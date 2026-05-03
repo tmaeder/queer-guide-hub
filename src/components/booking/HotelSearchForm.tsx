@@ -1,8 +1,14 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Search } from 'lucide-react';
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -95,88 +101,90 @@ export function HotelSearchForm({
   };
 
   return (
-    <Box
-      component="form"
+    <form
       onSubmit={handleSubmit}
-      sx={{
-        display: 'flex',
-        gap: 1.5,
-        flexWrap: 'wrap',
-        alignItems: 'flex-end',
-      }}
+      className="flex gap-3 flex-wrap items-end"
     >
-      <TextField
-        label="City"
-        value={city}
-        onChange={(e) => setCity(e.target.value)}
-        size="small"
-        required
-        sx={{ flex: '1 1 200px' }}
-        placeholder="Barcelona, Berlin, Bangkok..."
-      />
-      <TextField
-        label="Check-in"
-        type="date"
-        value={checkIn}
-        onChange={(e) => setCheckIn(e.target.value)}
-        size="small"
-        slotProps={{ inputLabel: { shrink: true } }}
-        sx={{ flex: '0 0 150px' }}
-      />
-      <TextField
-        label="Check-out"
-        type="date"
-        value={checkOut}
-        onChange={(e) => setCheckOut(e.target.value)}
-        size="small"
-        slotProps={{ inputLabel: { shrink: true } }}
-        sx={{ flex: '0 0 150px' }}
-      />
-      <TextField
-        label="Guests"
-        type="number"
-        value={guests}
-        onChange={(e) => setGuests(Math.max(1, Math.min(9, parseInt(e.target.value) || 1)))}
-        size="small"
-        slotProps={{ htmlInput: { min: 1, max: 9 } }}
-        sx={{ flex: '0 0 80px' }}
-      />
-      <TextField
-        select
-        label="Type"
-        value={hotelType}
-        onChange={(e) => setHotelType(e.target.value as HotelTypeOption)}
-        size="small"
-        sx={{ flex: '0 0 170px' }}
-      >
-        {HOTEL_TYPE_OPTIONS.map((opt) => (
-          <MenuItem key={opt} value={opt}>
-            {TYPE_LABELS[opt]}
-          </MenuItem>
-        ))}
-      </TextField>
-      <TextField
-        label="Min €"
-        type="number"
-        value={priceMin}
-        onChange={(e) => setPriceMin(e.target.value)}
-        size="small"
-        slotProps={{ htmlInput: { min: 0, 'aria-label': 'Minimum price' } }}
-        sx={{ flex: '0 0 90px' }}
-      />
-      <TextField
-        label="Max €"
-        type="number"
-        value={priceMax}
-        onChange={(e) => setPriceMax(e.target.value)}
-        size="small"
-        slotProps={{ htmlInput: { min: 0, 'aria-label': 'Maximum price' } }}
-        sx={{ flex: '0 0 90px' }}
-      />
+      <div className="flex flex-col gap-1" style={{ flex: '1 1 200px' }}>
+        <Label className="text-xs">City</Label>
+        <Input
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          required
+          placeholder="Barcelona, Berlin, Bangkok..."
+          className="h-9"
+        />
+      </div>
+      <div className="flex flex-col gap-1" style={{ flex: '0 0 150px' }}>
+        <Label className="text-xs">Check-in</Label>
+        <Input
+          type="date"
+          value={checkIn}
+          onChange={(e) => setCheckIn(e.target.value)}
+          className="h-9"
+        />
+      </div>
+      <div className="flex flex-col gap-1" style={{ flex: '0 0 150px' }}>
+        <Label className="text-xs">Check-out</Label>
+        <Input
+          type="date"
+          value={checkOut}
+          onChange={(e) => setCheckOut(e.target.value)}
+          className="h-9"
+        />
+      </div>
+      <div className="flex flex-col gap-1" style={{ flex: '0 0 80px' }}>
+        <Label className="text-xs">Guests</Label>
+        <Input
+          type="number"
+          value={guests}
+          onChange={(e) => setGuests(Math.max(1, Math.min(9, parseInt(e.target.value) || 1)))}
+          min={1}
+          max={9}
+          className="h-9"
+        />
+      </div>
+      <div className="flex flex-col gap-1" style={{ flex: '0 0 170px' }}>
+        <Label className="text-xs">Type</Label>
+        <Select value={hotelType} onValueChange={(v) => setHotelType(v as HotelTypeOption)}>
+          <SelectTrigger className="h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {HOTEL_TYPE_OPTIONS.map((opt) => (
+              <SelectItem key={opt} value={opt}>
+                {TYPE_LABELS[opt]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-1" style={{ flex: '0 0 90px' }}>
+        <Label className="text-xs">Min €</Label>
+        <Input
+          type="number"
+          value={priceMin}
+          onChange={(e) => setPriceMin(e.target.value)}
+          min={0}
+          aria-label="Minimum price"
+          className="h-9"
+        />
+      </div>
+      <div className="flex flex-col gap-1" style={{ flex: '0 0 90px' }}>
+        <Label className="text-xs">Max €</Label>
+        <Input
+          type="number"
+          value={priceMax}
+          onChange={(e) => setPriceMax(e.target.value)}
+          min={0}
+          aria-label="Maximum price"
+          className="h-9"
+        />
+      </div>
       <Button type="submit" size="sm">
         <Search style={{ height: 16, width: 16, marginRight: 6 }} />
         Search Hotels
       </Button>
-    </Box>
+    </form>
   );
 }

@@ -38,7 +38,6 @@
   "src/components/admin/users/UserDetailSheet.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/components/booking/HotelBookingFlow.tsx",
-  "src/components/booking/HotelSearchForm.tsx",
   "src/components/cms/AIAssistDrawer.tsx",
   "src/components/cms/AutoTagPanel.tsx",
   "src/components/cms/BulkActionsBar.tsx",
