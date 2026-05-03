@@ -82,7 +82,6 @@
   "src/components/trips/CreateTripDialog.tsx",
   "src/components/trips/DraggableItinerary.tsx",
   "src/components/trips/PackingTab.tsx",
-  "src/components/trips/PlaceCommentThread.tsx",
   "src/components/trips/ReservationsTab.tsx",
   "src/components/trips/ShareTripDialog.tsx",
   "src/components/trips/SocialSignalBadges.tsx",
