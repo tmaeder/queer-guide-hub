@@ -1,15 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Alert from '@mui/material/Alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 import {
   diffSettings,
@@ -73,10 +75,10 @@ function ChangePill({ change }: { change: AxisChange }) {
   const rems = change.removed?.length ?? 0;
   if (adds || rems) {
     return (
-      <Stack direction="row" spacing={0.5}>
+      <div className="flex flex-row gap-1">
         {adds > 0 && <Badge variant="default">+{adds}</Badge>}
         {rems > 0 && <Badge variant="destructive">-{rems}</Badge>}
-      </Stack>
+      </div>
     );
   }
   return <Badge variant="secondary">changed</Badge>;
@@ -84,37 +86,35 @@ function ChangePill({ change }: { change: AxisChange }) {
 
 function ChangeRow({ keyName, change }: { keyName: string; change: AxisChange }) {
   return (
-    <Box>
-      <Stack direction="row" alignItems="center" spacing={1.5}>
-        <Typography variant="subtitle2" sx={{ minWidth: 200, fontFamily: 'monospace' }}>
-          {keyName}
-        </Typography>
+    <div>
+      <div className="flex flex-row items-center gap-3">
+        <p className="text-sm font-semibold min-w-[200px] font-mono">{keyName}</p>
         <ChangePill change={change} />
-      </Stack>
+      </div>
       {change.kind === 'changed' && (change.added?.length || change.removed?.length) ? (
-        <Stack direction="row" spacing={2} sx={{ ml: 26, mt: 0.5 }}>
+        <div className="flex flex-row gap-4 ml-[208px] mt-1">
           {change.added && change.added.length > 0 && (
-            <Typography variant="caption" sx={{ color: '#10b981' }}>
+            <span className="text-xs" style={{ color: '#10b981' }}>
               +{change.added.map((a) => JSON.stringify(a)).join(', ')}
-            </Typography>
+            </span>
           )}
           {change.removed && change.removed.length > 0 && (
-            <Typography variant="caption" sx={{ color: '#ef4444' }}>
+            <span className="text-xs" style={{ color: '#ef4444' }}>
               −{change.removed.map((a) => JSON.stringify(a)).join(', ')}
-            </Typography>
+            </span>
           )}
-        </Stack>
+        </div>
       ) : null}
       {change.kind === 'changed' && change.nested ? (
-        <Box sx={{ ml: 26, mt: 0.5 }}>
+        <div className="ml-[208px] mt-1">
           {Object.entries(change.nested).map(([k, c]) => (
-            <Typography key={k} variant="caption" component="div" color="text.secondary">
+            <div key={k} className="text-xs text-muted-foreground">
               <code>{k}</code>: {c.kind}
-            </Typography>
+            </div>
           ))}
-        </Box>
+        </div>
       ) : null}
-    </Box>
+    </div>
   );
 }
 
@@ -215,25 +215,27 @@ export function SettingsTab() {
   const diff = filterRelevantChanges(rawDiff, { ignoreKeys: IGNORED_DIFF_KEYS });
 
   return (
-    <Stack spacing={3}>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="flex-end">
-        <TextField
-          select
-          label="Index"
-          value={index}
-          onChange={(e) => setIndex(e.target.value)}
-          sx={{ minWidth: 200 }}
-        >
-          {INDEXES.map((ix) => (
-            <MenuItem key={ix} value={ix}>
-              {ix}
-            </MenuItem>
-          ))}
-        </TextField>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="space-y-1.5 min-w-[200px]">
+          <Label>Index</Label>
+          <Select value={index} onValueChange={setIndex}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {INDEXES.map((ix) => (
+                <SelectItem key={ix} value={ix}>
+                  {ix}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button onClick={refresh} variant="outline" disabled={loading}>
           {loading ? 'Loading…' : 'Refresh'}
         </Button>
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
         {desired === null && applied !== null && (
           <Button onClick={importApplied} disabled={busy === 'import'} variant="outline">
             {busy === 'import' ? 'Importing…' : 'Snapshot live → desired'}
@@ -244,121 +246,127 @@ export function SettingsTab() {
             {busy === 'apply' ? 'Applying…' : 'Apply desired → Meili'}
           </Button>
         )}
-      </Stack>
+      </div>
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-      <Tabs value={view} onChange={(_, v: typeof view) => setView(v)}>
-        <Tab label={`Diff${diff.hasChanges ? ` (${diff.summary.length})` : ''}`} value="diff" />
-        <Tab label="Desired" value="desired" />
-        <Tab label="Applied" value="applied" />
-        <Tab label={`Versions (${versions.length})`} value="versions" />
-      </Tabs>
+      <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
+        <TabsList>
+          <TabsTrigger value="diff">
+            Diff{diff.hasChanges ? ` (${diff.summary.length})` : ''}
+          </TabsTrigger>
+          <TabsTrigger value="desired">Desired</TabsTrigger>
+          <TabsTrigger value="applied">Applied</TabsTrigger>
+          <TabsTrigger value="versions">Versions ({versions.length})</TabsTrigger>
+        </TabsList>
 
-      {view === 'diff' && (
-        <Card>
-          <CardContent>
-            {desired === null && applied === null ? (
-              <Typography color="text.secondary">No settings on either side yet.</Typography>
-            ) : !diff.hasChanges ? (
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Badge variant="default">in sync</Badge>
-                <Typography variant="body2" color="text.secondary">
-                  Desired (DB) and applied (Meili) match for{' '}
-                  <code>{index}</code> across all monitored keys.
-                </Typography>
-              </Stack>
+        <TabsContent value="diff">
+          <Card>
+            <CardContent>
+              {desired === null && applied === null ? (
+                <p className="text-muted-foreground">No settings on either side yet.</p>
+              ) : !diff.hasChanges ? (
+                <div className="flex flex-row items-center gap-2">
+                  <Badge variant="default">in sync</Badge>
+                  <p className="text-sm text-muted-foreground">
+                    Desired (DB) and applied (Meili) match for <code>{index}</code> across all
+                    monitored keys.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-row gap-2 items-center mb-4">
+                    <Badge variant="destructive">drift</Badge>
+                    <p className="text-sm">
+                      {diff.summary.length} key(s) differ between desired (DB) and applied (Meili).
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {Object.entries(diff.changes)
+                      .filter(([, c]) => c.kind !== 'unchanged')
+                      .map(([k, c]) => (
+                        <ChangeRow key={k} keyName={k} change={c} />
+                      ))}
+                  </div>
+                </>
+              )}
+              {desired === null && applied !== null && (
+                <div className="mt-6">
+                  <Alert>
+                    <AlertDescription>
+                      No desired version yet. Click <strong>Snapshot live → desired</strong> to
+                      anchor history without changing Meilisearch.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="desired">
+          <Card>
+            <CardContent>
+              {desiredVersion && (
+                <p className="text-xs text-muted-foreground block mb-2">
+                  version {desiredVersion.version} ·{' '}
+                  {new Date(desiredVersion.created_at).toLocaleString()} ·{' '}
+                  {desiredVersion.comment ?? 'no comment'}
+                </p>
+              )}
+              <SettingsJson value={desired} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="applied">
+          <Card>
+            <CardContent>
+              <SettingsJson value={applied} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="versions">
+          <div className="flex flex-col gap-2">
+            {versions.length === 0 ? (
+              <p className="text-muted-foreground">No versions on file.</p>
             ) : (
-              <>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                  <Badge variant="destructive">drift</Badge>
-                  <Typography variant="body2">
-                    {diff.summary.length} key(s) differ between desired (DB) and applied (Meili).
-                  </Typography>
-                </Stack>
-                <Stack spacing={1.5}>
-                  {Object.entries(diff.changes)
-                    .filter(([, c]) => c.kind !== 'unchanged')
-                    .map(([k, c]) => (
-                      <ChangeRow key={k} keyName={k} change={c} />
-                    ))}
-                </Stack>
-              </>
+              versions.map((v) => (
+                <Card key={v.id}>
+                  <CardContent>
+                    <div className="flex flex-row justify-between items-center">
+                      <div>
+                        <div className="flex flex-row items-center gap-2">
+                          <Badge variant="secondary">v{v.version}</Badge>
+                          <Badge variant="secondary">{v.channel}</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(v.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        {v.comment && <p className="text-sm mt-1">{v.comment}</p>}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => rollbackTo(v.version)}
+                        disabled={busy === `rb-${v.version}`}
+                      >
+                        {busy === `rb-${v.version}` ? 'Rolling…' : 'Roll back to this'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
             )}
-            {desired === null && applied !== null && (
-              <Box sx={{ mt: 3 }}>
-                <Alert severity="info">
-                  No desired version yet. Click <strong>Snapshot live → desired</strong> to anchor
-                  history without changing Meilisearch.
-                </Alert>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {view === 'desired' && (
-        <Card>
-          <CardContent>
-            {desiredVersion && (
-              <Typography variant="caption" color="text.secondary" gutterBottom display="block">
-                version {desiredVersion.version} ·{' '}
-                {new Date(desiredVersion.created_at).toLocaleString()} ·{' '}
-                {desiredVersion.comment ?? 'no comment'}
-              </Typography>
-            )}
-            <SettingsJson value={desired} />
-          </CardContent>
-        </Card>
-      )}
-
-      {view === 'applied' && (
-        <Card>
-          <CardContent>
-            <SettingsJson value={applied} />
-          </CardContent>
-        </Card>
-      )}
-
-      {view === 'versions' && (
-        <Stack spacing={1}>
-          {versions.length === 0 ? (
-            <Typography color="text.secondary">No versions on file.</Typography>
-          ) : (
-            versions.map((v) => (
-              <Card key={v.id}>
-                <CardContent>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Box>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Badge variant="secondary">v{v.version}</Badge>
-                        <Badge variant="secondary">{v.channel}</Badge>
-                        <Typography variant="caption" color="text.secondary">
-                          {new Date(v.created_at).toLocaleString()}
-                        </Typography>
-                      </Stack>
-                      {v.comment && (
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          {v.comment}
-                        </Typography>
-                      )}
-                    </Box>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => rollbackTo(v.version)}
-                      disabled={busy === `rb-${v.version}`}
-                    >
-                      {busy === `rb-${v.version}` ? 'Rolling…' : 'Roll back to this'}
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </Stack>
-      )}
-    </Stack>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
 
