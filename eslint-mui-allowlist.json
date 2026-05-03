@@ -257,7 +257,6 @@
   "src/pages/AdminEventTypes.tsx",
   "src/pages/AdminEvents.tsx",
   "src/pages/AdminFeedback/index.tsx",
-  "src/pages/AdminGroups.tsx",
   "src/pages/AdminHotels.tsx",
   "src/pages/AdminIngestionRules.tsx",
   "src/pages/AdminMarketplace.tsx",

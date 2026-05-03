@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -47,43 +45,22 @@ export default function AdminGroups() {
       columnHelper.accessor('name', {
         header: 'Group',
         cell: (info) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                height: 36,
-                width: 36,
-                borderRadius: 2,
-                background: 'linear-gradient(135deg, #DB2777, #F472B6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                flexShrink: 0,
-              }}
+          <div className="flex items-center gap-3">
+            <div
+              className="h-9 w-9 rounded-lg flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #DB2777, #F472B6)' }}
             >
               {info.getValue().charAt(0).toUpperCase()}
-            </Box>
-            <Box sx={{ minWidth: 0 }}>
-              <Box sx={{ fontWeight: 500 }}>{info.getValue()}</Box>
+            </div>
+            <div className="min-w-0">
+              <div className="font-medium">{info.getValue()}</div>
               {info.row.original.description && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: '0.75rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: 250,
-                  }}
-                >
+                <p className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap max-w-[250px]">
                   {info.row.original.description}
-                </Typography>
+                </p>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -106,10 +83,10 @@ export default function AdminGroups() {
       columnHelper.accessor('member_count', {
         header: 'Members',
         cell: (info) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <div className="flex items-center gap-1">
             <Users style={{ height: 14, width: 14 }} />
             {info.getValue() ?? 0}
-          </Box>
+          </div>
         ),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
@@ -127,7 +104,7 @@ export default function AdminGroups() {
           const tags = info.getValue();
           if (!tags || tags.length === 0) return <span style={{ color: '#999' }}>-</span>;
           return (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            <div className="flex flex-wrap gap-1">
               {tags.slice(0, 2).map((t) => (
                 <Badge key={t} variant="outline" style={{ fontSize: '0.7rem' }}>
                   {t}
@@ -138,7 +115,7 @@ export default function AdminGroups() {
                   +{tags.length - 2}
                 </Badge>
               )}
-            </Box>
+            </div>
           );
         },
         meta: { hideable: true } satisfies AdminColumnMeta,
@@ -249,41 +226,22 @@ function PendingJoinRequestsPanel() {
   if (!requests.length) return null;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1.5,
-        p: 2,
-        bgcolor: 'background.paper',
-      }}
-    >
-      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+    <div className="flex flex-col gap-3 p-4 bg-background">
+      <h6 className="text-base font-semibold">
         Pending Join Requests ({requests.length})
-      </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      </h6>
+      <div className="flex flex-col gap-2">
         {requests.map((req) => (
-          <Box
-            key={req.id}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-              py: 1,
-            }}
-          >
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {req.group_name ?? req.group_id}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
+          <div key={req.id} className="flex items-center justify-between gap-4 py-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">{req.group_name ?? req.group_id}</p>
+              <span className="text-xs text-muted-foreground">
                 User {req.user_id.slice(0, 8)}…
                 {req.message ? ` — ${req.message}` : ''} ·{' '}
                 {new Date(req.created_at).toLocaleString()}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+              </span>
+            </div>
+            <div className="flex gap-2">
               <Button
                 size="sm"
                 onClick={() => approve(req.id)}
@@ -299,10 +257,10 @@ function PendingJoinRequestsPanel() {
               >
                 <X style={{ width: 14, height: 14, marginRight: 4 }} /> Reject
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
