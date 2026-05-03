@@ -47,8 +47,6 @@ import {
   Server,
   Shield,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 const PREDEFINED_SERVICES = [
   { value: 'openai', label: 'OpenAI' },
@@ -82,19 +80,11 @@ const getStatusIcon = (status: string) => {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'configured':
-      return (
-        <Badge variant="default">
-          Configured
-        </Badge>
-      );
+      return <Badge variant="default">Configured</Badge>;
     case 'missing':
       return <Badge variant="destructive">Missing</Badge>;
     case 'error':
-      return (
-        <Badge variant="secondary">
-          Error
-        </Badge>
-      );
+      return <Badge variant="secondary">Error</Badge>;
     default:
       return <Badge variant="secondary">Unknown</Badge>;
   }
@@ -187,24 +177,19 @@ export const ApiKeysManager = () => {
   const errorCount = requiredKeys.filter((k) => k.status === 'error').length;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* ChatGPT OAuth Connection */}
       <ChatGPTConnection />
 
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="flex items-center justify-between">
         <div>
-          <Typography
-            variant="h2"
-            sx={{ fontSize: '1.875rem', fontWeight: 700, color: 'text.primary' }}
-          >
-            API Keys Management
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
+          <h2 className="text-3xl font-bold text-foreground">API Keys Management</h2>
+          <p className="text-muted-foreground">
             Securely manage API keys for external services
           </p>
         </div>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <Button variant="outline" onClick={refreshKeys} disabled={loading} size="sm">
             <RefreshCw
               style={{
@@ -231,7 +216,7 @@ export const ApiKeysManager = () => {
                     Store an API key securely for use in import operations
                   </DialogDescription>
                 </DialogHeader>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
+                <div className="flex flex-col gap-4 py-4">
                   <div>
                     <Label htmlFor="service">Service</Label>
                     <Select
@@ -299,7 +284,7 @@ export const ApiKeysManager = () => {
                       rows={3}
                     />
                   </div>
-                </Box>
+                </div>
                 <DialogFooter>
                   <Button
                     type="button"
@@ -320,8 +305,8 @@ export const ApiKeysManager = () => {
               </form>
             </DialogContent>
           </Dialog>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {loading ? (
         <Card>
@@ -342,47 +327,39 @@ export const ApiKeysManager = () => {
         <>
           {/* Status Summary */}
           {requiredKeys.length > 0 && (
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr 1fr 1fr', md: 'repeat(3, 1fr)' },
-                gap: 2,
-              }}
-            >
-              <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#f0fdf4', borderRadius: 2 }}>
-                <Typography variant="h5" sx={{ color: '#16a34a' }}>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-4 rounded-lg" style={{ background: '#f0fdf4' }}>
+                <div className="text-2xl font-semibold" style={{ color: '#16a34a' }}>
                   {configuredCount}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#16a34a' }}>
+                </div>
+                <div className="text-sm" style={{ color: '#16a34a' }}>
                   Configured
-                </Typography>
-              </Box>
-              <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#fef2f2', borderRadius: 2 }}>
-                <Typography variant="h5" sx={{ color: '#dc2626' }}>
+                </div>
+              </div>
+              <div className="text-center p-4 rounded-lg" style={{ background: '#fef2f2' }}>
+                <div className="text-2xl font-semibold" style={{ color: '#dc2626' }}>
                   {missingCount}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#dc2626' }}>
+                </div>
+                <div className="text-sm" style={{ color: '#dc2626' }}>
                   Missing
-                </Typography>
-              </Box>
-              <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#fffbeb', borderRadius: 2 }}>
-                <Typography variant="h5" sx={{ color: '#d97706' }}>
+                </div>
+              </div>
+              <div className="text-center p-4 rounded-lg" style={{ background: '#fffbeb' }}>
+                <div className="text-2xl font-semibold" style={{ color: '#d97706' }}>
                   {errorCount}
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#d97706' }}>
+                </div>
+                <div className="text-sm" style={{ color: '#d97706' }}>
                   Errors
-                </Typography>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Required API Keys (from Supabase env secrets) */}
           {requiredKeys.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle
-
-                >
+                <CardTitle>
                   <Shield style={{ width: 20, height: 20 }} />
                   Supabase Environment Secrets
                 </CardTitle>
@@ -391,24 +368,19 @@ export const ApiKeysManager = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <div className="flex flex-col gap-3">
                   {requiredKeys.map((rk) => (
-                    <Box
+                    <div
                       key={rk.key_name}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        p: 2,
-                        borderRadius: 1,
-                        border: '1px solid',
+                      className="flex items-center justify-between p-4 rounded border"
+                      style={{
                         borderColor:
                           rk.status === 'configured'
                             ? 'rgba(34,197,94,0.3)'
                             : rk.status === 'error'
                               ? 'rgba(245,158,11,0.3)'
                               : 'rgba(239,68,68,0.3)',
-                        bgcolor:
+                        background:
                           rk.status === 'configured'
                             ? 'rgba(34,197,94,0.05)'
                             : rk.status === 'error'
@@ -416,47 +388,33 @@ export const ApiKeysManager = () => {
                               : 'rgba(239,68,68,0.05)',
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
+                      <div className="flex items-center gap-3 flex-1">
                         {getStatusIcon(rk.status)}
-                        <Box>
-                          <Typography
-                            sx={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.875rem' }}
-                          >
-                            {rk.key_name}
-                          </Typography>
+                        <div>
+                          <p className="font-semibold font-mono text-sm">{rk.key_name}</p>
                           {rk.used_by.length > 0 && (
-                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                            <p className="text-xs text-muted-foreground">
                               Used by: {rk.used_by.map((u) => u.name).join(', ')}
-                            </Typography>
+                            </p>
                           )}
                           {rk.status === 'error' && rk.hint && (
-                            <Typography sx={{ fontSize: '0.75rem', color: '#d97706' }}>
+                            <p className="text-xs" style={{ color: '#d97706' }}>
                               {rk.hint}
-                            </Typography>
+                            </p>
                           )}
                           {rk.status === 'configured' && rk.hint && (
-                            <Typography
-                              sx={{
-                                fontSize: '0.75rem',
-                                color: 'text.secondary',
-                                fontFamily: 'monospace',
-                              }}
-                            >
-                              {rk.hint}
-                            </Typography>
+                            <p className="text-xs text-muted-foreground font-mono">{rk.hint}</p>
                           )}
-                        </Box>
-                      </Box>
+                        </div>
+                      </div>
                       {getStatusBadge(rk.status)}
-                    </Box>
+                    </div>
                   ))}
-                </Box>
-                <Typography
-                  sx={{ mt: 2, fontSize: '0.75rem', color: 'text.secondary', fontStyle: 'italic' }}
-                >
+                </div>
+                <p className="mt-4 text-xs text-muted-foreground italic">
                   To add or update these keys, go to Supabase Dashboard &rarr; Project Settings
                   &rarr; Edge Functions &rarr; Secrets
-                </Typography>
+                </p>
               </CardContent>
             </Card>
           )}
@@ -464,9 +422,7 @@ export const ApiKeysManager = () => {
           {/* Custom API Keys (from admin_api_keys table) */}
           <Card>
             <CardHeader>
-              <CardTitle
-
-              >
+              <CardTitle>
                 <Server style={{ width: 20, height: 20 }} />
                 Custom API Keys
               </CardTitle>
@@ -476,7 +432,7 @@ export const ApiKeysManager = () => {
             </CardHeader>
             <CardContent>
               {keys.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 3 }}>
+                <div className="text-center py-6">
                   <Key
                     style={{
                       height: 32,
@@ -485,26 +441,18 @@ export const ApiKeysManager = () => {
                       color: 'var(--muted-foreground)',
                     }}
                   />
-                  <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                  <p className="text-muted-foreground text-sm">
                     No custom API keys. Use the "+ Add API Key" button to store additional keys.
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
               ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <div className="flex flex-col gap-3">
                   {keys.map((key) => (
-                    <Box
+                    <div
                       key={key.id}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        p: 2,
-                        borderRadius: 1,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                      }}
+                      className="flex items-center justify-between p-4 rounded border border-border"
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <div className="flex items-center gap-3">
                         <Key
                           style={{
                             width: 16,
@@ -512,22 +460,20 @@ export const ApiKeysManager = () => {
                             color: key.is_active ? '#22c55e' : '#6b7280',
                           }}
                         />
-                        <Box>
-                          <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                        <div>
+                          <p className="font-semibold text-sm">
                             {key.service_name} / {key.key_name}
-                          </Typography>
+                          </p>
                           {key.description && (
-                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                              {key.description}
-                            </Typography>
+                            <p className="text-xs text-muted-foreground">{key.description}</p>
                           )}
-                          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                          <p className="text-xs text-muted-foreground">
                             Created {formatDate(key.created_at)}
                             {key.last_used_at && ` | Last used ${formatDate(key.last_used_at)}`}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Badge variant={key.is_active ? 'default' : 'secondary'}>
                           {key.is_active ? 'Active' : 'Inactive'}
                         </Badge>
@@ -555,10 +501,10 @@ export const ApiKeysManager = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                   ))}
-                </Box>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -575,8 +521,8 @@ export const ApiKeysManager = () => {
                 Update details. Leave key value empty to keep current key.
               </DialogDescription>
             </DialogHeader>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex items-center gap-2">
                 <Switch
                   checked={editForm.is_active}
                   onCheckedChange={(checked) =>
@@ -584,7 +530,7 @@ export const ApiKeysManager = () => {
                   }
                 />
                 <Label>Active</Label>
-              </Box>
+              </div>
               <div>
                 <Label htmlFor="edit_service">Service</Label>
                 <Input
@@ -624,7 +570,7 @@ export const ApiKeysManager = () => {
                   rows={3}
                 />
               </div>
-            </Box>
+            </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditingKey(null)}>
                 Cancel
@@ -634,6 +580,6 @@ export const ApiKeysManager = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 };
