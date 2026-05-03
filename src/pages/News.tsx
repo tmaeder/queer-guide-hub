@@ -334,30 +334,46 @@ export default function News() {
           </div>
         </PageHeader>
 
-        {/* Category Chips */}
+        {/* Category Tabs */}
         {categories.length > 0 && (
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-            <Badge
-              variant={activeCategory === null ? 'default' : 'outline'}
-              style={{ cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem' }}
+          <div
+            role="tablist"
+            aria-label={t('pages.news.categoriesLabel', 'News categories')}
+            className="flex gap-2 mb-6 overflow-x-auto pb-2"
+            style={{ scrollbarWidth: 'none' }}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === null}
+              className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                activeCategory === null
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-transparent text-foreground border-border hover:bg-muted'
+              }`}
               onClick={() => handleCategoryClick(null)}
             >
               All
-            </Badge>
+            </button>
             {categories.map((cat) => {
               const count = categoryCounts[cat.slug] || 0;
+              const selected = activeCategory === cat.slug;
               return (
-                <Badge
+                <button
                   key={cat.id}
-                  variant={activeCategory === cat.slug ? 'default' : 'outline'}
-                  style={{
-                    cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem',
-                    ...(activeCategory === cat.slug ? { backgroundColor: cat.color, color: 'hsl(var(--background))' } : {}),
-                  }}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    selected
+                      ? 'border-transparent'
+                      : 'bg-transparent text-foreground border-border hover:bg-muted'
+                  }`}
+                  style={selected ? { backgroundColor: cat.color, color: 'hsl(var(--background))' } : undefined}
                   onClick={() => handleCategoryClick(cat.slug)}
                 >
                   {cat.name}{count > 0 ? ` (${count})` : ''}
-                </Badge>
+                </button>
               );
             })}
           </div>
@@ -365,16 +381,21 @@ export default function News() {
 
         {/* Featured Section */}
         {showFeatured && (
-          <div className="border border-border rounded-lg p-6 mb-6 bg-background">
-            <p className="font-bold tracking-widest mb-4 text-muted-foreground uppercase text-xs">
+          <section className="border border-border rounded-lg p-6 mb-6 bg-background" aria-labelledby="featured-stories-heading">
+            <h2
+              id="featured-stories-heading"
+              className="font-bold tracking-widest mb-4 text-muted-foreground uppercase text-xs"
+            >
               Featured Stories
-            </p>
+            </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Hero featured article */}
               {featuredArticles[0] && (
                 <NewsCard
                   article={featuredArticles[0]}
                   variant="featured"
+                  priority
+                  hideDate
                   onViewArticle={handleViewArticle}
                   sourcesMap={sourcesMap}
                   categoriesMap={categoriesMap}
@@ -388,6 +409,7 @@ export default function News() {
                     key={fa.id}
                     article={fa}
                     variant="headline"
+                    hideDate
                     onViewArticle={handleViewArticle}
                     sourcesMap={sourcesMap}
                     categoriesMap={categoriesMap}
@@ -396,7 +418,7 @@ export default function News() {
                 ))}
               </div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* Quick Search & Controls */}
