@@ -661,10 +661,19 @@ export async function listFromWhere<T = unknown>(
   table: string,
   select: string,
   filters: Array<{ col: string; val: unknown }>,
+  opts?: { order?: { col: string; ascending?: boolean }; limit?: number },
 ): Promise<T[]> {
   let q = supabase.from(table as never).select(select as never);
   for (const f of filters) {
     q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(f.col, f.val);
+  }
+  if (opts?.order) {
+    q = (
+      q as unknown as { order: (c: string, opts: { ascending?: boolean }) => typeof q }
+    ).order(opts.order.col, { ascending: opts.order.ascending ?? true });
+  }
+  if (opts?.limit) {
+    q = (q as unknown as { limit: (n: number) => typeof q }).limit(opts.limit);
   }
   const { data, error } = await q;
   if (error) throw error;
@@ -840,6 +849,72 @@ export async function fetchAllUserFavorites(userId: string) {
     marketplace: (marketplaceData.data ?? []) as Array<Record<string, unknown>>,
     news: (newsData.data ?? []) as Array<Record<string, unknown>>,
   };
+}
+
+/** Insert a row, optionally returning the inserted id. */
+export async function insertReturningId(
+  table: string,
+  payload: Record<string, unknown>,
+): Promise<{ id: string | null; error: { message: string } | null }> {
+  const { data, error } = await supabase
+    .from(table as never)
+    .insert(payload as never)
+    .select('id')
+    .single();
+  return {
+    id: ((data as { id?: string } | null) ?? null)?.id ?? null,
+    error: error ? { message: error.message } : null,
+  };
+}
+
+/** Insert without expecting a return. */
+export async function insertRow(
+  table: string,
+  payload: Record<string, unknown>,
+): Promise<{ error: { message: string } | null }> {
+  const { error } = await supabase.from(table as never).insert(payload as never);
+  return { error: error ? { message: error.message } : null };
+}
+
+/** Count rows matching multiple eq filters. */
+export async function countRowsWhere(
+  table: string,
+  filters: Array<{ col: string; val: unknown }>,
+): Promise<number> {
+  let q = supabase.from(table as never).select('id', { count: 'exact', head: true });
+  for (const f of filters) {
+    q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(f.col, f.val);
+  }
+  const { count, error } = await q;
+  return error ? 0 : (count ?? 0);
+}
+
+/** Fetch one row by id. */
+export async function fetchById<T = unknown>(
+  table: string,
+  id: string,
+  select = '*',
+): Promise<T | null> {
+  const { data } = await supabase
+    .from(table as never)
+    .select(select as never)
+    .eq('id', id)
+    .single();
+  return (data as T | null) ?? null;
+}
+
+/** AudioManager + VideoManager — list rows with one nested join, ordered desc. */
+export async function listWithJoinDesc<T = unknown>(
+  table: string,
+  selectClause: string,
+  orderCol = 'created_at',
+): Promise<T[]> {
+  const { data, error } = await supabase
+    .from(table as never)
+    .select(selectClause as never)
+    .order(orderCol, { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as T[];
 }
 
 /** AdminReview.tsx — count rows matching a single filter (or all). */

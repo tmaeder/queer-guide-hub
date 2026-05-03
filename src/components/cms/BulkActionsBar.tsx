@@ -14,7 +14,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { upsertCMSContentMetadata, insertContentActions } from '@/hooks/useCMSContentMetadata';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
 import type { WorkflowState } from '@/types/cms';
@@ -44,17 +44,10 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
       setProgress(`Updating ${selections.length} item${selections.length === 1 ? '' : 's'}…`);
       let ok = 0;
       for (const sel of selections) {
-        const { error: e } = await supabase
-          .from('cms_content_metadata' as 'events')
-          .upsert(
-            {
-              source_table: sel.tableName,
-              source_id: sel.id,
-              workflow_state: state,
-              last_edited_at: new Date().toISOString(),
-            } as never,
-            { onConflict: 'source_table,source_id' },
-          );
+        const { error: e } = await upsertCMSContentMetadata(sel.tableName, sel.id, {
+          workflow_state: state,
+          last_edited_at: new Date().toISOString(),
+        });
         if (!e) ok++;
       }
       setBusy(false);
@@ -82,7 +75,7 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
         target_locale: locale,
         status: 'pending' as const,
       }));
-      const { error: e } = await supabase.from('content_actions' as 'events').insert(rows as never);
+      const { error: e } = await insertContentActions(rows);
       setBusy(false);
       setProgress(null);
       setTranslateAnchor(null);

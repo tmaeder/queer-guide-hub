@@ -1,6 +1,15 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { WorkflowState, VisibilityLevel } from '@/types/cms';
 
+export async function insertContentActions(
+  rows: Array<Record<string, unknown>>,
+): Promise<{ error: { message: string } | null }> {
+  const { error } = await supabase
+    .from('content_actions' as 'events')
+    .insert(rows as never);
+  return { error: error ? { message: error.message } : null };
+}
+
 export interface CMSContentMetadata {
   workflow_state: WorkflowState;
   visibility_level: VisibilityLevel;
@@ -24,10 +33,10 @@ export async function loadCMSContentMetadata(
 export async function upsertCMSContentMetadata(
   sourceTable: string,
   sourceId: string,
-  patch: Partial<Pick<CMSContentMetadata, 'visibility_level' | 'scheduled_publish_at'>>,
-): Promise<void> {
+  patch: Partial<CMSContentMetadata> & { last_edited_at?: string },
+): Promise<{ error: { message: string } | null }> {
   const now = new Date().toISOString();
-  await supabase.from('cms_content_metadata' as const).upsert(
+  const { error } = await supabase.from('cms_content_metadata' as const).upsert(
     {
       source_table: sourceTable,
       source_id: sourceId,
@@ -37,4 +46,5 @@ export async function upsertCMSContentMetadata(
     },
     { onConflict: 'source_table,source_id' },
   );
+  return { error: error ? { message: error.message } : null };
 }

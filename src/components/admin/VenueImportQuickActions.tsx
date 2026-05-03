@@ -12,6 +12,7 @@ import { VenueImportDialog } from './venues/VenueImportDialog';
 import { brandColors } from '@/theme/muiTheme';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere, listFrom } from '@/hooks/usePageFetchers';
 
 interface VenueSource {
   id: string;
@@ -82,13 +83,12 @@ export const VenueImportQuickActions = () => {
       try {
         setLoadingData(true);
 
-        const { data: sources, error: sourcesError } = await supabase
-          .from('ingestion_sources')
-          .select('id, name, slug, source_type, is_enabled, requires_api_key, edge_function, last_run_at, last_success_at, last_error, total_items_fetched, total_items_approved')
-          .eq('target_table', 'venues')
-          .order('name');
-
-        if (sourcesError) throw sourcesError;
+        const sources = await listFromWhere<VenueSource>(
+          'ingestion_sources',
+          'id, name, slug, source_type, is_enabled, requires_api_key, edge_function, last_run_at, last_success_at, last_error, total_items_fetched, total_items_approved',
+          [{ col: 'target_table', val: 'venues' }],
+          { order: { col: 'name', ascending: true } },
+        );
 
         const knownSlugs = (sources || []).map(s => s.slug);
         const extraSources: VenueSource[] = [];
@@ -112,15 +112,14 @@ export const VenueImportQuickActions = () => {
 
         setVenueSources([...(sources || []), ...extraSources]);
 
-        const { data: allVenues, error: venueError } = await supabase
-          .from('venues')
-          .select('data_source');
-
-        if (venueError) throw venueError;
+        const allVenues = await listFrom<{ data_source: string | null }>(
+          'venues',
+          'data_source',
+        );
 
         const stats: VenueStats = {};
         let total = 0;
-        for (const v of (allVenues || [])) {
+        for (const v of allVenues) {
           const src = v.data_source || 'manual';
           stats[src] = (stats[src] || 0) + 1;
           total++;
