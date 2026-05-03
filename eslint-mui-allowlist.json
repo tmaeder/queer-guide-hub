@@ -5,7 +5,6 @@
   "src/components/admin/AdminEditDialog.tsx",
   "src/App.tsx",
   "src/components/admin/AffiliatePartnersManager.tsx",
-  "src/components/admin/AutoCleanDuplicatesTab.tsx",
   "src/components/admin/AutomationDashboard.tsx",
   "src/components/admin/EmailIngestionsPanel.tsx",
   "src/components/admin/NewsQualityReviewTab.tsx",
