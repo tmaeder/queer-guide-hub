@@ -3,9 +3,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SelectField } from './fields';
 import { Heart } from 'lucide-react';
 import type { ProfileFormData } from '@/types/profileForm';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { stack } from '@/lib/sx';
 
 const ROMANTIC_ORIENTATION_OPTIONS = [
   { value: 'heteroromantic', label: 'Heteroromantic' },
@@ -123,7 +120,7 @@ interface RelationshipsTabProps {
 
 export function RelationshipsTab({ formData, onChange }: RelationshipsTabProps) {
   return (
-    <Box sx={stack(3)}>
+    <div className="flex flex-col gap-6">
       <Alert>
         <Heart style={{ width: 16, height: 16 }} />
         <AlertDescription>
@@ -135,25 +132,25 @@ export function RelationshipsTab({ formData, onChange }: RelationshipsTabProps) 
       <Card>
         <CardHeader>
           <CardTitle>Romance & Connection</CardTitle>
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             How you approach relationships and connection
-          </Typography>
+          </p>
         </CardHeader>
         <CardContent>
-          <Box sx={stack(2)}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="romantic_orientation" label="Romantic Orientation" value={formData.romantic_orientation} onChange={(v) => onChange('romantic_orientation', v)} options={ROMANTIC_ORIENTATION_OPTIONS} />
               <SelectField id="current_relationship_status" label="Current Status" value={formData.current_relationship_status} onChange={(v) => onChange('current_relationship_status', v)} options={RELATIONSHIP_STATUS_OPTIONS} />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="relationship_style" label="Relationship Style" value={formData.relationship_style} onChange={(v) => onChange('relationship_style', v)} options={RELATIONSHIP_STYLE_OPTIONS} />
               <SelectField id="romance_style" label="Romance Style" value={formData.romance_style} onChange={(v) => onChange('romance_style', v)} options={ROMANCE_STYLE_OPTIONS} />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="physical_affection_preference" label="Physical Affection" value={formData.physical_affection_preference} onChange={(v) => onChange('physical_affection_preference', v)} options={AFFECTION_OPTIONS} />
               <SelectField id="jealousy_comfort_level" label="Jealousy Comfort Level" value={formData.jealousy_comfort_level} onChange={(v) => onChange('jealousy_comfort_level', v)} options={JEALOUSY_OPTIONS} />
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -161,27 +158,27 @@ export function RelationshipsTab({ formData, onChange }: RelationshipsTabProps) 
       <Card>
         <CardHeader>
           <CardTitle>Intimacy</CardTitle>
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             Your preferences around physical intimacy and sexual health
-          </Typography>
+          </p>
         </CardHeader>
         <CardContent>
-          <Box sx={stack(2)}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="kink_experience_level" label="Kink Experience" value={formData.kink_experience_level} onChange={(v) => onChange('kink_experience_level', v)} options={KINK_EXPERIENCE_OPTIONS} />
               <SelectField id="bdsm_role" label="BDSM Role" value={formData.bdsm_role} onChange={(v) => onChange('bdsm_role', v)} options={BDSM_ROLE_OPTIONS} />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="sexual_frequency_preference" label="Frequency Preference" value={formData.sexual_frequency_preference} onChange={(v) => onChange('sexual_frequency_preference', v)} options={FREQUENCY_OPTIONS} />
               <SelectField id="communication_about_sex" label="Communication About Sex" value={formData.communication_about_sex} onChange={(v) => onChange('communication_about_sex', v)} options={COMMUNICATION_OPTIONS} />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="sexual_exploration_openness" label="Exploration Openness" value={formData.sexual_exploration_openness} onChange={(v) => onChange('sexual_exploration_openness', v)} options={EXPLORATION_OPTIONS} />
               <SelectField id="sexual_health_status" label="Sexual Health" value={formData.sexual_health_status} onChange={(v) => onChange('sexual_health_status', v)} options={HEALTH_STATUS_OPTIONS} />
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }
