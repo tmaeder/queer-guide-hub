@@ -221,8 +221,26 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	// pipeline takes ~6s for an essentially random ranking. Route it to
 	// the popular-entities path (sub-200ms) instead.
 	if (isBareLgbtqQuery(tokens)) {
+		// First try the precomputed popular entities (fast path).
 		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
-		const slice = popular.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
+		let hits: Array<Record<string, unknown>> = popular as Array<Record<string, unknown>>;
+
+		// Fallback: if user_events is empty (popular view returns nothing),
+		// browse featured docs directly from Meilisearch with an empty query.
+		// Without this, "trans"/"queer"/"gay" returned []. Bug #9 follow-up.
+		if (hits.length === 0) {
+			const browse = await meiliMultiSearch(env, {
+				indexes: ["venues", "events"],
+				query: "",
+				facets: INDEX_FACETS,
+				hitsPerPage: hitsPerPage * (page + 1),
+				page: 0,
+				useHybrid: false,
+			}).catch(() => null);
+			hits = browse?.hits ?? [];
+		}
+
+		const slice = hits.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
 		return json(
 			{
 				hits: slice,
@@ -230,7 +248,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 				nbHits: slice.length,
 				page,
 				hitsPerPage,
-				totalHits: popular.length,
+				totalHits: hits.length,
 				facetDistribution: {},
 				processingTimeMS: Date.now() - started,
 				reason: "bare_stopword_query",
@@ -296,8 +314,11 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 
 	// Search with rewritten query if available — preserves original q for lexical
 	// match by OR-ing synonyms (LLM rewrite + Postgres-backed) into the Meili
-	// query string.
-	const meiliQ = allSynonyms.length ? `${q} ${allSynonyms.join(" ")}` : q;
+	// query string. EXCEPT when the rewrite identified a city: the LLM tends to
+	// emit other city names as "synonyms" ('munich' → ['berlin', 'frankfurt'])
+	// which then dominate the Meili exact-match score and bury the actual hit.
+	const skipSynonymsForCity = !!rewrite?.city || !!rewrite?.type_hint;
+	const meiliQ = !skipSynonymsForCity && allSynonyms.length ? `${q} ${allSynonyms.join(" ")}` : q;
 	const useHybrid = meiliQ.split(/\s+/).length >= 3;
 	const [meili, sem] = await Promise.all([
 		meiliMultiSearch(env, {
