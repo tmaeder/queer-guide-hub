@@ -1,10 +1,6 @@
 import { useState } from 'react';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import Skeleton from '@mui/material/Skeleton';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDiscoverableTrips } from '@/hooks/useDiscoverableTrips';
@@ -25,48 +21,36 @@ export default function TripsDiscoverPage() {
   const { data: trips, isLoading } = useDiscoverableTrips(query);
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+    <div className="container mx-auto max-w-screen-lg px-4 py-6 md:py-10">
+      <div className="flex items-center gap-3 mb-2">
         <Compass size={26} style={{ color: 'hsl(var(--brand))' }} />
-        <Typography variant="h4" sx={{ fontWeight: 800 }}>
+        <h1 className="text-3xl font-extrabold">
           {t('trips.discover.title', 'Discover trips')}
-        </Typography>
-      </Box>
-      <Typography color="text.secondary" sx={{ mb: 3, fontSize: 14 }}>
+        </h1>
+      </div>
+      <p className="text-sm text-muted-foreground mb-6">
         {t(
           'trips.discover.subtitle',
           'Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.',
         )}
-      </Typography>
+      </p>
 
-      <TextField
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={t('trips.discover.searchPlaceholder', 'Filter by city…')}
-        size="small"
-        fullWidth
-        sx={{ mb: 3, maxWidth: 420 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search size={16} />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <div className="relative mb-6 max-w-[420px]">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('trips.discover.searchPlaceholder', 'Filter by city…')}
+          className="pl-9"
+        />
+      </div>
 
       {isLoading && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} variant="rectangular" height={260} />
+            <Skeleton key={i} className="h-[260px] w-full rounded" />
           ))}
-        </Box>
+        </div>
       )}
 
       {!isLoading && trips && trips.length === 0 && (
@@ -88,18 +72,12 @@ export default function TripsDiscoverPage() {
       )}
 
       {!isLoading && trips && trips.length > 0 && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {trips.map((trip) => (
             <PublicTripCard key={trip.id} trip={trip} />
           ))}
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
