@@ -46,7 +46,6 @@
   "src/components/cms/AuditLog.tsx",
   "src/components/cms/AutoTagPanel.tsx",
   "src/components/cms/BulkActionsBar.tsx",
-  "src/components/cms/CMSListView.tsx",
   "src/components/cms/CMSShell.tsx",
   "src/components/cms/CMSSidebar.tsx",
   "src/components/cms/ContentListPanel/ContentListFilters.tsx",
