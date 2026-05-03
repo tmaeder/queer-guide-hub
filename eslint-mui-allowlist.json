@@ -1,10 +1,7 @@
 [
-  "src/components/accessibility/AccessibilityControls.tsx",
   "src/components/admin/AdminEditDialog.tsx",
   "src/App.tsx",
-  "src/components/accessibility/AccessibilityControls.tsx",
   "src/components/admin/AdminEditDialog.tsx",
-  "src/components/accessibility/AccessibilityControls.tsx",
   "src/components/admin/AdminEditDialog.tsx",
   "src/App.tsx",
   "src/components/admin/AdvancedImportDialog.tsx",
