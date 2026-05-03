@@ -17,11 +17,8 @@ import {
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { MapPin, Grid, Map } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
@@ -142,40 +139,31 @@ const Venues = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, currentFilters, autoLoadedCount]);
 
+  const gridClass =
+    'grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Container sx={{ py: { xs: 3, md: 5 } }}>
-        {/* Filters (search is the header now) */}
+    <div className="min-h-screen">
+      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10">
         <VenueFilters onFiltersChange={handleFiltersChange} />
 
-        {/* Toolbar: result count + sort + view toggle + submit */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mt: 2.5,
-            mb: 2,
-            gap: 1.5,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {/* Toolbar */}
+        <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             {!loading && venues.length > 0 && (
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }} aria-live="polite">
-                {/* Bug #21: prefer the server-side filtered total when available
-                    so the chip-driven filter (or any active filter) reflects in
-                    the count, not just the locally loaded page slice. Fall back
-                    to venues.length if datasetTotal isn't reported. */}
+              <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
                 {(datasetTotal ?? venues.length).toLocaleString()} venue
                 {(datasetTotal ?? venues.length) !== 1 ? 's' : ''}
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger aria-label={t('pages.venues.sortBy', 'Sort venues')} className="w-32 h-9 text-sm">
+              <SelectTrigger
+                aria-label={t('pages.venues.sortBy', 'Sort venues')}
+                className="w-32 h-9 text-sm"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -187,63 +175,54 @@ const Venues = () => {
                   {t('pages.venues.sortCategory', 'Category')}
                 </SelectItem>
                 <SelectItem value="city">{t('pages.venues.sortCity', 'City')}</SelectItem>
-                <SelectItem value="created_at">{t('pages.venues.sortNewest', 'Newest')}</SelectItem>
+                <SelectItem value="created_at">
+                  {t('pages.venues.sortNewest', 'Newest')}
+                </SelectItem>
               </SelectContent>
             </Select>
 
-            <Box sx={{ display: 'flex', borderRadius: 1.5, overflow: 'hidden' }}>
-              <IconButton
-                size="small"
+            <div className="flex overflow-hidden rounded-md">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setViewMode('grid')}
-                sx={{
-                  borderRadius: 0,
-                  bgcolor: viewMode === 'grid' ? 'action.selected' : 'transparent',
-                  px: 1,
-                }}
+                className={cn(
+                  'h-9 w-9 rounded-none px-2',
+                  viewMode === 'grid' && 'bg-accent',
+                )}
                 aria-label={t('pages.venues.gridView', 'Grid view')}
               >
                 <Grid size={16} />
-              </IconButton>
-              <IconButton
-                size="small"
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setViewMode('map')}
-                sx={{
-                  borderRadius: 0,
-                  bgcolor: viewMode === 'map' ? 'action.selected' : 'transparent',
-                  px: 1,
-                }}
+                className={cn(
+                  'h-9 w-9 rounded-none px-2',
+                  viewMode === 'map' && 'bg-accent',
+                )}
                 aria-label={t('pages.venues.mapView', 'Map view')}
               >
                 <Map size={16} />
-              </IconButton>
-            </Box>
-
-            {/* P4-3 — Submit CTA consolidated to header. */}
-          </Box>
-        </Box>
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* Content */}
         {viewMode === 'grid' ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div className="flex flex-col gap-6">
             {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
 
             {loading && (
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: '1fr 1fr',
-                    md: 'repeat(3, 1fr)',
-                    lg: 'repeat(4, 1fr)',
-                  },
-                  gap: 2.5,
-                }}
-              >
+              <div className={gridClass}>
                 {Array.from({ length: 8 }).map((_, i) => (
                   <VenueCard key={i} loading />
                 ))}
-              </Box>
+              </div>
             )}
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchVenues()} />}
 
@@ -289,29 +268,20 @@ const Venues = () => {
             )}
 
             {!loading && venues.length > 0 && (
-              <StaggerGrid
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: '1fr 1fr',
-                    md: 'repeat(3, 1fr)',
-                    lg: 'repeat(4, 1fr)',
-                  },
-                  gap: 2.5,
-                }}
-              >
+              <StaggerGrid className={gridClass}>
                 {sortedVenues.map((venue, index) => (
-                  <Box key={venue.id} className={index >= PAGE_SIZE ? 'content-enter' : undefined}>
+                  <div
+                    key={venue.id}
+                    className={index >= PAGE_SIZE ? 'content-enter' : undefined}
+                  >
                     <VenueCard venue={venue} events={events} onViewDetails={handleViewDetails} />
-                  </Box>
+                  </div>
                 ))}
               </StaggerGrid>
             )}
 
-            {/* Infinite scroll sentinel */}
             {!loading && venues.length > 0 && (
-              <Box sx={{ textAlign: 'center', mt: 6 }}>
+              <div className="mt-12 text-center">
                 {hasMore && autoLoadedCount >= 50 && (
                   <Button
                     variant="outline"
@@ -331,24 +301,17 @@ const Venues = () => {
                     {t('common.loadMore', 'Load more')}
                   </Button>
                 )}
-                <Box ref={sentinelRef} sx={{ height: '1px' }} />
-              </Box>
+                <div ref={sentinelRef} className="h-px" />
+              </div>
             )}
-          </Box>
+          </div>
         ) : (
-          <Box
-            sx={{
-              height: 700,
-              width: '100%',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
+          <div className="h-[700px] w-full overflow-hidden rounded-lg">
             <ExploreMap height={700} defaultLayers={['venues']} showLayerToggles showFilters />
-          </Box>
+          </div>
         )}
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 };
 
