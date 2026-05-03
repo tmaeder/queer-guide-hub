@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import type { MapMarker } from '@/hooks/useExploreMapData';
 
 /**
@@ -14,12 +15,15 @@ export function renderPopupHTML(marker: MapMarker): string {
   const muted = 'hsl(var(--muted-foreground))';
   const badge = 'background:hsl(var(--muted));color:hsl(var(--muted-foreground))';
 
+  const tViewDetails = i18next.t('map.popup.viewDetails', { defaultValue: 'View details' });
+  const tShare = i18next.t('map.popup.share', { defaultValue: 'Share' });
+
   const link = marker.linkTo
-    ? `<a href="${esc(marker.linkTo)}" style="color:#6366f1;text-decoration:none;font-size:11px;">View details →</a>`
+    ? `<a href="${esc(marker.linkTo)}" style="color:#6366f1;text-decoration:none;font-size:11px;">${esc(tViewDetails)} →</a>`
     : '';
 
   const share = marker.linkTo
-    ? `<button type="button" data-share-id="${esc(marker.id)}" data-share-name="${esc(marker.name)}" data-share-url="${esc(marker.linkTo ?? '')}" data-share-subtitle="${esc(marker.subtitle ?? '')}" style="margin-left:8px;background:none;border:none;padding:0;color:#6366f1;text-decoration:none;font-size:11px;cursor:pointer;font-family:inherit;">Teilen / Share</button>`
+    ? `<button type="button" data-share-id="${esc(marker.id)}" data-share-name="${esc(marker.name)}" data-share-url="${esc(marker.linkTo ?? '')}" data-share-subtitle="${esc(marker.subtitle ?? '')}" style="margin-left:8px;background:none;border:none;padding:0;color:#6366f1;text-decoration:none;font-size:11px;cursor:pointer;font-family:inherit;">${esc(tShare)}</button>`
     : '';
 
   switch (marker.type) {
