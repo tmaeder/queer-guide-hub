@@ -56,7 +56,6 @@
   "src/components/cms/editor/SEOPanel.tsx",
   "src/components/cms/editor/WorkflowPanel.tsx",
   "src/components/cms/fields/CityAutocompleteField.tsx",
-  "src/components/cms/media/ExternalImageSearch.tsx",
   "src/components/cms/media/MediaPickerDialog.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
   "src/components/donate/DonorWall.tsx",
