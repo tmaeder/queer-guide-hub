@@ -16,11 +16,8 @@ import { fetchNamesByIds } from "@/hooks/usePageFetchers";
 import type { Tables } from "@/integrations/supabase/types";
 
 type FeaturedArticle = Tables<'news_articles'> & { news_sources?: Tables<'news_sources'> };
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Paper from "@mui/material/Paper";import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 
 const ARTICLES_PER_PAGE = 24;
@@ -319,27 +316,27 @@ export default function News() {
   const showFeatured = currentPage === 1 && !activeCategory && !quickSearch && featuredArticles.length > 0;
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
+    <div className="min-h-screen">
+      <div className="container mx-auto py-12 md:py-20 px-4">
         <PageHeader
           title={t('pages.news.title', 'News')}
           subtitle={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
               <Newspaper size={16} />
-              <Typography variant="body2" color="text.secondary">{articles.length} articles</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <p className="text-sm text-muted-foreground">{articles.length} articles</p>
+            </div>
+            <div className="flex items-center gap-1">
               <TrendingUp size={16} />
-              <Typography variant="body2" color="text.secondary">{sources.length} sources</Typography>
-            </Box>
-          </Box>
+              <p className="text-sm text-muted-foreground">{sources.length} sources</p>
+            </div>
+          </div>
         </PageHeader>
 
         {/* Category Chips */}
         {categories.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, mb: 3, overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
             <Badge
               variant={activeCategory === null ? 'default' : 'outline'}
               style={{ cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem' }}
@@ -363,16 +360,16 @@ export default function News() {
                 </Badge>
               );
             })}
-          </Box>
+          </div>
         )}
 
         {/* Featured Section */}
         {showFeatured && (
-          <Paper variant="outlined" sx={{ p: 3, mb: 3, bgcolor: 'background.paper' }}>
-            <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 1, mb: 2, display: 'block', color: 'text.secondary' }}>
+          <div className="border border-border rounded-lg p-6 mb-6 bg-background">
+            <p className="font-bold tracking-widest mb-4 text-muted-foreground uppercase text-xs">
               Featured Stories
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', lg: 'minmax(0, 1fr) minmax(0, 1fr)' }, gap: 3 }}>
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Hero featured article */}
               {featuredArticles[0] && (
                 <NewsCard
@@ -385,7 +382,7 @@ export default function News() {
                 />
               )}
               {/* Secondary featured articles */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div className="flex flex-col gap-4">
                 {featuredArticles.slice(1, 4).map((fa) => (
                   <NewsCard
                     key={fa.id}
@@ -397,15 +394,15 @@ export default function News() {
                     tags={articleTags[fa.id] || []}
                   />
                 ))}
-              </Box>
-            </Box>
-          </Paper>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Quick Search & Controls */}
-        <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2 }}>
-            <Box sx={{ position: 'relative', flex: 1, maxWidth: '28rem' }}>
+        <div className="border border-border rounded-lg p-4 mb-6 bg-background">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1 max-w-md">
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
               <Input ref={searchInputRef} placeholder={t('pages.news.searchPlaceholder', 'Quick search articles...')} value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
               {quickSearch && (
@@ -413,9 +410,9 @@ export default function News() {
                   <X size={16} />
                 </Button>
               )}
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger style={{ width: 180 }} aria-label="Sort articles">
                   <SortAsc style={{ width: 16, height: 16, marginRight: 8 }} />
@@ -429,7 +426,7 @@ export default function News() {
               </Select>
 
               {/* View Mode Buttons */}
-              <Box sx={{ display: 'flex', alignItems: 'center', borderRadius: 2, p: 0.5 }}>
+              <div className="flex items-center rounded-lg p-1">
                 <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view" title="Grid">
                   <Grid3X3 size={16} />
                 </Button>
@@ -442,7 +439,7 @@ export default function News() {
                 <Button variant={viewMode === 'magazine' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('magazine')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Magazine view" title="Magazine">
                   <BookOpen size={16} />
                 </Button>
-              </Box>
+              </div>
 
               <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }} aria-label="Toggle filters">
                 <Filter size={16} />
@@ -451,16 +448,16 @@ export default function News() {
                   <Badge variant="secondary" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>!</Badge>
                 )}
               </Button>
-            </Box>
-          </Box>
-        </Paper>
+            </div>
+          </div>
+        </div>
 
         {/* Active Filters Summary */}
         {hasActiveFilters && sortedArticles.length > 0 && (
-          <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: 'background.paper' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <div className="flex items-center justify-between mb-6 p-4 border border-border rounded-lg bg-background">
+            <div className="flex items-center gap-2 flex-wrap">
               <Filter size={16} />
-              <Typography variant="body2" color="text.secondary">{t('pages.news.activeFilters', 'Active filters')}</Typography>
+              <p className="text-sm text-muted-foreground">{t('pages.news.activeFilters', 'Active filters')}</p>
               {quickSearch && <Badge variant="outline">Search: {quickSearch}</Badge>}
               {activeCategory && <Badge variant="outline">Category: {categoriesMap[activeCategory]?.name || activeCategory}</Badge>}
               {currentFilters.sourceId && (
@@ -470,25 +467,25 @@ export default function News() {
                 <Badge variant="outline">Sort: {sortOptions.find(o => o.value === sortBy)?.label}</Badge>
               )}
               {currentFilters.featured !== undefined && <Badge variant="outline">Featured only</Badge>}
-            </Box>
+            </div>
             <Button variant="ghost" size="sm" onClick={clearAllFilters} aria-label="Clear all filters">{t('pages.news.clearAll', 'Clear All')}</Button>
-          </Paper>
+          </div>
         )}
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {showFilters && (
-            <Box sx={{ gridColumn: { lg: 'span 1' } }}>
+            <div className="lg:col-span-1">
               <NewsFilters sources={sources} categories={categories} onFiltersChange={handleFiltersChange} trendingTags={trendingTags} />
-            </Box>
+            </div>
           )}
 
-          <Box sx={{ gridColumn: showFilters ? { lg: 'span 3' } : { lg: 'span 4' } }}>
+          <div className={showFilters ? 'lg:col-span-3' : 'lg:col-span-4'}>
             {error && !loading && <ErrorState message={error} onRetry={() => fetchArticles()} />}
 
             {loading && (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (<NewsCard key={i} loading />))}
-              </Box>
+              </div>
             )}
             {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
@@ -539,16 +536,16 @@ export default function News() {
             )}
 
             {!loading && paginatedArticles.length > 0 && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
                     Showing {(currentPage - 1) * ARTICLES_PER_PAGE + 1}–{Math.min(currentPage * ARTICLES_PER_PAGE, sortedArticles.length)} of {sortedArticles.length} article{sortedArticles.length !== 1 ? 's' : ''}
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
 
                 {/* Headlines View */}
                 {viewMode === 'headlines' && (
-                  <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
+                  <div className="border border-border rounded-lg overflow-hidden">
                     {paginatedArticles.map((article) => (
                       <NewsCard
                         key={article.id}
@@ -566,12 +563,12 @@ export default function News() {
                         tags={articleTags[article.id] || []}
                       />
                     ))}
-                  </Paper>
+                  </div>
                 )}
 
                 {/* Magazine View */}
                 {viewMode === 'magazine' && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <div className="flex flex-col gap-6">
                     {/* First article as hero */}
                     {paginatedArticles[0] && (
                       <NewsCard
@@ -591,7 +588,7 @@ export default function News() {
                     )}
                     {/* Next 2 as medium cards */}
                     {paginatedArticles.length > 1 && (
-                      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {paginatedArticles.slice(1, 3).map((article) => (
                           <NewsCard
                             key={article.id}
@@ -608,7 +605,7 @@ export default function News() {
                             tags={articleTags[article.id] || []}
                           />
                         ))}
-                      </Box>
+                      </div>
                     )}
                     {/* Rest in compact grid */}
                     {paginatedArticles.length > 3 && (
@@ -631,7 +628,7 @@ export default function News() {
                         ))}
                       </StaggerGrid>
                     )}
-                  </Box>
+                  </div>
                 )}
 
                 {/* Grid / List View */}
@@ -661,34 +658,34 @@ export default function News() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, pt: 2 }}>
+                  <div className="flex items-center justify-center gap-2 pt-4">
                     <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <ChevronLeft size={16} /> {t('pages.news.previous', 'Previous')}
                     </Button>
-                    <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
+                    <div className="hidden sm:flex items-center gap-1">
                       {getPageNumbers().map((page, i) =>
                         page === 'ellipsis' ? (
-                          <Typography key={`e${i}`} variant="body2" sx={{ px: 1, color: 'text.secondary' }}>...</Typography>
+                          <p key={`e${i}`} className="px-2 text-sm text-muted-foreground">...</p>
                         ) : (
                           <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page as number)} style={{ minWidth: 36, height: 36, padding: 0 }}>
                             {page}
                           </Button>
                         )
                       )}
-                    </Box>
-                    <Typography variant="body2" sx={{ display: { xs: 'block', sm: 'none' }, color: 'text.secondary' }}>
+                    </div>
+                    <p className="block sm:hidden text-sm text-muted-foreground">
                       {currentPage} / {totalPages}
-                    </Typography>
+                    </p>
                     <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       Next <ChevronRight size={16} />
                     </Button>
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
             )}
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
