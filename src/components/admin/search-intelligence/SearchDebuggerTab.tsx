@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import { callSearchIntelligence, SearchDebugResult } from '@/hooks/useSearchIntelligence';
 
 const DEFAULT_INDEXES = [
@@ -49,87 +49,79 @@ export function SearchDebuggerTab() {
   };
 
   return (
-    <Stack spacing={3}>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="flex-end">
-        <TextField
-          select
-          label="Index"
-          value={index}
-          onChange={(e) => setIndex(e.target.value)}
-          sx={{ minWidth: 180 }}
-        >
-          {DEFAULT_INDEXES.map((ix) => (
-            <MenuItem key={ix} value={ix}>
-              {ix}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          label="Query"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Meili filter"
-          placeholder='e.g. country = "DE"'
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          fullWidth
-        />
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex flex-col gap-2 md:min-w-[180px]">
+          <Label htmlFor="sd-index">Index</Label>
+          <Select value={index} onValueChange={setIndex}>
+            <SelectTrigger id="sd-index">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DEFAULT_INDEXES.map((ix) => (
+                <SelectItem key={ix} value={ix}>{ix}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col gap-2 flex-1">
+          <Label htmlFor="sd-query">Query</Label>
+          <Input id="sd-query" value={query} onChange={(e) => setQuery(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-2 flex-1">
+          <Label htmlFor="sd-filter">Meili filter</Label>
+          <Input
+            id="sd-filter"
+            placeholder='e.g. country = "DE"'
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </div>
         <Button onClick={run} disabled={running || !query}>
           {running ? 'Running…' : 'Run'}
         </Button>
-      </Stack>
+      </div>
 
-      {error && <Typography color="error">{error}</Typography>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       {result && (
         <>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
+          <div>
+            <p className="text-xs text-muted-foreground">
               Hits {result.summary.hits} / est. total {result.summary.estimatedTotal ?? '?'} ·
               meili {result.summary.processingTimeMs ?? '?'}ms · round-trip{' '}
               {result.summary.roundTripMs}ms
-            </Typography>
-          </Box>
-          <Stack spacing={1}>
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
             {result.summary.topMatches.map((m, i) => (
               <Card key={i}>
                 <CardContent>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Box>
-                      <Typography variant="subtitle2">
+                  <div className="flex flex-row justify-between items-center">
+                    <div>
+                      <p className="text-sm font-semibold">
                         {String(m.title ?? '(no title)')}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      </p>
+                      <p className="text-xs text-muted-foreground">
                         id: {String(m.id ?? '—')}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ fontFeatureSettings: '"tnum"' }}>
+                      </p>
+                    </div>
+                    <p className="text-sm tabular-nums">
                       {m.score == null ? '—' : m.score.toFixed(3)}
-                    </Typography>
-                  </Stack>
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
-          </Stack>
+          </div>
           <details>
             <summary style={{ cursor: 'pointer' }}>Raw response</summary>
-            <pre
-              style={{
-                fontSize: 12,
-                maxHeight: 400,
-                overflow: 'auto',
-                background: 'rgba(0,0,0,0.04)',
-                padding: 12,
-              }}
-            >
+            <pre className="text-xs max-h-[400px] overflow-auto bg-muted p-3 rounded">
               {JSON.stringify(result.raw, null, 2)}
             </pre>
           </details>
         </>
       )}
-    </Stack>
+    </div>
   );
 }
