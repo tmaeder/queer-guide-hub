@@ -60,7 +60,6 @@
   "src/components/trips/TripSafetyBriefing.tsx",
   "src/components/ui/country-autocomplete.tsx",
   "src/lib/sx.ts",
-  "src/pages/About.tsx",
   "src/pages/AdminHotels.tsx",
   "src/pages/AdminQueerVillages.tsx",
   "src/pages/AdminRedirects.tsx",
