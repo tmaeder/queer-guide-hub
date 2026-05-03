@@ -178,7 +178,7 @@ export default function AdminIngestionRules() {
         <div>
           <h4 className="text-xl font-bold">
             Ingestion Rules & URL Import
-          </p>
+          </h4>
           <p style={{ color: 'var(--muted-foreground)' }}>
             Auto-tag/route community submissions; paste a URL to seed an inbox row.
           </p>
