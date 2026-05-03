@@ -141,7 +141,6 @@
   "src/components/profile/UrlValidator.tsx",
   "src/components/profile/UserRelationshipActions.tsx",
   "src/components/profile/settings/BasicInfoTab.tsx",
-  "src/components/profile/settings/RelationshipsTab.tsx",
   "src/components/search/SearchFeedbackButtons.tsx",
   "src/components/search/SearchFiltersPanel.tsx",
   "src/components/search/UniversalSearchBar.tsx",
