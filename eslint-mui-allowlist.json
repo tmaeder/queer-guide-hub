@@ -8,7 +8,6 @@
   "src/components/home/LatestNewsSlider.tsx",
   "src/components/home/RegionalEventsCalendar.tsx",
   "src/components/trips/ReservationsTab.tsx",
-  "src/components/ui/country-autocomplete.tsx",
   "src/lib/sx.ts",
   "src/pages/AdminQueerVillages.tsx",
   "src/pages/CMSRoutePage.tsx",
