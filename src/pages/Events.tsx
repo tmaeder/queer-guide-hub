@@ -50,11 +50,8 @@ import { format } from 'date-fns';
 import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { displayCityName } from '@/utils/cityDisplay';
 import { dedupeCitiesByNormalized, normalizeCityLabel } from '@/utils/dateRange';
-import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { useTheme } from '@mui/material/styles';import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 
 type Event = Database['public']['Tables']['events']['Row'];
@@ -84,7 +81,6 @@ const Events = () => {
   const { t, i18n } = useTranslation();
   const dfLocale = dateFnsLocaleFor(i18n.language);
   const navigate = useLocalizedNavigate();
-  const theme = useTheme();
   const { events, loading, error, hasMore, datasetTotal, fetchEvents, updateAttendance, loadingTimedOut } =
     useEvents(false);
   const { user } = useAuth();
@@ -294,23 +290,16 @@ const Events = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showPast]);
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-12 md:py-20">
         {/* Header */}
         <PageHeader
           title={t('pages.events.title', 'Events')}
           subtitle={t('pages.events.subtitle', 'Discover and join community events in your area')}
           actions={
             <>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  p: 0.5,
-                  bgcolor: 'action.hover',
-                  borderRadius: 2,
-                }}
+              <div
+                className="flex items-center gap-1 p-1 bg-muted rounded-lg"
                 role="group"
                 aria-label="View mode"
               >
@@ -330,7 +319,7 @@ const Events = () => {
                 >
                   <CalendarIcon size={16} />
                 </Button>
-              </Box>
+              </div>
               {/* P4-3 — Submit CTA consolidated to header. */}
             </>
           }
@@ -339,40 +328,11 @@ const Events = () => {
         <TrendingByType type="event" className="mt-4 mb-6" />
 
         {/* Filters */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            p: 2,
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            mb: 4,
-          }}
-        >
+        <div className="flex flex-col gap-4 p-4 bg-card rounded-lg mb-8">
           {/* Search Bar */}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap' }}>
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                borderRadius: 1,
-                px: 1.5,
-                py: 1,
-                bgcolor: 'background.default',
-              }}
-            >
-              <Search
-                style={{
-                  width: 16,
-                  height: 16,
-                  color: theme.palette.text.secondary,
-                  flexShrink: 0,
-                }}
-              />
+          <div className="flex gap-2 flex-nowrap">
+            <div className="flex-1 min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">
+              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
               <SearchInputTyped
                 aria-label={t('pages.events.searchLabel', 'Search events')}
                 placeholders={[
@@ -400,7 +360,7 @@ const Events = () => {
                 typingSpeed={75}
                 pauseDuration={1500}
               />
-            </Box>
+            </div>
             <Button
               onClick={handleNearMe}
               variant={nearMe ? 'default' : 'outline'}
@@ -434,28 +394,16 @@ const Events = () => {
             >
               {t('pages.events.showPastEvents', 'Past events')}
             </Button>
-          </Box>
+          </div>
 
           {/* Extended Filters */}
           {showFilters && (
-            <Box
-              component="nav"
+            <nav
               aria-label="Event filters"
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-                pt: 2,
-              }}
+              className="flex flex-col gap-4 pt-4"
             >
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' },
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="city">{t('pages.events.city', 'City')}</Label>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
@@ -514,8 +462,8 @@ const Events = () => {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="eventType">{t('pages.events.eventType', 'Event Type')}</Label>
                   <Select value={eventType} onValueChange={setEventType}>
                     <SelectTrigger>
@@ -530,19 +478,19 @@ const Events = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.startDate', 'Start Date')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        className={!startDate ? 'text-muted-foreground' : ''}
                         style={{
                           width: '100%',
                           justifyContent: 'flex-start',
                           textAlign: 'left',
                           fontWeight: 400,
-                          ...(!startDate ? { color: theme.palette.text.secondary } : {}),
                         }}
                       >
                         <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
@@ -559,19 +507,19 @@ const Events = () => {
                       />
                     </PopoverContent>
                   </Popover>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.endDate', 'End Date')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        className={!endDate ? 'text-muted-foreground' : ''}
                         style={{
                           width: '100%',
                           justifyContent: 'flex-start',
                           textAlign: 'left',
                           fontWeight: 400,
-                          ...(!endDate ? { color: theme.palette.text.secondary } : {}),
                         }}
                       >
                         <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
@@ -589,14 +537,14 @@ const Events = () => {
                       />
                     </PopoverContent>
                   </Popover>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               {/* Pride sub-kinds: Parade / Week / Festival / Party / Rally / Community */}
               {eventType === 'pride' && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.prideSubtype', 'Pride type')}</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <div className="flex flex-wrap gap-2">
                     {PRIDE_SUBTYPES.map(({ tag, label }) => {
                       const active = selectedTags.includes(tag);
                       return (
@@ -616,8 +564,8 @@ const Events = () => {
                         </Button>
                       );
                     })}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
 
               {/* Tags */}
@@ -631,15 +579,7 @@ const Events = () => {
               />
 
               {/* Past events toggle */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 2,
-                  pt: 1,
-                }}
-              >
+              <div className="flex items-center justify-between gap-4 pt-2">
                 <Label htmlFor="show-past-events" style={{ cursor: 'pointer' }}>
                   {t('pages.events.showPastEvents', 'Show past events')}
                 </Label>
@@ -649,10 +589,10 @@ const Events = () => {
                   onCheckedChange={setShowPast}
                   aria-label={t('pages.events.showPastEvents', 'Show past events')}
                 />
-              </Box>
+              </div>
 
               {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+              <div className="flex gap-2 pt-2">
                 <Button onClick={handleFiltersChange}>{t('pages.events.applyFilters', 'Apply Filters')}</Button>
                 {hasActiveFilters && (
                   <Button
@@ -664,16 +604,16 @@ const Events = () => {
                     {t('pages.events.clearAll', 'Clear All')}
                   </Button>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </nav>
           )}
 
           {/* Active Filters Display */}
           {hasActiveFilters && !showFilters && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
+            <div className="flex flex-wrap gap-2 items-center">
+              <p className="text-sm text-muted-foreground">
                 {t('pages.events.activeFilters', 'Active filters:')}
-              </Typography>
+              </p>
               {search && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {t('pages.events.filterSearch', { value: search, defaultValue: `Search: ${search}` })}
@@ -777,28 +717,28 @@ const Events = () => {
                   />
                 </Badge>
               ))}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
 
         {/* Status region for screen readers */}
-        <Box
+        <div
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+          className="sr-only"
         >
           {loading ? 'Loading events...' : error ? error : `${events.length} events found`}
-        </Box>
+        </div>
 
         {/* Error State */}
         {error && !loading && <ErrorState message={error} onRetry={() => fetchEvents()} />}
 
         {/* Loading State */}
         {loading && (
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (<EventCard key={i} loading />))}
-          </Box>
+          </div>
         )}
         {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchEvents()} />}
 
@@ -836,11 +776,7 @@ const Events = () => {
           <>
             {viewMode === 'grid' ? (
               <StaggerGrid
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-                  gap: 3,
-                }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
                 {events.map((event) => (
                   <EventCard
@@ -863,7 +799,7 @@ const Events = () => {
 
         {/* Load More */}
         {!loading && events.length > 0 && (
-          <Box sx={{ textAlign: 'center', mt: 6 }}>
+          <div className="text-center mt-12">
             {hasMore && autoLoadedCount >= 50 && (
               <Button
                 variant="outline"
@@ -885,10 +821,10 @@ const Events = () => {
                 Load More Events
               </Button>
             )}
-          </Box>
+          </div>
         )}
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 };
 export default Events;

@@ -1,29 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import MuiButton from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
-import MuiTable from '@mui/material/Table';
-import MuiTableBody from '@mui/material/TableBody';
-import MuiTableCell from '@mui/material/TableCell';
-import MuiTableHead from '@mui/material/TableHead';
-import MuiTableRow from '@mui/material/TableRow';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
-import Alert from '@mui/material/Alert';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Skeleton from '@mui/material/Skeleton';
-import Switch from '@mui/material/Switch';
-import InputAdornment from '@mui/material/InputAdornment';
-import Snackbar from '@mui/material/Snackbar';
 import {
   Plus,
   Upload,
@@ -41,6 +18,35 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -108,7 +114,6 @@ export default function AdminRedirects() {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [snackMsg, setSnackMsg] = useState('');
 
   const doRefresh = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['admin-table', 'redirects'] });
@@ -116,7 +121,7 @@ export default function AdminRedirects() {
 
   const handleCopyShortUrl = (slug: string) => {
     navigator.clipboard.writeText(`https://queer.guide/go/${slug}`);
-    setSnackMsg('Short URL copied!');
+    toast({ title: 'Short URL copied!' });
   };
 
   const handleShowEvents = async (redirectId: string) => {
@@ -157,10 +162,9 @@ export default function AdminRedirects() {
           const row = info.row.original;
           const source = row.type === 'SHORT' ? `/go/${row.slug}` : row.source_path;
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box
-                component="span"
-                sx={{
+            <div className="flex items-center" style={{ gap: 4 }}>
+              <span
+                style={{
                   fontFamily: 'monospace',
                   fontSize: '0.8rem',
                   maxWidth: 200,
@@ -170,11 +174,11 @@ export default function AdminRedirects() {
                 }}
               >
                 {source}
-              </Box>
+              </span>
               {(row.start_at || row.end_at) && (
                 <Clock style={{ height: 12, width: 12, color: '#888' }} />
               )}
-            </Box>
+            </div>
           );
         },
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -182,9 +186,8 @@ export default function AdminRedirects() {
       columnHelper.accessor('target', {
         header: 'Target',
         cell: (info) => (
-          <Box
-            component="span"
-            sx={{
+          <span
+            style={{
               fontFamily: 'monospace',
               fontSize: '0.8rem',
               maxWidth: 240,
@@ -195,7 +198,7 @@ export default function AdminRedirects() {
             }}
           >
             {info.getValue()}
-          </Box>
+          </span>
         ),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
@@ -312,7 +315,6 @@ export default function AdminRedirects() {
           label: 'Edit',
           icon: Edit2,
           onClick: async (row) => {
-            // Fetch full redirect data for edit dialog
             const data = await fetchRedirectById<Redirect>(row.id);
             if (data) {
               setEditingRedirect(data);
@@ -329,7 +331,7 @@ export default function AdminRedirects() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex" style={{ gap: 8 }}>
           <Button variant="outline" size="sm" onClick={() => setBulkDialogOpen(true)}>
             <Upload style={{ height: 14, width: 14, marginRight: 4 }} />
             Import
@@ -368,7 +370,7 @@ export default function AdminRedirects() {
             <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
             New Redirect
           </Button>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete/handleShowEvents are stable, adding would defeat memoization
@@ -376,10 +378,8 @@ export default function AdminRedirects() {
   );
 
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <div className="mx-auto flex flex-col" style={{ maxWidth: 1200, padding: 24, gap: 24 }}>
+      <div className="flex items-center" style={{ gap: 16 }}>
         <Button
           variant="ghost"
           size="sm"
@@ -389,14 +389,14 @@ export default function AdminRedirects() {
           <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
         </Button>
         <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
+          <h1 style={{ fontSize: '1.875rem', fontWeight: 700 }}>
             Redirects & Short Links
-          </Typography>
+          </h1>
           <p style={{ color: 'var(--muted-foreground)' }}>
             Manage URL redirects, short links, and analytics
           </p>
         </div>
-      </Box>
+      </div>
 
       <AdminDataTable config={tableConfig} />
 
@@ -425,48 +425,46 @@ export default function AdminRedirects() {
       />
 
       {/* Events / Analytics Dialog */}
-      <Dialog
-        open={!!eventsDialogId}
-        onClose={() => setEventsDialogId(null)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-        >
-          Click Analytics
-          <IconButton size="small" onClick={() => setEventsDialogId(null)}>
-            <X size={18} />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
+      <Dialog open={!!eventsDialogId} onOpenChange={(o) => { if (!o) setEventsDialogId(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              Click Analytics
+              <Button variant="ghost" size="sm" onClick={() => setEventsDialogId(null)}>
+                <X size={18} />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
           {eventsLoading ? (
-            <Box sx={{ py: 3 }}>
-              <Skeleton variant="rectangular" height={200} />
-            </Box>
+            <div style={{ paddingTop: 24, paddingBottom: 24 }}>
+              <Skeleton style={{ height: 200, width: '100%' }} />
+            </div>
           ) : events.length === 0 ? (
-            <Typography color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+            <p
+              className="text-center text-muted-foreground"
+              style={{ paddingTop: 24, paddingBottom: 24 }}
+            >
               No click events recorded yet.
-            </Typography>
+            </p>
           ) : (
-            <MuiTable size="small">
-              <MuiTableHead>
-                <MuiTableRow>
-                  <MuiTableCell>Time</MuiTableCell>
-                  <MuiTableCell>Country</MuiTableCell>
-                  <MuiTableCell>Referer</MuiTableCell>
-                  <MuiTableCell>Status</MuiTableCell>
-                </MuiTableRow>
-              </MuiTableHead>
-              <MuiTableBody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Country</TableHead>
+                  <TableHead>Referer</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {events.map((e) => (
-                  <MuiTableRow key={e.id}>
-                    <MuiTableCell sx={{ fontSize: '0.8rem' }}>
+                  <TableRow key={e.id}>
+                    <TableCell style={{ fontSize: '0.8rem' }}>
                       {format(new Date(e.ts), 'MMM d, HH:mm:ss')}
-                    </MuiTableCell>
-                    <MuiTableCell>{e.country || '—'}</MuiTableCell>
-                    <MuiTableCell
-                      sx={{
+                    </TableCell>
+                    <TableCell>{e.country || '—'}</TableCell>
+                    <TableCell
+                      style={{
                         maxWidth: 200,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -475,14 +473,14 @@ export default function AdminRedirects() {
                       }}
                     >
                       {e.referer || '—'}
-                    </MuiTableCell>
-                    <MuiTableCell>
-                      <Chip label={e.status} size="small" />
-                    </MuiTableCell>
-                  </MuiTableRow>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{e.status}</Badge>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </MuiTableBody>
-            </MuiTable>
+              </TableBody>
+            </Table>
           )}
         </DialogContent>
       </Dialog>
@@ -503,14 +501,7 @@ export default function AdminRedirects() {
 
       {/* Preview / Test Dialog */}
       <PreviewDialog open={previewOpen} onClose={() => setPreviewOpen(false)} />
-
-      <Snackbar
-        open={!!snackMsg}
-        autoHideDuration={3000}
-        onClose={() => setSnackMsg('')}
-        message={snackMsg}
-      />
-    </Box>
+    </div>
   );
 }
 
@@ -636,168 +627,192 @@ function RedirectFormDialog({ open, editingRedirect, onClose, onSave }: Redirect
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{editingRedirect ? 'Edit Redirect' : 'New Redirect'}</DialogTitle>
-      <DialogContent
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}
-      >
-        <Tabs value={type} onChange={(_, v) => setType(v)} sx={{ mb: 1 }}>
-          <Tab value="SHORT" label="Short Link" icon={<Link2 size={16} />} iconPosition="start" />
-          <Tab
-            value="PATH"
-            label="Path Redirect"
-            icon={<ArrowRight size={16} />}
-            iconPosition="start"
-          />
-        </Tabs>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>{editingRedirect ? 'Edit Redirect' : 'New Redirect'}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col" style={{ gap: 16, paddingTop: 8 }}>
+          <Tabs value={type} onValueChange={(v) => setType(v as RedirectType)} style={{ marginBottom: 8 }}>
+            <TabsList>
+              <TabsTrigger value="SHORT" className="flex items-center" style={{ gap: 4 }}>
+                <Link2 size={16} />
+                Short Link
+              </TabsTrigger>
+              <TabsTrigger value="PATH" className="flex items-center" style={{ gap: 4 }}>
+                <ArrowRight size={16} />
+                Path Redirect
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        {type === 'SHORT' ? (
-          <TextField
-            label="Slug"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-            error={!!validationErrors.slug}
-            helperText={validationErrors.slug || `Short URL: queer.guide/go/${slug || '...'}`}
-            InputProps={{ startAdornment: <InputAdornment position="start">/go/</InputAdornment> }}
-            fullWidth
-          />
-        ) : (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <TextField
-              label="Source Path"
-              value={sourcePath}
-              onChange={(e) => setSourcePath(e.target.value)}
-              error={!!validationErrors.sourcePath}
-              helperText={validationErrors.sourcePath}
-              placeholder="/old/page"
-              fullWidth
+          {type === 'SHORT' ? (
+            <div>
+              <Label>Slug</Label>
+              <div className="flex items-center" style={{ gap: 4 }}>
+                <span style={{ color: 'var(--muted-foreground)', fontFamily: 'monospace' }}>/go/</span>
+                <Input
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                  className="flex-1"
+                />
+              </div>
+              <p
+                className="text-xs"
+                style={{ marginTop: 4, color: validationErrors.slug ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
+              >
+                {validationErrors.slug || `Short URL: queer.guide/go/${slug || '...'}`}
+              </p>
+            </div>
+          ) : (
+            <div className="flex" style={{ gap: 8 }}>
+              <div className="flex-1">
+                <Label>Source Path</Label>
+                <Input
+                  value={sourcePath}
+                  onChange={(e) => setSourcePath(e.target.value)}
+                  placeholder="/old/page"
+                />
+                {validationErrors.sourcePath && (
+                  <p className="text-xs" style={{ marginTop: 4, color: 'hsl(var(--destructive))' }}>
+                    {validationErrors.sourcePath}
+                  </p>
+                )}
+              </div>
+              <div style={{ minWidth: 120 }}>
+                <Label>Match</Label>
+                <Select value={matchKind} onValueChange={(v) => setMatchKind(v as 'EXACT' | 'WILDCARD' | 'REGEX')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EXACT">Exact</SelectItem>
+                    <SelectItem value="WILDCARD">Wildcard</SelectItem>
+                    <SelectItem value="REGEX">Regex</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <Label>Target URL</Label>
+            <Input
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              placeholder="/events/pride-zurich-2026"
             />
-            <TextField
-              select
-              label="Match"
-              value={matchKind}
-              onChange={(e) => setMatchKind(e.target.value as 'EXACT' | 'WILDCARD' | 'REGEX')}
-              sx={{ minWidth: 120 }}
+            <p
+              className="text-xs"
+              style={{ marginTop: 4, color: validationErrors.target ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
             >
-              <MenuItem value="EXACT">Exact</MenuItem>
-              <MenuItem value="WILDCARD">Wildcard</MenuItem>
-              <MenuItem value="REGEX">Regex</MenuItem>
-            </TextField>
-          </Box>
-        )}
+              {validationErrors.target || 'Relative path (/page) or allowlisted absolute URL'}
+            </p>
+          </div>
 
-        <TextField
-          label="Target URL"
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          error={!!validationErrors.target}
-          helperText={
-            validationErrors.target || 'Relative path (/page) or allowlisted absolute URL'
-          }
-          placeholder="/events/pride-zurich-2026"
-          fullWidth
-        />
+          <div className="flex" style={{ gap: 16 }}>
+            <div style={{ minWidth: 140, flex: 1 }}>
+              <Label>HTTP Status</Label>
+              <Select value={String(statusCode)} onValueChange={(v) => setStatusCode(Number(v))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="301">301 Permanent</SelectItem>
+                  <SelectItem value="302">302 Temporary</SelectItem>
+                  <SelectItem value="307">307 Temporary</SelectItem>
+                  <SelectItem value="308">308 Permanent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div style={{ minWidth: 140, flex: 1 }}>
+              <Label>Query Params</Label>
+              <Select value={queryMode} onValueChange={(v) => setQueryMode(v as QueryMode)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PRESERVE">Preserve</SelectItem>
+                  <SelectItem value="DROP">Drop</SelectItem>
+                  <SelectItem value="OVERRIDE">Override</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            select
-            label="HTTP Status"
-            value={statusCode}
-            onChange={(e) => setStatusCode(Number(e.target.value))}
-            sx={{ minWidth: 140 }}
-          >
-            <MenuItem value={301}>301 Permanent</MenuItem>
-            <MenuItem value={302}>302 Temporary</MenuItem>
-            <MenuItem value={307}>307 Temporary</MenuItem>
-            <MenuItem value={308}>308 Permanent</MenuItem>
-          </TextField>
-          <TextField
-            select
-            label="Query Params"
-            value={queryMode}
-            onChange={(e) => setQueryMode(e.target.value as QueryMode)}
-            sx={{ minWidth: 140 }}
-          >
-            <MenuItem value="PRESERVE">Preserve</MenuItem>
-            <MenuItem value="DROP">Drop</MenuItem>
-            <MenuItem value="OVERRIDE">Override</MenuItem>
-          </TextField>
-        </Box>
+          {queryMode === 'OVERRIDE' && (
+            <div>
+              <Label>Query Override (JSON)</Label>
+              <Input
+                value={queryOverride}
+                onChange={(e) => setQueryOverride(e.target.value)}
+              />
+              <p
+                className="text-xs"
+                style={{ marginTop: 4, color: validationErrors.queryOverride ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
+              >
+                {validationErrors.queryOverride || 'e.g. {"ref":"campaign-a"}'}
+              </p>
+            </div>
+          )}
 
-        {queryMode === 'OVERRIDE' && (
-          <TextField
-            label="Query Override (JSON)"
-            value={queryOverride}
-            onChange={(e) => setQueryOverride(e.target.value)}
-            error={!!validationErrors.queryOverride}
-            helperText={validationErrors.queryOverride || 'e.g. {"ref":"campaign-a"}'}
-            size="small"
-            fullWidth
-          />
-        )}
+          <div>
+            <Label>UTM Defaults (JSON, optional)</Label>
+            <Input value={utmDefaults} onChange={(e) => setUtmDefaults(e.target.value)} />
+            <p
+              className="text-xs"
+              style={{ marginTop: 4, color: validationErrors.utmDefaults ? 'hsl(var(--destructive))' : 'var(--muted-foreground)' }}
+            >
+              {validationErrors.utmDefaults || 'Added if not already present'}
+            </p>
+          </div>
 
-        <TextField
-          label="UTM Defaults (JSON, optional)"
-          value={utmDefaults}
-          onChange={(e) => setUtmDefaults(e.target.value)}
-          error={!!validationErrors.utmDefaults}
-          helperText={validationErrors.utmDefaults || 'Added if not already present'}
-          size="small"
-          fullWidth
-        />
+          <div className="flex" style={{ gap: 16 }}>
+            <div className="flex-1">
+              <Label>Start (optional)</Label>
+              <Input
+                type="datetime-local"
+                value={startAt}
+                onChange={(e) => setStartAt(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <Label>End (optional)</Label>
+              <Input
+                type="datetime-local"
+                value={endAt}
+                onChange={(e) => setEndAt(e.target.value)}
+              />
+            </div>
+          </div>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            label="Start (optional)"
-            type="datetime-local"
-            value={startAt}
-            onChange={(e) => setStartAt(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-            fullWidth
-          />
-          <TextField
-            label="End (optional)"
-            type="datetime-local"
-            value={endAt}
-            onChange={(e) => setEndAt(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-            fullWidth
-          />
-        </Box>
+          <div className="flex" style={{ gap: 16 }}>
+            <div style={{ width: 160 }}>
+              <Label>Click Limit (optional)</Label>
+              <Input
+                type="number"
+                value={clickLimit}
+                onChange={(e) => setClickLimit(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center self-end" style={{ gap: 8, height: 40 }}>
+              <Switch checked={isEnabled} onCheckedChange={setIsEnabled} />
+              <span className="text-sm">{isEnabled ? 'Enabled' : 'Disabled'}</span>
+            </div>
+          </div>
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            label="Click Limit (optional)"
-            type="number"
-            value={clickLimit}
-            onChange={(e) => setClickLimit(e.target.value)}
-            size="small"
-            sx={{ width: 160 }}
-          />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Switch checked={isEnabled} onChange={(e) => setIsEnabled(e.target.checked)} />
-            <Typography variant="body2">{isEnabled ? 'Enabled' : 'Disabled'}</Typography>
-          </Box>
-        </Box>
-
-        <TextField
-          label="Notes (optional)"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          multiline
-          rows={2}
-          size="small"
-          fullWidth
-        />
+          <div>
+            <Label>Notes (optional)</Label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={saving}>
+            {saving ? 'Saving...' : editingRedirect ? 'Update' : 'Create'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <MuiButton onClick={onClose}>Cancel</MuiButton>
-        <MuiButton variant="contained" onClick={handleSubmit} disabled={saving}>
-          {saving ? 'Saving...' : editingRedirect ? 'Update' : 'Create'}
-        </MuiButton>
-      </DialogActions>
     </Dialog>
   );
 }
@@ -851,7 +866,7 @@ function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogProps) {
           return obj;
         })
         .filter((item) => item.target);
-      const res = await onImport(items);
+      const res = await onImport(items as Array<{ slug?: string; source_path?: string; target: string; status_code?: number; is_enabled?: boolean; }>);
       setResult(res);
     } catch (err: unknown) {
       setResult({ success: 0, errors: [err instanceof Error ? err.message : 'Import failed'] });
@@ -861,49 +876,47 @@ function BulkImportDialog({ open, onClose, onImport }: BulkImportDialogProps) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Bulk Import (CSV)</DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Bulk Import (CSV)</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground" style={{ marginBottom: 16 }}>
           Paste CSV with headers: <code>slug,target,status_code,is_enabled</code> (for short links)
           or <code>source_path,target,status_code,is_enabled</code> (for path redirects).
-        </Typography>
-        <TextField
-          multiline
+        </p>
+        <Textarea
           rows={8}
           value={csvText}
           onChange={(e) => setCsvText(e.target.value)}
           placeholder={`slug,target,status_code\npride-zrh,/events/pride-zurich-2026,301\nnyc-guide,/city/new-york,302`}
-          fullWidth
-          sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+          style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
         />
         {result && (
-          <Box sx={{ mt: 2 }}>
+          <div style={{ marginTop: 16 }}>
             {result.success > 0 && (
-              <Alert severity="success" sx={{ mb: 1 }}>
-                Imported {result.success} redirect(s)
+              <Alert style={{ marginBottom: 8 }}>
+                <AlertDescription>Imported {result.success} redirect(s)</AlertDescription>
               </Alert>
             )}
             {result.errors.length > 0 && (
-              <Alert severity="error">
-                {result.errors.map((e, i) => (
-                  <div key={i}>{e}</div>
-                ))}
+              <Alert variant="destructive">
+                <AlertDescription>
+                  {result.errors.map((e, i) => (
+                    <div key={i}>{e}</div>
+                  ))}
+                </AlertDescription>
               </Alert>
             )}
-          </Box>
+          </div>
         )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button onClick={handleImport} disabled={importing || !csvText.trim()}>
+            {importing ? 'Importing...' : 'Import'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <MuiButton onClick={onClose}>Close</MuiButton>
-        <MuiButton
-          variant="contained"
-          onClick={handleImport}
-          disabled={importing || !csvText.trim()}
-        >
-          {importing ? 'Importing...' : 'Import'}
-        </MuiButton>
-      </DialogActions>
     </Dialog>
   );
 }
@@ -926,37 +939,36 @@ function PreviewDialog({ open, onClose }: { open: boolean; onClose: () => void }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Preview / Test Redirect</DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Preview / Test Redirect</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground" style={{ marginBottom: 16 }}>
           Enter a slug or short URL to preview the redirect resolution.
-        </Typography>
-        <TextField
+        </p>
+        <Input
           value={testUrl}
           onChange={(e) => setTestUrl(e.target.value)}
           placeholder="pride-zrh or https://queer.guide/go/pride-zrh"
-          fullWidth
-          size="small"
           onKeyDown={(e) => e.key === 'Enter' && handlePreview()}
         />
-        <MuiButton sx={{ mt: 1 }} variant="outlined" onClick={handlePreview}>
+        <Button variant="outline" onClick={handlePreview} style={{ marginTop: 8, alignSelf: 'flex-start' }}>
           Test
-        </MuiButton>
+        </Button>
         {previewResult && (
-          <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Typography
-              variant="body2"
-              sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}
+          <div className="bg-muted" style={{ marginTop: 16, padding: 16, borderRadius: 4 }}>
+            <p
+              style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}
             >
               {previewResult}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Close</Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <MuiButton onClick={onClose}>Close</MuiButton>
-      </DialogActions>
     </Dialog>
   );
 }

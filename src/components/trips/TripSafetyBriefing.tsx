@@ -1,7 +1,4 @@
 import { useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
 import {
   Shield,
   ShieldAlert,
@@ -34,14 +31,8 @@ import { PerLegSafety } from './PerLegSafety';
 
 type OverallRisk = TripSafetyReport['overallRisk'];
 
-/**
- * Risk snapshot configuration. Each risk level gets a tonal background
- * (low-opacity fill), a solid accent color, and an icon.
- */
 function useRiskVisual(risk: OverallRisk) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
-  // Low-opacity backgrounds — solid, theme-aware.
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   const bg = {
     low: isDark ? '#052e1a' : '#ecfdf5',
     moderate: isDark ? '#3a2a06' : '#fffbeb',
@@ -71,9 +62,7 @@ function useRiskVisual(risk: OverallRisk) {
 
 interface Props {
   tripPlaces: TripPlace[];
-  /** Required for the per-leg breakdown — chronological segmentation. */
   tripDays?: TripDay[];
-  /** When provided alongside tripDays, the per-leg section appears. */
   tripId?: string;
 }
 
@@ -85,7 +74,6 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
     [tripPlaces],
   );
 
-  // Count how many places are in each country (for the "N stops" line)
   const placesPerCountry = useMemo(() => {
     const counts = new Map<string, number>();
     for (const place of tripPlaces) {
@@ -100,86 +88,47 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
 
   if (report.countries.length === 0) {
     return (
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: { xs: 6, md: 10 },
-          px: 3,
-          border: '1.5px dashed',
-          borderColor: 'divider',
-          borderRadius: 3,
-        }}
-      >
+      <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-xl">
         <Shield
-          style={{
-            width: 40,
-            height: 40,
-            margin: '0 auto 12px',
-            opacity: 0.3,
-          }}
+          className="w-10 h-10 mx-auto mb-3 opacity-30"
           aria-hidden="true"
         />
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {t('trips.safety.emptyTitle')}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ maxWidth: 420, mx: 'auto' }}
-        >
+        <h6 className="font-bold text-lg mb-0.5">{t('trips.safety.emptyTitle')}</h6>
+        <p className="text-sm text-muted-foreground max-w-[420px] mx-auto">
           {t('trips.safety.emptyDescription')}
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div>
       <RiskSnapshot report={report} />
 
       {tripId && <AiSafetyNarrativeCard tripId={tripId} canGenerate />}
 
       {report.crossBorderWarnings.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              fontWeight: 700,
-              mb: 1,
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-              fontSize: '0.7rem',
-              color: 'text.secondary',
-            }}
-          >
+        <div className="mb-3">
+          <p className="font-bold mb-1 uppercase tracking-[0.04em] text-[0.7rem] text-muted-foreground">
             {t('trips.safety.crossBorderHeading')}
-          </Typography>
+          </p>
           {report.crossBorderWarnings.map((w, i) => (
             <CrossBorderCard key={i} warning={w} />
           ))}
-        </Box>
+        </div>
       )}
 
       {tripId && tripDays && (
         <PerLegSafety tripId={tripId} tripPlaces={tripPlaces} tripDays={tripDays} />
       )}
 
-      <Typography
-        variant="subtitle2"
-        sx={{
-          fontWeight: 700,
-          mb: 1.5,
-          mt: tripId && tripDays ? 4 : 0,
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          fontSize: '0.7rem',
-          color: 'text.secondary',
-        }}
+      <p
+        className={`font-bold mb-1.5 uppercase tracking-[0.04em] text-[0.7rem] text-muted-foreground ${tripId && tripDays ? 'mt-4' : ''}`}
       >
         {t('trips.safety.countriesHeading')}
-      </Typography>
+      </p>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+      <div className="flex flex-col gap-[0.3125rem]">
         {report.countries.map((country) => (
           <CountryAccordion
             key={country.id}
@@ -187,34 +136,20 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
             placeCount={placesPerCountry.get(country.id) ?? 0}
           />
         ))}
-      </Box>
+      </div>
 
       <TripNewsSection countryIds={countryIds} />
 
-      <Box
-        sx={{
-          mt: 3,
-          p: 2,
-          borderRadius: 2,
-          bgcolor: 'action.hover',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 1.25,
-        }}
-      >
+      <div className="mt-3 p-2 rounded-lg bg-muted flex items-start gap-[0.3125rem]">
         <Info
-          style={{ width: 16, height: 16, marginTop: 2, flexShrink: 0, opacity: 0.7 }}
+          className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70"
           aria-hidden="true"
         />
-        <Typography variant="caption" color="text.secondary">
-          {t('trips.safety.dataSource')}
-        </Typography>
-      </Box>
-    </Box>
+        <span className="text-xs text-muted-foreground">{t('trips.safety.dataSource')}</span>
+      </div>
+    </div>
   );
 }
-
-/* ────────────────────────────────────────────────────────────────── */
 
 function RiskSnapshot({ report }: { report: TripSafetyReport }) {
   const { t } = useTranslation();
@@ -227,96 +162,61 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
   }, [report.countries]);
 
   return (
-    <Box
-      sx={{
-        bgcolor: visual.bg,
-        p: { xs: 2.5, md: 3 },
-        mb: 3,
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-        <Box
-          sx={{
-            flexShrink: 0,
-            width: 48,
-            height: 48,
-            bgcolor: 'rgba(255,255,255,0.08)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: visual.fg,
-          }}
+    <div className="p-2.5 md:p-3 mb-3" style={{ backgroundColor: visual.bg }}>
+      <div className="flex items-start gap-2">
+        <div
+          className="flex-shrink-0 w-12 h-12 flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: visual.fg }}
         >
-          <Icon style={{ width: 24, height: 24 }} />
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            sx={{
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: visual.fg,
-              mb: 0.25,
-            }}
+          <Icon className="w-6 h-6" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p
+            className="text-[0.7rem] font-bold uppercase tracking-[0.06em] mb-[0.0625rem]"
+            style={{ color: visual.fg }}
           >
             {t(`trips.safety.risk.${report.overallRisk}`)}
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 800,
-              lineHeight: 1.2,
-              color: 'text.primary',
-              mb: 0.5,
-            }}
+          </p>
+          <h6
+            className="text-lg font-extrabold mb-0.5"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.2 }}
           >
             {t(`trips.safety.headline.${report.overallRisk}`)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </h6>
+          <p className="text-sm text-muted-foreground">
             {t('trips.safety.basedOn', { count: report.countries.length })}
-          </Typography>
+          </p>
 
-          {/* Critical call-outs */}
           {(report.hasDeathPenaltyDestination || report.hasCriminalizedDestination) && (
-            <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            <div className="mt-1.5 flex flex-col gap-[0.1875rem]">
               {report.hasDeathPenaltyDestination && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <div className="flex items-center gap-[0.1875rem]">
                   <Skull
-                    style={{ width: 14, height: 14, color: visual.fg, flexShrink: 0 }}
+                    className="w-3.5 h-3.5 flex-shrink-0"
+                    style={{ color: visual.fg }}
                   />
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, color: visual.fg }}
-                  >
+                  <span className="text-sm font-semibold" style={{ color: visual.fg }}>
                     {t('trips.safety.flags.deathPenalty')}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
               )}
               {report.hasCriminalizedDestination &&
                 !report.hasDeathPenaltyDestination && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <div className="flex items-center gap-[0.1875rem]">
                     <ShieldAlert
-                      style={{ width: 14, height: 14, color: visual.fg, flexShrink: 0 }}
+                      className="w-3.5 h-3.5 flex-shrink-0"
+                      style={{ color: visual.fg }}
                     />
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 600, color: visual.fg }}
-                    >
+                    <span className="text-sm font-semibold" style={{ color: visual.fg }}>
                       {t('trips.safety.flags.criminalized')}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 )}
-            </Box>
+            </div>
           )}
 
           {worstCountry && report.overallRisk !== 'low' && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'block', mt: 1.25 }}
-            >
+            <span className="text-xs text-muted-foreground block mt-[0.3125rem]">
               {t('trips.safety.worstCountry', {
                 country: worstCountry.name,
                 score:
@@ -324,15 +224,13 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
                     ? worstCountry.equality_score
                     : '—',
               })}
-            </Typography>
+            </span>
           )}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }
-
-/* ────────────────────────────────────────────────────────────────── */
 
 function CrossBorderCard({
   warning,
@@ -341,43 +239,26 @@ function CrossBorderCard({
 }) {
   const { t } = useTranslation();
   return (
-    <Box
-      sx={{
-        bgcolor: (theme) =>
-          theme.palette.mode === 'dark' ? '#2a1f06' : '#fffbeb',
-        p: 2,
-        mb: 1,
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 1.25,
-      }}
-    >
+    <div className="p-2 mb-1 flex items-start gap-[0.3125rem] bg-amber-50 dark:bg-amber-950/40">
       <AlertTriangle
-        style={{
-          width: 18,
-          height: 18,
-          flexShrink: 0,
-          marginTop: 2,
-          color: '#b45309',
-        }}
+        className="w-[18px] h-[18px] flex-shrink-0 mt-0.5"
+        style={{ color: '#b45309' }}
         aria-hidden="true"
       />
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" sx={{ fontWeight: 700, mb: 0.25 }}>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold mb-[0.0625rem]">
           {t('trips.safety.crossBorderTitle', {
             from: warning.from.name,
             to: warning.to.name,
           })}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
+        </p>
+        <span className="text-xs text-muted-foreground">
           {t('trips.safety.crossBorderBody', { drop: warning.scoreDrop })}
-        </Typography>
-      </Box>
-    </Box>
+        </span>
+      </div>
+    </div>
   );
 }
-
-/* ────────────────────────────────────────────────────────────────── */
 
 function CountryAccordion({
   country,
@@ -410,154 +291,69 @@ function CountryAccordion({
           aria-expanded={open}
           aria-label={t('trips.safety.toggleDetails', { country: country.name })}
         >
-          <Box
-            component="button"
+          <button
             type="button"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 1.5,
-              width: '100%',
-              p: 2,
-              bgcolor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              textAlign: 'left',
-              color: 'inherit',
-              fontFamily: 'inherit',
-              transition: 'background-color 0.15s',
-              '&:hover': { bgcolor: 'action.hover' },
-              '&:focus-visible': {
-                outline: '2px solid',
-                outlineColor: 'brand.main',
-                outlineOffset: -2,
-              },
-            }}
+            className="flex items-center justify-between gap-1.5 w-full p-2 bg-transparent border-0 cursor-pointer text-left text-inherit transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:-outline-offset-2"
+            style={{ outlineColor: 'hsl(var(--brand))' }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {/* Score chip */}
-              <Box
-                sx={{
-                  flexShrink: 0,
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2,
-                  bgcolor: scoreInfo.bgColor,
-                  color: scoreInfo.color,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+              <div
+                className="flex-shrink-0 w-12 h-12 rounded-lg flex flex-col items-center justify-center"
+                style={{ backgroundColor: scoreInfo.bgColor, color: scoreInfo.color }}
                 aria-hidden="true"
               >
-                <Typography
-                  sx={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontSize: 16,
-                    fontWeight: 800,
-                    lineHeight: 1,
-                  }}
+                <span
+                  className="text-base font-extrabold leading-none"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   {country.equality_score ?? '—'}
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: 8,
-                    lineHeight: 1,
-                    mt: 0.25,
-                    opacity: 0.85,
-                  }}
-                >
-                  /100
-                </Typography>
-              </Box>
+                </span>
+                <span className="text-[8px] leading-none mt-[0.0625rem] opacity-85">/100</span>
+              </div>
 
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.75,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      fontWeight: 700,
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    }}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-[0.1875rem] flex-wrap">
+                  <p
+                    className="font-bold text-base"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                   >
                     {country.name}
-                  </Typography>
-                  <Badge
-                    variant="secondary"
-
-                  >
+                  </p>
+                  <Badge variant="secondary">
                     {t(
                       `trips.safety.scoreLabel.${scoreLabelToKey(scoreInfo.label)}`,
                       { defaultValue: scoreInfo.label },
                     )}
                   </Badge>
                   {warningCount > 0 && (
-                    <Badge
-                      variant="destructive"
-
-                    >
+                    <Badge variant="destructive">
                       {t('trips.safety.warningCount', { count: warningCount })}
                     </Badge>
                   )}
-                </Box>
+                </div>
                 {placeCount > 0 && (
-                  <Box
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      mt: 0.25,
-                      color: 'text.secondary',
-                    }}
-                  >
-                    <MapPin
-                      style={{ width: 12, height: 12 }}
-                      aria-hidden="true"
-                    />
-                    <Typography variant="caption">
+                  <div className="inline-flex items-center gap-0.5 mt-[0.0625rem] text-muted-foreground">
+                    <MapPin className="w-3 h-3" aria-hidden="true" />
+                    <span className="text-xs">
                       {t('trips.safety.stops', { count: placeCount })}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             <ChevronDown
-              style={{
-                width: 18,
-                height: 18,
-                flexShrink: 0,
-                opacity: 0.5,
-                transition: 'transform 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
-                transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
+              className="w-[18px] h-[18px] flex-shrink-0 opacity-50 transition-transform duration-200"
+              style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
               aria-hidden="true"
             />
-          </Box>
+          </button>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
           <CardContent>
-            <Box
-              sx={{
-                borderTop: '1px solid',
-                borderColor: 'divider',
-                pt: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.25,
-              }}
-            >
+            <div className="border-t border-border pt-2 flex flex-col gap-[0.3125rem]">
               {country.criminalized && (
                 <DetailRow
                   icon={ShieldAlert}
@@ -584,60 +380,29 @@ function CountryAccordion({
                 value={protectionStatus.so}
               />
 
-              {/* Actionable tip row */}
-              <Box
-                sx={{
-                  mt: 0.5,
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  bgcolor: 'action.hover',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 1,
-                }}
-              >
+              <div className="mt-0.5 p-1.5 rounded-md bg-muted flex items-start gap-1">
                 <Info
-                  style={{
-                    width: 14,
-                    height: 14,
-                    marginTop: 2,
-                    opacity: 0.6,
-                    flexShrink: 0,
-                  }}
+                  className="w-3.5 h-3.5 mt-0.5 opacity-60 flex-shrink-0"
                   aria-hidden="true"
                 />
-                <Typography variant="caption" color="text.secondary">
+                <span className="text-xs text-muted-foreground">
                   {t(`trips.safety.tip.${tipBucket(country.equality_score)}`)}
-                </Typography>
-              </Box>
+                </span>
+              </div>
 
               {country.code && (
-                <Box
-                  component="a"
+                <a
                   href={`https://database.ilga.org/${country.code.toLowerCase()}-lgbti`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    mt: 0.5,
-                    alignSelf: 'flex-start',
-                    color: 'brand.main',
-                    fontSize: '0.8125rem',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' },
-                  }}
+                  className="inline-flex items-center gap-0.5 mt-0.5 self-start text-[0.8125rem] font-semibold no-underline hover:underline"
+                  style={{ color: 'hsl(var(--brand))' }}
                 >
                   {t('trips.safety.viewOnIlga')}
-                  <ExternalLink
-                    style={{ width: 12, height: 12 }}
-                    aria-hidden="true"
-                  />
-                </Box>
+                  <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                </a>
               )}
-            </Box>
+            </div>
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
@@ -657,51 +422,28 @@ function DetailRow({
   value: string;
 }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+    <div className="flex items-start gap-1">
       {Icon && (
         <Icon
-          style={{
-            width: 14,
-            height: 14,
-            marginTop: 3,
-            flexShrink: 0,
-          }}
+          className="w-3.5 h-3.5 mt-[3px] flex-shrink-0"
           color={tone === 'destructive' ? '#dc2626' : undefined}
           aria-hidden="true"
         />
       )}
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography
-          variant="caption"
-          sx={{
-            display: 'block',
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-            fontWeight: 700,
-            color: 'text.secondary',
-            fontSize: '0.65rem',
-          }}
-        >
+      <div className="flex-1 min-w-0">
+        <span className="block uppercase tracking-[0.04em] font-bold text-muted-foreground text-[0.65rem]">
           {label}
-        </Typography>
-        <Typography
-          variant="body2"
-          color={tone === 'destructive' ? 'error.main' : 'text.primary'}
-          sx={{ fontWeight: tone === 'destructive' ? 600 : 400 }}
+        </span>
+        <p
+          className={tone === 'destructive' ? 'text-destructive font-semibold text-sm' : 'text-foreground text-sm'}
         >
           {value}
-        </Typography>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </div>
   );
 }
 
-/* ── pure helpers ───────────────────────────────────────────────── */
-
-/**
- * Map the utility's label string to a stable translation key.
- * Falls back to the raw label via i18n defaultValue.
- */
 function scoreLabelToKey(label: string): string {
   const map: Record<string, string> = {
     'Very High': 'veryHigh',
@@ -714,10 +456,6 @@ function scoreLabelToKey(label: string): string {
   return map[label] ?? 'noData';
 }
 
-/**
- * Bucket a country's equality score into a tip category.
- * Used to pick a generic actionable tip per risk level.
- */
 function tipBucket(score: number | null): 'safe' | 'caution' | 'danger' {
   if (score == null) return 'caution';
   if (score >= 60) return 'safe';

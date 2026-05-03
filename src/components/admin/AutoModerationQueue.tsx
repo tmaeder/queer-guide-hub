@@ -30,22 +30,20 @@ import {
   Flag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import MuiLink from '@mui/material/Link';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Collapse from '@mui/material/Collapse';
-import LinearProgress from '@mui/material/LinearProgress';
-import Slider from '@mui/material/Slider';
 import { brandColors } from '@/theme/muiTheme';
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -108,17 +106,17 @@ export function AutoModerationQueue() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [severityFilter, setSeverityFilter] = useState<string>('');
-  const [flagTypeFilter, setFlagTypeFilter] = useState<string>('');
-  const [contentTypeFilter, setContentTypeFilter] = useState<string>('');
+  const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const [flagTypeFilter, setFlagTypeFilter] = useState<string>('all');
+  const [contentTypeFilter, setContentTypeFilter] = useState<string>('all');
   const [autoApproveThreshold, setAutoApproveThreshold] = useState(0.9);
 
   // Filter flags
   const filteredFlags = useMemo(() => {
     return pendingFlags.filter((f) => {
-      if (severityFilter && f.severity !== severityFilter) return false;
-      if (flagTypeFilter && f.flag_type !== flagTypeFilter) return false;
-      if (contentTypeFilter && f.content_type !== contentTypeFilter) return false;
+      if (severityFilter !== 'all' && f.severity !== severityFilter) return false;
+      if (flagTypeFilter !== 'all' && f.flag_type !== flagTypeFilter) return false;
+      if (contentTypeFilter !== 'all' && f.content_type !== contentTypeFilter) return false;
       return true;
     });
   }, [pendingFlags, severityFilter, flagTypeFilter, contentTypeFilter]);
@@ -205,116 +203,90 @@ export function AutoModerationQueue() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            <Bot
-              style={{
-                width: 22,
-                height: 22,
-                display: 'inline',
-                marginRight: 8,
-                verticalAlign: 'middle',
-              }}
-            />
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Bot className="w-[22px] h-[22px]" />
             Automated Moderation
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </h2>
+          <p className="text-sm text-muted-foreground">
             {flagStats?.pending || 0} pending flags from automation modules
             {(flagStats?.applied || 0) > 0 && ` · ${flagStats?.applied} auto-applied`}
             {' · '}
-            <MuiLink
-              component={RouterLink}
+            <RouterLink
               to="/admin/automation"
-              underline="hover"
-              sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+              className="inline-flex items-center gap-1 hover:underline text-[hsl(var(--brand))]"
             >
               <Settings size={12} />
               Configure modules
-            </MuiLink>
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            </RouterLink>
+          </p>
+        </div>
+        <div className="flex gap-2 items-center">
           {selectedIds.length > 0 && (
             <>
               <Button size="sm" onClick={() => handleBulkAction('approved')}>
-                <CheckCircle style={{ width: 14, height: 14, marginRight: 4 }} />
+                <CheckCircle className="w-3.5 h-3.5 mr-1" />
                 Approve ({selectedIds.length})
               </Button>
               <Button variant="outline" size="sm" onClick={() => handleBulkAction('rejected')}>
-                <XCircle style={{ width: 14, height: 14, marginRight: 4 }} />
+                <XCircle className="w-3.5 h-3.5 mr-1" />
                 Reject ({selectedIds.length})
               </Button>
             </>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Auto-Approve Panel */}
-      <Card sx={{ border: '1px solid', borderColor: brandColors.main, bgcolor: brandColors.main + '0A' }}>
-        <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: 2,
-            }}
-          >
-            <Box sx={{ flex: 1, minWidth: 200 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <ShieldCheck style={{ width: 18, height: 18, color: brandColors.main }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                  Auto-Approve High Confidence
-                </Typography>
-              </Box>
-              <Typography variant="caption" color="text.secondary">
+      <Card
+        style={{ borderColor: brandColors.main, backgroundColor: brandColors.main + '0A' }}
+        className="border"
+      >
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldCheck className="w-[18px] h-[18px]" style={{ color: brandColors.main }} />
+                <div className="text-sm font-semibold">Auto-Approve High Confidence</div>
+              </div>
+              <p className="text-xs text-muted-foreground">
                 Approve all flags with confidence ≥ {(autoApproveThreshold * 100).toFixed(0)}% that
                 have suggested changes.
                 {autoApprovable.length > 0 && ` ${autoApprovable.length} flags eligible.`}
-              </Typography>
-              <Box sx={{ mt: 1, maxWidth: 300 }}>
-                <Typography variant="caption" color="text.secondary">
+              </p>
+              <div className="mt-2 max-w-[300px]">
+                <Label className="text-xs text-muted-foreground">
                   Threshold: {(autoApproveThreshold * 100).toFixed(0)}%
-                </Typography>
+                </Label>
                 <Slider
-                  value={autoApproveThreshold}
-                  onChange={(_, v) => setAutoApproveThreshold(v as number)}
+                  value={[autoApproveThreshold]}
+                  onValueChange={(v) => setAutoApproveThreshold(v[0])}
                   min={0.5}
                   max={1.0}
                   step={0.05}
-                  size="small"
-                  sx={{ color: brandColors.main }}
+                  className="mt-1"
                 />
-              </Box>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
               <Button
                 onClick={handleAutoApproveAll}
                 disabled={isReviewing || autoApprovable.length === 0}
               >
-                <Zap style={{ width: 14, height: 14, marginRight: 4 }} />
+                <Zap className="w-3.5 h-3.5 mr-1" />
                 Auto-Approve ({autoApprovable.length})
               </Button>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <div className="flex gap-2">
                 <Button
                   onClick={handleApplyAllEnrichments}
                   disabled={isReviewing || allWithSuggestions.length === 0}
                   variant="outline"
                   size="sm"
                 >
-                  <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                  <CheckCircle className="w-3 h-3 mr-1" />
                   Apply All Enrichments ({allWithSuggestions.length})
                 </Button>
                 <Button
@@ -323,105 +295,101 @@ export function AutoModerationQueue() {
                   variant="outline"
                   size="sm"
                 >
-                  <XCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                  <XCircle className="w-3 h-3 mr-1" />
                   Dismiss All ({filteredFlags.length})
                 </Button>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-        <Filter style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
-        <FormControl size="small" sx={{ minWidth: 130 }}>
-          <InputLabel>Severity</InputLabel>
-          <Select
-            value={severityFilter}
-            label="Severity"
-            onChange={(e) => setSeverityFilter(e.target.value)}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="critical">Critical</MenuItem>
-            <MenuItem value="error">Error</MenuItem>
-            <MenuItem value="warning">Warning</MenuItem>
-            <MenuItem value="info">Info</MenuItem>
+      <div className="flex gap-4 flex-wrap items-center">
+        <Filter className="w-4 h-4 text-muted-foreground" />
+        <div className="min-w-[130px]">
+          <Select value={severityFilter} onValueChange={setSeverityFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Severity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All severities</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
+              <SelectItem value="error">Error</SelectItem>
+              <SelectItem value="warning">Warning</SelectItem>
+              <SelectItem value="info">Info</SelectItem>
+            </SelectContent>
           </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 160 }}>
-          <InputLabel>Flag Type</InputLabel>
-          <Select
-            value={flagTypeFilter}
-            label="Flag Type"
-            onChange={(e) => setFlagTypeFilter(e.target.value)}
-          >
-            <MenuItem value="">All</MenuItem>
-            {Object.entries(FLAG_TYPE_LABELS).map(([k, v]) => (
-              <MenuItem key={k} value={k}>
-                {v}
-              </MenuItem>
-            ))}
+        </div>
+        <div className="min-w-[160px]">
+          <Select value={flagTypeFilter} onValueChange={setFlagTypeFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Flag Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              {Object.entries(FLAG_TYPE_LABELS).map(([k, v]) => (
+                <SelectItem key={k} value={k}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Content Type</InputLabel>
-          <Select
-            value={contentTypeFilter}
-            label="Content Type"
-            onChange={(e) => setContentTypeFilter(e.target.value)}
-          >
-            <MenuItem value="">All</MenuItem>
-            {Object.entries(CONTENT_TYPE_LABELS).map(([k, v]) => (
-              <MenuItem key={k} value={k}>
-                {v}
-              </MenuItem>
-            ))}
+        </div>
+        <div className="min-w-[150px]">
+          <Select value={contentTypeFilter} onValueChange={setContentTypeFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Content Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All content</SelectItem>
+              {Object.entries(CONTENT_TYPE_LABELS).map(([k, v]) => (
+                <SelectItem key={k} value={k}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
-      </Box>
+        </div>
+      </div>
 
-      {isLoading && <LinearProgress />}
+      {isLoading && (
+        <div className="h-1 w-full overflow-hidden rounded bg-muted">
+          <div className="h-full w-1/3 animate-pulse bg-primary" />
+        </div>
+      )}
 
       {/* Flag list */}
       {filteredFlags.length === 0 && !isLoading ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Bot
-            style={{
-              width: 48,
-              height: 48,
-              color: '#d1d5db',
-              marginBottom: 16,
-              marginLeft: 'auto',
-              marginRight: 'auto',
-              display: 'block',
-            }}
-          />
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-            No pending automation flags
-          </Typography>
-          <Typography color="text.secondary">
+        <div className="text-center py-16">
+          <Bot className="w-12 h-12 text-gray-300 mb-4 mx-auto block" />
+          <h3 className="text-base font-semibold mb-1">No pending automation flags</h3>
+          <p className="text-muted-foreground">
             Automation modules haven't generated any flags needing review.
-          </Typography>
-        </Box>
+          </p>
+        </div>
       ) : (
         <>
           {/* Select all */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             <Checkbox
-              checked={selectedIds.length === filteredFlags.length && filteredFlags.length > 0}
-              indeterminate={selectedIds.length > 0 && selectedIds.length < filteredFlags.length}
-              onChange={toggleSelectAll}
-              size="small"
+              checked={
+                selectedIds.length === filteredFlags.length && filteredFlags.length > 0
+                  ? true
+                  : selectedIds.length > 0
+                    ? 'indeterminate'
+                    : false
+              }
+              onCheckedChange={toggleSelectAll}
             />
-            <Typography variant="body2" color="text.secondary">
+            <span className="text-sm text-muted-foreground">
               {selectedIds.length > 0
                 ? `${selectedIds.length} selected`
                 : `Select all (${filteredFlags.length})`}
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <div className="flex flex-col gap-3">
             {filteredFlags.map((flag) => (
               <FlagCard
                 key={flag.id}
@@ -435,10 +403,10 @@ export function AutoModerationQueue() {
                 isReviewing={isReviewing}
               />
             ))}
-          </Box>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -469,57 +437,54 @@ function FlagCard({
   const sensitivityColor = SENSITIVITY_COLORS[flag.flag_type];
   const currentVal = flag.current_value as Record<string, unknown> | null;
   const reviewPriority = currentVal?.review_priority as string | undefined;
+  const relevanceScore = currentVal?.lgbti_relevance_score as number | undefined;
 
   return (
     <Card
-      sx={{
-        border: '1px solid',
-        borderColor: selected ? 'primary.main' : 'divider',
-        '&:hover': { boxShadow: 2 },
-        transition: 'all 200ms',
-      }}
+      className="border transition-all duration-200 hover:shadow-md"
+      style={{ borderColor: selected ? 'hsl(var(--primary))' : undefined }}
     >
-      <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-          <Checkbox checked={selected} onChange={onToggleSelect} size="small" sx={{ mt: -0.5 }} />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
+      <CardContent className="py-4">
+        <div className="flex items-start gap-3">
+          <Checkbox checked={selected} onCheckedChange={onToggleSelect} className="mt-1" />
+          <div className="flex-1 min-w-0">
             {/* Top row */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
-              <Chip
-                icon={<SeverityIcon style={{ width: 12, height: 12 }} />}
-                label={flag.severity}
-                size="small"
-                sx={{ bgcolor: severityColor, color: '#fff', fontWeight: 600, fontSize: '0.7rem' }}
-              />
-              <Chip
-                icon={
-                  flag.flag_type === 'sensitivity_legal' ? <Scale style={{ width: 12, height: 12 }} /> :
-                  flag.flag_type === 'sensitivity_medical' ? <Heart style={{ width: 12, height: 12 }} /> :
-                  flag.flag_type === 'sensitivity_nsfw' ? <EyeOff style={{ width: 12, height: 12 }} /> :
-                  flag.flag_type === 'lgbti_relevance' ? <Flag style={{ width: 12, height: 12 }} /> :
-                  undefined
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <Badge
+                style={{ backgroundColor: severityColor, color: '#fff' }}
+                className="font-semibold text-[0.7rem] gap-1"
+              >
+                <SeverityIcon className="w-3 h-3" />
+                {flag.severity}
+              </Badge>
+              <Badge
+                variant="outline"
+                style={
+                  sensitivityColor
+                    ? { borderColor: sensitivityColor, color: sensitivityColor }
+                    : undefined
                 }
-                label={FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}
-                size="small"
-                variant="outlined"
-                sx={sensitivityColor ? {
-                  borderColor: sensitivityColor,
-                  color: sensitivityColor,
-                  fontWeight: 600,
-                } : undefined}
-              />
-              <Chip
-                label={CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}
-                size="small"
-                variant="outlined"
-              />
+                className="font-semibold gap-1"
+              >
+                {flag.flag_type === 'sensitivity_legal' ? (
+                  <Scale className="w-3 h-3" />
+                ) : flag.flag_type === 'sensitivity_medical' ? (
+                  <Heart className="w-3 h-3" />
+                ) : flag.flag_type === 'sensitivity_nsfw' ? (
+                  <EyeOff className="w-3 h-3" />
+                ) : flag.flag_type === 'lgbti_relevance' ? (
+                  <Flag className="w-3 h-3" />
+                ) : null}
+                {FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}
+              </Badge>
+              <Badge variant="outline">
+                {CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}
+              </Badge>
               {flag.confidence != null && (
-                <Chip
-                  label={`${(flag.confidence * 100).toFixed(0)}%`}
-                  size="small"
-                  variant="outlined"
-                  sx={{
-                    fontWeight: 600,
+                <Badge
+                  variant="outline"
+                  className="font-semibold"
+                  style={{
                     borderColor:
                       flag.confidence >= 0.9
                         ? '#16a34a'
@@ -527,199 +492,160 @@ function FlagCard({
                           ? '#f59e0b'
                           : '#ef4444',
                   }}
-                />
+                >
+                  {(flag.confidence * 100).toFixed(0)}%
+                </Badge>
               )}
               {reviewPriority && (
-                <Chip
-                  label={`Priority: ${reviewPriority}`}
-                  size="small"
-                  sx={{
-                    bgcolor: REVIEW_PRIORITY_COLORS[reviewPriority] || '#6b7280',
+                <Badge
+                  style={{
+                    backgroundColor: REVIEW_PRIORITY_COLORS[reviewPriority] || '#6b7280',
                     color: '#fff',
-                    fontWeight: 600,
-                    fontSize: '0.7rem',
                   }}
-                />
+                  className="font-semibold text-[0.7rem]"
+                >
+                  Priority: {reviewPriority}
+                </Badge>
               )}
-              <Chip
-                icon={<Bot style={{ width: 12, height: 12 }} />}
-                label={flag.module_name.replace(/-/g, ' ')}
-                size="small"
-                variant="outlined"
-                sx={{ fontSize: '0.7rem' }}
-              />
-              <Box sx={{ flex: 1 }} />
-              <Typography variant="caption" color="text.secondary">
+              <Badge variant="outline" className="text-[0.7rem] gap-1">
+                <Bot className="w-3 h-3" />
+                {flag.module_name.replace(/-/g, ' ')}
+              </Badge>
+              <div className="flex-1" />
+              <span className="text-xs text-muted-foreground">
                 {new Date(flag.created_at).toLocaleDateString()}{' '}
                 {new Date(flag.created_at).toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
-              </Typography>
-            </Box>
+              </span>
+            </div>
 
             {/* Title */}
-            <Typography variant="body2" sx={{ fontWeight: 600, mt: 0.5 }}>
-              {flag.title}
-            </Typography>
+            <p className="text-sm font-semibold mt-1">{flag.title}</p>
             {flag.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-                {flag.description}
-              </Typography>
+              <p className="text-sm text-muted-foreground mt-0.5">{flag.description}</p>
             )}
 
             {/* Actions */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+            <div className="flex items-center gap-2 mt-2">
               {flag.suggested_value && (
                 <Button size="sm" onClick={onApprove} disabled={isReviewing}>
-                  <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                  <CheckCircle className="w-3 h-3 mr-1" />
                   Approve & Apply
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={onReject} disabled={isReviewing}>
-                <XCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                <XCircle className="w-3 h-3 mr-1" />
                 Dismiss
               </Button>
-              <IconButton size="small" onClick={onToggleExpand}>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onToggleExpand}>
                 {expanded ? (
-                  <ChevronUp style={{ width: 16, height: 16 }} />
+                  <ChevronUp className="w-4 h-4" />
                 ) : (
-                  <ChevronDown style={{ width: 16, height: 16 }} />
+                  <ChevronDown className="w-4 h-4" />
                 )}
-              </IconButton>
-            </Box>
+              </Button>
+            </div>
 
             {/* Expanded detail with diff */}
-            <Collapse in={expanded}>
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mb: 1 }}
-                >
-                  Content ID: {flag.content_id}
-                </Typography>
+            <Collapsible open={expanded}>
+              <CollapsibleContent>
+                <div className="mt-4 p-4 bg-muted rounded">
+                  <p className="text-xs text-muted-foreground block mb-2">
+                    Content ID: {flag.content_id}
+                  </p>
 
-                {/* Classifier-specific detail view */}
-                {isClassifierFlag && currentVal && (
-                  <Box sx={{ mb: 1.5 }}>
-                    {/* Relevance score bar */}
-                    {currentVal.lgbti_relevance_score != null && (
-                      <Box sx={{ mb: 1.5 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-                          LGBTI Relevance: {((currentVal.lgbti_relevance_score as number) * 100).toFixed(0)}%
-                        </Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={(currentVal.lgbti_relevance_score as number) * 100}
-                          sx={{
-                            height: 8,
-                            borderRadius: 4,
-                            bgcolor: 'rgba(0,0,0,0.08)',
-                            '& .MuiLinearProgress-bar': {
-                              bgcolor: (currentVal.lgbti_relevance_score as number) >= 0.7
-                                ? '#16a34a'
-                                : (currentVal.lgbti_relevance_score as number) >= 0.5
-                                  ? '#f59e0b'
-                                  : '#ef4444',
-                              borderRadius: 4,
-                            },
-                          }}
-                        />
-                      </Box>
-                    )}
-                    {/* Reasoning */}
-                    {currentVal.lgbti_reasoning && (
-                      <Typography variant="body2" sx={{ mb: 1, fontStyle: 'italic', color: 'text.secondary' }}>
-                        {String(currentVal.lgbti_reasoning)}
-                      </Typography>
-                    )}
-                    {/* Sensitivity indicators */}
-                    {currentVal.indicators && Array.isArray(currentVal.indicators) && (
-                      <Box sx={{ mb: 1 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}>
-                          Detected indicators:
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {(currentVal.indicators as string[]).map((indicator, i) => (
-                            <Chip
-                              key={i}
-                              label={indicator}
-                              size="small"
-                              sx={{
-                                fontSize: '0.7rem',
-                                bgcolor: sensitivityColor ? `${sensitivityColor}15` : undefined,
-                                borderColor: sensitivityColor,
-                                border: '1px solid',
+                  {/* Classifier-specific detail view */}
+                  {isClassifierFlag && currentVal && (
+                    <div className="mb-3">
+                      {/* Relevance score bar */}
+                      {relevanceScore != null && (
+                        <div className="mb-3">
+                          <p className="text-xs font-semibold block mb-1">
+                            LGBTI Relevance: {(relevanceScore * 100).toFixed(0)}%
+                          </p>
+                          <div className="h-2 w-full overflow-hidden rounded bg-black/10">
+                            <div
+                              className="h-full rounded"
+                              style={{
+                                width: `${relevanceScore * 100}%`,
+                                backgroundColor:
+                                  relevanceScore >= 0.7
+                                    ? '#16a34a'
+                                    : relevanceScore >= 0.5
+                                      ? '#f59e0b'
+                                      : '#ef4444',
                               }}
                             />
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
-                    {/* Severity */}
-                    {currentVal.severity && (
-                      <Typography variant="caption" color="text.secondary">
-                        Sensitivity severity: <strong>{String(currentVal.severity)}</strong>
-                      </Typography>
-                    )}
-                  </Box>
-                )}
+                          </div>
+                        </div>
+                      )}
+                      {/* Reasoning */}
+                      {currentVal.lgbti_reasoning && (
+                        <p className="text-sm mb-2 italic text-muted-foreground">
+                          {String(currentVal.lgbti_reasoning)}
+                        </p>
+                      )}
+                      {/* Sensitivity indicators */}
+                      {currentVal.indicators && Array.isArray(currentVal.indicators) && (
+                        <div className="mb-2">
+                          <p className="text-xs font-semibold block mb-1">Detected indicators:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {(currentVal.indicators as string[]).map((indicator, i) => (
+                              <Badge
+                                key={i}
+                                variant="outline"
+                                className="text-[0.7rem]"
+                                style={{
+                                  backgroundColor: sensitivityColor
+                                    ? `${sensitivityColor}15`
+                                    : undefined,
+                                  borderColor: sensitivityColor,
+                                }}
+                              >
+                                {indicator}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* Severity */}
+                      {currentVal.severity && (
+                        <p className="text-xs text-muted-foreground">
+                          Sensitivity severity: <strong>{String(currentVal.severity)}</strong>
+                        </p>
+                      )}
+                    </div>
+                  )}
 
-                {/* Generic flag detail view (non-classifier flags) */}
-                {!isClassifierFlag && flag.current_value && (
-                  <Box sx={{ mb: 1.5 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{ fontWeight: 600, display: 'block', mb: 0.5, color: '#ef4444' }}
-                    >
-                      Current Value:
-                    </Typography>
-                    <Box
-                      component="pre"
-                      sx={{
-                        fontSize: '0.75rem',
-                        overflow: 'auto',
-                        maxHeight: 150,
-                        p: 1,
-                        bgcolor: 'rgba(239,68,68,0.05)',
-                        borderRadius: 1,
-                        border: '1px solid rgba(239,68,68,0.2)',
-                      }}
-                    >
-                      {JSON.stringify(flag.current_value, null, 2)}
-                    </Box>
-                  </Box>
-                )}
+                  {/* Generic flag detail view (non-classifier flags) */}
+                  {!isClassifierFlag && flag.current_value && (
+                    <div className="mb-3">
+                      <p className="text-xs font-semibold block mb-1 text-[#ef4444]">
+                        Current Value:
+                      </p>
+                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.05)]">
+                        {JSON.stringify(flag.current_value, null, 2)}
+                      </pre>
+                    </div>
+                  )}
 
-                {flag.suggested_value && (
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      sx={{ fontWeight: 600, display: 'block', mb: 0.5, color: '#16a34a' }}
-                    >
-                      Suggested Value:
-                    </Typography>
-                    <Box
-                      component="pre"
-                      sx={{
-                        fontSize: '0.75rem',
-                        overflow: 'auto',
-                        maxHeight: 150,
-                        p: 1,
-                        bgcolor: 'rgba(22,163,74,0.05)',
-                        borderRadius: 1,
-                        border: '1px solid rgba(22,163,74,0.2)',
-                      }}
-                    >
-                      {JSON.stringify(flag.suggested_value, null, 2)}
-                    </Box>
-                  </Box>
-                )}
-              </Box>
-            </Collapse>
-          </Box>
-        </Box>
+                  {flag.suggested_value && (
+                    <div>
+                      <p className="text-xs font-semibold block mb-1 text-[#16a34a]">
+                        Suggested Value:
+                      </p>
+                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[rgba(22,163,74,0.2)] bg-[rgba(22,163,74,0.05)]">
+                        {JSON.stringify(flag.suggested_value, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
