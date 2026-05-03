@@ -69,7 +69,7 @@ export const useNews = () => {
           `
           id, slug, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
-          country_ids, city_ids, tags, category, publisher_name
+          country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,
         )
         .not('published_at', 'is', null)
@@ -100,7 +100,14 @@ export const useNews = () => {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('source_id', filters.sourceId);
       }
       if (filters?.category) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).eq('category', filters.category);
+        // Filter on the canonical-category column from migration
+        // news_qa_backfill_category_canonical. We OR with the legacy
+        // `category` column so any rows the backfill hasn't classified yet
+        // (or future legacy categories) still match by name.
+        const cat = filters.category.replace(/[(),]/g, '');
+        queryBuilder = (queryBuilder as typeof queryBuilder).or(
+          `category_canonical.eq.${cat},category.eq.${cat}`,
+        );
       }
       if (filters?.featured !== undefined) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('is_featured', filters.featured);
@@ -175,10 +182,14 @@ export const useNews = () => {
 
   const fetchSources = useCallback(async () => {
     try {
+      // Exclude aggregator providers (NewsAPI, GNews, NewsData, TheNewsAPI) so
+      // the Source dropdown only contains real publications.
+      // is_aggregator was added in migration news_qa_add_category_canonical_and_aggregator.
       const { data, error: fetchError } = await supabase
         .from('news_sources')
         .select('*')
         .eq('is_active', true)
+        .or('is_aggregator.is.null,is_aggregator.eq.false')
         .order('name', { ascending: true });
 
       if (fetchError) {
@@ -234,7 +245,7 @@ export const useNews = () => {
           `
           id, slug, title, excerpt, url, image_url, author,
           published_at, source_id, views_count, is_featured,
-          country_ids, city_ids, tags, category, publisher_name
+          country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,
         )
         .eq('is_featured', true)

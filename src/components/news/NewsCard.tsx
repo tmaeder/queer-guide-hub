@@ -119,7 +119,15 @@ export const NewsCard = ({
   const HIDDEN_CATEGORY_VALUES = new Set(['general', 'rss-news', 'rss_news']);
   const isHiddenCategory = (v?: string | null) =>
     !v || HIDDEN_CATEGORY_VALUES.has(String(v).toLowerCase());
-  const displayCategory = !isHiddenCategory(article.category) ? article.category : null;
+  // Prefer canonical category from the news_qa_backfill_category_canonical
+  // migration; fall back to the legacy `category` text column.
+  const articleAny = article as Record<string, unknown>;
+  const canonical = typeof articleAny.category_canonical === 'string' ? (articleAny.category_canonical as string) : null;
+  const displayCategory = !isHiddenCategory(canonical)
+    ? canonical
+    : !isHiddenCategory(article.category)
+      ? article.category
+      : null;
   const firstUsableTag = tags.find((t) => !isHiddenCategory(t));
   const fallbackCategoryFromTag = !displayCategory && firstUsableTag ? firstUsableTag : null;
   const hasImage = article.image_url && !imgFailed;

@@ -301,12 +301,15 @@ export default function News() {
     return pages;
   };
 
-  // Count articles per category for chips
+  // Count articles per canonical category for the tab badges. Prefer
+  // category_canonical (from migration news_qa_backfill_category_canonical)
+  // and fall back to legacy `category` so unclassified rows still surface.
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    articles.forEach((a: { category?: string }) => {
-      if (a.category && a.category !== 'general') {
-        counts[a.category] = (counts[a.category] || 0) + 1;
+    articles.forEach((a: { category?: string; category_canonical?: string | null }) => {
+      const slug = a.category_canonical || a.category;
+      if (slug && slug !== 'general') {
+        counts[slug] = (counts[slug] || 0) + 1;
       }
     });
     return counts;

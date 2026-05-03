@@ -407,17 +407,18 @@ export async function fetchNewsTagsForEntity(entityId: string): Promise<string[]
   );
 }
 
-/** NewsDetail.tsx — related articles in same category. */
+/** NewsDetail.tsx — related articles in same canonical category, falling back to legacy. */
 export async function fetchRelatedNewsArticles<T = unknown>(
   category: string,
   excludeId: string,
 ): Promise<T[]> {
   const { data } = await supabase
     .from('news_articles')
-    .select('id, title, excerpt, image_url, published_at, category')
-    .eq('category', category)
+    .select('id, slug, title, excerpt, image_url, published_at, category, category_canonical')
+    .or(`category_canonical.eq.${category},category.eq.${category}`)
     .neq('id', excludeId)
     .not('published_at', 'is', null)
+    .or('quality_status.is.null,quality_status.eq.passed')
     .order('published_at', { ascending: false })
     .limit(4);
   return (data ?? []) as T[];
