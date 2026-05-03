@@ -73,16 +73,22 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
                 <button
                   key={type}
                   type="button"
+                  aria-pressed={enabled}
+                  aria-label={`${label}${enabled && count > 0 ? `, ${count} visible` : ''}`}
                   onClick={() => { hapticTrigger('nudge'); onToggle(type); }}
-                  className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded-full border transition-all"
+                  className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded-full border transition-all focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
                     fontWeight: enabled ? 600 : 400,
-                    backgroundColor: enabled ? `${color}18` : 'transparent',
-                    color: enabled ? color : 'hsl(var(--muted-foreground))',
+                    // Active: opaque brand pill with white text — meets WCAG AA
+                    // (≥4.5:1) against panel bg for all 7 layer colors,
+                    // including amber Hotels which fails the prior tint approach.
+                    backgroundColor: enabled ? color : 'transparent',
+                    color: enabled ? '#ffffff' : 'hsl(var(--muted-foreground))',
                     borderColor: enabled ? color : 'hsl(var(--border))',
+                    outlineColor: color,
                   }}
                 >
-                  <Icon size={13} style={{ color: enabled ? color : 'hsl(var(--muted-foreground))' }} />
+                  <Icon size={13} style={{ color: enabled ? '#ffffff' : 'hsl(var(--muted-foreground))' }} />
                   {`${label}${enabled && count > 0 ? ` (${count})` : ''}`}
                 </button>
               );
