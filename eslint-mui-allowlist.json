@@ -99,7 +99,6 @@
   "src/components/profile/UserRelationshipActions.tsx",
   "src/components/profile/settings/BasicInfoTab.tsx",
   "src/components/search/SearchFeedbackButtons.tsx",
-  "src/components/search/UniversalSearchBar.tsx",
   "src/components/security/ContentSanitizer.tsx",
   "src/components/security/AdminRouteGuard.tsx",
   "src/components/submission/FlyerScanResults.tsx",
