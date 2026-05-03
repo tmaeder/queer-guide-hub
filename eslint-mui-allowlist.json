@@ -243,7 +243,6 @@
   "src/pages/CityDetail.parts.tsx",
   "src/pages/Directory.tsx",
   "src/pages/Donate.tsx",
-  "src/pages/EventDetail.parts.tsx",
   "src/pages/Events.tsx",
   "src/pages/Favorites.tsx",
   "src/pages/Friends.tsx",
