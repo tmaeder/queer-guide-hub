@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { listFromIn } from '@/hooks/usePageFetchers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -43,11 +44,9 @@ export function TagMergeCandidates() {
     queryKey: ['unified-tags-meta', ids.sort().join(',')],
     enabled: ids.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase.from('unified_tags')
-        .select('id, slug, name, usage_count').in('id', ids);
-      if (error) throw error;
+      const data = await listFromIn<TagMeta>('unified_tags', 'id, slug, name, usage_count', 'id', ids);
       const map: Record<string, TagMeta> = {};
-      for (const t of (data ?? []) as TagMeta[]) map[t.id] = t;
+      for (const t of data) map[t.id] = t;
       return map;
     },
   });

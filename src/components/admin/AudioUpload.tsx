@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { insertRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 
 interface AudioUploadProps {
@@ -93,20 +94,16 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       ));
 
       // Create audio record
-      const { data: _audioRecord, error: dbError } = await supabase
-        .from('audio_files')
-        .insert([{
-          id: audio.id,
-          title: audio.title,
-          artist: audio.artist || null,
-          album: audio.album || null,
-          description: audio.description || null,
-          original_filename: audio.file.name,
-          storage_path: filePath,
-          status: 'uploaded'
-        }])
-        .select()
-        .single();
+      const { error: dbError } = await insertRow('audio_files', {
+        id: audio.id,
+        title: audio.title,
+        artist: audio.artist || null,
+        album: audio.album || null,
+        description: audio.description || null,
+        original_filename: audio.file.name,
+        storage_path: filePath,
+        status: 'uploaded',
+      });
 
       if (dbError) throw dbError;
 

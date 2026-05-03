@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
+import { insertRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 
 interface VideoUploadProps {
@@ -73,18 +74,14 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       if (uploadError) throw uploadError;
 
       // Create video record
-      const { data: _videoRecord, error: dbError } = await supabase
-        .from('videos')
-        .insert([{
-          id: video.id,
-          title: video.title,
-          description: video.description,
-          original_filename: video.file.name,
-          storage_path: filePath,
-          status: 'uploaded'
-        }])
-        .select()
-        .single();
+      const { error: dbError } = await insertRow('videos', {
+        id: video.id,
+        title: video.title,
+        description: video.description,
+        original_filename: video.file.name,
+        storage_path: filePath,
+        status: 'uploaded',
+      });
 
       if (dbError) throw dbError;
 

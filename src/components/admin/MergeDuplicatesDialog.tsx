@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { submissionRegistry } from '@/config/submissionRegistry';
 
@@ -64,21 +65,26 @@ export function MergeDuplicatesDialog({
     let cancelled = false;
     const run = async () => {
       setLoading(true);
-      const q = supabase
-        .from('community_submissions')
-        .select('id, content_type, status, platform, data, submitted_at')
-        .eq('content_type', contentType)
-        .neq('id', submissionId)
-        .in('status', ['pending', 'approved', 'merged'])
-        .order('submitted_at', { ascending: false })
-        .limit(25);
-      const { data, error } = await q;
-      if (cancelled) return;
-      if (error) {
-        toast({ title: 'Search failed', description: error.message, variant: 'destructive' });
+      try {
+        const data = await listFromWhere<CandidateRow>(
+          'community_submissions',
+          'id, content_type, status, platform, data, submitted_at',
+          [
+            { col: 'content_type', val: contentType },
+            { col: 'id', val: submissionId, op: 'neq' as const },
+            { col: 'status', val: ['pending', 'approved', 'merged'], op: 'in' },
+          ] as never,
+          { order: { col: 'submitted_at', ascending: false }, limit: 25 },
+        );
+        if (cancelled) return;
+        setCandidates(data);
+      } catch (err) {
+        toast({
+          title: 'Search failed',
+          description: err instanceof Error ? err.message : '',
+          variant: 'destructive',
+        });
         setCandidates([]);
-      } else {
-        setCandidates((data ?? []) as CandidateRow[]);
       }
       setLoading(false);
     };
