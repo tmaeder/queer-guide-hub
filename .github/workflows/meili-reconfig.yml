@@ -4,8 +4,9 @@ name: Reconfigure Meilisearch
 # alias settings to the production Meilisearch instance, and to seed
 # city aliases for ~30 well-known cities.
 #
-# Reads MEILI_MASTER_KEY from the .env on the VPS so we don't have to
-# duplicate it as a GH secret.
+# The deploy-only Infomaniak SSH user has no docker access, so we cannot
+# read MEILI_MASTER_KEY off the VPS .env from CI. Pass it as a secret
+# input on dispatch — it gets passed straight to curl and is never logged.
 
 on:
   workflow_dispatch:
@@ -22,76 +23,35 @@ concurrency:
 jobs:
   reconfig:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
-      SSH_KEY: ${{ secrets.INFOMANIAK_SSH_PRIVATE_KEY }}
-      SSH_HOST: ${{ secrets.INFOMANIAK_SSH_HOST }}
-      SSH_USER: ${{ secrets.INFOMANIAK_SSH_USER }}
+      # MEILI_MASTER_KEY must be present as a repo secret. Set with:
+      #   gh secret set MEILI_MASTER_KEY
+      MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
+      MEILI_URL: https://s.queer.guide
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup SSH
+      - name: Verify MEILI_MASTER_KEY is set
         run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
-
-      - name: Copy scripts to VPS
-        run: |
-          scp -o StrictHostKeyChecking=accept-new \
-            meilisearch/configure-indexes.sh \
-            meilisearch/seed-city-aliases.sh \
-            "$SSH_USER@$SSH_HOST:/tmp/"
-
-      - name: Discover meilisearch compose dir on VPS
-        id: discover
-        run: |
-          # Try docker labels first (the compose CLI tags every container with
-          # com.docker.compose.project.working_dir). Falls back to a wider find.
-          DIR=$(ssh "$SSH_USER@$SSH_HOST" 'set +e; \
-            (docker ps -a --filter ancestor=getmeili/meilisearch --format "{{.ID}}" 2>/dev/null | head -1 | xargs -I{} docker inspect -f "{{ index .Config.Labels \"com.docker.compose.project.working_dir\" }}" {} 2>/dev/null); \
-            (docker ps -a --filter name=meili --format "{{.ID}}" 2>/dev/null | head -1 | xargs -I{} docker inspect -f "{{ index .Config.Labels \"com.docker.compose.project.working_dir\" }}" {} 2>/dev/null); \
-            find / -maxdepth 7 \( -name docker-compose.yml -o -name docker-compose.yaml -o -name compose.yml -o -name compose.yaml \) 2>/dev/null | xargs grep -l "meilisearch" 2>/dev/null | head -1 | xargs -I{} dirname {}; \
-            true' | grep -v '^$' | head -1)
-          if [ -z "$DIR" ]; then
-            echo "Could not find meilisearch dir on VPS" >&2
-            echo "--- docker ps ---" >&2
-            ssh "$SSH_USER@$SSH_HOST" 'docker ps --format "{{.Names}}\t{{.Image}}"' >&2 || true
+          if [ -z "${MEILI_MASTER_KEY:-}" ]; then
+            echo "::error::MEILI_MASTER_KEY repo secret is not set. Run: gh secret set MEILI_MASTER_KEY"
             exit 1
           fi
-          echo "compose_dir=$DIR" >> "$GITHUB_OUTPUT"
-          echo "Discovered: $DIR"
+
+      - name: Probe Meilisearch
+        run: |
+          status=$(curl -s -o /dev/null -w '%{http_code}' "$MEILI_URL/health")
+          echo "Meili /health → $status"
+          [ "$status" = "200" ]
 
       - name: Run configure-indexes.sh
-        env:
-          COMPOSE_DIR: ${{ steps.discover.outputs.compose_dir }}
         run: |
-          ssh "$SSH_USER@$SSH_HOST" "COMPOSE_DIR='$COMPOSE_DIR' bash -s" <<'REMOTE'
-            set -euo pipefail
-            if [ ! -f "$COMPOSE_DIR/.env" ]; then
-              echo "No .env in $COMPOSE_DIR" >&2; exit 1
-            fi
-            set -a
-            . "$COMPOSE_DIR/.env"
-            set +a
-            export MEILI_URL="https://s.queer.guide"
-            chmod +x /tmp/configure-indexes.sh
-            bash /tmp/configure-indexes.sh
-          REMOTE
+          chmod +x meilisearch/configure-indexes.sh
+          bash meilisearch/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
-        env:
-          COMPOSE_DIR: ${{ steps.discover.outputs.compose_dir }}
         run: |
-          ssh "$SSH_USER@$SSH_HOST" "COMPOSE_DIR='$COMPOSE_DIR' bash -s" <<'REMOTE'
-            set -euo pipefail
-            set -a
-            . "$COMPOSE_DIR/.env"
-            set +a
-            export MEILI_URL="https://s.queer.guide"
-            chmod +x /tmp/seed-city-aliases.sh
-            bash /tmp/seed-city-aliases.sh
-            rm -f /tmp/configure-indexes.sh /tmp/seed-city-aliases.sh
-          REMOTE
+          chmod +x meilisearch/seed-city-aliases.sh
+          bash meilisearch/seed-city-aliases.sh
