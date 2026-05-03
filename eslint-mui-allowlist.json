@@ -112,7 +112,6 @@
   "src/components/trips/TripsInboxSection.tsx",
   "src/components/trips/TripsSignedOutHero.tsx",
   "src/components/trips/TripsToolbar.tsx",
-  "src/components/trips/__tests__/CreateTripDialog.i18n.test.tsx",
   "src/components/trips/create/CityCountryAutocomplete.tsx",
   "src/components/ui/EmptyState.tsx",
   "src/components/ui/card.tsx",
