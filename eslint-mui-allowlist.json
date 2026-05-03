@@ -67,7 +67,6 @@
   "src/components/trips/AddPlaceDialog.tsx",
   "src/components/trips/AddToTripDialog.tsx",
   "src/components/trips/AddToTripMenuItem.tsx",
-  "src/components/trips/AiPlanTab.tsx",
   "src/components/trips/BudgetTab.tsx",
   "src/components/trips/CreateTripDialog.tsx",
   "src/components/trips/DraggableItinerary.tsx",
