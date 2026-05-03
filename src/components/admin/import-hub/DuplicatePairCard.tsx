@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,13 +18,12 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
   const color = confidence >= 0.9 ? '#16a34a' : confidence >= 0.7 ? '#ca8a04' : '#dc2626';
   const label = confidence >= 0.9 ? 'High' : confidence >= 0.7 ? 'Medium' : 'Low';
   return (
-    <Box sx={{
-      display: 'inline-flex', alignItems: 'center', gap: 0.5,
-      px: 1, py: 0.25, borderRadius: 1,
-      bgcolor: `${color}15`, color, fontSize: '0.75rem', fontWeight: 600,
-    }}>
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold"
+      style={{ backgroundColor: `${color}15`, color }}
+    >
       {pct}% ({label})
-    </Box>
+    </span>
   );
 }
 
@@ -42,14 +39,14 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
     <Card>
       <CardContent>
         {/* Header Row */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+        <div className="flex flex-row items-center justify-between mb-2">
+          <div className="flex flex-row items-center gap-3 flex-1 min-w-0">
             <Badge variant="outline">{pair.entity_type}</Badge>
             <Badge variant="secondary">{pair.match_method}</Badge>
             <ConfidenceBadge confidence={pair.confidence} />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+          <div className="flex flex-row gap-2 flex-shrink-0">
             <Button
               variant="outline"
               size="sm"
@@ -77,52 +74,52 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               <Merge style={{ width: 14, height: 14 }} />
               Merge
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Quick Preview — always visible */}
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', color: 'var(--muted-foreground)', fontSize: '0.875rem' }}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+        <div className="flex flex-row gap-4 items-center text-muted-foreground text-sm">
+          <p className="text-sm font-medium">
             A: <span style={{ color: 'var(--foreground)' }}>{pair.entity_a_id.slice(0, 8)}...</span>
-          </Typography>
-          <Typography variant="body2">vs</Typography>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          </p>
+          <p className="text-sm">vs</p>
+          <p className="text-sm font-medium">
             B: <span style={{ color: 'var(--foreground)' }}>{pair.entity_b_id.slice(0, 8)}...</span>
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {/* Expanded Details */}
         {expanded && (
-          <Box sx={{ mt: 2 }}>
+          <div className="mt-4">
             {(loadingA || loadingB) ? (
-              <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', py: 2, textAlign: 'center' }}>
+              <p className="text-sm text-muted-foreground py-4 text-center">
                 Loading records...
-              </Typography>
+              </p>
             ) : entityA && entityB ? (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardContent>
-                    <Typography variant="subtitle2" sx={{ mb: 1, color: '#3b82f6', fontWeight: 600 }}>
+                    <p className="text-sm font-semibold mb-2" style={{ color: '#3b82f6' }}>
                       Record A: {entityA[nameField] || 'Unknown'}
-                    </Typography>
+                    </p>
                     <StructuredFieldDisplay entityType={pair.entity_type} data={entityA} />
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent>
-                    <Typography variant="subtitle2" sx={{ mb: 1, color: brandColors.main, fontWeight: 600 }}>
+                    <p className="text-sm font-semibold mb-2" style={{ color: brandColors.main }}>
                       Record B: {entityB[nameField] || 'Unknown'}
-                    </Typography>
+                    </p>
                     <StructuredFieldDisplay entityType={pair.entity_type} data={entityB} />
                   </CardContent>
                 </Card>
-              </Box>
+              </div>
             ) : (
-              <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', textAlign: 'center' }}>
+              <p className="text-sm text-muted-foreground text-center">
                 Could not load one or both records.
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
         )}
       </CardContent>
     </Card>
