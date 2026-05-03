@@ -111,7 +111,6 @@
   "src/components/groups/GroupPostCard.tsx",
   "src/components/home/LatestNewsSlider.tsx",
   "src/components/home/RegionalEventsCalendar.tsx",
-  "src/components/hotels/HotelCard.tsx",
   "src/components/layout/AuthGate.tsx",
   "src/components/layout/Header.tsx",
   "src/components/loading/Spinner.tsx",
