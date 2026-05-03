@@ -55,7 +55,6 @@
   "src/components/cms/MediaLibrary/index.tsx",
   "src/components/cms/ModerationQueue.tsx",
   "src/components/cms/ReviewQueue.tsx",
-  "src/components/cms/UniversalContentDashboard.tsx",
   "src/components/cms/UniversalContentEditor.tsx",
   "src/components/cms/editor/CMSEditorLayout.tsx",
   "src/components/cms/editor/EditorHeader.tsx",
