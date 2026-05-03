@@ -68,7 +68,6 @@
   "src/pages/QueerVillageDetail.parts.tsx",
   "src/pages/SearchResults.tsx",
   "src/pages/Venues.tsx",
-  "src/pages/trips/SharedTripPage.tsx",
   "src/test/__tests__/test-utils.test.tsx",
   "src/test/test-utils.tsx",
   "src/theme/muiTheme.ts"
