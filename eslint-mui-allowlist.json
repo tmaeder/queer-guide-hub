@@ -15,7 +15,6 @@
   "src/components/trips/ReservationsTab.tsx",
   "src/components/ui/country-autocomplete.tsx",
   "src/lib/sx.ts",
-  "src/pages/AdminHotels.tsx",
   "src/pages/AdminQueerVillages.tsx",
   "src/pages/CMSRoutePage.tsx",
   "src/pages/HelpHotlines.tsx",
