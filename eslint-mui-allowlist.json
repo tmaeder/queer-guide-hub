@@ -183,7 +183,6 @@
   "src/components/security/AutomatedSecurityScheduler.tsx",
   "src/components/security/ContentSanitizer.tsx",
   "src/components/security/AdminRouteGuard.tsx",
-  "src/components/security/EnhancedSecurityDashboard.tsx",
   "src/components/security/LocationPrivacyManager.tsx",
   "src/components/security/PrivacyControlCenter.tsx",
   "src/components/security/SecureFinancialDataViewer.tsx",
