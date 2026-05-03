@@ -6,8 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useLocationPrivacy } from '@/hooks/useLocationPrivacy';
 import { MapPin, Shield, Clock, Eye, EyeOff } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 export function LocationPrivacyManager() {
   const {
@@ -18,33 +16,33 @@ export function LocationPrivacyManager() {
   } = useLocationPrivacy();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <MapPin style={{ height: 20, width: 20 }} />
               Location Privacy Settings
-            </Box>
+            </div>
           </CardTitle>
           <CardDescription>
             Control how your location data is shared and protected
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div className="flex flex-col gap-6">
             {/* Precise Location Setting */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <Eye style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-                <Box>
-                  <Typography sx={{ fontWeight: 500 }}>Precise Location Sharing</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                <div>
+                  <p className="font-medium">Precise Location Sharing</p>
+                  <p className="text-sm text-muted-foreground">
                     Allow others to see your exact location coordinates
-                  </Typography>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <Badge variant={locationSettings.preciseLocation ? "default" : "secondary"}>
                   {locationSettings.preciseLocation ? "Precise" : "Private"}
                 </Badge>
@@ -55,23 +53,23 @@ export function LocationPrivacyManager() {
                   }
                   disabled={loading}
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             <Separator />
 
             {/* Region-Only Setting */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <Shield style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-                <Box>
-                  <Typography sx={{ fontWeight: 500 }}>Region-Only Sharing</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                <div>
+                  <p className="font-medium">Region-Only Sharing</p>
+                  <p className="text-sm text-muted-foreground">
                     Show only city/region instead of exact venues
-                  </Typography>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <Badge variant={locationSettings.regionOnly ? "default" : "outline"}>
                   {locationSettings.regionOnly ? "Region Only" : "Full Details"}
                 </Badge>
@@ -82,23 +80,23 @@ export function LocationPrivacyManager() {
                   }
                   disabled={loading}
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             <Separator />
 
             {/* Auto-Anonymize Setting */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-                <Box>
-                  <Typography sx={{ fontWeight: 500 }}>Automatic Data Anonymization</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                <div>
+                  <p className="font-medium">Automatic Data Anonymization</p>
+                  <p className="text-sm text-muted-foreground">
                     Automatically anonymize location data after {locationSettings.anonymizationDays} days
-                  </Typography>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <Badge variant={locationSettings.autoAnonymize ? "default" : "destructive"}>
                   {locationSettings.autoAnonymize ? "Protected" : "Disabled"}
                 </Badge>
@@ -109,9 +107,9 @@ export function LocationPrivacyManager() {
                   }
                   disabled={loading}
                 />
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -128,25 +126,25 @@ export function LocationPrivacyManager() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <EyeOff style={{ height: 20, width: 20 }} />
               Data Protection Actions
-            </Box>
+            </div>
           </CardTitle>
           <CardDescription>
             Manually trigger privacy protection measures
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="subtitle2">Anonymize All Location Data</Typography>
-                  <Typography variant="body2" color="text.secondary">
+          <div className="flex flex-col gap-4">
+            <div className="p-4 border border-border rounded-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-sm">Anonymize All Location Data</p>
+                  <p className="text-sm text-muted-foreground">
                     Immediately anonymize all your stored location data for maximum privacy
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
                 <Button
                   variant="outline"
                   onClick={triggerLocationAnonymization}
@@ -154,9 +152,9 @@ export function LocationPrivacyManager() {
                 >
                   {loading ? "Processing..." : "Anonymize Now"}
                 </Button>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -166,28 +164,28 @@ export function LocationPrivacyManager() {
           <CardTitle>Privacy Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-            <Box sx={{ textAlign: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 border border-border rounded-md">
+              <p className="text-xl font-bold mb-2">
                 {locationSettings.preciseLocation ? "Visible" : "Hidden"}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">Precise Location</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+              </p>
+              <p className="text-sm text-muted-foreground">Precise Location</p>
+            </div>
+            <div className="text-center p-4 border border-border rounded-md">
+              <p className="text-xl font-bold mb-2">
                 {locationSettings.anonymizationDays}d
-              </Typography>
-              <Typography variant="body2" color="text.secondary">Auto-Anonymize After</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+              </p>
+              <p className="text-sm text-muted-foreground">Auto-Anonymize After</p>
+            </div>
+            <div className="text-center p-4 border border-border rounded-md">
+              <p className="text-xl font-bold mb-2">
                 {locationSettings.autoAnonymize ? "On" : "Off"}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">Auto-Protection</Typography>
-            </Box>
-          </Box>
+              </p>
+              <p className="text-sm text-muted-foreground">Auto-Protection</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }
