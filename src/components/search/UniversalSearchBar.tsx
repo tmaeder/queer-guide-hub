@@ -4,9 +4,7 @@ import { formatCurrency } from '@/lib/currency';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SearchInputTyped } from '@/components/ui/search-input-typed';
@@ -97,12 +95,10 @@ export const UniversalSearchBar = () => {
   const isMobile = useIsMobile();
   const { t } = useTranslation();
 
-  // Reset search state when navigating away from search results
   const prevPathRef = useRef(location.pathname);
   useEffect(() => {
     const prevPath = prevPathRef.current;
     prevPathRef.current = location.pathname;
-    // Only clear when actually navigating away from search (not on every re-render)
     if (
       prevPath !== location.pathname &&
       prevPath.startsWith('/search') &&
@@ -118,7 +114,6 @@ export const UniversalSearchBar = () => {
 
   const { suggestions, loading: suggestionsLoading } = useSearchSuggestions(query);
 
-  // Load recent searches from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('recent-searches');
     if (saved) {
@@ -130,7 +125,6 @@ export const UniversalSearchBar = () => {
     }
   }, []);
 
-  // Save search to recent searches
   const saveRecentSearch = (searchTerm: string) => {
     if (!searchTerm.trim()) return;
     const updated = [searchTerm, ...recentSearches.filter((s) => s !== searchTerm)].slice(0, 5);
@@ -221,7 +215,6 @@ export const UniversalSearchBar = () => {
   const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
     const displayName = suggestion.name || suggestion.title;
     setQuery(displayName);
-    // Feed bias vector with the click signal.
     if (suggestion.id && suggestion.type) {
       trackClickFromSearch({ type: suggestion.type, id: suggestion.id }, 'autocomplete', {
         query: displayName,
@@ -299,7 +292,6 @@ export const UniversalSearchBar = () => {
     (filters.priceRange ? 1 : 0) +
     (filters.rating ? 1 : 0);
 
-  // Focus input when popover opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 0);
@@ -307,21 +299,14 @@ export const UniversalSearchBar = () => {
   }, [isOpen]);
 
   return (
-    <Box sx={{ flex: 1, minWidth: 0 }}>
+    <div className="flex-1 min-w-0">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Box sx={{ position: 'relative' }}>
-            <Box
-              component="div"
+          <div className="relative">
+            <div
               role="search"
               aria-label="Site search"
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-                cursor: 'text',
-                bgcolor: 'background.paper',
-              }}
+              className="flex items-center cursor-text bg-background transition-all"
               onClick={() => {
                 setIsOpen(true);
                 setTimeout(() => inputRef.current?.focus(), 0);
@@ -345,7 +330,7 @@ export const UniversalSearchBar = () => {
                 <Search style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />
               </Button>
 
-              <Box sx={{ flex: 1, position: 'relative' }}>
+              <div className="flex-1 relative">
                 <SearchInputTyped
                   ref={inputRef}
                   aria-label={t('search.ariaLabel', 'Search Queer Guide')}
@@ -412,7 +397,7 @@ export const UniversalSearchBar = () => {
                     <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
                   </Button>
                 )}
-              </Box>
+              </div>
 
               <Button
                 variant="ghost"
@@ -435,8 +420,8 @@ export const UniversalSearchBar = () => {
                   <Badge variant="destructive">{activeFiltersCount}</Badge>
                 )}
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </PopoverTrigger>
 
         <PopoverContent
@@ -471,9 +456,7 @@ export const UniversalSearchBar = () => {
                         <Clock
                           style={{ height: 16, width: 16, marginRight: 8, color: 'hsl(var(--muted-foreground))' }}
                         />
-                        <Box component="span" sx={{ flex: 1 }}>
-                          {search}
-                        </Box>
+                        <span className="flex-1">{search}</span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -526,44 +509,16 @@ export const UniversalSearchBar = () => {
                               flexShrink: 0,
                             }}
                           />
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'flex-start',
-                              flex: 1,
-                              minWidth: 0,
-                            }}
-                          >
-                            <Box
-                              component="span"
-                              sx={{
-                                fontWeight: 500,
-                                fontSize: '0.875rem',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                width: '100%',
-                              }}
-                            >
+                          <div className="flex flex-col items-start flex-1 min-w-0">
+                            <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">
                               {displayName}
-                            </Box>
+                            </span>
                             {subtitle && (
-                              <Box
-                                component="span"
-                                sx={{
-                                  fontSize: '0.75rem',
-                                  color: 'text.secondary',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  width: '100%',
-                                }}
-                              >
+                              <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap w-full">
                                 {subtitle}
-                              </Box>
+                              </span>
                             )}
-                          </Box>
+                          </div>
                           <Badge variant="outline">{suggestion.type}</Badge>
                         </CommandItem>
                       );
@@ -599,77 +554,49 @@ export const UniversalSearchBar = () => {
                         animationDelay: `${idx * 0.04}s`,
                       }}
                     >
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, width: '100%' }}
-                      >
-                        <Box sx={{ flexShrink: 0, mt: 0.5 }}>{getResultIcon(result.type)}</Box>
+                      <div className="flex items-start gap-3 w-full">
+                        <div className="flex-shrink-0 mt-0.5">{getResultIcon(result.type)}</div>
                         {result.imageUrl && (
-                          <Box sx={{ flexShrink: 0 }}>
-                            <Box
-                              component="img"
+                          <div className="flex-shrink-0">
+                            <img
                               src={result.imageUrl}
                               alt={result.title}
-                              sx={{ width: 48, height: 48, objectFit: 'cover' }}
+                              style={{ width: 48, height: 48, objectFit: 'cover' }}
                             />
-                          </Box>
+                          </div>
                         )}
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Box
-                            sx={{
-                              fontWeight: 500,
-                              fontSize: '0.875rem',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap">
                             {result.title}
-                          </Box>
+                          </div>
                           {result.description && (
-                            <Box
-                              sx={{
-                                fontSize: '0.75rem',
-                                color: 'text.secondary',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
+                            <div className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                               {result.description}
-                            </Box>
+                            </div>
                           )}
-                          <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                          <div className="text-xs text-muted-foreground">
                             {formatResultSubtitle(result)}
-                          </Box>
-                        </Box>
+                          </div>
+                        </div>
                         {result.rating && (
-                          <Box sx={{ flexShrink: 0, fontSize: '0.75rem', color: 'text.secondary' }}>
+                          <div className="flex-shrink-0 text-xs text-muted-foreground">
                             ⭐ {result.rating}
-                          </Box>
+                          </div>
                         )}
-                      </Box>
+                      </div>
                     </CommandItem>
                   ))}
                 </CommandGroup>
               ))}
 
-              {/* Empty / error state. Distinguishes proxy/network failure
-                  from a genuine zero-hit query so users can tell whether to
-                  retry vs change their query (#UX-1 from the QA sweep). */}
+              {/* Empty / error state. */}
               {suggestions.length === 0 &&
                 searchResults.length === 0 &&
                 query.length >= 2 &&
                 !loading &&
                 !suggestionsLoading && (
                   <CommandEmpty style={{ padding: '24px 0', textAlign: 'center' }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}
-                    >
+                    <div className="flex flex-col items-center gap-2">
                       {searchError ? (
                         <>
                           <Search
@@ -677,45 +604,38 @@ export const UniversalSearchBar = () => {
                               height: 32,
                               width: 32,
                               opacity: 0.5,
-                              color: 'var(--mui-palette-error-main, #d32f2f)',
+                              color: '#d32f2f',
                             }}
                           />
-                          <Typography color="error">Couldn't reach search</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {searchError}
-                          </Typography>
+                          <p style={{ color: '#d32f2f' }}>Couldn't reach search</p>
+                          <span className="text-xs text-muted-foreground">{searchError}</span>
                         </>
                       ) : (
                         <>
                           <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
-                          <Typography>No results found for "{query}"</Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <p>No results found for "{query}"</p>
+                          <span className="text-xs text-muted-foreground">
                             Try different keywords or adjust your filters
-                          </Typography>
+                          </span>
                         </>
                       )}
-                    </Box>
+                    </div>
                   </CommandEmpty>
                 )}
 
             </CommandList>
 
-            {/* Loading + action button live OUTSIDE CommandList — cmdk's
-                role="listbox" only permits option/group children, so a
-                progressbar or action button inside violates aria-required-children. */}
             {(loading || suggestionsLoading) && (
-              <Box sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }} aria-live="polite">
-                <Box
-                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}
-                >
-                  <CircularProgress size={24} aria-label="Searching" />
-                  <Typography variant="body2">Searching...</Typography>
-                </Box>
-              </Box>
+              <div className="py-6 text-center text-muted-foreground" aria-live="polite">
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="animate-spin" size={24} aria-label="Searching" />
+                  <span className="text-sm">Searching...</span>
+                </div>
+              </div>
             )}
 
             {query && (
-              <Box sx={{ p: 1.5, borderTop: '1px solid hsl(var(--border))' }}>
+              <div className="p-3 border-t border-border">
                 <Button
                   onClick={() => handleSearch()}
                   variant="default"
@@ -725,11 +645,11 @@ export const UniversalSearchBar = () => {
                   <Search style={{ height: 16, width: 16, marginRight: 8 }} />
                   Search for "{query.length > 20 ? query.slice(0, 20) + '...' : query}"
                 </Button>
-              </Box>
+              </div>
             )}
           </Command>
         </PopoverContent>
       </Popover>
-    </Box>
+    </div>
   );
 };
