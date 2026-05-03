@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -414,12 +413,12 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
         {/* Wikipedia/Wikidata Lookup */}
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Quick Lookup</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
+            <h6 className="text-lg font-semibold mb-3">Quick Lookup</h6>
+            <p className="text-sm text-muted-foreground mb-3">
               Search Wikipedia/Wikidata to automatically prefill personality information
-            </Typography>
+            </p>
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <div className="flex gap-2">
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -430,7 +429,6 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 type="button"
                 onClick={handleWikipediaLookup}
                 disabled={lookupLoading || !searchTerm.trim()}
-
               >
                 {lookupLoading ? (
                   <Loader2 />
@@ -439,18 +437,18 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 )}
                 {lookupLoading ? 'Searching...' : 'Lookup'}
               </Button>
-            </Box>
+            </div>
           </CardContent>
         </Card>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 3 }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
             <Card>
               <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Basic Information</Typography>
+                <h6 className="text-lg font-semibold mb-3">Basic Information</h6>
 
-                <Box>
+                <div>
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
@@ -459,9 +457,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     placeholder="Full name"
                     required
                   />
-                </Box>
+                </div>
 
-                <Box>
+                <div>
                   <Label htmlFor="pronouns">Pronouns</Label>
                   <Input
                     id="pronouns"
@@ -469,9 +467,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, pronouns: e.target.value }))}
                     placeholder="e.g., they/them, she/her, he/him"
                   />
-                </Box>
+                </div>
 
-                <Box>
+                <div>
                   <Label htmlFor="profession">Profession</Label>
                   <Input
                     id="profession"
@@ -479,9 +477,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, profession: e.target.value }))}
                     placeholder="Primary profession or role"
                   />
-                </Box>
+                </div>
 
-                <Box>
+                <div>
                   <Label htmlFor="nationality">Nationality</Label>
                   <CountryAutocomplete
                     id="nationality"
@@ -490,18 +488,18 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     placeholder="Select country / nationality..."
                   />
                   {resolvedCountryName && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                    <div className="flex items-center gap-1 mt-1">
                       <Check style={{ width: 12, height: 12, color: '#22c55e' }} />
-                      <Typography variant="caption" sx={{ color: '#22c55e' }}>
+                      <span className="text-xs" style={{ color: '#22c55e' }}>
                         Linked to {resolvedCountryName}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   )}
-                </Box>
+                </div>
 
-                <Box>
+                <div>
                   <Label htmlFor="birth_place">Birth Place</Label>
-                  <Box sx={{ position: 'relative' }}>
+                  <div className="relative">
                     <Input
                       id="birth_place"
                       value={formData.birth_place}
@@ -512,25 +510,25 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     {resolvingGeo && (
                       <Loader2 style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, animation: 'spin 1s linear infinite', color: '#999' }} />
                     )}
-                  </Box>
+                  </div>
                   {resolvedCityId && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                    <div className="flex items-center gap-1 mt-1">
                       <Check style={{ width: 12, height: 12, color: '#22c55e' }} />
-                      <Typography variant="caption" sx={{ color: '#22c55e' }}>
+                      <span className="text-xs" style={{ color: '#22c55e' }}>
                         City linked in database
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   )}
-                </Box>
+                </div>
               </CardContent>
             </Card>
 
             {/* Dates and Status */}
             <Card>
               <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Dates & Status</Typography>
+                <h6 className="text-lg font-semibold mb-3">Dates & Status</h6>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="is_living"
                     checked={formData.is_living}
@@ -539,9 +537,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     }
                   />
                   <Label htmlFor="is_living">Currently living</Label>
-                </Box>
+                </div>
 
-                <Box>
+                <div>
                   <Label htmlFor="birth_date">Birth Date</Label>
                   <Input
                     id="birth_date"
@@ -549,11 +547,11 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     value={formData.birth_date}
                     onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
                   />
-                </Box>
+                </div>
 
                 {!formData.is_living && (
                   <>
-                    <Box>
+                    <div>
                       <Label htmlFor="death_date">Death Date</Label>
                       <Input
                         id="death_date"
@@ -561,8 +559,8 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         value={formData.death_date}
                         onChange={(e) => setFormData(prev => ({ ...prev, death_date: e.target.value }))}
                       />
-                    </Box>
-                    <Box>
+                    </div>
+                    <div>
                       <Label htmlFor="death_place">Death Place</Label>
                       <Input
                         id="death_place"
@@ -570,11 +568,11 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         onChange={(e) => setFormData(prev => ({ ...prev, death_place: e.target.value }))}
                         placeholder="City, Country"
                       />
-                    </Box>
+                    </div>
                   </>
                 )}
 
-                <Box>
+                <div>
                   <Label htmlFor="visibility">Visibility</Label>
                   <Select
                     value={formData.visibility}
@@ -591,71 +589,67 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       <SelectItem value="private">Private</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
+                </div>
 
                 {/* Image Upload */}
-                <Box>
+                <div>
                   <Label>Profile Image</Label>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  <div className="flex flex-col gap-3">
                     {formData.image_url ? (
-                      <Box sx={{ position: 'relative' }}>
-                        <Box
-                          component="img"
+                      <div className="relative">
+                        <img
                           src={formData.image_url}
                           alt="Preview"
-                          sx={{ width: '128px', height: '128px', objectFit: 'cover', borderRadius: 2, border: 1, borderColor: 'divider' }}
+                          className="w-32 h-32 object-cover rounded-md border border-border"
                         />
                         <Button
                           type="button"
                           variant="destructive"
                           size="sm"
-
                           onClick={removeImage}
                         >
                           <X />
                         </Button>
-                      </Box>
+                      </div>
                     ) : (
-                      <Box sx={{ border: 2, borderStyle: 'dashed', borderColor: 'text.secondary', borderRadius: 2, p: 3, textAlign: 'center' }}>
+                      <div className="border-2 border-dashed border-muted-foreground rounded-md p-6 text-center">
                         <ImageIcon />
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>No image uploaded</Typography>
-                      </Box>
+                        <p className="text-sm text-muted-foreground">No image uploaded</p>
+                      </div>
                     )}
 
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <div className="flex gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-
                         onClick={() => document.getElementById('image-upload')?.click()}
                         disabled={uploading}
                       >
                         <Upload />
                         {uploading ? 'Uploading...' : 'Upload Image'}
                       </Button>
-                      <Box
-                        component="input"
+                      <input
                         id="image-upload"
                         type="file"
                         accept="image/*"
-                        sx={{ display: 'none' }}
+                        className="hidden"
                         onChange={handleImageUpload}
                       />
-                    </Box>
+                    </div>
 
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    <span className="text-xs text-muted-foreground">
                       Or enter URL manually:
-                    </Typography>
+                    </span>
                     <Input
                       value={formData.image_url}
                       onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                       placeholder="https://..."
                     />
-                  </Box>
-                </Box>
+                  </div>
+                </div>
 
-                <Box>
+                <div>
                   <Label htmlFor="website_url">Website URL</Label>
                   <Input
                     id="website_url"
@@ -663,17 +657,17 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
                     placeholder="https://..."
                   />
-                </Box>
+                </div>
               </CardContent>
             </Card>
-          </Box>
+          </div>
 
           {/* Description and Bio */}
           <Card>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Description & Biography</Typography>
+              <h6 className="text-lg font-semibold mb-3">Description & Biography</h6>
 
-              <Box>
+              <div>
                 <Label htmlFor="description">Short Description</Label>
                 <Textarea
                   id="description"
@@ -682,9 +676,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   placeholder="Brief description (1-2 sentences)"
                   rows={2}
                 />
-              </Box>
+              </div>
 
-              <Box>
+              <div>
                 <Label htmlFor="bio">Biography</Label>
                 <Textarea
                   id="bio"
@@ -693,17 +687,17 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   placeholder="Detailed biography"
                   rows={4}
                 />
-              </Box>
+              </div>
             </CardContent>
           </Card>
 
           {/* Fields of Work */}
           <Card>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Fields of Work</Typography>
+              <h6 className="text-lg font-semibold mb-3">Fields of Work</h6>
 
               {formData.fields.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+                <div className="flex flex-wrap gap-2 mb-3">
                   {formData.fields.map((field) => (
                     <Badge key={field} variant="secondary">
                       {field}
@@ -711,19 +705,18 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-
                         onClick={() => handleFieldToggle(field)}
                       >
                         <X />
                       </Button>
                     </Badge>
                   ))}
-                </Box>
+                </div>
               )}
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, maxHeight: '128px', overflowY: 'auto' }}>
+              <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
                 {FIELD_OPTIONS.map((field) => (
-                  <Box key={field} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div key={field} className="flex items-center gap-2">
                     <Checkbox
                       id={field}
                       checked={formData.fields.includes(field)}
@@ -732,18 +725,18 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                     <Label htmlFor={field}>
                       {field}
                     </Label>
-                  </Box>
+                  </div>
                 ))}
-              </Box>
+              </div>
             </CardContent>
           </Card>
 
           {/* Achievements */}
           <Card>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Achievements</Typography>
+              <h6 className="text-lg font-semibold mb-3">Achievements</h6>
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <div className="flex gap-2">
                 <Input
                   value={newAchievement}
                   onChange={(e) => setNewAchievement(e.target.value)}
@@ -753,13 +746,13 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 <Button type="button" onClick={addAchievement} size="sm">
                   <Plus />
                 </Button>
-              </Box>
+              </div>
 
               {formData.achievements.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   {formData.achievements.map((achievement, index) => (
-                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
-                      <Typography component="span" variant="body2" sx={{ flex: 1 }}>{achievement}</Typography>
+                    <div key={index} className="flex items-center gap-2 p-2 bg-accent rounded-md">
+                      <span className="flex-1 text-sm">{achievement}</span>
                       <Button
                         type="button"
                         variant="ghost"
@@ -768,9 +761,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                       >
                         <X />
                       </Button>
-                    </Box>
+                    </div>
                   ))}
-                </Box>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -778,9 +771,9 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
           {/* Tags */}
           <Card>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>Tags</Typography>
+              <h6 className="text-lg font-semibold mb-3">Tags</h6>
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <div className="flex gap-2">
                 <Input
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
@@ -790,10 +783,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                 <Button type="button" onClick={addTag} size="sm">
                   <Plus />
                 </Button>
-              </Box>
+              </div>
 
               {formData.tags.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <div className="flex flex-wrap gap-1">
                   {formData.tags.map((tag, index) => (
                     <Badge key={index} variant="outline">
                       {tag}
@@ -801,28 +794,27 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-
                         onClick={() => removeTag(index)}
                       >
                         <X />
                       </Button>
                     </Badge>
                   ))}
-                </Box>
+                </div>
               )}
             </CardContent>
           </Card>
 
           {/* Submit Button */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, pt: 2 }}>
+          <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
               {loading ? 'Adding...' : 'Add Personality'}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </form>
 
         <PersonalitySelectionDialog
           open={selectionDialogOpen}

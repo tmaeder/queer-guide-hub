@@ -77,7 +77,6 @@
   "src/components/messaging/StartConversationButton.tsx",
   "src/components/moderation/ReportDialog.tsx",
   "src/components/notifications/NotificationBell.tsx",
-  "src/components/personalities/AddPersonalityDialog.tsx",
   "src/components/personalities/PersonalitiesFiltersBar.tsx",
   "src/components/personalization/TravelPrefsPrompt.tsx",
   "src/components/profile/UrlValidator.tsx",
