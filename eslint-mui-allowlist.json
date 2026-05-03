@@ -241,7 +241,6 @@
   "src/pages/AdminVenues.tsx",
   "src/pages/CMSRoutePage.tsx",
   "src/pages/CityDetail.parts.tsx",
-  "src/pages/CountryDetail.parts.tsx",
   "src/pages/Directory.tsx",
   "src/pages/Donate.tsx",
   "src/pages/EventDetail.parts.tsx",
