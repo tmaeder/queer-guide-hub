@@ -14,6 +14,11 @@ import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib
 import { homepageJsonLd } from './_lib/jsonLd';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml } from './_lib/routeBody';
+ * The SPA still renders client-side; this only fixes the crawler-visible HTML.
+ * Pre-rendered body HTML is Phase 2.
+ */
+import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib/routeMeta';
+import { homepageJsonLd } from './_lib/jsonLd';
 
 const SKIP_PREFIXES = ['/api/', '/functions/', '/assets/', '/icons/', '/images/', '/fonts/'];
 const SKIP_SUFFIXES = [
@@ -127,5 +132,9 @@ export const onRequest: PagesFunction = async (context) => {
   if (isBot || indexable) {
     rewritten.headers.append('Vary', 'User-Agent');
   }
+  const rewritten = rewriter.transform(response);
+
+  // Preserve original cache headers but ensure Vary on User-Agent isn't needed
+  // since we don't branch on UA in Phase 1.
   return rewritten;
 };
