@@ -3,7 +3,6 @@
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
-  "src/components/home/RegionalEventsCalendar.tsx",
   "src/components/trips/ReservationsTab.tsx",
   "src/lib/sx.ts",
   "src/pages/AdminQueerVillages.tsx",

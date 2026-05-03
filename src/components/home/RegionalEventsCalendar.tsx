@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
-import Box from '@mui/material/Box';
 import { useEvents } from '@/hooks/useEvents';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { addDays, format, isSameDay, startOfDay } from 'date-fns';
-import { container } from '@/lib/sx';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 type Event = {
   id: string;
@@ -19,9 +18,10 @@ type Event = {
   featured?: boolean | null;
 };
 
-const Hairline = () => (
-  <Box sx={{ height: '1px', bgcolor: 'currentColor', opacity: 0.12 }} />
-);
+const Hairline = () => <div className="h-px bg-current opacity-10" />;
+
+const DISPLAY = "'Plus Jakarta Sans', sans-serif";
+const BODY = "'Inter', sans-serif";
 
 const RegionalEventsCalendar: React.FC = () => {
   const { events, loading, fetchEvents } = useEvents(false);
@@ -87,346 +87,194 @@ const RegionalEventsCalendar: React.FC = () => {
     ? t('home.upcoming.titleNear', 'Upcoming Events Near You')
     : t('home.upcoming.title', 'Upcoming Events');
 
+  const activeDays = days.filter(
+    (d) => (eventsByDay.get(d.toISOString()) || []).length > 0,
+  );
+
   return (
-    <Box component="section" sx={{ ...container, py: { xs: 4, md: 8 } }}>
+    <section className="w-full px-4 py-8 sm:px-6 md:px-8 md:py-16">
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 2,
-          flexWrap: 'wrap',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, flexWrap: 'wrap' }}>
-          <Box
-            component="h2"
-            sx={{
-              m: 0,
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 800,
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-              letterSpacing: '-0.01em',
-              lineHeight: 1.1,
-            }}
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-4">
+        <div className="flex flex-wrap items-baseline gap-4">
+          <h2
+            className="m-0 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight md:text-[2.25rem]"
+            style={{ fontFamily: DISPLAY }}
           >
             {headline}
-          </Box>
-          <Box
-            sx={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: { xs: '0.8125rem', md: '0.875rem' },
-              color: 'text.secondary',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
+          </h2>
+          <div
+            className="text-[0.8125rem] uppercase text-muted-foreground md:text-sm"
+            style={{ fontFamily: BODY, letterSpacing: '0.08em' }}
           >
             {monthLabel}
-          </Box>
-        </Box>
-        <Box
-          component={LocalizedLink}
+          </div>
+        </div>
+        <LocalizedLink
           to="/events"
-          sx={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: { xs: '0.8125rem', md: '0.875rem' },
-            color: 'text.primary',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            transition: 'opacity 0.2s',
-            '&:hover': { opacity: 0.7 },
-          }}
+          className="whitespace-nowrap text-[0.8125rem] text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
+          style={{ fontFamily: BODY }}
         >
           {t('common.browseAll', 'Browse all')} →
-        </Box>
-      </Box>
+        </LocalizedLink>
+      </div>
       <Hairline />
 
       {/* Hero + index */}
-      <Box
-        sx={{
-          mt: { xs: 3, md: 4 },
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            md: list.length > 0 ? '3fr 2fr' : '1fr',
-          },
-          columnGap: { md: 4 },
-          rowGap: { xs: 3, md: 0 },
-        }}
+      <div
+        className={cn(
+          'mt-6 grid grid-cols-1 gap-y-6 md:mt-8 md:gap-y-0',
+          list.length > 0 ? 'md:grid-cols-[3fr_2fr] md:gap-x-8' : 'md:grid-cols-1',
+        )}
       >
         {/* Hero */}
-        <Box
-          component={LocalizedLink}
+        <LocalizedLink
           to={heroHref}
-          sx={{
-            display: 'block',
-            textDecoration: 'none',
-            color: 'text.primary',
-            transition: 'opacity 0.2s',
-            '&:hover': { opacity: 0.85 },
-          }}
+          className="block text-foreground no-underline transition-opacity hover:opacity-85"
         >
           {hero.image_url && (
-            <Box
-              sx={{
-                width: '100%',
-                aspectRatio: '4 / 3',
-                overflow: 'hidden',
-                bgcolor: 'action.hover',
-                mb: 2,
-              }}
-            >
-              <Box
-                component="img"
+            <div className="mb-4 aspect-[4/3] w-full overflow-hidden bg-muted">
+              <img
                 src={hero.image_url}
                 alt=""
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
+                className="block h-full w-full object-cover"
               />
-            </Box>
+            </div>
           )}
-          <Box
-            sx={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 800,
-              textTransform: 'uppercase',
+          <div
+            className="mb-2 text-sm font-extrabold uppercase text-[hsl(var(--brand))] md:text-base"
+            style={{
+              fontFamily: DISPLAY,
               letterSpacing: '0.04em',
-              fontSize: { xs: '0.875rem', md: '1rem' },
-              color: 'brand.main',
               fontVariantNumeric: 'tabular-nums',
-              mb: 1,
             }}
           >
             {format(new Date(hero.start_date), 'dd MMM').toUpperCase()}
-          </Box>
-          <Box
-            component="h3"
-            sx={{
-              m: 0,
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 700,
+          </div>
+          <h3
+            className="m-0 mb-3 overflow-hidden font-bold leading-[1.15]"
+            style={{
+              fontFamily: DISPLAY,
               fontSize: 'clamp(1.5rem, 3.2vw, 2.5rem)',
-              lineHeight: 1.15,
-              mb: 1.5,
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
             }}
           >
             {hero.title}
-          </Box>
+          </h3>
           {(hero.venue_name || hero.city) && (
-            <Box
-              sx={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: { xs: '0.875rem', md: '0.9375rem' },
-                color: 'text.secondary',
-              }}
+            <div
+              className="text-sm text-muted-foreground md:text-[0.9375rem]"
+              style={{ fontFamily: BODY }}
             >
               {[hero.venue_name, hero.city].filter(Boolean).join(' · ')}
-            </Box>
+            </div>
           )}
-        </Box>
+        </LocalizedLink>
 
-        {/* Index list (only when there are further events) */}
+        {/* Index list */}
         {list.length > 0 && (
-          <Box
-            sx={{
-              bgcolor: { md: 'action.hover' },
-              p: { xs: 0, md: 3 },
-              alignSelf: 'start',
-            }}
-          >
+          <div className="self-start p-0 md:bg-accent md:p-6">
             {list.map((ev, idx) => (
               <React.Fragment key={ev.id}>
                 {idx > 0 && <Hairline />}
-                <Box
-                  component={LocalizedLink}
+                <LocalizedLink
                   to={`/events/${ev.slug}`}
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: 'auto 1fr auto',
-                    alignItems: 'baseline',
-                    columnGap: 2,
-                    py: { xs: 1.5, md: 2 },
-                    textDecoration: 'none',
-                    color: 'text.primary',
-                    '&:hover .qg-ev-title': { opacity: 0.7 },
-                    '&:hover .qg-ev-arrow': {
-                      transform: 'translateX(4px)',
-                    },
-                  }}
+                  className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-x-4 py-3 text-foreground no-underline md:py-4"
                 >
-                  <Box
-                    sx={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
+                  <div
+                    className="whitespace-nowrap text-xs font-medium uppercase text-muted-foreground"
+                    style={{
+                      fontFamily: BODY,
                       letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      color: 'text.secondary',
                       fontVariantNumeric: 'tabular-nums',
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     {format(new Date(ev.start_date), 'dd MMM').toUpperCase()}
-                  </Box>
-                  <Box
-                    className="qg-ev-title"
-                    sx={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      fontWeight: 600,
-                      fontSize: { xs: '0.9375rem', md: '1rem' },
-                      lineHeight: 1.3,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      transition: 'opacity 0.2s',
-                    }}
+                  </div>
+                  <div
+                    className="overflow-hidden whitespace-nowrap text-ellipsis text-[0.9375rem] font-semibold leading-[1.3] transition-opacity group-hover:opacity-70 md:text-base"
+                    style={{ fontFamily: DISPLAY }}
                   >
                     {ev.title}
-                  </Box>
-                  <Box
-                    className="qg-ev-arrow"
-                    sx={{
-                      color: 'text.secondary',
-                      transition: 'transform 0.2s',
-                      fontFamily: "'Inter', sans-serif",
-                    }}
+                  </div>
+                  <div
+                    className="text-muted-foreground transition-transform group-hover:translate-x-1"
+                    style={{ fontFamily: BODY }}
                   >
                     →
-                  </Box>
-                </Box>
+                  </div>
+                </LocalizedLink>
               </React.Fragment>
             ))}
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
 
-      {/* Upcoming-dates strip: only days that have events in the next 14 days */}
-      {(() => {
-        const activeDays = days.filter(
-          (d) => (eventsByDay.get(d.toISOString()) || []).length > 0,
-        );
-        if (activeDays.length === 0) return null;
-        return (
-          <Box
-            sx={{
-              mt: { xs: 4, md: 6 },
-              pt: { xs: 3, md: 4 },
-              borderTop: '1px solid',
-              borderColor: 'divider',
-            }}
+      {/* Upcoming dates strip */}
+      {activeDays.length > 0 && (
+        <div className="mt-8 border-t pt-6 md:mt-12 md:pt-8">
+          <div
+            className="mb-4 text-xs font-medium uppercase text-muted-foreground md:mb-6"
+            style={{ fontFamily: BODY, letterSpacing: '0.08em' }}
           >
-            <Box
-              sx={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: '0.75rem',
-                fontWeight: 500,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: 'text.secondary',
-                mb: { xs: 2, md: 3 },
-              }}
-            >
-              {t('home.upcoming.next14', 'Next 14 days')}
-            </Box>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: 'repeat(auto-fit, minmax(96px, 1fr))',
-                  md: 'repeat(auto-fit, minmax(120px, 1fr))',
-                },
-                columnGap: { xs: 1.5, md: 2 },
-                rowGap: 3,
-              }}
-            >
-              {activeDays.map((day) => {
-                const items = eventsByDay.get(day.toISOString()) || [];
-                const isToday = isSameDay(day, today);
-                const top = items[0];
-                return (
-                  <Box
-                    key={day.toISOString()}
-                    component={LocalizedLink}
-                    to={`/events/${top.slug}`}
-                    sx={{
-                      display: 'block',
-                      minWidth: 0,
-                      textDecoration: 'none',
-                      color: 'text.primary',
-                      transition: 'opacity 0.2s',
-                      '&:hover': { opacity: 0.7 },
+            {t('home.upcoming.next14', 'Next 14 days')}
+          </div>
+          <div
+            className="grid gap-x-3 gap-y-6 md:gap-x-4"
+            style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))' }}
+          >
+            {activeDays.map((day) => {
+              const items = eventsByDay.get(day.toISOString()) || [];
+              const isToday = isSameDay(day, today);
+              const top = items[0];
+              return (
+                <LocalizedLink
+                  key={day.toISOString()}
+                  to={`/events/${top.slug}`}
+                  className="block min-w-0 text-foreground no-underline transition-opacity hover:opacity-70"
+                >
+                  <div
+                    className="text-[0.6875rem] font-medium uppercase text-muted-foreground"
+                    style={{ fontFamily: BODY, letterSpacing: '0.08em' }}
+                  >
+                    {format(day, 'EEE')}
+                  </div>
+                  <div
+                    className={cn(
+                      'mb-2 text-2xl font-light leading-none md:text-[1.75rem]',
+                      isToday && 'text-[hsl(var(--brand))]',
+                    )}
+                    style={{ fontFamily: DISPLAY, fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    {format(day, 'd')}
+                  </div>
+                  <div
+                    className="overflow-hidden text-[0.8125rem] font-semibold leading-[1.3]"
+                    style={{
+                      fontFamily: DISPLAY,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
                     }}
                   >
-                    <Box
-                      sx={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontSize: '0.6875rem',
-                        fontWeight: 500,
-                        letterSpacing: '0.08em',
-                        textTransform: 'uppercase',
-                        color: 'text.secondary',
-                      }}
+                    {top.title}
+                  </div>
+                  {items.length > 1 && (
+                    <div
+                      className="mt-1 text-[0.6875rem] text-muted-foreground"
+                      style={{ fontFamily: BODY }}
                     >
-                      {format(day, 'EEE')}
-                    </Box>
-                    <Box
-                      sx={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontWeight: 300,
-                        fontSize: { xs: '1.5rem', md: '1.75rem' },
-                        lineHeight: 1,
-                        mb: 1,
-                        color: isToday ? 'brand.main' : 'text.primary',
-                        fontVariantNumeric: 'tabular-nums',
-                      }}
-                    >
-                      {format(day, 'd')}
-                    </Box>
-                    <Box
-                      sx={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontWeight: 600,
-                        fontSize: '0.8125rem',
-                        lineHeight: 1.3,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {top.title}
-                    </Box>
-                    {items.length > 1 && (
-                      <Box
-                        sx={{
-                          fontFamily: "'Inter', sans-serif",
-                          fontSize: '0.6875rem',
-                          color: 'text.secondary',
-                          mt: 0.5,
-                        }}
-                      >
-                        +{items.length - 1}
-                      </Box>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
-        );
-      })()}
-    </Box>
+                      +{items.length - 1}
+                    </div>
+                  )}
+                </LocalizedLink>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </section>
   );
 };
 
