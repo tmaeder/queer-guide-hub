@@ -530,16 +530,14 @@ h1, h2, h3, h4, h5, h6 {
   border: 0;
 }
 
-/* Bug #23: Microsoft Clarity injects a fixed-position feedback bubble at
-   the bottom-right that overlaps the map's geolocation/zoom controls on
-   small viewports. Clarity uses several class/id selectors depending on
-   its version, so we target all of them with a min-bottom offset. Above
-   the md breakpoint we leave it alone. */
+/* Bug #23: the in-app FeedbackButton (originally attributed to Microsoft
+   Clarity) is fixed at bottom-right and overlaps the Mapbox attribution +
+   geolocation/zoom controls on small viewports. Lift it above the map
+   chrome below md. Microsoft Clarity itself does not render a visible
+   widget on this site (verified on prod 2026-05-03), so the previous
+   clarity.* selectors never matched anything. */
 @media (max-width: 767px) {
-  iframe[src*="clarity.ms"],
-  div[id^="clarity-"],
-  div[class*="clarity-"],
-  div[data-cmp-host*="clarity"] {
+  button[aria-label="Share feedback"] {
     bottom: 96px !important;
   }
 }
