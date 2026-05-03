@@ -101,7 +101,6 @@
   "src/components/notifications/NotificationBell.tsx",
   "src/components/notifications/NotificationList.tsx",
   "src/components/personalities/AddPersonalityDialog.tsx",
-  "src/components/personalities/BulkCreatePersonalities.tsx",
   "src/components/personalities/PersonalitiesFiltersBar.tsx",
   "src/components/personalization/TravelPrefsPrompt.tsx",
   "src/components/posts/CommentsSection.tsx",
