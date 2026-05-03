@@ -104,7 +104,6 @@
   "src/components/donate/DonorWall.tsx",
   "src/components/entity/EntityDetailLayout.tsx",
   "src/components/events/EventCard.tsx",
-  "src/components/events/EventsCalendarView.tsx",
   "src/components/events/RecurrencePicker.tsx",
   "src/components/feedback/FeedbackButton.tsx",
   "src/components/groups/CreateGroupDialog.tsx",
