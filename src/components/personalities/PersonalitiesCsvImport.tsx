@@ -295,8 +295,8 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                         className="text-xl font-bold"
                         style={{
                           color: k === EXPECTED_KIND
-                            ? 'hsl(142 71% 45%)'
-                            : (preview.histogram[k] > 0 ? 'hsl(38 92% 50%)' : 'hsl(var(--muted-foreground))'),
+                            ? 'hsl(var(--success))'
+                            : (preview.histogram[k] > 0 ? 'hsl(var(--warning))' : 'hsl(var(--muted-foreground))'),
                         }}
                       >
                         {preview.histogram[k]}
@@ -306,7 +306,7 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                 </div>
 
                 {preview.mismatchCount > 0 && (
-                  <div className="p-4 mb-4" style={{ backgroundColor: 'rgba(250, 204, 21, 0.15)' }}>
+                  <div className="p-4 mb-4" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
                     <p className="text-sm font-semibold mb-2">
                       ⚠ {preview.mismatchCount} of {preview.totalRows} rows look like
                       a different entity type than {EXPECTED_KIND}. The validator
@@ -384,8 +384,8 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                     <p>📊 Total personalities processed: <strong>{importResult.total_parsed}</strong></p>
                     {importResult.errors && importResult.errors.length > 0 && (
                       <div>
-                        <p style={{ color: 'hsl(38 92% 50%)' }}>⚠️ Some rows had errors:</p>
-                        <ul className="list-inside ml-4" style={{ color: 'hsl(38 92% 50%)' }}>
+                        <p style={{ color: 'hsl(var(--warning))' }}>⚠️ Some rows had errors:</p>
+                        <ul className="list-inside ml-4" style={{ color: 'hsl(var(--warning))' }}>
                           {importResult.errors.map((error, index) => (
                             <li key={index}>{error}</li>
                           ))}
@@ -400,7 +400,7 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                       <p className="text-muted-foreground">{importResult.details}</p>
                     )}
                     {importResult.hint && (
-                      <p style={{ color: 'hsl(199 89% 48%)' }}>💡 {importResult.hint}</p>
+                      <p style={{ color: 'hsl(var(--primary))' }}>💡 {importResult.hint}</p>
                     )}
                     {importResult.errors && importResult.errors.length > 0 && (
                       <div>
