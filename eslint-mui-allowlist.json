@@ -28,7 +28,6 @@
   "src/components/cms/CMSShell.tsx",
   "src/components/cms/ContentListPanel/ContentListTable.tsx",
   "src/components/cms/ContentListPanel/index.tsx",
-  "src/components/cms/ReviewQueue.tsx",
   "src/components/cms/fields/CityAutocompleteField.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
   "src/components/donate/DonorWall.tsx",
