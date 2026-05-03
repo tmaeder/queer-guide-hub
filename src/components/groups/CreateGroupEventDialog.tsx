@@ -11,7 +11,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { CreateGroupEventData } from '@/hooks/useGroupEvents';
-import Box from '@mui/material/Box';
 
 interface CreateGroupEventDialogProps {
   onCreateEvent: (eventData: CreateGroupEventData) => void;
@@ -108,9 +107,9 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
           <DialogTitle>Create Group Event</DialogTitle>
         </DialogHeader>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-            <Box sx={{ gridColumn: { md: 'span 2' } }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
               <Label htmlFor="title">Event Title *</Label>
               <Input
                 id="title"
@@ -119,9 +118,9 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 placeholder="Enter event title"
                 required
               />
-            </Box>
+            </div>
 
-            <Box sx={{ gridColumn: { md: 'span 2' } }}>
+            <div className="md:col-span-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
@@ -130,7 +129,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 placeholder="Describe your event"
                 rows={3}
               />
-            </Box>
+            </div>
 
             <div>
               <Label>Start Date *</Label>
@@ -231,7 +230,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
               />
             </div>
 
-            <Box sx={{ gridColumn: { md: 'span 2' } }}>
+            <div className="md:col-span-2">
               <Label htmlFor="address">Address</Label>
               <Input
                 id="address"
@@ -239,18 +238,18 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder="Event address"
               />
-            </Box>
+            </div>
 
-            <Box sx={{ gridColumn: { md: 'span 2' } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-2">
                 <Switch
                   id="is_free"
                   checked={formData.is_free}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_free: checked })}
                 />
                 <Label htmlFor="is_free">Free Event</Label>
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             {!formData.is_free && (
               <>
@@ -345,9 +344,9 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                 placeholder="https://tickets.example.com"
               />
             </div>
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+          <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
@@ -363,8 +362,8 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
             >
               {isCreating ? "Creating..." : "Create Event"}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
