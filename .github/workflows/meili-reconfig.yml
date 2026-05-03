@@ -44,15 +44,24 @@ jobs:
             meilisearch/seed-city-aliases.sh \
             "$SSH_USER@$SSH_HOST:/tmp/"
 
-      - name: Run configure-indexes.sh
+      - name: Discover meilisearch compose dir on VPS
+        id: discover
         run: |
-          ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+          DIR=$(ssh "$SSH_USER@$SSH_HOST" 'find ~ /opt /srv /var -maxdepth 6 -type f -name docker-compose.yml -path "*meilisearch*" 2>/dev/null | head -1 | xargs -I{} dirname {}')
+          if [ -z "$DIR" ]; then
+            echo "Could not find meilisearch dir on VPS" >&2; exit 1
+          fi
+          echo "compose_dir=$DIR" >> "$GITHUB_OUTPUT"
+          echo "Discovered: $DIR"
+
+      - name: Run configure-indexes.sh
+        env:
+          COMPOSE_DIR: ${{ steps.discover.outputs.compose_dir }}
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" "COMPOSE_DIR='$COMPOSE_DIR' bash -s" <<'REMOTE'
             set -euo pipefail
-            for d in ~/Dev/web/meilisearch ~/queer-guide/Dev/web/meilisearch ~/meilisearch; do
-              if [ -f "$d/.env" ]; then COMPOSE_DIR="$d"; break; fi
-            done
-            if [ -z "${COMPOSE_DIR:-}" ]; then
-              echo "Could not find meilisearch dir with .env on VPS" >&2; exit 1
+            if [ ! -f "$COMPOSE_DIR/.env" ]; then
+              echo "No .env in $COMPOSE_DIR" >&2; exit 1
             fi
             set -a
             . "$COMPOSE_DIR/.env"
@@ -64,12 +73,11 @@ jobs:
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
+        env:
+          COMPOSE_DIR: ${{ steps.discover.outputs.compose_dir }}
         run: |
-          ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+          ssh "$SSH_USER@$SSH_HOST" "COMPOSE_DIR='$COMPOSE_DIR' bash -s" <<'REMOTE'
             set -euo pipefail
-            for d in ~/Dev/web/meilisearch ~/queer-guide/Dev/web/meilisearch ~/meilisearch; do
-              if [ -f "$d/.env" ]; then COMPOSE_DIR="$d"; break; fi
-            done
             set -a
             . "$COMPOSE_DIR/.env"
             set +a
