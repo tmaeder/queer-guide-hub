@@ -29,7 +29,6 @@
   "src/components/admin/search-intelligence/SuggestionsTab.tsx",
   "src/components/admin/search-intelligence/SynonymsTab.tsx",
   "src/components/admin/search-intelligence/TopicsTab.tsx",
-  "src/components/admin/shell/AdminShell.tsx",
   "src/components/admin/shell/AdminSidebar.tsx",
   "src/components/admin/users/UserDetailSheet.tsx",
   "src/components/animation/StaggerGrid.tsx",
