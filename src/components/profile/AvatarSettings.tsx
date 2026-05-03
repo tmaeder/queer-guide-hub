@@ -7,6 +7,7 @@ import { AvatarBuilder, generateRandomConfig } from '@/components/profile/Avatar
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { updateRowsBy } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -119,10 +120,11 @@ export const AvatarSettings = ({
         updated_at: new Date().toISOString(),
       };
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(profileUpdate)
-        .eq('user_id', user.id);
+      const { error: updateError } = await updateRowsBy(
+        'profiles',
+        { col: 'user_id', val: user.id },
+        profileUpdate,
+      );
 
       if (updateError) {
         throw updateError;

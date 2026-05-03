@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import { FieldWrapper } from './FieldWrapper';
 import type { FieldProps } from './FieldRenderer';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { toast } from 'sonner';
 
@@ -52,23 +52,17 @@ export function CityAutocompleteField({
     const fetchCities = async () => {
       setLoading(true);
       try {
-        let query = supabase
-          .from('cities')
-          .select('id, name, country_id, countries!inner(name)')
-          .order('name');
-
-        if (currentCountryId) {
-          query = query.eq('country_id', currentCountryId);
-        }
-
-        const { data, error: fetchError } = await query;
-        if (fetchError) {
-          console.error('Error fetching cities:', fetchError);
-          return;
-        }
+        const filters: Array<{ col: string; val: unknown }> = [];
+        if (currentCountryId) filters.push({ col: 'country_id', val: currentCountryId });
+        const data = await listFromWhere<Record<string, unknown>>(
+          'cities',
+          'id, name, country_id, countries!inner(name)',
+          filters,
+          { order: { col: 'name', ascending: true } },
+        );
 
         setCities(
-          (data || []).map((c: Record<string, unknown>) => ({
+          data.map((c) => ({
             id: c.id as string,
             name: c.name as string,
             country_id: c.country_id as string,

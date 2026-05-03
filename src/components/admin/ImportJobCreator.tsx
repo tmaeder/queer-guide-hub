@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { useImportHub } from '@/hooks/useImportHub';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import {
   Upload,
   Eye,
@@ -161,16 +162,13 @@ export const ImportJobCreator = () => {
   const [citySearch, setCitySearch] = useState('');
 
   useEffect(() => {
-    supabase
-      .from('cities')
-      .select('name, countries!inner(name)')
-      .order('name')
-      .then(({ data }) => {
-        if (data)
-          setAllCities(
-            data.map((c: { name: string; countries?: { name?: string } }) => ({ name: c.name, country: c.countries?.name || '' })),
-          );
-      });
+    listFrom<{ name: string; countries?: { name?: string } }>(
+      'cities',
+      'name, countries!inner(name)',
+      { col: 'name' },
+    ).then((data) => {
+      setAllCities(data.map((c) => ({ name: c.name, country: c.countries?.name || '' })));
+    });
   }, []);
 
   const selected = findImportItem(importType);

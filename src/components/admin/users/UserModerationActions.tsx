@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { updateRowsBy } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -58,10 +59,11 @@ export function UserModerationActions({
 
     try {
       setLoading(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({ moderation_status: pendingAction } as Record<string, unknown>)
-        .eq('user_id', userId);
+      const { error } = await updateRowsBy(
+        'profiles',
+        { col: 'user_id', val: userId },
+        { moderation_status: pendingAction },
+      );
 
       if (error) throw error;
 

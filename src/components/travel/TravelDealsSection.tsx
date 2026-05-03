@@ -1,6 +1,8 @@
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import { Plane, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { TravelDealCard } from './TravelDealCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
@@ -27,60 +29,78 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
 
   if (originLoading) {
     return (
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-7 w-[200px]" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Skeleton variant="text" width={200} height={28} />
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2,
+          }}
+        >
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[140px] rounded" />
+            <Skeleton key={i} variant="rounded" height={140} />
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   if (!originIata) {
     return (
-      <div className="text-center py-6">
-        <p className="text-muted-foreground mb-2">
+      <Box sx={{ textAlign: 'center', py: 3 }}>
+        <Typography sx={{ color: 'text.secondary', mb: 1 }}>
           Enable location to see personalized flight deals to {destinationCity}
-        </p>
+        </Typography>
         <LocalizedLink to="/travel">
           <Button variant="outline" size="sm">
             <Plane style={{ height: 14, width: 14, marginRight: 6 }} />
             Search Flights Manually
           </Button>
         </LocalizedLink>
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-row justify-between items-center">
-        <div>
-          <h6 className="text-base font-semibold">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
             Flights from {originCity || originIata}
             {destinationIata ? ` to ${destinationCity}` : ''}
-          </h6>
-          <p className="text-xs text-muted-foreground">
+          </Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
             Best deals based on your location
-          </p>
-        </div>
+          </Typography>
+        </Box>
         <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
           <Button variant="ghost" size="sm">
             More <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
           </Button>
         </LocalizedLink>
-      </div>
+      </Box>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2,
+          }}
+        >
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[140px] rounded" />
+            <Skeleton key={i} variant="rounded" height={140} />
           ))}
-        </div>
+        </Box>
       ) : deals && deals.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            gap: 2,
+          }}
+        >
           {deals.map((deal, i) => (
             <TravelDealCard
               key={`${deal.origin}-${deal.destination}-${deal.departure_date}-${i}`}
@@ -89,9 +109,9 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
               destinationCity={destinationCity}
             />
           ))}
-        </div>
+        </Box>
       ) : (
-        <div className="text-center py-6 bg-muted rounded-lg">
+        <Box sx={{ textAlign: 'center', py: 3, bgcolor: 'action.hover', borderRadius: 2 }}>
           <Plane
             style={{
               height: 24,
@@ -100,16 +120,16 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
               color: 'var(--muted-foreground)',
             }}
           />
-          <p className="text-muted-foreground mb-2">
+          <Typography sx={{ color: 'text.secondary', mb: 1 }}>
             No deals available right now
-          </p>
+          </Typography>
           <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
             <Button variant="outline" size="sm">
               Search Flights to {destinationCity}
             </Button>
           </LocalizedLink>
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

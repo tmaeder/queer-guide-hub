@@ -1,6 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,8 +19,8 @@ import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
-import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';import { useTranslation } from 'react-i18next';
+
 
 const columns = [
   { id: 'new', label: 'New', color: '#f59e0b' },
@@ -43,14 +46,17 @@ export default function FeedbackBoard() {
   const [selectedItem, setSelectedItem] = useState<FeedbackItem | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
+  // Fetch all feedback submissions
   const { data: items = [], isLoading } = useQuery<FeedbackItem[]>({
     queryKey: ['feedback-board'],
     queryFn: () => fetchFeedbackBoardItems<FeedbackItem>(),
   });
 
+  // Batch vote counts
   const submissionIds = useMemo(() => items.map((i) => i.id), [items]);
   const { data: votesMap = {} } = useFeedbackVoteCounts(submissionIds);
 
+  // Group items by column, sort by votes (desc)
   const grouped = useMemo(() => {
     const map: Record<string, FeedbackItem[]> = {};
     for (const col of columns) map[col.id] = [];
@@ -59,12 +65,14 @@ export default function FeedbackBoard() {
       if (map[status]) map[status].push(item);
       else map.new.push(item);
     }
+    // Sort each column by vote count desc
     for (const col of columns) {
       map[col.id].sort((a, b) => (votesMap[b.id]?.count ?? 0) - (votesMap[a.id]?.count ?? 0));
     }
     return map;
   }, [items, votesMap]);
 
+  // Vote mutation (for detail dialog)
   const voteMutation = useMutation({
     mutationFn: async (submissionId: string) => {
       if (!user) throw new Error('Login required');
@@ -94,42 +102,77 @@ export default function FeedbackBoard() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-12 px-4 text-center">
-        <Loader2 className="h-6 w-6 animate-spin inline-block" aria-label="Loading" />
-      </div>
+      <Container sx={{ py: 6, textAlign: 'center' }}>
+        <CircularProgress  aria-label="Loading"/>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto py-4 sm:py-8 px-4">
+    <Container sx={{ py: { xs: 2, sm: 4 } }}>
       <PageHeader
         title="Community Feedback"
         subtitle="Ideas, bugs, and improvements from the community. Vote on what matters most."
       />
 
-      <div
-        className="grid gap-4 mt-6"
-        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, 220px), 1fr))` }}
+      {/* Kanban board */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: `repeat(${columns.length}, 1fr)` },
+          gap: 2,
+          mt: 3,
+        }}
       >
         {columns.map((col) => {
           const colItems = grouped[col.id] || [];
           return (
-            <div key={col.id}>
-              <div
-                className="flex items-center gap-2 mb-3 pb-2 border-b-2"
-                style={{ borderColor: col.color }}
+            <Box key={col.id}>
+              {/* Column header */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  mb: 1.5,
+                  pb: 1,
+                  borderBottom: 2,
+                  borderColor: col.color,
+                }}
               >
-                <p className="text-sm font-bold">{col.label}</p>
-                <Badge variant="secondary" className="text-[0.65rem]">
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  {col.label}
+                </Typography>
+                <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
                   {colItems.length}
                 </Badge>
-              </div>
+              </Box>
 
-              <div className="flex flex-col gap-2 md:max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+              {/* Cards */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  maxHeight: { md: 'calc(100vh - 280px)' },
+                  overflowY: 'auto',
+                  pr: 0.5,
+                }}
+              >
                 {colItems.length === 0 && (
-                  <span className="text-xs text-muted-foreground py-5 text-center italic opacity-60">
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      py: 2.5,
+                      textAlign: 'center',
+                      fontSize: '0.7rem',
+                      fontStyle: 'italic',
+                      opacity: 0.6,
+                    }}
+                  >
                     —
-                  </span>
+                  </Typography>
                 )}
                 {colItems.map((item) => (
                   <FeedbackCard
@@ -141,12 +184,13 @@ export default function FeedbackBoard() {
                     onClick={() => handleCardClick(item)}
                   />
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
           );
         })}
-      </div>
+      </Box>
 
+      {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent style={{ maxWidth: 520, maxHeight: '85vh', overflowY: 'auto' }}>
           {selectedItem && (
@@ -155,7 +199,7 @@ export default function FeedbackBoard() {
                 <DialogTitle>{selectedItem.data.title}</DialogTitle>
               </DialogHeader>
 
-              <div className="flex gap-2 flex-wrap mb-4">
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
                 {(() => {
                   const cat = categoryConfig[selectedItem.data.category];
                   if (!cat) return null;
@@ -163,10 +207,15 @@ export default function FeedbackBoard() {
                   return (
                     <Badge
                       variant="outline"
-                      style={{ borderColor: cat.color, color: cat.color }}
-                      className="inline-flex items-center gap-1"
+                      style={{
+                        borderColor: cat.color,
+                        color: cat.color,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
                     >
-                      <Icon className="w-3 h-3" />
+                      <Icon style={{ width: 12, height: 12 }} />
                       {cat.label}
                     </Badge>
                   );
@@ -179,40 +228,45 @@ export default function FeedbackBoard() {
                     </Badge>
                   ) : null;
                 })()}
-              </div>
+              </Box>
 
-              <p className="text-sm whitespace-pre-wrap mb-4">{selectedItem.data.description}</p>
+              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
+                {selectedItem.data.description}
+              </Typography>
 
-              <div className="flex items-center gap-4">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Button
                   variant={votesMap[selectedItem.id]?.hasVoted ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handleVote(selectedItem.id)}
                   style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
                     ...(votesMap[selectedItem.id]?.hasVoted
                       ? { backgroundColor: 'hsl(var(--accent-warm))', color: '#fff' }
                       : {}),
                   }}
                 >
-                  <ChevronUp className="w-3.5 h-3.5 mr-1.5" />
+                  <ChevronUp style={{ width: 14, height: 14 }} />
                   {votesMap[selectedItem.id]?.count ?? 0} vote
                   {(votesMap[selectedItem.id]?.count ?? 0) !== 1 ? 's' : ''}
                 </Button>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Clock style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="caption" color="text.secondary">
                     {new Date(selectedItem.submitted_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
                     })}
-                  </span>
-                </div>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
             </>
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </Container>
   );
 }

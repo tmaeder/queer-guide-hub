@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import MuiAutocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
-import { supabase } from "@/integrations/supabase/client";
+import { listWhereNotNull } from "@/hooks/usePageFetchers";
 
 const filter = createFilterOptions<string>();
 
@@ -29,22 +29,17 @@ export function ProfessionAutocomplete({
     const fetchProfessions = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('personalities')
-          .select('profession')
-          .not('profession', 'is', null)
-          .neq('profession', '')
-          .order('profession');
-
-        if (error) {
-          console.error('Error fetching professions:', error);
-          return;
-        }
+        const data = await listWhereNotNull<{ profession: string | null }>(
+          'personalities',
+          'profession',
+          'profession',
+          'profession',
+        ).then((rows) => rows.filter((r) => r.profession && r.profession !== ''));
 
         // Extract unique professions and handle comma-separated values
         const uniqueProfessions = new Set<string>();
 
-        data?.forEach(item => {
+        data.forEach((item) => {
           if (item.profession) {
             const professionList = item.profession.split(',').map((p: string) => p.trim());
             professionList.forEach((profession: string) => {

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Collapse from '@mui/material/Collapse';
 import { ChevronDown, ChevronRight, History } from 'lucide-react';
 import { timeAgo } from '@/utils/timezone';
 import { useStoryEvents } from '@/hooks/useStoryRoutine';
@@ -64,25 +67,32 @@ export function StoryActivityLog({ storyId, adminById }: Props) {
   if (events.length === 0) return null;
 
   return (
-    <div className="mb-2">
-      <div
+    <Box sx={{ mb: 1 }}>
+      <Box
         onClick={() => setOpen(!open)}
-        className="flex flex-row items-center gap-1 cursor-pointer py-1"
+        sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer', py: 0.5 }}
       >
         {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         <History size={12} />
-        <span className="text-xs font-semibold">
+        <Typography variant="caption" sx={{ fontWeight: 600 }}>
           Story timeline ({events.length})
-        </span>
-      </div>
-      {open && (
-        <div
-          className="mt-1 p-2 bg-muted rounded max-h-[280px] overflow-y-auto"
+        </Typography>
+      </Box>
+      <Collapse in={open}>
+        <Box
+          sx={{
+            mt: 0.5,
+            p: 1,
+            bgcolor: 'action.hover',
+            borderRadius: 1,
+            maxHeight: 280,
+            overflowY: 'auto',
+          }}
           data-testid="story-timeline"
         >
           {events.map((e) => (
-            <div key={e.id} className="mb-1">
-              <span className="block text-xs" style={{ fontSize: '0.7rem' }}>
+            <Box key={e.id} sx={{ mb: 0.5 }}>
+              <Typography variant="caption" sx={{ display: 'block', fontSize: '0.7rem' }}>
                 <strong>
                   {e.actor_id
                     ? adminById[e.actor_id]?.display_name ?? 'Admin'
@@ -91,14 +101,14 @@ export function StoryActivityLog({ storyId, adminById }: Props) {
                       : 'System'}
                 </strong>{' '}
                 {renderEvent(e)}
-              </span>
-              <span className="text-xs text-muted-foreground" style={{ fontSize: '0.6rem' }}>
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
                 {timeAgo(e.created_at)}
-              </span>
-            </div>
+              </Typography>
+            </Box>
           ))}
-        </div>
-      )}
-    </div>
+        </Box>
+      </Collapse>
+    </Box>
   );
 }

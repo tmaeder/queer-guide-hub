@@ -7,7 +7,10 @@ import type {
 import { useState, useEffect, memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';
+import { updateRow } from '@/hooks/usePageFetchers';
 import { useCityImages } from '@/hooks/useCityImages';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface PlacesCardProps {
   type: 'continent' | 'country' | 'city';
@@ -79,7 +82,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
         setCountryImage(imageUrl);
 
         // Save to DB so future visits don't need Pexels
-        supabase.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
+        void updateRow('countries', data.id, { image_url: imageUrl });
       } catch (_err) {
         // Silently fail — fallback image handles it
       } finally {
@@ -148,37 +151,69 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
     if (type === 'country' && data) {
       const country = data as Country;
       return (
-        <div className="flex flex-col gap-1">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {country.capital && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                fontSize: '0.875rem',
+                color: 'var(--muted-foreground)',
+              }}
+            >
               <Crown style={{ height: 16, width: 16 }} />
               <span>{country.capital}</span>
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       );
     }
 
     if (type === 'city' && data) {
       const city = data as City;
       return (
-        <div className="flex flex-col gap-1">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {city.countries && (
-            <p className="text-sm text-muted-foreground">{city.countries.name}</p>
+            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+              {city.countries.name}
+            </Typography>
           )}
-          <div className="flex gap-2">
+          <Box sx={{ display: 'flex', gap: 1 }}>
             {city.is_capital && (
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  bgcolor: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)',
+                }}
+              >
                 <Crown style={{ height: 12, width: 12 }} />
-              </div>
+              </Box>
             )}
             {city.is_major_city && (
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-secondary/10">
-                <Building2 style={{ height: 12, width: 12 }} className="text-secondary-foreground" />
-              </div>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  bgcolor: 'rgba(var(--secondary-rgb, 107, 114, 128), 0.1)',
+                }}
+              >
+                <Building2
+                  style={{ height: 12, width: 12, color: 'var(--secondary-foreground)' }}
+                />
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       );
     }
 
@@ -188,10 +223,18 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   const getStats = () => {
     if (data?.population) {
       return (
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+            fontSize: '0.875rem',
+            color: 'var(--muted-foreground)',
+          }}
+        >
           <Users style={{ height: 16, width: 16 }} />
           <span>{formatPopulation(data.population)}</span>
-        </div>
+        </Box>
       );
     }
     return null;
@@ -236,7 +279,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
               : { display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
           }
         >
-          <div className="flex items-center gap-2">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {type !== 'country' && type !== 'city' && getIcon()}
             <span
               style={
@@ -247,7 +290,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
             >
               {name}
             </span>
-          </div>
+          </Box>
           {type !== 'country' && type !== 'city' && getStats()}
         </CardTitle>
       </CardHeader>

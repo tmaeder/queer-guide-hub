@@ -6,6 +6,9 @@ import {
 import { SwitchField } from './fields';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 import type { ProfileFormData } from '@/types/profileForm';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { stack, row } from '@/lib/sx';
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public' },
@@ -23,13 +26,13 @@ function VisibilityRow({ id, label, description, value, onChange }: {
   id: string; label: string; description: string; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex flex-row items-center justify-between gap-4">
-      <div>
+    <Box sx={{ ...row(2), justifyContent: 'space-between' }}>
+      <Box>
         <Label htmlFor={id}>
-          <p className="text-sm font-medium">{label}</p>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>{label}</Typography>
         </Label>
-        <span className="text-xs text-muted-foreground">{description}</span>
-      </div>
+        <Typography variant="caption" color="text.secondary">{description}</Typography>
+      </Box>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger style={{ width: 128 }}>
           <SelectValue />
@@ -40,7 +43,7 @@ function VisibilityRow({ id, label, description, value, onChange }: {
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </Box>
   );
 }
 
@@ -48,14 +51,14 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
   const ps = formData.privacy_settings;
 
   return (
-    <div className="flex flex-col gap-6">
+    <Box sx={stack(3)}>
       {/* Profile Visibility */}
       <Card>
         <CardHeader>
           <CardTitle>Privacy Settings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4">
+          <Box sx={stack(2)}>
             <VisibilityRow
               id="profile_visibility"
               label="Profile Visibility"
@@ -98,7 +101,7 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               checked={!!ps.phone_visible}
               onChange={(v) => onPrivacyChange('phone_visible', v)}
             />
-          </div>
+          </Box>
         </CardContent>
       </Card>
 
@@ -108,19 +111,19 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
           <CardTitle>Security Settings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-row items-center justify-between gap-4">
-            <div>
+          <Box sx={{ ...row(2), justifyContent: 'space-between' }}>
+            <Box>
               <Label>
-                <p className="text-sm font-medium">Passkey Authentication</p>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Passkey Authentication</Typography>
               </Label>
-              <span className="text-xs text-muted-foreground">
+              <Typography variant="caption" color="text.secondary">
                 {hasPasskey ? 'Passkey is enabled for secure login' : 'Add a passkey for enhanced security'}
-              </span>
-            </div>
+              </Typography>
+            </Box>
             <PasskeyButton mode="enroll" />
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

@@ -32,7 +32,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
-import { supabase } from '@/integrations/supabase/client';
+import { countRows } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { brandColors } from '@/theme/muiTheme';
 
@@ -184,12 +184,7 @@ export function CMSSidebar({
       const counts: Record<string, number> = {};
       const promises = contentTypes.map(async (ct) => {
         try {
-          const { count, error } = await supabase
-            .from(ct.tableName as 'events')
-            .select('*', { count: 'exact', head: true });
-          if (!error && count !== null) {
-            counts[ct.id] = count;
-          }
+          counts[ct.id] = await countRows(ct.tableName);
         } catch {
           // Silently skip tables that fail
         }

@@ -1,29 +1,96 @@
-import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import MuiTooltip from '@mui/material/Tooltip';
 
-const TooltipProvider = TooltipPrimitive.Provider
+// Internal context to pass tooltip content from TooltipContent up to the Tooltip wrapper
+const TooltipContext = React.createContext<{
+  setTitle: (title: React.ReactNode) => void;
+}>({ setTitle: () => {} });
 
-const Tooltip = TooltipPrimitive.Root
+function TooltipProvider({ children }: { children: React.ReactNode; delayDuration?: number }) {
+  return <>{children}</>;
+}
 
-const TooltipTrigger = TooltipPrimitive.Trigger
+function Tooltip({
+  children,
+  delayDuration,
+}: {
+  children: React.ReactNode;
+  delayDuration?: number;
+}) {
+  const [title, setTitle] = React.useState<React.ReactNode>('');
+  const [placement, _setPlacement] = React.useState<'top' | 'right' | 'bottom' | 'left'>('top');
 
-const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Portal>
-    <TooltipPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 overflow-hidden rounded-md bg-foreground px-3 py-1.5 text-xs text-background animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        className
-      )}
-      {...props}
-    />
-  </TooltipPrimitive.Portal>
-))
-TooltipContent.displayName = TooltipPrimitive.Content.displayName
+  // Context also carries placement from TooltipContent
+  const ctx = React.useMemo(() => ({ setTitle }), []);
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+  return (
+    <TooltipContext.Provider value={ctx}>
+      <MuiTooltip
+        title={title || ''}
+        placement={placement}
+        enterDelay={delayDuration || 200}
+        enterTouchDelay={50}
+        arrow
+        slotProps={{
+          tooltip: {
+            sx: {
+              bgcolor: 'hsl(var(--foreground))',
+              color: 'hsl(var(--background))',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              borderRadius: 0,
+              px: 1.5,
+              py: 0.75,
+            },
+          },
+          arrow: {
+            sx: { color: 'hsl(var(--foreground))' },
+          },
+        }}
+      >
+        <span style={{ display: 'inline-flex' }}>{children}</span>
+      </MuiTooltip>
+    </TooltipContext.Provider>
+  );
+}
+
+const TooltipTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+>(({ children, asChild, ...props }, ref) => {
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, {
+      ref,
+      ...props,
+    });
+  }
+  return (
+    <button ref={ref} type="button" {...props}>
+      {children}
+    </button>
+  );
+});
+TooltipTrigger.displayName = 'TooltipTrigger';
+
+interface TooltipContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  sideOffset?: number;
+  align?: 'start' | 'center' | 'end';
+}
+
+const TooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(
+  ({ children, ..._props }, _ref) => {
+    const { setTitle } = React.useContext(TooltipContext);
+
+    // Push children as the tooltip title into MUI Tooltip via context
+    React.useEffect(() => {
+      setTitle(children);
+    }, [children, setTitle]);
+
+    // Render nothing visible — content is shown by MUI Tooltip
+    return null;
+  },
+);
+TooltipContent.displayName = 'TooltipContent';
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

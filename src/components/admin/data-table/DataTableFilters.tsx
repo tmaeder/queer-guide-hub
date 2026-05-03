@@ -16,7 +16,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { listWhereNotNull } from '@/hooks/usePageFetchers';
 import type { EntityFilterConfig } from './types';
 
 interface DataTableFiltersProps {
@@ -286,16 +286,16 @@ function useFilterOptions(config: EntityFilterConfig): { value: string; label: s
       if (!config.dynamicSource) return [];
       const { table, column, labelColumn } = config.dynamicSource;
       const selectCols = labelColumn ? `${column}, ${labelColumn}` : column;
-      const { data, error } = await supabase
-        .from(table as 'venues')
-        .select(selectCols)
-        .not(column, 'is', null)
-        .order(labelColumn || column);
-      if (error) throw error;
+      const data = await listWhereNotNull<Record<string, string>>(
+        table,
+        selectCols,
+        column,
+        labelColumn || column,
+      );
 
       const seen = new Set<string>();
       const options: { value: string; label: string }[] = [];
-      for (const row of data || []) {
+      for (const row of data) {
         const val = (row as unknown as Record<string, string>)[column];
         if (val && !seen.has(val)) {
           seen.add(val);

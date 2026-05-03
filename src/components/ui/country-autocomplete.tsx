@@ -4,7 +4,7 @@ import MuiAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 
 export interface Country {
   id: string;
@@ -56,17 +56,12 @@ export function CountryAutocomplete({
     const fetchCountries = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('countries')
-          .select('id, name, code, flag_emoji')
-          .order('name');
-
-        if (error) {
-          console.error('Error fetching countries:', error);
-          return;
-        }
-
-        setCountries(data || []);
+        const data = await listFrom<Country>(
+          'countries',
+          'id, name, code, flag_emoji',
+          { col: 'name' },
+        );
+        setCountries(data);
       } catch (error) {
         console.error('Error fetching countries:', error);
       } finally {

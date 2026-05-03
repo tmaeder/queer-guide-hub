@@ -1,4 +1,7 @@
 import React from 'react';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -67,18 +70,29 @@ export function ResourcesFilterBar({
   categoriesTree,
 }: ResourcesFilterBarProps) {
   return (
-    <div className="border border-border rounded-md p-4 md:p-6 mb-6 bg-background">
-      <div className="flex flex-col sm:flex-row gap-4 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+    <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 }, mb: 3, bgcolor: 'background.paper' }}>
+      {/* Row 1: Search + View toggles */}
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
+        <Box sx={{ position: 'relative', flex: 1 }}>
+          <Search
+            style={{
+              position: 'absolute',
+              left: 16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 20,
+              height: 20,
+              color: 'hsl(var(--muted-foreground))',
+            }}
+          />
           <Input
             placeholder="Search tags, categories, descriptions..."
             value={searchQuery}
             onChange={(e) => onSearch(e.target.value)}
-            className="pl-12 h-11 text-base"
+            style={{ paddingLeft: 48, height: 44, fontSize: '1rem' }}
           />
-        </div>
-        <div className="flex gap-1">
+        </Box>
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
           {[
             { mode: 'chips' as DisplayMode, icon: Tag, label: 'Chips' },
             { mode: 'grid' as DisplayMode, icon: LayoutGrid, label: 'Grid' },
@@ -88,30 +102,31 @@ export function ResourcesFilterBar({
               key={mode}
               variant={displayMode === mode ? 'default' : 'secondary'}
               size="lg"
-              className="h-11 w-11 p-0"
+              style={{ height: 44, width: 44, padding: 0 }}
               onClick={() => onDisplayModeChange(mode)}
               title={`${label} view`}
             >
-              <Icon className="w-[18px] h-[18px]" />
+              <Icon style={{ width: 18, height: 18 }} />
             </Button>
           ))}
-          <div className="w-px bg-border mx-1" />
+          <Box sx={{ width: '1px', bgcolor: 'divider', mx: 0.5 }} />
           <Button
             variant={viewMode === 'graph' ? 'default' : 'secondary'}
             size="lg"
-            className="h-11 w-11 p-0"
+            style={{ height: 44, width: 44, padding: 0 }}
             onClick={onToggleGraph}
             title="Tag Relationship Graph"
           >
-            <Network className="w-[18px] h-[18px]" />
+            <Network style={{ width: 18, height: 18 }} />
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="flex flex-wrap gap-3 items-center">
+      {/* Row 2: Filters + Sort */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
           <SelectTrigger style={{ width: 220, height: 40 }}>
-            <Filter className="w-4 h-4 mr-2 shrink-0" />
+            <Filter style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -124,7 +139,7 @@ export function ResourcesFilterBar({
                   <SelectItem value={cat.name}>{getCategoryShortName(cat.name)}</SelectItem>
                   {cat.children.map((child) => (
                     <SelectItem key={child.id} value={child.name}>
-                      <span className="pl-4 text-[0.85em] opacity-85">
+                      <span style={{ paddingLeft: 16, fontSize: '0.85em', opacity: 0.85 }}>
                         {getCategoryShortName(child.name)}
                       </span>
                     </SelectItem>
@@ -136,7 +151,7 @@ export function ResourcesFilterBar({
 
         <Select value={usageFilter} onValueChange={onUsageFilterChange}>
           <SelectTrigger style={{ width: 140, height: 40 }}>
-            <BarChart3 className="w-4 h-4 mr-2 shrink-0" />
+            <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
             <SelectValue placeholder="Usage" />
           </SelectTrigger>
           <SelectContent>
@@ -149,21 +164,21 @@ export function ResourcesFilterBar({
         <Button
           variant={hasImageFilter ? 'default' : 'secondary'}
           size="sm"
-          className="h-10"
+          style={{ height: 40 }}
           onClick={() => onHasImageFilterChange(!hasImageFilter)}
           title="Only show tags with images"
         >
-          <Image className="w-4 h-4 mr-1.5" />
+          <Image style={{ width: 16, height: 16, marginRight: 6 }} />
           Has Image
         </Button>
 
-        <div className="ml-auto flex gap-2 items-center">
+        <Box sx={{ ml: 'auto', display: 'flex', gap: 1, alignItems: 'center' }}>
           <Select
             value={sortBy}
             onValueChange={(value: string) => onSortByChange(value as SortOption)}
           >
             <SelectTrigger style={{ width: 150, height: 40 }}>
-              <TrendingUp className="w-4 h-4 mr-2 shrink-0" />
+              <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -175,58 +190,99 @@ export function ResourcesFilterBar({
           <Button
             variant="secondary"
             size="sm"
-            className="h-10 w-10 p-0"
+            style={{ height: 40, width: 40, padding: 0 }}
             onClick={onSortDirectionToggle}
             title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
           >
             {sortDirection === 'asc' ? (
-              <SortAsc className="w-4 h-4" />
+              <SortAsc style={{ width: 16, height: 16 }} />
             ) : (
-              <SortDesc className="w-4 h-4" />
+              <SortDesc style={{ width: 16, height: 16 }} />
             )}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
+      {/* Active filters summary */}
       {(filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter) && (
-        <div className="flex flex-wrap gap-2 mt-4 items-center">
-          <span className="text-xs text-muted-foreground">Active:</span>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2, alignItems: 'center' }}>
+          <Typography variant="caption" color="text.secondary">
+            Active:
+          </Typography>
           {filterCategory !== 'all' && (
-            <span
+            <Box
               onClick={() => onFilterCategoryChange('all')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1,
+                py: 0.25,
+                borderRadius: 1,
+                cursor: 'pointer',
+                bgcolor: 'secondary.main',
+                fontSize: '0.75rem',
+                '&:hover': { opacity: 0.8 },
+              }}
             >
               {getCategoryShortName(filterCategory)} ✕
-            </span>
+            </Box>
           )}
           {usageFilter !== 'all' && (
-            <span
+            <Box
               onClick={() => onUsageFilterChange('all')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1,
+                py: 0.25,
+                borderRadius: 1,
+                cursor: 'pointer',
+                bgcolor: 'secondary.main',
+                fontSize: '0.75rem',
+                '&:hover': { opacity: 0.8 },
+              }}
             >
               {usageFilter === 'used' ? 'Used' : 'Unused'} ✕
-            </span>
+            </Box>
           )}
           {hasImageFilter && (
-            <span
+            <Box
               onClick={() => onHasImageFilterChange(false)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1,
+                py: 0.25,
+                borderRadius: 1,
+                cursor: 'pointer',
+                bgcolor: 'secondary.main',
+                fontSize: '0.75rem',
+                '&:hover': { opacity: 0.8 },
+              }}
             >
               Has Image ✕
-            </span>
+            </Box>
           )}
-          <span
+          <Box
             onClick={() => {
               onFilterCategoryChange('all');
               onUsageFilterChange('all');
               onHasImageFilterChange(false);
             }}
-            className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
+            sx={{
+              cursor: 'pointer',
+              fontSize: '0.75rem',
+              color: 'text.secondary',
+              '&:hover': { color: 'primary.main' },
+            }}
           >
             Clear all
-          </span>
-        </div>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Paper>
   );
 }

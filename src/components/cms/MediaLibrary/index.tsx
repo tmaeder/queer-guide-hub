@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { countRows, deleteRow } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useMediaList } from '@/hooks/useMediaList';
@@ -86,11 +87,9 @@ export function MediaLibrary() {
     try {
       setLoading(true);
 
-      const { count: existingCount } = await supabase
-        .from('media_optimization_status')
-        .select('id', { count: 'exact', head: true });
+      const existingCount = await countRows('media_optimization_status');
 
-      if ((existingCount || 0) > 0) {
+      if (existingCount > 0) {
         toast({
           title: "Status Already Synced",
           description: "Optimization status is already populated.",
@@ -204,10 +203,7 @@ export function MediaLibrary() {
         console.error('Storage deletion error:', storageError);
       }
 
-      const { error: dbError } = await supabase
-        .from('cms_media')
-        .delete()
-        .eq('id', item.id);
+      const { error: dbError } = await deleteRow('cms_media', item.id);
 
       if (dbError) throw dbError;
 

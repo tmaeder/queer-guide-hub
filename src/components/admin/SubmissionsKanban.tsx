@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import { submissionRegistry } from '@/config/submissionRegistry';
 
 interface KanbanRow {
@@ -51,15 +51,13 @@ interface Props {
 export function SubmissionsKanban({ onCardClick }: Props) {
   const { data: rows = [], isLoading } = useQuery<KanbanRow[]>({
     queryKey: ['admin-table', 'community_submissions', 'kanban'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('community_submissions')
-        .select(SELECT)
-        .order('submitted_at', { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as unknown as KanbanRow[];
-    },
+    queryFn: () =>
+      listFrom<KanbanRow>(
+        'community_submissions',
+        SELECT,
+        { col: 'submitted_at', ascending: false },
+        200,
+      ),
   });
 
   const byLane = useMemo(() => {

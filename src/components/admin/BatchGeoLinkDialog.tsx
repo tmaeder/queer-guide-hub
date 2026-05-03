@@ -6,6 +6,9 @@
  */
 
 import { useState, useEffect } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
 import {
   Dialog,
   DialogContent,
@@ -115,17 +118,17 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Globe className="h-4 w-4 mr-2" />
+          <Globe style={{ height: 16, width: 16, marginRight: 8 }} />
           Batch Geo-Link
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <div className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Globe style={{ height: 20, width: 20 }} />
               Batch Geo-Link Content
-            </div>
+            </Box>
           </DialogTitle>
           <DialogDescription>
             Link content items to cities and countries using deterministic matching.
@@ -133,40 +136,50 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
           {/* Unlinked counts */}
           {unlinkedCounts && (
-            <div className="border border-border rounded-lg p-3 flex flex-col gap-1">
-              <span className="text-xs font-semibold mb-1">Unlinked Items</span>
-              <div className="grid grid-cols-2 gap-1">
+            <Box sx={{
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 2,
+              p: 1.5,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.5,
+            }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5 }}>
+                Unlinked Items
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.5 }}>
                 {[
                   { label: 'Venues', count: unlinkedCounts.venues },
                   { label: 'Events', count: unlinkedCounts.events },
                   { label: 'Personalities', count: unlinkedCounts.personalities },
                   { label: 'News Articles', count: unlinkedCounts.news_articles },
                 ].map(item => (
-                  <div key={item.label} className="flex items-center gap-1">
+                  <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     {item.count > 0 ? (
-                      <AlertCircle className="h-3 w-3 text-yellow-600" />
+                      <AlertCircle style={{ height: 12, width: 12, color: '#ca8a04' }} />
                     ) : (
-                      <CheckCircle className="h-3 w-3 text-green-600" />
+                      <CheckCircle style={{ height: 12, width: 12, color: '#16a34a' }} />
                     )}
-                    <span className="text-xs">
+                    <Typography variant="caption">
                       <strong>{item.count}</strong> {item.label}
-                    </span>
-                  </div>
+                    </Typography>
+                  </Box>
                 ))}
-              </div>
+              </Box>
               {totalUnlinked !== null && (
-                <span className="text-xs text-muted-foreground mt-1">
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
                   Total: {totalUnlinked} items need geo-linking
-                </span>
+                </Typography>
               )}
-            </div>
+            </Box>
           )}
 
           {/* Content Type Selection */}
-          <div>
+          <Box>
             <Label>Content Type</Label>
             <Select value={contentType} onValueChange={setContentType} disabled={loading}>
               <SelectTrigger>
@@ -180,10 +193,10 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </Box>
 
           {/* Batch limit */}
-          <div>
+          <Box>
             <Label>Batch Limit</Label>
             <Input
               type="number"
@@ -193,75 +206,91 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
               onChange={e => setBatchLimit(Number(e.target.value))}
               disabled={loading}
             />
-            <span className="text-xs text-muted-foreground">
+            <Typography variant="caption" color="text.secondary">
               Max items to process per content type
-            </span>
-          </div>
+            </Typography>
+          </Box>
 
           {/* Info box */}
-          <div className="bg-muted rounded p-3">
-            <span className="text-xs text-muted-foreground">
+          <Box sx={{ bgcolor: 'action.hover', borderRadius: 1, p: 1.5 }}>
+            <Typography variant="caption" color="text.secondary">
               <strong>No AI cost</strong> — Uses deterministic alias normalization and
               exact matching against 351 cities and 199 countries in the database.
-            </span>
-          </div>
+            </Typography>
+          </Box>
 
           {/* Progress */}
           {loading && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <p className="text-sm">Processing...</p>
-              </div>
-              <div className="h-1 w-full bg-muted overflow-hidden rounded">
-                <div className="h-full bg-primary animate-pulse" style={{ width: '50%' }} />
-              </div>
-            </div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
+                <Typography variant="body2">Processing...</Typography>
+              </Box>
+              <LinearProgress sx={{ borderRadius: 1 }} />
+            </Box>
           )}
 
           {/* Results */}
           {totals && !loading && (
-            <div className="border border-border rounded-lg p-4 flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <p className="text-sm font-semibold">Geo-Link Complete</p>
-              </div>
+            <Box sx={{
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 2,
+              p: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5,
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  Geo-Link Complete
+                </Typography>
+              </Box>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                  <p className="text-sm"><strong>{totals.processed}</strong> processed</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="h-3.5 w-3.5 text-green-600" />
-                  <p className="text-sm"><strong>{totals.linked}</strong> fully linked</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <AlertCircle className="h-3.5 w-3.5 text-yellow-600" />
-                  <p className="text-sm"><strong>{totals.partial}</strong> partial</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                  <p className="text-sm"><strong>{totals.skipped}</strong> skipped</p>
-                </div>
-              </div>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MapPin style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2">
+                    <strong>{totals.processed}</strong> processed
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <CheckCircle style={{ height: 14, width: 14, color: '#16a34a' }} />
+                  <Typography variant="body2">
+                    <strong>{totals.linked}</strong> fully linked
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <AlertCircle style={{ height: 14, width: 14, color: '#ca8a04' }} />
+                  <Typography variant="body2">
+                    <strong>{totals.partial}</strong> partial
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <AlertCircle style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2">
+                    <strong>{totals.skipped}</strong> skipped
+                  </Typography>
+                </Box>
+              </Box>
 
               {totals.processed === 0 && (
-                <p className="text-sm text-muted-foreground">
+                <Typography variant="body2" color="text.secondary">
                   All items already have geo-links assigned.
-                </p>
+                </Typography>
               )}
-            </div>
+            </Box>
           )}
 
           {/* Run button */}
           {!loading && (
             <Button onClick={handleRun}>
-              <Globe className="h-4 w-4 mr-2" />
+              <Globe style={{ height: 16, width: 16, marginRight: 8 }} />
               {showResult ? 'Run Again' : 'Start Batch Geo-Link'}
             </Button>
           )}
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   );

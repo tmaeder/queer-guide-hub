@@ -660,12 +660,15 @@ export async function countRows(
 export async function listFromWhere<T = unknown>(
   table: string,
   select: string,
-  filters: Array<{ col: string; val: unknown }>,
+  filters: Array<{ col: string; val: unknown; op?: 'eq' | 'neq' | 'in' | 'gte' | 'lte' }>,
   opts?: { order?: { col: string; ascending?: boolean }; limit?: number },
 ): Promise<T[]> {
   let q = supabase.from(table as never).select(select as never);
   for (const f of filters) {
-    q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(f.col, f.val);
+    const op = f.op ?? 'eq';
+    q = (
+      q as unknown as Record<string, (c: string, v: unknown) => typeof q>
+    )[op](f.col, f.val);
   }
   if (opts?.order) {
     q = (
@@ -865,6 +868,70 @@ export async function insertReturningId(
     id: ((data as { id?: string } | null) ?? null)?.id ?? null,
     error: error ? { message: error.message } : null,
   };
+}
+
+/** Search unified_tags by name (ilike) — admin search-intelligence. */
+export async function searchUnifiedTagsByName<T = unknown>(q: string): Promise<T[]> {
+  const { data } = await supabase
+    .from('unified_tags')
+    .select('id, name, slug')
+    .ilike('name', `%${q}%`)
+    .eq('status', 'active')
+    .is('merged_into_id', null)
+    .limit(15);
+  return (data ?? []) as T[];
+}
+
+/** Update rows matching one eq filter (not necessarily id). */
+export async function updateRowsBy(
+  table: string,
+  match: { col: string; val: unknown },
+  update: Record<string, unknown>,
+): Promise<{ error: { message: string } | null }> {
+  const { error } = await supabase
+    .from(table as never)
+    .update(update as never)
+    .eq(match.col, match.val);
+  return { error: error ? { message: error.message } : null };
+}
+
+/** List rows where a column is not null. */
+export async function listWhereNotNull<T = unknown>(
+  table: string,
+  select: string,
+  notNullCol: string,
+  orderCol?: string,
+): Promise<T[]> {
+  let q = supabase.from(table as never).select(select as never).not(notNullCol, 'is', null);
+  if (orderCol) {
+    q = (q as unknown as { order: (c: string) => typeof q }).order(orderCol);
+  }
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
+/** Delete many rows by id list — generic for any table. */
+export async function deleteRowsByIds(
+  table: string,
+  ids: string[],
+): Promise<{ error: { message: string } | null }> {
+  if (ids.length === 0) return { error: null };
+  const { error } = await supabase
+    .from(table as never)
+    .delete()
+    .in('id', ids);
+  return { error: error ? { message: error.message } : null };
+}
+
+/** Insert multiple rows. */
+export async function insertRows(
+  table: string,
+  rows: Array<Record<string, unknown>>,
+): Promise<{ error: { message: string } | null }> {
+  if (rows.length === 0) return { error: null };
+  const { error } = await supabase.from(table as never).insert(rows as never);
+  return { error: error ? { message: error.message } : null };
 }
 
 /** Insert without expecting a return. */

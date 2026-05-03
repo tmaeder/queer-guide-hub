@@ -7,6 +7,9 @@
  */
 
 import { useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
 import {
   Dialog,
   DialogContent,
@@ -27,15 +30,42 @@ import {
 import { Wand2, Loader2, CheckCircle, AlertTriangle, FileText, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
 const MODULES = [
-  { value: 'ai-enhancer', label: 'AI Content Enhancement', description: 'Generate improved descriptions using AI' },
-  { value: 'content-validator', label: 'Quality Check', description: 'Find encoding issues, broken HTML, short descriptions' },
-  { value: 'link-sanitizer', label: 'Link Validation', description: 'Check for dead links and tracking parameters' },
-  { value: 'geo-enricher', label: 'Geo Enrichment', description: 'Validate coordinates and assign locations' },
-  { value: 'auto-tagger', label: 'Auto Tagger', description: 'Suggest tags based on content analysis' },
-  { value: 'data-normalizer', label: 'Data Normalization', description: 'Validate emails, URLs, phone numbers, and contacts' },
-  { value: 'event-validator', label: 'Event Validation', description: 'Detect past events and missing end times' },
+  {
+    value: 'ai-enhancer',
+    label: 'AI Content Enhancement',
+    description: 'Generate improved descriptions using AI',
+  },
+  {
+    value: 'content-validator',
+    label: 'Quality Check',
+    description: 'Find encoding issues, broken HTML, short descriptions',
+  },
+  {
+    value: 'link-sanitizer',
+    label: 'Link Validation',
+    description: 'Check for dead links and tracking parameters',
+  },
+  {
+    value: 'geo-enricher',
+    label: 'Geo Enrichment',
+    description: 'Validate coordinates and assign locations',
+  },
+  {
+    value: 'auto-tagger',
+    label: 'Auto Tagger',
+    description: 'Suggest tags based on content analysis',
+  },
+  {
+    value: 'data-normalizer',
+    label: 'Data Normalization',
+    description: 'Validate emails, URLs, phone numbers, and contacts',
+  },
+  {
+    value: 'event-validator',
+    label: 'Event Validation',
+    description: 'Detect past events and missing end times',
+  },
 ];
 
 interface EnrichResult {
@@ -107,17 +137,17 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Wand2 className="h-4 w-4 mr-2" />
+          <Wand2 style={{ height: 16, width: 16, marginRight: 8 }} />
           Bulk Enrich
         </Button>
       </DialogTrigger>
       <DialogContent style={{ maxWidth: 540 }}>
         <DialogHeader>
           <DialogTitle>
-            <span className="flex items-center gap-2">
-              <Wand2 className="h-5 w-5" />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Wand2 style={{ height: 20, width: 20 }} />
               Bulk Content Enrichment
-            </span>
+            </Box>
           </DialogTitle>
           <DialogDescription>
             Run automation modules to validate, enrich, and improve content in batch. Results appear
@@ -125,8 +155,9 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-5 mt-2">
-          <div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
+          {/* Module Selection */}
+          <Box>
             <Label>Automation Module</Label>
             <Select value={moduleName} onValueChange={setModuleName} disabled={loading}>
               <SelectTrigger>
@@ -141,85 +172,117 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
               </SelectContent>
             </Select>
             {selectedModule && (
-              <span className="text-xs text-muted-foreground mt-1 block">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 0.5, display: 'block' }}
+              >
                 {selectedModule.description}
-              </span>
+              </Typography>
             )}
-          </div>
+          </Box>
 
-          <div className="bg-muted rounded-sm p-3">
-            <span className="text-xs text-muted-foreground">
+          {/* Info box */}
+          <Box sx={{ bgcolor: 'action.hover', borderRadius: 1, p: 1.5 }}>
+            <Typography variant="caption" color="text.secondary">
               The module will process items according to its configured batch size and create flags
               in the automation review queue. High-confidence changes may be auto-approved based on
               module settings.
-            </span>
-          </div>
+            </Typography>
+          </Box>
 
+          {/* Progress */}
           {loading && (
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <p className="text-sm">Running {selectedModule?.label}...</p>
-              </div>
-              <div className="h-1 w-full bg-muted overflow-hidden rounded-sm">
-                <div className="h-full bg-primary animate-pulse" style={{ width: '50%' }} />
-              </div>
-            </div>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
+                <Typography variant="body2">Running {selectedModule?.label}...</Typography>
+              </Box>
+              <LinearProgress sx={{ borderRadius: 1 }} />
+            </Box>
           )}
 
+          {/* Results */}
           {result && !loading && (
-            <div className="border border-border rounded-md p-4 flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" style={{ color: '#16a34a' }} />
-                <p className="text-sm font-semibold">Processing Complete</p>
-              </div>
+            <Box
+              sx={{
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 2,
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1.5,
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  Processing Complete
+                </Typography>
+              </Box>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-1">
-                  <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                  <p className="text-sm">
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <FileText style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
+                  <Typography variant="body2">
                     <strong>{result.items_processed}</strong> / {result.items_total} processed
-                  </p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Zap className="h-3.5 w-3.5" style={{ color: '#f59e0b' }} />
-                  <p className="text-sm">
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Zap style={{ height: 14, width: 14, color: '#f59e0b' }} />
+                  <Typography variant="body2">
                     <strong>{result.flags_created}</strong> flags created
-                  </p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="h-3.5 w-3.5" style={{ color: '#16a34a' }} />
-                  <p className="text-sm">
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <CheckCircle style={{ height: 14, width: 14, color: '#16a34a' }} />
+                  <Typography variant="body2">
                     <strong>{result.auto_approved}</strong> auto-approved
-                  </p>
-                </div>
+                  </Typography>
+                </Box>
                 {result.items_failed > 0 && (
-                  <div className="flex items-center gap-1">
-                    <AlertTriangle className="h-3.5 w-3.5" style={{ color: '#ef4444' }} />
-                    <p className="text-sm">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <AlertTriangle style={{ height: 14, width: 14, color: '#ef4444' }} />
+                    <Typography variant="body2">
                       <strong>{result.items_failed}</strong> failed
-                    </p>
-                  </div>
+                    </Typography>
+                  </Box>
                 )}
-              </div>
+              </Box>
 
               {result.errors.length > 0 && (
-                <div className="mt-2 max-h-24 overflow-auto text-xs text-destructive">
+                <Box
+                  sx={{
+                    mt: 1,
+                    maxHeight: 100,
+                    overflow: 'auto',
+                    fontSize: '0.75rem',
+                    color: 'error.main',
+                  }}
+                >
                   {result.errors.slice(0, 5).map((e, i) => (
-                    <span key={i} className="block text-xs text-destructive">{e}</span>
+                    <Typography
+                      key={i}
+                      variant="caption"
+                      sx={{ display: 'block', color: 'error.main' }}
+                    >
+                      {e}
+                    </Typography>
                   ))}
-                </div>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
 
+          {/* Run button */}
           {!loading && (
-            <Button onClick={handleRun} className="w-full">
-              <Wand2 className="h-4 w-4 mr-2" />
+            <Button onClick={handleRun} style={{ width: '100%' }}>
+              <Wand2 style={{ height: 16, width: 16, marginRight: 8 }} />
               {result ? 'Run Again' : `Run ${selectedModule?.label || 'Module'}`}
             </Button>
           )}
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   );

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { Clock, ArrowUpRight, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface ActivityItem {
   id: string;
@@ -44,14 +46,14 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
         </CardHeader>
         <CardContent>
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex flex-row items-start gap-3 animate-pulse">
+            <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
               <Skeleton />
-              <div className="flex-1 flex flex-col gap-2">
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Skeleton />
                 <Skeleton />
                 <Skeleton />
-              </div>
-            </div>
+              </Box>
+            </Box>
           ))}
         </CardContent>
       </Card>
@@ -78,52 +80,52 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
             <Clock style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
-            <p>No recent activity</p>
-          </div>
+            <Typography>No recent activity</Typography>
+          </Box>
         ) : (
-          <div className="flex flex-col gap-4">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {activities.map((activity) => {
               const Icon = activity.icon;
               return (
-                <div key={activity.id} className="flex flex-row items-start gap-3 group">
-                  <div className="p-2 bg-muted rounded-full">
+                <Box key={activity.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, '&:hover .arrow': { opacity: 1 } }}>
+                  <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: '50%' }}>
                     <Icon style={{ width: 16, height: 16 }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-row items-center gap-2 mb-1">
-                      <p className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap">
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {activity.title}
-                      </p>
-                      <Badge variant={getBadgeVariant(activity.type)}>
+                      </Typography>
+                      <Badge
+                        variant={getBadgeVariant(activity.type)}
+
+                      >
                         {activity.badge}
                       </Badge>
-                    </div>
-                    <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap block mb-1">
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', mb: 0.5 }}>
                       {activity.description}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
                       {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
-                    </span>
-                  </div>
-                  <ArrowUpRight
-                    style={{ width: 16, height: 16 }}
-                    className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                  />
-                </div>
+                    </Typography>
+                  </Box>
+                  <ArrowUpRight style={{ width: 16, height: 16, color: 'var(--muted-foreground)', opacity: 0, transition: 'opacity 0.2s' }} />
+                </Box>
               );
             })}
 
             {activities.length > 0 && (
-              <div className="pt-4 border-t border-border">
+              <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
                 <Button variant="ghost" size="sm">
                   View All Activity
                   <ArrowUpRight style={{ width: 16, height: 16, marginLeft: 8 }} />
                 </Button>
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
       </CardContent>
     </Card>

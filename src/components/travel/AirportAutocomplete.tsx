@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Plane } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchAirportByIata, searchAirports } from '@/hooks/useAirportSearch';
 
 interface Airport {
   iata_code: string;
@@ -42,12 +42,7 @@ export function AirportAutocomplete({
     } else if (value && !displayValue) {
       // Fallback: resolve IATA code to display label from DB
       const loadLabel = async () => {
-        const { data } = await supabase
-          .from('airports')
-          .select('iata_code, city_name, country_code')
-          .eq('iata_code', value)
-          .limit(1)
-          .maybeSingle();
+        const data = await fetchAirportByIata(value);
         if (data) {
           setDisplayValue(`${data.city_name || value} (${data.iata_code})`);
         } else {
@@ -79,14 +74,10 @@ export function AirportAutocomplete({
 
     // Exact IATA match gets priority (e.g. "LHR")
 
-    const { data } = await supabase
-      .from('airports')
-      .select('iata_code, name, city_name, country_code')
-      .or(`city_name.ilike.%${q}%,name.ilike.%${q}%,iata_code.ilike.%${q}%`)
-      .limit(30);
+    const data = await searchAirports(q);
 
     // Sort results by relevance: major airports first, then exact city match, then alphabetical
-    const sorted = (data || []).sort((a, b) => {
+    const sorted = data.sort((a, b) => {
       const aName = a.name?.toLowerCase() || '';
       const bName = b.name?.toLowerCase() || '';
       const aCityMatch = a.city_name?.toLowerCase() === q.toLowerCase();

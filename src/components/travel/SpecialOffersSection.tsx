@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import { Sparkles, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 
@@ -60,50 +62,51 @@ export function SpecialOffersSection() {
 
   if (isLoading) {
     return (
-      <div className="mb-8">
-        <Skeleton className="h-6 w-[180px] mb-2" />
-        <div className="flex flex-row gap-3 overflow-x-auto">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="w-[200px] h-[100px] rounded" />)}
-        </div>
-      </div>
+      <Box sx={{ mb: 4 }}>
+        <Skeleton variant="text" width={180} height={24} sx={{ mb: 1 }} />
+        <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto' }}>
+          {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" width={200} height={100} />)}
+        </Box>
+      </Box>
     );
   }
 
   if (!offers || offers.length === 0) return null;
 
   return (
-    <div className="mb-8">
-      <div className="flex flex-row items-center gap-2 mb-3">
+    <Box sx={{ mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
         <Sparkles style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <p className="font-bold text-base">Hot Deals</p>
-      </div>
-      <div className="flex flex-row gap-3 overflow-x-auto pb-2">
+        <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>Hot Deals</Typography>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 1 }}>
         {offers.map((offer, i) => (
           <Card key={`${offer.origin}-${offer.destination}-${i}`} className="hover:shadow-sm transition-shadow" style={{ minWidth: 200, flexShrink: 0 }}>
             <CardContent style={{ padding: 12 }}>
-              <div className="flex flex-row items-center gap-1 mb-1">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
                 {offer.airline && (
-                  <img
+                  <Box
+                    component="img"
                     src={`https://pics.avs.io/24/24/${offer.airline}.png`}
                     alt={offer.airline}
-                    className="w-4 h-4 rounded-full"
+                    sx={{ width: 16, height: 16, borderRadius: '50%' }}
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
                   />
                 )}
-                <p className="font-bold text-sm">
+                <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
                   {offer.origin} → {offer.destination}
-                </p>
-              </div>
+                </Typography>
+              </Box>
               {offer.departDate && (
-                <p className="text-muted-foreground mb-1" style={{ fontSize: '0.7rem' }}>
+                <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary', mb: 0.5 }}>
                   {new Date(offer.departDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   {offer.returnDate && ` - ${new Date(offer.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
-                </p>
+                </Typography>
               )}
-              <div className="flex flex-row justify-between items-center mt-2">
-                <p className="font-extrabold text-primary" style={{ fontSize: '1.1rem' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: 'primary.main' }}>
                   €{Math.round(offer.price)}
-                </p>
+                </Typography>
                 <Button
                   size="sm"
                   onClick={() => {
@@ -113,11 +116,11 @@ export function SpecialOffersSection() {
                 >
                   <ExternalLink style={{ height: 12, width: 12 }} />
                 </Button>
-              </div>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

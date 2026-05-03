@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Globe, Save, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { updateRowsBy } from '@/hooks/usePageFetchers';
 import { SocialLinksList } from './social/SocialLinksList';
 import { PlatformSelector } from './social/PlatformSelector';
 import { PLATFORM_CONFIGS } from './social/platformConfigs';
@@ -127,10 +127,11 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
         ...Object.fromEntries(customLinks.map((link) => [link.platform, link.url])),
       };
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({ social_links: allSocialLinks })
-        .eq('user_id', user.id);
+      const { error } = await updateRowsBy(
+        'profiles',
+        { col: 'user_id', val: user.id },
+        { social_links: allSocialLinks },
+      );
 
       if (error) throw error;
 
