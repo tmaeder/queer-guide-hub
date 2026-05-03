@@ -18,7 +18,6 @@
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/admin/automation/ModuleSettingsDialog.tsx",
   "src/components/admin/automation/ReviewQueue.tsx",
-  "src/components/admin/data-table/AdminDataTable.tsx",
   "src/components/admin/feedback/ApiErrorsKanban.tsx",
   "src/components/admin/feedback/FeedbackBulkBar.tsx",
   "src/components/admin/feedback/FeedbackDetailDrawer.tsx",
