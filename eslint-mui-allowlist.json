@@ -154,7 +154,6 @@
   "src/components/submission/FlyerScanResults.tsx",
   "src/components/tags/TagLinkedContent.tsx",
   "src/components/tags/TagRelationshipGraph.tsx",
-  "src/components/tags/TagSelector.tsx",
   "src/components/travel/AirportAutocomplete.tsx",
   "src/components/travel/FlightSearchForm.tsx",
   "src/components/trips/AddBudgetDialog.tsx",
