@@ -1,8 +1,6 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import { ExternalLink, Check, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface FieldDef {
   key: string;
@@ -94,7 +92,6 @@ function getFieldsForEntity(entityType: string, data: Record<string, unknown>): 
   const defined = FIELD_DEFINITIONS[entityType];
   if (defined) return defined;
 
-  // Build field defs dynamically from data keys
   return Object.keys(data)
     .filter((k) => !['id', 'created_at', 'updated_at'].includes(k))
     .slice(0, 20)
@@ -115,89 +112,65 @@ function isUrl(value: unknown): boolean {
 
 function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
   if (value === null || value === undefined || value === '') {
-    return (
-      <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>
-        —
-      </Typography>
-    );
+    return <p className="text-sm italic text-muted-foreground">—</p>;
   }
 
   switch (type) {
     case 'boolean':
       return value ? (
-        <Chip
-          icon={<Check style={{ width: 12, height: 12 }} />}
-          label="Yes"
-          size="small"
-          color="success"
-          variant="outlined"
-        />
+        <Badge variant="outline" className="gap-1 border-green-600 text-green-700">
+          <Check className="h-3 w-3" />
+          Yes
+        </Badge>
       ) : (
-        <Chip
-          icon={<X style={{ width: 12, height: 12 }} />}
-          label="No"
-          size="small"
-          variant="outlined"
-        />
+        <Badge variant="outline" className="gap-1">
+          <X className="h-3 w-3" />
+          No
+        </Badge>
       );
 
     case 'date':
       try {
-        return (
-          <Typography variant="body2">{new Date(String(value)).toLocaleDateString()}</Typography>
-        );
+        return <p className="text-sm">{new Date(String(value)).toLocaleDateString()}</p>;
       } catch {
-        return <Typography variant="body2">{String(value)}</Typography>;
+        return <p className="text-sm">{String(value)}</p>;
       }
 
     case 'datetime':
       try {
-        return <Typography variant="body2">{new Date(String(value)).toLocaleString()}</Typography>;
+        return <p className="text-sm">{new Date(String(value)).toLocaleString()}</p>;
       } catch {
-        return <Typography variant="body2">{String(value)}</Typography>;
+        return <p className="text-sm">{String(value)}</p>;
       }
 
     case 'number':
-      return (
-        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-          {String(value)}
-        </Typography>
-      );
+      return <p className="text-sm font-mono">{String(value)}</p>;
 
     case 'textarea':
       return (
-        <Typography
-          variant="body2"
-          sx={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', lineHeight: 1.4 }}
-        >
+        <p className="text-sm whitespace-pre-wrap max-h-[120px] overflow-auto leading-snug">
           {String(value).slice(0, 500)}
           {String(value).length > 500 ? '...' : ''}
-        </Typography>
+        </p>
       );
 
     default:
       if (isUrl(value)) {
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="body2" sx={{ color: '#3b82f6', wordBreak: 'break-all' }}>
-              {String(value)}
-            </Typography>
+          <div className="flex items-center gap-1">
+            <p className="text-sm text-blue-500 break-all">{String(value)}</p>
             <a
               href={String(value)}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ flexShrink: 0 }}
+              className="flex-shrink-0"
             >
-              <ExternalLink style={{ width: 12, height: 12, color: '#3b82f6' }} />
+              <ExternalLink className="h-3 w-3 text-blue-500" />
             </a>
-          </Box>
+          </div>
         );
       }
-      return (
-        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-          {String(value)}
-        </Typography>
-      );
+      return <p className="text-sm break-words">{String(value)}</p>;
   }
 }
 
@@ -217,73 +190,46 @@ export function StructuredFieldDisplay({
   const fields = getFieldsForEntity(entityType, data);
 
   if (compact) {
-    // Single-line badges for key fields (name, city, country, etc.)
     const keyFields = fields.slice(0, 5);
     return (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <div className="flex flex-wrap gap-2">
         {keyFields.map((field) => {
           const val = data[field.key];
           if (val === null || val === undefined || val === '') return null;
           return (
-            <Box key={field.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography
-                variant="caption"
-                sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}
-              >
-                {field.label}:
-              </Typography>
-              <Typography variant="caption">{String(val).slice(0, 60)}</Typography>
-            </Box>
+            <div key={field.key} className="flex items-center gap-1">
+              <span className="text-xs font-medium text-muted-foreground">{field.label}:</span>
+              <span className="text-xs">{String(val).slice(0, 60)}</span>
+            </div>
           );
         })}
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: '140px 1fr' },
-        gap: 1,
-        alignItems: 'start',
-      }}
-    >
+    <div className="grid gap-2 items-start grid-cols-1 sm:grid-cols-[140px_1fr]">
       {fields.map((field) => {
         const val = data[field.key];
         const isHighlighted = highlightFields?.includes(field.key);
         return (
           <React.Fragment key={field.key}>
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--muted-foreground)',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                fontSize: '0.65rem',
-                letterSpacing: 0.5,
-                pt: 0.3,
-              }}
-            >
+            <span className="text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground pt-1">
               {field.label}
-            </Typography>
-            <Box
-              sx={{
-                px: 1,
-                py: 0.3,
-                borderRadius: 0.5,
-                bgcolor: isHighlighted ? 'rgba(250, 204, 21, 0.15)' : 'transparent',
-                border: isHighlighted
-                  ? '1px solid rgba(250, 204, 21, 0.3)'
-                  : '1px solid transparent',
-              }}
+            </span>
+            <div
+              className={`px-2 py-1 rounded-sm border ${
+                isHighlighted
+                  ? 'bg-yellow-200/15 border-yellow-300/30'
+                  : 'bg-transparent border-transparent'
+              }`}
             >
               {formatValue(val, field.type)}
-            </Box>
+            </div>
           </React.Fragment>
         );
       })}
-    </Box>
+    </div>
   );
 }
 
