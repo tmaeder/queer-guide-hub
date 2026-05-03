@@ -5,17 +5,11 @@
  */
 
 import { useNavigate } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Skeleton from '@mui/material/Skeleton';
-import LinearProgress from '@mui/material/LinearProgress';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { alpha } from '@mui/material/styles';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import {
   LayoutDashboard,
   Activity,
@@ -50,6 +44,18 @@ import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
 import { brandColors } from '@/theme/muiTheme';
 
+// Lightweight alpha helper for hex colors
+function alphaHex(color: string, a: number): string {
+  // Accept #rrggbb only; otherwise wrap as rgba via CSS color-mix fallback
+  if (color.startsWith('#') && (color.length === 7)) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+  return `color-mix(in srgb, ${color} ${a * 100}%, transparent)`;
+}
+
 // ── Quadrant Card ──────────────────────────────────────────────────
 
 function QuadrantCard({
@@ -67,49 +73,31 @@ function QuadrantCard({
 }) {
   const navigate = useNavigate();
   return (
-    <Paper
-      variant="outlined"
-      sx={{
-        p: 2.5,
-        borderRadius: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        height: '100%',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 28,
-              height: 28,
-              borderRadius: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              bgcolor: alpha(color, 0.1),
-            }}
+    <div className="border border-border rounded-lg bg-background p-5 flex flex-col gap-4 h-full">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-7 h-7 rounded-md flex items-center justify-center"
+            style={{ background: alphaHex(color, 0.1) }}
           >
             <Icon size={15} style={{ color }} />
-          </Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            {title}
-          </Typography>
-        </Box>
+          </div>
+          <h3 className="text-sm font-semibold">{title}</h3>
+        </div>
         {action && (
           <Button
-            size="small"
-            endIcon={<ArrowRight size={14} />}
+            variant="ghost"
+            size="sm"
             onClick={() => navigate(action.route)}
-            sx={{ textTransform: 'none', fontSize: '0.75rem', fontWeight: 500 }}
+            className="text-xs font-medium normal-case"
           >
             {action.label}
+            <ArrowRight size={14} className="ml-1" />
           </Button>
         )}
-      </Box>
+      </div>
       {children}
-    </Paper>
+    </div>
   );
 }
 
@@ -132,13 +120,16 @@ function SystemStatus({ data }: { data: CockpitData }) {
 
   return (
     <QuadrantCard title="System Status" icon={Activity} color="#10b981">
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+      <div className="flex items-center gap-3 mb-2">
         <StatusIcon size={20} style={{ color: statusColors[system.status] }} />
-        <Typography variant="body2" sx={{ fontWeight: 600, color: statusColors[system.status] }}>
+        <span
+          className="text-sm font-semibold"
+          style={{ color: statusColors[system.status] }}
+        >
           {statusLabels[system.status]}
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <MetricBox
           label="DB Latency"
           value={`${system.dbLatencyMs}ms`}
@@ -149,28 +140,27 @@ function SystemStatus({ data }: { data: CockpitData }) {
           value={system.recentErrors.toString()}
           good={system.recentErrors === 0}
         />
-      </Box>
+      </div>
     </QuadrantCard>
   );
 }
 
 function MetricBox({ label, value, good }: { label: string; value: string; good: boolean }) {
   return (
-    <Box
-      sx={{
-        p: 1.5,
-        borderRadius: 1.5,
-        bgcolor: good ? alpha('#10b981', 0.06) : alpha('#f59e0b', 0.06),
-        textAlign: 'center',
+    <div
+      className="p-3 rounded-md text-center"
+      style={{
+        background: good ? alphaHex('#10b981', 0.06) : alphaHex('#f59e0b', 0.06),
       }}
     >
-      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-        {label}
-      </Typography>
-      <Typography variant="body1" sx={{ fontWeight: 700, color: good ? '#10b981' : '#f59e0b' }}>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div
+        className="text-base font-bold"
+        style={{ color: good ? '#10b981' : '#f59e0b' }}
+      >
         {value}
-      </Typography>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -212,47 +202,35 @@ function ReviewQueueWidget({ data }: { data: CockpitData }) {
       color="#f59e0b"
       action={{ label: 'All Reviews', route: '/admin/review' }}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+      <div className="flex flex-col gap-1.5">
         {queues.map((q) => (
-          <Box
+          <div
             key={q.label}
             onClick={() => navigate(`/admin/review?tab=${q.tab}`)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              px: 1.5,
-              py: 0.75,
-              borderRadius: 1,
-              cursor: 'pointer',
-              transition: 'background 0.15s',
-              '&:hover': { bgcolor: 'action.hover' },
-            }}
+            className="flex items-center justify-between px-3 py-1.5 rounded cursor-pointer transition-colors hover:bg-muted"
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <q.icon size={14} style={{ color: q.color }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {q.label}
-              </Typography>
-            </Box>
-            <Chip
-              label={q.count > 0 ? q.count.toLocaleString() : '0'}
-              size="small"
-              sx={{
-                height: 20,
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                bgcolor: q.count > 0 ? alpha(q.color, 0.12) : 'action.selected',
-                color: q.count > 0 ? q.color : 'text.secondary',
-              }}
-            />
-          </Box>
+              <span className="text-sm font-medium">{q.label}</span>
+            </div>
+            <Badge
+              variant="secondary"
+              className="h-5 text-[0.7rem] font-bold"
+              style={
+                q.count > 0
+                  ? { background: alphaHex(q.color, 0.12), color: q.color }
+                  : undefined
+              }
+            >
+              {q.count > 0 ? q.count.toLocaleString() : '0'}
+            </Badge>
+          </div>
         ))}
-      </Box>
+      </div>
       {review.total > 0 && (
-        <Typography variant="caption" sx={{ fontWeight: 600, color: '#f59e0b', mt: 0.5 }}>
+        <div className="text-xs font-semibold mt-1" style={{ color: '#f59e0b' }}>
           {review.total.toLocaleString()} total items need attention
-        </Typography>
+        </div>
       )}
     </QuadrantCard>
   );
@@ -270,7 +248,7 @@ function ImportStatus({ data }: { data: CockpitData }) {
       color="#10b981"
       action={{ label: 'Imports', route: '/admin/imports' }}
     >
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+      <div className="grid grid-cols-2 gap-3">
         <MetricBox
           label="Active Jobs"
           value={imports.activeJobs.toString()}
@@ -287,7 +265,7 @@ function ImportStatus({ data }: { data: CockpitData }) {
           value={`${imports.errorRate}%`}
           good={imports.errorRate < 10}
         />
-      </Box>
+      </div>
     </QuadrantCard>
   );
 }
@@ -306,38 +284,36 @@ function QualityWidget({ data }: { data: CockpitData }) {
       color="#3b82f6"
       action={{ label: 'Details', route: '/admin/imports/enrichment' }}
     >
-      <Box sx={{ textAlign: 'center', py: 1 }}>
-        <Typography variant="h3" sx={{ fontWeight: 800, color: scoreColor, lineHeight: 1 }}>
+      <div className="text-center py-2">
+        <div
+          className="text-5xl font-extrabold leading-none"
+          style={{ color: scoreColor }}
+        >
           {quality.overallScore}%
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+        </div>
+        <div className="text-xs font-medium text-muted-foreground mt-1">
           Overall Quality Score
-        </Typography>
-      </Box>
-      <LinearProgress
-        variant="determinate"
-        value={quality.overallScore}
-        sx={{
-          height: 6,
-          borderRadius: 3,
-          bgcolor: alpha(scoreColor, 0.12),
-          '& .MuiLinearProgress-bar': { bgcolor: scoreColor, borderRadius: 3 },
-        }}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mt: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        </div>
+      </div>
+      <div
+        className="rounded-full overflow-hidden"
+        style={{ height: 6, background: alphaHex(scoreColor, 0.12) }}
+      >
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${quality.overallScore}%`, background: scoreColor }}
+        />
+      </div>
+      <div className="flex justify-center gap-6 mt-2">
+        <div className="flex items-center gap-1">
           <AlertTriangle size={12} style={{ color: '#f59e0b' }} />
-          <Typography variant="caption" sx={{ fontWeight: 500 }}>
-            {quality.warnings} warnings
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <span className="text-xs font-medium">{quality.warnings} warnings</span>
+        </div>
+        <div className="flex items-center gap-1">
           <AlertCircle size={12} style={{ color: '#ef4444' }} />
-          <Typography variant="caption" sx={{ fontWeight: 500 }}>
-            {quality.critical} critical
-          </Typography>
-        </Box>
-      </Box>
+          <span className="text-xs font-medium">{quality.critical} critical</span>
+        </div>
+      </div>
     </QuadrantCard>
   );
 }
@@ -423,57 +399,49 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
   const navigate = useNavigate();
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-          Content Overview
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
+    <div className="border border-border rounded-lg bg-background p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold">Content Overview</h3>
+        <span className="text-xs text-muted-foreground">
           {Object.values(stats)
             .reduce((a, b) => a + b, 0)
             .toLocaleString()}{' '}
           total items
-        </Typography>
-      </Box>
+        </span>
+      </div>
       <StaggerGrid
         stagger={0.04}
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(4, 1fr)', md: 'repeat(6, 1fr)' },
-          gap: 1.5,
-        }}
+        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3"
       >
         {contentStatItems.map(({ key, label, icon: Icon, color, route }) => (
-          <Box
+          <div
             key={key}
             onClick={() => navigate(route)}
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 0.5,
-              p: 1.5,
-              borderRadius: 1.5,
-              cursor: 'pointer',
-              transition: 'all 0.15s',
-              '&:hover': { bgcolor: alpha(color, 0.06), transform: 'translateY(-1px)' },
-            }}
+            className="flex flex-col items-center gap-1 p-3 rounded-md cursor-pointer transition-all hover:-translate-y-px"
+            style={
+              {
+                ['--hover-bg' as string]: alphaHex(color, 0.06),
+              } as React.CSSProperties
+            }
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLDivElement).style.background = alphaHex(color, 0.06))
+            }
+            onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.background = '')}
           >
             <Icon size={18} style={{ color }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', lineHeight: 1 }}>
+            <div className="text-lg font-bold leading-none">
               {(stats[key as keyof typeof stats] ?? 0).toLocaleString()}
-            </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ fontWeight: 500, fontSize: '0.65rem' }}
+            </div>
+            <div
+              className="font-medium text-muted-foreground"
+              style={{ fontSize: '0.65rem' }}
             >
               {label}
-            </Typography>
-          </Box>
+            </div>
+          </div>
         ))}
       </StaggerGrid>
-    </Paper>
+    </div>
   );
 }
 
@@ -489,27 +457,24 @@ function QuickActionsBar() {
   ];
 
   return (
-    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+    <div className="flex gap-2 flex-wrap">
       {actions.map((a) => (
         <Button
           key={a.label}
-          variant="outlined"
-          size="small"
-          startIcon={<a.icon size={15} />}
+          variant="outline"
+          size="sm"
           onClick={() => navigate(a.route)}
-          sx={{
-            textTransform: 'none',
-            fontWeight: 500,
-            borderColor: alpha(a.color, 0.3),
+          className="hidden sm:inline-flex normal-case font-medium"
+          style={{
+            borderColor: alphaHex(a.color, 0.3),
             color: a.color,
-            display: { xs: 'none', sm: 'inline-flex' },
-            '&:hover': { borderColor: a.color, bgcolor: alpha(a.color, 0.04) },
           }}
         >
+          <a.icon size={15} className="mr-1.5" />
           {a.label}
         </Button>
       ))}
-    </Box>
+    </div>
   );
 }
 
@@ -517,14 +482,14 @@ function QuickActionsBar() {
 
 function CockpitSkeleton() {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} variant="rounded" height={220} sx={{ borderRadius: 2 }} />
+          <Skeleton key={i} className="rounded-lg" style={{ height: 220 }} />
         ))}
-      </Box>
-      <Skeleton variant="rounded" height={160} sx={{ borderRadius: 2 }} />
-    </Box>
+      </div>
+      <Skeleton className="rounded-lg" style={{ height: 160 }} />
+    </div>
   );
 }
 
@@ -534,41 +499,47 @@ export default function AdminDashboard() {
   const { data, isLoading, refetch } = useAdminCockpit();
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
           <LayoutDashboard size={24} style={{ color: brandColors.main }} />
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Cockpit
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <h1 className="text-xl font-bold">Cockpit</h1>
+        </div>
+        <div className="flex items-center gap-2">
           <QuickActionsBar />
-          <Tooltip title="Refresh">
-            <IconButton size="small" onClick={() => refetch()}>
-              <RefreshCw size={16} />
-            </IconButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => refetch()}
+              >
+                <RefreshCw size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Refresh</TooltipContent>
           </Tooltip>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {isLoading || !data ? (
         <CockpitSkeleton />
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <div className="flex flex-col gap-5">
           {/* Four quadrants */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SystemStatus data={data} />
             <ReviewQueueWidget data={data} />
             <ImportStatus data={data} />
             <QualityWidget data={data} />
-          </Box>
+          </div>
 
           {/* Content stats */}
           <ContentStatsGrid stats={data.stats} />
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
