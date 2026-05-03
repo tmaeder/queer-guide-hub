@@ -147,7 +147,6 @@
   "src/components/trips/AiPlanTab.tsx",
   "src/components/trips/BudgetTab.tsx",
   "src/components/trips/CreateTripDialog.tsx",
-  "src/components/trips/DocumentsList.tsx",
   "src/components/trips/DraggableItinerary.tsx",
   "src/components/trips/PackingTab.tsx",
   "src/components/trips/PlaceCommentThread.tsx",
