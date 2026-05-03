@@ -5,16 +5,6 @@
 
 import { Suspense, lazy, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Alert from '@mui/material/Alert';
-import LinearProgress from '@mui/material/LinearProgress';
 import {
   Inbox,
   Flag,
@@ -32,6 +22,15 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useReviewCounts, type ReviewCounts } from '@/hooks/useReviewCounts';
 import { useReviewBulkActions, type BulkActionType } from '@/hooks/useReviewBulkActions';
 import { useAuth } from '@/hooks/useAuth';
@@ -117,26 +116,20 @@ function StatCard({ icon: Icon, label, count, color, active, onClick }: StatCard
       }}
     >
       <CardContent>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}
-        >
+        <div className="flex items-center justify-center gap-2 mb-1">
           <Icon style={{ height: 20, width: 20, color }} />
-          <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-            {count.toLocaleString()}
-          </Typography>
-        </Box>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          {label}
-        </Typography>
+          <span className="text-2xl font-bold">{count.toLocaleString()}</span>
+        </div>
+        <p className="text-xs text-muted-foreground">{label}</p>
       </CardContent>
     </Card>
   );
 }
 
 const Loading = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-    <CircularProgress size={28} aria-label="Loading" />
-  </Box>
+  <div className="flex justify-center py-12">
+    <Loader2 className="h-7 w-7 animate-spin" aria-label="Loading" />
+  </div>
 );
 
 const TAB_COUNT_KEY: Partial<Record<TabId, keyof ReviewCounts>> = {
@@ -165,16 +158,16 @@ const BULK_BUTTONS: Array<{
   label: string;
   icon: typeof Inbox;
   color?: string;
-  variant: 'contained' | 'outlined';
-  muiColor?: 'success' | 'error';
+  variant: 'default' | 'outline';
+  tone?: 'success' | 'destructive';
 }> = [
-  { action: 'approve', label: 'Approve All', icon: CheckCheck, variant: 'contained', muiColor: 'success' },
-  { action: 'approve_confident', label: 'Approve High-Confidence', icon: Sparkles, variant: 'outlined', color: '#0ea5e9' },
-  { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outlined', color: 'hsl(var(--brand))' },
-  { action: 'dedup', label: 'Resolve Duplicates', icon: Inbox, variant: 'outlined', color: '#ea580c' },
-  { action: 'dismiss_low', label: 'Dismiss Low-Severity', icon: VolumeX, variant: 'outlined', color: '#a855f7' },
-  { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outlined', color: 'hsl(var(--muted-foreground))' },
-  { action: 'reject_all', label: 'Reject All', icon: XCircle, variant: 'outlined', muiColor: 'error' },
+  { action: 'approve', label: 'Approve All', icon: CheckCheck, variant: 'default', tone: 'success' },
+  { action: 'approve_confident', label: 'Approve High-Confidence', icon: Sparkles, variant: 'outline', color: '#0ea5e9' },
+  { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outline', color: 'hsl(var(--brand))' },
+  { action: 'dedup', label: 'Resolve Duplicates', icon: Inbox, variant: 'outline', color: '#ea580c' },
+  { action: 'dismiss_low', label: 'Dismiss Low-Severity', icon: VolumeX, variant: 'outline', color: '#a855f7' },
+  { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outline', color: 'hsl(var(--muted-foreground))' },
+  { action: 'reject_all', label: 'Reject All', icon: XCircle, variant: 'outline', tone: 'destructive' },
 ];
 
 export default function AdminReview() {
@@ -238,152 +231,131 @@ export default function AdminReview() {
   };
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 3,
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
             <Shield style={{ height: 24, width: 24, color: '#f59e0b' }} />
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              Review & Moderation
-            </Typography>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
+            <h5 className="text-xl font-bold">Review & Moderation</h5>
+          </div>
+          <p className="text-sm text-muted-foreground">
             {c.total > 0
               ? `${c.total.toLocaleString()} item${c.total !== 1 ? 's' : ''} need${c.total === 1 ? 's' : ''} attention`
               : 'All caught up!'}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         {c.total > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {BULK_BUTTONS.map(({ action, label, icon: BtnIcon, color, variant, muiColor }) => (
+          <div className="flex gap-2 flex-wrap">
+            {BULK_BUTTONS.map(({ action, label, icon: BtnIcon, color, variant, tone }) => (
               <Button
                 key={action}
-                size="small"
-                variant={variant}
-                color={muiColor}
+                size="sm"
+                variant={
+                  tone === 'destructive'
+                    ? 'destructive'
+                    : variant === 'default'
+                      ? 'default'
+                      : 'outline'
+                }
                 onClick={() => openBulkDialog(action)}
-                startIcon={<BtnIcon size={15} />}
-                sx={{
-                  textTransform: 'none',
+                style={{
                   fontWeight: 600,
                   fontSize: '0.8rem',
-                  ...(color && !muiColor ? { borderColor: color, color } : {}),
+                  ...(color && !tone ? { borderColor: color, color } : {}),
+                  ...(tone === 'success' ? { backgroundColor: '#16a34a', color: '#fff' } : {}),
                 }}
               >
+                <BtnIcon size={15} style={{ marginRight: 6 }} />
                 {label}
               </Button>
             ))}
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Bulk Action Confirmation Dialog */}
-      <Dialog open={bulkDialogOpen} onClose={closeBulkDialog} maxWidth="sm" fullWidth>
-        {bulkAction && (
-          <>
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 700 }}>
-              {(() => {
-                const Info = bulkActionLabels[bulkAction].icon;
-                return <Info size={20} style={{ color: bulkActionLabels[bulkAction].color }} />;
-              })()}
-              {bulkActionLabels[bulkAction].title}
-            </DialogTitle>
-            <DialogContent>
-              {!bulkResult ? (
-                <>
+      <Dialog open={bulkDialogOpen} onOpenChange={(o) => !o && closeBulkDialog()}>
+        <DialogContent className="sm:max-w-lg">
+          {bulkAction && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  {(() => {
+                    const Info = bulkActionLabels[bulkAction].icon;
+                    return <Info size={20} style={{ color: bulkActionLabels[bulkAction].color }} />;
+                  })()}
+                  {bulkActionLabels[bulkAction].title}
+                </DialogTitle>
+              </DialogHeader>
+              <div>
+                {!bulkResult ? (
+                  <>
+                    <Alert
+                      variant={
+                        (bulkActionLabels[bulkAction].severity ?? 'warning') === 'error'
+                          ? 'destructive'
+                          : 'default'
+                      }
+                      className="mb-4"
+                    >
+                      <AlertDescription>{bulkActionLabels[bulkAction].desc}</AlertDescription>
+                    </Alert>
+                    {bulkRunning && (
+                      <div className="mt-4">
+                        <div className="h-1.5 w-full bg-muted overflow-hidden rounded-full">
+                          <div
+                            className="h-full bg-primary animate-pulse"
+                            style={{ width: '50%' }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 block text-center">
+                          Processing...
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
                   <Alert
-                    severity={bulkActionLabels[bulkAction].severity ?? 'warning'}
-                    sx={{ mb: 2 }}
+                    variant={bulkResult.failed === 0 ? 'default' : 'destructive'}
+                    className="mt-2"
                   >
-                    {bulkActionLabels[bulkAction].desc}
+                    <AlertDescription>
+                      {bulkResult.success} items processed successfully.
+                      {bulkResult.failed > 0 && ` ${bulkResult.failed} failed.`}
+                    </AlertDescription>
                   </Alert>
-                  {bulkRunning && (
-                    <Box sx={{ mt: 2 }}>
-                      <LinearProgress
-                        variant="indeterminate"
-                        sx={{ height: 6, borderRadius: 3 }}
-                      />
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: 0.5, display: 'block', textAlign: 'center' }}
-                      >
-                        Processing...
-                      </Typography>
-                    </Box>
-                  )}
-                </>
-              ) : (
-                <Alert severity={bulkResult.failed === 0 ? 'success' : 'warning'} sx={{ mt: 1 }}>
-                  {bulkResult.success} items processed successfully.
-                  {bulkResult.failed > 0 && ` ${bulkResult.failed} failed.`}
-                </Alert>
-              )}
-            </DialogContent>
-            <DialogActions>
-              {!bulkResult ? (
-                <>
-                  <Button
-                    onClick={closeBulkDialog}
-                    disabled={bulkRunning}
-                    sx={{ textTransform: 'none' }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={handleBulkExecute}
-                    disabled={bulkRunning}
-                    startIcon={
-                      bulkRunning ? (
-                        <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                      ) : undefined
-                    }
-                    sx={{ textTransform: 'none', fontWeight: 600 }}
-                    color={
-                      bulkAction === 'approve' || bulkAction === 'approve_confident'
-                        ? 'success'
-                        : bulkAction === 'reject_all'
-                          ? 'error'
-                          : 'primary'
-                    }
-                  >
-                    {bulkRunning ? 'Processing...' : 'Confirm'}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={closeBulkDialog}
-                  variant="contained"
-                  sx={{ textTransform: 'none' }}
-                >
-                  Done
-                </Button>
-              )}
-            </DialogActions>
-          </>
-        )}
+                )}
+              </div>
+              <DialogFooter>
+                {!bulkResult ? (
+                  <>
+                    <Button variant="ghost" onClick={closeBulkDialog} disabled={bulkRunning}>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleBulkExecute}
+                      disabled={bulkRunning}
+                      variant={bulkAction === 'reject_all' ? 'destructive' : 'default'}
+                      style={{ fontWeight: 600 }}
+                    >
+                      {bulkRunning && (
+                        <Loader2 size={14} style={{ marginRight: 6 }} className="animate-spin" />
+                      )}
+                      {bulkRunning ? 'Processing...' : 'Confirm'}
+                    </Button>
+                  </>
+                ) : (
+                  <Button onClick={closeBulkDialog}>Done</Button>
+                )}
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
       </Dialog>
 
       {/* Summary Cards */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(9, 1fr)' },
-          gap: 2,
-          mb: 3,
-        }}
-      >
+      <div className="grid grid-cols-2 md:grid-cols-9 gap-4 mb-6">
         <StatCard
           icon={Inbox}
           label="Import Staging"
@@ -456,7 +428,7 @@ export default function AdminReview() {
           active={activeTab === 'entity-links'}
           onClick={() => handleTabChange('entity-links')}
         />
-      </Box>
+      </div>
 
       {/* Tab content — navigation via stat cards above */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -515,6 +487,6 @@ export default function AdminReview() {
           </Suspense>
         </TabsContent>
       </Tabs>
-    </Box>
+    </div>
   );
 }
