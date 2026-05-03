@@ -3,8 +3,6 @@ import { useParams } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
@@ -155,20 +153,18 @@ export default function EventDetail() {
 
   if (!isLoading && !event && !error) {
     return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Event Not Found
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+      <div className="container mx-auto py-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Event Not Found</h2>
+        <p className="text-muted-foreground mb-6">
           The event you're looking for doesn't exist.
-        </Typography>
+        </p>
         <LocalizedLink to="/events">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Events
           </Button>
         </LocalizedLink>
-      </Container>
+      </div>
     );
   }
 
@@ -281,9 +277,9 @@ export default function EventDetail() {
             eventPath={`/events/${event.slug || event.id}`}
           />
 
-          <Container sx={{ pb: 4 }}>
+          <div className="container mx-auto pb-8">
             <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-8" />
-          </Container>
+          </div>
         </>
       )}
     </>

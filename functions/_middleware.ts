@@ -3,6 +3,17 @@
  * ships its own <title>, <meta name="description">, <link rel="canonical">,
  * absolute OG/Twitter tags, and (on the homepage) JSON-LD.
  *
+ * Phase 2 addition: for crawler user agents on indexable routes, we also
+ * inject route-specific body content into <div id="root">. Real users get
+ * the SPA shell unchanged; React's createRoot() replaces children on mount,
+ * so even when Googlebot's JS-rendering pass runs, the SPA mounts cleanly
+ * over the injected content with no hydration mismatch (we use createRoot,
+ * not hydrateRoot).
+ */
+import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib/routeMeta';
+import { homepageJsonLd } from './_lib/jsonLd';
+import { isBotUserAgent } from './_lib/botUa';
+import { buildBodyHtml } from './_lib/routeBody';
  * The SPA still renders client-side; this only fixes the crawler-visible HTML.
  * Pre-rendered body HTML is Phase 2.
  */
@@ -48,6 +59,13 @@ class HeadInjector {
   constructor(private readonly html: string) {}
   element(el: Element) {
     el.append(this.html, { html: true });
+  }
+}
+
+class RootBodyInjector {
+  constructor(private readonly html: string) {}
+  element(el: Element) {
+    el.setInnerContent(this.html, { html: true });
   }
 }
 
@@ -99,6 +117,21 @@ export const onRequest: PagesFunction = async (context) => {
     .on('meta[name="description"]', new MetaContentRewriter(meta.description))
     .on('head', new HeadInjector(headInjections.join('\n    ')));
 
+  const isBot = indexable && isBotUserAgent(request.headers.get('user-agent'));
+  if (isBot) {
+    rewriter.on(
+      '#root',
+      new RootBodyInjector(buildBodyHtml(pathname, { title: meta.title, description: meta.description })),
+    );
+  }
+
+  const rewritten = rewriter.transform(response);
+
+  // We branch on User-Agent for indexable HTML responses, so downstream caches
+  // must vary on UA to avoid serving bot HTML to humans (or vice versa).
+  if (isBot || indexable) {
+    rewritten.headers.append('Vary', 'User-Agent');
+  }
   const rewritten = rewriter.transform(response);
 
   // Preserve original cache headers but ensure Vary on User-Agent isn't needed
