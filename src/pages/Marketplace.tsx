@@ -20,11 +20,8 @@ import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/layout/PageHeader';
-import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
@@ -66,8 +63,8 @@ const Marketplace = () => {
   const sortOptions = [
     { value: 'newest', label: 'Newest First' },
     { value: 'oldest', label: 'Oldest First' },
-    { value: 'az', label: 'A\u2013Z' },
-    { value: 'za', label: 'Z\u2013A' },
+    { value: 'az', label: 'A–Z' },
+    { value: 'za', label: 'Z–A' },
   ];
 
   const sortedListings = useMemo(() => {
@@ -116,7 +113,7 @@ const Marketplace = () => {
           ? 'You can find this in your favorites list.'
           : 'Item removed from your favorites.',
       });
-      fetchListings(); // Refresh to show updated favorites
+      fetchListings();
     }
   };
   const handleViewDetails = (listing: MarketplaceListing) => {
@@ -124,35 +121,19 @@ const Marketplace = () => {
     incrementViews(listing.id);
   };
 
-  // Filter listings by category for tabs
   const getFilteredListings = (category?: string) => {
     if (!category || category === 'all') return sortedListings;
     return sortedListings.filter((listing) => listing.category === category);
   };
   const categories = [
-    {
-      id: 'all',
-      label: 'All',
-      count: sortedListings.length,
-    },
-    {
-      id: 'products',
-      label: 'Products',
-      count: sortedListings.filter((l) => l.category === 'products').length,
-    },
-    {
-      id: 'services',
-      label: 'Services',
-      count: sortedListings.filter((l) => l.category === 'services').length,
-    },
+    { id: 'all', label: 'All', count: sortedListings.length },
+    { id: 'products', label: 'Products', count: sortedListings.filter((l) => l.category === 'products').length },
+    { id: 'services', label: 'Services', count: sortedListings.filter((l) => l.category === 'services').length },
   ];
-  // Error renders inline below the toolbar (not as a full-page replacement)
-  // so users keep access to filters / sort / view toggle while retrying —
-  // matches the /news, /events, /venues pattern. (#UX-2 from QA sweep
-  // 2026-04-30.)
+
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
+    <div className="min-h-screen">
+      <div className="container mx-auto py-12 md:py-20 px-4">
         {/* Header */}
         <PageHeader
           title={t('pages.marketplace.title', 'Marketplace')}
@@ -181,14 +162,14 @@ const Marketplace = () => {
 
         {/* Filters & Category Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ marginBottom: 24 }}>
-          <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
+          <div className="border border-border rounded-lg p-4 mb-6 bg-background">
             {/* Filters */}
-            <Box sx={{ mb: 2 }}>
+            <div className="mb-4">
               <MarketplaceFilters onFiltersChange={handleFiltersChange} />
-            </Box>
+            </div>
 
             {/* Category Tabs & View Toggle */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div className="flex items-center justify-between">
               <TabsList
                 style={{
                   display: 'grid',
@@ -211,7 +192,7 @@ const Marketplace = () => {
                 ))}
               </TabsList>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <div className="flex items-center gap-3">
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger style={{ width: 160 }} aria-label="Sort listings">
                     <SelectValue placeholder="Sort by" />
@@ -240,11 +221,11 @@ const Marketplace = () => {
                 >
                   <List style={{ width: 16, height: 16 }} />
                 </Button>
-              </Box>
-            </Box>
-          </Paper>
+              </div>
+            </div>
+          </div>
 
-          {/* Error State (inline; preserves chrome above) */}
+          {/* Error State */}
           {error && (
             <ErrorState
               message={t('pages.marketplace.loadError', 'Something went wrong while loading the marketplace. Please try again.')}
@@ -255,9 +236,9 @@ const Marketplace = () => {
           {/* Loading State */}
           {!error && loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchListings()} />}
           {!error && loading && !loadingTimedOut && (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (<MarketplaceCard key={i} loading />))}
-            </Box>
+            </div>
           )}
 
           {/* Empty State */}
@@ -292,27 +273,16 @@ const Marketplace = () => {
               {!loading &&
                 getFilteredListings(category.id === 'all' ? undefined : category.id).length > 0 && (
                   <>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 3,
-                      }}
-                    >
-                      <Typography color="text.secondary">
+                    <div className="flex items-center justify-between mb-6">
+                      <p className="text-muted-foreground">
                         Found{' '}
-                        {
-                          getFilteredListings(category.id === 'all' ? undefined : category.id)
-                            .length
-                        }{' '}
+                        {getFilteredListings(category.id === 'all' ? undefined : category.id).length}{' '}
                         listing
-                        {getFilteredListings(category.id === 'all' ? undefined : category.id)
-                          .length !== 1
+                        {getFilteredListings(category.id === 'all' ? undefined : category.id).length !== 1
                           ? 's'
                           : ''}
-                      </Typography>
-                    </Box>
+                      </p>
+                    </div>
 
                     <StaggerGrid
                       sx={
@@ -332,14 +302,14 @@ const Marketplace = () => {
                     >
                       {getFilteredListings(category.id === 'all' ? undefined : category.id).map(
                         (listing) => (
-                          <Box key={listing.id}>
+                          <div key={listing.id}>
                             <MarketplaceCard
                               listing={listing}
                               onViewDetails={handleViewDetails}
                               onToggleFavorite={user ? handleToggleFavorite : undefined}
                               showFavoriteButton={!!user}
                             />
-                          </Box>
+                          </div>
                         ),
                       )}
                     </StaggerGrid>
@@ -365,8 +335,8 @@ const Marketplace = () => {
             </TabsContent>
           ))}
         </Tabs>
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 };
 export default Marketplace;
