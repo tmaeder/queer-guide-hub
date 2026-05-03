@@ -17,9 +17,6 @@ import { LocationInfo } from '@/components/location/LocationInfo';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ArrowLeft, Globe, MapPin, Building2, Map as MapIcon, Landmark, ChevronDown, ChevronUp } from 'lucide-react';
@@ -38,8 +35,11 @@ const TABS_STYLE: React.CSSProperties = { display: 'flex', flexDirection: 'colum
 const TABS_LIST_STYLE: React.CSSProperties = { display: 'grid', width: '100%', maxWidth: 600, gridTemplateColumns: 'repeat(4, 1fr)' };
 const TAB_CONTENT_STYLE: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24 };
 const BADGE_STYLE: React.CSSProperties = { paddingLeft: 12, paddingRight: 12, paddingTop: 4, paddingBottom: 4, fontWeight: 500 };
-const MAP_ICON_STYLE: React.CSSProperties = { height: 32, width: 32, margin: '0 auto', color: 'text.secondary' };
+const MAP_ICON_STYLE: React.CSSProperties = { height: 32, width: 32, margin: '0 auto', color: 'hsl(var(--muted-foreground))' };
 const COLLAPSED_COUNT = 6;
+
+const GRID_6_COLS = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4';
+const GRID_4_COLS = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4';
 
 type ViewMode = 'overview' | 'country' | 'city' | 'search';
 
@@ -224,45 +224,36 @@ export default function Places() {
 
   if (loading) {
     return (
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
+      <div className="container mx-auto py-12 md:py-20 px-4">
         <PageLoadingState count={8} />
         {loadingTimedOut && (
-          <Box sx={{ mt: 3 }}>
+          <div className="mt-6">
             <LoadingTimeout onRetry={() => window.location.reload()} />
-          </Box>
+          </div>
         )}
-      </Container>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Box
-        sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="max-w-[480px] mx-auto">
           <ErrorState message={error} onRetry={() => window.location.reload()} />
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <div className="w-full">
       {/* Hero Section */}
-      <Container sx={{ pt: { xs: 6, md: 10 }, pb: 2 }}>
-        <Box
-          sx={{
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            p: { xs: 3, lg: 4 },
-            mb: 3,
-          }}
-        >
+      <div className="container mx-auto pt-12 md:pt-20 pb-4 px-4">
+        <div className="bg-background rounded-lg p-6 lg:p-8 mb-6">
           {/* Navigation Header */}
-          <Box sx={{ mb: 3 }}>
+          <div className="mb-6">
             {viewMode !== 'overview' && (
-              <Box>
+              <div>
                 <Button
                   variant="ghost"
                   onClick={handleBack}
@@ -271,27 +262,19 @@ export default function Places() {
                   <ArrowLeft style={BACK_ICON_STYLE} />
                   Back
                 </Button>
-              </Box>
+              </div>
             )}
 
             {/* Dynamic Title */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontSize: { xs: '2.25rem', lg: '3rem' },
-                  fontWeight: 700,
-                  letterSpacing: '-0.025em',
-                  color: 'text.primary',
-                }}
-              >
+            <div className="flex flex-col gap-3">
+              <h3 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
                 {viewMode === 'overview' && 'Explore Places'}
                 {viewMode === 'country' && selectedCountry && <>Explore {selectedCountry.name}</>}
                 {viewMode === 'city' && selectedCity && <>Discover {selectedCity.name}</>}
                 {viewMode === 'search' && 'Search Results'}
-              </Typography>
+              </h3>
 
-              <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary' }}>
+              <p className="text-lg text-muted-foreground">
                 {viewMode === 'overview' &&
                   'Discover amazing places around the world. Find countries, cities, and locations that match your interests.'}
                 {viewMode === 'country' &&
@@ -302,9 +285,9 @@ export default function Places() {
                   `Everything you need to know about ${selectedCity.name}. Weather, demographics, and local insights.`}
                 {viewMode === 'search' &&
                   "Find exactly what you're looking for with our powerful search and filtering tools."}
-              </Typography>
-            </Box>
-          </Box>
+              </p>
+            </div>
+          </div>
 
           {/* Enhanced Search */}
           <PlacesSearch
@@ -313,92 +296,62 @@ export default function Places() {
             onNearMeSearch={handleNearMeSearch}
             placeholder="Search countries, cities, or regions..."
           />
-        </Box>
-      </Container>
+        </div>
+      </div>
 
       {/* Personalized Recommendations (overview only) */}
       {viewMode === 'overview' && (
-        <Container sx={{ pb: 0 }}>
+        <div className="container mx-auto pb-0 px-4">
           <PersonalizedFeed />
-        </Container>
+        </div>
       )}
 
       {/* Main Content Area */}
-      <Container sx={{ pb: 6 }}>
+      <div className="container mx-auto pb-12 px-4">
         {/* Breadcrumb Navigation */}
         {viewMode !== 'overview' && viewMode !== 'search' && (
-          <Box sx={{ mb: 3 }}>
-            <Box
-              component="nav"
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.875rem' }}
-            >
-              <Box
-                component="button"
+          <div className="mb-6">
+            <nav className="flex items-center gap-2 text-sm">
+              <button
+                type="button"
                 onClick={() => setViewMode('overview')}
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': { color: 'text.primary', bgcolor: 'action.hover' },
-                  transition: 'color 150ms',
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  border: 'none',
-                  bgcolor: 'background.paper',
-                  cursor: 'pointer',
-                }}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-2 py-1 rounded border-0 bg-background cursor-pointer"
               >
                 Places
-              </Box>
+              </button>
               {selectedCountry && (
                 <>
-                  <Box component="span" sx={{ color: 'text.disabled' }}>
-                    /
-                  </Box>
-                  <Box
-                    component="button"
+                  <span className="text-muted-foreground/60">/</span>
+                  <button
+                    type="button"
                     onClick={() => setViewMode('country')}
-                    sx={{
-                      color: 'text.secondary',
-                      '&:hover': { color: 'text.primary', bgcolor: 'action.hover' },
-                      transition: 'color 150ms',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      border: 'none',
-                      bgcolor: 'background.paper',
-                      cursor: 'pointer',
-                    }}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-2 py-1 rounded border-0 bg-background cursor-pointer"
                   >
                     {selectedCountry.name}
-                  </Box>
+                  </button>
                 </>
               )}
               {selectedCity && (
                 <>
-                  <Box component="span" sx={{ color: 'text.disabled' }}>
-                    /
-                  </Box>
-                  <Box
-                    component="span"
-                    sx={{ color: 'text.primary', fontWeight: 500, px: 1, py: 0.5 }}
-                  >
+                  <span className="text-muted-foreground/60">/</span>
+                  <span className="text-foreground font-medium px-2 py-1">
                     {selectedCity.name}
-                  </Box>
+                  </span>
                 </>
               )}
-            </Box>
-          </Box>
+            </nav>
+          </div>
         )}
 
         {/* Content based on view mode */}
-        <Box>
+        <div>
           {viewMode === 'overview' && (
             <Tabs
               defaultValue="countries"
               style={TABS_STYLE}
             >
               {/* Enhanced Tab Navigation */}
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="flex items-center justify-between">
                 <TabsList
                   style={TABS_LIST_STYLE}
                 >
@@ -421,77 +374,48 @@ export default function Places() {
                 </TabsList>
 
                 {/* Stats Overview */}
-                <Box
-                  sx={{
-                    display: { xs: 'none', md: 'flex' },
-                    alignItems: 'center',
-                    gap: 2,
-                    fontSize: '0.875rem',
-                    color: 'text.secondary',
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
                     <MapPin style={ICON_SM} />
                     <span>{countries.length} countries</span>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  </div>
+                  <div className="flex items-center gap-1">
                     <Building2 style={ICON_SM} />
                     <span>{cities.length} cities</span>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  </div>
+                  <div className="flex items-center gap-1">
                     <Landmark style={ICON_SM} />
                     <span>{villages.length} neighborhoods</span>
-                  </Box>
-                </Box>
-              </Box>
+                  </div>
+                </div>
+              </div>
 
               <TabsContent
                 value="countries"
                 style={TAB_CONTENT_STYLE}
               >
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      Explore Countries
-                    </Typography>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h5 className="text-2xl font-semibold">Explore Countries</h5>
                     <Badge
                       variant="secondary"
                       style={BADGE_STYLE}
                     >
                       {filteredCountries.length} found
                     </Badge>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div className="flex flex-col gap-10">
                   {loading ? (
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                          xs: '1fr',
-                          sm: '1fr 1fr',
-                          md: 'repeat(3, 1fr)',
-                          lg: 'repeat(4, 1fr)',
-                          xl: 'repeat(6, 1fr)',
-                        },
-                        gap: 2,
-                      }}
-                    >
+                    <div className={GRID_6_COLS}>
                       {Array.from({ length: 12 }).map((_, i) => (
-                        <Box
+                        <div
                           key={i}
-                          sx={{
-                            height: 128,
-                            bgcolor: 'action.hover',
-                            borderRadius: 2,
-                            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                          }}
+                          className="h-32 bg-muted rounded-lg animate-pulse"
                         />
                       ))}
-                    </Box>
+                    </div>
                   ) : continents.length > 0 ? (
                     continents.map((continent) => {
                       const continentCountries = filteredCountries.filter(
@@ -503,157 +427,101 @@ export default function Places() {
                       const isExpanded = expandedContinents[continent.id as string];
 
                       return (
-                        <Box
-                          key={continent.id}
-                          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-                        >
-                          <Box
+                        <div key={continent.id} className="flex flex-col gap-6">
+                          <div
                             onClick={() => toggleContinent(continent.id as string)}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: 2,
-                              p: 2,
-                              bgcolor: 'action.hover',
-                              cursor: 'pointer',
-                              '&:hover': { opacity: 0.85 },
-                            }}
+                            className="flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85"
                           >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ p: 1, bgcolor: 'action.selected' }}>
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-muted-foreground/10">
                                 <Globe style={ICON_MD} />
-                              </Box>
-                              <Box>
-                                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
-                                  {continent.name}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                              </div>
+                              <div>
+                                <p className="text-lg font-semibold">{continent.name}</p>
+                                <p className="text-sm text-muted-foreground">
                                   {continentCountries.length} countries to explore
-                                </Typography>
-                              </Box>
-                            </Box>
+                                </p>
+                              </div>
+                            </div>
                             {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
-                          </Box>
+                          </div>
 
                           {isExpanded && (
-                            <Box
-                              sx={{
-                                display: 'grid',
-                                gridTemplateColumns: {
-                                  xs: '1fr',
-                                  sm: '1fr 1fr',
-                                  md: 'repeat(3, 1fr)',
-                                  lg: 'repeat(4, 1fr)',
-                                  xl: 'repeat(6, 1fr)',
-                                },
-                                gap: 2,
-                              }}
-                            >
+                            <div className={GRID_6_COLS}>
                               {continentCountries.map((country, index) => (
-                                <Box key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
+                                <div key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
                                   <PlacesCard
                                     type="country"
                                     name={country.name}
                                     data={country}
                                     onClick={() => handleCountryClick(country)}
                                   />
-                                </Box>
+                                </div>
                               ))}
-                            </Box>
+                            </div>
                           )}
-                        </Box>
+                        </div>
                       );
                     })
                   ) : (
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                          xs: '1fr',
-                          sm: '1fr 1fr',
-                          md: 'repeat(3, 1fr)',
-                          lg: 'repeat(4, 1fr)',
-                          xl: 'repeat(6, 1fr)',
-                        },
-                        gap: 2,
-                      }}
-                    >
+                    <div className={GRID_6_COLS}>
                       {filteredCountries.map((country, index) => (
-                        <Box key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
+                        <div key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
                           <PlacesCard
                             type="country"
                             name={country.name}
                             data={country}
                             onClick={() => handleCountryClick(country)}
                           />
-                        </Box>
+                        </div>
                       ))}
-                    </Box>
+                    </div>
                   )}
-                </Box>
+                </div>
               </TabsContent>
 
               <TabsContent
                 value="cities"
                 style={TAB_CONTENT_STYLE}
               >
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      Discover Cities
-                    </Typography>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h5 className="text-2xl font-semibold">Discover Cities</h5>
                     <Badge
                       variant="secondary"
                       style={BADGE_STYLE}
                     >
                       {filteredCities.length} found
                     </Badge>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div className="flex flex-col gap-8">
                   {citiesByContinent.map(({ continent, totalCities, countries: groupedCountries }) => {
                     const isExpanded = expandedCityContinents[continent.id as string];
 
                     return (
-                      <Box
-                        key={continent.id}
-                        sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-                      >
-                        <Box
+                      <div key={continent.id} className="flex flex-col gap-6">
+                        <div
                           onClick={() => toggleCityContinent(continent.id as string)}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 2,
-                            p: 2,
-                            bgcolor: 'action.hover',
-                            cursor: 'pointer',
-                            '&:hover': { opacity: 0.85 },
-                          }}
+                          className="flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85"
                         >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Box sx={{ p: 1, bgcolor: 'action.selected' }}>
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-muted-foreground/10">
                               <Building2 style={ICON_MD} />
-                            </Box>
-                            <Box>
-                              <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
-                                {continent.name as string}
-                              </Typography>
-                              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            </div>
+                            <div>
+                              <p className="text-lg font-semibold">{continent.name as string}</p>
+                              <p className="text-sm text-muted-foreground">
                                 {totalCities} cities in {groupedCountries.length} countries
-                              </Typography>
-                            </Box>
-                          </Box>
+                              </p>
+                            </div>
+                          </div>
                           {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
-                        </Box>
+                        </div>
 
                         {isExpanded && (
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, pl: { xs: 0, sm: 2 } }}>
+                          <div className="flex flex-col gap-8 pl-0 sm:pl-4">
                             {groupedCountries.map((country) => {
                               const isCountryExpanded = expandedCityCountries[country.id as string];
                               const visibleCities = isCountryExpanded
@@ -662,41 +530,27 @@ export default function Places() {
                               const hasMore = country.cities.length > COLLAPSED_COUNT;
 
                               return (
-                                <Box key={country.id} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <div key={country.id} className="flex flex-col gap-4">
+                                  <div className="flex items-center gap-2">
                                     <MapPin style={ICON_SM} />
-                                    <Typography sx={{ fontWeight: 600 }}>
-                                      {country.name as string}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    <p className="font-semibold">{country.name as string}</p>
+                                    <p className="text-sm text-muted-foreground">
                                       {country.cities.length} cities
-                                    </Typography>
-                                  </Box>
+                                    </p>
+                                  </div>
 
-                                  <Box
-                                    sx={{
-                                      display: 'grid',
-                                      gridTemplateColumns: {
-                                        xs: '1fr',
-                                        sm: '1fr 1fr',
-                                        md: 'repeat(3, 1fr)',
-                                        lg: 'repeat(4, 1fr)',
-                                        xl: 'repeat(6, 1fr)',
-                                      },
-                                      gap: 2,
-                                    }}
-                                  >
+                                  <div className={GRID_6_COLS}>
                                     {visibleCities.map((city, index) => (
-                                      <Box key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
+                                      <div key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
                                         <PlacesCard
                                           type="city"
                                           name={city.name}
                                           data={city}
                                           onClick={() => handleCityClick(city)}
                                         />
-                                      </Box>
+                                      </div>
                                     ))}
-                                  </Box>
+                                  </div>
 
                                   {hasMore && !isCountryExpanded && (
                                     <Button
@@ -707,56 +561,41 @@ export default function Places() {
                                       Show all {country.cities.length} cities
                                     </Button>
                                   )}
-                                </Box>
+                                </div>
                               );
                             })}
-                          </Box>
+                          </div>
                         )}
-                      </Box>
+                      </div>
                     );
                   })}
-                </Box>
+                </div>
               </TabsContent>
 
               <TabsContent
                 value="neighborhoods"
                 style={TAB_CONTENT_STYLE}
               >
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      LGBTQ+ Neighborhoods
-                    </Typography>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <h5 className="text-2xl font-semibold">LGBTQ+ Neighborhoods</h5>
                     <Badge
                       variant="secondary"
                       style={BADGE_STYLE}
                     >
                       {villages.length} found
                     </Badge>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
 
                 {villagesLoading && villages.length === 0 ? (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        sm: '1fr 1fr',
-                        md: 'repeat(3, 1fr)',
-                        lg: 'repeat(4, 1fr)',
-                      },
-                      gap: 2,
-                    }}
-                  >
+                  <div className={GRID_4_COLS}>
                     {Array.from({ length: 8 }).map((_, i) => (
-                      <Box key={i} sx={{ height: 240, bgcolor: 'action.hover', borderRadius: 2 }} />
+                      <div key={i} className="h-60 bg-muted rounded-lg" />
                     ))}
-                  </Box>
+                  </div>
                 ) : villages.length > 0 ? (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div className="flex flex-col gap-8">
                     {continents.map((continent) => {
                       const continentVillages = villages.filter(
                         (v) => v.countries?.continent_id === continent.id,
@@ -778,64 +617,38 @@ export default function Places() {
                       const hasMore = continentVillages.length > COLLAPSED_COUNT;
 
                       return (
-                        <Box
-                          key={continent.id}
-                          sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-                        >
-                          <Box
+                        <div key={continent.id} className="flex flex-col gap-6">
+                          <div
                             onClick={() => toggleContinent(villageKey)}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: 2,
-                              p: 2,
-                              borderRadius: 2,
-                              bgcolor: 'action.hover',
-                              cursor: 'pointer',
-                              '&:hover': { opacity: 0.85 },
-                            }}
+                            className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted cursor-pointer hover:opacity-85"
                           >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.selected' }}>
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-muted-foreground/10">
                                 <Globe style={ICON_MD} />
-                              </Box>
-                              <Box>
-                                <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
-                                  {continent.name as string}
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                              </div>
+                              <div>
+                                <p className="text-lg font-semibold">{continent.name as string}</p>
+                                <p className="text-sm text-muted-foreground">
                                   {continentVillages.length} neighborhood{continentVillages.length !== 1 ? 's' : ''}
-                                </Typography>
-                              </Box>
-                            </Box>
+                                </p>
+                              </div>
+                            </div>
                             {hasMore && (
                               isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />
                             )}
-                          </Box>
+                          </div>
 
                           {Object.entries(byCountry).map(([countryId, { name: countryName, villages: countryVillages }]) => (
-                              <Box key={countryId} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', pl: 0.5 }}>
+                              <div key={countryId} className="flex flex-col gap-3">
+                                <p className="text-sm font-semibold text-muted-foreground pl-1">
                                   {countryName}
-                                </Typography>
-                                <Box
-                                  sx={{
-                                    display: 'grid',
-                                    gridTemplateColumns: {
-                                      xs: '1fr',
-                                      sm: 'repeat(2, 1fr)',
-                                      md: 'repeat(3, 1fr)',
-                                      lg: 'repeat(4, 1fr)',
-                                    },
-                                    gap: 2,
-                                  }}
-                                >
+                                </p>
+                                <div className={GRID_4_COLS}>
                                   {countryVillages.map((village) => (
                                     <VillageCard key={village.id} village={village} />
                                   ))}
-                                </Box>
-                              </Box>
+                                </div>
+                              </div>
                           ))}
 
                           {hasMore && !isExpanded && (
@@ -847,76 +660,46 @@ export default function Places() {
                               Show all {continentVillages.length} neighborhoods
                             </Button>
                           )}
-                        </Box>
+                        </div>
                       );
                     })}
 
                     {/* Villages without a continent */}
                     {villages.some((v) => !v.countries?.continent_id) && (
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>Other</Typography>
-                        <Box
-                          sx={{
-                            display: 'grid',
-                            gridTemplateColumns: {
-                              xs: '1fr',
-                              sm: 'repeat(2, 1fr)',
-                              md: 'repeat(3, 1fr)',
-                              lg: 'repeat(4, 1fr)',
-                            },
-                            gap: 2,
-                          }}
-                        >
+                      <div className="flex flex-col gap-4">
+                        <p className="text-lg font-semibold">Other</p>
+                        <div className={GRID_4_COLS}>
                           {villages
                             .filter((v) => !v.countries?.continent_id)
                             .map((village) => (
                               <VillageCard key={village.id} village={village} />
                             ))}
-                        </Box>
-                      </Box>
+                        </div>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 ) : (
-                  <Box sx={{ textAlign: 'center', py: 6 }}>
+                  <div className="text-center py-12">
                     <Landmark
                       style={ICON_XL}
                     />
-                    <Typography color="text.secondary">No neighborhoods found yet</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    <p className="text-muted-foreground">No neighborhoods found yet</p>
+                    <p className="text-sm text-muted-foreground mt-2">
                       Check back later as we continue to add LGBTQ+ neighborhoods.
-                    </Typography>
-                  </Box>
+                    </p>
+                  </div>
                 )}
               </TabsContent>
 
               <TabsContent value="map">
                 <Suspense
                   fallback={
-                    <Box
-                      sx={{
-                        height: 600,
-                        bgcolor: 'action.hover',
-                        borderRadius: 2,
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          textAlign: 'center',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 1,
-                        }}
-                      >
+                    <div className="h-[600px] bg-muted rounded-lg animate-pulse flex items-center justify-center">
+                      <div className="text-center flex flex-col gap-2">
                         <MapIcon style={MAP_ICON_STYLE} />
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                          Loading map...
-                        </Typography>
-                      </Box>
-                    </Box>
+                        <p className="text-sm text-muted-foreground">Loading map...</p>
+                      </div>
+                    </div>
                   }
                 >
                   <ExploreMap
@@ -932,183 +715,129 @@ export default function Places() {
 
           {/* Country View */}
           {viewMode === 'country' && selectedCountry && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="flex flex-col gap-8">
+              <div className="flex flex-col gap-6">
                 <PlacesCard type="country" name={selectedCountry.name} data={selectedCountry} />
 
                 {selectedCountry.latitude && selectedCountry.longitude && (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                      gap: 3,
-                    }}
-                  >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <LocationInfo name={selectedCountry.name} type="country" />
                     <WeatherForecast
                       latitude={selectedCountry.latitude}
                       longitude={selectedCountry.longitude}
                       cityName={selectedCountry.capital || selectedCountry.name}
                     />
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    Cities in {selectedCountry.name}
-                  </Typography>
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center gap-3">
+                  <h5 className="text-2xl font-semibold">Cities in {selectedCountry.name}</h5>
                   <Badge
                     variant="secondary"
                     style={BADGE_STYLE}
                   >
                     {countryCities.length} cities
                   </Badge>
-                </Box>
+                </div>
 
                 {countryCities.length > 0 ? (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        sm: '1fr 1fr',
-                        md: 'repeat(3, 1fr)',
-                        lg: 'repeat(4, 1fr)',
-                        xl: 'repeat(6, 1fr)',
-                      },
-                      gap: 2,
-                    }}
-                  >
+                  <div className={GRID_6_COLS}>
                     {countryCities.map((city, index) => (
-                      <Box key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
+                      <div key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
                         <PlacesCard
                           type="city"
                           name={city.name}
                           data={city}
                           onClick={() => handleCityClick(city)}
                         />
-                      </Box>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 ) : (
-                  <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                  <div className="text-center py-12 text-muted-foreground">
                     <Building2
                       style={ICON_XL}
                     />
-                    <Typography>No cities found in this country</Typography>
-                  </Box>
+                    <p>No cities found in this country</p>
+                  </div>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
 
           {/* City View */}
           {viewMode === 'city' && selectedCity && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="flex flex-col gap-8">
               <PlacesCard type="city" name={selectedCity.name} data={selectedCity} />
 
               {selectedCity.latitude && selectedCity.longitude && (
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 3,
-                  }}
-                >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <LocationInfo name={selectedCity.name} type="city" />
                   <WeatherForecast
                     latitude={selectedCity.latitude}
                     longitude={selectedCity.longitude}
                     cityName={selectedCity.name}
                   />
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
           )}
 
           {/* Search Results */}
           {viewMode === 'search' && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="flex flex-col gap-8">
               {searchResults.countries?.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      Countries
-                    </Typography>
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center gap-3">
+                    <h5 className="text-2xl font-semibold">Countries</h5>
                     <Badge
                       variant="secondary"
                       style={BADGE_STYLE}
                     >
                       {searchResults.countries.length} found
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        sm: '1fr 1fr',
-                        md: 'repeat(3, 1fr)',
-                        lg: 'repeat(4, 1fr)',
-                        xl: 'repeat(6, 1fr)',
-                      },
-                      gap: 2,
-                    }}
-                  >
+                  </div>
+                  <div className={GRID_6_COLS}>
                     {searchResults.countries.map((country, index: number) => (
-                      <Box key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
+                      <div key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
                         <PlacesCard
                           type="country"
                           name={country.name}
                           data={country}
                           onClick={() => handleCountryClick(country)}
                         />
-                      </Box>
+                      </div>
                     ))}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
 
               {searchResults.cities?.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      Cities
-                    </Typography>
+                <div className="flex flex-col gap-6">
+                  <div className="flex items-center gap-3">
+                    <h5 className="text-2xl font-semibold">Cities</h5>
                     <Badge
                       variant="secondary"
                       style={BADGE_STYLE}
                     >
                       {searchResults.cities.length} found
                     </Badge>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        sm: '1fr 1fr',
-                        md: 'repeat(3, 1fr)',
-                        lg: 'repeat(4, 1fr)',
-                        xl: 'repeat(6, 1fr)',
-                      },
-                      gap: 2,
-                    }}
-                  >
+                  </div>
+                  <div className={GRID_6_COLS}>
                     {searchResults.cities.map((city, index: number) => (
-                      <Box key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
+                      <div key={city.id} style={{ animationDelay: `${index * 50}ms` }}>
                         <PlacesCard
                           type="city"
                           name={city.name}
                           data={city}
                           onClick={() => handleCityClick(city)}
                         />
-                      </Box>
+                      </div>
                     ))}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
 
               {!searchResults.countries?.length && !searchResults.cities?.length && (
@@ -1126,10 +855,10 @@ export default function Places() {
                   }}
                 />
               )}
-            </Box>
+            </div>
           )}
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }
