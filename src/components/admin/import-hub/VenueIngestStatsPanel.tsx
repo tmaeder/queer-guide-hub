@@ -5,9 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import {
   useVenueIngestStats,
@@ -15,6 +13,10 @@ import {
   useVenueIngestHealthSnapshot,
   useVenueIngestDuplicateSummary,
 } from '@/hooks/useVenueIngestStats';
+
+const Spinner = () => (
+  <Loader2 className="animate-spin h-5 w-5 text-muted-foreground" aria-label="Loading" />
+);
 
 export function VenueIngestStatsPanel() {
   const stats = useVenueIngestStats();
@@ -48,7 +50,6 @@ export function VenueIngestStatsPanel() {
     }
   };
 
-  // Aggregate totals across the full window
   const totals = (stats.data ?? []).reduce(
     (acc, r) => ({
       staged:         acc.staged + r.staged,
@@ -74,27 +75,25 @@ export function VenueIngestStatsPanel() {
   ];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Pipeline Health Snapshot */}
       <Card>
         <CardContent style={{ padding: 24 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-            Pipeline Health
-          </Typography>
+          <p className="font-semibold text-base mb-4">Pipeline Health</p>
           {health.isLoading ? (
-            <CircularProgress size={20} aria-label="Loading" />
+            <Spinner />
           ) : (health.data ?? []).length === 0 ? (
-            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>No data.</Typography>
+            <p className="text-sm text-muted-foreground">No data.</p>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr repeat(9, 1fr)', gap: 1, fontSize: '0.72rem', color: 'var(--muted-foreground)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="flex flex-col gap-2">
+              <div className="grid gap-2 text-[0.72rem] text-muted-foreground font-semibold uppercase tracking-wide" style={{ gridTemplateColumns: '1.2fr repeat(9, 1fr)' }}>
                 <span>Target</span><span>Total</span><span>Pending</span><span>Rejected</span><span>Review</span>
                 <span>Stuck Norm</span><span>Stuck Val</span><span>Stuck Dedup</span><span>Stuck Commit</span><span>Review Stale</span>
-              </Box>
+              </div>
               {(health.data ?? []).map((h) => {
                 const anyStuck = h.stuck_normalize + h.stuck_validate + h.stuck_dedup + h.stuck_commit + h.review_stale;
                 return (
-                  <Box key={h.target_table} sx={{ display: 'grid', gridTemplateColumns: '1.2fr repeat(9, 1fr)', gap: 1, fontSize: '0.85rem', py: 0.75, borderTop: '1px solid var(--border)' }}>
+                  <div key={h.target_table} className="grid gap-2 text-sm py-1.5 border-t border-border" style={{ gridTemplateColumns: '1.2fr repeat(9, 1fr)' }}>
                     <span style={{ fontWeight: 500 }}>{h.target_table}</span>
                     <span>{h.total.toLocaleString()}</span>
                     <span>{h.pending}</span>
@@ -105,10 +104,10 @@ export function VenueIngestStatsPanel() {
                     <span style={{ color: h.stuck_dedup > 0 ? '#dc2626' : undefined }}>{h.stuck_dedup}</span>
                     <span style={{ color: h.stuck_commit > 0 ? '#dc2626' : undefined }}>{h.stuck_commit}</span>
                     <span style={{ color: h.review_stale > 0 ? '#ca8a04' : undefined, fontWeight: anyStuck > 0 ? 600 : undefined }}>{h.review_stale}</span>
-                  </Box>
+                  </div>
                 );
               })}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -116,13 +115,11 @@ export function VenueIngestStatsPanel() {
       {/* Dead-letter replay */}
       <Card>
         <CardContent style={{ padding: 24 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-            Replay Rejected Items
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', mb: 2 }}>
+          <p className="font-semibold text-base mb-2">Replay Rejected Items</p>
+          <p className="text-sm text-muted-foreground mb-4">
             Enter an error-message substring to reset matching venue rejects back to <code>pending</code>. Up to 200 per click.
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          </p>
+          <div className="flex gap-2 items-center">
             <Input
               placeholder='e.g. "category_check" or "venue_subtype"'
               value={replayPattern}
@@ -132,31 +129,27 @@ export function VenueIngestStatsPanel() {
             <Button onClick={runReplay} disabled={replayBusy || !replayPattern.trim()}>
               {replayBusy ? 'Replaying…' : 'Replay'}
             </Button>
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
       {/* Funnel */}
       <Card>
         <CardContent style={{ padding: 24 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+          <p className="font-semibold text-base mb-4">
             Venue Ingest Funnel (last 60 days)
-          </Typography>
+          </p>
           {stats.isLoading ? (
-            <CircularProgress size={20} aria-label="Loading" />
+            <Spinner />
           ) : (
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 2 }}>
+            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
               {funnelSteps.map((s) => (
-                <Box key={s.label} sx={{ p: 2, backgroundColor: 'var(--muted)' }}>
-                  <Typography variant="caption" sx={{ color: 'var(--muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {s.label}
-                  </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 700, mt: 0.5 }}>
-                    {s.value.toLocaleString()}
-                  </Typography>
-                </Box>
+                <div key={s.label} className="p-4 bg-muted rounded">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</p>
+                  <p className="text-2xl font-bold mt-1">{s.value.toLocaleString()}</p>
+                </div>
               ))}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -164,23 +157,19 @@ export function VenueIngestStatsPanel() {
       {/* Duplicates per source */}
       <Card>
         <CardContent style={{ padding: 24 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-            Flagged Duplicates by Source
-          </Typography>
+          <p className="font-semibold text-base mb-4">Flagged Duplicates by Source</p>
           {dupes.isLoading ? (
-            <CircularProgress size={20} aria-label="Loading" />
+            <Spinner />
           ) : (dupes.data ?? []).length === 0 ? (
-            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-              No duplicates flagged.
-            </Typography>
+            <p className="text-sm text-muted-foreground">No duplicates flagged.</p>
           ) : (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <div className="flex flex-wrap gap-2">
               {(dupes.data ?? []).map((d) => (
                 <Badge key={d.slug} variant="outline">
                   {d.slug}: {d.duplicates}
                 </Badge>
               ))}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -188,20 +177,18 @@ export function VenueIngestStatsPanel() {
       {/* Per-source per-day breakdown */}
       <Card>
         <CardContent style={{ padding: 24 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-            Per-Source Daily Breakdown
-          </Typography>
+          <p className="font-semibold text-base mb-4">Per-Source Daily Breakdown</p>
           {stats.isLoading ? (
-            <CircularProgress size={20} aria-label="Loading" />
+            <Spinner />
           ) : (stats.data ?? []).length === 0 ? (
-            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>No activity.</Typography>
+            <p className="text-sm text-muted-foreground">No activity.</p>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr repeat(6, 80px)', gap: 1, fontSize: '0.75rem', color: 'var(--muted-foreground)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="flex flex-col gap-2">
+              <div className="grid gap-2 text-xs text-muted-foreground font-semibold uppercase tracking-wide" style={{ gridTemplateColumns: '1.2fr 1fr repeat(6, 80px)' }}>
                 <span>Day</span><span>Source</span><span>Staged</span><span>Valid</span><span>Unique</span><span>Dups</span><span>Inserted</span><span>Rejected</span>
-              </Box>
+              </div>
               {(stats.data ?? []).slice(0, 30).map((r, i) => (
-                <Box key={`${r.day}-${r.source}-${i}`} sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr repeat(6, 80px)', gap: 1, fontSize: '0.8rem', py: 0.5, borderTop: i === 0 ? undefined : '1px solid var(--border)' }}>
+                <div key={`${r.day}-${r.source}-${i}`} className="grid gap-2 text-[0.8rem] py-1" style={{ gridTemplateColumns: '1.2fr 1fr repeat(6, 80px)', borderTop: i === 0 ? undefined : '1px solid hsl(var(--border))' }}>
                   <span>{new Date(r.day).toLocaleDateString()}</span>
                   <span>{r.source}</span>
                   <span>{r.staged}</span>
@@ -210,9 +197,9 @@ export function VenueIngestStatsPanel() {
                   <span>{r.duplicates}</span>
                   <span>{r.inserted}</span>
                   <span>{r.rejected}</span>
-                </Box>
+                </div>
               ))}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -220,30 +207,28 @@ export function VenueIngestStatsPanel() {
       {/* Recent audit events */}
       <Card>
         <CardContent style={{ padding: 24 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-            Recent Pipeline Events
-          </Typography>
+          <p className="font-semibold text-base mb-4">Recent Pipeline Events</p>
           {events.isLoading ? (
-            <CircularProgress size={20} aria-label="Loading" />
+            <Spinner />
           ) : (events.data ?? []).length === 0 ? (
-            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>No events.</Typography>
+            <p className="text-sm text-muted-foreground">No events.</p>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <div className="flex flex-col gap-1">
               {(events.data ?? []).map((e) => (
-                <Box key={e.id} sx={{ display: 'grid', gridTemplateColumns: '160px 100px 100px 120px 1fr', gap: 1, fontSize: '0.8rem', py: 0.5 }}>
-                  <span style={{ color: 'var(--muted-foreground)' }}>{new Date(e.created_at).toLocaleString()}</span>
+                <div key={e.id} className="grid gap-2 text-[0.8rem] py-1" style={{ gridTemplateColumns: '160px 100px 100px 120px 1fr' }}>
+                  <span className="text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
                   <span><Badge variant="outline">{e.stage}</Badge></span>
                   <span>{e.new_status}</span>
-                  <span style={{ color: 'var(--muted-foreground)' }}>{e.actor}</span>
-                  <span style={{ fontFamily: 'monospace', color: 'var(--muted-foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span className="text-muted-foreground">{e.actor}</span>
+                  <span className="font-mono text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                     {e.payload ? JSON.stringify(e.payload).slice(0, 120) : '—'}
                   </span>
-                </Box>
+                </div>
               ))}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }
