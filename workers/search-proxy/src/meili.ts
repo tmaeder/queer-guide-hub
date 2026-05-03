@@ -4,19 +4,37 @@
 
 import type { Env } from "./index";
 
+/**
+ * Maps client-facing entity-type tokens to Meilisearch index UIDs. We accept
+ * both singular ("venue") and plural ("venues") forms because the public API
+ * documents the singular form (`type: 'venue'`) but legacy callers pass the
+ * plural form. Without the singular keys, autocomplete/search silently
+ * returned 0 hits whenever the caller passed `types: ['venue']` (bug #3 / #6).
+ */
 export const INDEX_MAP: Record<string, string> = {
+	venue: "venues",
 	venues: "venues",
+	event: "events",
 	events: "events",
+	user: "personalities",
 	users: "personalities",
 	news: "news",
 	marketplace: "marketplace",
+	location: "cities",
 	locations: "cities",
+	city: "cities",
 	cities: "cities",
+	country: "countries",
 	countries: "countries",
 	content: "tags",
+	tag: "tags",
 	tags: "tags",
+	personality: "personalities",
 	personalities: "personalities",
+	queer_village: "queer_villages",
 	queer_villages: "queer_villages",
+	group: "groups",
+	groups: "groups",
 };
 
 export const ALL_INDEXES = [
@@ -55,6 +73,8 @@ function scopeFilterToIndex(filter: string | undefined, indexUid: string): strin
 		"is_featured",
 		"start_date",
 		"end_date",
+		"city_id",
+		"cluster_ids",
 	]);
 	// Conservative split on " AND " — we only emit AND-joined clauses from buildFilters().
 	const parts = filter.split(/\s+AND\s+/i);
@@ -72,10 +92,13 @@ export interface SearchFilters {
 	featured?: boolean;
 	location?: string;
 	city?: string;
+	city_id?: string;
 	country?: string;
 	categories?: string[];
 	tags?: string[];
+	type?: string;
 	types?: string[];
+	cluster_ids?: string[];
 	lat?: number;
 	lng?: number;
 	radius?: number;
@@ -92,6 +115,7 @@ export function buildFilters(filters: SearchFilters | null | undefined): string 
 		parts.push(`(city = "${loc}" OR country = "${loc}")`);
 	}
 	if (filters.city) parts.push(`city = "${esc(filters.city)}"`);
+	if (filters.city_id) parts.push(`city_id = "${esc(filters.city_id)}"`);
 	if (filters.country) parts.push(`country = "${esc(filters.country)}"`);
 	if (filters.categories?.length) {
 		const cats = filters.categories.map((c: string) => `category = "${esc(c)}"`).join(" OR ");
@@ -100,6 +124,10 @@ export function buildFilters(filters: SearchFilters | null | undefined): string 
 	if (filters.tags?.length) {
 		const t = filters.tags.map((c: string) => `tags = "${esc(c)}"`).join(" OR ");
 		parts.push(`(${t})`);
+	}
+	if (filters.cluster_ids?.length) {
+		const c = filters.cluster_ids.map((id) => `cluster_ids = "${esc(id)}"`).join(" OR ");
+		parts.push(`(${c})`);
 	}
 	if (filters.lat != null && filters.lng != null && filters.radius) {
 		parts.push(`_geoRadius(${filters.lat}, ${filters.lng}, ${filters.radius * 1000})`);
@@ -121,13 +149,23 @@ export async function meiliMultiSearch(
 		filter?: string;
 		facets: Record<string, string[]>;
 		hitsPerPage: number;
+		page?: number;
 		useHybrid: boolean;
 	},
 ) {
+	const page = Math.max(0, args.page ?? 0);
+	// Each per-index query asks for a wider window so the merge/sort/page step
+	// has enough material to slice. The actual page slice happens in handleSearch
+	// after fusion + personalisation — this `limit`/`offset` only governs how
+	// much Meili returns per index. Without `offset` here, deep pages
+	// previously returned the same first slice on every call (bug #5).
+	const perIndexLimit = Math.max(5, Math.ceil(args.hitsPerPage * 1.5));
+	const offset = page * perIndexLimit;
 	const queries = args.indexes.map((indexUid) => ({
 		indexUid,
 		q: args.query,
-		limit: Math.max(5, Math.ceil(args.hitsPerPage * 1.5)),
+		limit: perIndexLimit,
+		offset,
 		// Strip filter clauses that reference attributes the index doesn't have as filterable.
 		filter: scopeFilterToIndex(args.filter, indexUid),
 		facets: args.facets[indexUid] || ["type"],

@@ -29,7 +29,26 @@ function sentry(env: Env, request: Request, ctx: ExecutionContext): Toucan | nul
 import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntities } from "./supabase";
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
-import { getCorsHeaders, json, readJsonBody } from "./util";
+import { detectScript, tokenize, isBareLgbtqQuery } from "./queryPrep";
+import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
+import {
+	parseJsonBody,
+	rejectUnknown,
+	validString,
+	validInt,
+	validFilters,
+	validEntityType,
+	validEntityTypeArray,
+	validTrackEvent,
+	validUuid,
+	validMetadata,
+	sanitiseStoredString,
+	MAX_HITS_PER_PAGE,
+	MAX_PAGE,
+	MIN_QUERY_LEN,
+	MAX_QUERY_LEN,
+	type ValidatedFilters,
+} from "./validation";
 
 export interface Env {
 	AI: Ai;
@@ -50,17 +69,23 @@ export interface Env {
 	SENTRY_RELEASE?: string;
 }
 
+// Read endpoints: corpus is public, ACAO: *.
+// Write endpoints: locked to ALLOWED_ORIGINS so the browser blocks cross-origin
+// writes from random sites. (Server-side scrapers bypass CORS either way.)
+const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		const cors = getCorsHeaders(request, env);
-		if (request.method === "OPTIONS") return new Response(null, { headers: cors });
-
 		const url = new URL(request.url);
+		const cors = WRITE_PATHS.has(url.pathname)
+			? getCorsHeadersOriginLocked(request, env)
+			: getCorsHeaders(request, env);
+		if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
 		// Rate limit: 60 rps per IP, sliding window in KV. /health bypasses.
 		if (url.pathname !== "/health") {
 			const rl = await rateLimit(env, request);
-			if (!rl.ok) return json({ error: "rate_limited", retry_after: rl.retryAfter }, 429, { ...cors, "Retry-After": String(rl.retryAfter) });
+			if (!rl.ok) return json({ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter }, 429, { ...cors, "Retry-After": String(rl.retryAfter) });
 		}
 
 		try {
@@ -85,7 +110,7 @@ export default {
 				case "/admin/analytics":
 					return await handleAnalytics(request, env, cors);
 				default:
-					return json({ error: "not found" }, 404, cors);
+					return json({ error: "not found", code: "not_found" }, 404, cors);
 			}
 		} catch (e) {
 			console.error("handler error", e);
@@ -94,7 +119,7 @@ export default {
 			} catch {
 				/* sentry best-effort */
 			}
-			return json({ error: "internal", details: (e as Error)?.message ?? String(e) }, 500, cors);
+			return json({ error: "internal", code: "internal", details: (e as Error)?.message ?? String(e) }, 500, cors);
 		}
 	},
 };
@@ -103,16 +128,104 @@ export default {
 // /search
 // ─────────────────────────────────────────────
 async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, cors: HeadersInit): Promise<Response> {
-	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
 	const started = Date.now();
-	const body = await readJsonBody<SearchBody>(request);
-	const { query, filters = {}, hitsPerPage = 20, user_id, session_id, lang = "en" } = body;
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
 
-	if (!query?.trim()) {
-		return json({ hits: [], facetDistribution: {}, processingTimeMS: 0 }, 200, cors);
+	const knownCheck = rejectUnknown(
+		body,
+		["query", "filters", "hitsPerPage", "page", "user_id", "session_id", "lang", "debug"],
+		"body",
+	);
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+
+	const queryR = validString(body.query, "query", { min: MIN_QUERY_LEN, max: MAX_QUERY_LEN });
+	if (!queryR.ok) return errorResponse(queryR, cors);
+	const q = queryR.value;
+
+	// Bug #16: punctuation/emoji/control-only queries collapse to nothing
+	// after tokenisation. Don't run the ranking pipeline on no signal.
+	const tokens = tokenize(q);
+	if (tokens.length === 0) {
+		return json(
+			{ hits: [], suggestions: [], facetDistribution: {}, processingTimeMS: Date.now() - started, reason: "empty_after_tokenize" },
+			200,
+			cors,
+		);
 	}
 
-	const q = query.trim();
+	// Bug #10: non-Latin script. Without aliases populated for the queried
+	// city, fuzzy matching against the Latin index would return random
+	// near-matches (柏林 → Bamberg). The aliases backfill (seed-city-aliases.sh)
+	// covers the most-populous cities; for everything else we'd rather
+	// return empty + a hint than a wrong answer.
+	const script = detectScript(q);
+	if (script !== "latin" && script !== "mixed") {
+		// Try a strict alias match against the cities index. If none, give up.
+		const aliasHits = await meiliMultiSearch(env, {
+			indexes: ["cities"],
+			query: q,
+			facets: INDEX_FACETS,
+			hitsPerPage: 5,
+			useHybrid: false,
+		}).catch(() => null);
+		if (!aliasHits || aliasHits.hits.length === 0) {
+			return json(
+				{ hits: [], suggestions: [], facetDistribution: {}, processingTimeMS: Date.now() - started, reason: "unsupported_script", script },
+				200,
+				cors,
+			);
+		}
+		// Fall through with the alias-matched seed hits as the primary result.
+		return json(
+			{ hits: aliasHits.hits, suggestions: aliasHits.hits.slice(0, 5), facetDistribution: {}, processingTimeMS: Date.now() - started, script },
+			200,
+			cors,
+		);
+	}
+
+	const filtersR = validFilters(body.filters);
+	if (!filtersR.ok) return errorResponse(filtersR, cors);
+	const filters: ValidatedFilters = filtersR.value;
+
+	const hppR = validInt(body.hitsPerPage, "hitsPerPage", { min: 1, max: MAX_HITS_PER_PAGE, default: 20, clamp: true });
+	if (!hppR.ok) return errorResponse(hppR, cors);
+	const hitsPerPage = hppR.value;
+
+	const pageR = validInt(body.page, "page", { min: 0, max: MAX_PAGE, default: 0 });
+	if (!pageR.ok) return errorResponse(pageR, cors);
+	const page = pageR.value;
+
+	const lang = (typeof body.lang === "string" && ["en", "de", "es", "fr"].includes(body.lang) ? body.lang : "en") as "en" | "de" | "es" | "fr";
+	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
+	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+	const debug = body.debug === true;
+
+	// Bug #9: a bare LGBTQ+ token query ('gay', 'queer', 'trans') is a
+	// stop-word in the venue/event indexes — running it through the full
+	// pipeline takes ~6s for an essentially random ranking. Route it to
+	// the popular-entities path (sub-200ms) instead.
+	if (isBareLgbtqQuery(tokens)) {
+		const popular = await popularEntities(env, ["venue", "event"], hitsPerPage * (page + 1));
+		const slice = popular.slice(page * hitsPerPage, (page + 1) * hitsPerPage);
+		return json(
+			{
+				hits: slice,
+				suggestions: slice.slice(0, 5),
+				nbHits: slice.length,
+				page,
+				hitsPerPage,
+				totalHits: popular.length,
+				facetDistribution: {},
+				processingTimeMS: Date.now() - started,
+				reason: "bare_stopword_query",
+			},
+			200,
+			cors,
+		);
+	}
 
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
@@ -120,15 +233,17 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const rewrite = shouldRewrite ? await rewriteQuery(env, q, lang) : null;
 
 	const effectiveQ = rewrite?.q_en || q;
-	const mergedFilters = { ...filters };
+	const mergedFilters: ValidatedFilters = { ...filters };
 	if (rewrite?.city && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewrite.city;
-	if (rewrite?.type_hint && !mergedFilters.types?.length) {
-		const tMap: Record<string, string> = { venue: "venues", event: "events", city: "cities", personality: "personalities", news: "news" };
-		mergedFilters.types = [tMap[rewrite.type_hint] || rewrite.type_hint];
-	}
+	// Normalise type/types: collapse `type` into `types` for downstream code.
+	const allTypes: string[] = [
+		...(mergedFilters.type ? [mergedFilters.type] : []),
+		...(mergedFilters.types ?? []),
+	];
+	if (rewrite?.type_hint && allTypes.length === 0) allTypes.push(rewrite.type_hint);
 
-	const requestedIndexes: string[] = mergedFilters.types?.length
-		? [...new Set<string>(mergedFilters.types.map((t: string) => INDEX_MAP[t] || t).filter((t: string) => ALL_INDEXES.includes(t)))]
+	const requestedIndexes: string[] = allTypes.length
+		? [...new Set<string>(allTypes.map((t) => INDEX_MAP[t] || t).filter((t) => ALL_INDEXES.includes(t)))]
 		: ALL_INDEXES;
 
 	const filterParts = buildFilters(mergedFilters);
@@ -174,6 +289,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			filter: filterParts,
 			facets: INDEX_FACETS,
 			hitsPerPage,
+			page,
 			useHybrid,
 		}),
 		semanticSearch(env, {
@@ -258,10 +374,12 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			hits: final,
 			suggestions: final.slice(0, 5),
 			nbHits: final.length,
+			page,
+			hitsPerPage,
 			totalHits: meili.estimatedTotalHits,
 			processingTimeMS,
 			facetDistribution: reorderedFacets,
-			debug: body.debug
+			debug: debug
 				? {
 						biasApplied: !!biasVec,
 						biasEvents: signal.biasItems?.length || 0,
@@ -283,25 +401,59 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 // ─────────────────────────────────────────────
 // /track
 // ─────────────────────────────────────────────
+// Per-event-type metadata schemas. Anything not listed here is rejected — see
+// validation.validMetadata + sanitiseStoredString. This blocks the XSS/SQL
+// injection vector demonstrated in bug #11 (a `<script>` literal landing in
+// stored metadata that admin tooling later renders unescaped).
+const METADATA_KEYS_BY_EVENT: Record<string, readonly string[]> = {
+	click: ["source", "position", "query"],
+	view: ["source", "duration_ms"],
+	save: ["source"],
+	favorite: ["source"],
+	book: ["source", "amount", "currency"],
+	attend: ["source"],
+	dismiss: ["source", "query"],
+};
+
 async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
-	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const body = await readJsonBody<{
-		user_id?: string;
-		session_id?: string;
-		event_type: string;
-		entity_type: string;
-		entity_id: string;
-		metadata?: Record<string, unknown>;
-	}>(request);
-	if (!body.event_type || !body.entity_type || !body.entity_id) {
-		return json({ error: "missing fields" }, 400, cors);
-	}
-	const id = await trackEvent(env, body);
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
+
+	const knownCheck = rejectUnknown(
+		body,
+		["user_id", "session_id", "event_type", "entity_type", "entity_id", "metadata"],
+		"body",
+	);
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+
+	const eventR = validTrackEvent(body.event_type);
+	if (!eventR.ok) return errorResponse(eventR, cors);
+	const event_type = eventR.value;
+
+	const entityTypeR = validEntityType(body.entity_type);
+	if (!entityTypeR.ok) return errorResponse(entityTypeR, cors);
+	const entity_type = entityTypeR.value;
+
+	const entityIdR = validUuid(body.entity_id, "entity_id");
+	if (!entityIdR.ok) return errorResponse(entityIdR, cors);
+	const entity_id = entityIdR.value;
+
+	const allowedKeys = METADATA_KEYS_BY_EVENT[event_type] ?? [];
+	const metadataR = validMetadata(body.metadata, allowedKeys);
+	if (!metadataR.ok) return errorResponse(metadataR, cors);
+	const metadata = metadataR.value;
+
+	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
+	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+
+	const id = await trackEvent(env, { user_id, session_id, event_type, entity_type, entity_id, metadata });
 
 	// Record seen-recently in KV for decay (24h TTL).
-	const sessionKey = body.user_id ? `u:${body.user_id}` : body.session_id ? `s:${body.session_id}` : null;
-	if (sessionKey && (body.event_type === "view" || body.event_type === "click")) {
-		await appendRecentSeen(env, sessionKey, `${body.entity_type}:${body.entity_id}`);
+	const sessionKey = user_id ? `u:${user_id}` : session_id ? `s:${session_id}` : null;
+	if (sessionKey && (event_type === "view" || event_type === "click")) {
+		await appendRecentSeen(env, sessionKey, `${entity_type}:${entity_id}`);
 	}
 
 	return json({ ok: true, id }, 200, cors);
@@ -328,22 +480,48 @@ async function appendRecentSeen(env: Env, key: string, entityId: string): Promis
 // /onboarding
 // ─────────────────────────────────────────────
 async function handleOnboarding(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
-	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const body = await readJsonBody<{
-		user_id: string;
-		vibes?: string[];
-		home_city?: string;
-		languages?: string[];
-	}>(request);
-	if (!body.user_id) return json({ error: "user_id required" }, 400, cors);
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
 
-	// Upsert minimal fields on profiles table.
-	const patch = {
-		interests: body.vibes ?? [],
-		location: body.home_city ?? null,
-		languages: body.languages ?? ["en"],
+	const knownCheck = rejectUnknown(body, ["user_id", "vibes", "home_city", "languages"], "body");
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+
+	const userIdR = validUuid(body.user_id, "user_id");
+	if (!userIdR.ok) return errorResponse(userIdR, cors);
+	const user_id = userIdR.value;
+
+	const sanitisedArray = (v: unknown, field: string, max = 32): { ok: true; value: string[] } | { ok: false; status: number; error: string; code: string; field?: string } => {
+		if (v === undefined) return { ok: true, value: [] };
+		if (!Array.isArray(v)) return { ok: false, status: 400, error: `${field} must be an array`, code: "type_error", field };
+		if (v.length > max) return { ok: false, status: 400, error: `${field} too long`, code: "too_long", field };
+		const out: string[] = [];
+		for (const item of v) {
+			const r = sanitiseStoredString(item, `${field}[]`, 64);
+			if (!r.ok) return r;
+			out.push(r.value);
+		}
+		return { ok: true, value: out };
 	};
-	const res = await fetch(`${env.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${body.user_id}`, {
+
+	const vibesR = sanitisedArray(body.vibes, "vibes");
+	if (!vibesR.ok) return errorResponse(vibesR, cors);
+	const langsR = sanitisedArray(body.languages, "languages", 8);
+	if (!langsR.ok) return errorResponse(langsR, cors);
+	let home_city: string | null = null;
+	if (body.home_city !== undefined && body.home_city !== null) {
+		const r = sanitiseStoredString(body.home_city, "home_city", 100);
+		if (!r.ok) return errorResponse(r, cors);
+		home_city = r.value;
+	}
+
+	const patch = {
+		interests: vibesR.value,
+		location: home_city,
+		languages: langsR.value.length ? langsR.value : ["en"],
+	};
+	const res = await fetch(`${env.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${user_id}`, {
 		method: "PATCH",
 		headers: {
 			apikey: env.SUPABASE_SERVICE_KEY,
@@ -353,7 +531,7 @@ async function handleOnboarding(request: Request, env: Env, cors: HeadersInit): 
 		},
 		body: JSON.stringify(patch),
 	});
-	if (!res.ok) return json({ error: "onboarding failed", details: await res.text() }, 500, cors);
+	if (!res.ok) return json({ error: "onboarding failed", code: "upstream_error", details: await res.text() }, 502, cors);
 	return json({ ok: true }, 200, cors);
 }
 
@@ -361,42 +539,44 @@ async function handleOnboarding(request: Request, env: Env, cors: HeadersInit): 
 // /similar
 // ─────────────────────────────────────────────
 async function handleSimilar(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
-	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { entity_type, entity_id, limit = 10, content_types } = await readJsonBody<{
-		entity_type?: string;
-		entity_id?: string;
-		limit?: number;
-		content_types?: string[] | null;
-	}>(request);
-	if (!entity_type || !entity_id) return json({ error: "missing" }, 400, cors);
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
+	const knownCheck = rejectUnknown(body, ["entity_type", "entity_id", "limit", "content_types"], "body");
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
 
-	// Fetch vector of seed.
+	const entityTypeR = validEntityType(body.entity_type);
+	if (!entityTypeR.ok) return errorResponse(entityTypeR, cors);
+	const entity_type = entityTypeR.value;
+	const entityIdR = validUuid(body.entity_id, "entity_id");
+	if (!entityIdR.ok) return errorResponse(entityIdR, cors);
+	const entity_id = entityIdR.value;
+	const limitR = validInt(body.limit, "limit", { min: 1, max: 50, default: 10, clamp: true });
+	if (!limitR.ok) return errorResponse(limitR, cors);
+	const limit = limitR.value;
+	let content_types: string[] | null = null;
+	if (body.content_types !== undefined && body.content_types !== null) {
+		const r = validEntityTypeArray(body.content_types, "content_types");
+		if (!r.ok) return errorResponse(r, cors);
+		content_types = r.value;
+	}
+
+	// Fetch vector of seed. Both fields are validated UUIDs / enum so safe to inline.
 	const seed = (await fetch(
 		`${env.SUPABASE_URL}/rest/v1/content_embeddings?content_type=eq.${entity_type}&content_id=eq.${entity_id}&select=embedding&limit=1`,
 		{ headers: { apikey: env.SUPABASE_SERVICE_KEY, authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}` } },
 	).then((r) => r.json())) as Array<{ embedding: unknown }>;
-	if (!seed?.[0]?.embedding) return json({ error: "no seed" }, 404, cors);
+	if (!seed?.[0]?.embedding) return json({ error: "no seed", code: "not_found" }, 404, cors);
 
 	const vec = parsePgVector(seed[0].embedding);
-	const results = await semanticSearch(env, { queryVec: vec, contentTypes: content_types || null, biasWeight: 0, limit: limit + 1 });
+	const results = await semanticSearch(env, { queryVec: vec, contentTypes: content_types, biasWeight: 0, limit: limit + 1 });
 	return json({ results: results.filter((r) => !(r.content_type === entity_type && r.content_id === entity_id)).slice(0, limit) }, 200, cors);
 }
 
 // ─────────────────────────────────────────────
 // helpers (local to file)
 // ─────────────────────────────────────────────
-
-import type { SearchFilters } from "./meili";
-
-type SearchBody = {
-	query: string;
-	filters?: SearchFilters;
-	hitsPerPage?: number;
-	user_id?: string;
-	session_id?: string;
-	lang?: "en" | "de" | "es" | "fr";
-	debug?: boolean;
-};
 
 const INDEX_TO_PG_TYPE: Record<string, string> = {
 	venues: "venue",
@@ -539,14 +719,34 @@ function parsePgVector(raw: unknown): number[] {
 // /autocomplete — fast prefix/typo suggestions from Meili across indexes
 // ─────────────────────────────────────────────
 async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
-	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { query, limit = 6, types } = await readJsonBody<{ query: string; limit?: number; types?: string[] }>(request);
-	const q = query?.trim();
-	if (!q) return json({ suggestions: [] }, 200, cors);
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
+	const knownCheck = rejectUnknown(body, ["query", "limit", "types"], "body");
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
 
-	const indexes = (types?.length
-		? types.map((t) => INDEX_MAP[t] || t).filter((t) => ALL_INDEXES.includes(t))
-		: ["venues", "events", "cities", "personalities"]) as string[];
+	const queryR = validString(body.query, "query", { min: MIN_QUERY_LEN, max: MAX_QUERY_LEN });
+	if (!queryR.ok) return errorResponse(queryR, cors);
+	const q = queryR.value;
+
+	const limitR = validInt(body.limit, "limit", { min: 1, max: 20, default: 6, clamp: true });
+	if (!limitR.ok) return errorResponse(limitR, cors);
+	const limit = limitR.value;
+
+	let indexes: string[];
+	if (body.types !== undefined) {
+		const r = validEntityTypeArray(body.types, "types");
+		if (!r.ok) return errorResponse(r, cors);
+		indexes = [...new Set(r.value.map((t) => INDEX_MAP[t]).filter((t) => ALL_INDEXES.includes(t)))];
+		if (indexes.length === 0) {
+			// All requested types had no Meilisearch index — return empty rather than
+			// silently widening (which would mask the caller's bug).
+			return json({ suggestions: [] }, 200, cors);
+		}
+	} else {
+		indexes = ["venues", "events", "cities", "personalities"];
+	}
 
 	const meili = await meiliMultiSearch(env, {
 		indexes,
@@ -571,14 +771,60 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 // /trending — popular by type in the last N days, lightly personalized
 // ─────────────────────────────────────────────
 async function handleTrending(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
-	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { types = ["venue", "event"], city, limit = 10, user_id, session_id } = await readJsonBody<{
-		types?: string[];
-		city?: string;
-		limit?: number;
-		user_id?: string;
-		session_id?: string;
-	}>(request);
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
+	const knownCheck = rejectUnknown(body, ["types", "city", "limit", "user_id", "session_id"], "body");
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+
+	const TRENDING_DEFAULT_TYPES = ["venue", "event"] as const;
+	let types: string[];
+	if (body.types === undefined) {
+		types = [...TRENDING_DEFAULT_TYPES];
+	} else {
+		const r = validEntityTypeArray(body.types, "types");
+		if (!r.ok) return errorResponse(r, cors);
+		// Empty array means "all types" — historically returned 0, which surprised callers (bug #17).
+		types = r.value.length ? r.value : [...TRENDING_DEFAULT_TYPES];
+	}
+
+	let city: string | null = null;
+	if (body.city !== undefined && body.city !== null) {
+		const r = validString(body.city, "city", { max: 100 });
+		if (!r.ok) return errorResponse(r, cors);
+		city = r.value;
+	}
+
+	const limitR = validInt(body.limit, "limit", { min: 1, max: 50, default: 10, clamp: true });
+	if (!limitR.ok) return errorResponse(limitR, cors);
+	const limit = limitR.value;
+
+	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
+	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+
+	// Bug #9: edge cache. Trending only changes meaningfully every few minutes
+	// and the underlying RPC is the slowest endpoint per p95 (~1-3s). Cache
+	// keyed by (types, city, limit). Personalised responses bypass the cache.
+	const isPersonal = !!(user_id || session_id);
+	const cacheKey = isPersonal
+		? null
+		: new Request(
+			`https://search.queer.guide/_cache/trending?t=${types.slice().sort().join(",")}&c=${encodeURIComponent(city ?? "")}&l=${limit}`,
+		);
+	const cache = (caches as unknown as { default: Cache }).default;
+	if (cacheKey) {
+		const cached = await cache.match(cacheKey).catch(() => null);
+		if (cached) {
+			// Re-attach CORS — Cloudflare's edge cache doesn't store/replay
+			// per-origin headers in a useful way for us.
+			const body = await cached.text();
+			return new Response(body, {
+				status: 200,
+				headers: { ...cors, "Content-Type": "application/json", "X-Cache": "HIT" },
+			});
+		}
+	}
 
 	const url = `${env.SUPABASE_URL}/rest/v1/rpc/get_trending_entities`;
 	const res = await fetch(url, {
@@ -588,7 +834,7 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 			authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ p_types: types, p_city: city ?? null, p_limit: limit }),
+		body: JSON.stringify({ p_types: types, p_city: city, p_limit: limit }),
 	});
 	if (!res.ok) {
 		// Fallback: popular view only.
@@ -598,7 +844,7 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 	const list = (await res.json()) as Array<{ city?: string; score?: number; [k: string]: unknown }>;
 
 	// Soft personalization: if we have signal, boost items in user cities / interests.
-	if (user_id || session_id) {
+	if (isPersonal) {
 		const sig = await getUserSignal(env, { user_id, session_id });
 		const citySet = new Set(
 			[sig?.home_city, ...(sig?.recent_cities || [])]
@@ -612,34 +858,59 @@ async function handleTrending(request: Request, env: Env, cors: HeadersInit): Pr
 			return (b.score || 0) - (a.score || 0);
 		});
 	}
-	return json({ trending: list.slice(0, limit) }, 200, cors);
+
+	const payload = JSON.stringify({ trending: list.slice(0, limit) });
+	if (cacheKey) {
+		// 5-minute TTL. Stale-while-revalidate gives us 1 minute of grace.
+		const cacheable = new Response(payload, {
+			status: 200,
+			headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300, stale-while-revalidate=60" },
+		});
+		// Don't await — fire and forget so the user doesn't pay for the cache write.
+		(globalThis as unknown as { ctx?: ExecutionContext }).ctx?.waitUntil?.(cache.put(cacheKey, cacheable.clone()));
+		await cache.put(cacheKey, cacheable).catch(() => void 0);
+	}
+	return new Response(payload, {
+		status: 200,
+		headers: { ...cors, "Content-Type": "application/json", "X-Cache": "MISS" },
+	});
 }
 
 // ─────────────────────────────────────────────
 // /feedback — explicit thumbs up/down on a result
 // ─────────────────────────────────────────────
 async function handleFeedback(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
-	if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-	const { user_id, session_id, query, entity_type, entity_id, vote } = await readJsonBody<{
-		user_id?: string;
-		session_id?: string;
-		query?: string;
-		entity_type?: string;
-		entity_id?: string;
-		vote?: "up" | "down";
-	}>(request);
-	if (!entity_type || !entity_id || !vote || !["up", "down"].includes(vote)) {
-		return json({ error: "missing fields" }, 400, cors);
+	if (request.method !== "POST") return json({ error: "method", code: "method_not_allowed" }, 405, cors);
+	const parsed = await parseJsonBody<Record<string, unknown>>(request);
+	if (!parsed.ok) return errorResponse(parsed, cors);
+	const body = parsed.value;
+	const knownCheck = rejectUnknown(body, ["user_id", "session_id", "query", "entity_type", "entity_id", "vote"], "body");
+	if (!knownCheck.ok) return errorResponse(knownCheck, cors);
+
+	const entityTypeR = validEntityType(body.entity_type);
+	if (!entityTypeR.ok) return errorResponse(entityTypeR, cors);
+	const entityIdR = validUuid(body.entity_id, "entity_id");
+	if (!entityIdR.ok) return errorResponse(entityIdR, cors);
+	if (body.vote !== "up" && body.vote !== "down") {
+		return errorResponse({ ok: false, status: 400, error: "vote must be 'up' or 'down'", code: "invalid_enum", field: "vote" }, cors);
 	}
-	// Stored as user_events so it feeds bias vector naturally.
-	const event_type = vote === "up" ? "save" : "dismiss";
+	let query: string | undefined;
+	if (body.query !== undefined && body.query !== null) {
+		const r = sanitiseStoredString(body.query, "query", MAX_QUERY_LEN);
+		if (!r.ok) return errorResponse(r, cors);
+		query = r.value;
+	}
+	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
+	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+
+	const event_type = body.vote === "up" ? "save" : "dismiss";
 	await trackEvent(env, {
 		user_id,
 		session_id,
 		event_type,
-		entity_type,
-		entity_id,
-		metadata: { source: "feedback", query },
+		entity_type: entityTypeR.value,
+		entity_id: entityIdR.value,
+		metadata: { source: "feedback", ...(query ? { query } : {}) },
 	});
 	return json({ ok: true }, 200, cors);
 }
