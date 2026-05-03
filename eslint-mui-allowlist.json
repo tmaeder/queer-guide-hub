@@ -193,7 +193,6 @@
   "src/pages/AdminSubmissions.tsx",
   "src/pages/AdminUsers.tsx",
   "src/pages/AdminVenueAmenities.tsx",
-  "src/pages/AdminVenueCategories.tsx",
   "src/pages/AdminVenueServices.tsx",
   "src/pages/AdminVenues.tsx",
   "src/pages/CMSRoutePage.tsx",
