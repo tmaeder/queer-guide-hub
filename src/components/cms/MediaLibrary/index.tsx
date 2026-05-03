@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import {
   Trash2,
   Search,
@@ -405,17 +403,17 @@ export function MediaLibrary() {
   };
 
   return (
-    <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="max-w-screen-lg mx-auto p-6 flex flex-col gap-6">
       {/* Header */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { sm: 'center' }, justifyContent: 'space-between', gap: 2 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>Media Library</Typography>
-          <Typography variant="body2" color="text.secondary">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h4 className="text-2xl font-bold">Media Library</h4>
+          <p className="text-sm text-muted-foreground">
             Manage and optimize your media files
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <Button
             onClick={populateOptimizationStatus}
             variant="outline"
@@ -436,30 +434,30 @@ export function MediaLibrary() {
             <Sliders style={{ height: 16, width: 16, marginRight: 4 }} />
             Optimize
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Bulk Actions Bar */}
       {bulkMode && (
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <p className="text-sm font-medium">
                   {selectedItems.size} of {filteredMedia.length} selected
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                </p>
+                <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={selectAllVisible}>
                     Select All Visible
                   </Button>
                   <Button size="sm" variant="outline" onClick={clearSelection}>
                     Clear Selection
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               {selectedItems.size > 0 && (
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => setShowOptimization(true)}>
                     <Zap style={{ height: 16, width: 16, marginRight: 4 }} />
                     Optimize
@@ -472,9 +470,9 @@ export function MediaLibrary() {
                     <Trash2 style={{ height: 16, width: 16, marginRight: 4 }} />
                     Delete
                   </Button>
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -486,30 +484,30 @@ export function MediaLibrary() {
             <CardTitle style={{ fontSize: '1.125rem' }}>Active Optimizations</CardTitle>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <div className="flex flex-col gap-3">
               {optimizationJobs.filter(job => job.status !== 'completed').map(job => (
-                <Box key={job.id} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                <div key={job.id} className="flex flex-col gap-3 p-4 border border-border rounded-md">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm font-medium">
                       Optimizing {job.media_ids.length} files ({job.settings.formats.join(', ')})
-                    </Typography>
+                    </p>
                     <Badge variant={job.status === 'processing' ? 'default' : 'secondary'}>
                       {job.status}
                     </Badge>
-                  </Box>
+                  </div>
                   <Progress value={job.progress} style={{ height: 8 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="caption" color="text.secondary">{job.progress}% complete</Typography>
+                  <div className="flex justify-between">
+                    <span className="text-xs text-muted-foreground">{job.progress}% complete</span>
                     {job.results && (
-                      <Typography variant="caption" color="text.secondary">
+                      <span className="text-xs text-muted-foreground">
                         {job.results.successful}/{job.results.processed} processed
                         {job.results.totalSavings > 0 && ` - ${formatFileSize(job.results.totalSavings)} saved`}
-                      </Typography>
+                      </span>
                     )}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -532,8 +530,8 @@ export function MediaLibrary() {
       {/* Filters and Controls */}
       <Card>
         <CardContent style={{ padding: 16 }}>
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 2 }}>
-            <Box sx={{ position: 'relative', flex: 1, maxWidth: { md: 400 } }}>
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1 md:max-w-md">
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
               <Input
                 placeholder="Search media files..."
@@ -541,9 +539,9 @@ export function MediaLibrary() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{ paddingLeft: 40 }}
               />
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="flex gap-2 items-center flex-wrap">
               <Select value={filterBy} onValueChange={(value: FilterBy) => setFilterBy(value)}>
                 <SelectTrigger style={{ width: 144 }}>
                   <SelectValue />
@@ -572,7 +570,7 @@ export function MediaLibrary() {
                 </SelectContent>
               </Select>
 
-              <Box sx={{ display: 'flex', border: 1, borderColor: 'divider', borderRadius: 1 }}>
+              <div className="flex border border-border rounded">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -597,7 +595,7 @@ export function MediaLibrary() {
                 >
                   <FolderOpen style={{ height: 16, width: 16 }} />
                 </Button>
-              </Box>
+              </div>
 
               <Button
                 variant="outline"
@@ -606,8 +604,8 @@ export function MediaLibrary() {
               >
                 <RefreshCw style={{ height: 16, width: 16 }} />
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -640,30 +638,30 @@ export function MediaLibrary() {
           <CardTitle style={{ fontSize: '1.125rem' }}>Library Statistics</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{media.length}</Typography>
-              <Typography variant="body2" color="text.secondary">Total Files</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-xl font-bold">{media.length}</p>
+              <p className="text-sm text-muted-foreground">Total Files</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold">
                 {formatFileSize(media.reduce((acc, item) => acc + item.file_size, 0))}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">Total Size</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              </p>
+              <p className="text-sm text-muted-foreground">Total Size</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold">
                 {media.filter(item => item.optimization_status === 'optimized').length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">Optimized</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+              </p>
+              <p className="text-sm text-muted-foreground">Optimized</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold">
                 {media.filter(item => (item.usage_count || 0) === 0).length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">Unused</Typography>
-            </Box>
-          </Box>
+              </p>
+              <p className="text-sm text-muted-foreground">Unused</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -696,7 +694,7 @@ export function MediaLibrary() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Box>
+    </div>
   );
 }
 
