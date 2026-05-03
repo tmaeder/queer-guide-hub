@@ -399,6 +399,339 @@ async function personalityDetail(
   return { meta, body, jsonLd: renderLd(prune(personLd)) };
 }
 
+// City — programmatic SEO surface for /city/:slug
+
+async function cityDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  const cityRow = await fetchOne(
+    env,
+    'cities',
+    'slug',
+    slug,
+    'id,name,slug,description,image_url,latitude,longitude,country_id,is_capital,is_major_city,population,lgbt_friendly_rating,updated_at',
+  );
+  if (!cityRow) return null;
+
+  const name = stringField(cityRow, 'name') ?? slug;
+  const description = stringField(cityRow, 'description') ?? '';
+  const image = stringField(cityRow, 'image_url');
+  const cityId = stringField(cityRow, 'id');
+
+  // Aggregate venues + events for this city. Best-effort — if either fails the
+  // page still renders with whatever we have.
+  const [venues, events] = await Promise.all([
+    cityId
+      ? fetchRows(
+          env,
+          'venues',
+          'name,slug,address,category,venue_subtype,foursquare_rating',
+          `city_id=eq.${cityId}&order=foursquare_rating.desc.nullslast`,
+          10,
+        ).catch(() => [])
+      : Promise.resolve([]),
+    cityId
+      ? fetchRows(
+          env,
+          'events',
+          'title,slug,start_date',
+          `city_id=eq.${cityId}&start_date=gte.${new Date().toISOString().slice(0, 10)}&order=start_date.asc`,
+          10,
+        ).catch(() => [])
+      : Promise.resolve([]),
+  ]);
+
+  const meta: RouteMeta = {
+    title: truncate(`LGBTQ+ guide to ${name}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description ||
+        `Queer venues, events, hotels and travel tips for ${name}. ${venues.length} venues, ${events.length} upcoming events on Queer Guide.`,
+      MAX_DESC,
+    ),
+    ogImage: image ?? DEFAULT_OG_IMAGE,
+  };
+
+  const venuesList = venues
+    .filter((v) => stringField(v, 'slug'))
+    .map((v) => {
+      const vname = escape(stringField(v, 'name') ?? '');
+      const vslug = escape(stringField(v, 'slug') ?? '');
+      const vsub = stringField(v, 'venue_subtype') ?? stringField(v, 'category');
+      return `<li><a href="/venues/${vslug}">${vname}</a>${vsub ? ` — ${escape(vsub)}` : ''}</li>`;
+    })
+    .join('\n        ');
+
+  const eventsList = events
+    .filter((e) => stringField(e, 'slug'))
+    .map((e) => {
+      const ename = escape(stringField(e, 'title') ?? '');
+      const eslug = escape(stringField(e, 'slug') ?? '');
+      const edate = stringField(e, 'start_date');
+      return `<li><a href="/events/${eslug}">${ename}</a>${edate ? ` — <time datetime="${escape(edate)}">${escape(edate.slice(0, 10))}</time>` : ''}</li>`;
+    })
+    .join('\n        ');
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>LGBTQ+ guide to ${escape(name)}</h1>
+      ${description ? paragraphsHtml(description) : `<p>${escape(name)} is part of the global queer life Queer Guide tracks. Below are the venues, events and travel tips we have on file for ${escape(name)}.</p>`}
+      ${venues.length ? `<section><h2>Top LGBTQ+ venues in ${escape(name)}</h2><ul>\n        ${venuesList}\n      </ul></section>` : ''}
+      ${events.length ? `<section><h2>Upcoming LGBTQ+ events in ${escape(name)}</h2><ul>\n        ${eventsList}\n      </ul></section>` : ''}
+      <section><h2>Plan your trip</h2><p>Check the <a href="/travel">country safety guide</a> before you go, and browse <a href="/hotels">queer-friendly hotels</a> and <a href="/villages">queer villages</a> for a place to stay.</p></section>
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/places">All places</a></li>
+        <li><a href="/venues">All venues</a></li>
+        <li><a href="/events">All events</a></li>
+        <li><a href="/travel">Travel</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const placeLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Place',
+    name,
+    description: description || `LGBTQ+ guide to ${name} on Queer Guide.`,
+    url: `${SITE_ORIGIN}${pathname}`,
+    image,
+    geo:
+      numField(cityRow, 'latitude') !== undefined && numField(cityRow, 'longitude') !== undefined
+        ? {
+            '@type': 'GeoCoordinates',
+            latitude: numField(cityRow, 'latitude'),
+            longitude: numField(cityRow, 'longitude'),
+          }
+        : undefined,
+  };
+
+  const itemList: Record<string, unknown> | null = venues.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: `LGBTQ+ venues in ${name}`,
+        itemListElement: venues
+          .filter((v) => stringField(v, 'slug'))
+          .map((v, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            url: `${SITE_ORIGIN}/venues/${stringField(v, 'slug')}`,
+            name: stringField(v, 'name'),
+          })),
+      }
+    : null;
+
+  const jsonLd =
+    renderLd(prune(placeLd)) + (itemList ? '\n' + renderLd(prune(itemList)) : '');
+
+  return { meta, body, jsonLd };
+}
+
+// Country — /country/:slug
+
+async function countryDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  const row = await fetchOne(
+    env,
+    'countries',
+    'slug',
+    slug,
+    'id,name,slug,code,description,image_url,capital,latitude,longitude,equality_score,lgbt_legal_status,lgbt_rights_status,lgbti_same_sex_unions,population,updated_at',
+  );
+  if (!row) return null;
+
+  const name = stringField(row, 'name') ?? slug;
+  const description = stringField(row, 'description') ?? '';
+  const image = stringField(row, 'image_url');
+  const legal = stringField(row, 'lgbt_legal_status');
+  const unions = stringField(row, 'lgbti_same_sex_unions');
+  const capital = stringField(row, 'capital');
+
+  const meta: RouteMeta = {
+    title: truncate(`LGBTQ+ rights & travel — ${name}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description ||
+        `LGBTQ+ legal status, safety, venues and travel guide for ${name}. ${legal ? `Legal status: ${legal}.` : ''}`,
+      MAX_DESC,
+    ),
+    ogImage: image ?? DEFAULT_OG_IMAGE,
+  };
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>LGBTQ+ guide to ${escape(name)}</h1>
+      ${capital ? `<p><strong>Capital:</strong> ${escape(capital)}</p>` : ''}
+      ${legal ? `<p><strong>LGBTQ+ legal status:</strong> ${escape(legal)}</p>` : ''}
+      ${unions ? `<p><strong>Same-sex unions:</strong> ${escape(unions)}</p>` : ''}
+      ${description ? paragraphsHtml(description) : `<p>Country profile, legal status and travel notes for ${escape(name)}.</p>`}
+      <section><h2>Plan your trip</h2><p>Read the <a href="/travel">global travel safety guide</a>, browse <a href="/places">cities and queer villages</a>, and check <a href="/help-hotlines">crisis hotlines</a> before you go.</p></section>
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/places">Places</a></li>
+        <li><a href="/travel">Travel</a></li>
+        <li><a href="/venues">Venues</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const countryLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Country',
+    name,
+    identifier: stringField(row, 'code'),
+    description: description || undefined,
+    image,
+    url: `${SITE_ORIGIN}${pathname}`,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(countryLd)) };
+}
+
+// Hotels — /hotels/:slug
+
+async function hotelDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  const row = await fetchOne(
+    env,
+    'hotels',
+    'slug',
+    slug,
+    'name,slug,description,address,city,country,latitude,longitude,images,hotel_type,star_rating,price_range,amenities,booking_url,phone,website,queer_safety_notes,lgbtq_friendly,updated_at',
+  );
+  if (!row) return null;
+
+  const name = stringField(row, 'name') ?? slug;
+  const description = stringField(row, 'description') ?? '';
+  const city = stringField(row, 'city');
+  const country = stringField(row, 'country');
+  const safetyNotes = stringField(row, 'queer_safety_notes');
+
+  const meta: RouteMeta = {
+    title: truncate(`${name}${city ? ` — ${city}` : ''}${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description || `LGBTQ+ friendly hotel${city ? ` in ${city}` : ''} on Queer Guide.`,
+      MAX_DESC,
+    ),
+    ogImage: (arrayField(row, 'images')?.[0] as string) ?? DEFAULT_OG_IMAGE,
+  };
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${city ? `<p><strong>${escape([stringField(row, 'address'), city, country].filter(Boolean).join(', '))}</strong></p>` : ''}
+      ${description ? paragraphsHtml(description) : ''}
+      ${safetyNotes ? `<section><h2>Queer safety notes</h2>${paragraphsHtml(safetyNotes)}</section>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/hotels">All hotels</a></li>
+        ${city ? `<li><a href="/city/${escape(slugify(city))}">More in ${escape(city)}</a></li>` : ''}
+        <li><a href="/travel">Travel</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const lodgingLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'LodgingBusiness',
+    name,
+    description: description || undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+    address:
+      stringField(row, 'address') || city
+        ? {
+            '@type': 'PostalAddress',
+            streetAddress: stringField(row, 'address'),
+            addressLocality: city,
+            addressCountry: country,
+          }
+        : undefined,
+    geo:
+      numField(row, 'latitude') !== undefined && numField(row, 'longitude') !== undefined
+        ? {
+            '@type': 'GeoCoordinates',
+            latitude: numField(row, 'latitude'),
+            longitude: numField(row, 'longitude'),
+          }
+        : undefined,
+    image: arrayField(row, 'images')?.[0],
+    starRating: numField(row, 'star_rating')
+      ? { '@type': 'Rating', ratingValue: numField(row, 'star_rating') }
+      : undefined,
+    telephone: stringField(row, 'phone'),
+    priceRange:
+      numField(row, 'price_range') !== undefined ? '$'.repeat(numField(row, 'price_range') as number) : undefined,
+    sameAs: stringField(row, 'website') ? [stringField(row, 'website')] : undefined,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(lodgingLd)) };
+}
+
+// Queer villages — /villages/:slug
+
+async function villageDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  const row = await fetchOne(
+    env,
+    'queer_villages',
+    'slug',
+    slug,
+    'name,slug,description,history,latitude,longitude,images,image_url,notable_landmarks,website,updated_at',
+  );
+  if (!row) return null;
+
+  const name = stringField(row, 'name') ?? slug;
+  const description = stringField(row, 'description') ?? '';
+  const history = stringField(row, 'history') ?? '';
+  const landmarks = arrayField(row, 'notable_landmarks') ?? [];
+  const image = stringField(row, 'image_url') ?? (arrayField(row, 'images')?.[0] as string | undefined);
+
+  const meta: RouteMeta = {
+    title: truncate(`${name} — Queer village${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description || `${name} — historic queer neighborhood and travel destination on Queer Guide.`,
+      MAX_DESC,
+    ),
+    ogImage: image ?? DEFAULT_OG_IMAGE,
+  };
+
+  const landmarksList = landmarks
+    .filter((l): l is string => typeof l === 'string' && l.length > 0)
+    .map((l) => `<li>${escape(l)}</li>`)
+    .join('\n        ');
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${description ? paragraphsHtml(description) : ''}
+      ${history ? `<section><h2>History</h2>${paragraphsHtml(history)}</section>` : ''}
+      ${landmarksList ? `<section><h2>Notable landmarks</h2><ul>\n        ${landmarksList}\n      </ul></section>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/places">All places</a></li>
+        <li><a href="/travel">Travel</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const placeLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristDestination',
+    name,
+    description: description || undefined,
+    url: `${SITE_ORIGIN}${pathname}`,
+    image,
+    geo:
+      numField(row, 'latitude') !== undefined && numField(row, 'longitude') !== undefined
+        ? {
+            '@type': 'GeoCoordinates',
+            latitude: numField(row, 'latitude'),
+            longitude: numField(row, 'longitude'),
+          }
+        : undefined,
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(placeLd)) };
+}
+
 // Dispatch
 
 export async function resolveDetailRoute(
@@ -408,7 +741,9 @@ export async function resolveDetailRoute(
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }
-  const m = pathname.match(/^\/(venues?|events?|news|personalities|personality)\/([^/?#]+)\/?$/);
+  const m = pathname.match(
+    /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?)\/([^/?#]+)\/?$/,
+  );
   if (!m) return null;
   const [, kindRaw, rawSlug] = m;
   const slug = decodeURIComponent(rawSlug);
@@ -417,6 +752,10 @@ export async function resolveDetailRoute(
     if (kindRaw.startsWith('event')) return await eventDetail(env, slug, pathname);
     if (kindRaw === 'news') return await newsDetail(env, slug, pathname);
     if (kindRaw.startsWith('personalit')) return await personalityDetail(env, slug, pathname);
+    if (kindRaw === 'city') return await cityDetail(env, slug, pathname);
+    if (kindRaw === 'country') return await countryDetail(env, slug, pathname);
+    if (kindRaw.startsWith('hotel')) return await hotelDetail(env, slug, pathname);
+    if (kindRaw.startsWith('village')) return await villageDetail(env, slug, pathname);
   } catch {
     return null;
   }
