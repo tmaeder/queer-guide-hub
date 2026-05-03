@@ -18,10 +18,7 @@ import {
   Luggage,
   Navigation2,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -168,25 +165,16 @@ export function EventHero({
   return (
     <>
       {heroImage && (
-        <Box
-          sx={{
-            width: '100%',
-            height: { xs: 160, md: 192 },
-            borderRadius: 3,
-            overflow: 'hidden',
-            mb: 3,
-          }}
-        >
-          <Box
-            component="img"
+        <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6">
+          <img
             src={heroImage}
             alt={event.title}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-        </Box>
+        </div>
       )}
 
       {event.countries?.lgbti_criminalization && (
@@ -197,96 +185,56 @@ export function EventHero({
       )}
 
       {isPast && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          Dieses Event hat bereits stattgefunden. / This event has ended.
+        <Alert className="mb-6">
+          <AlertDescription>
+            Dieses Event hat bereits stattgefunden. / This event has ended.
+          </AlertDescription>
         </Alert>
       )}
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { md: 'flex-start' },
-          justifyContent: { md: 'space-between' },
-          gap: 2,
-          mb: 2,
-        }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              mb: 0.5,
-              flexWrap: 'wrap',
-              pl: '2px',
-            }}
-          >
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-1 flex-wrap pl-[2px]">
             {event.logo_url && (
-              <Box
-                component="img"
+              <img
                 src={event.logo_url}
                 alt=""
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '10px',
-                  objectFit: 'contain',
-                  p: '3px',
-                  flexShrink: 0,
-                }}
+                className="object-contain flex-shrink-0"
+                style={{ width: 40, height: 40, borderRadius: '10px', padding: '3px' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             )}
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-                minWidth: 0,
-                flex: { xs: '1 1 100%', sm: '1 1 auto' },
-                wordBreak: 'break-word',
-                overflowWrap: 'anywhere',
-                pl: '1px',
-              }}
-            >
+            <h4 className="text-2xl font-bold min-w-0 flex-[1_1_100%] sm:flex-[1_1_auto] break-words pl-[1px]" style={{ overflowWrap: 'anywhere' }}>
               {event.title}
-            </Typography>
+            </h4>
             {event.is_featured && (
               <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
             )}
             {event.countries?.equality_score != null && (
               <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
             )}
-          </Box>
+          </div>
           {event.festivals?.id && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+            <div className="flex items-center gap-1 mb-1">
               <Music style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-              <Typography variant="body2" color="text.secondary">
-                Part of{' '}
-                <Typography component="span" variant="body2" sx={{ fontWeight: 600 }}>
-                  {event.festivals.name}
-                </Typography>
-              </Typography>
-            </Box>
+              <span className="text-sm text-muted-foreground">
+                Part of <span className="text-sm font-semibold">{event.festivals.name}</span>
+              </span>
+            </div>
           )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+          <div className="flex items-center gap-1 mb-2">
             <MapPin style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-            <Typography variant="body2" color="text.secondary">
+            <span className="text-sm text-muted-foreground">
               {event.venues?.id ? (
                 <LocalizedLink
                   to={`/venues/${event.venues.slug || event.venues.id}`}
                   style={{ color: 'inherit', textDecoration: 'none' }}
                 >
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
-                  >
+                  <span className="text-sm hover:text-primary hover:underline">
                     {event.venues.name}
-                  </Typography>
+                  </span>
                 </LocalizedLink>
               ) : (
                 event.venue_name || ''
@@ -296,13 +244,7 @@ export function EventHero({
                   {event.venues?.name || event.venue_name ? ', ' : ''}
                   {cityLink ? (
                     <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
-                      >
-                        {cityName}
-                      </Typography>
+                      <span className="text-sm hover:text-primary hover:underline">{cityName}</span>
                     </LocalizedLink>
                   ) : (
                     cityName
@@ -314,26 +256,20 @@ export function EventHero({
                   {', '}
                   {countryLink ? (
                     <LocalizedLink to={countryLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
-                      >
+                      <span className="text-sm hover:text-primary hover:underline">
                         {countryName}
-                      </Typography>
+                      </span>
                     </LocalizedLink>
                   ) : (
                     countryName
                   )}
                 </>
               )}
-            </Typography>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
 
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}
-        >
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
           <FavoriteButton itemId={event.id} type="event" size="md" />
           {!isPast && (
             <Button variant="outline" size="sm" onClick={onAddToTrip}>
@@ -376,59 +312,49 @@ export function EventHero({
               Send
             </Button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-        <Chip
-          icon={<Calendar style={{ width: 14, height: 14 }} />}
-          label={formatEventDate(event.start_date, event.end_date)}
-          size="small"
-          variant="outlined"
-        />
-        <Chip
-          icon={<Clock style={{ width: 14, height: 14 }} />}
-          label={formatEventTime(
-            event.start_date,
-            event.end_date,
-            showEventTz ? event.timezone : null,
-          )}
-          size="small"
-          variant="outlined"
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Badge variant="outline" className="gap-1">
+          <Calendar style={{ width: 14, height: 14 }} />
+          {formatEventDate(event.start_date, event.end_date)}
+        </Badge>
+        <Badge
+          variant="outline"
+          className={`gap-1 ${event.timezone ? 'cursor-pointer' : ''}`}
           onClick={event.timezone ? () => setShowEventTz((prev) => !prev) : undefined}
-          sx={event.timezone ? { cursor: 'pointer' } : undefined}
           title={
             event.timezone
               ? `Click to toggle between event timezone and your local time`
               : undefined
           }
-        />
-        <Chip
-          icon={<MapPin style={{ width: 14, height: 14 }} />}
-          label={locationLabel}
-          size="small"
-          variant="outlined"
+        >
+          <Clock style={{ width: 14, height: 14 }} />
+          {formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
+        </Badge>
+        <Badge
+          variant="outline"
+          className="gap-1 cursor-pointer"
           onClick={() => venueRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-          sx={{ cursor: 'pointer' }}
-        />
-        <Chip
-          icon={<DollarSign style={{ width: 14, height: 14 }} />}
-          label={getPriceDisplay(event)}
-          size="small"
-          variant="outlined"
-        />
+        >
+          <MapPin style={{ width: 14, height: 14 }} />
+          {locationLabel}
+        </Badge>
+        <Badge variant="outline" className="gap-1">
+          <DollarSign style={{ width: 14, height: 14 }} />
+          {getPriceDisplay(event)}
+        </Badge>
         {isMeaningfulTag(event.event_type) && (
-          <Chip
-            icon={<Tag style={{ width: 14, height: 14 }} />}
-            label={event.event_type}
-            size="small"
-            sx={{ textTransform: 'capitalize' }}
-          />
+          <Badge className="gap-1 capitalize">
+            <Tag style={{ width: 14, height: 14 }} />
+            {event.event_type}
+          </Badge>
         )}
         {event.age_restriction && (
-          <Chip label={event.age_restriction} size="small" variant="outlined" />
+          <Badge variant="outline">{event.age_restriction}</Badge>
         )}
-      </Box>
+      </div>
 
       {(() => {
         const priceUnknown = !event.is_free && !event.price_min;
@@ -439,29 +365,18 @@ export function EventHero({
           .filter(Boolean)
           .join(' and ');
         return (
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: 1.5,
-              mb: 3,
-              p: 1.5,
-              bgcolor: 'action.hover',
-              borderRadius: 2,
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-muted rounded-lg">
+            <p className="text-sm text-muted-foreground">
               {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet —
               check the source for the latest info.
-            </Typography>
+            </p>
             <Button size="sm" variant="outline" asChild>
               <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink style={{ width: 14, height: 14, marginRight: 6 }} />
                 Visit source
               </a>
             </Button>
-          </Box>
+          </div>
         );
       })()}
     </>
@@ -487,16 +402,16 @@ export function EventOverview({
   const attendeesInterested = event.event_attendees?.filter((a) => a.status === 'interested') || [];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {event.description && (
         <Card>
           <CardHeader>
             <CardTitle>About This Event</CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+            <p className="text-muted-foreground whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
               {event.description}
-            </Typography>
+            </p>
           </CardContent>
         </Card>
       )}
@@ -504,7 +419,7 @@ export function EventOverview({
       {user && !isPast && (
         <Card>
           <CardContent style={{ paddingTop: 24 }}>
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <div className="flex gap-3">
               <Button
                 variant={userAttendance === 'going' ? 'default' : 'outline'}
                 onClick={() => onAttendanceUpdate('going')}
@@ -521,7 +436,7 @@ export function EventOverview({
                 <Users style={{ width: 16, height: 16, marginRight: 8 }} />
                 Interested {userAttendance === 'interested' && '✓'}
               </Button>
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -535,110 +450,65 @@ export function EventOverview({
           </CardHeader>
           <CardContent>
             {attendeesGoing.length > 0 && (
-              <Box sx={{ mb: attendeesInterested.length > 0 ? 2 : 0 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Going
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <div className={attendeesInterested.length > 0 ? 'mb-4' : ''}>
+                <p className="text-sm font-medium mb-2">Going</p>
+                <div className="flex flex-wrap gap-2">
                   {attendeesGoing.slice(0, 12).map((attendee) => (
-                    <Box
+                    <div
                       key={attendee.id}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        bgcolor: 'action.hover',
-                        borderRadius: '9999px',
-                        px: 1.5,
-                        py: 0.5,
-                      }}
+                      className="flex items-center gap-2 bg-muted rounded-full px-3 py-1"
                     >
-                      <Box
-                        sx={{
-                          width: 24,
-                          height: 24,
-                          bgcolor: 'primary.main',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 12,
-                          color: 'primary.contrastText',
-                        }}
+                      <div
+                        className="bg-primary text-primary-foreground rounded-full flex items-center justify-center"
+                        style={{ width: 24, height: 24, fontSize: 12 }}
                       >
                         {attendee.profiles?.display_name?.[0] || 'U'}
-                      </Box>
-                      <Typography variant="caption">
+                      </div>
+                      <span className="text-xs">
                         {attendee.profiles?.display_name || 'Anonymous'}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   ))}
                   {attendeesGoing.length > 12 && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ px: 1.5, py: 0.5 }}
-                    >
+                    <span className="text-xs text-muted-foreground px-3 py-1">
                       +{attendeesGoing.length - 12} more
-                    </Typography>
+                    </span>
                   )}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
             {attendeesInterested.length > 0 && (
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Interested
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <div>
+                <p className="text-sm font-medium mb-2">Interested</p>
+                <div className="flex flex-wrap gap-2">
                   {attendeesInterested.slice(0, 8).map((attendee) => (
-                    <Box
+                    <div
                       key={attendee.id}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        bgcolor: 'action.hover',
-                        borderRadius: '9999px',
-                        px: 1.5,
-                        py: 0.5,
-                      }}
+                      className="flex items-center gap-2 bg-muted rounded-full px-3 py-1"
                     >
-                      <Box
-                        sx={{
-                          width: 24,
-                          height: 24,
-                          bgcolor: 'action.hover',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 12,
-                        }}
+                      <div
+                        className="bg-muted rounded-full flex items-center justify-center"
+                        style={{ width: 24, height: 24, fontSize: 12 }}
                       >
                         {attendee.profiles?.display_name?.[0] || 'U'}
-                      </Box>
-                      <Typography variant="caption">
+                      </div>
+                      <span className="text-xs">
                         {attendee.profiles?.display_name || 'Anonymous'}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   ))}
                   {attendeesInterested.length > 8 && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ px: 1.5, py: 0.5 }}
-                    >
+                    <span className="text-xs text-muted-foreground px-3 py-1">
                       +{attendeesInterested.length - 8} more
-                    </Typography>
+                    </span>
                   )}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -654,7 +524,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
   const hasMap = typeof lat === 'number' && typeof lng === 'number';
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {hasMap && (
         <Card ref={venueRef}>
           <CardContent>
@@ -683,61 +553,39 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
           <CardTitle>Event Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <div className="flex items-center gap-3">
             <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-            <Typography variant="body2">
-              {formatEventDate(event.start_date, event.end_date)}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <span className="text-sm">{formatEventDate(event.start_date, event.end_date)}</span>
+          </div>
+          <div className="flex items-center gap-3">
             <Clock style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-            <Typography variant="body2">
-              {formatEventTime(event.start_date, event.end_date)}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
+          </div>
+          <div className="flex items-center gap-3">
             <DollarSign style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {getPriceDisplay(event)}
-            </Typography>
-          </Box>
+            <span className="text-sm font-medium">{getPriceDisplay(event)}</span>
+          </div>
           {event.max_attendees && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Users style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-              <Typography variant="body2">Max {event.max_attendees} attendees</Typography>
-            </Box>
+              <span className="text-sm">Max {event.max_attendees} attendees</span>
+            </div>
           )}
           {event.organizer_name && (
-            <Box sx={{ mt: 1, pt: 1.5, borderTop: 1, borderColor: 'divider' }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-                Organizer
-              </Typography>
-              <Box
-                component="button"
+            <div className="mt-2 pt-3 border-t border-border">
+              <p className="text-sm font-medium mb-1">Organizer</p>
+              <button
                 onClick={() => onOrganizerClick(event.organizer_name!)}
-                sx={{
-                  fontSize: 14,
-                  color: 'primary.main',
-                  '&:hover': { textDecoration: 'underline' },
-                  textAlign: 'left',
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                  p: 0,
-                }}
+                className="text-sm text-primary hover:underline text-left border-0 bg-transparent cursor-pointer p-0"
               >
                 {event.organizer_name}
-              </Box>
+              </button>
               {event.organizer_contact && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mt: 0.25 }}
-                >
+                <span className="block text-xs text-muted-foreground mt-0.5">
                   {event.organizer_contact}
-                </Typography>
+                </span>
               )}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -784,16 +632,14 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
             <CardTitle>Venue</CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-              {event.venues.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <p className="font-medium">{event.venues.name}</p>
+            <p className="text-sm text-muted-foreground">
               {event.venues.address}
               <br />
               {event.venues.city}
               {event.venues.state ? `, ${event.venues.state}` : ''} {event.venues.country}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+            </p>
+            <div className="flex gap-2 mt-1 flex-wrap">
               {hasMap && (
                 <Button variant="outline" size="sm" asChild>
                   <a
@@ -819,10 +665,10 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
                   View Venue
                 </Button>
               </LocalizedLink>
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
