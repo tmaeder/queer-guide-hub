@@ -178,7 +178,6 @@
   "src/components/profile/settings/PrivacyTab.tsx",
   "src/components/profile/settings/RelationshipsTab.tsx",
   "src/components/profile/settings/fields/SwitchField.tsx",
-  "src/components/resources/TagListRenderer.tsx",
   "src/components/search/SearchFeedbackButtons.tsx",
   "src/components/search/SearchFiltersPanel.tsx",
   "src/components/search/UniversalSearchBar.tsx",
