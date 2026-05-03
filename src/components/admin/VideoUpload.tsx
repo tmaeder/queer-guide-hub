@@ -1,7 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Upload, Video, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -172,131 +170,121 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Upload Zone */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            <Video style={{ width: 20, height: 20 }} />
+          <CardTitle className="flex items-center gap-2">
+            <Video className="h-5 w-5" />
             Upload Videos
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box
+          <div
             {...getRootProps()}
-            sx={{
-              border: 2,
-              borderStyle: 'dashed',
-              borderRadius: 2,
-              p: 4,
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              borderColor: isDragActive ? 'primary.main' : 'divider',
-              bgcolor: isDragActive ? 'primary.light' : 'transparent',
-              '&:hover': { borderColor: 'primary.main' },
-            }}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors hover:border-primary ${
+              isDragActive ? 'border-primary bg-primary/10' : 'border-border bg-transparent'
+            }`}
           >
             <input {...getInputProps()} />
-            <Upload style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
+            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             {isDragActive ? (
-              <Typography variant="subtitle1">Drop video files here...</Typography>
+              <p className="text-base font-medium">Drop video files here...</p>
             ) : (
-              <Box>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Drag & drop video files here, or click to select
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </p>
+                <p className="text-sm text-muted-foreground">
                   Supports MP4, MOV, AVI, MKV, WebM
-                </Typography>
-              </Box>
+                </p>
+              </div>
             )}
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
       {/* Video List */}
       {videos.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {videos.map((video) => (
             <Card key={video.id}>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Box sx={{ flexShrink: 0 }}>
-                    <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Video style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
-                    </Box>
-                  </Box>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                      <Video className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  </div>
 
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Title</Typography>
+                  <div className="flex-1 flex flex-col gap-4">
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                      <div>
+                        <p className="text-sm font-medium">Title</p>
                         <Input
                           value={video.title}
                           onChange={(e) => updateVideoInfo(video.id, 'title', e.target.value)}
                           placeholder="Video title"
                         />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Status</Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                          <Box sx={{
-                            width: 8, height: 8, borderRadius: '50%',
-                            bgcolor: video.status === 'completed' ? 'success.main' :
-                                     video.status === 'error' ? 'error.main' : 'warning.main'
-                          }} />
-                          <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{video.status}</Typography>
-                        </Box>
-                      </Box>
-                    </Box>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Status</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div
+                            className={`w-2 h-2 rounded-full ${
+                              video.status === 'completed'
+                                ? 'bg-green-600'
+                                : video.status === 'error'
+                                ? 'bg-destructive'
+                                : 'bg-yellow-500'
+                            }`}
+                          />
+                          <p className="text-sm capitalize">{video.status}</p>
+                        </div>
+                      </div>
+                    </div>
 
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Description</Typography>
+                    <div>
+                      <p className="text-sm font-medium">Description</p>
                       <Textarea
                         value={video.description}
                         onChange={(e) => updateVideoInfo(video.id, 'description', e.target.value)}
                         placeholder="Video description"
                         rows={2}
                       />
-                    </Box>
+                    </div>
 
                     {/* Progress */}
                     {video.status === 'uploading' && (
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2">Uploading...</Typography>
-                          <Typography variant="body2">{Math.round(video.uploadProgress)}%</Typography>
-                        </Box>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <p className="text-sm">Uploading...</p>
+                          <p className="text-sm">{Math.round(video.uploadProgress)}%</p>
+                        </div>
                         <Progress value={video.uploadProgress} />
-                      </Box>
+                      </div>
                     )}
 
                     {video.status === 'processing' && (
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2">Processing video...</Typography>
-                          <Typography variant="body2">{video.processingProgress || 0}%</Typography>
-                        </Box>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <p className="text-sm">Processing video...</p>
+                          <p className="text-sm">{video.processingProgress || 0}%</p>
+                        </div>
                         <Progress value={video.processingProgress || 0} />
-                      </Box>
+                      </div>
                     )}
-                  </Box>
+                  </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeVideo(video.id)}
-
-                  >
-                    <X style={{ width: 16, height: 16 }} />
+                  <Button variant="ghost" size="sm" onClick={() => removeVideo(video.id)}>
+                    <X className="h-4 w-4" />
                   </Button>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
