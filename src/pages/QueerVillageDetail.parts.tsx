@@ -17,9 +17,6 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { EntityMap } from '@/components/map/EntityMap';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import type { ReactNode } from 'react';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -79,22 +76,13 @@ interface VillageHeroProps {
 
 export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageHeroProps) {
   return (
-    <Box>
+    <div>
       {village.image_url && (
-        <Box
-          sx={{
-            position: 'relative',
-            height: { xs: 200, md: 280 },
-            borderRadius: 2,
-            overflow: 'hidden',
-            mb: 3,
-          }}
-        >
-          <Box
-            component="img"
+        <div className="relative mb-6 h-[200px] overflow-hidden rounded-lg md:h-[280px]">
+          <img
             src={village.image_url}
             alt={village.name}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="h-full w-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
@@ -112,35 +100,18 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
               Featured
             </Badge>
           )}
-        </Box>
+        </div>
       )}
 
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 1,
-          flexWrap: 'wrap',
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h3"
-            sx={{
-              fontSize: { xs: '1.75rem', lg: '2.25rem' },
-              fontWeight: 700,
-              color: 'text.primary',
-              mb: 0.5,
-            }}
-          >
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="mb-1 text-[1.75rem] font-bold text-foreground lg:text-[2.25rem]">
             {village.countries?.flag_emoji && <>{village.countries.flag_emoji} </>}
             {village.name}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+          </h1>
+          <div className="flex items-center gap-1 text-muted-foreground">
             <MapPin style={{ width: 16, height: 16 }} />
-            <Typography sx={{ fontSize: '1.125rem' }}>
+            <p className="text-lg">
               {village.cities && (
                 <LocalizedLink
                   to={`/city/${village.cities.slug || village.cities.id}`}
@@ -166,11 +137,11 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
                   {village.countries.name}
                 </LocalizedLink>
               )}
-            </Typography>
-          </Box>
-        </Box>
+            </p>
+          </div>
+        </div>
 
-        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, mt: 1, flexWrap: 'wrap' }}>
+        <div className="mt-2 flex flex-shrink-0 flex-wrap gap-2">
           <ReportButton
             contentType="queer_villages"
             contentId={village.id}
@@ -202,17 +173,19 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
               </a>
             </Button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {village.tags && village.tags.length > 0 && (
-        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 2 }}>
+        <div className="mb-4 flex flex-wrap gap-1.5">
           {village.tags.map((tag, i) => (
-            <Chip key={i} label={tag} size="small" variant="outlined" />
+            <Badge key={i} variant="outline">
+              {tag}
+            </Badge>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -227,8 +200,8 @@ export const villageTabIcons = {
 
 export function VillageOverviewTab({ village }: { village: VillageWithRelations }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}>
+    <div className="mt-6 flex flex-col gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[3fr_2fr]">
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -237,10 +210,10 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+            <p className="leading-relaxed text-muted-foreground">
               {village.description ||
                 `Discover ${village.name}, a vibrant LGBTQ+ neighborhood in ${village.cities?.name || 'the city'}.`}
-            </Typography>
+            </p>
           </CardContent>
         </Card>
 
@@ -253,36 +226,25 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
           </CardHeader>
           <CardContent>
             {village.notable_landmarks && village.notable_landmarks.length > 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className="flex flex-col gap-2">
                 {village.notable_landmarks.map((landmark, i) => (
-                  <Box
+                  <div
                     key={i}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: 'action.hover',
-                    }}
+                    className="flex items-center gap-2 rounded-lg bg-accent p-3"
                   >
                     <Landmark
                       style={{ width: 16, height: 16, flexShrink: 0, color: '#777777' }}
                     />
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {landmark}
-                    </Typography>
-                  </Box>
+                    <p className="text-sm font-medium">{landmark}</p>
+                  </div>
                 ))}
-              </Box>
+              </div>
             ) : (
-              <Typography variant="body2" color="text.secondary">
-                No landmarks listed yet.
-              </Typography>
+              <p className="text-sm text-muted-foreground">No landmarks listed yet.</p>
             )}
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       {village.history && (
         <Card>
@@ -293,11 +255,9 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography
-              sx={{ color: 'text.secondary', lineHeight: 1.7, whiteSpace: 'pre-line' }}
-            >
+            <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
               {village.history}
-            </Typography>
+            </p>
           </CardContent>
         </Card>
       )}
@@ -311,16 +271,13 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography
-              variant="body2"
-              sx={{ fontFamily: 'monospace', color: 'text.secondary' }}
-            >
+            <p className="font-mono text-sm text-muted-foreground">
               {village.latitude.toFixed(4)}, {village.longitude.toFixed(4)}
-            </Typography>
+            </p>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -334,28 +291,22 @@ export function VillageVenuesTab({
   loading: boolean;
 }) {
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+    <div className="mt-6">
+      <h3 className="mb-4 text-lg font-semibold">
         Venues in {village.cities?.name || 'the area'}
-      </Typography>
+      </h3>
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <Typography color="text.secondary">Loading venues...</Typography>
-        </Box>
+        <div className="flex justify-center py-16">
+          <p className="text-muted-foreground">Loading venues...</p>
+        </div>
       ) : venues.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           {venues.map((venue) => (
             <VenueCard key={venue.id} venue={venue} />
           ))}
-        </Box>
+        </div>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
+        <div className="py-16 text-center">
           <Building
             style={{
               height: 48,
@@ -364,15 +315,13 @@ export function VillageVenuesTab({
               margin: '0 auto 16px',
             }}
           />
-          <Typography variant="h6" color="text.secondary">
-            No venues found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          <h3 className="text-lg text-muted-foreground">No venues found</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
             Check back later as we continue to add venues in this area.
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -386,28 +335,22 @@ export function VillageEventsTab({
   loading: boolean;
 }) {
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+    <div className="mt-6">
+      <h3 className="mb-4 text-lg font-semibold">
         Events in {village.cities?.name || 'the area'}
-      </Typography>
+      </h3>
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <Typography color="text.secondary">Loading events...</Typography>
-        </Box>
+        <div className="flex justify-center py-16">
+          <p className="text-muted-foreground">Loading events...</p>
+        </div>
       ) : events.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {events.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
-        </Box>
+        </div>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
+        <div className="py-16 text-center">
           <Calendar
             style={{
               height: 48,
@@ -416,45 +359,34 @@ export function VillageEventsTab({
               margin: '0 auto 16px',
             }}
           />
-          <Typography variant="h6" color="text.secondary">
-            No upcoming events
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          <h3 className="text-lg text-muted-foreground">No upcoming events</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
             Check back later for events in this area.
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
 export function VillagePhotosTab({ village }: { village: VillageWithRelations }) {
   return (
-    <Box sx={{ mt: 3 }}>
+    <div className="mt-6">
       {village.images && village.images.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           {village.images.map((img, i) => (
-            <Box
-              key={i}
-              sx={{ borderRadius: 2, overflow: 'hidden', height: 200, bgcolor: 'action.hover' }}
-            >
+            <div key={i} className="h-[200px] overflow-hidden rounded-lg bg-accent">
               <img
                 src={img}
                 alt={`${village.name} ${i + 1}`}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 loading="lazy"
               />
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
+        <div className="py-16 text-center">
           <ImageIcon
             style={{
               height: 48,
@@ -463,15 +395,13 @@ export function VillagePhotosTab({ village }: { village: VillageWithRelations })
               margin: '0 auto 16px',
             }}
           />
-          <Typography variant="h6" color="text.secondary">
-            No photos yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          <h3 className="text-lg text-muted-foreground">No photos yet</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
             Photos will be added soon.
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -521,11 +451,9 @@ export function VillageTabLabel({
   label: string;
 }) {
   return (
-    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
+    <span className="inline-flex items-center gap-1.5">
       <Icon style={{ height: 16, width: 16 }} />
-      <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-        {label}
-      </Box>
-    </Box>
+      <span className="hidden sm:inline">{label}</span>
+    </span>
   );
 }
