@@ -96,7 +96,6 @@
   "src/components/security/AdminRouteGuard.tsx",
   "src/components/submission/FlyerScanResults.tsx",
   "src/components/travel/AirportAutocomplete.tsx",
-  "src/components/travel/FlightSearchForm.tsx",
   "src/components/trips/AddBudgetDialog.tsx",
   "src/components/trips/AddDocumentDialog.tsx",
   "src/components/trips/AddPlaceDialog.tsx",
