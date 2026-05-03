@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Alert from '@mui/material/Alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { searchUnifiedTagsByName } from '@/hooks/usePageFetchers';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 
@@ -108,31 +105,25 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
     setBusy(null);
   };
 
-  if (loading && !detail) return <Typography variant="caption">Loading tags…</Typography>;
+  if (loading && !detail) return <span className="text-xs">Loading tags…</span>;
 
   const linkedIds = new Set((detail?.tags ?? []).map((t) => t.tag_id));
   const filteredResults = results.filter((r) => !linkedIds.has(r.id));
 
   return (
-    <Box sx={{ mt: 1.5, p: 1.5, background: 'rgba(0,0,0,0.03)' }}>
+    <div className="mt-3 p-3 bg-black/5">
       {error && (
-        <Alert severity="error" sx={{ mb: 1 }}>
-          {error}
+        <Alert variant="destructive" className="mb-2">
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+      <p className="text-xs text-muted-foreground mb-1 block">
         Linked tags ({detail?.tags.length ?? 0})
-      </Typography>
+      </p>
       {detail && detail.tags.length > 0 && (
-        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', mb: 1.5 }}>
+        <div className="flex flex-row flex-wrap gap-1 mb-3">
           {detail.tags.map((t) => (
-            <Stack
-              key={t.tag_id}
-              direction="row"
-              alignItems="center"
-              spacing={0.5}
-              sx={{ mr: 0.5, mb: 0.5 }}
-            >
+            <div key={t.tag_id} className="flex flex-row items-center gap-1 mr-1 mb-1">
               <Badge variant="secondary">
                 {t.unified_tags?.name ?? t.tag_id.slice(0, 8)}
               </Badge>
@@ -145,31 +136,30 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
               >
                 ×
               </Button>
-            </Stack>
+            </div>
           ))}
-        </Stack>
+        </div>
       )}
       {detail && detail.entity_counts.length > 0 && (
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+        <p className="text-xs text-muted-foreground mb-2 block">
           Entities reached:{' '}
           {detail.entity_counts
             .map((e) => `${e.entity_count} ${e.entity_type}${e.entity_count === 1 ? '' : 's'}`)
             .join(' · ')}
-        </Typography>
+        </p>
       )}
-      <TextField
-        size="small"
-        fullWidth
+      <Input
         placeholder="Type a tag name to add (≥ 2 chars)…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        className="h-9"
       />
       {query.trim().length >= 2 && (
-        <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap', mt: 1 }}>
+        <div className="flex flex-row flex-wrap gap-1 mt-2">
           {filteredResults.length === 0 ? (
-            <Typography variant="caption" color="text.secondary">
+            <span className="text-xs text-muted-foreground">
               No matches. Tags must exist in unified_tags before linking.
-            </Typography>
+            </span>
           ) : (
             filteredResults.map((r) => (
               <Button
@@ -184,8 +174,8 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
               </Button>
             ))
           )}
-        </Stack>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
