@@ -157,7 +157,6 @@
   "src/components/tags/TagRelationshipGraph.tsx",
   "src/components/tags/TagSelector.tsx",
   "src/components/travel/AirportAutocomplete.tsx",
-  "src/components/travel/CityTravelHub.tsx",
   "src/components/travel/FlightSearchForm.tsx",
   "src/components/trips/AddBudgetDialog.tsx",
   "src/components/trips/AddDocumentDialog.tsx",
