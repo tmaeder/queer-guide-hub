@@ -1,4 +1,3 @@
-import * as React from "react"
 import { useState } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"

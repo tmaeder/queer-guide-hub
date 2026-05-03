@@ -580,7 +580,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               id={key}
               value={fieldValue || ''}
               onChange={(e) => handleFieldChange(key, e.target.value)}
-              sx={{ minHeight: 96 }}
+              className="min-h-24"
               required={required}
             />
           </div>
@@ -996,7 +996,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <CardHeader>
               <CardTitle>Content Information</CardTitle>
             </CardHeader>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CardContent className="flex flex-col gap-4">
               <div>
                 <Label>Content Type</Label>
                 <p className="text-sm text-muted-foreground capitalize">
@@ -1021,7 +1021,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               {content.status && (
                 <div>
                   <Label>Status</Label>
-                  <Badge sx={{ ml: 1 }} variant={content.status === 'active' ? 'default' : 'secondary'}>
+                  <Badge className="ml-2" variant={content.status === 'active' ? 'default' : 'secondary'}>
                     {content.status}
                   </Badge>
                 </div>
