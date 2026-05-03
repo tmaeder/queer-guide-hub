@@ -63,7 +63,6 @@
   "src/components/cms/AuditLog.tsx",
   "src/components/cms/AutoTagPanel.tsx",
   "src/components/cms/BulkActionsBar.tsx",
-  "src/components/cms/CMSAdvancedFilters.tsx",
   "src/components/cms/CMSDuplicateManager.tsx",
   "src/components/cms/CMSListView.tsx",
   "src/components/cms/CMSOverview.tsx",

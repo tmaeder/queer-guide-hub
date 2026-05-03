@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { CalendarIcon, Filter, RotateCcw, Search, SlidersHorizontal } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,22 +47,22 @@ export function CMSAdvancedFilters({
   return (
     <Card>
       <CardHeader>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box>
+        <div className="flex items-center justify-between">
+          <div>
             <CardTitle>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex items-center gap-2">
                 <Filter style={{ height: 20, width: 20 }} />
                 Filters & Search
                 {activeFiltersCount > 0 && (
                   <Badge variant="secondary">{activeFiltersCount} active</Badge>
                 )}
-              </Box>
+              </div>
             </CardTitle>
             <CardDescription>
               Showing {totalResults.toLocaleString()} of {totalRecords.toLocaleString()} items
             </CardDescription>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -79,17 +77,17 @@ export function CMSAdvancedFilters({
                 Reset
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {/* Basic Filters */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' }, gap: 2 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Search */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-2">
               <Label htmlFor="search">Search</Label>
-              <Box sx={{ position: 'relative' }}>
+              <div className="relative">
                 <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
                 <Input
                   id="search"
@@ -98,11 +96,11 @@ export function CMSAdvancedFilters({
                   onChange={(e) => onFilterChange('search', e.target.value)}
 
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             {/* Content Type */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-2">
               <Label>Content Type</Label>
               <Select value={filters.contentType} onValueChange={(value) => onFilterChange('contentType', value)}>
                 <SelectTrigger>
@@ -117,10 +115,10 @@ export function CMSAdvancedFilters({
                   ))}
                 </SelectContent>
               </Select>
-            </Box>
+            </div>
 
             {/* Status */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-2">
               <Label>Status</Label>
               <Select value={filters.status} onValueChange={(value) => onFilterChange('status', value)}>
                 <SelectTrigger>
@@ -135,12 +133,12 @@ export function CMSAdvancedFilters({
                   ))}
                 </SelectContent>
               </Select>
-            </Box>
+            </div>
 
             {/* Sort */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-2">
               <Label>Sort By</Label>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <div className="flex gap-2">
                 <Select value={filters.sortBy} onValueChange={(value) => onFilterChange('sortBy', value)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -161,19 +159,19 @@ export function CMSAdvancedFilters({
                 >
                   {filters.sortOrder === 'asc' ? '\u2191' : '\u2193'}
                 </Button>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
 
           {/* Advanced Filters */}
           {showAdvanced && (
             <>
               <Separator />
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Date Range */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   <Label>Date Range</Label>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <div className="flex gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -233,19 +231,19 @@ export function CMSAdvancedFilters({
                         />
                       </PopoverContent>
                     </Popover>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
 
                 {/* Show Deleted */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Switch
                     id="show-deleted"
                     checked={filters.showDeleted}
                     onCheckedChange={(checked) => onFilterChange('showDeleted', checked)}
                   />
                   <Label htmlFor="show-deleted">Show deleted content</Label>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </>
           )}
 
@@ -253,8 +251,8 @@ export function CMSAdvancedFilters({
           {activeFiltersCount > 0 && (
             <>
               <Separator />
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Active filters:</Typography>
+              <div className="flex flex-wrap gap-2">
+                <p className="text-sm font-medium">Active filters:</p>
                 {filters.search && (
                   <Badge variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     Search: "{filters.search}"
@@ -285,10 +283,10 @@ export function CMSAdvancedFilters({
                     <button onClick={() => onFilterChange('dateRange', { ...filters.dateRange, to: null })}>&times;</button>
                   </Badge>
                 )}
-              </Box>
+              </div>
             </>
           )}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );
