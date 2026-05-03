@@ -13,9 +13,6 @@ import { fetchProfilesByUserIds } from '@/hooks/usePageFetchers';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { useSOS } from '@/hooks/useSOS';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -77,13 +74,13 @@ export default function Friends() {
 
   return (
     <AuthGate title="Friends" description="Please sign in to view your friends.">
-      <Container sx={{ py: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className="container mx-auto py-6 px-4">
+        <div className="flex flex-col gap-6">
           <PageHeader
             title="Friends"
             subtitle="Manage your connections"
             actions={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex items-center gap-2">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -118,33 +115,33 @@ export default function Friends() {
                   </AlertDialogContent>
                 </AlertDialog>
                 <Badge variant="secondary">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Users style={{ width: 16, height: 16 }} />
                     {friends.length} Friends
-                  </Box>
+                  </div>
                 </Badge>
-              </Box>
+              </div>
             }
           />
 
           <Tabs defaultValue="friends" style={{ width: '100%' }}>
             <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
               <TabsTrigger value="friends">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Users style={{ width: 16, height: 16 }} />
                   Friends ({friends.length})
-                </Box>
+                </div>
               </TabsTrigger>
               <TabsTrigger value="requests">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Clock style={{ width: 16, height: 16 }} />
                   Requests ({pendingRequests.length})
-                </Box>
+                </div>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="friends">
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div className="flex flex-col gap-4">
                 {friends.length === 0 ? (
                   <EmptyState
                     icon={Users}
@@ -157,7 +154,7 @@ export default function Friends() {
                     }}
                   />
                 ) : (
-                  <Box sx={{ display: 'grid', gap: 2 }}>
+                  <div className="grid gap-4">
                     {friends.map((friendship) => {
                       const friendId =
                         friendship.user_id === user!.id
@@ -168,21 +165,15 @@ export default function Friends() {
                       return (
                         <Card key={friendship.id}>
                           <CardContent>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
                                 <Avatar style={{ width: 48, height: 48 }}>
                                   <AvatarImage src={profile?.avatar_url || undefined} />
                                   <AvatarFallback>
                                     {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>
                                 </Avatar>
-                                <Box>
+                                <div>
                                   <LocalizedLink
                                     to={`/users/${friendId}`}
                                     style={{ fontWeight: 500, transition: 'color 0.2s' }}
@@ -190,13 +181,13 @@ export default function Friends() {
                                     {profile?.display_name || 'Unknown User'}
                                   </LocalizedLink>
                                   {profile?.location && (
-                                    <Typography variant="body2" color="text.secondary">
+                                    <p className="text-sm text-muted-foreground">
                                       {profile.location}
-                                    </Typography>
+                                    </p>
                                   )}
-                                </Box>
-                              </Box>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
                                 <StartConversationButton
                                   userId={friendId}
                                   userName={profile?.display_name || 'User'}
@@ -211,19 +202,19 @@ export default function Friends() {
                                 >
                                   Remove
                                 </Button>
-                              </Box>
-                            </Box>
+                              </div>
+                            </div>
                           </CardContent>
                         </Card>
                       );
                     })}
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
             </TabsContent>
 
             <TabsContent value="requests">
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div className="flex flex-col gap-4">
                 {pendingRequests.length === 0 ? (
                   <EmptyState
                     icon={Clock}
@@ -232,55 +223,49 @@ export default function Friends() {
                     mood="encouraging"
                   />
                 ) : (
-                  <Box sx={{ display: 'grid', gap: 2 }}>
+                  <div className="grid gap-4">
                     {pendingRequests.map((request) => {
                       const profile = requestProfiles?.find((p) => p.user_id === request.user_id);
 
                       return (
                         <Card key={request.id}>
                           <CardContent>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
                                 <Avatar style={{ width: 48, height: 48 }}>
                                   <AvatarImage src={profile?.avatar_url || undefined} />
                                   <AvatarFallback>
                                     {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
                                   </AvatarFallback>
                                 </Avatar>
-                                <Box>
+                                <div>
                                   <LocalizedLink
                                     to={`/users/${request.user_id}`}
                                     style={{ fontWeight: 500, transition: 'color 0.2s' }}
                                   >
                                     {profile?.display_name || 'Unknown User'}
                                   </LocalizedLink>
-                                  <Typography variant="body2" color="text.secondary">
+                                  <p className="text-sm text-muted-foreground">
                                     Sent you a friend request
-                                  </Typography>
+                                  </p>
                                   {profile?.location && (
-                                    <Typography variant="body2" color="text.secondary">
+                                    <p className="text-sm text-muted-foreground">
                                       {profile.location}
-                                    </Typography>
+                                    </p>
                                   )}
-                                </Box>
-                              </Box>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
                                 <Button
                                   variant="default"
                                   size="sm"
                                   onClick={() => acceptFriendRequest(request.id)}
                                   disabled={loading}
                                 >
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <div className="flex items-center gap-2">
                                     <Check style={{ width: 16, height: 16 }} />
                                     Accept
-                                  </Box>
+                                  </div>
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -288,24 +273,24 @@ export default function Friends() {
                                   onClick={() => rejectFriendRequest(request.id)}
                                   disabled={loading}
                                 >
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <div className="flex items-center gap-2">
                                     <X style={{ width: 16, height: 16 }} />
                                     Decline
-                                  </Box>
+                                  </div>
                                 </Button>
-                              </Box>
-                            </Box>
+                              </div>
+                            </div>
                           </CardContent>
                         </Card>
                       );
                     })}
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
             </TabsContent>
           </Tabs>
-        </Box>
-      </Container>
+        </div>
+      </div>
     </AuthGate>
   );
 }

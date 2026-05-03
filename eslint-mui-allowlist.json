@@ -194,7 +194,6 @@
   "src/pages/Donate.tsx",
   "src/pages/Events.tsx",
   "src/pages/Favorites.tsx",
-  "src/pages/Friends.tsx",
   "src/pages/GroupDetail.tsx",
   "src/pages/HelpHotlines.tsx",
   "src/pages/Marketplace.tsx",
