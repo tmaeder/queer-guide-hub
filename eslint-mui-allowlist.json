@@ -56,7 +56,6 @@
   "src/pages/AdminQueerVillages.tsx",
   "src/pages/AdminRedirects.tsx",
   "src/pages/CMSRoutePage.tsx",
-  "src/pages/Directory.tsx",
   "src/pages/Donate.tsx",
   "src/pages/Events.tsx",
   "src/pages/HelpHotlines.tsx",
