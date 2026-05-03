@@ -224,3 +224,33 @@ export function isIndexable(pathname: string): boolean {
   ];
   return !noindex.some((r) => r.test(pathname));
 }
+
+export const SUPPORTED_LOCALES = [
+  'en', 'es', 'fr', 'de', 'pt', 'it', 'ru', 'zh', 'ja', 'ko', 'ar',
+] as const;
+export const DEFAULT_LOCALE = 'en';
+
+const LOCALE_RE = new RegExp(`^/(${SUPPORTED_LOCALES.join('|')})(/|$)`);
+
+/**
+ * Splits a pathname into its locale prefix and the locale-agnostic base path.
+ * The default-locale ("en") version of any URL has no prefix; all other
+ * locales prefix their two-letter code, per src/routes.tsx (LocaleRouter).
+ */
+export function splitLocale(pathname: string): { locale: string; basePath: string } {
+  const match = pathname.match(LOCALE_RE);
+  if (!match) return { locale: DEFAULT_LOCALE, basePath: pathname };
+  const locale = match[1];
+  const basePath = pathname.slice(match[0].length - (match[2] === '/' ? 1 : 0)) || '/';
+  return { locale, basePath };
+}
+
+/**
+ * Builds the absolute URL for a given (locale, basePath) pair. The default
+ * locale gets no prefix; any other locale gets `/{code}`.
+ */
+export function localizedUrl(locale: string, basePath: string): string {
+  const clean = basePath.replace(/\/+$/, '') || '/';
+  if (locale === DEFAULT_LOCALE) return `${SITE_ORIGIN}${clean}`;
+  return `${SITE_ORIGIN}/${locale}${clean === '/' ? '' : clean}`;
+}

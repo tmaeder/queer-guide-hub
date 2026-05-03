@@ -13,6 +13,9 @@ const SITEMAPS = [
   { path: '/sitemap-blog.xml', minEntries: 0, kind: 'urlset' },
   { path: '/sitemap-personalities.xml', minEntries: 5, kind: 'urlset' },
   { path: '/sitemap-places.xml', minEntries: 5, kind: 'urlset' },
+  { path: '/sitemap-hotels.xml', minEntries: 0, kind: 'urlset' },
+  { path: '/sitemap-villages.xml', minEntries: 0, kind: 'urlset' },
+  { path: '/sitemap-tags.xml', minEntries: 0, kind: 'urlset' },
 ];
 
 const MAX_AGE_DAYS = 14;

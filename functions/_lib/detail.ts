@@ -732,6 +732,66 @@ async function villageDetail(env: Env, slug: string, pathname: string): Promise<
   return { meta, body, jsonLd: renderLd(prune(placeLd)) };
 }
 
+// Tags — /tags/:slug
+
+async function tagDetail(env: Env, slug: string, pathname: string): Promise<DetailResult | null> {
+  const row = await fetchOne(
+    env,
+    'unified_tags',
+    'slug',
+    slug,
+    'name,slug,description,short_description,long_description,image_url,category,wikipedia_url,wikidata_id,updated_at',
+  );
+  if (!row) return null;
+
+  const name = stringField(row, 'name') ?? slug;
+  const description =
+    stringField(row, 'long_description') ??
+    stringField(row, 'description') ??
+    stringField(row, 'short_description') ??
+    '';
+  const image = stringField(row, 'image_url');
+  const category = stringField(row, 'category');
+
+  const meta: RouteMeta = {
+    title: truncate(`${name} — Topic${TITLE_SUFFIX}`, MAX_TITLE),
+    description: truncate(
+      description || `Articles, venues and events about ${name} on Queer Guide.`,
+      MAX_DESC,
+    ),
+    ogImage: image ?? DEFAULT_OG_IMAGE,
+  };
+
+  const body = `<main data-prerendered="bot-ua">
+    <article>
+      <h1>${escape(name)}</h1>
+      ${category ? `<p><strong>Category:</strong> ${escape(category)}</p>` : ''}
+      ${description ? paragraphsHtml(description) : `<p>Browse content tagged ${escape(name)} on Queer Guide.</p>`}
+      ${stringField(row, 'wikipedia_url') ? `<p><a href="${escape(stringField(row, 'wikipedia_url')!)}" rel="noopener">Read more on Wikipedia</a></p>` : ''}
+    </article>
+    <nav aria-label="Site sections">
+      <ul>
+        <li><a href="/resources">Knowledge hub</a></li>
+        <li><a href="/news">Related news</a></li>
+        <li><a href="/blog">Long-form essays</a></li>
+      </ul>
+    </nav>
+  </main>`;
+
+  const thingLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTerm',
+    name,
+    description: description || undefined,
+    image,
+    url: `${SITE_ORIGIN}${pathname}`,
+    sameAs: stringField(row, 'wikipedia_url') ? [stringField(row, 'wikipedia_url')] : undefined,
+    identifier: stringField(row, 'wikidata_id'),
+  };
+
+  return { meta, body, jsonLd: renderLd(prune(thingLd)) };
+}
+
 // Dispatch
 
 export async function resolveDetailRoute(
@@ -742,7 +802,7 @@ export async function resolveDetailRoute(
     return null;
   }
   const m = pathname.match(
-    /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?)\/([^/?#]+)\/?$/,
+    /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?)\/([^/?#]+)\/?$/,
   );
   if (!m) return null;
   const [, kindRaw, rawSlug] = m;
@@ -756,6 +816,7 @@ export async function resolveDetailRoute(
     if (kindRaw === 'country') return await countryDetail(env, slug, pathname);
     if (kindRaw.startsWith('hotel')) return await hotelDetail(env, slug, pathname);
     if (kindRaw.startsWith('village')) return await villageDetail(env, slug, pathname);
+    if (kindRaw.startsWith('tag')) return await tagDetail(env, slug, pathname);
   } catch {
     return null;
   }

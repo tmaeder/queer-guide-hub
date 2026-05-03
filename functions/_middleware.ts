@@ -10,7 +10,15 @@
  * over the injected content with no hydration mismatch (we use createRoot,
  * not hydrateRoot).
  */
-import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib/routeMeta';
+import {
+  resolveMeta,
+  isIndexable,
+  DEFAULT_OG_IMAGE,
+  splitLocale,
+  localizedUrl,
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+} from './_lib/routeMeta';
 import { homepageJsonLd } from './_lib/jsonLd';
 import { isBotUserAgent } from './_lib/botUa';
 import { buildBodyHtml } from './_lib/routeBody';
@@ -78,15 +86,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('text/html')) return response;
 
+  // Strip the optional /:locale prefix so route resolution operates on the
+  // canonical (default-locale) path. Each translated URL keeps its own
+  // self-canonical and exposes hreflang alternates to its 10 siblings.
+  const { locale, basePath } = splitLocale(pathname);
+
   // Phase 3: detail routes look up the row in Supabase and override
   // meta/body/JSON-LD with type-specific values (LocalBusiness, Event, etc.).
   // Returns null if the path isn't a detail route or the row isn't found.
-  const detail = await resolveDetailRoute(env, pathname);
+  const detail = await resolveDetailRoute(env, basePath);
 
-  const meta = detail?.meta ?? resolveMeta(pathname);
-  const canonical = canonicalUrl(pathname);
+  const meta = detail?.meta ?? resolveMeta(basePath);
+  const canonical = localizedUrl(locale, basePath);
   const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
-  const indexable = isIndexable(pathname);
+  const indexable = isIndexable(basePath);
 
   // Tags appended to <head>. We append rather than replace for og:* / twitter:*
   // because the source HTML may also have them — duplicates are tolerated by
@@ -106,11 +119,24 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     `<meta name="twitter:image" content="${escapeAttr(ogImage)}">`,
   ];
 
+  // hreflang alternates: one link per supported locale, plus x-default. Each
+  // locale's URL points to itself; the default locale is no-prefix English.
+  if (indexable) {
+    for (const l of SUPPORTED_LOCALES) {
+      headInjections.push(
+        `<link rel="alternate" hreflang="${l}" href="${escapeAttr(localizedUrl(l, basePath))}">`,
+      );
+    }
+    headInjections.push(
+      `<link rel="alternate" hreflang="x-default" href="${escapeAttr(localizedUrl(DEFAULT_LOCALE, basePath))}">`,
+    );
+  }
+
   if (!indexable) {
     headInjections.push('<meta name="robots" content="noindex,nofollow">');
   }
 
-  if (pathname === '/' || pathname === '') {
+  if (basePath === '/' || basePath === '') {
     headInjections.push(homepageJsonLd());
   }
   if (detail?.jsonLd) {
@@ -126,7 +152,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (isBot) {
     const bodyHtml =
       detail?.body ??
-      buildBodyHtml(pathname, { title: meta.title, description: meta.description });
+      buildBodyHtml(basePath, { title: meta.title, description: meta.description });
     rewriter.on('#root', new RootBodyInjector(bodyHtml));
   }
 
