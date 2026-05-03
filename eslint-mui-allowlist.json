@@ -248,7 +248,6 @@
   "src/pages/EventDetail.parts.tsx",
   "src/pages/Events.tsx",
   "src/pages/Favorites.tsx",
-  "src/pages/Feed.tsx",
   "src/pages/Friends.tsx",
   "src/pages/GroupDetail.tsx",
   "src/pages/Groups.tsx",
