@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
 import { Sparkles, Shield } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SimilarCitiesProps {
@@ -78,50 +76,50 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
 
   if (isLoading) {
     return (
-      <Box>
-        <Skeleton variant="text" width={200} height={24} sx={{ mb: 1 }} />
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
-          {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={70} />)}
-        </Box>
-      </Box>
+      <div>
+        <Skeleton className="h-6 w-[200px] mb-2" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-[70px] rounded" />)}
+        </div>
+      </div>
     );
   }
 
   if (!cities || cities.length === 0) return null;
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+    <div>
+      <div className="flex flex-row items-center gap-2 mb-3">
         <Sparkles style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+        <p className="font-semibold" style={{ fontSize: '0.95rem' }}>
           You might also like
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {cities.map((city) => (
           <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
             <Card className="hover:shadow-sm transition-shadow">
               <CardContent style={{ padding: 12 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{city.name}</Typography>
-                    <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>{city.country_name}</Typography>
-                  </Box>
+                <div className="flex flex-row justify-between items-center">
+                  <div>
+                    <p className="font-semibold text-sm">{city.name}</p>
+                    <p className="text-muted-foreground" style={{ fontSize: '0.7rem' }}>{city.country_name}</p>
+                  </div>
                   {city.eq_score != null && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                    <div className="flex flex-row items-center gap-0.5">
                       <Shield style={{
                         height: 12, width: 12,
                         color: city.eq_score >= 70 ? 'var(--success)' : city.eq_score >= 40 ? 'var(--warning)' : 'var(--destructive)',
                       }} />
-                      <Typography sx={{ fontSize: '0.65rem', fontWeight: 600 }}>{city.eq_score}</Typography>
-                    </Box>
+                      <p className="font-semibold" style={{ fontSize: '0.65rem' }}>{city.eq_score}</p>
+                    </div>
                   )}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           </LocalizedLink>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
