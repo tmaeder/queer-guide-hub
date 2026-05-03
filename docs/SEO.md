@@ -63,6 +63,17 @@ Detail routes follow the pattern `/<type>/:slug`. Supported types and their tabl
 | `/events/:slug` | `events` | `Event` |
 | `/news/:slug` | `news_articles` | `NewsArticle` |
 | `/personalities/:slug` | `personalities` | `Person` |
+| `/city/:slug` | `cities` | `Place` + `ItemList` of top venues |
+| `/country/:slug` | `countries` | `Country` |
+| `/hotels/:slug` | `hotels` | `LodgingBusiness` |
+| `/villages/:slug` | `queer_villages` | `TouristDestination` |
+| `/tags/:slug` | `unified_tags` | `DefinedTerm` |
+
+## i18n / hreflang
+
+Routes are mounted under an optional `/:locale?` segment in `src/routes.tsx`. The default locale (`en`) is served at the root path; the other ten get a two-letter prefix (`/de`, `/fr`, `/es`, `/pt`, `/it`, `/ru`, `/zh`, `/ja`, `/ko`, `/ar`).
+
+The middleware strips the locale prefix before resolving meta and detail routes, then emits `<link rel="alternate" hreflang="...">` for every supported locale plus `x-default`. Each locale variant is its own self-canonical. Update the locale list in `functions/_lib/routeMeta.ts` (`SUPPORTED_LOCALES`) if you add or drop a language — keep it in sync with `src/i18n/languages.ts`.
 
 To add a new detail type:
 
