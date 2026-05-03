@@ -1,5 +1,4 @@
 [
-  "src/components/admin/WorkflowDashboard.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/lib/sx.ts",
   "src/test/__tests__/test-utils.test.tsx",
