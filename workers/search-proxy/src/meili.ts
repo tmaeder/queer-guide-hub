@@ -256,6 +256,9 @@ function mapHit(hit: Record<string, unknown>, indexUid: string) {
 		end_date: hit.end_date as number | string | undefined,
 		featured: Boolean(hit.featured || hit.is_featured),
 		tags: (hit.tags as string[]) || [],
+		// Pass aliases through so personalizedRank's exact-title boost can
+		// match alias hits (köln -> Cologne, münchen -> Munich).
+		aliases: Array.isArray(hit.aliases) ? (hit.aliases as string[]) : undefined,
 		_rankingScore: (hit._rankingScore as number) || 0,
 	};
 }
