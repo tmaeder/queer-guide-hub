@@ -24,7 +24,6 @@
   "src/components/admin/data-table/DataTableToolbar.tsx",
   "src/components/admin/feedback/ApiErrorsKanban.tsx",
   "src/components/admin/feedback/FeedbackBulkBar.tsx",
-  "src/components/admin/feedback/FeedbackCard.tsx",
   "src/components/admin/feedback/FeedbackDetailDrawer.tsx",
   "src/components/admin/feedback/FeedbackFilters.tsx",
   "src/components/admin/feedback/HandoffSection.tsx",
