@@ -72,6 +72,7 @@ export const RecurrencePicker: React.FC<RecurrencePickerProps> = ({ value, onCha
 
   return (
     <div className="p-3">
+      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
       <label className="flex items-center gap-2 cursor-pointer">
         <Switch checked={enabled} onCheckedChange={handleToggle} />
         <span className="flex items-center gap-1">

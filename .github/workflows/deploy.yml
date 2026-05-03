@@ -33,16 +33,12 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        # Soft-fail: pre-existing lint errors from in-flight MUI->shadcn batch
-        # migrations have been blocking every deploy. Don't gate the deploy
-        # on lint until the cleanup PR lands. Typecheck + tests still gate.
-        continue-on-error: true
         run: npm run lint
 
       - name: Test
-        # Soft-fail: same MUI->shadcn churn that broke lint also broke
-        # several component tests (CityCountryAutocomplete, ForceGraph2D
-        # mounts, News). Tracked separately. Typecheck still gates.
+        # Soft-fail: pre-existing component test failures from in-flight
+        # MUI->shadcn batch migrations (CityCountryAutocomplete,
+        # ForceGraph2D mounts, News). Re-gate after the test cleanup PR.
         continue-on-error: true
         run: npm test
 
