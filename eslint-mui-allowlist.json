@@ -135,7 +135,6 @@
   "src/components/posts/CommentsSection.tsx",
   "src/components/posts/CreatePostDialog.tsx",
   "src/components/posts/PostCard.tsx",
-  "src/components/profile/AvatarBuilder.tsx",
   "src/components/profile/AvatarSettings.tsx",
   "src/components/profile/TravelPreferencesEditor.tsx",
   "src/components/profile/UrlValidator.tsx",
