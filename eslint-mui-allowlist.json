@@ -185,7 +185,6 @@
   "src/components/trips/TripPolls.tsx",
   "src/components/trips/TripSafetyBriefing.tsx",
   "src/components/trips/TripSuggestions.tsx",
-  "src/components/trips/TripTemplates.tsx",
   "src/components/trips/TripsInboxSection.tsx",
   "src/components/trips/TripsSignedOutHero.tsx",
   "src/components/trips/TripsToolbar.tsx",
