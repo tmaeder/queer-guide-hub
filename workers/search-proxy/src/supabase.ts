@@ -4,21 +4,35 @@
 
 import type { Env } from "./index";
 
-async function rpc<T = unknown>(env: Env, fn: string, args: Record<string, unknown>): Promise<T> {
-	const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-		method: "POST",
-		headers: {
-			apikey: env.SUPABASE_SERVICE_KEY,
-			authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify(args),
-	});
-	if (!res.ok) {
-		const text = await res.text();
-		throw new Error(`supabase rpc ${fn} ${res.status}: ${text}`);
+// Hard timeout per Supabase RPC. The worker has ~30s of CPU time total, and
+// a single request can hit 4-5 RPCs in parallel; if even one of them stalls
+// the whole search hangs. 4s is enough for normal latencies (p95 < 1s) and
+// short enough that a degraded backend doesn't take down search entirely.
+const RPC_TIMEOUT_MS = 4000;
+
+async function rpc<T = unknown>(env: Env, fn: string, args: Record<string, unknown>, opts: { timeoutMs?: number } = {}): Promise<T> {
+	const controller = new AbortController();
+	const timeoutMs = opts.timeoutMs ?? RPC_TIMEOUT_MS;
+	const timer = setTimeout(() => controller.abort("rpc-timeout"), timeoutMs);
+	try {
+		const res = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+			method: "POST",
+			headers: {
+				apikey: env.SUPABASE_SERVICE_KEY,
+				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(args),
+			signal: controller.signal,
+		});
+		if (!res.ok) {
+			const text = await res.text();
+			throw new Error(`supabase rpc ${fn} ${res.status}: ${text}`);
+		}
+		return (await res.json()) as T;
+	} finally {
+		clearTimeout(timer);
 	}
-	return (await res.json()) as T;
 }
 
 function parsePgVector(raw: unknown): number[] {
@@ -35,21 +49,26 @@ export async function getBiasVector(
 	who: { user_id?: string; session_id?: string },
 ): Promise<{ embedding: number[]; event_type: string; age_days: number }[] | null> {
 	if (!who.user_id && !who.session_id) return null;
-	const rows = await rpc<Array<{ embedding: unknown; event_type: string; age_days: number | string }>>(
-		env,
-		"get_bias_signal",
-		{
-			p_user_id: who.user_id ?? null,
-			p_session_id: who.session_id ?? null,
-			p_window: 30,
-		},
-	);
-	if (!rows?.length) return null;
-	return rows.map((r) => ({
-		embedding: parsePgVector(r.embedding),
-		event_type: r.event_type,
-		age_days: Number(r.age_days) || 0,
-	}));
+	try {
+		const rows = await rpc<Array<{ embedding: unknown; event_type: string; age_days: number | string }>>(
+			env,
+			"get_bias_signal",
+			{
+				p_user_id: who.user_id ?? null,
+				p_session_id: who.session_id ?? null,
+				p_window: 30,
+			},
+		);
+		if (!rows?.length) return null;
+		return rows.map((r) => ({
+			embedding: parsePgVector(r.embedding),
+			event_type: r.event_type,
+			age_days: Number(r.age_days) || 0,
+		}));
+	} catch (e) {
+		console.warn("get_bias_signal", (e as Error).message);
+		return null;
+	}
 }
 
 export interface UserSignal {
@@ -102,30 +121,47 @@ export async function semanticSearch(
 	opts: { queryVec: number[]; contentTypes?: string[] | null; biasWeight?: number; limit?: number },
 ): Promise<Array<{ content_type: string; content_id: string; score: number; metadata: Record<string, unknown> }>> {
 	const pg = formatVec(opts.queryVec);
-	return await rpc<Array<{ content_type: string; content_id: string; score: number; metadata: Record<string, unknown> }>>(
-		env,
-		"personalized_semantic_search",
-		{
-			p_query_vec: pg,
-			p_bias_vec: null, // bias already blended in worker
-			p_bias_weight: 0,
-			p_content_types: opts.contentTypes ?? null,
-			p_limit: opts.limit ?? 100,
-		},
-	);
+	try {
+		return await rpc<Array<{ content_type: string; content_id: string; score: number; metadata: Record<string, unknown> }>>(
+			env,
+			"personalized_semantic_search",
+			{
+				p_query_vec: pg,
+				p_bias_vec: null,
+				p_bias_weight: 0,
+				p_content_types: opts.contentTypes ?? null,
+				p_limit: opts.limit ?? 100,
+			},
+		);
+	} catch (e) {
+		// Fail-soft: empty semantic hits → /search degrades to Meilisearch-only
+		// instead of timing out. Bug observed 2026-05-03 when the RPC stalled
+		// indefinitely after a large data update.
+		console.warn("personalized_semantic_search", (e as Error).message);
+		return [];
+	}
 }
 
 export async function popularEntities(env: Env, contentTypes: string[], limit = 30) {
 	const types = contentTypes.map((t) => `"${t}"`).join(",");
 	const url = `${env.SUPABASE_URL}/rest/v1/v_popular_entities?content_type=in.(${encodeURIComponent(types)})&order=score.desc&limit=${limit}`;
-	const res = await fetch(url, {
-		headers: {
-			apikey: env.SUPABASE_SERVICE_KEY,
-			authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
-		},
-	});
-	if (!res.ok) return [];
-	return (await res.json()) as Array<{ content_type: string; content_id: string; score: number }>;
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort("popular-timeout"), RPC_TIMEOUT_MS);
+	try {
+		const res = await fetch(url, {
+			headers: {
+				apikey: env.SUPABASE_SERVICE_KEY,
+				authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+			},
+			signal: controller.signal,
+		});
+		if (!res.ok) return [];
+		return (await res.json()) as Array<{ content_type: string; content_id: string; score: number }>;
+	} catch {
+		return [];
+	} finally {
+		clearTimeout(timer);
+	}
 }
 
 function formatVec(v: number[]): string {
