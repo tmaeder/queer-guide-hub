@@ -1,55 +1,34 @@
 import * as React from 'react';
-import MuiCard from '@mui/material/Card';
-import MuiCardContent from '@mui/material/CardContent';
-import MuiCardActions from '@mui/material/CardActions';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
 import { motion, useReducedMotion } from 'motion/react';
 import type { LucideIcon } from 'lucide-react';
 import { springs } from '@/lib/motion';
+import { cn } from '@/lib/utils';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, children, style, hoverable, ...props }, ref) => (
-    <MuiCard
+  ({ className, children, hoverable, ...props }, ref) => (
+    <div
       ref={ref}
-      className={className}
-      style={style}
-      variant="outlined"
-      sx={{
-        transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
-        bgcolor: 'background.paper',
-        border: 'none',
-        boxShadow: 'none',
-        borderRadius: 0,
-        '&:hover': {
-          boxShadow: 'none',
-        },
-        ...(hoverable && {
-          cursor: 'pointer',
-          '&:hover': {
-            opacity: 0.85,
-          },
-        }),
-      }}
-      {...(props as Record<string, unknown>)}
+      className={cn(
+        'bg-background transition-all duration-[250ms] ease-out',
+        hoverable && 'cursor-pointer hover:opacity-85',
+        className,
+      )}
+      {...props}
     >
       {children}
-    </MuiCard>
+    </div>
   ),
 );
 Card.displayName = 'Card';
 
 /* ── MotionCard — opt-in hover-lift card powered by motion ────────── */
 
-const MotionMuiCardBase = motion.create(MuiCard);
-
 const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, children, style, ...props }, ref) => {
+  ({ className, children, ...props }, ref) => {
     const reduced = useReducedMotion();
     const hover = reduced
       ? {}
@@ -58,19 +37,14 @@ const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
           transition: springs.soft,
         };
     return (
-      <MotionMuiCardBase
-        ref={ref as React.Ref<HTMLDivElement>}
-        className={className}
-        style={style}
-        variant="outlined"
-        sx={{
-          bgcolor: 'background.paper',
-        }}
+      <motion.div
+        ref={ref}
+        className={cn('bg-background', className)}
         {...hover}
         {...(props as Record<string, unknown>)}
       >
         {children}
-      </MotionMuiCardBase>
+      </motion.div>
     );
   },
 );
@@ -95,69 +69,45 @@ const CardImage: React.FC<CardImageProps> = ({
 }) => {
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
-  const theme = useTheme();
-  const brandColor = theme.palette.brand?.main || theme.palette.primary.main;
 
   if (!src || error) {
     return (
-      <Box
-        sx={{
-          height,
-          bgcolor: 'action.hover',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
+      <div
+        className="bg-muted flex items-center justify-center relative overflow-hidden"
+        style={{ height }}
       >
         {FallbackIcon && (
           <FallbackIcon
-            style={{ width: 28, height: 28, color: brandColor, opacity: 0.5 }}
+            style={{ width: 28, height: 28, color: 'hsl(var(--brand))', opacity: 0.5 }}
             aria-hidden="true"
           />
         )}
         {children}
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ position: 'relative', height, overflow: 'hidden' }}>
-      <Box
-        component="img"
+    <div className="relative overflow-hidden" style={{ height }}>
+      <img
         src={src}
         alt={alt}
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
-        className={`img-lazy-fade${loaded ? ' loaded' : ''}`}
-        sx={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          transition:
-            'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-        }}
+        className={`img-lazy-fade${loaded ? ' loaded' : ''} w-full h-full object-cover transition-transform duration-300 ease-out`}
       />
       {children}
-    </Box>
+    </div>
   );
 };
-CardImage.displayName = 'CardImage';// Actually, MUI CardHeader uses title/subheader/action props, not children.
-// We need to keep rendering children like shadcn does. Use a plain div with sx.
+CardImage.displayName = 'CardImage';
+
 const CardHeaderCompat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, style, ...props }, ref) => (
+  ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={className}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 6,
-        padding: 24,
-        ...style,
-      }}
+      className={cn('flex flex-col gap-1.5 p-6', className)}
       {...props}
     >
       {children}
@@ -166,23 +116,15 @@ const CardHeaderCompat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<H
 );
 CardHeaderCompat.displayName = 'CardHeader';
 
-const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, children, style, ...props }, ref) => (
-    <Typography
+const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, children, ...props }, ref) => (
+    <h3
       ref={ref}
-      variant="h6"
-      component="h3"
-      className={className}
-      style={style}
-      sx={{
-        fontWeight: 600,
-        lineHeight: 1,
-        letterSpacing: '-0.015em',
-      }}
-      {...(props as Record<string, unknown>)}
+      className={cn('text-lg font-semibold leading-none tracking-tight', className)}
+      {...props}
     >
       {children}
-    </Typography>
+    </h3>
   ),
 );
 CardTitle.displayName = 'CardTitle';
@@ -190,46 +132,39 @@ CardTitle.displayName = 'CardTitle';
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, style, ...props }, ref) => (
-  <Typography
+>(({ className, children, ...props }, ref) => (
+  <p
     ref={ref}
-    variant="body2"
-    color="text.secondary"
-    className={className}
-    style={style}
-    {...(props as Record<string, unknown>)}
+    className={cn('text-sm text-muted-foreground', className)}
+    {...props}
   >
     {children}
-  </Typography>
+  </p>
 ));
 CardDescription.displayName = 'CardDescription';
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, style, ...props }, ref) => (
-    <MuiCardContent
-      ref={ref as React.Ref<HTMLDivElement>}
-      className={className}
-      style={style}
-      sx={{ pt: 0, '&:last-child': { pb: 3 } }}
-      {...(props as Record<string, unknown>)}
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('px-6 pb-6 pt-0', className)}
+      {...props}
     >
       {children}
-    </MuiCardContent>
+    </div>
   ),
 );
 CardContent.displayName = 'CardContent';
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, style, ...props }, ref) => (
-    <MuiCardActions
-      ref={ref as React.Ref<HTMLDivElement>}
-      className={className}
-      style={style}
-      sx={{ px: 3, pt: 0 }}
-      {...(props as Record<string, unknown>)}
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('flex items-center px-6 pt-0', className)}
+      {...props}
     >
       {children}
-    </MuiCardActions>
+    </div>
   ),
 );
 CardFooter.displayName = 'CardFooter';
