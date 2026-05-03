@@ -38,16 +38,37 @@ const pick = (html, re) => {
   return m ? m[1].trim() : null;
 };
 
+const BOT_UA =
+  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+
 async function check(path) {
   const url = `${BASE.replace(/\/$/, '')}${path}`;
-  const res = await fetch(url, { headers: { 'User-Agent': 'queer-guide-seo-check/1' } });
-  const html = await res.text();
+  const [humanRes, botRes] = await Promise.all([
+    fetch(url, { headers: { 'User-Agent': 'queer-guide-seo-check/1' } }),
+    fetch(url, { headers: { 'User-Agent': BOT_UA } }),
+  ]);
+  const html = await humanRes.text();
+  const botHtml = await botRes.text();
   const title = pick(html, /<title[^>]*>([\s\S]*?)<\/title>/i);
   const description = pick(html, /<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
   const canonical = pick(html, /<link\s+rel=["']canonical["']\s+href=["']([^"']*)["']/i);
   const ogImage = pick(html, /<meta\s+property=["']og:image["']\s+content=["']([^"']*)["']/i);
   const hasJsonLd = /application\/ld\+json/.test(html);
-  return { path, url, status: res.status, title, description, canonical, ogImage, hasJsonLd };
+  const botH1 = pick(botHtml, /<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  const botBodySize = botHtml.length;
+  return {
+    path,
+    url,
+    status: humanRes.status,
+    botStatus: botRes.status,
+    title,
+    description,
+    canonical,
+    ogImage,
+    hasJsonLd,
+    botH1,
+    botBodySize,
+  };
 }
 
 const fail = (msg, ctx) => {
@@ -115,6 +136,17 @@ async function main() {
 
     if (r.path === '/' && !r.hasJsonLd) failures += fail('homepage missing JSON-LD');
     else if (r.path === '/') pass('JSON-LD present');
+
+    // Bot UA: middleware should inject route-specific body content. We expect
+    // an <h1> in the raw HTML and a non-trivial body size.
+    if (r.botStatus !== 200) failures += fail(`bot HTTP ${r.botStatus}`);
+    else if (!r.botH1) failures += fail('bot UA: missing <h1> in initial HTML');
+    else {
+      pass(`bot <h1>: "${r.botH1.replace(/<[^>]+>/g, '').slice(0, 60)}"`);
+      if (r.botBodySize < 3000) {
+        failures += fail(`bot HTML too small: ${r.botBodySize} bytes (expected >3000)`);
+      }
+    }
   }
 
   if (duplicates.size > 0) {
