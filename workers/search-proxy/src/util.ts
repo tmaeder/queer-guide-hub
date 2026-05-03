@@ -24,6 +24,10 @@ export function getCorsHeadersOriginLocked(request: Request, env: Env): HeadersI
 		// Empty header means the browser blocks the response, which is the desired
 		// behaviour for cross-origin write requests from unknown origins.
 		"Access-Control-Allow-Origin": isAllowed ? origin : "",
+		// Bug #14: write endpoints accept the signed qg_sid cookie. Browsers
+		// only attach cookies on cross-origin requests when both
+		// credentials: 'include' (client) and ACAC: true (server) are set.
+		"Access-Control-Allow-Credentials": "true",
 		"Access-Control-Allow-Headers": "content-type, authorization",
 		"Access-Control-Allow-Methods": "POST, OPTIONS",
 		"Access-Control-Max-Age": "86400",

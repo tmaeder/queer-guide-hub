@@ -793,15 +793,34 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		indexes = ["venues", "events", "cities", "personalities"];
 	}
 
-	const meili = await meiliMultiSearch(env, {
-		indexes,
-		query: q,
-		facets: INDEX_FACETS,
-		hitsPerPage: limit,
-		useHybrid: false, // lexical only — autocomplete must be < 40ms
-	});
+	// Bug #9: 800ms hard timeout on autocomplete. Falls back to popular-cities
+	// cache so the dropdown never blocks user typing. Cache populated on cold
+	// start in KV by the `populatePopularCache` helper below.
+	const AUTOCOMPLETE_TIMEOUT_MS = 800;
+	const timed = await Promise.race([
+		meiliMultiSearch(env, {
+			indexes,
+			query: q,
+			facets: INDEX_FACETS,
+			hitsPerPage: limit,
+			useHybrid: false, // lexical only — autocomplete must be < 40ms
+		}),
+		new Promise<{ hits: never[] } | null>((resolve) =>
+			setTimeout(() => resolve(null), AUTOCOMPLETE_TIMEOUT_MS),
+		),
+	]).catch(() => null);
 
-	const out = meili.hits.slice(0, limit).map((h) => ({
+	let hits: Array<Record<string, unknown>> = (timed && "hits" in timed ? timed.hits : []) as Array<Record<string, unknown>>;
+	if (hits.length === 0) {
+		// Cache fallback: substring match against popular city titles.
+		const cached = (await env.EMBED_CACHE.get("popular_cities:v1", { type: "json" }).catch(() => null)) as Array<Record<string, unknown>> | null;
+		if (cached) {
+			const ql = q.toLowerCase();
+			hits = cached.filter((c) => String(c.title || "").toLowerCase().includes(ql)).slice(0, limit);
+		}
+	}
+
+	const out = hits.slice(0, limit).map((h) => ({
 		id: h.id,
 		type: h.type,
 		title: h.title,

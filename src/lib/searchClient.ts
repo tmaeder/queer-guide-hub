@@ -34,15 +34,29 @@ export interface SearchHit {
 	[key: string]: unknown;
 }
 
+// Write endpoints (/track, /feedback, /onboarding) need credentials: 'include'
+// so the signed qg_sid cookie travels — the worker uses it to verify the
+// session id (bug #14). Read endpoints don't need credentials and stay
+// `same-origin` to keep CORS simple.
+const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
+
 async function post<T>(path: string, body: object): Promise<T> {
 	const res = await fetch(`${SEARCH_URL}${path}`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(body),
+		credentials: WRITE_PATHS.has(path) ? "include" : "same-origin",
 		keepalive: true,
 	});
 	if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
-	return (await res.json()) as T;
+	const data = (await res.json()) as T & { session_verified?: boolean };
+	// One-shot migration: once the worker confirms it has a verified signed
+	// cookie for this session, drop the legacy localStorage id so future
+	// sessions rely on the cookie alone.
+	if (data?.session_verified && typeof window !== "undefined") {
+		try { localStorage.removeItem(SESSION_KEY); } catch { /* private mode */ }
+	}
+	return data;
 }
 
 export type TrackEvent =

@@ -648,18 +648,15 @@ export const UniversalSearchBar = () => {
                   <CommandEmpty style={{ padding: '24px 0', textAlign: 'center' }}>
                     <div className="flex flex-col items-center gap-2">
                       {searchError ? (
-                        <>
+                        // Bug #22 follow-up: align with the /search results page —
+                        // honest copy + role=alert, no fake "Couldn't reach" title.
+                        <div role="alert" className="flex flex-col items-center gap-2">
                           <Search
-                            style={{
-                              height: 32,
-                              width: 32,
-                              opacity: 0.5,
-                              color: '#d32f2f',
-                            }}
+                            style={{ height: 32, width: 32, opacity: 0.5, color: 'hsl(var(--destructive))' }}
                           />
-                          <p style={{ color: '#d32f2f' }}>Couldn't reach search</p>
+                          <p style={{ color: 'hsl(var(--destructive))' }}>Search is temporarily unavailable</p>
                           <span className="text-xs text-muted-foreground">{searchError}</span>
-                        </>
+                        </div>
                       ) : (
                         <>
                           <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
