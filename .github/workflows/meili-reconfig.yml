@@ -47,9 +47,18 @@ jobs:
       - name: Discover meilisearch compose dir on VPS
         id: discover
         run: |
-          DIR=$(ssh "$SSH_USER@$SSH_HOST" 'find ~ /opt /srv /var -maxdepth 6 -type f -name docker-compose.yml -path "*meilisearch*" 2>/dev/null | head -1 | xargs -I{} dirname {}')
+          # Try docker labels first (the compose CLI tags every container with
+          # com.docker.compose.project.working_dir). Falls back to a wider find.
+          DIR=$(ssh "$SSH_USER@$SSH_HOST" 'set +e; \
+            (docker ps -a --filter ancestor=getmeili/meilisearch --format "{{.ID}}" 2>/dev/null | head -1 | xargs -I{} docker inspect -f "{{ index .Config.Labels \"com.docker.compose.project.working_dir\" }}" {} 2>/dev/null); \
+            (docker ps -a --filter name=meili --format "{{.ID}}" 2>/dev/null | head -1 | xargs -I{} docker inspect -f "{{ index .Config.Labels \"com.docker.compose.project.working_dir\" }}" {} 2>/dev/null); \
+            find / -maxdepth 7 \( -name docker-compose.yml -o -name docker-compose.yaml -o -name compose.yml -o -name compose.yaml \) 2>/dev/null | xargs grep -l "meilisearch" 2>/dev/null | head -1 | xargs -I{} dirname {}; \
+            true' | grep -v '^$' | head -1)
           if [ -z "$DIR" ]; then
-            echo "Could not find meilisearch dir on VPS" >&2; exit 1
+            echo "Could not find meilisearch dir on VPS" >&2
+            echo "--- docker ps ---" >&2
+            ssh "$SSH_USER@$SSH_HOST" 'docker ps --format "{{.Names}}\t{{.Image}}"' >&2 || true
+            exit 1
           fi
           echo "compose_dir=$DIR" >> "$GITHUB_OUTPUT"
           echo "Discovered: $DIR"
