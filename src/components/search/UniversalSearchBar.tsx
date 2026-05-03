@@ -334,7 +334,11 @@ export const UniversalSearchBar = () => {
                 <SearchInputTyped
                   ref={inputRef}
                   aria-label={t('search.ariaLabel', 'Search Queer Guide')}
-                  role="searchbox"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={isOpen}
+                  aria-controls="qg-search-listbox"
+                  aria-haspopup="listbox"
                   placeholders={
                     isMobile
                       ? [t('search.placeholders.generic', 'Search...')]
@@ -442,7 +446,7 @@ export const UniversalSearchBar = () => {
               </>
             )}
 
-            <CommandList style={{ maxHeight: 384 }}>
+            <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
               {/* Recent Searches */}
               {!query && recentSearches.length > 0 && (
                 <>
@@ -625,8 +629,28 @@ export const UniversalSearchBar = () => {
 
             </CommandList>
 
+            {/* Bug #18: screen-reader status announcement of result counts and
+                error states. Visually hidden; assistive tech reads it as the
+                hits/error change. */}
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+            >
+              {searchError
+                ? searchError
+                : loading || suggestionsLoading
+                  ? 'Searching…'
+                  : query && (searchResults.length || suggestions.length)
+                    ? `${searchResults.length + suggestions.length} results for ${query}`
+                    : query
+                      ? `No results for ${query}`
+                      : ''}
+            </div>
+
             {(loading || suggestionsLoading) && (
-              <div className="py-6 text-center text-muted-foreground" aria-live="polite">
+              <div className="py-6 text-center text-muted-foreground">
                 <div className="flex flex-col items-center gap-2">
                   <Loader2 className="animate-spin" size={24} aria-label="Searching" />
                   <span className="text-sm">Searching...</span>

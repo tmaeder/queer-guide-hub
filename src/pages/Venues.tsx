@@ -162,8 +162,13 @@ const Venues = () => {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {!loading && venues.length > 0 && (
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                {venues.length} venue{venues.length !== 1 ? 's' : ''}
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }} aria-live="polite">
+                {/* Bug #21: prefer the server-side filtered total when available
+                    so the chip-driven filter (or any active filter) reflects in
+                    the count, not just the locally loaded page slice. Fall back
+                    to venues.length if datasetTotal isn't reported. */}
+                {(datasetTotal ?? venues.length).toLocaleString()} venue
+                {(datasetTotal ?? venues.length) !== 1 ? 's' : ''}
               </Typography>
             )}
           </Box>
