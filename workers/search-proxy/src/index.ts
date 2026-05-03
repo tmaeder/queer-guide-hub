@@ -249,11 +249,15 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const mergedFilters: ValidatedFilters = { ...filters };
 	if (rewrite?.city && !mergedFilters.city && !mergedFilters.location) mergedFilters.city = rewrite.city;
 	// Normalise type/types: collapse `type` into `types` for downstream code.
+	// Note: rewrite.type_hint is intentionally NOT used to narrow indexes.
+	// Doing so previously caused single-word city queries ("berlin") to be
+	// restricted to the cities index, where Meilisearch's typo tolerance
+	// pushed Berlin out of the top 75 hits and yielded irrelevant results.
+	// We rely on the exact-title boost in personalizedRank instead.
 	const allTypes: string[] = [
 		...(mergedFilters.type ? [mergedFilters.type] : []),
 		...(mergedFilters.types ?? []),
 	];
-	if (rewrite?.type_hint && allTypes.length === 0) allTypes.push(rewrite.type_hint);
 
 	const requestedIndexes: string[] = allTypes.length
 		? [...new Set<string>(allTypes.map((t) => INDEX_MAP[t] || t).filter((t) => ALL_INDEXES.includes(t)))]
@@ -333,8 +337,9 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	}));
 	const fused = rrfFuse([meiliHits, semHits], 60);
 
-	// Personalization nudges (boost/decay).
-	let ranked = personalizedRank(fused, signal, recent);
+	// Personalization nudges (boost/decay) + worker-side exact-title boost
+	// for bug #4 (until the Meilisearch index ranking rules are reconfigured).
+	let ranked = personalizedRank(fused, signal, recent, q);
 
 	// Cold-start fallback if starved.
 	if (ranked.length < 5) {
