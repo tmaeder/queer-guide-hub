@@ -16,9 +16,6 @@ import { fetchEmailTemplates, upsertEmailTemplate } from '@/hooks/usePageFetcher
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 
 interface EmailTemplate {
   id: string;
@@ -178,102 +175,99 @@ export default function EmailTemplates() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <Loader2 style={{ height: 32, width: 32, animation: 'spin 1s linear infinite' }} />
-      </Box>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <Container sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h4">Email Templates</Typography>
-          <Typography color="text.secondary">Manage automated email templates sent by the system</Typography>
-        </Box>
-      </Box>
+    <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="text-2xl font-bold">Email Templates</h4>
+          <p className="text-muted-foreground">Manage automated email templates sent by the system</p>
+        </div>
+      </div>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '4fr 8fr' }, gap: 3 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Templates List */}
-        <Box>
+        <div className="lg:col-span-4">
           <Card>
             <CardHeader>
               <CardTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Mail style={{ height: 20, width: 20 }} />
                   Templates
-                </Box>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className="flex flex-col gap-2">
                 {templates.map((template) => (
-                  <Box
+                  <div
                     key={template.id}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      border: 1,
-                      borderColor: selectedTemplate?.id === template.id ? 'primary.main' : 'divider',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s',
-                      ...(selectedTemplate?.id === template.id
-                        ? { bgcolor: 'action.selected' }
-                        : { '&:hover': { bgcolor: 'action.hover' } }
-                      ),
+                    className="cursor-pointer transition-colors"
+                    style={{
+                      padding: 12,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderStyle: 'solid',
+                      borderColor: selectedTemplate?.id === template.id ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                      backgroundColor: selectedTemplate?.id === template.id ? 'hsl(var(--accent))' : undefined,
                     }}
                     onClick={() => {
                       setSelectedTemplate(template);
                       setEditingTemplate(null);
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography sx={{ fontWeight: 500 }}>{template.name}</Typography>
-                        <Typography variant="body2" color="text.secondary">{template.template_key}</Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium">{template.name}</p>
+                        <p className="text-sm text-muted-foreground">{template.template_key}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Badge variant={template.is_active ? 'default' : 'secondary'}>
                           {template.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                      </Box>
-                    </Box>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </Box>
+              </div>
             </CardContent>
           </Card>
-        </Box>
+        </div>
 
         {/* Template Details/Editor */}
-        <Box>
+        <div className="lg:col-span-8">
           {!selectedTemplate ? (
             <Card>
               <CardContent style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '24rem' }}>
-                <Box sx={{ textAlign: 'center' }}>
+                <div className="text-center">
                   <Mail style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px auto', display: 'block' }} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>No Template Selected</Typography>
-                  <Typography color="text.secondary">Select a template from the list to view or edit</Typography>
-                </Box>
+                  <p className="text-base font-medium">No Template Selected</p>
+                  <p className="text-muted-foreground">Select a template from the list to view or edit</p>
+                </div>
               </CardContent>
             </Card>
           ) : editingTemplate ? (
             /* Edit Mode */
             <Card>
               <CardHeader>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
+                <div className="flex items-center justify-between">
+                  <div>
                     <CardTitle>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         <Edit style={{ height: 20, width: 20 }} />
                         Editing: {editingTemplate.name}
-                      </Box>
+                      </div>
                     </CardTitle>
                     <CardDescription>
                       Make changes to the email template
                     </CardDescription>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  </div>
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -288,19 +282,19 @@ export default function EmailTemplates() {
                       disabled={isSaving}
                     >
                       {isSaving ? (
-                        <Loader2 style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+                        <Loader2 style={{ height: 16, width: 16, marginRight: 8 }} className="animate-spin" />
                       ) : (
                         <Save style={{ height: 16, width: 16, marginRight: 8 }} />
                       )}
                       Save
                     </Button>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
                       <Label htmlFor="name">Template Name</Label>
                       <Input
                         id="name"
@@ -312,10 +306,10 @@ export default function EmailTemplates() {
                           })
                         }
                       />
-                    </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    </div>
+                    <div className="flex flex-col gap-2">
                       <Label htmlFor="active">Status</Label>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         <Switch
                           id="active"
                           checked={editingTemplate.is_active}
@@ -329,11 +323,11 @@ export default function EmailTemplates() {
                         <Label htmlFor="active">
                           {editingTemplate.is_active ? 'Active' : 'Inactive'}
                         </Label>
-                      </Box>
-                    </Box>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="description">Description</Label>
                     <Input
                       id="description"
@@ -345,9 +339,9 @@ export default function EmailTemplates() {
                         })
                       }
                     />
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="subject">Subject Line</Label>
                     <Input
                       id="subject"
@@ -359,7 +353,7 @@ export default function EmailTemplates() {
                         })
                       }
                     />
-                  </Box>
+                  </div>
 
                   <Tabs defaultValue="html" style={{ width: '100%' }}>
                     <TabsList>
@@ -369,7 +363,7 @@ export default function EmailTemplates() {
                     </TabsList>
 
                     <TabsContent value="html">
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <div className="flex flex-col gap-2">
                         <Label htmlFor="html-content">HTML Content</Label>
                         <Textarea
                           id="html-content"
@@ -382,11 +376,11 @@ export default function EmailTemplates() {
                           }
                           style={{ minHeight: 300, fontFamily: 'monospace', fontSize: '0.875rem' }}
                         />
-                      </Box>
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="text">
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <div className="flex flex-col gap-2">
                         <Label htmlFor="text-content">Text Content (Optional)</Label>
                         <Textarea
                           id="text-content"
@@ -400,17 +394,17 @@ export default function EmailTemplates() {
                           style={{ minHeight: 300, fontFamily: 'monospace', fontSize: '0.875rem' }}
                           placeholder="Plain text version of the email..."
                         />
-                      </Box>
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="variables">
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Box>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>Available Variables</Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      <div className="flex flex-col gap-4">
+                        <div>
+                          <p className="text-base font-medium mb-2">Available Variables</p>
+                          <p className="text-sm text-muted-foreground mb-4">
                             Use these variables in your email content by wrapping them in double curly braces: {`{{variable_name}}`}
-                          </Typography>
-                        </Box>
+                          </p>
+                        </div>
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -429,32 +423,32 @@ export default function EmailTemplates() {
                             ))}
                           </TableBody>
                         </Table>
-                      </Box>
+                      </div>
                     </TabsContent>
                   </Tabs>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           ) : (
             /* View Mode */
             <Card>
               <CardHeader>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
+                <div className="flex items-center justify-between">
+                  <div>
                     <CardTitle>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         <FileText style={{ height: 20, width: 20 }} />
                         {selectedTemplate.name}
                         <Badge variant={selectedTemplate.is_active ? 'default' : 'secondary'}>
                           {selectedTemplate.is_active ? 'Active' : 'Inactive'}
                         </Badge>
-                      </Box>
+                      </div>
                     </CardTitle>
                     <CardDescription>
                       Template Key: <code style={{ fontSize: '0.75rem' }}>{selectedTemplate.template_key}</code>
                     </CardDescription>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  </div>
+                  <div className="flex gap-2">
                     <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
@@ -469,8 +463,8 @@ export default function EmailTemplates() {
                             Send a test email using this template to verify it works correctly.
                           </DialogDescription>
                         </DialogHeader>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-col gap-2">
                             <Label htmlFor="test-email">Recipient Email</Label>
                             <Input
                               id="test-email"
@@ -479,8 +473,8 @@ export default function EmailTemplates() {
                               onChange={(e) => setTestEmail(e.target.value)}
                               placeholder="test@example.com"
                             />
-                          </Box>
-                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                          </div>
+                          <div className="flex justify-end gap-2">
                             <Button variant="outline" onClick={() => setShowTestDialog(false)}>
                               Cancel
                             </Button>
@@ -489,14 +483,14 @@ export default function EmailTemplates() {
                               disabled={!testEmail || isSendingTest}
                             >
                               {isSendingTest ? (
-                                <Loader2 style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+                                <Loader2 style={{ height: 16, width: 16, marginRight: 8 }} className="animate-spin" />
                               ) : (
                                 <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
                               )}
                               Send Test
                             </Button>
-                          </Box>
-                        </Box>
+                          </div>
+                        </div>
                       </DialogContent>
                     </Dialog>
 
@@ -516,57 +510,57 @@ export default function EmailTemplates() {
                       <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
                       Edit
                     </Button>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div className="flex flex-col gap-6">
                   {selectedTemplate.description && (
                     <Alert>
                       <AlertDescription>{selectedTemplate.description}</AlertDescription>
                     </Alert>
                   )}
 
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                    <Box>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <Label style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Created</Label>
-                      <Typography variant="body2">{formatDate(selectedTemplate.created_at)}</Typography>
-                    </Box>
-                    <Box>
+                      <p className="text-sm">{formatDate(selectedTemplate.created_at)}</p>
+                    </div>
+                    <div>
                       <Label style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Last Updated</Label>
-                      <Typography variant="body2">{formatDate(selectedTemplate.updated_at)}</Typography>
-                    </Box>
-                  </Box>
+                      <p className="text-sm">{formatDate(selectedTemplate.updated_at)}</p>
+                    </div>
+                  </div>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <div className="flex flex-col gap-2">
                     <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Subject Line</Label>
-                    <Box sx={{ p: 1.5, bgcolor: 'grey.100', borderRadius: 2 }}>
+                    <div className="rounded-md bg-muted" style={{ padding: 12 }}>
                       <code style={{ fontSize: '0.875rem' }}>{selectedTemplate.subject}</code>
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <div className="flex flex-col gap-2">
                     <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Available Variables</Label>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <div className="flex flex-col gap-2">
                       {selectedTemplate.variables.map((variable, index) => (
-                        <Box key={index} sx={{ p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
-                          <Typography variant="body2" component="span">
+                        <div key={index} className="rounded bg-muted" style={{ padding: 8 }}>
+                          <span className="text-sm">
                             <code style={{ fontFamily: 'monospace' }}>{`{{${variable.name}}}`}</code>
-                            <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>- {variable.description}</Typography>
-                          </Typography>
-                        </Box>
+                            <span className="text-muted-foreground ml-2">- {variable.description}</span>
+                          </span>
+                        </div>
                       ))}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
 
                   {showPreview && (
-                    <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 3 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 2 }}>Email Preview</Typography>
+                    <div className="border-t border-border pt-6">
+                      <p className="text-base font-medium mb-4">Email Preview</p>
 
                       {/* Variable inputs for preview */}
-                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
                         {selectedTemplate.variables.map((variable) => (
-                          <Box key={variable.name} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <div key={variable.name} className="flex flex-col gap-1">
                             <Label htmlFor={`preview-${variable.name}`} style={{ fontSize: '0.75rem' }}>
                               {variable.name}
                             </Label>
@@ -581,9 +575,9 @@ export default function EmailTemplates() {
                               }
                               placeholder={variable.description}
                             />
-                          </Box>
+                          </div>
                         ))}
-                      </Box>
+                      </div>
 
                       <Tabs defaultValue="html-preview" style={{ width: '100%' }}>
                         <TabsList>
@@ -595,10 +589,10 @@ export default function EmailTemplates() {
                         </TabsList>
 
                         <TabsContent value="html-preview">
-                          <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, bgcolor: 'background.default' }}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 1, mb: 2 }}>
+                          <div className="border border-border rounded-md p-4 bg-background">
+                            <div className="border-b border-border pb-2 mb-4">
                               <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
-                            </Box>
+                            </div>
                             <ContentSanitizer
                               style={{ maxWidth: 'none' }}
                               className="prose"
@@ -607,38 +601,38 @@ export default function EmailTemplates() {
                                 'p','br','strong','em','u','a','ul','ol','li','blockquote','code','pre','h1','h2','h3','h4','h5','h6','img','table','thead','tbody','tr','th','td'
                               ]}
                             />
-                          </Box>
+                          </div>
                         </TabsContent>
 
                         <TabsContent value="html-code">
-                          <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
+                          <div className="rounded-md bg-muted p-4">
                             <pre style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
                               {generatePreview(selectedTemplate, previewData).htmlContent}
                             </pre>
-                          </Box>
+                          </div>
                         </TabsContent>
 
                         {selectedTemplate.text_content && (
                           <TabsContent value="text-preview">
-                            <Box sx={{ p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
-                              <Box sx={{ borderBottom: 1, borderColor: 'divider', pb: 1, mb: 2 }}>
+                            <div className="rounded-md bg-muted p-4">
+                              <div className="border-b border-border pb-2 mb-4">
                                 <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
-                              </Box>
+                              </div>
                               <pre style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
                                 {generatePreview(selectedTemplate, previewData).textContent}
                               </pre>
-                            </Box>
+                            </div>
                           </TabsContent>
                         )}
                       </Tabs>
-                    </Box>
+                    </div>
                   )}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
-        </Box>
-      </Box>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 }
