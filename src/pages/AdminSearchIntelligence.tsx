@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OverviewTab } from '@/components/admin/search-intelligence/OverviewTab';
 import { SearchDebuggerTab } from '@/components/admin/search-intelligence/SearchDebuggerTab';
@@ -22,27 +19,25 @@ export default function AdminSearchIntelligence() {
 
   if (!FEATURE_FLAG_ENABLED) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Search Intelligence
-        </Typography>
-        <Typography color="text.secondary">
+      <div className="container mx-auto max-w-screen-md px-4 py-8">
+        <h1 className="text-3xl font-bold mb-2">Search Intelligence</h1>
+        <p className="text-sm text-muted-foreground">
           This admin surface is behind the <code>VITE_FEATURE_SEARCH_INTELLIGENCE</code> feature
           flag. Set it to <code>1</code> at build time to enable. Backend (database + edge function)
           is already deployable independently.
-        </Typography>
-      </Container>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4">Search Intelligence</Typography>
-        <Typography variant="body2" color="text.secondary">
+    <div className="container mx-auto max-w-screen-xl px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Search Intelligence</h1>
+        <p className="text-sm text-muted-foreground">
           Unified admin surface for tags, synonyms, geo, images, dates, and Meilisearch backend.
-        </Typography>
-      </Box>
+        </p>
+      </div>
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="setup">Setup</TabsTrigger>
@@ -57,7 +52,7 @@ export default function AdminSearchIntelligence() {
           <TabsTrigger value="consistency">Consistency</TabsTrigger>
           <TabsTrigger value="audit">Audit</TabsTrigger>
         </TabsList>
-        <Box sx={{ mt: 3 }}>
+        <div className="mt-6">
           <TabsContent value="setup">
             <SetupTab />
           </TabsContent>
@@ -99,8 +94,8 @@ export default function AdminSearchIntelligence() {
           <TabsContent value="audit">
             <AuditTab />
           </TabsContent>
-        </Box>
+        </div>
       </Tabs>
-    </Container>
+    </div>
   );
 }
