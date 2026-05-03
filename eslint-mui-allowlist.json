@@ -57,7 +57,6 @@
   "src/components/cms/editor/EditorHeader.tsx",
   "src/components/cms/editor/EditorSidebar.tsx",
   "src/components/cms/editor/MediaPanel.tsx",
-  "src/components/cms/editor/RevisionPanel.tsx",
   "src/components/cms/editor/SEOPanel.tsx",
   "src/components/cms/editor/WorkflowPanel.tsx",
   "src/components/cms/fields/CityAutocompleteField.tsx",
