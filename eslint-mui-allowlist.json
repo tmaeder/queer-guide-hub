@@ -109,7 +109,6 @@
   "src/components/location/LocationInfo.tsx",
   "src/components/marketplace/MarketplaceFilters.tsx",
   "src/components/messaging/MessagingInterface.tsx",
-  "src/components/messaging/SendEventDialog.tsx",
   "src/components/messaging/StartConversationButton.tsx",
   "src/components/moderation/ReportDialog.tsx",
   "src/components/news/NewsCard.tsx",
