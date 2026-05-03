@@ -131,7 +131,6 @@
   "src/components/search/SearchFeedbackButtons.tsx",
   "src/components/search/SearchFiltersPanel.tsx",
   "src/components/search/UniversalSearchBar.tsx",
-  "src/components/security/AutomatedSecurityScheduler.tsx",
   "src/components/security/ContentSanitizer.tsx",
   "src/components/security/AdminRouteGuard.tsx",
   "src/components/security/PrivacyControlCenter.tsx",
