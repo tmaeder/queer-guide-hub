@@ -12,9 +12,6 @@ import {
   Luggage,
   Navigation2,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -74,22 +71,14 @@ export function getPriceRange(range: number | null) {
 
 export function formatHours(hours: Record<string, unknown>) {
   if (!hours || typeof hours !== 'object')
-    return (
-      <Typography variant="body2" color="text.secondary">
-        Hours not available
-      </Typography>
-    );
+    return <p className="text-sm text-muted-foreground">Hours not available</p>;
   const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   return days.map((day, index) => (
-    <Box key={day} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-        {dayNames[index]}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {(hours[day] as string) || 'Closed'}
-      </Typography>
-    </Box>
+    <div key={day} className="flex justify-between">
+      <span className="text-sm font-medium">{dayNames[index]}</span>
+      <span className="text-sm text-muted-foreground">{(hours[day] as string) || 'Closed'}</span>
+    </div>
   ));
 }
 
@@ -130,26 +119,16 @@ export function VenueHero({
     <>
       {/* Hero Image */}
       {heroImage && (
-        <Box
-          sx={{
-            width: '100%',
-            height: { xs: 160, md: 192 },
-            borderRadius: 3,
-            overflow: 'hidden',
-            mb: 3,
-            position: 'relative',
-          }}
-        >
-          <Box
-            component="img"
+        <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6 relative">
+          <img
             src={heroImage}
             alt={venue.name}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-        </Box>
+        </div>
       )}
 
       {/* Safety Alert Banner */}
@@ -162,19 +141,8 @@ export function VenueHero({
 
       {/* Permanently Closed Banner */}
       {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-        <Box
-          sx={{
-            mb: 3,
-            px: 2,
-            py: 1.5,
-            bgcolor: 'error.main',
-            color: 'error.contrastText',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <div className="mb-6 px-4 py-3 bg-destructive text-destructive-foreground flex items-center gap-2">
+          <p className="text-sm font-semibold">
             Permanently closed
             {' · '}
             {new Date(venue.closed_at).toLocaleDateString(undefined, {
@@ -182,44 +150,26 @@ export function VenueHero({
               month: 'long',
               day: 'numeric',
             })}
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
 
       {/* Title Row */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { md: 'flex-start' },
-          justifyContent: { md: 'space-between' },
-          gap: 2,
-          mb: 2,
-        }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5, flexWrap: 'wrap' }}>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-1 flex-wrap">
             {venue.logo_url && (
-              <Box
-                component="img"
+              <img
                 src={venue.logo_url}
                 alt=""
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '10px',
-                  objectFit: 'contain',
-                  p: '3px',
-                  flexShrink: 0,
-                }}
+                className="object-contain flex-shrink-0"
+                style={{ width: 40, height: 40, borderRadius: '10px', padding: '3px' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             )}
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              {venue.name}
-            </Typography>
+            <h4 className="text-2xl font-bold">{venue.name}</h4>
             {venue.verified && (
               <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
             )}
@@ -227,8 +177,8 @@ export function VenueHero({
             {venue.countries?.equality_score != null && (
               <EqualityScoreBadge score={venue.countries.equality_score} size="sm" />
             )}
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+          </div>
+          <div className="flex items-center gap-1 mb-2">
             <MapPin
               style={{
                 width: 14,
@@ -237,16 +187,10 @@ export function VenueHero({
                 flexShrink: 0,
               }}
             />
-            <Typography variant="body2" color="text.secondary">
+            <span className="text-sm text-muted-foreground">
               {cityLink ? (
                 <LocalizedLink to={cityLink} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  <Typography
-                    component="span"
-                    variant="body2"
-                    sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
-                  >
-                    {cityName}
-                  </Typography>
+                  <span className="text-sm hover:text-primary hover:underline">{cityName}</span>
                 </LocalizedLink>
               ) : (
                 cityName
@@ -259,24 +203,20 @@ export function VenueHero({
                       to={countryLink}
                       style={{ color: 'inherit', textDecoration: 'none' }}
                     >
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ '&:hover': { color: 'primary.main', textDecoration: 'underline' } }}
-                      >
+                      <span className="text-sm hover:text-primary hover:underline">
                         {countryName}
-                      </Typography>
+                      </span>
                     </LocalizedLink>
                   ) : (
                     countryName
                   )}
                 </>
               )}
-            </Typography>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+        <div className="flex items-center gap-2 flex-shrink-0">
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
           <Button variant="outline" size="sm" onClick={onAddToTrip}>
             <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
@@ -319,41 +259,33 @@ export function VenueHero({
               Website
             </Button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Stat Chips */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-        {venue.category && <Chip label={venue.category} size="small" />}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {venue.category && <Badge>{venue.category}</Badge>}
         {cityName && (
-          <Chip
-            icon={<MapPin style={{ width: 14, height: 14 }} />}
-            label={`${cityName}${countryName ? `, ${countryName}` : ''}`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <MapPin style={{ width: 14, height: 14 }} />
+            {cityName}{countryName ? `, ${countryName}` : ''}
+          </Badge>
         )}
         {venue.price_range && (
-          <Chip label={getPriceRange(venue.price_range)} size="small" variant="outlined" />
+          <Badge variant="outline">{getPriceRange(venue.price_range)}</Badge>
         )}
         {averageRating > 0 && (
-          <Chip
-            icon={<Star style={{ width: 14, height: 14, fill: 'currentColor' }} />}
-            label={`${averageRating.toFixed(1)} (${reviewCount} review${reviewCount !== 1 ? 's' : ''})`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Star style={{ width: 14, height: 14, fill: 'currentColor' }} />
+            {averageRating.toFixed(1)} ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
+          </Badge>
         )}
         {venue.amenities?.map((amenity) => (
-          <Chip
-            key={amenity}
-            label={amenity.replace('-', ' ')}
-            size="small"
-            variant="outlined"
-            sx={{ textTransform: 'capitalize' }}
-          />
+          <Badge key={amenity} variant="outline" className="capitalize">
+            {amenity.replace('-', ' ')}
+          </Badge>
         ))}
-      </Box>
+      </div>
     </>
   );
 }
@@ -368,16 +300,9 @@ interface VenueOverviewProps {
 export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverviewProps) {
   return (
     <ScrollReveal direction="up">
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
-          gap: 3,
-          mt: 1,
-        }}
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 mt-2">
         {/* Main Content */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {/* Description */}
           {venue.description && (
             <Card>
@@ -385,9 +310,9 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 <CardTitle>{t('pages.venueDetail.about', 'About')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                   {venue.description}
-                </Typography>
+                </p>
               </CardContent>
             </Card>
           )}
@@ -399,58 +324,36 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 <CardTitle>{t('pages.venueDetail.amenities', 'Amenities')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr' },
-                    gap: 1.5,
-                  }}
-                >
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {venue.amenities.map((amenity, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        p: 1,
-                        borderRadius: 1,
-                      }}
-                    >
+                    <div key={index} className="flex items-center gap-2 p-2 rounded">
                       {amenity === 'wifi' && <Wifi style={{ width: 16, height: 16 }} />}
                       {amenity === 'parking' && <Car style={{ width: 16, height: 16 }} />}
                       {amenity === 'wheelchair-accessible' && (
                         <Accessibility style={{ width: 16, height: 16 }} />
                       )}
                       {!['wifi', 'parking', 'wheelchair-accessible'].includes(amenity) && (
-                        <Box
-                          sx={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: '50%',
-                            bgcolor: 'action.disabled',
-                            flexShrink: 0,
-                          }}
+                        <div
+                          className="rounded-full bg-muted flex-shrink-0"
+                          style={{ width: 16, height: 16 }}
                         />
                       )}
-                      <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                        {amenity.replace('-', ' ')}
-                      </Typography>
-                    </Box>
+                      <span className="text-sm capitalize">{amenity.replace('-', ' ')}</span>
+                    </div>
                   ))}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
 
           {/* Recent Check-ins (mobile only, shown inline) */}
-          <Box sx={{ display: { xs: 'block', lg: 'none' } }}>
+          <div className="block lg:hidden">
             <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Sidebar */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {/* Location Map */}
           {typeof venue.latitude === 'number' && typeof venue.longitude === 'number' && (
             <Card>
@@ -475,9 +378,9 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
           )}
 
           {/* Recent Check-ins (desktop only) */}
-          <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+          <div className="hidden lg:block">
             <VenueRecentCheckins venueId={venue.id} refreshTrigger={checkinRefresh} />
-          </Box>
+          </div>
 
           {/* Contact Info */}
           <Card>
@@ -486,7 +389,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
             </CardHeader>
             <CardContent>
               {venue.address && (
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <div className="flex items-start gap-3">
                   <MapPin
                     style={{
                       width: 16,
@@ -496,11 +399,11 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                       marginTop: 2,
                     }}
                   />
-                  <Box>
-                    <Typography variant="body2">
+                  <div>
+                    <p className="text-sm">
                       {venue.address}
                       {venue.postal_code ? `, ${venue.postal_code}` : ''}
-                    </Typography>
+                    </p>
                     {typeof venue.latitude === 'number' &&
                       typeof venue.longitude === 'number' && (
                         <Button variant="outline" size="sm" asChild style={{ marginTop: 8 }}>
@@ -514,79 +417,58 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                           </a>
                         </Button>
                       )}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
               {venue.phone && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Phone
-                    style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <Typography
-                    component="a"
+                <div className="flex items-center gap-3">
+                  <Phone style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                  <a
                     href={`tel:${venue.phone}`}
-                    variant="body2"
-                    color="primary"
-                    sx={{ '&:hover': { textDecoration: 'underline' } }}
+                    className="text-sm text-primary hover:underline"
                   >
                     {venue.phone}
-                  </Typography>
-                </Box>
+                  </a>
+                </div>
               )}
               {venue.email && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <div className="flex items-center gap-3">
                   <Mail style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
-                  <Typography
-                    component="a"
+                  <a
                     href={`mailto:${venue.email}`}
-                    variant="body2"
-                    color="primary"
-                    sx={{ '&:hover': { textDecoration: 'underline' } }}
+                    className="text-sm text-primary hover:underline"
                   >
                     {venue.email}
-                  </Typography>
-                </Box>
+                  </a>
+                </div>
               )}
               {venue.website && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Globe
-                    style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <Typography
-                    component="a"
+                <div className="flex items-center gap-3">
+                  <Globe style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
+                  <a
                     href={venue.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    variant="body2"
-                    color="primary"
-                    sx={{
-                      '&:hover': { textDecoration: 'underline' },
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
+                    className="text-sm text-primary hover:underline overflow-hidden text-ellipsis whitespace-nowrap"
                   >
                     {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                  </Typography>
-                </Box>
+                  </a>
+                </div>
               )}
               {venue.instagram && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <div className="flex items-center gap-3">
                   <Instagram
                     style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }}
                   />
-                  <Typography
-                    component="a"
+                  <a
                     href={`https://instagram.com/${venue.instagram}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    variant="body2"
-                    color="primary"
-                    sx={{ '&:hover': { textDecoration: 'underline' } }}
+                    className="text-sm text-primary hover:underline"
                   >
                     @{venue.instagram}
-                  </Typography>
-                </Box>
+                  </a>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -596,10 +478,10 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Clock style={{ width: 16, height: 16 }} />
                     Hours
-                  </Box>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>{formatHours(venue.hours as Record<string, unknown>)}</CardContent>
@@ -613,23 +495,23 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 <CardTitle>{t('pages.venueDetail.tags', 'Tags')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <div className="flex flex-wrap gap-2">
                   {venue.tags.map((tag, index) => (
-                    <Chip
+                    <Badge
                       key={index}
-                      label={tag}
-                      size="small"
-                      variant="outlined"
+                      variant="outline"
+                      className="cursor-pointer"
                       onClick={() => navigate(`/resources/${encodeURIComponent(tag)}`)}
-                      sx={{ cursor: 'pointer' }}
-                    />
+                    >
+                      {tag}
+                    </Badge>
                   ))}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
     </ScrollReveal>
   );
 }
@@ -642,11 +524,11 @@ interface VenuePhotosProps {
 export function VenuePhotos({ venue, t }: VenuePhotosProps) {
   if (!venue.images || venue.images.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
-        <Typography color="text.secondary">
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">
           {t('pages.venueDetail.noPhotos', 'No photos available')}
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
   return (
@@ -658,33 +540,20 @@ export function VenuePhotos({ venue, t }: VenuePhotosProps) {
       }}
     >
       {venue.images.map((imageUrl, index) => (
-        <Box
+        <div
           key={index}
-          sx={{
-            aspectRatio: '1/1',
-            borderRadius: 2,
-            overflow: 'hidden',
-            bgcolor: 'action.hover',
-          }}
+          className="aspect-square rounded-lg overflow-hidden bg-muted"
         >
-          <Box
-            component="img"
+          <img
             src={imageUrl}
             alt={`${venue.name} - Image ${index + 1}`}
-            sx={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              '&:hover': { transform: 'scale(1.05)' },
-              transition: 'transform 300ms',
-              cursor: 'pointer',
-            }}
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).src = '/placeholder.svg';
             }}
             onClick={() => window.open(imageUrl, '_blank')}
           />
-        </Box>
+        </div>
       ))}
     </StaggerGrid>
   );
@@ -699,22 +568,22 @@ interface VenueEventsTabProps {
 export function VenueEventsTab({ venue, venueEvents, t }: VenueEventsTabProps) {
   if (venueEvents.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
-        <Typography color="text.secondary">
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">
           {t('pages.venueDetail.noEvents', 'No upcoming events at this venue')}
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
   return (
-    <Box sx={{ mt: 1 }}>
+    <div className="mt-2">
       <VenueEvents
         venueId={venue.id}
         venueName={venue.name}
         events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
         compact={false}
       />
-    </Box>
+    </div>
   );
 }
 
@@ -725,47 +594,31 @@ interface VenueReviewsProps {
 export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
   if (reviews.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
-        <Typography color="text.secondary">
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">
           No reviews yet. Be the first to leave a review!
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+    <div className="flex flex-col gap-4 mt-2">
       {reviews.map((review) => (
         <Card key={review.id}>
           <CardContent>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                mb: 1,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    bgcolor: 'action.hover',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                  }}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div
+                  className="bg-muted rounded-full flex items-center justify-center font-semibold text-sm"
+                  style={{ width: 36, height: 36 }}
                 >
                   {review.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
-                </Box>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">
                     {review.profiles?.display_name || 'Anonymous'}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                  </p>
+                  <div className="flex items-center" style={{ gap: 1 }}>
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
@@ -778,26 +631,24 @@ export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
                         }}
                       />
                     ))}
-                  </Box>
-                </Box>
-              </Box>
-              <Typography variant="caption" color="text.secondary">
+                  </div>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground">
                 {new Date(review.created_at).toLocaleDateString()}
-              </Typography>
-            </Box>
+              </span>
+            </div>
             {review.title && (
-              <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                {review.title}
-              </Typography>
+              <p className="text-sm font-semibold mb-1">{review.title}</p>
             )}
             {review.content && (
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+              <p className="text-sm text-muted-foreground" style={{ lineHeight: 1.6 }}>
                 {review.content}
-              </Typography>
+              </p>
             )}
           </CardContent>
         </Card>
       ))}
-    </Box>
+    </div>
   );
 }
