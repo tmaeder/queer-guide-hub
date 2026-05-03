@@ -14,11 +14,9 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Collapse from '@mui/material/Collapse';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import {
   Server,
   Hash,
@@ -35,6 +33,7 @@ import { kanbanColumns, type KanbanStatus } from './constants';
 import { SERVICE_COLORS, type ApiErrorSubmission } from './claudePrompts';
 import { SparklineCell } from './analytics/SparklineCell';
 import { toDailySeries, type ApiErrorDailyRow } from '@/hooks/useFeedbackAnalytics';
+import { cn } from '@/lib/utils';
 
 interface Props {
   errors: ApiErrorSubmission[];
@@ -45,7 +44,6 @@ interface Props {
   forwardingIds: Set<string>;
 }
 
-// Strip log prefixes / classify subject for readable card titles.
 function extractTitle(item: ApiErrorSubmission): string {
   const msg = item.data.message ?? '';
   const meta = item.data.metadata as
@@ -64,7 +62,6 @@ function extractTitle(item: ApiErrorSubmission): string {
   return msg.replace(/^\[[^\]]+\]\s*/, '');
 }
 
-// Chronic errors float above one-off spikes.
 function impactScore(e: ApiErrorSubmission): number {
   const firstSeen = new Date(e.submitted_at).getTime();
   const lastSeen = new Date(e.last_seen_at).getTime();
@@ -124,9 +121,7 @@ export function ApiErrorsKanban({
 
   if (errors.length === 0) {
     return (
-      <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-        No API errors recorded
-      </Typography>
+      <p className="text-sm text-muted-foreground py-8 text-center">No API errors recorded</p>
     );
   }
 
@@ -160,18 +155,13 @@ export function ApiErrorsKanban({
       collisionDetection={pointerWithin}
       onDragEnd={handleDragEnd}
     >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, 1fr)',
-            lg: 'repeat(3, 1fr)',
-            xl: `repeat(${kanbanColumns.length}, 1fr)`,
-          },
-          gap: 2,
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        style={{
+          gridTemplateColumns: undefined,
         }}
       >
+        <div className="contents xl:hidden" />
         {kanbanColumns.map((col) => (
           <Column
             key={col.id}
@@ -187,7 +177,7 @@ export function ApiErrorsKanban({
             forwardingIds={forwardingIds}
           />
         ))}
-      </Box>
+      </div>
     </DndContext>
   );
 }
@@ -220,56 +210,28 @@ function Column({
   const { setNodeRef, isOver } = useDroppable({ id: `col:${col.id}` });
 
   return (
-    <Box ref={setNodeRef} data-col-id={col.id}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          mb: 1.5,
-          pb: 1,
-          borderBottom: 2,
-          borderColor: col.color,
-        }}
+    <div ref={setNodeRef} data-col-id={col.id}>
+      <div
+        className="flex items-center gap-2 mb-3 pb-2 border-b-2"
+        style={{ borderColor: col.color }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-          {col.label}
-        </Typography>
+        <p className="text-sm font-bold">{col.label}</p>
         <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
           {items.length}
         </Badge>
-      </Box>
+      </div>
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1,
-          minHeight: 120,
-          maxHeight: { md: 'calc(100vh - 300px)' },
-          overflowY: 'auto',
-          pr: 0.5,
-          p: 0.5,
-          borderRadius: 1,
-          bgcolor: isOver ? 'action.hover' : 'transparent',
-          transition: 'background-color 0.15s',
-        }}
+      <div
+        className={cn(
+          'flex flex-col gap-2 min-h-[120px] md:max-h-[calc(100vh-300px)] overflow-y-auto pr-1 p-1 rounded transition-colors',
+          isOver ? 'bg-muted' : 'bg-transparent',
+        )}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
           {items.length === 0 && (
-            <Box
-              sx={{
-                py: 4,
-                textAlign: 'center',
-                border: '1px dashed',
-                borderColor: 'divider',
-                borderRadius: 1,
-                color: 'text.disabled',
-                fontSize: '0.75rem',
-              }}
-            >
+            <div className="py-8 text-center border border-dashed border-border rounded text-muted-foreground text-xs">
               Drop here
-            </Box>
+            </div>
           )}
           {items.map((item) => (
             <SortableErrorCard
@@ -285,8 +247,8 @@ function Column({
             />
           ))}
         </SortableContext>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -339,45 +301,18 @@ function SortableErrorCard({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Box
-        sx={{
-          p: 1.25,
-          border: 1,
-          borderColor: 'divider',
-          bgcolor: 'background.paper',
-          borderRadius: 1,
-          display: 'flex',
-          gap: 0.75,
-          '&:hover': { borderColor: 'primary.main' },
-        }}
-      >
-        <Box
+      <div className="p-2.5 border border-border bg-background rounded flex gap-1.5 hover:border-primary">
+        <div
           {...attributes}
           {...listeners}
-          sx={{
-            cursor: 'grab',
-            color: 'text.disabled',
-            display: 'flex',
-            alignItems: 'flex-start',
-            pt: 0.5,
-            '&:active': { cursor: 'grabbing' },
-            '&:hover': { color: 'text.secondary' },
-          }}
+          className="cursor-grab text-muted-foreground/60 flex items-start pt-1 active:cursor-grabbing hover:text-muted-foreground"
           aria-label="Drag to reorder"
         >
           <GripVertical style={{ width: 14, height: 14 }} />
-        </Box>
+        </div>
 
-        <Box sx={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={onToggle}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              mb: 0.5,
-              flexWrap: 'wrap',
-            }}
-          >
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onToggle}>
+          <div className="flex items-center gap-1 mb-1 flex-wrap">
             <Badge
               variant="outline"
               style={{
@@ -430,15 +365,15 @@ function SortableErrorCard({
                 <Github style={{ width: 11, height: 11 }} />#{item.github_issue_number}
               </Badge>
             )}
-            <Box sx={{ flex: 1 }} />
-            <Box sx={{ opacity: 0.8 }}>
+            <div className="flex-1" />
+            <div className="opacity-80">
               <SparklineCell
                 data={toDailySeries(series, 14)}
                 color={color}
                 width={56}
                 height={16}
               />
-            </Box>
+            </div>
             <Badge
               variant="secondary"
               style={{
@@ -452,29 +387,22 @@ function SortableErrorCard({
               <Hash style={{ width: 11, height: 11 }} />
               {item.occurrence_count}×
             </Badge>
-          </Box>
+          </div>
 
-          <Typography
-            sx={{
-              fontWeight: 600,
+          <p
+            className="font-semibold mb-0.5 break-words overflow-hidden"
+            style={{
               fontSize: '0.85rem',
               lineHeight: 1.35,
-              mb: 0.25,
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              wordBreak: 'break-word',
             }}
           >
             {extractTitle(item)}
-          </Typography>
+          </p>
 
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ fontSize: '0.72rem', display: 'block' }}
-          >
+          <p className="text-muted-foreground block" style={{ fontSize: '0.72rem' }}>
             <Zap
               style={{
                 width: 11,
@@ -487,9 +415,9 @@ function SortableErrorCard({
             {item.data.function_name}
             {item.data.status_code ? ` · ${item.data.status_code}` : ''}
             {' · '}last seen {timeAgo(item.last_seen_at)}
-          </Typography>
+          </p>
 
-          <Box sx={{ display: 'flex', gap: 0.75, mt: 1, flexWrap: 'wrap' }}>
+          <div className="flex gap-1.5 mt-2 flex-wrap">
             {item.github_issue_url ? (
               <Button
                 variant="outline"
@@ -568,36 +496,25 @@ function SortableErrorCard({
             >
               <Copy style={{ width: 12, height: 12 }} />
             </Button>
-          </Box>
+          </div>
 
-          <Collapse in={expanded}>
-            {item.data.stack && (
-              <Box sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                <Typography
-                  variant="caption"
-                  sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
-                >
-                  Stack trace
-                </Typography>
-                <Box
-                  sx={{
-                    p: 1,
-                    bgcolor: 'action.hover',
-                    fontFamily: 'monospace',
-                    fontSize: '0.7rem',
-                    maxHeight: 200,
-                    overflowY: 'auto',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-all',
-                  }}
-                >
-                  {item.data.stack}
-                </Box>
-              </Box>
-            )}
-          </Collapse>
-        </Box>
-      </Box>
+          <Collapsible open={expanded}>
+            <CollapsibleContent>
+              {item.data.stack && (
+                <div className="mt-2 pt-2 border-t border-border">
+                  <p className="text-xs font-semibold block mb-1">Stack trace</p>
+                  <div
+                    className="p-2 bg-muted font-mono overflow-y-auto whitespace-pre-wrap break-all"
+                    style={{ fontSize: '0.7rem', maxHeight: 200 }}
+                  >
+                    {item.data.stack}
+                  </div>
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </div>
     </div>
   );
 }
