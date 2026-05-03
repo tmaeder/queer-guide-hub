@@ -5,8 +5,6 @@ import { Crown, Shield, User, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface GroupMember {
   user_id: string;
@@ -51,12 +49,12 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {members.map((member) => (
         <Card key={member.user_id}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
                 <Avatar>
                   <AvatarImage src={member.profiles.avatar_url || undefined} />
                   <AvatarFallback>
@@ -64,33 +62,33 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
                   </AvatarFallback>
                 </Avatar>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium">
                     {member.profiles.display_name}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </p>
+                  <div className="flex items-center gap-2">
                     <Badge variant={getRoleColor(member.role) as 'default' | 'secondary' | 'destructive' | 'outline'}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <span className="flex items-center gap-1">
                         {getRoleIcon(member.role)}
                         {member.role}
-                      </Box>
+                      </span>
                     </Badge>
-                    <Typography variant="caption" color="text.secondary">
+                    <span className="text-xs text-muted-foreground">
                       Joined {new Date(member.joined_at).toLocaleDateString()}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                   {member.profiles.social_links && Object.keys(member.profiles.social_links).length > 0 && (
-                    <Box sx={{ mt: 1 }}>
+                    <div className="mt-2">
                       <SocialLinksDisplay
                         socialLinks={member.profiles.social_links}
                         size="sm"
                       />
-                    </Box>
+                    </div>
                   )}
-                </Box>
-              </Box>
+                </div>
+              </div>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex items-center gap-2">
                 {member.user_id !== user?.id && onStartConversation && (
                   <Button
                     variant="outline"
@@ -107,11 +105,11 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
                     Manage
                   </Button>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           </CardContent>
         </Card>
       ))}
-    </Box>
+    </div>
   );
 }
