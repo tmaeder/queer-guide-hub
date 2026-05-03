@@ -259,7 +259,6 @@
   "src/pages/ProfessionDetail.tsx",
   "src/pages/ProfileSettings.tsx",
   "src/pages/QueerVillageDetail.parts.tsx",
-  "src/pages/Ressources.tsx",
   "src/pages/SearchResults.tsx",
   "src/pages/SecurityDashboard.tsx",
   "src/pages/Travel.tsx",
