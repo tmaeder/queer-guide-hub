@@ -61,7 +61,6 @@
   "src/components/search/SearchFeedbackButtons.tsx",
   "src/components/security/ContentSanitizer.tsx",
   "src/components/security/AdminRouteGuard.tsx",
-  "src/components/trips/AddDocumentDialog.tsx",
   "src/components/trips/AddPlaceDialog.tsx",
   "src/components/trips/AddToTripDialog.tsx",
   "src/components/trips/AddToTripMenuItem.tsx",
