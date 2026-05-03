@@ -17,7 +17,6 @@
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/admin/automation/ReviewQueue.tsx",
   "src/components/admin/feedback/ApiErrorsKanban.tsx",
-  "src/components/admin/feedback/FeedbackBulkBar.tsx",
   "src/components/admin/feedback/FeedbackDetailDrawer.tsx",
   "src/components/admin/feedback/FeedbackFilters.tsx",
   "src/components/admin/feedback/RoutineLoopSection.tsx",
