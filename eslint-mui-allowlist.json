@@ -58,7 +58,6 @@
   "src/components/layout/LayoutShell.tsx",
   "src/components/messaging/StartConversationButton.tsx",
   "src/components/notifications/NotificationBell.tsx",
-  "src/components/personalities/PersonalitiesFiltersBar.tsx",
   "src/components/personalization/TravelPrefsPrompt.tsx",
   "src/components/profile/UrlValidator.tsx",
   "src/components/search/SearchFeedbackButtons.tsx",
