@@ -273,7 +273,6 @@
   "src/pages/Venues.tsx",
   "src/pages/admin/EmailTemplates.tsx",
   "src/pages/trips/SharedTripPage.tsx",
-  "src/pages/trips/TodayModePage.tsx",
   "src/pages/trips/TripPlannerPage.tsx",
   "src/pages/trips/TripsPage.tsx",
   "src/routes.tsx",

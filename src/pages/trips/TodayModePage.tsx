@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
 import {
   Calendar,
   Clock,
@@ -18,6 +13,7 @@ import {
   Skull,
   WifiOff,
   Bell,
+  Loader2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -34,21 +30,13 @@ import {
 } from '@/utils/offlineTripPack';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { classifyTripError } from '@/utils/tripError';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 
 /**
  * Day-of-travel mode.
- *
- * Shows the user's plan for *today* — every trip_place on today's trip_day
- * plus every reservation whose start_at falls in today's window — sorted
- * in chronological order. A "next up" card ticks live (1-minute interval)
- * with a countdown until the next item starts.
- *
- * Access is limited to trips that include today in their [start_date,
- * end_date] window. Outside the window we bounce the user to the planner.
- * The page is intentionally narrow — this isn't a planning surface.
  */
 
 interface TimelineItem {
@@ -113,22 +101,16 @@ export default function TodayModePage() {
   const online = useOnlineStatus();
   const push = usePushSubscription();
 
-  // Offline-snapshot rehydration — used only when the live query failed or
-  // returned nothing (airplane mode / dead signal). When online with fresh
-  // data we write a new snapshot on every successful render.
   const [snapshotTrip, setSnapshotTrip] = useState<TripWithDetails | null>(null);
   const [snapshotReservations, setSnapshotReservations] = useState<Reservation[] | null>(null);
   const [snapshotSavedAt, setSnapshotSavedAt] = useState<string | null>(null);
 
-  // Tick so "next in N min" stays fresh without a heavy interval.
   const [now, setNow] = useState<Date>(() => new Date());
   useEffect(() => {
     const i = setInterval(() => setNow(new Date()), 60 * 1000);
     return () => clearInterval(i);
   }, []);
 
-  // Load any existing snapshot at mount — so we can render immediately if
-  // the network is down. Also prune stale snapshots opportunistically.
   useEffect(() => {
     if (!tripId) return;
     void pruneStaleSnapshots();
@@ -140,8 +122,6 @@ export default function TodayModePage() {
     });
   }, [tripId]);
 
-  // Write a fresh snapshot whenever the live data lands — overwrites the
-  // prior blob so the next offline visit sees current-ish state.
   const tripReservationsForSnapshot = useMemo(
     () => (reservations ?? []).filter((r) => r.trip_id === trip?.id),
     [reservations, trip?.id],
@@ -151,7 +131,6 @@ export default function TodayModePage() {
     void cacheTripSnapshot(tripId, trip, tripReservationsForSnapshot);
   }, [tripId, trip, tripReservationsForSnapshot]);
 
-  // Pick the source of truth: live data when we have it, snapshot otherwise.
   const effectiveTrip = trip ?? snapshotTrip;
   const effectiveReservations = reservations ?? snapshotReservations ?? undefined;
   const servingFromSnapshot = !trip && !!snapshotTrip;
@@ -162,7 +141,6 @@ export default function TodayModePage() {
     const todayEnd = endOfLocalDay(now);
     const todayISO = todayStart.toISOString().slice(0, 10);
 
-    // Places scheduled on today's trip_day.
     const todaysDayIds = new Set<string>(
       effectiveTrip.trip_days.filter((d: TripDay) => d.date === todayISO).map((d) => d.id),
     );
@@ -194,7 +172,6 @@ export default function TodayModePage() {
         };
       });
 
-    // Reservations that touch today (start or end intersects [todayStart,todayEnd]).
     const reservationItems: TimelineItem[] = (effectiveReservations ?? [])
       .filter((r) => {
         if (r.trip_id !== effectiveTrip.id) return false;
@@ -229,7 +206,6 @@ export default function TodayModePage() {
     return timeline.find((i) => i.start && i.start.getTime() > now.getTime()) ?? null;
   }, [timeline, now]);
 
-  // Per-leg safety: which country is the user in *today*?
   const tripReservations = useMemo(
     () => (effectiveReservations ?? []).filter((r) => r.trip_id === effectiveTrip?.id),
     [effectiveReservations, effectiveTrip?.id],
@@ -261,16 +237,16 @@ export default function TodayModePage() {
 
   if (isLoading && !effectiveTrip) {
     return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress  aria-label="Loading"/>
-      </Container>
+      <div className="container mx-auto py-16 px-4 text-center">
+        <Loader2 className="h-6 w-6 animate-spin mx-auto" aria-label="Loading" />
+      </div>
     );
   }
 
   if ((error && !effectiveTrip) || !effectiveTrip) {
     const kind = classifyTripError(tripId, error, effectiveTrip) ?? 'load-error';
     return (
-      <Container sx={{ py: 8 }}>
+      <div className="container mx-auto py-16 px-4">
         <ErrorState
           title={t(`trips.error.${kind}.title`)}
           description={t(`trips.error.${kind}.description`)}
@@ -280,53 +256,43 @@ export default function TodayModePage() {
             variant: 'default',
           }}
         />
-      </Container>
+      </div>
     );
   }
 
   if (!isTripActiveToday(effectiveTrip.start_date, effectiveTrip.end_date, now)) {
     return (
-      <Container sx={{ py: 8 }}>
-        <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+      <div className="container mx-auto py-16 px-4">
+        <div className="text-center max-w-[480px] mx-auto">
+          <h5 className="text-xl font-bold mb-2">
             {t('trips.today.inactiveTitle', "This trip isn't active today")}
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+          </h5>
+          <p className="text-muted-foreground mb-6">
             {t(
               'trips.today.inactiveDescription',
               "Today-mode only shows content while you're on the trip. Head back to the planner.",
             )}
-          </Typography>
+          </p>
           <LocalizedLink to={`/trips/${effectiveTrip.id}`}>
             <Button variant="outline">
-              <ArrowLeft style={{ width: 16, height: 16, marginRight: 6 }} />
+              <ArrowLeft className="w-4 h-4 mr-1.5" />
               {t('trips.today.backToPlanner', 'Back to planner')}
             </Button>
           </LocalizedLink>
-        </Box>
-      </Container>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container sx={{ py: { xs: 4, md: 6 } }}>
-      {/* Offline banner — visible when we're serving a cached snapshot. */}
+    <div className="container mx-auto py-8 md:py-12 px-4">
       {(!online || servingFromSnapshot) && (
-        <Box
-          sx={{
-            mb: 2,
-            p: 1.5,
-            bgcolor: 'action.hover',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            fontSize: '0.875rem',
-            color: 'text.secondary',
-          }}
+        <div
+          className="mb-4 p-3 bg-muted flex items-center gap-2 text-sm text-muted-foreground"
           role="status"
         >
           <WifiOff size={16} />
-          <Typography sx={{ fontSize: '0.875rem' }}>
+          <span className="text-sm">
             {t(
               'trips.today.offlineBanner',
               "You're offline — showing your last-saved itinerary.",
@@ -339,219 +305,158 @@ export default function TodayModePage() {
                 </span>
               </>
             )}
-          </Typography>
-        </Box>
+          </span>
+        </div>
       )}
 
-      {/* Push opt-in — shown on Today mode because this is where the
-          reminders (next-item, doc-expiry) are most useful. Discreet. */}
       {online && push.supported && !push.subscribed && (
-        <Box
-          sx={{
-            mb: 2,
-            p: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 1,
-            bgcolor: 'action.hover',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="mb-4 p-3 flex items-center justify-between gap-2 bg-muted">
+          <div className="flex items-center gap-2">
             <Bell size={16} />
-            <Typography sx={{ fontSize: '0.875rem' }}>
+            <span className="text-sm">
               {t(
                 'trips.today.pushPrompt',
                 'Get a reminder 30 min before each reservation.',
               )}
-            </Typography>
-          </Box>
+            </span>
+          </div>
           <Button size="sm" onClick={push.subscribe} disabled={push.pending}>
             {t('trips.today.pushEnable', 'Enable')}
           </Button>
-        </Box>
+        </div>
       )}
 
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
+      <div className="mb-6">
         <LocalizedLink
           to={`/trips/${effectiveTrip.id}`}
           style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem' }}
         >
           ← {effectiveTrip.title}
         </LocalizedLink>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-          <Typography variant="h3" sx={{ fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+        <div className="flex items-center gap-2 mt-2">
+          <h3 className="text-3xl md:text-4xl font-bold">
             {t('trips.today.title', 'Today')}
-          </Typography>
-          <Typography
-            component="span"
-            sx={{ color: 'text.secondary', fontSize: '1.1rem', fontWeight: 500 }}
-          >
+          </h3>
+          <span className="text-muted-foreground text-lg font-medium">
             {now.toLocaleDateString(undefined, {
               weekday: 'long',
               month: 'long',
               day: 'numeric',
             })}
-          </Typography>
-        </Box>
-      </Box>
+          </span>
+        </div>
+      </div>
 
-      {/* Per-leg safety alert — only shown when today lands in a country
-          with limited rights (score < 50) or active criminalization. */}
       {activeCountrySafety &&
         (activeCountrySafety.criminalized ||
           activeCountrySafety.deathPenalty ||
           (activeCountrySafety.equality_score != null &&
             activeCountrySafety.equality_score < 50)) && (
-          <Box
-            sx={{
-              mb: 3,
-              p: 2,
-              bgcolor: activeCountrySafety.deathPenalty ? 'error.main' : 'warning.main',
-              color: activeCountrySafety.deathPenalty ? 'error.contrastText' : 'warning.contrastText',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 1.5,
-            }}
+          <div
+            className={`mb-6 p-4 flex items-start gap-3 ${
+              activeCountrySafety.deathPenalty
+                ? 'bg-destructive text-destructive-foreground'
+                : 'bg-yellow-500 text-yellow-foreground'
+            }`}
             role="alert"
           >
-            <Box sx={{ pt: 0.25, flexShrink: 0 }}>
+            <div className="pt-0.5 flex-shrink-0">
               {activeCountrySafety.deathPenalty ? (
                 <Skull size={20} />
               ) : (
                 <ShieldAlert size={20} />
               )}
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontWeight: 700, mb: 0.25 }}>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold mb-1">
                 {activeCountrySafety.deathPenalty
                   ? t('trips.today.safetyDeathTitle', "You're in a country with the death penalty for same-sex acts")
                   : activeCountrySafety.criminalized
                     ? t('trips.today.safetyCriminalTitle', "You're in a country where same-sex acts are criminalized")
                     : t('trips.today.safetyLimitedTitle', "You're in a country with limited LGBTQ+ rights")}
-              </Typography>
-              <Typography sx={{ fontSize: '0.875rem', opacity: 0.9 }}>
+              </p>
+              <p className="text-sm opacity-90">
                 {activeCountrySafety.name}
                 {activeCountrySafety.equality_score != null && (
                   <> · {t('trips.today.scoreLabel', 'Equality score')} {activeCountrySafety.equality_score}/100</>
                 )}
-              </Typography>
+              </p>
               <LocalizedLink
                 to={`/trips/${effectiveTrip.id}`}
                 style={{ color: 'inherit', textDecoration: 'underline', fontSize: '0.8125rem' }}
               >
                 {t('trips.today.viewBriefing', 'View full safety briefing →')}
               </LocalizedLink>
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
 
-      {/* Next-up / active-now card */}
       {(activeNow || nextUp) && (
-        <Box
-          sx={{
-            mb: 3,
-            p: 2,
-            bgcolor: 'action.hover',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-          }}
-        >
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+        <div className="mb-6 p-4 bg-muted flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
             {activeNow ? <MapPin size={18} /> : <Clock size={18} />}
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              sx={{
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                color: 'primary.main',
-              }}
-            >
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="uppercase tracking-wider text-xs font-bold text-primary">
               {activeNow
                 ? t('trips.today.happeningNow', 'Happening now')
                 : t('trips.today.nextUp', 'Next up')}
-            </Typography>
-            <Typography sx={{ fontWeight: 700 }}>
+            </p>
+            <p className="font-bold">
               {activeNow?.title ?? nextUp?.title}
-            </Typography>
+            </p>
             {nextUp && !activeNow && nextUp.start && (
-              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+              <p className="text-muted-foreground text-sm">
                 {formatCountdown(nextUp.start, now, t)}
-              </Typography>
+              </p>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Timeline */}
       {timeline.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+        <div className="text-center py-12 text-muted-foreground">
           <Calendar size={32} style={{ opacity: 0.4, margin: '0 auto 12px' }} />
-          <Typography>{t('trips.today.nothingTitle', 'Nothing scheduled today.')}</Typography>
-          <Typography sx={{ fontSize: '0.875rem', mt: 0.5 }}>
+          <p>{t('trips.today.nothingTitle', 'Nothing scheduled today.')}</p>
+          <p className="text-sm mt-1">
             {t('trips.today.nothingHint', 'Add items in the planner to see them here.')}
-          </Typography>
-        </Box>
+          </p>
+        </div>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col gap-3">
           {timeline.map((item) => {
             const Icon = item.icon;
             const isPast = item.end && item.end.getTime() < now.getTime();
             return (
               <Card key={item.id}>
                 <CardContent>
-                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', opacity: isPast ? 0.55 : 1 }}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        bgcolor: 'action.hover',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
+                  <div
+                    className="flex gap-3 items-start"
+                    style={{ opacity: isPast ? 0.55 : 1 }}
+                  >
+                    <div className="w-9 h-9 bg-muted flex items-center justify-center flex-shrink-0">
                       <Icon size={16} />
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography sx={{ fontWeight: 700 }}>{item.title}</Typography>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold">{item.title}</p>
                         {item.category && (
-                          <Chip label={item.category} size="small" sx={{ textTransform: 'capitalize' }} />
+                          <Badge className="capitalize">{item.category}</Badge>
                         )}
                         {item.kind === 'reservation' && (
-                          <Chip
-                            label={t('trips.today.reservationLabel', 'reservation')}
-                            size="small"
-                            variant="outlined"
-                          />
+                          <Badge variant="outline">
+                            {t('trips.today.reservationLabel', 'reservation')}
+                          </Badge>
                         )}
-                      </Box>
+                      </div>
                       {item.subtitle && (
-                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                          {item.subtitle}
-                        </Typography>
+                        <p className="text-sm text-muted-foreground">{item.subtitle}</p>
                       )}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                      <div className="flex items-center gap-1 mt-1">
                         <Clock size={12} style={{ color: 'var(--muted-foreground)' }} />
-                        <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                        <span className="text-xs text-muted-foreground">
                           {item.start
                             ? item.start.toLocaleTimeString(undefined, {
                                 hour: '2-digit',
@@ -567,21 +472,21 @@ export default function TodayModePage() {
                               })}
                             </>
                           )}
-                        </Typography>
-                      </Box>
-                    </Box>
+                        </span>
+                      </div>
+                    </div>
                     <ArrowRight
                       size={14}
                       style={{ color: 'var(--muted-foreground)', flexShrink: 0, marginTop: 10 }}
                     />
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
 
