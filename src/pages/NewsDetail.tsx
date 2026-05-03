@@ -272,7 +272,7 @@ export default function NewsDetail() {
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8 px-4 pb-24">
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 mb-4 flex-wrap">
         <LocalizedLink

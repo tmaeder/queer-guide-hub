@@ -317,7 +317,8 @@ export default function News() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
+      {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
+      <div className="container mx-auto py-12 md:py-20 px-4 pb-24">
         <PageHeader
           title={t('pages.news.title', 'News')}
           subtitle={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
