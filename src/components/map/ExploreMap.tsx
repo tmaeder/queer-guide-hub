@@ -2,11 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import { ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ExternalLink, Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { mapStyle } from '@/config/mapStyle';
 import {
@@ -670,42 +667,24 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <Box className={className} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column', height }}>
-      <Box ref={containerRef} sx={{ flex: 1, width: '100%', minHeight: 0 }} />
+    <div
+      className={`relative rounded-lg overflow-hidden flex flex-col ${className ?? ''}`}
+      style={{ height }}
+    >
+      <div ref={containerRef} className="flex-1 w-full min-h-0" />
 
       {/* Lightweight hover tooltip for boundary polygons */}
-      <Box
+      <div
         ref={tooltipRef}
-        sx={{
-          display: 'none',
-          position: 'absolute',
-          pointerEvents: 'none',
-          zIndex: 20,
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          px: 1.25,
-          py: 0.625,
-          fontSize: 13,
-          whiteSpace: 'nowrap',
-        }}
+        className="hidden absolute pointer-events-none z-20 bg-background text-foreground whitespace-nowrap"
+        style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 5, paddingBottom: 5, fontSize: 13 }}
       />
 
       {/* Loading overlay */}
       {!mapReady && (
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: 'background.default',
-            opacity: 0.7,
-            zIndex: 5,
-          }}
-        >
-          <CircularProgress size={32} aria-label="Loading" />
-        </Box>
+        <div className="absolute inset-0 flex items-center justify-center bg-background opacity-70 z-[5]">
+          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+        </div>
       )}
 
       {/* Layer toggles */}
@@ -719,57 +698,31 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       )}
 
       {/* Fetching indicator + result count */}
-      <Box
-        sx={{
-          position: 'absolute',
+      <div
+        className="absolute z-10 flex items-center gap-1 bg-background px-2 py-1 pointer-events-none transition-opacity duration-200"
+        style={{
           top: 12,
           right: 56,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          bgcolor: 'background.paper',
-          px: 1,
-          py: 0.5,
-          transition: 'opacity 200ms',
           opacity: isFetching || pointsTotalCount > 0 ? 1 : 0,
-          pointerEvents: 'none',
         }}
       >
-        {isFetching && <CircularProgress size={12} aria-label="Loading" />}
-        <Typography variant="caption" color="text.secondary">
+        {isFetching && <Loader2 className="h-3 w-3 animate-spin" aria-label="Loading" />}
+        <span className="text-xs text-muted-foreground">
           {isFetching ? 'Loading...' : `${pointsTotalCount.toLocaleString()} results in view`}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* "Open full map" link for embedded previews */}
       {linkToFullMap && (
         <Button
-          size="small"
-          variant="text"
+          size="sm"
+          variant="ghost"
           aria-label="Open full map"
           onClick={() => navigate(linkToFullMap)}
-          sx={{
-            position: 'absolute',
-            bottom: 12,
-            left: 12,
-            zIndex: 10,
-            minWidth: 0,
-            px: { xs: 0.75, sm: 1 },
-            py: 0.5,
-            borderRadius: 0,
-            textTransform: 'none',
-            fontSize: '0.75rem',
-            lineHeight: 1.2,
-            color: 'brand.main',
-            bgcolor: 'background.paper',
-            '&:hover': { bgcolor: 'background.paper', opacity: 0.85 },
-          }}
+          className="absolute bottom-3 left-3 z-10 min-w-0 px-2 py-1 rounded-none normal-case text-xs leading-tight bg-background hover:bg-background hover:opacity-85"
         >
           <ExternalLink size={14} />
-          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 0.5 }}>
-            Full map
-          </Box>
+          <span className="hidden sm:inline ml-1">Full map</span>
         </Button>
       )}
 
@@ -780,7 +733,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           onFiltersChange={setFilters}
         />
       )}
-    </Box>
+    </div>
   );
 };
 

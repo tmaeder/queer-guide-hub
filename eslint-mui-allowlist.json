@@ -122,7 +122,6 @@
   "src/components/layout/AuthGate.tsx",
   "src/components/layout/LayoutShell.tsx",
   "src/components/location/LocationInfo.tsx",
-  "src/components/map/ExploreMap.tsx",
   "src/components/marketplace/MarketplaceCard.tsx",
   "src/components/marketplace/MarketplaceFilters.tsx",
   "src/components/messaging/MessagingInterface.tsx",
