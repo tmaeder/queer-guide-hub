@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -430,14 +428,14 @@ export default function AdminVenues() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
             {info.row.original.address && (
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+              <p className="text-xs text-muted-foreground">
                 {info.row.original.address}
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -463,10 +461,10 @@ export default function AdminVenues() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 12, width: 12 }} />
               {val}
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -634,7 +632,7 @@ export default function AdminVenues() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           {(['foursquare', 'tripadvisor', 'tomtom', 'google-places'] as const).map((provider) => (
             <Button
               key={provider}
@@ -662,7 +660,7 @@ export default function AdminVenues() {
             <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
             Add Venue
           </Button>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDeleteVenue/refetch are stable, adding would defeat memoization
@@ -683,17 +681,12 @@ export default function AdminVenues() {
           <DialogHeader>
             <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
           </DialogHeader>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* Basic Info */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Basic Information
-                </Typography>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Basic Information
+                </h3>
                 <Button
                   type="button"
                   variant="outline"
@@ -703,9 +696,9 @@ export default function AdminVenues() {
                 >
                   {isEnrichingVenue ? 'Enriching...' : 'Enrich Venue'}
                 </Button>
-              </Box>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label htmlFor="name">Venue Name</Label>
                   <Input
                     id="name"
@@ -713,8 +706,8 @@ export default function AdminVenues() {
                     onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                     required
                   />
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label htmlFor="category">Category</Label>
                   <Select
                     value={formData.category}
@@ -731,9 +724,9 @@ export default function AdminVenues() {
                       ))}
                     </SelectContent>
                   </Select>
-                </Box>
-              </Box>
-              <Box>
+                </div>
+              </div>
+              <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -743,14 +736,13 @@ export default function AdminVenues() {
                   }
                   rows={3}
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             {/* Location */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Location
-              </Typography>
+            <div className="flex flex-col gap-4">
+              <h3 className="font-semibold">Location
+              </h3>
               <LocationAutocomplete
                 value={formData.address}
                 onChange={(address, coordinates, components) => {
@@ -766,50 +758,45 @@ export default function AdminVenues() {
                 placeholder="Enter full address"
               />
               {formData.latitude && formData.longitude && (
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label>Latitude</Label>
                     <Input
                       value={formData.latitude}
                       readOnly
                       style={{ backgroundColor: 'var(--muted)' }}
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Longitude</Label>
                     <Input
                       value={formData.longitude}
                       readOnly
                       style={{ backgroundColor: 'var(--muted)' }}
                     />
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
               <details>
-                <Box
-                  component="summary"
-                  sx={{ fontSize: '0.875rem', color: 'text.secondary', cursor: 'pointer' }}
-                >
+                <summary className="text-sm text-muted-foreground cursor-pointer">
                   Manual location override
-                </Box>
-                <Box
-                  sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2, pt: 1 }}
-                >
-                  <Box>
+                </summary>
+                <div className="grid grid-cols-4 gap-4 pt-2">
+                  <div>
                     <Label>City</Label>
                     <Input
                       value={formData.city}
                       onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>State</Label>
                     <Input
                       value={formData.state}
                       onChange={(e) => setFormData((prev) => ({ ...prev, state: e.target.value }))}
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Country</Label>
                     <Input
                       value={formData.country}
@@ -817,8 +804,8 @@ export default function AdminVenues() {
                         setFormData((prev) => ({ ...prev, country: e.target.value }))
                       }
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Postal Code</Label>
                     <Input
                       value={formData.postal_code}
@@ -826,40 +813,39 @@ export default function AdminVenues() {
                         setFormData((prev) => ({ ...prev, postal_code: e.target.value }))
                       }
                     />
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </details>
-            </Box>
+            </div>
 
             {/* Contact */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Contact
-              </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box>
+            <div className="flex flex-col gap-4">
+              <h3 className="font-semibold">Contact
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label>Phone</Label>
                   <Input
                     value={formData.phone}
                     onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
                   />
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label>Email</Label>
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                   />
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label>Website</Label>
                   <Input
                     value={formData.website}
                     onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))}
                   />
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label>Instagram</Label>
                   <Input
                     value={formData.instagram}
@@ -867,17 +853,16 @@ export default function AdminVenues() {
                       setFormData((prev) => ({ ...prev, instagram: e.target.value }))
                     }
                   />
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
 
             {/* Settings */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Settings
-              </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-                <Box>
+            <div className="flex flex-col gap-4">
+              <h3 className="font-semibold">Settings
+              </h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
                   <Label>Price Range</Label>
                   <Select
                     value={formData.price_range}
@@ -893,8 +878,8 @@ export default function AdminVenues() {
                       <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </div>
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="is_featured"
                     checked={formData.is_featured}
@@ -903,8 +888,8 @@ export default function AdminVenues() {
                     }
                   />
                   <Label htmlFor="is_featured">Featured</Label>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </div>
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="verified"
                     checked={formData.verified}
@@ -913,18 +898,17 @@ export default function AdminVenues() {
                     }
                   />
                   <Label htmlFor="verified">Verified</Label>
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
 
             {/* Tags */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Tags &amp; Amenities
-              </Typography>
-              <Box>
+            <div className="flex flex-col gap-4">
+              <h3 className="font-semibold">Tags &amp; Amenities
+              </h3>
+              <div>
                 <Label>Tags</Label>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1, mt: 0.5 }}>
+                <div className="flex flex-wrap gap-1 mb-2 mt-1">
                   {formData.tags.map((tag, i) => (
                     <Badge
                       key={i}
@@ -952,7 +936,7 @@ export default function AdminVenues() {
                       </button>
                     </Badge>
                   ))}
-                </Box>
+                </div>
                 <Input
                   placeholder="Add tags (Enter)"
                   onKeyPress={(e) => {
@@ -966,10 +950,10 @@ export default function AdminVenues() {
                     }
                   }}
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label>Amenities</Label>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1, mt: 0.5 }}>
+                <div className="flex flex-wrap gap-1 mb-2 mt-1">
                   {formData.amenities.map((a, i) => (
                     <Badge
                       key={i}
@@ -997,7 +981,7 @@ export default function AdminVenues() {
                       </button>
                     </Badge>
                   ))}
-                </Box>
+                </div>
                 <Input
                   placeholder="Add amenities (Enter)"
                   onKeyPress={(e) => {
@@ -1011,7 +995,7 @@ export default function AdminVenues() {
                     }
                   }}
                 />
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
+                <div className="flex flex-wrap gap-1 mt-2">
                   {commonAmenities.map((a) => (
                     <Button
                       key={a}
@@ -1028,9 +1012,9 @@ export default function AdminVenues() {
                       {a}
                     </Button>
                   ))}
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
 
             <VenueImageUpload
               images={formData.images}
@@ -1041,7 +1025,7 @@ export default function AdminVenues() {
             <Button type="submit" style={{ width: '100%' }}>
               {editingVenue ? 'Update Venue' : 'Add Venue'}
             </Button>
-          </Box>
+          </form>
         </DialogContent>
       </Dialog>
 
