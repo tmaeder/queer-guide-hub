@@ -7,6 +7,7 @@ import type {
 import { useState, useEffect, memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';
+import { updateRow } from '@/hooks/usePageFetchers';
 import { useCityImages } from '@/hooks/useCityImages';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -81,7 +82,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
         setCountryImage(imageUrl);
 
         // Save to DB so future visits don't need Pexels
-        supabase.from('countries').update({ image_url: imageUrl }).eq('id', data.id).then();
+        void updateRow('countries', data.id, { image_url: imageUrl });
       } catch (_err) {
         // Silently fail — fallback image handles it
       } finally {

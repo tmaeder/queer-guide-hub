@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { supabase } from '@/integrations/supabase/client';
+import { updateRow } from '@/hooks/usePageFetchers';
 import type { CMSMediaAttachment, MediaRole } from '@/types/cms';
 import MediaPickerDialog from '../media/MediaPickerDialog';
 
@@ -141,10 +142,9 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
     );
 
     // Persist to DB
-    const { error: updateError } = await supabase
-      .from('cms_media_attachments' as const)
-      .update({ media_role: newRole })
-      .eq('id', attachmentId);
+    const { error: updateError } = await updateRow('cms_media_attachments', attachmentId, {
+      media_role: newRole,
+    });
 
     if (updateError) {
       setError('Failed to update role.');
