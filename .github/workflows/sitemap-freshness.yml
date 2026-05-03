@@ -1,0 +1,26 @@
+name: Sitemap Freshness
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Base URL to audit
+        required: false
+        default: https://queer.guide
+  schedule:
+    - cron: "0 5 * * *"
+concurrency:
+  group: sitemap-freshness
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Audit sitemap freshness
+        env:
+          INPUT_BASE: ${{ github.event.inputs.base_url }}
+        run: node scripts/sitemap-freshness.mjs "${INPUT_BASE:-https://queer.guide}"
