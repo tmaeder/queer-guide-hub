@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import { Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { feedbackCategories } from '@/config/feedbackCategories';
 import { kanbanColumns, priorities } from './constants';
 import type { AdminProfile } from './types';
@@ -52,197 +49,114 @@ export function FeedbackFilters({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localQ]);
 
+  const switchRow = (id: string, checked: boolean, onChange: (v: boolean) => void, label: string) => (
+    <div className="flex items-center gap-1.5 ml-1">
+      <Switch id={id} checked={checked} onCheckedChange={onChange} />
+      <Label htmlFor={id} className="text-xs">{label}</Label>
+    </div>
+  );
+
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 1,
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        mb: 2,
-      }}
-    >
-      <TextField
-        inputRef={searchInputRef}
-        size="small"
-        placeholder="Search title, description, URL…"
-        value={localQ}
-        onChange={(e) => setLocalQ(e.target.value)}
-        sx={{ minWidth: 260, flex: { xs: '1 1 100%', sm: '0 1 320px' } }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search size={14} />
-            </InputAdornment>
-          ),
-          endAdornment: localQ ? (
-            <InputAdornment position="end">
-              <Box
-                component="button"
-                onClick={() => setLocalQ('')}
-                sx={{ p: 0, border: 0, bgcolor: 'transparent', cursor: 'pointer' }}
-                aria-label="Clear search"
-              >
-                <X size={14} />
-              </Box>
-            </InputAdornment>
-          ) : null,
-        }}
-      />
+    <div className="flex gap-2 flex-wrap items-center mb-4">
+      <div className="relative min-w-[260px] flex-[0_1_320px] max-sm:flex-[1_1_100%]">
+        <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          ref={searchInputRef}
+          placeholder="Search title, description, URL…"
+          value={localQ}
+          onChange={(e) => setLocalQ(e.target.value)}
+          className="pl-7 pr-7 h-9"
+        />
+        {localQ && (
+          <button
+            onClick={() => setLocalQ('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer bg-transparent border-0 p-0"
+            aria-label="Clear search"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
 
-      <Select
-        size="small"
-        displayEmpty
-        value={state.category ?? ''}
-        onChange={(e) => update({ category: (e.target.value || null) as string | null })}
-        sx={{ minWidth: 140 }}
-      >
-        <MenuItem value="">All categories</MenuItem>
-        {feedbackCategories.map((c) => (
-          <MenuItem key={c.value} value={c.value}>
-            {c.label}
-          </MenuItem>
-        ))}
+      <Select value={state.category ?? '__all__'} onValueChange={(v) => update({ category: v === '__all__' ? null : v })}>
+        <SelectTrigger className="min-w-[140px] h-9 w-auto"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">All categories</SelectItem>
+          {feedbackCategories.map((c) => (
+            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={state.status ?? '__all__'} onValueChange={(v) => update({ status: v === '__all__' ? null : v })}>
+        <SelectTrigger className="min-w-[140px] h-9 w-auto"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">All statuses</SelectItem>
+          {kanbanColumns.map((s) => (
+            <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+          ))}
+        </SelectContent>
       </Select>
 
       <Select
-        size="small"
-        displayEmpty
-        value={state.status ?? ''}
-        onChange={(e) => update({ status: (e.target.value || null) as string | null })}
-        sx={{ minWidth: 140 }}
+        value={state.priority == null ? '__all__' : String(state.priority)}
+        onValueChange={(v) => update({ priority: v === '__all__' ? null : Number(v) })}
       >
-        <MenuItem value="">All statuses</MenuItem>
-        {kanbanColumns.map((s) => (
-          <MenuItem key={s.id} value={s.id}>
-            {s.label}
-          </MenuItem>
-        ))}
+        <SelectTrigger className="min-w-[120px] h-9 w-auto"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">All priorities</SelectItem>
+          {priorities.map((p) => (
+            <SelectItem key={p.value} value={String(p.value)}>{p.short} · {p.label}</SelectItem>
+          ))}
+        </SelectContent>
       </Select>
 
-      <Select
-        size="small"
-        displayEmpty
-        value={state.priority ?? ''}
-        onChange={(e) =>
-          update({
-            priority: e.target.value === '' ? null : Number(e.target.value),
-          })
-        }
-        sx={{ minWidth: 120 }}
-      >
-        <MenuItem value="">All priorities</MenuItem>
-        {priorities.map((p) => (
-          <MenuItem key={p.value} value={p.value}>
-            {p.short} · {p.label}
-          </MenuItem>
-        ))}
-      </Select>
-
-      <Select
-        size="small"
-        displayEmpty
-        value={state.assignee ?? ''}
-        onChange={(e) => update({ assignee: (e.target.value || null) as string | null })}
-        sx={{ minWidth: 160 }}
-      >
-        <MenuItem value="">Any assignee</MenuItem>
-        <MenuItem value="__unassigned__">Unassigned</MenuItem>
-        {admins.map((a) => (
-          <MenuItem key={a.user_id} value={a.user_id}>
-            {a.display_name || a.user_id.slice(0, 8)}
-          </MenuItem>
-        ))}
+      <Select value={state.assignee ?? '__any__'} onValueChange={(v) => update({ assignee: v === '__any__' ? null : v })}>
+        <SelectTrigger className="min-w-[160px] h-9 w-auto"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__any__">Any assignee</SelectItem>
+          <SelectItem value="__unassigned__">Unassigned</SelectItem>
+          {admins.map((a) => (
+            <SelectItem key={a.user_id} value={a.user_id}>
+              {a.display_name || a.user_id.slice(0, 8)}
+            </SelectItem>
+          ))}
+        </SelectContent>
       </Select>
 
       {labels.length > 0 && (
-        <Select
-          size="small"
-          displayEmpty
-          value={state.label ?? ''}
-          onChange={(e) => update({ label: (e.target.value || null) as string | null })}
-          sx={{ minWidth: 140 }}
-        >
-          <MenuItem value="">Any label</MenuItem>
-          {labels.map((l) => (
-            <MenuItem key={l} value={l}>
-              {l}
-            </MenuItem>
-          ))}
+        <Select value={state.label ?? '__any__'} onValueChange={(v) => update({ label: v === '__any__' ? null : v })}>
+          <SelectTrigger className="min-w-[140px] h-9 w-auto"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__any__">Any label</SelectItem>
+            {labels.map((l) => (
+              <SelectItem key={l} value={l}>{l}</SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       )}
 
-      <FormControlLabel
-        control={
-          <Switch
-            size="small"
-            checked={state.hasScreenshot}
-            onChange={(e) => update({ hasScreenshot: e.target.checked })}
-          />
-        }
-        label="Has screenshot"
-        sx={{ ml: 0.5, '& .MuiTypography-root': { fontSize: '0.75rem' } }}
-      />
-      <FormControlLabel
-        control={
-          <Switch
-            size="small"
-            checked={state.hasErrors}
-            onChange={(e) => update({ hasErrors: e.target.checked })}
-          />
-        }
-        label="Has errors"
-        sx={{ ml: 0.5, '& .MuiTypography-root': { fontSize: '0.75rem' } }}
-      />
-      <FormControlLabel
-        control={
-          <Switch
-            size="small"
-            checked={state.withClaude}
-            onChange={(e) => update({ withClaude: e.target.checked })}
-          />
-        }
-        label="With Claude"
-        sx={{ ml: 0.5, '& .MuiTypography-root': { fontSize: '0.75rem' } }}
-      />
+      {switchRow('hasScreenshot', state.hasScreenshot, (v) => update({ hasScreenshot: v }), 'Has screenshot')}
+      {switchRow('hasErrors', state.hasErrors, (v) => update({ hasErrors: v }), 'Has errors')}
+      {switchRow('withClaude', state.withClaude, (v) => update({ withClaude: v }), 'With Claude')}
       {state.tab === 'community' && (
         <>
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={state.showSpam}
-                onChange={(e) => update({ showSpam: e.target.checked })}
-              />
-            }
-            label="Include spam"
-            sx={{ ml: 0.5, '& .MuiTypography-root': { fontSize: '0.75rem' } }}
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={state.showDuplicates}
-                onChange={(e) => update({ showDuplicates: e.target.checked })}
-              />
-            }
-            label="Include dups"
-            sx={{ ml: 0.5, '& .MuiTypography-root': { fontSize: '0.75rem' } }}
-          />
+          {switchRow('showSpam', state.showSpam, (v) => update({ showSpam: v }), 'Include spam')}
+          {switchRow('showDuplicates', state.showDuplicates, (v) => update({ showDuplicates: v }), 'Include dups')}
         </>
       )}
 
       {activeFilterCount > 0 && (
-        <Chip
-          size="small"
-          variant="outlined"
-          onDelete={clearFilters}
-          label={`${activeFilterCount} filter${activeFilterCount === 1 ? '' : 's'}`}
-        />
+        <Badge variant="outline" className="gap-1">
+          {activeFilterCount} filter{activeFilterCount === 1 ? '' : 's'}
+          <button onClick={clearFilters} aria-label="Clear filters" className="ml-1">
+            <X size={12} />
+          </button>
+        </Badge>
       )}
-      <Button size="small" variant="text" onClick={clearFilters} disabled={activeFilterCount === 0}>
+      <Button size="sm" variant="ghost" onClick={clearFilters} disabled={activeFilterCount === 0}>
         Reset
       </Button>
-    </Box>
+    </div>
   );
 }
