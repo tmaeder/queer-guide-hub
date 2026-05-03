@@ -234,7 +234,6 @@
   "src/pages/admin/EmailTemplates.tsx",
   "src/pages/trips/SharedTripPage.tsx",
   "src/pages/trips/TripPlannerPage.tsx",
-  "src/pages/trips/TripsPage.tsx",
   "src/routes.tsx",
   "src/test/__tests__/test-utils.test.tsx",
   "src/test/test-utils.tsx",
