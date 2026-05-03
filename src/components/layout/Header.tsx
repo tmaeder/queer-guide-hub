@@ -61,9 +61,6 @@ import { NotificationList } from '@/components/notifications/NotificationList';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 import { motion } from 'motion/react';
-import IconButton from '@mui/material/IconButton';
-import ListItemButton from '@mui/material/ListItemButton';
-import { useTheme } from '@mui/material/styles';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 

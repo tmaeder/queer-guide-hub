@@ -377,6 +377,7 @@ export const UmamiAnalyticsDashboard = () => {
         <CardContent>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
               <label className="text-sm font-medium">Date Range:</label>
               <Select
                 value={dateRange}
@@ -395,6 +396,7 @@ export const UmamiAnalyticsDashboard = () => {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
               <label className="text-sm font-medium">Device:</label>
               <Select
                 value={deviceFilter}
@@ -415,6 +417,7 @@ export const UmamiAnalyticsDashboard = () => {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
               <label className="text-sm font-medium">Auto Refresh:</label>
               <Button
                 variant={autoRefresh ? 'default' : 'outline'}

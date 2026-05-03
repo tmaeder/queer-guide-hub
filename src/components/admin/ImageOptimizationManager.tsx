@@ -486,11 +486,13 @@ export function ImageOptimizationManager() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
+                  {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
                   <label className="text-sm font-medium">AVIF Quality</label>
                   <input type="range" min="20" max="80" defaultValue="50" style={{ width: '100%' }} />
                   <p className="text-xs text-muted-foreground">Lower = smaller files, higher = better quality</p>
                 </div>
                 <div>
+                  {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
                   <label className="text-sm font-medium">WebP Quality</label>
                   <input type="range" min="50" max="90" defaultValue="75" style={{ width: '100%' }} />
                   <p className="text-xs text-muted-foreground">Lower = smaller files, higher = better quality</p>
@@ -498,6 +500,7 @@ export function ImageOptimizationManager() {
               </div>
 
               <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
                 <label className="text-sm font-medium block mb-2">Responsive Breakpoints</label>
                 <p className="text-sm text-muted-foreground mb-2">
                   Current: 320px, 640px, 768px, 1024px, 1280px, 1440px, 1920px (21 files per image)

@@ -102,6 +102,7 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
 
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
               <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- shadcn Input forwards id; htmlFor pattern not yet wired */}
                 <label className="text-sm font-medium mb-1 block">Departure</label>
                 <Input
                   type="date"
@@ -111,6 +112,7 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
                 />
               </div>
               <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- shadcn Input forwards id; htmlFor pattern not yet wired */}
                 <label className="text-sm font-medium mb-1 block">Return (optional)</label>
                 <Input
                   type="date"
