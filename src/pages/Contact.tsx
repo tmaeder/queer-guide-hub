@@ -7,9 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Mail, Clock, MessageCircle, Shield, Bug, HelpCircle, ChevronDown, ChevronRight, Send, Loader2 } from "lucide-react";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -67,16 +64,16 @@ export default function Contact() {
   }
 
   return (
-    <Box>
-      <Container sx={{ py: 6 }}>
-        <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>Contact Us</Typography>
-          <Typography variant="body1" color="text.secondary">
+    <div>
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-2">Contact Us</h1>
+          <p className="text-muted-foreground">
             Questions, feedback, or need support? Reach out to our community team.
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 6, mb: 8 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Contact Form */}
           <Card>
             <CardHeader>
@@ -84,20 +81,20 @@ export default function Contact() {
             </CardHeader>
             <CardContent>
               {submitted ? (
-                <Box sx={{ textAlign: "center", py: 4 }}>
+                <div className="text-center py-8">
                   <Mail style={{ width: 48, height: 48, margin: "0 auto 16px", opacity: 0.5 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Message Sent</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  <h3 className="text-lg font-semibold mb-2">Message Sent</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
                     We'll respond as soon as possible.
-                  </Typography>
+                  </p>
                   <Button variant="outline" onClick={() => { setSubmitted(false); setForm({ name: "", email: user?.email ?? "", category: "", message: "" }); }}>
                     Send Another
                   </Button>
-                </Box>
+                </div>
               ) : (
                 <form onSubmit={handleSubmit}>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-                    <Box>
+                  <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-2">
                       <Label htmlFor="name">Name</Label>
                       <Input
                         id="name"
@@ -106,8 +103,8 @@ export default function Contact() {
                         onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                         required
                       />
-                    </Box>
-                    <Box>
+                    </div>
+                    <div className="flex flex-col gap-2">
                       <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
@@ -117,8 +114,8 @@ export default function Contact() {
                         onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                         required
                       />
-                    </Box>
-                    <Box>
+                    </div>
+                    <div className="flex flex-col gap-2">
                       <Label>Category</Label>
                       <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
                         <SelectTrigger>
@@ -130,8 +127,8 @@ export default function Contact() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </Box>
-                    <Box>
+                    </div>
+                    <div className="flex flex-col gap-2">
                       <Label htmlFor="message">Message</Label>
                       <Textarea
                         id="message"
@@ -141,85 +138,85 @@ export default function Contact() {
                         required
                         style={{ minHeight: 120 }}
                       />
-                    </Box>
+                    </div>
                     <Button type="submit" disabled={submitting || !form.name || !form.email || !form.category || !form.message}>
                       {submitting ? <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: "spin 1s linear infinite" }} /> : <Send style={{ width: 16, height: 16, marginRight: 8 }} />}
                       {submitting ? "Sending..." : "Send Message"}
                     </Button>
-                  </Box>
+                  </div>
                 </form>
               )}
             </CardContent>
           </Card>
 
           {/* Contact Methods + Info */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>Direct Contact</Typography>
+          <div className="flex flex-col gap-4">
+            <h2 className="text-xl font-bold">Direct Contact</h2>
             {categories.filter((c) => c.value !== "other").map((method) => (
               <Card key={method.value}>
                 <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                    <method.icon style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} color="var(--mui-palette-primary-main)" />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: "0.9375rem" }}>{method.label}</Typography>
-                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 0.5 }}>
-                        <Typography variant="body2" component="a" href={`mailto:${method.email}`} color="primary.main">
+                  <div className="flex items-start gap-4">
+                    <method.icon style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} className="text-primary" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-[0.9375rem]">{method.label}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <a href={`mailto:${method.email}`} className="text-sm text-primary">
                           {method.email}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        </a>
+                        <span className="text-xs text-muted-foreground">
                           ~{method.responseTime}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}
 
             <Card>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Clock style={{ width: 18, height: 18 }} color="var(--mui-palette-primary-main)" />
-                  <Typography variant="body2"><strong>Response Time</strong> — within 24 hours</Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Shield style={{ width: 18, height: 18 }} color="var(--mui-palette-primary-main)" />
-                  <Typography variant="body2"><strong>Safety First</strong> — priority support for safety concerns</Typography>
-                </Box>
+                <div className="flex items-center gap-3">
+                  <Clock style={{ width: 18, height: 18 }} className="text-primary" />
+                  <p className="text-sm"><strong>Response Time</strong> — within 24 hours</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Shield style={{ width: 18, height: 18 }} className="text-primary" />
+                  <p className="text-sm"><strong>Safety First</strong> — priority support for safety concerns</p>
+                </div>
               </CardContent>
             </Card>
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* FAQ */}
-        <Box component="section">
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
-            <HelpCircle style={{ width: 24, height: 24 }} color="var(--mui-palette-primary-main)" />
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <HelpCircle style={{ width: 24, height: 24 }} className="text-primary" />
             Frequently Asked Questions
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          </h2>
+          <div className="flex flex-col gap-3">
             {faqs.map((faq, index) => (
               <Card key={index}>
                 <Collapsible open={openFaq === index} onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}>
                   <CollapsibleTrigger asChild>
                     <CardHeader>
-                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.9375rem" }}>{faq.question}</Typography>
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-[0.9375rem]">{faq.question}</p>
                         {openFaq === index ? <ChevronDown style={{ width: 18, height: 18, flexShrink: 0 }} /> : <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />}
-                      </Box>
+                      </div>
                     </CardHeader>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <CardContent>
-                      <Typography variant="body2" color="text.secondary">{faq.answer}</Typography>
+                      <p className="text-sm text-muted-foreground">{faq.answer}</p>
                     </CardContent>
                   </CollapsibleContent>
                 </Collapsible>
               </Card>
             ))}
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }
