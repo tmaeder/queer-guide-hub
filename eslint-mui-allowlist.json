@@ -267,7 +267,6 @@
   "src/pages/Ressources.tsx",
   "src/pages/SearchResults.tsx",
   "src/pages/SecurityDashboard.tsx",
-  "src/pages/SubmitForm.tsx",
   "src/pages/Travel.tsx",
   "src/pages/UserProfile.tsx",
   "src/pages/VenueDetail.parts.tsx",
