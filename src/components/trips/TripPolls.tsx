@@ -1,17 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import { useTheme } from '@mui/material/styles';
 import { Plus, X, Lock, Clock, BarChart3 } from 'lucide-react';
 import { formatDistanceToNow, isPast } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
@@ -31,7 +27,6 @@ interface Props {
 
 export function TripPolls({ tripId }: Props) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const { user } = useAuth();
   const { toast } = useToast();
   const { data: polls, isLoading, createPoll, vote, closePoll } = useTripPolls(tripId);
@@ -84,37 +79,33 @@ export function TripPolls({ tripId }: Props) {
 
   if (isLoading) return <PageLoadingState count={2} />;
 
-  const brandColor = theme.palette.brand?.main || 'hsl(var(--brand))';
-
   return (
-    <Box>
-      <Box className="flex items-center justify-between mb-3">
-        <Typography variant="subtitle2" color="text.secondary">
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-medium text-muted-foreground">
           {polls?.length || 0} {(polls?.length || 0) === 1 ? t('trips.polls.poll', 'poll') : t('trips.polls.polls', 'polls')}
-        </Typography>
+        </p>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <Plus size={14} />
           {t('trips.polls.create', 'Create Poll')}
         </Button>
-      </Box>
+      </div>
 
       {(!polls || polls.length === 0) && (
         <ScrollReveal>
-          <Box className="flex flex-col items-center justify-center py-16 text-center">
-            <Box
-              sx={{ width: 56, height: 56, borderRadius: '50%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}
-            >
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
               <BarChart3 size={24} style={{ opacity: 0.5 }} />
-            </Box>
-            <Typography variant="subtitle2" fontWeight={600}>{t('trips.polls.noPolls', 'No polls yet')}</Typography>
-            <Typography variant="body2" color="text.secondary">
+            </div>
+            <p className="text-sm font-semibold">{t('trips.polls.noPolls', 'No polls yet')}</p>
+            <p className="text-sm text-muted-foreground">
               {t('trips.polls.noPollsHint', 'Create one to help your group make decisions')}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         </ScrollReveal>
       )}
 
-      <Box className="space-y-3">
+      <div className="space-y-3">
         {polls?.map((poll) => {
           const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes?.length || 0), 0);
           const isExpired = poll.deadline ? isPast(new Date(poll.deadline)) : false;
@@ -123,153 +114,124 @@ export function TripPolls({ tripId }: Props) {
 
           return (
             <Card key={poll.id}>
-              <CardContent>
-                <Box className="flex items-start justify-between gap-2 mb-2">
-                  <Typography variant="subtitle1" fontWeight={600} sx={{ fontSize: 14 }}>
-                    {poll.question}
-                  </Typography>
-                  <Box className="flex items-center gap-1 shrink-0">
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <p className="text-sm font-semibold">{poll.question}</p>
+                  <div className="flex items-center gap-1 shrink-0">
                     {isClosed && <Badge variant="outline"><Lock size={10} style={{ marginRight: 4 }} />{t('trips.polls.closed', 'Closed')}</Badge>}
                     {poll.is_multiple_choice && <Badge variant="outline">{t('trips.polls.multiple', 'Multiple')}</Badge>}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
 
-                <Box className="space-y-1.5">
+                <div className="space-y-1.5">
                   {poll.options.map((opt) => {
                     const voteCount = opt.votes?.length || 0;
                     const pct = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
                     const hasVoted = opt.votes?.includes(user?.id || '');
 
                     return (
-                      <Box
+                      <div
                         key={opt.id}
                         onClick={() => {
                           if (!isClosed && user) handleVote(poll.id, opt.id);
                         }}
-                        sx={{
-                          position: 'relative',
-                          bgcolor: 'action.hover',
-                          borderRadius: 2,
-                          px: 1.5,
-                          height: 32,
-                          display: 'flex',
-                          alignItems: 'center',
-                          cursor: isClosed ? 'default' : 'pointer',
-                          outline: hasVoted ? `2px solid ${brandColor}` : 'none',
-                          outlineOffset: -2,
-                          transition: 'background-color 0.15s',
-                          '&:hover': !isClosed ? { bgcolor: 'action.selected' } : {},
-                          overflow: 'hidden',
-                        }}
+                        className={`relative bg-muted rounded-md px-3 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
+                        style={hasVoted ? { outline: '2px solid hsl(var(--brand))', outlineOffset: -2 } : undefined}
                       >
-                        {/* Filled bar */}
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
+                        <div
+                          className="absolute left-0 top-0 bottom-0 transition-all"
+                          style={{
                             width: `${pct}%`,
-                            bgcolor: hasVoted ? brandColor : 'action.selected',
+                            backgroundColor: hasVoted ? 'hsl(var(--brand))' : 'hsl(var(--accent))',
                             opacity: hasVoted ? 0.2 : 0.5,
-                            transition: 'width 0.3s',
                           }}
                         />
-                        <Box className="relative z-10 flex items-center justify-between w-full">
-                          <Typography variant="body2" fontWeight={hasVoted ? 600 : 400} sx={{ fontSize: 13 }}>
-                            {opt.text}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+                        <div className="relative z-10 flex items-center justify-between w-full">
+                          <span className={`text-[13px] ${hasVoted ? 'font-semibold' : ''}`}>{opt.text}</span>
+                          <span className="text-[11px] text-muted-foreground">
                             {voteCount} {totalVotes > 0 && `(${Math.round(pct)}%)`}
-                          </Typography>
-                        </Box>
-                      </Box>
+                          </span>
+                        </div>
+                      </div>
                     );
                   })}
-                </Box>
+                </div>
 
-                <Box className="flex items-center justify-between mt-2">
-                  <Box className="flex items-center gap-2">
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground">
                       {totalVotes} {totalVotes === 1 ? t('trips.polls.totalVote', 'total vote') : t('trips.polls.totalVotes', 'total votes')}
-                    </Typography>
+                    </span>
                     {poll.deadline && !isClosed && (
-                      <Box className="flex items-center gap-0.5">
-                        <Clock size={10} style={{ color: theme.palette.text.secondary }} />
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
+                      <div className="flex items-center gap-0.5">
+                        <Clock size={10} className="text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">
                           {formatDistanceToNow(new Date(poll.deadline), { addSuffix: true })}
-                        </Typography>
-                      </Box>
+                        </span>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                   {isAuthor && !poll.is_closed && (
                     <Button variant="ghost" size="sm" onClick={() => closePoll.mutate(poll.id)}>
                       {t('trips.polls.closePoll', 'Close Poll')}
                     </Button>
                   )}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           );
         })}
-      </Box>
+      </div>
 
-      {/* Create Poll Dialog */}
       <Dialog open={createOpen} onOpenChange={(o) => { if (!o) { setCreateOpen(false); resetForm(); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('trips.polls.create', 'Create Poll')}</DialogTitle>
           </DialogHeader>
 
-          <Box className="flex flex-col gap-3 mt-2">
-            <TextField
+          <div className="flex flex-col gap-3 mt-2">
+            <Input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder={t('trips.polls.questionPlaceholder', 'What would you like to ask?')}
-              fullWidth
-              size="small"
             />
 
-            <Typography variant="caption" fontWeight={600} sx={{ display: 'block' }}>
-              {t('trips.polls.options', 'Options')}
-            </Typography>
+            <p className="text-xs font-semibold block">{t('trips.polls.options', 'Options')}</p>
             {options.map((opt, idx) => (
-              <Box key={idx} className="flex items-center gap-1">
-                <TextField
+              <div key={idx} className="flex items-center gap-1">
+                <Input
                   value={opt}
                   onChange={(e) => updateOption(idx, e.target.value)}
                   placeholder={t('trips.polls.optionPlaceholder', 'Option {{n}}', { n: idx + 1 })}
-                  fullWidth
-                  size="small"
                 />
                 {options.length > 2 && (
-                  <IconButton size="small" onClick={() => removeOption(idx)} sx={{ minWidth: 44, minHeight: 44 }}>
+                  <Button variant="ghost" size="sm" onClick={() => removeOption(idx)} className="min-w-[44px] min-h-[44px]">
                     <X size={14} />
-                  </IconButton>
+                  </Button>
                 )}
-              </Box>
+              </div>
             ))}
             {options.length < 6 && (
               <Button variant="ghost" size="sm" onClick={addOption}>{t('trips.polls.addOption', '+ Add Option')}</Button>
             )}
 
-            <FormControlLabel
-              control={
-                <Switch checked={isMultiple} onChange={(e) => setIsMultiple(e.target.checked)} size="small" />
-              }
-              label={<Typography variant="body2" sx={{ fontSize: 13 }}>{t('trips.polls.allowMultiple', 'Allow multiple choices')}</Typography>}
-            />
+            <div className="flex items-center gap-2">
+              <Switch id="poll-multi" checked={isMultiple} onCheckedChange={setIsMultiple} />
+              <Label htmlFor="poll-multi" className="text-[13px]">
+                {t('trips.polls.allowMultiple', 'Allow multiple choices')}
+              </Label>
+            </div>
 
-            <TextField
-              type="datetime-local"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              label={t('trips.polls.deadline', 'Deadline (optional)')}
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              sx={{ maxWidth: 260 }}
-            />
-          </Box>
+            <div className="flex flex-col gap-2 max-w-[260px]">
+              <Label htmlFor="poll-deadline">{t('trips.polls.deadline', 'Deadline (optional)')}</Label>
+              <Input
+                id="poll-deadline"
+                type="datetime-local"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
+            </div>
+          </div>
 
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => { setCreateOpen(false); resetForm(); }}>
@@ -285,6 +247,6 @@ export function TripPolls({ tripId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }
