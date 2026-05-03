@@ -180,7 +180,6 @@
   "src/pages/AdminAccessibilityAttributes.tsx",
   "src/pages/AdminCities.tsx",
   "src/pages/AdminDashboard.tsx",
-  "src/pages/AdminEventServices.tsx",
   "src/pages/AdminEvents.tsx",
   "src/pages/AdminFeedback/index.tsx",
   "src/pages/AdminHotels.tsx",
