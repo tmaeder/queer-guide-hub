@@ -3,24 +3,39 @@
  * sortable headers, skeleton rows, empty state, and per-row cells.
  */
 
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Skeleton from '@mui/material/Skeleton';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TablePagination from '@mui/material/TablePagination';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import { alpha } from '@mui/material/styles';
 import { Plus, Edit, ArrowUp, ArrowDown, ArrowUpDown, Inbox, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 import {
   getStatusColor,
@@ -38,26 +53,26 @@ function TableSkeleton({ columns }: { columns: number }) {
     <>
       {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
         <TableRow key={i}>
-          <TableCell sx={{ width: 42 }}>
-            <Skeleton variant="rectangular" width={18} height={18} sx={{ borderRadius: 0.5 }} />
+          <TableCell style={{ width: 42 }}>
+            <Skeleton style={{ width: 18, height: 18, borderRadius: 2 }} />
           </TableCell>
           <TableCell>
-            <Skeleton variant="text" width={`${55 + (i % 3) * 15}%`} height={20} />
-            <Skeleton variant="text" width={`${30 + (i % 2) * 20}%`} height={14} sx={{ mt: 0.3 }} />
+            <Skeleton style={{ width: `${55 + (i % 3) * 15}%`, height: 20 }} />
+            <Skeleton className="mt-1" style={{ width: `${30 + (i % 2) * 20}%`, height: 14 }} />
           </TableCell>
           {columns >= 4 && (
             <TableCell>
-              <Skeleton variant="rounded" width={70} height={20} />
+              <Skeleton className="rounded" style={{ width: 70, height: 20 }} />
             </TableCell>
           )}
           <TableCell>
-            <Skeleton variant="circular" width={8} height={8} sx={{ display: 'inline-block' }} />
+            <Skeleton className="rounded-full inline-block" style={{ width: 8, height: 8 }} />
           </TableCell>
           <TableCell>
-            <Skeleton variant="text" width={60} height={16} />
+            <Skeleton style={{ width: 60, height: 16 }} />
           </TableCell>
-          <TableCell align="right">
-            <Skeleton variant="circular" width={24} height={24} />
+          <TableCell className="text-right">
+            <Skeleton className="rounded-full" style={{ width: 24, height: 24 }} />
           </TableCell>
         </TableRow>
       ))}
@@ -82,26 +97,13 @@ function EmptyState({
   const color = config?.color || '#6b7280';
 
   return (
-    <Box
-      sx={{
-        py: 8,
-        px: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-      }}
-    >
-      <Box
-        sx={{
+    <div className="py-16 px-6 flex flex-col items-center text-center">
+      <div
+        className="rounded-full flex items-center justify-center mb-5"
+        style={{
           width: 72,
           height: 72,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: alpha(color, 0.08),
-          mb: 2.5,
+          backgroundColor: `${color}14`,
         }}
       >
         {Icon ? (
@@ -109,48 +111,38 @@ function EmptyState({
         ) : (
           <Inbox size={32} style={{ color, opacity: 0.7 }} />
         )}
-      </Box>
+      </div>
 
       {hasSearch ? (
         <>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-            No results found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 360 }}>
+          <h6 className="text-lg font-semibold mb-1">No results found</h6>
+          <p className="text-sm text-muted-foreground mb-4 max-w-[360px]">
             Try adjusting your search query or clear the filter to see all items.
-          </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<X size={14} />}
-            onClick={onClearSearch}
-          >
+          </p>
+          <Button variant="outline" size="sm" onClick={onClearSearch}>
+            <X size={14} />
             Clear Search
           </Button>
         </>
       ) : (
         <>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+          <h6 className="text-lg font-semibold mb-1">
             No {config ? config.label.plural.toLowerCase() : 'items'} yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, maxWidth: 360 }}>
+          </h6>
+          <p className="text-sm text-muted-foreground mb-5 max-w-[360px]">
             {config
               ? `Create your first ${config.label.singular.toLowerCase()} to get started.`
               : 'Content you create will appear here.'}
-          </Typography>
+          </p>
           {config && (
-            <Button
-              variant="contained"
-              startIcon={<Plus size={16} />}
-              onClick={onCreate}
-              sx={{ textTransform: 'none' }}
-            >
+            <Button onClick={onCreate}>
+              <Plus size={16} />
               Create {config.label.singular}
             </Button>
           )}
         </>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -172,17 +164,11 @@ function SortableHeader({
   const isActive = currentField === field;
 
   return (
-    <TableCell
-      sx={{
-        fontWeight: 600,
-        cursor: 'pointer',
-        userSelect: 'none',
-        '&:hover': { color: 'primary.main' },
-        transition: 'color 0.15s',
-      }}
+    <TableHead
+      className="font-semibold cursor-pointer select-none transition-colors hover:text-primary"
       onClick={() => onSort(field)}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <div className="flex items-center gap-1">
         {label}
         {isActive ? (
           currentDir === 'asc' ? (
@@ -193,8 +179,8 @@ function SortableHeader({
         ) : (
           <ArrowUpDown size={14} style={{ opacity: 0.3 }} />
         )}
-      </Box>
-    </TableCell>
+      </div>
+    </TableHead>
   );
 }
 
@@ -209,29 +195,22 @@ function renderColumnValue(
   if (field.listRender) {
     const node = field.listRender(row);
     if (node === null || node === undefined || node === '') {
-      return (
-        <Typography variant="caption" color="text.disabled">
-          --
-        </Typography>
-      );
+      return <span className="text-xs text-muted-foreground/60">--</span>;
     }
     return node;
   }
   const v = row[field.name];
   if (v === null || v === undefined || v === '') {
-    return (
-      <Typography variant="caption" color="text.disabled">
-        --
-      </Typography>
-    );
+    return <span className="text-xs text-muted-foreground/60">--</span>;
   }
   if (field.type === 'datetime' || field.type === 'date') {
     const s = String(v);
     return (
-      <Tooltip title={new Date(s).toLocaleString()} placement="top">
-        <Typography variant="caption" color="text.secondary">
-          {relativeTime(s)}
-        </Typography>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-xs text-muted-foreground">{relativeTime(s)}</span>
+        </TooltipTrigger>
+        <TooltipContent side="top">{new Date(s).toLocaleString()}</TooltipContent>
       </Tooltip>
     );
   }
@@ -239,74 +218,52 @@ function renderColumnValue(
     const opt = field.options?.find((o) => o.value === v);
     const color = field.name === 'category' ? (config?.color ?? '#6b7280') : '#6b7280';
     return (
-      <Chip
-        label={opt?.label ?? String(v)}
-        size="small"
-        sx={{
-          height: 20,
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          bgcolor: alpha(color, 0.1),
-          color,
-        }}
-      />
+      <Badge
+        className="h-5 text-[0.7rem] font-semibold"
+        style={{ backgroundColor: `${color}1A`, color }}
+      >
+        {opt?.label ?? String(v)}
+      </Badge>
     );
   }
   if (field.type === 'boolean') {
-    return (
-      <Typography variant="caption" color="text.secondary">
-        {v ? 'Yes' : 'No'}
-      </Typography>
-    );
+    return <span className="text-xs text-muted-foreground">{v ? 'Yes' : 'No'}</span>;
   }
   if (field.type === 'number') {
     const n = typeof v === 'number' ? v : Number(v);
     if (Number.isNaN(n)) {
-      return (
-        <Typography variant="caption" color="text.disabled">
-          --
-        </Typography>
-      );
+      return <span className="text-xs text-muted-foreground/60">--</span>;
     }
     const formatted = n >= 0 && n <= 1 ? n.toFixed(2) : n.toLocaleString();
     return (
-      <Typography variant="body2" sx={{ fontSize: '0.8rem', fontVariantNumeric: 'tabular-nums' }}>
+      <span className="text-[0.8rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
         {formatted}
-      </Typography>
+      </span>
     );
   }
   if (field.type === 'tags' && Array.isArray(v)) {
     if (v.length === 0) {
-      return (
-        <Typography variant="caption" color="text.disabled">
-          --
-        </Typography>
-      );
+      return <span className="text-xs text-muted-foreground/60">--</span>;
     }
     const shown = v.slice(0, 3);
     const remaining = v.length - shown.length;
     return (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      <div className="flex flex-wrap gap-1">
         {shown.map((tag) => (
-          <Chip
-            key={String(tag)}
-            label={String(tag)}
-            size="small"
-            sx={{ height: 18, fontSize: '0.65rem' }}
-          />
+          <Badge key={String(tag)} variant="secondary" className="h-[18px] text-[0.65rem]">
+            {String(tag)}
+          </Badge>
         ))}
         {remaining > 0 && (
-          <Typography variant="caption" color="text.secondary">
-            +{remaining}
-          </Typography>
+          <span className="text-xs text-muted-foreground">+{remaining}</span>
         )}
-      </Box>
+      </div>
     );
   }
   return (
-    <Typography variant="body2" sx={{ fontSize: '0.8rem' }} noWrap>
+    <span className="text-[0.8rem] truncate block">
       {String(v)}
-    </Typography>
+    </span>
   );
 }
 
@@ -361,24 +318,21 @@ export function ContentListTable({
   onEdit,
   onCreate,
 }: ContentListTableProps) {
-  // checkbox + title + extras + (type?) + status + updated + actions
   const colCount = (contentTypeId ? 5 : 6) + extraColumns.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
 
   return (
-    <Paper sx={{ overflow: 'hidden', borderRadius: 2 }}>
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow sx={{ '& th': { bgcolor: 'background.default' } }}>
-              <TableCell sx={{ width: 42, pl: 1.5 }}>
+    <div className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead style={{ width: 42, paddingLeft: 12 }}>
                 <Checkbox
-                  size="small"
-                  checked={allSelected}
-                  indeterminate={someSelected && !allSelected}
-                  onChange={toggleSelectAll}
-                  sx={{ p: 0.5 }}
+                  checked={someSelected && !allSelected ? 'indeterminate' : allSelected}
+                  onCheckedChange={toggleSelectAll}
                 />
-              </TableCell>
+              </TableHead>
 
               <SortableHeader
                 label="Title"
@@ -399,15 +353,17 @@ export function ContentListTable({
                     onSort={handleSort}
                   />
                 ) : (
-                  <TableCell key={f.name} sx={{ fontWeight: 600 }}>
+                  <TableHead key={f.name} className="font-semibold">
                     {f.label}
-                  </TableCell>
+                  </TableHead>
                 ),
               )}
 
-              {!contentTypeId && <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>}
+              {!contentTypeId && <TableHead className="font-semibold">Type</TableHead>}
 
-              <TableCell sx={{ fontWeight: 600, width: 90 }}>Status</TableCell>
+              <TableHead className="font-semibold" style={{ width: 90 }}>
+                Status
+              </TableHead>
 
               <SortableHeader
                 label="Updated"
@@ -417,17 +373,17 @@ export function ContentListTable({
                 onSort={handleSort}
               />
 
-              <TableCell align="right" sx={{ fontWeight: 600, width: 60 }}>
+              <TableHead className="text-right font-semibold" style={{ width: 60 }}>
                 Actions
-              </TableCell>
+              </TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {loading ? (
               <TableSkeleton columns={colCount} />
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={colCount} sx={{ p: 0, border: 'none' }}>
+                <TableCell colSpan={colCount} className="p-0 border-0">
                   <EmptyState
                     config={config}
                     hasSearch={!!debouncedSearch}
@@ -446,47 +402,27 @@ export function ContentListTable({
                 return (
                   <TableRow
                     key={itemKey}
-                    hover
-                    selected={isSelected}
-                    sx={{
-                      cursor: 'pointer',
+                    data-state={isSelected ? 'selected' : undefined}
+                    className="cursor-pointer transition-colors hover:bg-muted/50"
+                    style={{
                       borderLeft: '3px solid transparent',
-                      transition: 'border-color 0.15s ease',
-                      '&:hover': {
-                        borderLeftColor: rowColor,
-                      },
-                      '&.Mui-selected': {
-                        bgcolor: (_theme) => alpha(rowColor, 0.04),
-                        '&:hover': {
-                          bgcolor: (_theme) => alpha(rowColor, 0.07),
-                        },
-                      },
+                      ...(isSelected ? { backgroundColor: `${rowColor}0A` } : {}),
                     }}
                     onClick={() => onEdit(item.contentType, item.id)}
                   >
-                    <TableCell sx={{ pl: 1.5 }}>
+                    <TableCell style={{ paddingLeft: 12 }} onClick={(e) => e.stopPropagation()}>
                       <Checkbox
-                        size="small"
                         checked={isSelected}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={() => toggleSelect(itemKey)}
-                        sx={{ p: 0.5 }}
+                        onCheckedChange={() => toggleSelect(itemKey)}
                       />
                     </TableCell>
 
                     <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.3 }}>
-                        {item.title}
-                      </Typography>
+                      <p className="text-sm font-medium leading-tight">{item.title}</p>
                       {item.description && (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          noWrap
-                          sx={{ maxWidth: 360, display: 'block', mt: 0.2 }}
-                        >
+                        <span className="text-xs text-muted-foreground truncate block max-w-[360px] mt-0.5">
                           {item.description}
-                        </Typography>
+                        </span>
                       )}
                     </TableCell>
 
@@ -496,72 +432,71 @@ export function ContentListTable({
 
                     {!contentTypeId && (
                       <TableCell>
-                        <Chip
-                          label={item.contentTypeLabel}
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: '0.7rem',
-                            fontWeight: 600,
-                            bgcolor: alpha(item.contentTypeColor, 0.1),
+                        <Badge
+                          className="h-5 text-[0.7rem] font-semibold"
+                          style={{
+                            backgroundColor: `${item.contentTypeColor}1A`,
                             color: item.contentTypeColor,
                           }}
-                        />
+                        >
+                          {item.contentTypeLabel}
+                        </Badge>
                       </TableCell>
                     )}
 
                     <TableCell>
                       {item.status ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                          <Box
-                            sx={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: '50%',
-                              bgcolor: statusColor,
-                              flexShrink: 0,
-                            }}
+                        <div className="flex items-center gap-1.5">
+                          <div
+                            className="rounded-full flex-shrink-0"
+                            style={{ width: 8, height: 8, backgroundColor: statusColor }}
                           />
-                          <Typography
-                            variant="caption"
-                            sx={{ color: statusColor, fontWeight: 500 }}
+                          <span
+                            className="text-xs font-medium"
+                            style={{ color: statusColor }}
                           >
                             {getStatusLabel(item.status)}
-                          </Typography>
-                        </Box>
+                          </span>
+                        </div>
                       ) : (
-                        <Typography variant="caption" color="text.disabled">
-                          --
-                        </Typography>
+                        <span className="text-xs text-muted-foreground/60">--</span>
                       )}
                     </TableCell>
 
                     <TableCell>
-                      <Tooltip
-                        title={item.updatedAt ? new Date(item.updatedAt).toLocaleString() : ''}
-                        placement="top"
-                      >
-                        <Typography variant="caption" color="text.secondary">
-                          {item.updatedAt ? relativeTime(item.updatedAt) : '--'}
-                        </Typography>
-                      </Tooltip>
+                      {item.updatedAt ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-xs text-muted-foreground">
+                              {relativeTime(item.updatedAt)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {new Date(item.updatedAt).toLocaleString()}
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">--</span>
+                      )}
                     </TableCell>
 
-                    <TableCell align="right">
-                      <Tooltip title="Edit">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit(item.contentType, item.id);
-                          }}
-                          sx={{
-                            transition: 'color 0.15s',
-                            '&:hover': { color: rowColor },
-                          }}
-                        >
-                          <Edit size={15} />
-                        </IconButton>
+                    <TableCell className="text-right">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit(item.contentType, item.id);
+                            }}
+                            style={{ ['--tw-color' as never]: rowColor } as never}
+                          >
+                            <Edit size={15} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit</TooltipContent>
                       </Tooltip>
                     </TableCell>
                   </TableRow>
@@ -570,21 +505,64 @@ export function ContentListTable({
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+      </div>
       {items.length > 0 && (
-        <TablePagination
-          component="div"
-          count={totalCount}
-          page={page}
-          onPageChange={(_, newPage) => setPage(newPage)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-        />
+        <div className="flex items-center justify-between gap-4 px-4 py-2 border-t border-border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Rows per page:</span>
+            <Select
+              value={String(rowsPerPage)}
+              onValueChange={(v) => {
+                setRowsPerPage(parseInt(v, 10));
+                setPage(0);
+              }}
+            >
+              <SelectTrigger className="h-7 w-[70px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    {n}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span>
+              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalCount)} of {totalCount}
+            </span>
+          </div>
+          <Pagination className="mx-0 w-auto justify-end">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page > 0) setPage(page - 1);
+                  }}
+                  aria-disabled={page === 0}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink href="#" isActive>
+                  {page + 1}
+                </PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page + 1 < totalPages) setPage(page + 1);
+                  }}
+                  aria-disabled={page + 1 >= totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
-    </Paper>
+    </div>
   );
 }
