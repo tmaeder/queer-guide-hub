@@ -8,16 +8,18 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import MuiTabs from '@mui/material/Tabs';
-import MuiTab from '@mui/material/Tab';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import Paper from '@mui/material/Paper';
-import Badge from '@mui/material/Badge';
-import LinearProgress from '@mui/material/LinearProgress';
-import { FileText, List, MapPin, Image, Search, Settings, Heart, ExternalLink } from 'lucide-react';
+import {
+  FileText,
+  List,
+  MapPin,
+  Image,
+  Search,
+  Settings,
+  Heart,
+  ExternalLink,
+  Loader2,
+  Sparkles,
+} from 'lucide-react';
 import { useCMSEditor } from '@/hooks/useCMSEditor';
 import {
   getContentType,
@@ -29,12 +31,13 @@ import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { EditorHeader } from './EditorHeader';
 import { EditorSidebar } from './EditorSidebar';
 import { AIAssistDrawer } from '@/components/cms/AIAssistDrawer';
-import Button from '@mui/material/Button';
-import { Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { FieldGroup } from '@/types/cms';
 import { brandColors } from '@/theme/muiTheme';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 /** Map field groups to Lucide icons for tab labels */
 const fieldGroupIcons: Record<FieldGroup, React.ElementType> = {
@@ -90,9 +93,6 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     () => getFieldsByGroup(contentType, state.activeGroup),
     [contentType, state.activeGroup],
   );
-
-  // Current tab index
-  const activeTabIndex = fieldGroups.indexOf(state.activeGroup);
 
   // Required fields progress (% filled)
   const requiredProgress = useMemo(() => {
@@ -185,17 +185,6 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     };
   }, [handleSave, state.isDirty, state.isSaving]);
 
-  // Handle tab change
-  const handleTabChange = useCallback(
-    (_event: React.SyntheticEvent, newValue: number) => {
-      const group = fieldGroups[newValue];
-      if (group) {
-        setActiveGroup(group);
-      }
-    },
-    [fieldGroups, setActiveGroup],
-  );
-
   // Curried field change handler
   const handleFieldChange = useCallback(
     (fieldName: string) => (value: unknown) => {
@@ -219,56 +208,34 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
   if (!config) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          p: 4,
-        }}
-      >
-        <Alert severity="error">
-          Unknown content type: <strong>{contentType}</strong>
+      <div className="flex items-center justify-center h-full p-8">
+        <Alert variant="destructive">
+          <AlertDescription>
+            Unknown content type: <strong>{contentType}</strong>
+          </AlertDescription>
         </Alert>
-      </Box>
+      </div>
     );
   }
 
   if (state.isLoading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          gap: 2,
-          p: 4,
-        }}
-      >
-        <CircularProgress size={40} aria-label="Loading" />
-        <Typography variant="body2" color="text.secondary">
+      <div className="flex flex-col items-center justify-center h-full gap-3 p-8">
+        <Loader2 className="h-10 w-10 animate-spin" aria-label="Loading" />
+        <p className="text-sm text-muted-foreground">
           Loading {config.label.singular.toLowerCase()}...
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   if (state.errors._load) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          p: 4,
-        }}
-      >
-        <Alert severity="error">{state.errors._load}</Alert>
-      </Box>
+      <div className="flex items-center justify-center h-full p-8">
+        <Alert variant="destructive">
+          <AlertDescription>{state.errors._load}</AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
@@ -277,24 +244,9 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
     requiredProgress === 100 ? '#22c55e' : requiredProgress >= 60 ? '#f59e0b' : '#ef4444';
 
   return (
-    <Box
-      className="scale-in"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        bgcolor: 'background.default',
-      }}
-    >
+    <div className="scale-in flex flex-col h-full bg-background">
       {/* ── Sticky Header ──────────────────────────────────────── */}
-      <Box
-        sx={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 20,
-          flexShrink: 0,
-        }}
-      >
+      <div className="sticky top-0 z-20 flex-shrink-0">
         <EditorHeader
           contentType={config}
           state={state}
@@ -306,176 +258,83 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
         />
 
         {/* ── Progress bar ─────────────────────────────────────── */}
-        <Box
-          sx={{
-            position: 'relative',
-            height: 3,
-            bgcolor: 'divider',
-          }}
-        >
-          <LinearProgress
-            variant="determinate"
-            value={requiredProgress}
-            sx={{
-              height: 3,
-              bgcolor: 'transparent',
-              '& .MuiLinearProgress-bar': {
-                bgcolor: progressColor,
-                transition: 'transform 0.4s ease, background-color 0.4s ease',
-              },
+        <div className="relative h-[3px] bg-border">
+          <div
+            className="h-[3px] transition-all duration-400 ease-in-out"
+            style={{
+              width: `${requiredProgress}%`,
+              backgroundColor: progressColor,
             }}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* ── Error banners ───────────────────────────────────── */}
       {state.errors._conflict && (
-        <Alert severity="warning" sx={{ mx: 2, mt: 1.5 }}>
-          {state.errors._conflict}
+        <Alert className="mx-3 mt-3 border-yellow-500 text-yellow-700">
+          <AlertDescription>{state.errors._conflict}</AlertDescription>
         </Alert>
       )}
       {state.errors._save && (
-        <Alert severity="error" sx={{ mx: 2, mt: 1.5 }}>
-          {state.errors._save}
+        <Alert variant="destructive" className="mx-3 mt-3">
+          <AlertDescription>{state.errors._save}</AlertDescription>
         </Alert>
       )}
 
       {/* ── Body (main + sidebar) ───────────────────────────── */}
-      <Box
-        sx={{
-          flex: 1,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: { xs: 'column', lg: 'row' },
-        }}
-      >
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* ── Main Column ─────────────────────────────────── */}
-        <Box
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            width: { lg: '70%' },
-            maxWidth: { lg: '70%' },
-          }}
-        >
-          <Paper
-            elevation={0}
-            variant="outlined"
-            sx={{
-              m: 2,
-              mb: { xs: 1, lg: 2 },
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
+        <div className="flex-1 overflow-auto lg:w-[70%] lg:max-w-[70%]">
+          <div className="border border-border rounded-lg bg-background m-3 mb-1 lg:mb-3 overflow-hidden">
             {/* Group tabs */}
-            <MuiTabs
-              value={activeTabIndex >= 0 ? activeTabIndex : 0}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                minHeight: 48,
-                bgcolor: 'background.paper',
-                '& .MuiTab-root': {
-                  minHeight: 48,
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  fontSize: '0.875rem',
-                  gap: 0.75,
-                  px: 2,
-                },
-                '& .MuiTabs-indicator': {
-                  height: 2.5,
-                  borderRadius: '2px 2px 0 0',
-                },
-              }}
+            <Tabs
+              value={state.activeGroup}
+              onValueChange={(v) => setActiveGroup(v as FieldGroup)}
             >
-              {fieldGroups.map((group) => {
-                const GroupIcon = fieldGroupIcons[group];
-                const count = fieldCountsByGroup[group] ?? 0;
-                const dotColor = fieldGroupColors[group];
+              <TabsList className="border-b border-border min-h-12 bg-background w-full justify-start overflow-x-auto">
+                {fieldGroups.map((group) => {
+                  const GroupIcon = fieldGroupIcons[group];
+                  const count = fieldCountsByGroup[group] ?? 0;
+                  const dotColor = fieldGroupColors[group];
 
-                return (
-                  <MuiTab
-                    key={group}
-                    label={
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.75,
+                  return (
+                    <TabsTrigger
+                      key={group}
+                      value={group}
+                      className="min-h-12 normal-case font-medium text-sm gap-1.5 px-3"
+                    >
+                      <GroupIcon
+                        style={{
+                          width: 15,
+                          height: 15,
+                          color: dotColor,
+                          flexShrink: 0,
                         }}
-                      >
-                        <GroupIcon
-                          style={{
-                            width: 15,
-                            height: 15,
-                            color: dotColor,
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span>{fieldGroupLabels[group] || group}</span>
-                        <Badge
-                          badgeContent={count}
-                          sx={{
-                            '& .MuiBadge-badge': {
-                              position: 'static',
-                              transform: 'none',
-                              fontSize: '0.65rem',
-                              fontWeight: 700,
-                              minWidth: 18,
-                              height: 18,
-                              borderRadius: '9px',
-                              bgcolor: 'action.selected',
-                              color: 'text.secondary',
-                              lineHeight: '18px',
-                            },
-                          }}
-                        />
-                      </Box>
-                    }
-                  />
-                );
-              })}
-            </MuiTabs>
+                      />
+                      <span>{fieldGroupLabels[group] || group}</span>
+                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-muted text-muted-foreground text-[0.65rem] font-bold leading-[18px] px-1">
+                        {count}
+                      </span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
 
             {/* Field grid */}
-            <Box sx={{ p: { xs: 2, sm: 3 } }}>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gap: { xs: 2, sm: 2.5 },
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: 'repeat(2, 1fr)',
-                  },
-                }}
-              >
+            <div className="p-3 sm:p-6">
+              <div className="grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-2">
                 {activeFields.map((field) => (
-                  <Box
+                  <div
                     key={field.name}
-                    sx={{
+                    style={{
                       gridColumn: field.colSpan === 2 ? '1 / -1' : undefined,
                     }}
                   >
-                    <Box
-                      sx={{
-                        p: 2,
-                        borderRadius: 1.5,
-                        border: '1px solid',
-                        borderColor: state.errors[field.name] ? 'error.main' : 'divider',
-                        bgcolor: 'background.default',
-                        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-                        '&:focus-within': {
-                          borderColor: 'primary.main',
-                          boxShadow: (theme) => `0 0 0 2px ${theme.palette.primary.main}20`,
-                        },
-                      }}
+                    <div
+                      className={`p-3 rounded-md border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
+                        state.errors[field.name] ? 'border-destructive' : 'border-border'
+                      }`}
                     >
                       <FieldRenderer
                         field={field}
@@ -486,66 +345,38 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                         setFields={setFields}
                         allValues={state.data}
                       />
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 ))}
 
                 {activeFields.length === 0 && (
-                  <Box
-                    sx={{
-                      gridColumn: '1 / -1',
-                      py: 6,
-                      textAlign: 'center',
-                    }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      No fields in this group.
-                    </Typography>
-                  </Box>
+                  <div className="col-span-full py-12 text-center">
+                    <p className="text-sm text-muted-foreground">No fields in this group.</p>
+                  </div>
                 )}
-              </Box>
-            </Box>
-          </Paper>
-        </Box>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* ── Sidebar ─────────────────────────────────────── */}
-        <Box
-          sx={{
-            overflow: 'auto',
-            width: { lg: '30%' },
-            minWidth: { lg: 300 },
-            maxWidth: { lg: 400 },
-            borderTop: { xs: '1px solid', lg: 'none' },
-            borderLeft: { xs: 'none', lg: '1px solid' },
-            borderColor: 'divider',
-          }}
-        >
+        <div className="overflow-auto lg:w-[30%] lg:min-w-[300px] lg:max-w-[400px] border-t lg:border-t-0 lg:border-l border-border">
           <EditorSidebar
             contentType={contentType}
             itemId={state.itemId ?? itemId}
             metadata={metadata}
             onUpdateMetadata={updateMetadata}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {aiEnabled && (
         <>
           <Button
-            variant="contained"
-            color="primary"
             onClick={() => setAiOpen(true)}
-            startIcon={<Sparkles size={16} />}
-            sx={{
-              position: 'fixed',
-              bottom: 24,
-              right: 24,
-              zIndex: 30,
-              textTransform: 'none',
-              fontWeight: 600,
-              boxShadow: 4,
-            }}
+            className="fixed bottom-6 right-6 z-30 normal-case font-semibold shadow-lg"
           >
+            <Sparkles size={16} className="mr-1" />
             AI Assist
           </Button>
           {config && (
@@ -560,6 +391,6 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
           )}
         </>
       )}
-    </Box>
+    </div>
   );
 }

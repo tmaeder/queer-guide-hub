@@ -50,7 +50,6 @@
   "src/components/cms/ContentListPanel/index.tsx",
   "src/components/cms/ModerationQueue.tsx",
   "src/components/cms/ReviewQueue.tsx",
-  "src/components/cms/editor/CMSEditorLayout.tsx",
   "src/components/cms/editor/EditorHeader.tsx",
   "src/components/cms/editor/EditorSidebar.tsx",
   "src/components/cms/editor/SEOPanel.tsx",
