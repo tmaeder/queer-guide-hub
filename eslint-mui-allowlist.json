@@ -102,7 +102,6 @@
   "src/components/loading/Spinner.tsx",
   "src/components/layout/AuthGate.tsx",
   "src/components/layout/LayoutShell.tsx",
-  "src/components/location/LocationInfo.tsx",
   "src/components/messaging/MessagingInterface.tsx",
   "src/components/messaging/StartConversationButton.tsx",
   "src/components/moderation/ReportDialog.tsx",
