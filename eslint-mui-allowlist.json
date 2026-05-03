@@ -1,5 +1,4 @@
 [
-  "src/components/admin/NewsQualityReviewTab.tsx",
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
