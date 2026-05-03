@@ -182,7 +182,6 @@
   "src/pages/AdminRedirects.tsx",
   "src/pages/AdminReview.tsx",
   "src/pages/AdminSubmissions.tsx",
-  "src/pages/AdminUsers.tsx",
   "src/pages/AdminVenues.tsx",
   "src/pages/CMSRoutePage.tsx",
   "src/pages/Directory.tsx",

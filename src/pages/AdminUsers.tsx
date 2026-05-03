@@ -17,8 +17,6 @@ import { AdminEntityTable } from '@/components/admin/data-table/AdminEntityTable
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
 import { UserDetailSheet } from '@/components/admin/users/UserDetailSheet';
 import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';
@@ -68,16 +66,16 @@ export default function AdminUsers() {
           const name =
             info.getValue() || row.first_name || row.last_name || row.email || 'Anonymous';
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Avatar style={{ width: 32, height: 32, flexShrink: 0 }}>
                 <AvatarImage src={row.avatar_url ?? undefined} alt={name} />
                 <AvatarFallback style={{ fontSize: '0.75rem' }}>
                   {name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <Box sx={{ minWidth: 0 }}>
-                <Box
-                  sx={{
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
                     fontWeight: 500,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -85,23 +83,22 @@ export default function AdminUsers() {
                   }}
                 >
                   {name}
-                </Box>
+                </div>
                 {row.email && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  <span
+                    className="block text-xs text-muted-foreground"
+                    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                   >
                     {row.email}
-                  </Typography>
+                  </span>
                 )}
                 {row.pronouns && (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs text-muted-foreground">
                     {row.pronouns}
-                  </Typography>
+                  </span>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           );
         },
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -122,9 +119,9 @@ export default function AdminUsers() {
           const roles = info.row.original._roles;
           if (!roles || roles.length === 0)
             return (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 user
-              </Typography>
+              </span>
             );
           const primary = roles.includes('admin') ? 'admin' : roles[0];
           return (
@@ -146,12 +143,12 @@ export default function AdminUsers() {
       columnHelper.accessor('is_online', {
         header: 'Online',
         cell: (info) => (
-          <Box
-            sx={{
+          <div
+            style={{
               width: 8,
               height: 8,
               borderRadius: '50%',
-              bgcolor: info.getValue() ? '#22c55e' : '#d1d5db',
+              backgroundColor: info.getValue() ? '#22c55e' : '#d1d5db',
             }}
             title={info.getValue() ? 'Online' : 'Offline'}
           />
@@ -180,7 +177,7 @@ export default function AdminUsers() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
               <span
                 style={{
@@ -192,7 +189,7 @@ export default function AdminUsers() {
               >
                 {val}
               </span>
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -306,7 +303,7 @@ export default function AdminUsers() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           {isAdmin && (
             <Button
               size="sm"
@@ -334,7 +331,7 @@ export default function AdminUsers() {
               await exportToExcel(allData, cols, generateFilename('users'));
             }}
           />
-        </Box>
+        </div>
       ),
     }),
     [columns, isAdmin, navigate],
