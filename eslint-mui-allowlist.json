@@ -221,7 +221,6 @@
   "src/pages/ProfileSettings.tsx",
   "src/pages/QueerVillageDetail.parts.tsx",
   "src/pages/SearchResults.tsx",
-  "src/pages/SecurityDashboard.tsx",
   "src/pages/Travel.tsx",
   "src/pages/UserProfile.tsx",
   "src/pages/Venues.tsx",

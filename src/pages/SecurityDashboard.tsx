@@ -9,10 +9,6 @@ import { PrivacyControlCenter } from '@/components/security/PrivacyControlCenter
 import { SecureFinancialDataViewer } from '@/components/security/SecureFinancialDataViewer';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 
 export default function SecurityDashboard() {
   const { user } = useAuth();
@@ -20,7 +16,7 @@ export default function SecurityDashboard() {
 
   if (!user || !isAdmin) {
     return (
-      <Container sx={{ py: 3 }}>
+      <div className="container mx-auto py-6 px-4">
         <Alert>
           <Shield style={{ height: 16, width: 16 }} />
           <AlertTitle>Access Denied</AlertTitle>
@@ -28,7 +24,7 @@ export default function SecurityDashboard() {
             You need administrator privileges to access the security dashboard.
           </AlertDescription>
         </Alert>
-      </Container>
+      </div>
     );
   }
 
@@ -96,23 +92,23 @@ export default function SecurityDashboard() {
   ];
 
   return (
-    <Container sx={{ py: 3 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="container mx-auto py-6 px-4">
+      <div className="flex flex-col gap-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
               <Shield style={{ width: 32, height: 32 }} />
               Security Dashboard
-            </Typography>
-            <Typography color="text.secondary" sx={{ mt: 1 }}>
+            </h1>
+            <p className="text-muted-foreground mt-1">
               Comprehensive security monitoring and protection status
-            </Typography>
-          </Box>
+            </p>
+          </div>
           <Badge variant="outline" style={{ backgroundColor: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}>
             <Activity style={{ width: 16, height: 16, marginRight: 4 }} />
             All Systems Secure
           </Badge>
-        </Box>
+        </div>
 
         <Alert style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' }}>
           <Shield style={{ height: 16, width: 16, color: '#16a34a' }} />
@@ -122,8 +118,8 @@ export default function SecurityDashboard() {
           </AlertDescription>
         </Alert>
 
-        <Tabs defaultValue="overview" style={{ width: '100%' }}>
-          <TabsList style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', width: '100%' }}>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid grid-cols-5 w-full">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
             <TabsTrigger value="privacy">Privacy</TabsTrigger>
@@ -132,14 +128,14 @@ export default function SecurityDashboard() {
           </TabsList>
 
           <TabsContent value="overview">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+            <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {securityFeatures.map((feature) => {
                   const IconComponent = feature.icon;
                   return (
                     <Card key={feature.title}>
                       <CardHeader style={{ paddingBottom: 12 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div className="flex items-center justify-between">
                           <CardTitle style={{ fontSize: '1.125rem', display: 'flex', alignItems: 'center', gap: 8 }}>
                             <IconComponent style={{ width: 20, height: 20 }} />
                             {feature.title}
@@ -147,30 +143,30 @@ export default function SecurityDashboard() {
                           <Badge variant="outline" style={{ backgroundColor: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}>
                             {feature.status}
                           </Badge>
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">{feature.description}</Typography>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{feature.description}</p>
                       </CardHeader>
                       <CardContent>
-                        <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <ul className="flex flex-col gap-1">
                           {feature.details.map((detail, index) => (
-                            <Box component="li" key={index} sx={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Box sx={{ height: 6, width: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+                            <li key={index} className="text-sm flex items-center gap-2">
+                              <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
                               {detail}
-                            </Box>
+                            </li>
                           ))}
-                        </Box>
+                        </ul>
                       </CardContent>
                     </Card>
                   );
                 })}
-              </Box>
+              </div>
 
-              <Paper sx={{ mt: 4, p: 3, bgcolor: 'action.hover', borderRadius: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Security Implementation Summary</Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Implemented Protections:</Typography>
-                    <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <div className="mt-8 p-6 bg-muted rounded-lg">
+                <h6 className="text-base font-semibold mb-4">Security Implementation Summary</h6>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-medium mb-2">Implemented Protections:</p>
+                    <ul className="flex flex-col gap-1">
                       {[
                         "Field-level encryption for sensitive data",
                         "Enhanced privacy controls and validation",
@@ -180,13 +176,13 @@ export default function SecurityDashboard() {
                         "Secure messaging controls",
                         "Financial data anonymization"
                       ].map((item, i) => (
-                        <Typography component="li" variant="body2" color="text.secondary" key={i}>&#8226; {item}</Typography>
+                        <li className="text-sm text-muted-foreground" key={i}>• {item}</li>
                       ))}
-                    </Box>
-                  </Box>
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Security Features:</Typography>
-                    <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium mb-2">Security Features:</p>
+                    <ul className="flex flex-col gap-1">
                       {[
                         "Content validation and sanitization",
                         "SQL injection prevention",
@@ -196,13 +192,13 @@ export default function SecurityDashboard() {
                         "Role-based permissions",
                         "Security event tracking"
                       ].map((item, i) => (
-                        <Typography component="li" variant="body2" color="text.secondary" key={i}>&#8226; {item}</Typography>
+                        <li className="text-sm text-muted-foreground" key={i}>• {item}</li>
                       ))}
-                    </Box>
-                  </Box>
-                </Box>
-              </Paper>
-            </Box>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="monitoring">
@@ -218,7 +214,7 @@ export default function SecurityDashboard() {
           </TabsContent>
 
           <TabsContent value="financial">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="flex flex-col gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -237,19 +233,19 @@ export default function SecurityDashboard() {
                       All access attempts are logged and monitored.
                     </AlertDescription>
                   </Alert>
-                  <Box sx={{ mt: 2 }}>
+                  <div className="mt-4">
                     <SecureFinancialDataViewer userId={user?.id || ''}>
-                      <Typography variant="body2" color="text.secondary">
+                      <p className="text-sm text-muted-foreground">
                         Select a user to view their encrypted financial data with proper authorization.
-                      </Typography>
+                      </p>
                     </SecureFinancialDataViewer>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           </TabsContent>
         </Tabs>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 }
