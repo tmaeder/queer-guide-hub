@@ -7,20 +7,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Box,
-  Typography,
-  Button,
-  Stack,
-  Chip,
-  IconButton,
-  Select,
-  MenuItem,
-  CircularProgress,
-  Tooltip,
-  Alert,
-  Paper,
-} from '@mui/material';
-import {
   Plus,
   Trash2,
   Paperclip,
@@ -28,12 +14,24 @@ import {
   FileText,
   Film,
   Music,
+  Loader2,
 } from 'lucide-react';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { supabase } from '@/integrations/supabase/client';
 import { updateRow } from '@/hooks/usePageFetchers';
 import type { CMSMediaAttachment, MediaRole } from '@/types/cms';
 import MediaPickerDialog from '../media/MediaPickerDialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface MediaPanelProps {
   /** Source table name, e.g. 'venues' */
@@ -66,18 +64,18 @@ function getMimeIcon(mimeType: string) {
   return <FileText size={20} className="text-gray-400" />;
 }
 
-function getRoleBadgeColor(role: MediaRole): 'primary' | 'secondary' | 'default' | 'info' | 'success' {
+function getRoleBadgeClass(role: MediaRole): string {
   switch (role) {
     case 'cover':
-      return 'primary';
+      return 'border-primary text-primary';
     case 'gallery':
-      return 'info';
+      return 'border-blue-500 text-blue-700';
     case 'avatar':
-      return 'secondary';
+      return 'border-purple-500 text-purple-700';
     case 'thumbnail':
-      return 'success';
+      return 'border-green-500 text-green-700';
     default:
-      return 'default';
+      return 'border-border text-foreground';
   }
 }
 
@@ -154,59 +152,60 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
   };
 
   return (
-    <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}>
+    <div className="border border-border rounded-md bg-background">
       {/* Header */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}
-      >
-        <Stack direction="row" alignItems="center" spacing={1}>
+      <div className="flex flex-row items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex flex-row items-center gap-1">
           <Paperclip size={16} className="text-gray-500" />
-          <Typography variant="subtitle2" fontWeight={600}>
-            Media Attachments
-          </Typography>
+          <p className="text-sm font-semibold">Media Attachments</p>
           {attachments.length > 0 && (
-            <Chip label={attachments.length} size="small" variant="outlined" />
+            <Badge variant="outline">{attachments.length}</Badge>
           )}
-        </Stack>
-        <Button
-          size="small"
-          startIcon={<Plus size={14} />}
-          onClick={() => setPickerOpen(true)}
-        >
+        </div>
+        <Button size="sm" variant="ghost" onClick={() => setPickerOpen(true)}>
+          <Plus size={14} className="mr-1" />
           Add media
         </Button>
-      </Stack>
+      </div>
 
-      <Box sx={{ p: 2 }}>
+      <div className="p-4">
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
+          <Alert variant="destructive" className="mb-2">
+            <AlertDescription className="flex justify-between items-center">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                className="ml-2 text-xs underline"
+              >
+                Dismiss
+              </button>
+            </AlertDescription>
           </Alert>
         )}
 
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={24} aria-label="Loading" />
-          </Box>
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+          </div>
         )}
 
         {!loading && attachments.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <ImageIcon size={32} className="text-gray-300" style={{ margin: '0 auto 8px' }} />
-            <Typography variant="body2" color="text.secondary">
-              No media attached yet.
-            </Typography>
-            <Typography variant="caption" color="text.disabled">
+          <div className="text-center py-8">
+            <ImageIcon
+              size={32}
+              className="text-gray-300"
+              style={{ margin: '0 auto 8px' }}
+            />
+            <p className="text-sm text-muted-foreground">No media attached yet.</p>
+            <p className="text-xs text-muted-foreground/70">
               Click &ldquo;Add media&rdquo; to attach files.
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
         {!loading && attachments.length > 0 && (
-          <Stack spacing={1.5}>
+          <div className="flex flex-col gap-3">
             {attachments.map((attachment) => {
               const media = attachment.media;
               if (!media) return null;
@@ -215,108 +214,89 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
               const isDetaching = detachingId === attachment.id;
 
               return (
-                <Box
+                <div
                   key={attachment.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    p: 1,
-                    borderRadius: 1,
-                    border: 1,
-                    borderColor: 'divider',
-                    bgcolor: 'grey.50',
-                    opacity: isDetaching ? 0.5 : 1,
-                  }}
+                  className={`flex items-center gap-3 p-2 rounded border border-border bg-gray-50 ${
+                    isDetaching ? 'opacity-50' : ''
+                  }`}
                 >
                   {/* Thumbnail */}
                   {isImage ? (
-                    <Box
-                      component="img"
+                    <img
                       src={getThumbnailUrl(media.storage_path, media.external_source)}
                       alt={media.alt_text?.en || media.filename}
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        objectFit: 'cover',
-                        borderRadius: 0.5,
-                        flexShrink: 0,
-                      }}
+                      className="w-12 h-12 object-cover rounded-sm flex-shrink-0"
                     />
                   ) : (
-                    <Box
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: 'grey.200',
-                        borderRadius: 0.5,
-                        flexShrink: 0,
-                      }}
-                    >
+                    <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-sm flex-shrink-0">
                       {getMimeIcon(media.mime_type)}
-                    </Box>
+                    </div>
                   )}
 
                   {/* Info */}
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Tooltip title={media.original_filename}>
-                      <Typography variant="caption" fontWeight={500} noWrap display="block">
-                        {media.original_filename}
-                      </Typography>
+                  <div className="flex-1 min-w-0">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-xs font-medium block truncate">
+                          {media.original_filename}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent>{media.original_filename}</TooltipContent>
                     </Tooltip>
 
                     {/* Role selector */}
                     <Select
                       value={attachment.media_role}
-                      onChange={(e) =>
-                        handleRoleChange(attachment.id, e.target.value as MediaRole)
+                      onValueChange={(v) =>
+                        handleRoleChange(attachment.id, v as MediaRole)
                       }
-                      size="small"
-                      variant="standard"
-                      disableUnderline
-                      sx={{ fontSize: '0.75rem', mt: 0.25 }}
                     >
-                      {MEDIA_ROLES.map((r) => (
-                        <MenuItem key={r.value} value={r.value} sx={{ fontSize: '0.75rem' }}>
-                          {r.label}
-                        </MenuItem>
-                      ))}
+                      <SelectTrigger className="h-7 text-xs mt-1 border-0 bg-transparent shadow-none px-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MEDIA_ROLES.map((r) => (
+                          <SelectItem key={r.value} value={r.value} className="text-xs">
+                            {r.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
-                  </Box>
+                  </div>
 
                   {/* Role badge */}
-                  <Chip
-                    label={attachment.media_role}
-                    size="small"
-                    color={getRoleBadgeColor(attachment.media_role)}
-                    variant="outlined"
-                    sx={{ fontSize: '0.65rem', height: 20 }}
-                  />
+                  <Badge
+                    variant="outline"
+                    className={`text-[0.65rem] h-5 ${getRoleBadgeClass(attachment.media_role)}`}
+                  >
+                    {attachment.media_role}
+                  </Badge>
 
                   {/* Remove button */}
-                  <Tooltip title="Remove attachment">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleDetach(attachment.id)}
-                      disabled={isDetaching}
-                      sx={{ flexShrink: 0 }}
-                    >
-                      {isDetaching ? (
-                        <CircularProgress size={14} aria-label="Loading" />
-                      ) : (
-                        <Trash2 size={14} className="text-gray-400" />
-                      )}
-                    </IconButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDetach(attachment.id)}
+                        disabled={isDetaching}
+                        className="h-7 w-7 p-0 flex-shrink-0"
+                      >
+                        {isDetaching ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" />
+                        ) : (
+                          <Trash2 size={14} className="text-gray-400" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Remove attachment</TooltipContent>
                   </Tooltip>
-                </Box>
+                </div>
               );
             })}
-          </Stack>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Media Picker Dialog */}
       <MediaPickerDialog
@@ -324,6 +304,6 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
         onClose={() => setPickerOpen(false)}
         onSelect={handleMediaSelected}
       />
-    </Paper>
+    </div>
   );
 }
