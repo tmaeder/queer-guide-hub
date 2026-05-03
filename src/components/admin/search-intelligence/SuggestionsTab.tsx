@@ -1,13 +1,19 @@
 import { useEffect, useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Alert from '@mui/material/Alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import {
+  Alert,
+  AlertDescription,
+} from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 
 type SuggestionStatus =
@@ -64,21 +70,15 @@ const STATUS_VARIANT: Record<SuggestionStatus, 'default' | 'secondary' | 'destru
 function PrettyJson({ value, label }: { value: unknown; label: string }) {
   if (value === null || value === undefined) {
     return (
-      <Box>
-        <Typography variant="caption" color="text.secondary">
-          {label}
-        </Typography>
-        <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.disabled' }}>
-          (none)
-        </Typography>
-      </Box>
+      <div>
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <p className="text-sm italic text-muted-foreground/60">(none)</p>
+      </div>
     );
   }
   return (
-    <Box>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
+    <div>
+      <span className="text-xs text-muted-foreground">{label}</span>
       <pre
         style={{
           fontSize: 12,
@@ -91,17 +91,10 @@ function PrettyJson({ value, label }: { value: unknown; label: string }) {
       >
         {JSON.stringify(value, null, 2)}
       </pre>
-    </Box>
+    </div>
   );
 }
 
-/**
- * Specialized view for translation suggestions. The producer stores
- *   proposed_value: { field: 'name'|'title'|'description', value: string }
- *   current_value:  { value: source_text }
- *   locale:         target locale (BCP-47)
- * Falls back to PrettyJson if the shape is unexpected.
- */
 function TranslationDiff({ s }: { s: AiSuggestion }) {
   const proposed = (s.proposed_value ?? {}) as { field?: string; value?: string };
   const current = (s.current_value ?? {}) as { value?: string };
@@ -112,41 +105,37 @@ function TranslationDiff({ s }: { s: AiSuggestion }) {
 
   if (typeof proposedText !== 'string' || typeof sourceText !== 'string' || !field) {
     return (
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <Box sx={{ flex: 1 }}>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
           <PrettyJson value={s.current_value} label="Current" />
-        </Box>
-        <Box sx={{ flex: 1 }}>
+        </div>
+        <div className="flex-1">
           <PrettyJson value={s.proposed_value} label="Proposed" />
-        </Box>
-      </Stack>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 0.5 }}>
+    <div>
+      <div className="text-xs text-muted-foreground mb-1">
         {field} · source → {targetLocale}
-      </Typography>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" color="text.secondary">
-            Source
-          </Typography>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <span className="text-xs text-muted-foreground">Source</span>
+          <p className="text-sm whitespace-pre-wrap">
             {sourceText || <em>(empty)</em>}
-          </Typography>
-        </Box>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" color="text.secondary">
-            {targetLocale}
-          </Typography>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+          </p>
+        </div>
+        <div className="flex-1">
+          <span className="text-xs text-muted-foreground">{targetLocale}</span>
+          <p className="text-sm whitespace-pre-wrap">
             {proposedText || <em>(empty)</em>}
-          </Typography>
-        </Box>
-      </Stack>
-    </Box>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -221,89 +210,92 @@ export function SuggestionsTab() {
   };
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            AI suggestion review queue
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+        <CardContent className="p-6">
+          <h3 className="text-lg font-semibold mb-2">AI suggestion review queue</h3>
+          <p className="text-sm text-muted-foreground">
             Producers (auto-tag-content, automation taggers, translate-i18n-batch, future
             Claude-driven suggesters) write to <code>ai_suggestions</code>. Approving here
             auto-applies for <code>tag</code>, <code>synonym</code>,{' '}
             <code>cluster_membership</code>, and <code>translation</code>; other types are
             flagged for manual application.
-          </Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 2 }}>
-            <TextField
-              select
-              label="Status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              size="small"
-              sx={{ minWidth: 140 }}
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="approved">Approved</MenuItem>
-              <MenuItem value="applied">Applied</MenuItem>
-              <MenuItem value="rejected">Rejected</MenuItem>
-              <MenuItem value="expired">Expired</MenuItem>
-            </TextField>
-            <TextField
-              select
-              label="Type"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              size="small"
-              sx={{ minWidth: 200 }}
-            >
-              <MenuItem value="">All types</MenuItem>
-              <MenuItem value="tag">Tag</MenuItem>
-              <MenuItem value="synonym">Synonym</MenuItem>
-              <MenuItem value="alt_text">Alt text</MenuItem>
-              <MenuItem value="description">Description</MenuItem>
-              <MenuItem value="title">Title</MenuItem>
-              <MenuItem value="cluster_membership">Cluster membership</MenuItem>
-              <MenuItem value="category">Category</MenuItem>
-              <MenuItem value="image_replacement">Image replacement</MenuItem>
-              <MenuItem value="translation">Translation</MenuItem>
-              <MenuItem value="other">Other</MenuItem>
-            </TextField>
-            <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
+          </p>
+          <div className="flex flex-col md:flex-row gap-4 mt-4">
+            <div className="flex flex-col gap-1 min-w-[140px]">
+              <Label htmlFor="sg-status">Status</Label>
+              <Select value={statusFilter || '__all__'} onValueChange={(v) => setStatusFilter(v === '__all__' ? '' : v)}>
+                <SelectTrigger id="sg-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="applied">Applied</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1 min-w-[200px]">
+              <Label htmlFor="sg-type">Type</Label>
+              <Select value={typeFilter || '__all__'} onValueChange={(v) => setTypeFilter(v === '__all__' ? '' : v)}>
+                <SelectTrigger id="sg-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All types</SelectItem>
+                  <SelectItem value="tag">Tag</SelectItem>
+                  <SelectItem value="synonym">Synonym</SelectItem>
+                  <SelectItem value="alt_text">Alt text</SelectItem>
+                  <SelectItem value="description">Description</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                  <SelectItem value="cluster_membership">Cluster membership</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                  <SelectItem value="image_replacement">Image replacement</SelectItem>
+                  <SelectItem value="translation">Translation</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button size="sm" variant="outline" onClick={refresh} disabled={loading} className="self-end">
               Refresh
             </Button>
-          </Stack>
+          </div>
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
+            <Alert variant="destructive" className="mt-4">
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           {info && (
-            <Alert severity="info" sx={{ mt: 2 }} onClose={() => setInfo(null)}>
-              {info}
+            <Alert className="mt-4">
+              <AlertDescription>{info}</AlertDescription>
+              <button
+                type="button"
+                onClick={() => setInfo(null)}
+                className="absolute right-2 top-2 text-xs text-muted-foreground hover:text-foreground"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
             </Alert>
           )}
         </CardContent>
       </Card>
 
       {loading ? (
-        <Typography>Loading…</Typography>
+        <p>Loading…</p>
       ) : items.length === 0 ? (
-        <Typography color="text.secondary">No suggestions match these filters.</Typography>
+        <p className="text-muted-foreground">No suggestions match these filters.</p>
       ) : (
-        <Stack spacing={1}>
+        <div className="flex flex-col gap-2">
           {items.map((s) => (
             <Card key={s.id}>
-              <CardContent>
-                <Stack
-                  direction={{ xs: 'column', md: 'row' }}
-                  justifyContent="space-between"
-                  spacing={2}
-                  alignItems="flex-start"
-                >
-                  <Box sx={{ flex: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
+                  <div className="flex-1">
+                    <div className="flex flex-row items-center gap-2 flex-wrap">
                       <Badge variant={STATUS_VARIANT[s.status]}>{s.status}</Badge>
                       <Badge variant="secondary">{s.suggestion_type}</Badge>
                       {s.entity_type && (
@@ -317,35 +309,33 @@ export function SuggestionsTab() {
                       {s.confidence != null && (
                         <Badge variant="secondary">conf {s.confidence.toFixed(2)}</Badge>
                       )}
-                    </Stack>
-                    <Box sx={{ mt: 1.5 }}>
+                    </div>
+                    <div className="mt-3">
                       {s.suggestion_type === 'translation' ? (
                         <TranslationDiff s={s} />
                       ) : (
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                          <Box sx={{ flex: 1 }}>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <div className="flex-1">
                             <PrettyJson value={s.current_value} label="Current" />
-                          </Box>
-                          <Box sx={{ flex: 1 }}>
+                          </div>
+                          <div className="flex-1">
                             <PrettyJson value={s.proposed_value} label="Proposed" />
-                          </Box>
-                        </Stack>
+                          </div>
+                        </div>
                       )}
-                    </Box>
+                    </div>
                     {s.review_notes && (
-                      <Alert severity="warning" sx={{ mt: 1 }}>
-                        <Typography variant="caption" component="div">
-                          {s.review_notes}
-                        </Typography>
+                      <Alert className="mt-2 border-yellow-500">
+                        <AlertDescription className="text-xs">{s.review_notes}</AlertDescription>
                       </Alert>
                     )}
                     {editing?.id === s.id && (
-                      <Box sx={{ mt: 1 }}>
+                      <div className="mt-2">
                         {s.suggestion_type === 'translation' ? (
                           <>
-                            <Typography variant="caption" color="text.secondary">
+                            <span className="text-xs text-muted-foreground">
                               Edit translation ({s.locale ?? '?'}):
-                            </Typography>
+                            </span>
                             <textarea
                               style={{
                                 width: '100%',
@@ -363,9 +353,9 @@ export function SuggestionsTab() {
                           </>
                         ) : (
                           <>
-                            <Typography variant="caption" color="text.secondary">
+                            <span className="text-xs text-muted-foreground">
                               Edit proposed_value (JSON):
-                            </Typography>
+                            </span>
                             <textarea
                               style={{
                                 width: '100%',
@@ -389,22 +379,22 @@ export function SuggestionsTab() {
                               }}
                             />
                             {editing.parseError && (
-                              <Typography variant="caption" color="error">
+                              <span className="text-xs text-destructive">
                                 JSON parse error: {editing.parseError}
-                              </Typography>
+                              </span>
                             )}
                           </>
                         )}
-                      </Box>
+                      </div>
                     )}
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    <div className="text-xs text-muted-foreground mt-2 block">
                       {s.source_model && <>model: {s.source_model} · </>}
                       created {new Date(s.created_at).toLocaleString()}
                       {s.applied_at && <> · applied {new Date(s.applied_at).toLocaleString()}</>}
-                    </Typography>
-                  </Box>
+                    </div>
+                  </div>
                   {s.status === 'pending' && editing?.id !== s.id && (
-                    <Stack direction="row" spacing={1}>
+                    <div className="flex flex-row gap-2">
                       <Button
                         size="sm"
                         onClick={() => setStatus(s.id, 'approved')}
@@ -443,10 +433,10 @@ export function SuggestionsTab() {
                       >
                         Reject
                       </Button>
-                    </Stack>
+                    </div>
                   )}
                   {editing?.id === s.id && (
-                    <Stack direction="row" spacing={1}>
+                    <div className="flex flex-row gap-2">
                       <Button
                         size="sm"
                         onClick={async () => {
@@ -486,7 +476,7 @@ export function SuggestionsTab() {
                       >
                         Cancel
                       </Button>
-                    </Stack>
+                    </div>
                   )}
                   {s.status === 'approved' && s.review_notes && (
                     <Button
@@ -498,12 +488,12 @@ export function SuggestionsTab() {
                       Retry apply
                     </Button>
                   )}
-                </Stack>
+                </div>
               </CardContent>
             </Card>
           ))}
-        </Stack>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }
