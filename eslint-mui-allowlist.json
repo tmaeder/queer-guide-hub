@@ -17,7 +17,6 @@
   "src/components/trips/AddToTripMenuItem.tsx",
   "src/components/trips/ReservationsTab.tsx",
   "src/components/trips/ShareTripDialog.tsx",
-  "src/components/trips/TripPolls.tsx",
   "src/components/ui/country-autocomplete.tsx",
   "src/lib/sx.ts",
   "src/pages/AdminHotels.tsx",
