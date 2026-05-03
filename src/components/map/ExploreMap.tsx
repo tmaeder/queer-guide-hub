@@ -104,6 +104,11 @@ export interface ExploreMapProps {
   initialZoom?: number;
   /** Skip visitor geo auto-fly */
   skipAutoFly?: boolean;
+  /** Fired on map idle / moveend with the new viewport. Use to encode
+   *  state in the URL or persist preferences. */
+  onViewportChange?: (viewport: { center: [number, number]; zoom: number }) => void;
+  /** Fired when the enabled layer set changes. */
+  onLayersChange?: (layers: LayerType[]) => void;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -119,6 +124,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   initialCenter,
   initialZoom,
   skipAutoFly = false,
+  onViewportChange: onViewportChangeProp,
+  onLayersChange: onLayersChangeProp,
 }) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
@@ -185,9 +192,11 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   // ── Layer toggle ─────────────────────────────────────────────────────────
   const toggleLayer = useCallback((layer: LayerType) => {
-    setEnabledLayers((prev) =>
-      prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer],
-    );
+    setEnabledLayers((prev) => {
+      const next = prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer];
+      onLayersChangeProp?.(next);
+      return next;
+    });
   }, []);
 
   // ── Geolocation ──────────────────────────────────────────────────────────
@@ -331,6 +340,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       const z = map.getZoom();
       onViewportChange(bbox, z);
       setCurrentZoom(z);
+      const c = map.getCenter();
+      onViewportChangeProp?.({ center: [c.lng, c.lat], zoom: z });
     });
 
     return () => {
