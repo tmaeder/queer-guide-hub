@@ -36,10 +36,6 @@ jobs:
         run: npm run lint
 
       - name: Test
-        # Soft-fail: pre-existing component test failures from in-flight
-        # MUI->shadcn batch migrations (CityCountryAutocomplete,
-        # ForceGraph2D mounts, News). Re-gate after the test cleanup PR.
-        continue-on-error: true
         run: npm test
 
       - name: Build

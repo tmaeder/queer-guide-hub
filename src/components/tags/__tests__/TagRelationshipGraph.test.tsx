@@ -49,14 +49,15 @@ vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 
 // Control ResizeObserver — component must wait for it before mounting ForceGraph2D.
 type ResizeCallback = (entries: Array<{ contentRect: { width: number; height: number } }>) => void;
-let lastObserver: { cb: ResizeCallback } | null = null;
+const allObservers: Array<{ cb: ResizeCallback }> = [];
 class MockResizeObserver {
   cb: ResizeCallback;
   constructor(cb: ResizeCallback) {
     this.cb = cb;
-    lastObserver = { cb };
+    allObservers.push({ cb });
   }
   observe() {}
+  unobserve() {}
   disconnect() {}
 }
 // @ts-expect-error test polyfill
@@ -89,7 +90,9 @@ const wrap = ({ children }: { children: ReactNode }) => {
 
 const emitResize = (width: number, height: number) => {
   act(() => {
-    lastObserver?.cb([{ contentRect: { width, height } }]);
+    for (const obs of allObservers) {
+      obs.cb([{ contentRect: { width, height } }]);
+    }
   });
 };
 
@@ -100,7 +103,7 @@ describe('TagRelationshipGraph — left-alignment regression', () => {
     d3ReheatSimulation.mockClear();
     centerForce.x.mockClear();
     centerForce.y.mockClear();
-    lastObserver = null;
+    allObservers.length = 0;
     boundingRect = { width: 0, height: 0 };
   });
 

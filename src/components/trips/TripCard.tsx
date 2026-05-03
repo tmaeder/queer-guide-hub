@@ -213,6 +213,8 @@ export function TripCard({ trip }: Props) {
               <Button
                 variant="ghost"
                 onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
                 aria-label={t('trips.card.menuAria')}
                 className="trip-card-menu absolute top-2 right-2 h-7 w-7 p-0 bg-background shadow"
               >

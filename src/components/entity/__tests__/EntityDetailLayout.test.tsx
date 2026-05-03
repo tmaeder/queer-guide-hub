@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { EntityDetailLayout, type EntityDetailTab } from '../EntityDetailLayout';
 
@@ -46,11 +46,15 @@ describe('EntityDetailLayout', () => {
     expect(screen.getByText('Boom')).toBeInTheDocument();
   });
 
-  it('switches tab content when active tab changes', () => {
+  it('switches tab content when active tab changes', async () => {
     renderLayout();
     expect(screen.getByText('Overview body')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Details'));
-    expect(screen.getByText('Details body')).toBeInTheDocument();
+    const detailsTab = screen.getByRole('tab', { name: 'Details' });
+    detailsTab.focus();
+    fireEvent.keyDown(detailsTab, { key: 'Enter' });
+    await waitFor(() =>
+      expect(screen.getByText('Details body')).toBeInTheDocument(),
+    );
   });
 
   it('renders breadcrumbs when provided', () => {

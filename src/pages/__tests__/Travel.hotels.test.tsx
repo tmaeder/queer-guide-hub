@@ -131,10 +131,11 @@ describe('Travel — hotels URL sync', { timeout: 20000 }, () => {
       latest = p;
     });
 
-    const chip = document.querySelector('.MuiChip-root[class*="MuiChip-deletable"]');
-    expect(chip).toBeTruthy();
-    const deleteIcon = chip!.querySelector('.MuiChip-deleteIcon') as HTMLElement;
-    fireEvent.click(deleteIcon);
+    const typeChipClear = screen
+      .getAllByRole('button', { name: 'Clear' })
+      .find((btn) => btn.closest('div')?.textContent?.includes('Type:'));
+    expect(typeChipClear).toBeTruthy();
+    fireEvent.click(typeChipClear!);
 
     expect(latest.get('type')).toBeNull();
     expect(latest.get('priceMin')).toBe('80');

@@ -26,7 +26,18 @@ const DropdownMenuTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTML
       onClick?.(e);
     };
     if (asChild && React.isValidElement(children)) {
-      return React.cloneElement(children as React.ReactElement<Record<string, unknown>>, { onClick: handleClick, ref });
+      const childProps = (children as React.ReactElement<Record<string, unknown>>).props;
+      const childOnClick = childProps.onClick as
+        | ((e: React.MouseEvent<HTMLButtonElement>) => void)
+        | undefined;
+      const composedOnClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        childOnClick?.(e);
+        handleClick(e);
+      };
+      return React.cloneElement(
+        children as React.ReactElement<Record<string, unknown>>,
+        { onClick: composedOnClick, ref },
+      );
     }
     return <button ref={ref} onClick={handleClick} type="button" {...props}>{children}</button>;
   }
