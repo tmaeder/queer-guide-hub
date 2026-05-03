@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { Users, X } from 'lucide-react';
 
 import { useMeta } from '@/hooks/useMeta';
@@ -267,8 +264,8 @@ export default function Personalities() {
   const loadedCount = personalities.length;
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Container sx={{ px: 2, py: { xs: 4, md: 8 } }}>
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:py-16">
         <PageHeader
           title={t('pages.personalities.title', 'Personalities')}
           subtitle={t('pages.personalities.subtitle', 'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.')}
@@ -281,9 +278,9 @@ export default function Personalities() {
         {/* Featured rail — only on the cold default view */}
         {!hasAnyFilter && <FeaturedPersonalityRail />}
 
-        <Box sx={{ mb: 2 }}>
+        <div className="mb-4">
           <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
-        </Box>
+        </div>
 
         <StickyLetterBar
           letter={filters.name_starts_with ?? null}
@@ -292,18 +289,10 @@ export default function Personalities() {
 
         {/* Active filter chips */}
         {activeChips.length > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: 1,
-              mb: 2,
-            }}
-          >
-            <Typography variant="body2" sx={{ color: 'text.secondary', mr: 0.5 }}>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <p className="text-sm">
               Active:
-            </Typography>
+            </p>
             {activeChips.map((chip) => (
               <Badge
                 key={chip.key}
@@ -311,49 +300,32 @@ export default function Personalities() {
 
               >
                 {chip.label}
-                <Box
-                  component="button"
+                <button
                   type="button"
                   onClick={chip.onRemove}
                   aria-label={`Remove ${chip.label}`}
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    p: 0,
-                    ml: 0.25,
-                  }}
+                  className="inline-flex items-center justify-center bg-transparent border-none cursor-pointer p-0 ml-1"
                 >
                   <X size={12} />
-                </Box>
+                </button>
               </Badge>
             ))}
             <Button variant="ghost" size="sm" onClick={clearAll}>
               Clear all
             </Button>
-          </Box>
+          </div>
         )}
 
         {/* Results toolbar */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 2,
-          }}
-        >
-          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm">
             {loading && personalities.length === 0
               ? 'Loading…'
               : totalCount > 0
                 ? `Showing ${loadedCount.toLocaleString()} of ${totalCount.toLocaleString()}`
                 : 'No results'}
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {/* Error state */}
         {error && personalities.length === 0 && (
@@ -367,11 +339,11 @@ export default function Personalities() {
 
         {/* Initial loading skeleton */}
         {loading && personalities.length === 0 && !error && (
-          <Box sx={GRID_SX}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
             {Array.from({ length: 10 }).map((_, i) => (
               <PersonalityCardSkeleton key={i} />
             ))}
-          </Box>
+          </div>
         )}
 
         {/* Empty state */}
@@ -395,29 +367,26 @@ export default function Personalities() {
 
             {/* Sentinel for auto-load */}
             {hasMore && autoLoadedCount < AUTO_LOAD_CAP && (
-              <Box ref={sentinelRef} sx={{ height: 40, mt: 4 }} aria-hidden="true" />
+              <div ref={sentinelRef} className="h-10 mt-8" aria-hidden="true" />
             )}
 
             {/* Manual load more after cap */}
             {showLoadMoreButton && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <div className="flex justify-center mt-8">
                 <Button onClick={loadMoreManual} variant="outline">
                   Load more ({(totalCount - loadedCount).toLocaleString()} more)
                 </Button>
-              </Box>
+              </div>
             )}
 
             {loading && personalities.length > 0 && (
-              <Typography
-                variant="body2"
-                sx={{ textAlign: 'center', color: 'text.secondary', mt: 3 }}
-              >
+              <p className="text-sm">
                 Loading more…
-              </Typography>
+              </p>
             )}
           </>
         )}
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 }

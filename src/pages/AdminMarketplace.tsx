@@ -28,8 +28,6 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -181,12 +179,12 @@ export default function AdminMarketplace() {
       columnHelper.accessor('title', {
         header: 'Title',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+            <p className="text-sm text-muted-foreground">
               {info.row.original.business_name}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -213,10 +211,10 @@ export default function AdminMarketplace() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 12, width: 12 }} />
               {val}
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -319,7 +317,7 @@ export default function AdminMarketplace() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <ExportExcelButton
             onExport={async () => {
               const cols: ExportColumnDef<Record<string, unknown>>[] = [
@@ -352,7 +350,7 @@ export default function AdminMarketplace() {
           >
             <Plus style={{ height: 14, width: 14, marginRight: 4 }} /> Create Listing
           </Button>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is stable in practice, adding would defeat memoization
@@ -376,7 +374,7 @@ export default function AdminMarketplace() {
             onSubmit={handleSubmit}
             style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
           >
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Title</Label>
                 <Input
@@ -393,7 +391,7 @@ export default function AdminMarketplace() {
                   required
                 />
               </div>
-            </Box>
+            </div>
             <div>
               <Label>Description</Label>
               <Textarea
@@ -402,7 +400,7 @@ export default function AdminMarketplace() {
                 rows={3}
               />
             </div>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Category</Label>
                 <Select
@@ -446,8 +444,8 @@ export default function AdminMarketplace() {
                   </SelectContent>
                 </Select>
               </div>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Price</Label>
                 <Input
@@ -492,8 +490,8 @@ export default function AdminMarketplace() {
                   </SelectContent>
                 </Select>
               </div>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Phone</Label>
                 <Input
@@ -524,9 +522,9 @@ export default function AdminMarketplace() {
                   placeholder="City, State"
                 />
               </div>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            </div>
+            <div className="flex gap-6">
+              <div className="flex items-center gap-2">
                 <Checkbox
                   checked={formData.shipping_available}
                   onCheckedChange={(c) =>
@@ -534,15 +532,15 @@ export default function AdminMarketplace() {
                   }
                 />
                 <Label>Shipping Available</Label>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              </div>
+              <div className="flex items-center gap-2">
                 <Checkbox
                   checked={formData.featured}
                   onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c as boolean }))}
                 />
                 <Label>Featured</Label>
-              </Box>
-            </Box>
+              </div>
+            </div>
             <Button type="submit" style={{ width: '100%' }}>
               Create Listing
             </Button>
@@ -556,7 +554,7 @@ export default function AdminMarketplace() {
           <DialogHeader>
             <DialogTitle>Import from Awin CSV Feed</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             <div>
               <Label>Custom CSV Feed URL (Optional)</Label>
               <Input
@@ -565,7 +563,7 @@ export default function AdminMarketplace() {
                 onChange={(e) => setImportParams((p) => ({ ...p, csvUrl: e.target.value }))}
               />
             </div>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Max Products</Label>
                 <Input
@@ -599,8 +597,8 @@ export default function AdminMarketplace() {
                   }
                 />
               </div>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setIsAwinImportOpen(false)}
@@ -628,8 +626,8 @@ export default function AdminMarketplace() {
                   </>
                 )}
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
         </>
