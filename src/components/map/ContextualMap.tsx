@@ -6,8 +6,7 @@
  */
 
 import React, { Suspense } from 'react';
-import Box from '@mui/material/Box';
-import Skeleton from '@mui/material/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
@@ -105,13 +104,12 @@ export const ContextualMap: React.FC<ContextualMapProps> = ({
     <Suspense
       fallback={
         <Skeleton
-          variant="rectangular"
-          height={typeof mapHeight === 'number' ? mapHeight : 400}
-          sx={{ borderRadius: 2 }}
+          className="rounded-lg w-full"
+          style={{ height: typeof mapHeight === 'number' ? mapHeight : 400 }}
         />
       }
     >
-      <Box sx={{ borderRadius: 2, overflow: 'hidden' }} className={className}>
+      <div className={`rounded-lg overflow-hidden ${className ?? ''}`}>
         <ExploreMap
           height={mapHeight}
           initialCenter={center}
@@ -122,7 +120,7 @@ export const ContextualMap: React.FC<ContextualMapProps> = ({
           showFilters={showFilters ?? defaults.showFilters}
           skipAutoFly={!!center}
         />
-      </Box>
+      </div>
     </Suspense>
   );
 };
