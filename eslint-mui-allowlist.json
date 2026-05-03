@@ -265,7 +265,6 @@
   "src/pages/SecurityDashboard.tsx",
   "src/pages/Travel.tsx",
   "src/pages/UserProfile.tsx",
-  "src/pages/VenueDetail.parts.tsx",
   "src/pages/Venues.tsx",
   "src/pages/admin/EmailTemplates.tsx",
   "src/pages/trips/SharedTripPage.tsx",
