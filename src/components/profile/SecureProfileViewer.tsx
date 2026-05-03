@@ -4,8 +4,6 @@ import { PrivacyGuard } from '@/components/security/PrivacyGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, GraduationCap, Heart, MapPin, Globe, Phone, Shield } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface SecureProfileViewerProps {
   profile: Record<string, unknown>;
@@ -18,17 +16,15 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
   if (!profile) return null;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Basic Information - Always visible for public profiles */}
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box
-              sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}
-            >
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Location - Privacy controlled */}
               <PrivacyGuard
                 profileUserId={profile.user_id}
@@ -37,17 +33,13 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="location_verification"
               >
                 {profile.location && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <MapPin style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Location
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {profile.location}
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Location</p>
+                      <p className="text-sm text-muted-foreground">{profile.location}</p>
+                    </div>
+                  </div>
                 )}
               </PrivacyGuard>
 
@@ -59,14 +51,10 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="identity_verification"
               >
                 {profile.pronouns && (
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Pronouns
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      {profile.pronouns}
-                    </Typography>
-                  </Box>
+                  <div>
+                    <p className="text-sm font-medium">Pronouns</p>
+                    <p className="text-sm text-muted-foreground">{profile.pronouns}</p>
+                  </div>
                 )}
               </PrivacyGuard>
 
@@ -78,19 +66,13 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="profile_verification"
               >
                 {profile.occupation && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Briefcase
-                      style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }}
-                    />
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Occupation
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {profile.occupation}
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <div className="flex items-center gap-3">
+                    <Briefcase className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Occupation</p>
+                      <p className="text-sm text-muted-foreground">{profile.occupation}</p>
+                    </div>
+                  </div>
                 )}
               </PrivacyGuard>
 
@@ -102,22 +84,16 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="profile_verification"
               >
                 {profile.education && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <GraduationCap
-                      style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }}
-                    />
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Education
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {profile.education}
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <div className="flex items-center gap-3">
+                    <GraduationCap className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Education</p>
+                      <p className="text-sm text-muted-foreground">{profile.education}</p>
+                    </div>
+                  </div>
                 )}
               </PrivacyGuard>
-            </Box>
+            </div>
 
             {/* Interests - Privacy controlled */}
             <PrivacyGuard
@@ -129,23 +105,21 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
               {profile.interests &&
                 Array.isArray(profile.interests) &&
                 profile.interests.length > 0 && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box>
-                      <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
-                        Interests
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <p className="text-base font-medium mb-2">Interests</p>
+                      <div className="flex flex-wrap gap-2">
                         {profile.interests.map((interest: string, index: number) => (
                           <Badge key={index} variant="secondary">
                             {interest}
                           </Badge>
                         ))}
-                      </Box>
-                    </Box>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
                 )}
             </PrivacyGuard>
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
@@ -161,30 +135,22 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
             <CardTitle>Contact Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               {profile.website && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Globe style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Website
-                    </Typography>
+                <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Website</p>
                     <a
                       href={profile.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: 'var(--primary)', textDecoration: 'none' }}
-                      onMouseOver={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                      }}
-                      onMouseOut={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                      }}
+                      className="text-primary hover:underline"
                     >
                       {profile.website}
                     </a>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
 
               {/* Phone - Extra privacy protection */}
@@ -195,20 +161,16 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                 adminJustification="emergency_contact"
               >
                 {profile.phone && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Phone style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Phone
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {profile.phone}
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Phone</p>
+                      <p className="text-sm text-muted-foreground">{profile.phone}</p>
+                    </div>
+                  </div>
                 )}
               </PrivacyGuard>
-            </Box>
+            </div>
           </CardContent>
         </Card>
       </PrivacyGuard>
@@ -218,18 +180,16 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
         <Card>
           <CardHeader>
             <CardTitle>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Shield style={{ height: 20, width: 20 }} />
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
                 Sensitive Information
                 {!isOwnProfile && <Badge variant="destructive">Admin Access</Badge>}
-              </Box>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}
-              >
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Gender Identity - Highly sensitive */}
                 <PrivacyGuard
                   profileUserId={profile.user_id}
@@ -238,14 +198,10 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   adminJustification="identity_verification_critical"
                 >
                   {profile.gender_identity && (
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Gender Identity
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {profile.gender_identity}
-                      </Typography>
-                    </Box>
+                    <div>
+                      <p className="text-sm font-medium">Gender Identity</p>
+                      <p className="text-sm text-muted-foreground">{profile.gender_identity}</p>
+                    </div>
                   )}
                 </PrivacyGuard>
 
@@ -257,14 +213,10 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   adminJustification="identity_verification_critical"
                 >
                   {profile.sexual_orientation && (
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Sexual Orientation
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {profile.sexual_orientation}
-                      </Typography>
-                    </Box>
+                    <div>
+                      <p className="text-sm font-medium">Sexual Orientation</p>
+                      <p className="text-sm text-muted-foreground">{profile.sexual_orientation}</p>
+                    </div>
                   )}
                 </PrivacyGuard>
 
@@ -276,17 +228,13 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   adminJustification="profile_moderation"
                 >
                   {profile.relationship_status && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Heart style={{ height: 20, width: 20, color: 'var(--muted-foreground)' }} />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          Relationship Status
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                          {profile.relationship_status}
-                        </Typography>
-                      </Box>
-                    </Box>
+                    <div className="flex items-center gap-3">
+                      <Heart className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">Relationship Status</p>
+                        <p className="text-sm text-muted-foreground">{profile.relationship_status}</p>
+                      </div>
+                    </div>
                   )}
                 </PrivacyGuard>
 
@@ -298,40 +246,26 @@ export function SecureProfileViewer({ profile, isOwnProfile }: SecureProfileView
                   adminJustification="financial_verification"
                 >
                   {profile.income_range && (
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Income Range
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {profile.income_range}
-                      </Typography>
-                    </Box>
+                    <div>
+                      <p className="text-sm font-medium">Income Range</p>
+                      <p className="text-sm text-muted-foreground">{profile.income_range}</p>
+                    </div>
                   )}
                 </PrivacyGuard>
-              </Box>
+              </div>
 
               {!isOwnProfile && isAdmin && (
-                <Box
-                  sx={{
-                    mt: 2,
-                    p: 1.5,
-                    bgcolor: 'error.main',
-                    opacity: 0.1,
-                    border: 1,
-                    borderColor: 'error.main',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 500 }}>
+                <div className="mt-4 p-3 bg-destructive/10 border border-destructive rounded-lg">
+                  <p className="text-sm text-destructive font-medium">
                     Admin Access: This sensitive information is logged and monitored for security
                     compliance.
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
               )}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
