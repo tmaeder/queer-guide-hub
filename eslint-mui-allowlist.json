@@ -84,7 +84,6 @@
   "src/components/trips/SocialSignalBadges.tsx",
   "src/components/trips/TripBookingAssistant.tsx",
   "src/components/trips/TripCard.tsx",
-  "src/components/trips/TripChatTab.tsx",
   "src/components/trips/TripCoverBand.tsx",
   "src/components/trips/TripMap.tsx",
   "src/components/trips/TripNotes.tsx",
