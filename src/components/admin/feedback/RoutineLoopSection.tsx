@@ -1,15 +1,22 @@
 import { useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import LinearProgress from '@mui/material/LinearProgress';
-import Tooltip from '@mui/material/Tooltip';
 import { Bot, Sparkles, AlertTriangle, ExternalLink, RefreshCcw, ShieldAlert, Archive, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatCombinedStoryPrompt } from './claudePrompts';
 import type { ApiErrorSubmission } from './claudePrompts';
 import type {
@@ -96,8 +103,6 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
     dispatch.mutate({
       storyId: story.id,
       runner,
-      // Server builds + redacts the prompt by default; only send override
-      // when the admin actively edited it.
       promptOverride: editing ? promptDraft : undefined,
     });
 
@@ -125,133 +130,127 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
   const showArchiveCard = story.status === 'resolved' && !story.archived_at;
 
   return (
-    <Box data-testid="routine-loop" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <TooltipProvider>
+    <div data-testid="routine-loop" className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
         <Bot size={14} />
-        <Typography variant="overline" sx={{ letterSpacing: 0.5 }}>
-          Claude routine
-        </Typography>
-        <Chip
-          size="small"
-          label={PHASE_LABELS[phase]}
-          sx={{
-            bgcolor: `color-mix(in srgb, ${PHASE_COLORS[phase]} 18%, transparent)`,
+        <span className="text-xs uppercase tracking-wider">Claude routine</span>
+        <Badge
+          variant="outline"
+          style={{
+            backgroundColor: `color-mix(in srgb, ${PHASE_COLORS[phase]} 18%, transparent)`,
             color: PHASE_COLORS[phase],
-            border: `1px solid ${PHASE_COLORS[phase]}`,
+            borderColor: PHASE_COLORS[phase],
             height: 22,
           }}
-        />
+        >
+          {PHASE_LABELS[phase]}
+        </Badge>
         {story.archived_at && (
-          <Chip size="small" icon={<Archive size={12} />} label="Archived" />
+          <Badge variant="secondary" className="inline-flex items-center gap-1">
+            <Archive size={12} /> Archived
+          </Badge>
         )}
-      </Box>
+      </div>
 
       {/* Approve & dispatch */}
       {showApproveCard && (
-        <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="subtitle2">Approve for Claude routine</Typography>
-          <Typography variant="caption" color="text.secondary">
+        <div className="border border-border rounded p-3 flex flex-col gap-2">
+          <p className="text-sm font-semibold">Approve for Claude routine</p>
+          <p className="text-xs text-muted-foreground">
             A human review is required before any code-changing routine runs.
             Approving creates a queued run with the prompt below; the active runner ({runner}) executes it.
-          </Typography>
-          <Tooltip title="Show / edit the generated prompt">
-            <Button size="small" variant="text" onClick={handleEdit}>
-              {editing ? 'Editing prompt' : 'Show / edit prompt'}
-            </Button>
+          </p>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="sm" variant="ghost" onClick={handleEdit} className="self-start">
+                {editing ? 'Editing prompt' : 'Show / edit prompt'}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Show / edit the generated prompt</TooltipContent>
           </Tooltip>
           {editing && (
-            <TextField
-              fullWidth
-              multiline
-              minRows={6}
-              maxRows={20}
-              size="small"
+            <Textarea
+              rows={6}
               value={promptDraft}
               onChange={(e) => setPromptDraft(e.target.value)}
-              sx={{ fontFamily: 'monospace' }}
+              className="font-mono"
             />
           )}
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex gap-2 items-center flex-wrap">
             <Button
-              variant="contained"
-              size="small"
+              size="sm"
               onClick={handleApprove}
               disabled={approving}
               data-testid="approve-for-claude"
             >
               {approving ? 'Approving…' : 'Approve for Claude routine'}
             </Button>
-            <TextField
-              size="small"
+            <Input
               placeholder="Needs more context (reason)"
               value={followupReason}
               onChange={(e) => setFollowupReason(e.target.value)}
-              sx={{ flex: 1, minWidth: 200 }}
+              className="flex-1 min-w-[200px]"
             />
             <Button
-              size="small"
-              variant="outlined"
-              color="warning"
-              startIcon={<ShieldAlert size={14} />}
+              size="sm"
+              variant="outline"
               onClick={handleNeedsFollowup}
               disabled={!followupReason.trim() || markFollowup.isPending}
+              className="text-yellow-600 border-yellow-600"
             >
+              <ShieldAlert size={14} className="mr-1" />
               Needs more context
             </Button>
-          </Box>
-        </Paper>
+          </div>
+        </div>
       )}
 
-      {/* Dispatch — story is approved, no live run */}
+      {/* Dispatch */}
       {showDispatchCard && (
-        <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="subtitle2">
-            <Sparkles size={12} style={{ verticalAlign: 'middle' }} /> Dispatch routine
-          </Typography>
+        <div className="border border-border rounded p-3 flex flex-col gap-2">
+          <p className="text-sm font-semibold inline-flex items-center gap-1">
+            <Sparkles size={12} /> Dispatch routine
+          </p>
           {story.needs_followup_reason && (
-            <Typography variant="caption" color="warning.main">
+            <p className="text-xs text-yellow-600">
               Needs more context: {story.needs_followup_reason}
-            </Typography>
+            </p>
           )}
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Select
-              size="small"
-              value={runner}
-              onChange={(e) => setRunner(e.target.value as RoutineRunner)}
-              sx={{ minWidth: 160 }}
-            >
-              {RUNNERS.map((r) => (
-                <MenuItem key={r} value={r}>
-                  {r}
-                </MenuItem>
-              ))}
+          <div className="flex gap-2 items-center flex-wrap">
+            <Select value={runner} onValueChange={(v) => setRunner(v as RoutineRunner)}>
+              <SelectTrigger className="min-w-[160px] w-auto">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RUNNERS.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <Button
-              variant="contained"
-              size="small"
+              size="sm"
               onClick={handleDispatch}
               disabled={dispatching}
               data-testid="dispatch-routine"
             >
               {dispatching ? 'Dispatching…' : 'Dispatch'}
             </Button>
-            <Button size="small" onClick={handleEdit}>
+            <Button size="sm" variant="ghost" onClick={handleEdit}>
               {editing ? 'Editing prompt' : 'Edit prompt'}
             </Button>
-          </Box>
+          </div>
           {editing && (
-            <TextField
-              fullWidth
-              multiline
-              minRows={6}
-              maxRows={20}
-              size="small"
+            <Textarea
+              rows={6}
               value={promptDraft}
               onChange={(e) => setPromptDraft(e.target.value)}
-              sx={{ fontFamily: 'monospace' }}
+              className="font-mono"
             />
           )}
-        </Paper>
+        </div>
       )}
 
       {/* Active run */}
@@ -268,23 +267,19 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
 
       {/* Verify */}
       {showVerifyCard && latestRun && latestRetest && (
-        <Paper
-          variant="outlined"
-          sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, borderColor: 'success.main' }}
+        <div
+          className="border border-green-600 rounded p-3 flex flex-col gap-2"
           data-testid="verify-card"
         >
-          <Typography variant="subtitle2">Ready for verification</Typography>
-          <Typography variant="caption" color="text.secondary">
-            Original: {story.title}
-          </Typography>
-          <Typography variant="caption">Fix: {latestRun.fix_summary ?? '—'}</Typography>
-          <Typography variant="caption" color="success.main">
+          <p className="text-sm font-semibold">Ready for verification</p>
+          <p className="text-xs text-muted-foreground">Original: {story.title}</p>
+          <p className="text-xs">Fix: {latestRun.fix_summary ?? '—'}</p>
+          <p className="text-xs text-green-600">
             Retest ({latestRetest.kind}): passed
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          </p>
+          <div className="flex gap-2 flex-wrap">
             <Button
-              variant="contained"
-              size="small"
+              size="sm"
               onClick={handleResolve}
               disabled={verifying}
               data-testid="verify-resolved"
@@ -292,49 +287,49 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
               Resolve
             </Button>
             <Button
-              size="small"
-              variant="outlined"
-              color="warning"
-              startIcon={<RotateCcw size={14} />}
+              size="sm"
+              variant="outline"
               onClick={handleReopen}
               disabled={verifying}
+              className="text-yellow-600 border-yellow-600"
             >
+              <RotateCcw size={14} className="mr-1" />
               Reopen
             </Button>
-          </Box>
-        </Paper>
+          </div>
+        </div>
       )}
 
       {/* Archive */}
       {showArchiveCard && (
-        <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="subtitle2">Archive</Typography>
-          <Typography variant="caption" color="text.secondary">
+        <div className="border border-border rounded p-3 flex flex-col gap-2">
+          <p className="text-sm font-semibold">Archive</p>
+          <p className="text-xs text-muted-foreground">
             Resolved stories can be archived for auditability. Archived stories
             stay searchable but are hidden from the default kanban.
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-            <TextField
-              size="small"
+          </p>
+          <div className="flex gap-2 items-center flex-wrap">
+            <Input
               placeholder="Reason (optional)"
               value={archiveReason}
               onChange={(e) => setArchiveReason(e.target.value)}
-              sx={{ flex: 1, minWidth: 200 }}
+              className="flex-1 min-w-[200px]"
             />
             <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Archive size={14} />}
+              size="sm"
+              variant="outline"
               onClick={handleArchive}
               disabled={archiving}
               data-testid="archive-story"
             >
+              <Archive size={14} className="mr-1" />
               Archive
             </Button>
-          </Box>
-        </Paper>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
+    </TooltipProvider>
   );
 }
 
@@ -351,75 +346,69 @@ function RoutineRunCard({ run, retests, onCancel, onStartRetest, cancelling, ret
   const inFlight = run.status === 'queued' || run.status === 'dispatched' || run.status === 'in_progress';
   const failed = run.status === 'failed';
   return (
-    <Paper variant="outlined" sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }} data-testid="routine-run-card">
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-        <Typography variant="subtitle2">Run · {run.runner}</Typography>
-        <Chip size="small" label={run.status} sx={{ height: 20, fontSize: '0.7rem' }} />
+    <div className="border border-border rounded p-3 flex flex-col gap-2" data-testid="routine-run-card">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm font-semibold">Run · {run.runner}</span>
+        <Badge variant="secondary" style={{ height: 20, fontSize: '0.7rem' }}>{run.status}</Badge>
         {run.external_ref && (
-          <Chip
-            size="small"
-            label={run.external_ref}
-            sx={{ height: 20, fontSize: '0.7rem', fontFamily: 'monospace' }}
-          />
+          <Badge variant="secondary" style={{ height: 20, fontSize: '0.7rem', fontFamily: 'monospace' }}>
+            {run.external_ref}
+          </Badge>
         )}
         {run.pr_url && (
-          <Button
-            size="small"
-            variant="text"
+          <a
             href={run.pr_url}
             target="_blank"
             rel="noreferrer"
-            startIcon={<ExternalLink size={12} />}
-            sx={{ minWidth: 0 }}
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
           >
-            PR
-          </Button>
+            <ExternalLink size={12} /> PR
+          </a>
         )}
-      </Box>
+      </div>
 
-      {inFlight && <LinearProgress sx={{ height: 3 }} />}
+      {inFlight && (
+        <div className="h-[3px] bg-muted overflow-hidden">
+          <div className="h-full w-1/3 bg-primary animate-pulse" />
+        </div>
+      )}
 
       {run.fix_summary && (
-        <Typography variant="caption" sx={{ whiteSpace: 'pre-wrap' }}>
-          {run.fix_summary}
-        </Typography>
+        <p className="text-xs whitespace-pre-wrap">{run.fix_summary}</p>
       )}
       {run.confidence && (
-        <Chip
-          size="small"
-          label={`Confidence: ${run.confidence}`}
-          color={run.confidence === 'high' ? 'success' : run.confidence === 'low' ? 'warning' : 'default'}
-          sx={{ alignSelf: 'flex-start', height: 20 }}
-        />
+        <Badge
+          variant={run.confidence === 'high' ? 'default' : run.confidence === 'low' ? 'destructive' : 'secondary'}
+          className="self-start"
+          style={{ height: 20 }}
+        >
+          {`Confidence: ${run.confidence}`}
+        </Badge>
       )}
       {run.risks && (
-        <Typography variant="caption" color="warning.main" sx={{ display: 'flex', gap: 0.5 }}>
+        <p className="text-xs text-yellow-600 flex gap-1 items-center">
           <AlertTriangle size={12} /> {run.risks}
-        </Typography>
+        </p>
       )}
       {run.files_changed && run.files_changed.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        <div className="flex flex-col gap-px">
           {run.files_changed.map((f) => (
-            <Typography key={f} variant="caption" sx={{ fontFamily: 'monospace' }}>
-              {f}
-            </Typography>
+            <span key={f} className="text-xs font-mono">{f}</span>
           ))}
-        </Box>
+        </div>
       )}
       {failed && run.error && (
-        <Typography variant="caption" color="error.main">
-          {run.error}
-        </Typography>
+        <p className="text-xs text-destructive">{run.error}</p>
       )}
 
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="flex gap-2 items-center flex-wrap">
         {inFlight && (
           <Button
-            size="small"
-            variant="outlined"
-            color="warning"
+            size="sm"
+            variant="outline"
             onClick={onCancel}
             disabled={cancelling}
+            className="text-yellow-600 border-yellow-600"
           >
             Cancel
           </Button>
@@ -428,49 +417,44 @@ function RoutineRunCard({ run, retests, onCancel, onStartRetest, cancelling, ret
           RETEST_KINDS.map((k) => (
             <Button
               key={k}
-              size="small"
-              variant="outlined"
-              startIcon={<RefreshCcw size={12} />}
+              size="sm"
+              variant="outline"
               onClick={() => onStartRetest(k)}
               disabled={retesting}
               data-testid={`retest-${k}`}
             >
+              <RefreshCcw size={12} className="mr-1" />
               {k}
             </Button>
           ))}
-      </Box>
+      </div>
 
       {retests.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.5 }} data-testid="retests-list">
+        <div className="flex flex-col gap-1 mt-1" data-testid="retests-list">
           {retests.map((r) => (
-            <Box
-              key={r.id}
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.7rem' }}
-            >
-              <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                {r.kind}
-              </Typography>
-              <Chip
-                size="small"
-                label={r.status}
-                color={
+            <div key={r.id} className="flex items-center gap-2 text-xs">
+              <span className="font-mono text-xs">{r.kind}</span>
+              <Badge
+                variant={
                   r.status === 'passed'
-                    ? 'success'
+                    ? 'default'
                     : r.status === 'failed' || r.status === 'error'
-                      ? 'error'
-                      : 'default'
+                      ? 'destructive'
+                      : 'secondary'
                 }
-                sx={{ height: 18, fontSize: '0.65rem' }}
-              />
+                style={{ height: 18, fontSize: '0.65rem' }}
+              >
+                {r.status}
+              </Badge>
               {typeof r.result?.log_excerpt === 'string' && (
-                <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                <span className="text-xs text-muted-foreground flex-1">
                   {(r.result.log_excerpt as string).slice(0, 140)}
-                </Typography>
+                </span>
               )}
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
-    </Paper>
+    </div>
   );
 }
