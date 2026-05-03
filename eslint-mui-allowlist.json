@@ -50,7 +50,6 @@
   "src/lib/sx.ts",
   "src/pages/AdminHotels.tsx",
   "src/pages/AdminQueerVillages.tsx",
-  "src/pages/AdminRedirects.tsx",
   "src/pages/CMSRoutePage.tsx",
   "src/pages/Donate.tsx",
   "src/pages/HelpHotlines.tsx",
