@@ -94,7 +94,6 @@
   "src/components/posts/PostCard.tsx",
   "src/components/profile/TravelPreferencesEditor.tsx",
   "src/components/profile/UrlValidator.tsx",
-  "src/components/profile/UserRelationshipActions.tsx",
   "src/components/profile/settings/BasicInfoTab.tsx",
   "src/components/search/SearchFeedbackButtons.tsx",
   "src/components/security/ContentSanitizer.tsx",
