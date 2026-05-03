@@ -3,7 +3,6 @@
   "src/components/admin/AutomationDashboard.tsx",
   "src/components/admin/NewsQualityReviewTab.tsx",
   "src/components/admin/WorkflowDashboard.tsx",
-  "src/components/admin/feedback/StoryDetailDrawer.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/components/booking/HotelBookingFlow.tsx",
   "src/components/cms/ContentListPanel/ContentListTable.tsx",

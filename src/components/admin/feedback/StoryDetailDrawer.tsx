@@ -1,20 +1,25 @@
 import { useState, useMemo } from 'react';
-import Drawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   X,
   Trash2,
@@ -157,431 +162,383 @@ export function StoryDetailDrawer({
   };
 
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      PaperProps={{ sx: { width: { xs: '100%', md: 600 } } }}
-    >
-      <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2, height: '100%', overflow: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="overline" color="text.secondary">
-            Story · {story.origin === 'ai_suggested' ? 'AI-suggested' : 'Manual'}
-          </Typography>
-          <IconButton size="small" onClick={onClose} aria-label="Close">
-            <X size={16} />
-          </IconButton>
-        </Box>
+    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0 overflow-y-auto">
+        <div className="p-5 flex flex-col gap-4 h-full overflow-auto">
+          <div className="flex items-center justify-between">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">
+              Story · {story.origin === 'ai_suggested' ? 'AI-suggested' : 'Manual'}
+            </span>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={onClose} aria-label="Close">
+              <X size={16} />
+            </Button>
+          </div>
 
-        <TextField
-          fullWidth
-          variant="standard"
-          value={titleDraft}
-          onChange={(e) => setTitleDraft(e.target.value)}
-          onBlur={() => {
-            if (titleDraft.trim() && titleDraft.trim() !== story.title) {
-              onRename(titleDraft.trim(), summaryDraft);
-            }
-          }}
-          InputProps={{ style: { fontWeight: 700, fontSize: '1.25rem' } }}
-        />
-
-        <TextField
-          fullWidth
-          multiline
-          minRows={2}
-          size="small"
-          placeholder="Summary (optional)"
-          value={summaryDraft}
-          onChange={(e) => setSummaryDraft(e.target.value)}
-          onBlur={() => {
-            if ((summaryDraft || '') !== (story.summary ?? '')) {
-              onRename(titleDraft.trim() || story.title, summaryDraft);
-            }
-          }}
-        />
-
-        {/* Narrative — brief title + "As a X, I want Y, so that Z." */}
-        {onSaveNarrative && (
-          <Box
-            sx={{
-              p: 1.5,
-              bgcolor: 'action.hover',
-              borderLeft: 3,
-              borderColor: 'hsl(var(--accent-warm))',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1,
+          <Input
+            value={titleDraft}
+            onChange={(e) => setTitleDraft(e.target.value)}
+            onBlur={() => {
+              if (titleDraft.trim() && titleDraft.trim() !== story.title) {
+                onRename(titleDraft.trim(), summaryDraft);
+              }
             }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                color: 'hsl(var(--accent-warm))',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              <Sparkles size={12} />
-              Story {story.narrative_edited ? '· edited' : ''}
-              <Box sx={{ flex: 1 }} />
-              {onRenarrate && (
-                <Button
-                  size="small"
-                  variant="text"
-                  disabled={renarrating}
-                  onClick={onRenarrate}
-                  sx={{ fontSize: '0.65rem', minWidth: 0, py: 0, px: 0.5 }}
-                >
-                  {renarrating ? 'Generating…' : story.narrative_edited ? 'Re-generate' : 'Refresh'}
-                </Button>
-              )}
-            </Box>
-            <TextField
-              fullWidth
-              size="small"
-              variant="standard"
-              placeholder="Brief title"
-              value={briefDraft}
-              onChange={(e) => setBriefDraft(e.target.value)}
-              onBlur={() => {
-                if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
-                  onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
-                }
-              }}
-              InputProps={{ style: { fontWeight: 600, fontSize: '0.85rem' } }}
-            />
-            <TextField
-              fullWidth
-              multiline
-              minRows={2}
-              size="small"
-              placeholder="As a [persona], I [want to …], so that [value]."
-              value={narrativeDraft}
-              onChange={(e) => setNarrativeDraft(e.target.value)}
-              onBlur={() => {
-                if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
-                  onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
-                }
-              }}
-              InputProps={{ style: { fontStyle: 'italic', fontSize: '0.8rem', lineHeight: 1.4 } }}
-            />
-          </Box>
-        )}
+            className="border-0 border-b rounded-none px-0 text-xl font-bold focus-visible:ring-0"
+          />
 
-        {/* Divergence warning — story wins on conflict, surface the fact */}
-        {divergence &&
-          (divergence.status_diff > 0 ||
-            divergence.priority_diff > 0 ||
-            divergence.assignee_diff > 0) && (
-            <Box
-              sx={{
-                p: 1.25,
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 1,
-                bgcolor: 'color-mix(in srgb, #f59e0b 10%, transparent)',
-                borderLeft: 3,
-                borderColor: '#f59e0b',
-              }}
+          <Textarea
+            placeholder="Summary (optional)"
+            value={summaryDraft}
+            onChange={(e) => setSummaryDraft(e.target.value)}
+            onBlur={() => {
+              if ((summaryDraft || '') !== (story.summary ?? '')) {
+                onRename(titleDraft.trim() || story.title, summaryDraft);
+              }
+            }}
+            rows={2}
+          />
+
+          {/* Narrative */}
+          {onSaveNarrative && (
+            <div
+              className="p-3 bg-muted flex flex-col gap-2"
+              style={{ borderLeft: '3px solid hsl(var(--accent-warm))' }}
             >
-              <AlertCircle size={14} color="#f59e0b" style={{ marginTop: 2, flexShrink: 0 }} />
-              <Typography variant="caption" sx={{ fontSize: '0.72rem', lineHeight: 1.45 }}>
-                {divergence.status_diff > 0 && (
-                  <>
-                    <strong>{divergence.status_diff}</strong> member
-                    {divergence.status_diff === 1 ? '' : 's'} differ on status
-                  </>
+              <div
+                className="flex items-center gap-2 text-[0.65rem] font-bold uppercase"
+                style={{ color: 'hsl(var(--accent-warm))', letterSpacing: 0.5 }}
+              >
+                <Sparkles size={12} />
+                Story {story.narrative_edited ? '· edited' : ''}
+                <div className="flex-1" />
+                {onRenarrate && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={renarrating}
+                    onClick={onRenarrate}
+                    className="h-auto py-0 px-1 text-[0.65rem]"
+                  >
+                    {renarrating ? 'Generating…' : story.narrative_edited ? 'Re-generate' : 'Refresh'}
+                  </Button>
                 )}
-                {divergence.priority_diff > 0 && (
-                  <>
-                    {divergence.status_diff > 0 && ', '}
-                    <strong>{divergence.priority_diff}</strong> on priority
-                  </>
-                )}
-                {divergence.assignee_diff > 0 && (
-                  <>
-                    {(divergence.status_diff > 0 || divergence.priority_diff > 0) && ', '}
-                    <strong>{divergence.assignee_diff}</strong> on assignee
-                  </>
-                )}
-                . Saving the story overrides member values.
-              </Typography>
-            </Box>
+              </div>
+              <Input
+                placeholder="Brief title"
+                value={briefDraft}
+                onChange={(e) => setBriefDraft(e.target.value)}
+                onBlur={() => {
+                  if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
+                    onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
+                  }
+                }}
+                className="border-0 border-b rounded-none px-0 text-sm font-semibold focus-visible:ring-0"
+              />
+              <Textarea
+                placeholder="As a [persona], I [want to …], so that [value]."
+                value={narrativeDraft}
+                onChange={(e) => setNarrativeDraft(e.target.value)}
+                onBlur={() => {
+                  if (briefDraft !== (story.brief_title ?? '') || narrativeDraft !== (story.narrative ?? '')) {
+                    onSaveNarrative(briefDraft.trim(), narrativeDraft.trim());
+                  }
+                }}
+                rows={2}
+                className="italic text-xs leading-snug"
+              />
+            </div>
           )}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Select
-            size="small"
-            value={story.status}
-            onChange={(e) => handleStatusSelect(e.target.value as StoryStatus)}
-            sx={{ minWidth: 140 }}
-          >
-            {storyColumns.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.label}
-              </MenuItem>
-            ))}
-            <MenuItem value="archived">Archived</MenuItem>
-          </Select>
-          <Select
-            size="small"
-            value={story.priority}
-            onChange={(e) => onPriorityChange(Number(e.target.value))}
-            sx={{ minWidth: 140 }}
-          >
-            {priorities.map((p) => (
-              <MenuItem key={p.value} value={p.value}>
-                <Box sx={{ width: 8, height: 8, bgcolor: p.color, borderRadius: '50%', mr: 1, display: 'inline-block' }} />
-                {p.short} · {p.label}
-              </MenuItem>
-            ))}
-          </Select>
-          <Select
-            size="small"
-            value={story.assignee_id ?? ''}
-            displayEmpty
-            onChange={(e) => onAssign(e.target.value ? String(e.target.value) : null)}
-            sx={{ minWidth: 160 }}
-          >
-            <MenuItem value="">Unassigned</MenuItem>
-            {admins.map((a) => (
-              <MenuItem key={a.user_id} value={a.user_id}>
-                {a.display_name ?? a.user_id.slice(0, 8)}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
-
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Labels
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
-            {story.labels.map((l) => (
-              <Chip
-                key={l}
-                size="small"
-                label={l}
-                onDelete={() => onRemoveLabel(l)}
-                sx={{ height: 20, fontSize: '0.7rem' }}
-              />
-            ))}
-            <TextField
-              size="small"
-              placeholder="add label"
-              value={labelInput}
-              onChange={(e) => setLabelInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && labelInput.trim()) {
-                  onAddLabel(labelInput.trim());
-                  setLabelInput('');
-                }
-              }}
-              sx={{ width: 120 }}
-            />
-          </Box>
-        </Box>
-
-        <RoutineLoopSection
-          story={story}
-          feedbackMembers={feedbackMembers}
-          errorMembers={errorMembers}
-          memberCount={members.length}
-        />
-
-        <StoryActivityLog storyId={story.id} adminById={adminById} />
-
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Members ({members.length})
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {feedbackMembers.map((item) => (
-              <Paper
-                key={item.id}
-                elevation={0}
-                sx={{
-                  p: 1.25,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'start',
-                  gap: 1,
+          {/* Divergence */}
+          {divergence &&
+            (divergence.status_diff > 0 ||
+              divergence.priority_diff > 0 ||
+              divergence.assignee_diff > 0) && (
+              <div
+                className="p-2.5 flex items-start gap-2"
+                style={{
+                  backgroundColor: 'color-mix(in srgb, #f59e0b 10%, transparent)',
+                  borderLeft: '3px solid #f59e0b',
                 }}
               >
-                <MessageSquare size={14} style={{ marginTop: 2 }} />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {item.data.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    {item.feedback_status} · {item.data.category}
-                  </Typography>
-                </Box>
-                {handoffMode === 'per_item' && (
-                  <IconButton
-                    size="small"
-                    onClick={() => handlePerItemCopy(item.id, 'feedback')}
-                    aria-label="Copy prompt"
-                  >
-                    <Copy size={14} />
-                  </IconButton>
-                )}
-                <IconButton
-                  size="small"
-                  onClick={() => onOpenMember(item.id, 'feedback')}
-                  aria-label="Open item"
-                >
-                  <ExternalLink size={14} />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => onRemoveMember(item.id)}
-                  aria-label="Remove from story"
-                >
-                  <Trash2 size={14} />
-                </IconButton>
-              </Paper>
-            ))}
-            {errorMembers.map((item) => (
-              <Paper
-                key={item.id}
-                elevation={0}
-                sx={{
-                  p: 1.25,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'start',
-                  gap: 1,
-                }}
-              >
-                <AlertTriangle size={14} style={{ marginTop: 2 }} />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {item.data.function_name}: {item.data.message}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    {item.data.service} · {item.occurrence_count} occurrences
-                  </Typography>
-                </Box>
-                {handoffMode === 'per_item' && (
-                  <IconButton
-                    size="small"
-                    onClick={() => handlePerItemCopy(item.id, 'api_error')}
-                    aria-label="Copy prompt"
-                  >
-                    <Copy size={14} />
-                  </IconButton>
-                )}
-                <IconButton
-                  size="small"
-                  onClick={() => onOpenMember(item.id, 'api_error')}
-                  aria-label="Open item"
-                >
-                  <ExternalLink size={14} />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => onRemoveMember(item.id)}
-                  aria-label="Remove from story"
-                >
-                  <Trash2 size={14} />
-                </IconButton>
-              </Paper>
-            ))}
-            {openItems > 0 && (
-              <Typography variant="caption" color="text.secondary">
-                {openItems} member(s) not loaded on this tab.
-              </Typography>
+                <AlertCircle size={14} color="#f59e0b" style={{ marginTop: 2, flexShrink: 0 }} />
+                <span className="text-[0.72rem] leading-snug">
+                  {divergence.status_diff > 0 && (
+                    <>
+                      <strong>{divergence.status_diff}</strong> member
+                      {divergence.status_diff === 1 ? '' : 's'} differ on status
+                    </>
+                  )}
+                  {divergence.priority_diff > 0 && (
+                    <>
+                      {divergence.status_diff > 0 && ', '}
+                      <strong>{divergence.priority_diff}</strong> on priority
+                    </>
+                  )}
+                  {divergence.assignee_diff > 0 && (
+                    <>
+                      {(divergence.status_diff > 0 || divergence.priority_diff > 0) && ', '}
+                      <strong>{divergence.assignee_diff}</strong> on assignee
+                    </>
+                  )}
+                  . Saving the story overrides member values.
+                </span>
+              </div>
             )}
-          </Box>
-        </Box>
 
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Handoff to Claude / GitHub
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Button
-              size="small"
-              variant={handoffMode === 'combined' ? 'contained' : 'outlined'}
-              onClick={() => setHandoffMode('combined')}
-              sx={{ textTransform: 'none' }}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={story.status} onValueChange={(v) => handleStatusSelect(v as StoryStatus)}>
+              <SelectTrigger className="min-w-[140px] w-[140px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {storyColumns.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={String(story.priority)}
+              onValueChange={(v) => onPriorityChange(Number(v))}
             >
-              Combined prompt
-            </Button>
-            <Button
-              size="small"
-              variant={handoffMode === 'per_item' ? 'contained' : 'outlined'}
-              onClick={() => setHandoffMode('per_item')}
-              sx={{ textTransform: 'none' }}
+              <SelectTrigger className="min-w-[140px] w-[140px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {priorities.map((p) => (
+                  <SelectItem key={p.value} value={String(p.value)}>
+                    <span className="inline-flex items-center">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full mr-2"
+                        style={{ backgroundColor: p.color }}
+                      />
+                      {p.short} · {p.label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={story.assignee_id ?? 'unassigned'}
+              onValueChange={(v) => onAssign(v === 'unassigned' ? null : v)}
             >
-              Per-item
-            </Button>
-          </Box>
-          {handoffMode === 'combined' ? (
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<Copy size={14} />}
-              onClick={handleCombinedCopy}
-              sx={{ textTransform: 'none' }}
-            >
-              Copy combined prompt
-            </Button>
-          ) : (
-            <Typography variant="caption" color="text.secondary">
-              Use the copy icon on each member above.
-            </Typography>
-          )}
-          {handoffStatus && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              {handoffStatus}
-            </Typography>
-          )}
-        </Box>
+              <SelectTrigger className="min-w-[160px] w-[160px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {admins.map((a) => (
+                  <SelectItem key={a.user_id} value={a.user_id}>
+                    {a.display_name ?? a.user_id.slice(0, 8)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Box sx={{ mt: 'auto', display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Chip
-            size="small"
-            label={prio.short}
-            sx={{ bgcolor: prio.color, color: 'white' }}
-          />
-          {assignee && (
-            <Chip size="small" label={assignee.display_name ?? 'assigned'} />
-          )}
-        </Box>
-      </Box>
-
-      <Dialog open={resolveModalOpen} onClose={() => setResolveModalOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Resolve story</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Mark "{story.title}" as resolved?
-          </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={resolveCloseItems}
-                onChange={(_, v) => setResolveCloseItems(v)}
+          <div>
+            <p className="text-xs text-muted-foreground">Labels</p>
+            <div className="flex gap-1 flex-wrap mt-1 items-center">
+              {story.labels.map((l) => (
+                <Badge
+                  key={l}
+                  variant="secondary"
+                  className="h-5 text-[0.7rem] gap-1 cursor-pointer"
+                  onClick={() => onRemoveLabel(l)}
+                >
+                  {l}
+                  <X size={10} />
+                </Badge>
+              ))}
+              <Input
+                placeholder="add label"
+                value={labelInput}
+                onChange={(e) => setLabelInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && labelInput.trim()) {
+                    onAddLabel(labelInput.trim());
+                    setLabelInput('');
+                  }
+                }}
+                className="w-[120px] h-7"
               />
-            }
-            label={`Also mark ${members.length} linked item${members.length === 1 ? '' : 's'} as done`}
+            </div>
+          </div>
+
+          <RoutineLoopSection
+            story={story}
+            feedbackMembers={feedbackMembers}
+            errorMembers={errorMembers}
+            memberCount={members.length}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setResolveModalOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleResolveConfirm}>
-            Resolve
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Drawer>
+
+          <StoryActivityLog storyId={story.id} adminById={adminById} />
+
+          <div>
+            <p className="text-sm font-semibold mb-2">Members ({members.length})</p>
+            <div className="flex flex-col gap-2">
+              {feedbackMembers.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-2.5 border border-border flex items-start gap-2 rounded"
+                >
+                  <MessageSquare size={14} style={{ marginTop: 2 }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{item.data.title}</p>
+                    <span className="text-xs text-muted-foreground block">
+                      {item.feedback_status} · {item.data.category}
+                    </span>
+                  </div>
+                  {handoffMode === 'per_item' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => handlePerItemCopy(item.id, 'feedback')}
+                      aria-label="Copy prompt"
+                    >
+                      <Copy size={14} />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => onOpenMember(item.id, 'feedback')}
+                    aria-label="Open item"
+                  >
+                    <ExternalLink size={14} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => onRemoveMember(item.id)}
+                    aria-label="Remove from story"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              ))}
+              {errorMembers.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-2.5 border border-border flex items-start gap-2 rounded"
+                >
+                  <AlertTriangle size={14} style={{ marginTop: 2 }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">
+                      {item.data.function_name}: {item.data.message}
+                    </p>
+                    <span className="text-xs text-muted-foreground block">
+                      {item.data.service} · {item.occurrence_count} occurrences
+                    </span>
+                  </div>
+                  {handoffMode === 'per_item' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => handlePerItemCopy(item.id, 'api_error')}
+                      aria-label="Copy prompt"
+                    >
+                      <Copy size={14} />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => onOpenMember(item.id, 'api_error')}
+                    aria-label="Open item"
+                  >
+                    <ExternalLink size={14} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={() => onRemoveMember(item.id)}
+                    aria-label="Remove from story"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              ))}
+              {openItems > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {openItems} member(s) not loaded on this tab.
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold mb-2">Handoff to Claude / GitHub</p>
+            <div className="flex items-center gap-2 mb-2">
+              <Button
+                size="sm"
+                variant={handoffMode === 'combined' ? 'default' : 'outline'}
+                onClick={() => setHandoffMode('combined')}
+              >
+                Combined prompt
+              </Button>
+              <Button
+                size="sm"
+                variant={handoffMode === 'per_item' ? 'default' : 'outline'}
+                onClick={() => setHandoffMode('per_item')}
+              >
+                Per-item
+              </Button>
+            </div>
+            {handoffMode === 'combined' ? (
+              <Button size="sm" onClick={handleCombinedCopy}>
+                <Copy size={14} />
+                Copy combined prompt
+              </Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                Use the copy icon on each member above.
+              </span>
+            )}
+            {handoffStatus && (
+              <span className="text-xs text-muted-foreground block mt-1">{handoffStatus}</span>
+            )}
+          </div>
+
+          <div className="mt-auto flex gap-2 items-center flex-wrap">
+            <Badge style={{ backgroundColor: prio.color, color: 'white' }}>{prio.short}</Badge>
+            {assignee && <Badge variant="secondary">{assignee.display_name ?? 'assigned'}</Badge>}
+          </div>
+        </div>
+
+        <Dialog open={resolveModalOpen} onOpenChange={(o) => !o && setResolveModalOpen(false)}>
+          <DialogContent className="max-w-xs">
+            <DialogHeader>
+              <DialogTitle>Resolve story</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm mb-2">Mark "{story.title}" as resolved?</p>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="resolve-close-items"
+                checked={resolveCloseItems}
+                onCheckedChange={setResolveCloseItems}
+              />
+              <Label htmlFor="resolve-close-items">
+                {`Also mark ${members.length} linked item${members.length === 1 ? '' : 's'} as done`}
+              </Label>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setResolveModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleResolveConfirm}>Resolve</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
