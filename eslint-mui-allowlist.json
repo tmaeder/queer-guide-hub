@@ -7,7 +7,6 @@
   "src/components/country/LGBTJurisdictionInfo.tsx",
   "src/components/home/LatestNewsSlider.tsx",
   "src/components/home/RegionalEventsCalendar.tsx",
-  "src/components/trips/AddToTripMenuItem.tsx",
   "src/components/trips/ReservationsTab.tsx",
   "src/components/ui/country-autocomplete.tsx",
   "src/lib/sx.ts",
