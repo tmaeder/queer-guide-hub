@@ -19,9 +19,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useVenueCheckins } from '@/hooks/useVenueCheckins';
 import { useAuth } from '@/hooks/useAuth';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 
 interface VenueCheckInButtonProps {
   venueId: string;
@@ -79,32 +76,32 @@ export function VenueCheckInButton({
             Privacy-Protected Check-In
           </DialogTitle>
         </DialogHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Paper sx={{ p: 2, bgcolor: 'action.hover', border: 1, borderColor: 'divider' }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <div className="flex flex-col gap-6">
+          <div className="p-4 bg-accent border border-border rounded">
+            <div className="flex items-start gap-3">
               <Shield style={{ width: 20, height: 20, marginTop: 2 }} />
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-medium">
                   Enhanced Privacy Protection
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
+                </p>
+                <p className="text-xs text-muted-foreground">
                   Your location is automatically anonymized after 24 hours. Choose your privacy
                   settings below.
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
               <Label htmlFor="public-check-in" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
                 Make check-in visible to others
               </Label>
               <Switch id="public-check-in" checked={isPublic} onCheckedChange={setIsPublic} />
-            </Box>
+            </div>
 
             {isPublic && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className="flex flex-col gap-2">
                 <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Location visibility</Label>
                 <Select
                   value={locationVisibility}
@@ -121,18 +118,18 @@ export function VenueCheckInButton({
                     <SelectItem value="public">Public (Very approximate)</SelectItem>
                   </SelectContent>
                 </Select>
-                <Typography variant="caption" color="text.secondary">
+                <p className="text-xs text-muted-foreground">
                   {locationVisibility === 'friends'
                     ? 'Friends see your location within ~100m accuracy'
                     : locationVisibility === 'public'
                       ? 'Public users see your location within ~1km accuracy'
                       : 'Only you can see your exact location'}
-                </Typography>
-              </Box>
+                </p>
+              </div>
             )}
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={() => setShowPrivacyDialog(false)}
@@ -152,8 +149,8 @@ export function VenueCheckInButton({
               )}
               {loading ? 'Checking in...' : 'Check In'}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
