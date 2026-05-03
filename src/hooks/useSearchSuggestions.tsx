@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
 import type { SearchHit } from '@/lib/searchClient';
+import { searchFetch, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE } from '@/lib/searchFetch';
 
-const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
+const MIN_QUERY_LEN = 2;
 
 export interface SearchSuggestion {
   id: string;
@@ -34,34 +35,26 @@ const TYPE_ICONS: Record<string, React.ComponentType> = {
 export function useSearchSuggestions(query: string) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchSuggestions = useCallback(async (searchTerm: string) => {
-    if (!searchTerm || searchTerm.length < 2) {
+    if (!searchTerm || searchTerm.length < MIN_QUERY_LEN) {
       setSuggestions([]);
+      setError(null);
       return;
     }
 
     setLoading(true);
+    setError(null);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      const data = await searchFetch<{ hits?: SearchHit[]; suggestions?: SearchHit[] }>(
+        '/',
+        { query: searchTerm, hitsPerPage: 8 },
+        { timeoutMs: 5000 },
+      );
 
-      const res = await fetch(SEARCH_PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: searchTerm,
-          hitsPerPage: 8,
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeout);
-
-      if (!res.ok) throw new Error(`Search failed: ${res.status}`);
-      const data = await res.json();
-
-      const mapped: SearchSuggestion[] = (data.suggestions || []).map((hit: SearchHit) => ({
+      const source = data.suggestions ?? data.hits ?? [];
+      const mapped: SearchSuggestion[] = source.map((hit: SearchHit) => ({
         id: hit.id || hit.objectID || '',
         name: hit.title || hit.name || '',
         type: hit.type as SearchSuggestion['type'],
@@ -74,9 +67,12 @@ export function useSearchSuggestions(query: string) {
       }));
 
       setSuggestions(mapped);
-    } catch (error) {
-      console.error('Error fetching suggestions:', error);
+    } catch (err) {
+      console.error('Error fetching suggestions:', err);
       setSuggestions([]);
+      // Surface the unavailable state so the search popover can render an
+      // error row instead of silent emptiness (bug #2 / #22).
+      if (isSearchUnavailable(err)) setError(SEARCH_UNAVAILABLE_MESSAGE);
     } finally {
       setLoading(false);
     }
@@ -90,5 +86,5 @@ export function useSearchSuggestions(query: string) {
     return () => clearTimeout(timer);
   }, [query, fetchSuggestions]);
 
-  return { suggestions, loading };
+  return { suggestions, loading, error };
 }

@@ -1,9 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "./useDebounce";
+import {
+  searchFetch,
+  SearchFetchException,
+  SEARCH_UNAVAILABLE_MESSAGE,
+  isSearchUnavailable,
+} from "@/lib/searchFetch";
 
-const SEARCH_PROXY_URL = import.meta.env.VITE_SEARCH_PROXY_URL || 'https://search.queer.guide';
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 1000;
+// Mirror the worker's MIN_QUERY_LEN — anything shorter is rejected server-side
+// with 400, so we short-circuit it client-side too (bug #8).
+const MIN_QUERY_LEN = 2;
 
 export interface SearchResult {
   objectID: string;
@@ -37,44 +43,26 @@ export interface FacetDistribution {
   [facet: string]: Record<string, number>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function searchWithRetry(body: Record<string, unknown>): Promise<any> {
-  let lastError: unknown;
+export type SearchErrorKind = 'unavailable' | 'client_error' | null;
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
-
-      const res = await fetch(SEARCH_PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeout);
-
-      if (!res.ok) throw new Error(`Search failed: ${res.status}`);
-      return await res.json();
-    } catch (err) {
-      lastError = err;
-      if (attempt < MAX_RETRIES - 1) {
-        await new Promise(r => setTimeout(r, RETRY_DELAY_MS * Math.pow(2, attempt)));
-      }
-    }
-  }
-
-  throw lastError;
+interface SearchResponse {
+  hits?: SearchResult[];
+  suggestions?: SearchResult[];
+  facetDistribution?: FacetDistribution;
+  totalHits?: number;
+  page?: number;
+  hitsPerPage?: number;
 }
 
-export const useSearch = (query: string, filters: SearchFilters = {}) => {
+export const useSearch = (query: string, filters: SearchFilters = {}, page = 0) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const [facets, setFacets] = useState<FacetDistribution>({});
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<SearchErrorKind>(null);
+  const [totalHits, setTotalHits] = useState(0);
 
   useEffect(() => {
     if (!loading) {
@@ -94,33 +82,48 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtersKey]);
 
-  const performSearch = async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
+  const performSearch = async (searchQuery: string, searchPage = 0) => {
+    if (searchQuery.trim().length < MIN_QUERY_LEN) {
       setResults([]);
       setSuggestions([]);
       setFacets({});
+      setError(null);
+      setErrorKind(null);
       return;
     }
 
     setLoading(true);
     setLoadingTimedOut(false);
     setError(null);
+    setErrorKind(null);
     try {
-      const data = await searchWithRetry({
+      const data = await searchFetch<SearchResponse>('/', {
         query: searchQuery,
         filters: filtersRef.current,
         hitsPerPage: 20,
+        page: searchPage,
       });
 
       setResults(data?.hits || []);
       setSuggestions(data?.suggestions || []);
       setFacets(data?.facetDistribution || {});
+      setTotalHits(data?.totalHits ?? data?.hits?.length ?? 0);
     } catch (err) {
       console.error('Search error:', err);
       setResults([]);
       setSuggestions([]);
       setFacets({});
-      setError(err instanceof Error ? err.message : 'Search failed');
+      setTotalHits(0);
+      if (isSearchUnavailable(err)) {
+        setError(SEARCH_UNAVAILABLE_MESSAGE);
+        setErrorKind('unavailable');
+      } else if (err instanceof SearchFetchException) {
+        setError(err.message);
+        setErrorKind('client_error');
+      } else {
+        setError(SEARCH_UNAVAILABLE_MESSAGE);
+        setErrorKind('unavailable');
+      }
     } finally {
       setLoading(false);
     }
@@ -128,21 +131,25 @@ export const useSearch = (query: string, filters: SearchFilters = {}) => {
 
   useEffect(() => {
     if (debouncedQuery) {
-      performSearch(debouncedQuery);
+      performSearch(debouncedQuery, page);
     } else {
       setResults([]);
       setSuggestions([]);
       setFacets({});
+      setTotalHits(0);
     }
-  }, [debouncedQuery, filtersKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQuery, filtersKey, page]);
 
   return {
     results,
     suggestions,
     facets,
+    totalHits,
     loading,
     loadingTimedOut,
     error,
+    errorKind,
     performSearch,
   };
 };
