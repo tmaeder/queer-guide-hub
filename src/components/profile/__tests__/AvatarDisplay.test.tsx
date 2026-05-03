@@ -15,11 +15,10 @@ describe('AvatarDisplay', () => {
     expect(document.querySelector('svg')).not.toBeNull();
   });
 
-  it('should render avatar image when avatarUrl provided', () => {
+  it('should render avatar image when avatarUrl provided', async () => {
     render(<AvatarDisplay avatarUrl="https://example.com/avatar.jpg" />);
-    const img = document.querySelector('img');
-    expect(img).not.toBeNull();
-    expect(img?.getAttribute('src')).toBe('https://example.com/avatar.jpg');
+    const img = await screen.findByAltText('User avatar');
+    expect(img.getAttribute('src')).toBe('https://example.com/avatar.jpg');
   });
 
   it('should render BigHead when avatarConfig provided', () => {
@@ -28,11 +27,10 @@ describe('AvatarDisplay', () => {
     expect(screen.getByTestId('bighead-avatar')).toBeInTheDocument();
   });
 
-  it('should render initials avatar when email provided', () => {
+  it('should render initials avatar when email provided', async () => {
     render(<AvatarDisplay email="test@example.com" />);
-    const img = document.querySelector('img');
-    expect(img).not.toBeNull();
-    expect(img?.getAttribute('src')).toContain('data:image/svg+xml');
+    const img = await screen.findByAltText('User avatar');
+    expect(img.getAttribute('src')).toContain('data:image/svg+xml');
   });
 
   it('should prioritize avatarUrl over avatarConfig', () => {

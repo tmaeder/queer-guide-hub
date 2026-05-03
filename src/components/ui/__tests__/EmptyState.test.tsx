@@ -42,8 +42,7 @@ describe('EmptyState', () => {
     expect(screen.getByTestId('empty-state-active-filters')).toBeInTheDocument();
     expect(screen.getByText('Category: News')).toBeInTheDocument();
     expect(screen.getByText('Search: pride')).toBeInTheDocument();
-    const deleteButtons = screen.getAllByTestId('CancelIcon');
-    fireEvent.click(deleteButtons[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Category: News' }));
     expect(removeA).toHaveBeenCalledTimes(1);
   });
 

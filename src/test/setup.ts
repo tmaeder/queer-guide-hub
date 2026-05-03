@@ -39,6 +39,31 @@ if (typeof window.IntersectionObserver === 'undefined') {
   } as unknown as typeof IntersectionObserver;
 }
 
+// jsdom doesn't implement Element.prototype.hasPointerCapture — Radix uses it.
+if (typeof Element !== 'undefined' && !Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = () => false;
+  Element.prototype.setPointerCapture = () => {};
+  Element.prototype.releasePointerCapture = () => {};
+}
+
+// jsdom doesn't implement scrollIntoView — Radix uses it.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
+
+// jsdom never fires Image load events — Radix Avatar relies on it to render <img>.
+if (typeof window !== 'undefined' && typeof window.Image !== 'undefined') {
+  Object.defineProperty(window.Image.prototype, 'src', {
+    set(value: string) {
+      this.setAttribute('src', value);
+      setTimeout(() => this.dispatchEvent(new Event('load')), 0);
+    },
+    get() {
+      return this.getAttribute('src') ?? '';
+    },
+  });
+}
+
 // ResizeObserver — used by some MUI + shadcn components.
 if (typeof window.ResizeObserver === 'undefined') {
   window.ResizeObserver = class ResizeObserver {
