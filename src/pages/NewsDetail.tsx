@@ -32,9 +32,7 @@ import {
 } from '@/hooks/usePageFetchers';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { formatDistanceToNow, format } from 'date-fns';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 interface NewsArticle {
   id: string;
@@ -64,6 +62,7 @@ interface DbCategory {
 
 interface RelatedArticle {
   id: string;
+  slug?: string | null;
   title: string;
   excerpt: string | null;
   image_url: string | null;
@@ -186,54 +185,44 @@ export default function NewsDetail() {
   // Loading skeleton matching 2-column grid pattern
   if (loading) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Box
-          sx={{
-            '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.5 } },
-            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          }}
-        >
-          <Box sx={{ height: 24, bgcolor: 'action.hover', borderRadius: 1, width: '40%', mb: 2 }} />
-          <Box sx={{ height: 192, bgcolor: 'action.hover', borderRadius: 3, mb: 3 }} />
-          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '60%', mb: 2 }} />
-          <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+      <div className="container mx-auto py-8 px-4">
+        <div className="animate-pulse">
+          <div className="h-6 bg-muted rounded w-2/5 mb-4" />
+          <div className="h-48 bg-muted rounded-2xl mb-6" />
+          <div className="h-8 bg-muted rounded w-3/5 mb-4" />
+          <div className="flex gap-2 mb-6">
             {[1, 2, 3].map((i) => (
-              <Box
-                key={i}
-                sx={{ height: 28, width: 80, bgcolor: 'action.hover', borderRadius: 4 }}
-              />
+              <div key={i} className="h-7 w-20 bg-muted rounded-2xl" />
             ))}
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 2 }} />
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ height: 160, bgcolor: 'action.hover', borderRadius: 2 }} />
-              <Box sx={{ height: 120, bgcolor: 'action.hover', borderRadius: 2 }} />
-            </Box>
-          </Box>
-        </Box>
-      </Container>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
+            <div className="flex flex-col gap-6">
+              <div className="h-64 bg-muted rounded-lg" />
+            </div>
+            <div className="flex flex-col gap-6">
+              <div className="h-40 bg-muted rounded-lg" />
+              <div className="h-32 bg-muted rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (!article) {
     return (
-      <Container sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Article Not Found
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 3 }}>
+      <div className="container mx-auto py-8 px-4 text-center">
+        <h5 className="text-xl font-bold mb-4">Article Not Found</h5>
+        <p className="text-muted-foreground mb-6">
           The article you're looking for doesn't exist.
-        </Typography>
+        </p>
         <LocalizedLink to="/news">
           <Button>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to News
           </Button>
         </LocalizedLink>
-      </Container>
+      </div>
     );
   }
 
@@ -249,9 +238,9 @@ export default function NewsDetail() {
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
-    <Container sx={{ py: 4 }}>
+    <div className="container mx-auto py-8 px-4">
       {/* Breadcrumb */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}>
+      <div className="flex items-center gap-1 mb-4 flex-wrap">
         <LocalizedLink
           to="/news"
           style={{
@@ -262,136 +251,88 @@ export default function NewsDetail() {
           }}
         >
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ '&:hover': { color: 'primary.main' } }}
-          >
-            News
-          </Typography>
+          <span className="text-sm text-muted-foreground hover:text-primary">News</span>
         </LocalizedLink>
         {article.category && article.category !== 'general' && (
           <>
             <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                cursor: 'pointer',
-                textTransform: 'capitalize',
-                '&:hover': { color: 'primary.main' },
-              }}
+            <button
+              type="button"
+              className="text-sm text-muted-foreground capitalize hover:text-primary cursor-pointer bg-transparent border-0 p-0"
               onClick={() => navigate(`/news?category=${article.category}`)}
             >
               {getCategoryLabel(article.category)}
-            </Typography>
+            </button>
           </>
         )}
         <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 500,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            maxWidth: 300,
-          }}
-        >
+        <span className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap max-w-[300px]">
           {decodeHtmlEntities(article.title)}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* Hero image */}
       {article.image_url && (
-        <Box
-          sx={{
-            width: '100%',
-            height: { xs: 160, md: 240 },
-            borderRadius: 3,
-            overflow: 'hidden',
-            mb: 3,
-          }}
-        >
-          <Box
-            component="img"
+        <div className="w-full h-40 md:h-60 rounded-2xl overflow-hidden mb-6">
+          <img
             src={article.image_url}
             alt={decodeHtmlEntities(article.title)}
             referrerPolicy="no-referrer"
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-        </Box>
+        </div>
       )}
 
       {/* Title Row */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { md: 'flex-start' },
-          justifyContent: { md: 'space-between' },
-          gap: 2,
-          mb: 2,
-        }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
-            <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <h4 className="text-2xl font-bold leading-tight">
               {decodeHtmlEntities(article.title)}
-            </Typography>
+            </h4>
             {article.is_featured && (
               <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
             )}
-          </Box>
+          </div>
 
           {/* Meta row */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              color: 'text.secondary',
-              flexWrap: 'wrap',
-            }}
-          >
+          <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
             {authorName && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <div className="flex items-center gap-1">
                 <User style={{ width: 14, height: 14 }} />
-                <Typography variant="body2">By {authorName}</Typography>
-              </Box>
+                <span className="text-sm">By {authorName}</span>
+              </div>
             )}
             {article.published_at && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <div className="flex items-center gap-1">
                 <Calendar style={{ width: 14, height: 14 }} />
-                <Typography variant="body2">
+                <span className="text-sm">
                   {format(new Date(article.published_at), 'MMMM d, yyyy')}
-                </Typography>
-              </Box>
+                </span>
+              </div>
             )}
             {article.published_at && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <div className="flex items-center gap-1">
                 <Clock style={{ width: 14, height: 14 }} />
-                <Typography variant="body2">
+                <span className="text-sm">
                   {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-                </Typography>
-              </Box>
+                </span>
+              </div>
             )}
             {article.views_count > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <div className="flex items-center gap-1">
                 <Eye style={{ width: 14, height: 14 }} />
-                <Typography variant="body2">{article.views_count} views</Typography>
-              </Box>
+                <span className="text-sm">{article.views_count} views</span>
+              </div>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Action buttons */}
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0, flexWrap: 'wrap' }}
-        >
+        <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
           <FavoriteButton itemId={article.id} type="news" />
           <ReportButton contentType="news_article" contentId={article.id} />
           <Button variant="outline" size="sm" onClick={handleShare}>
@@ -402,11 +343,11 @@ export default function NewsDetail() {
             <ExternalLink style={{ width: 16, height: 16, marginRight: 6 }} />
             Read Full Article
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Category & Source badges */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
         {article.category && article.category !== 'general' && (
           <Badge
             style={{
@@ -419,12 +360,12 @@ export default function NewsDetail() {
           </Badge>
         )}
         {sourceName && <Badge variant="outline">{sourceName}</Badge>}
-      </Box>
+      </div>
 
       {/* 2-Column Layout */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 4 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
         {/* Main Content */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {/* Article Content Card */}
           <Card>
             <CardHeader>
@@ -432,42 +373,38 @@ export default function NewsDetail() {
             </CardHeader>
             <CardContent>
               {contentText ? (
-                <Typography color="text.secondary" sx={{ lineHeight: 1.8, whiteSpace: 'pre-line' }}>
+                <p className="text-muted-foreground whitespace-pre-line" style={{ lineHeight: 1.8 }}>
                   {contentText}
-                </Typography>
+                </p>
               ) : excerptText ? (
-                <Box>
-                  <Typography color="text.secondary" sx={{ lineHeight: 1.8, mb: 2 }}>
+                <div>
+                  <p className="text-muted-foreground mb-4" style={{ lineHeight: 1.8 }}>
                     {excerptText}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  </p>
+                  <p className="text-sm text-muted-foreground italic">
                     To read the full article, click "Read Full Article" above.
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
               ) : (
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                <p className="text-sm text-muted-foreground italic">
                   This article is available on the original source. Click "Read Full Article" to
                   read it.
-                </Typography>
+                </p>
               )}
             </CardContent>
           </Card>
 
           {/* Read Full Article CTA Card */}
           <Card>
-            <CardContent
-
-            >
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Read the full article
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+            <CardContent>
+              <div>
+                <p className="text-base font-semibold">Read the full article</p>
+                <p className="text-sm text-muted-foreground">
                   {sourceName
                     ? `Originally published on ${sourceName}`
                     : 'View on the original source'}
-                </Typography>
-              </Box>
+                </p>
+              </div>
               <Button
                 onClick={() => window.open(article.url, '_blank')}
                 style={{ display: 'flex', alignItems: 'center', gap: 8 }}
@@ -485,74 +422,55 @@ export default function NewsDetail() {
                 <CardTitle>{t('pages.newsDetail.relatedArticles', 'Related Articles')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                    gap: 2,
-                  }}
-                >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {relatedArticles.map((related) => (
-                    <Box
+                    <LocalizedLink
                       key={related.id}
-                      component={LocalizedLink}
                       to={`/news/${related.slug || related.id}`}
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        transition: 'all 0.2s',
-                        '&:hover': { bgcolor: 'action.hover' },
-                      }}
+                      className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted"
                     >
                       {related.image_url && (
-                        <Box sx={{ overflow: 'hidden' }}>
-                          <Box
-                            component="img"
+                        <div className="overflow-hidden">
+                          <img
                             src={related.image_url}
                             alt={decodeHtmlEntities(related.title)}
-                            sx={{ width: '100%', height: 120, objectFit: 'cover' }}
+                            className="w-full object-cover"
+                            style={{ height: 120 }}
                             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
-                        </Box>
+                        </div>
                       )}
-                      <Box sx={{ p: 1.5 }}>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            fontWeight: 600,
-                            mb: 0.5,
+                      <div className="p-3">
+                        <p
+                          className="text-sm font-semibold mb-1 overflow-hidden"
+                          style={{
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
                           }}
                         >
                           {decodeHtmlEntities(related.title)}
-                        </Typography>
+                        </p>
                         {related.published_at && (
-                          <Typography variant="caption" color="text.secondary">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(related.published_at), {
                               addSuffix: true,
                             })}
-                          </Typography>
+                          </span>
                         )}
-                      </Box>
-                    </Box>
+                      </div>
+                    </LocalizedLink>
                   ))}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
-        </Box>
+        </div>
 
         {/* Sidebar */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {/* Article Info Card */}
           <Card>
             <CardHeader>
@@ -560,50 +478,42 @@ export default function NewsDetail() {
             </CardHeader>
             <CardContent>
               {article.published_at && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <div className="flex items-center gap-3">
                   <Calendar style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                      Published
-                    </Typography>
-                    <Typography sx={{ fontWeight: 500 }}>
+                    <p className="text-sm text-muted-foreground">Published</p>
+                    <p className="font-medium">
                       {format(new Date(article.published_at), 'MMMM d, yyyy')}
-                    </Typography>
+                    </p>
                   </div>
-                </Box>
+                </div>
               )}
               {authorName && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <div className="flex items-center gap-3">
                   <User style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                      Author
-                    </Typography>
-                    <Typography sx={{ fontWeight: 500 }}>{authorName}</Typography>
+                    <p className="text-sm text-muted-foreground">Author</p>
+                    <p className="font-medium">{authorName}</p>
                   </div>
-                </Box>
+                </div>
               )}
               {sourceName && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <div className="flex items-center gap-3">
                   <Newspaper style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                      Source
-                    </Typography>
-                    <Typography sx={{ fontWeight: 500 }}>{sourceName}</Typography>
+                    <p className="text-sm text-muted-foreground">Source</p>
+                    <p className="font-medium">{sourceName}</p>
                   </div>
-                </Box>
+                </div>
               )}
               {article.views_count > 0 && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <div className="flex items-center gap-3">
                   <Eye style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div>
-                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                      Views
-                    </Typography>
-                    <Typography sx={{ fontWeight: 500 }}>{article.views_count}</Typography>
+                    <p className="text-sm text-muted-foreground">Views</p>
+                    <p className="font-medium">{article.views_count}</p>
                   </div>
-                </Box>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -618,7 +528,7 @@ export default function NewsDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
                     <Badge
                       key={tag}
@@ -629,7 +539,7 @@ export default function NewsDetail() {
                       {tag}
                     </Badge>
                   ))}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -644,38 +554,26 @@ export default function NewsDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   {linkedCities.map((c) => (
-                    <Typography
+                    <LocalizedLink
                       key={c.id}
-                      component={LocalizedLink}
                       to={`/city/${c.slug || c.id}`}
-                      sx={{
-                        fontWeight: 500,
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' },
-                      }}
+                      className="font-medium text-primary no-underline hover:underline"
                     >
                       {c.name}
-                    </Typography>
+                    </LocalizedLink>
                   ))}
                   {linkedCountries.map((c) => (
-                    <Typography
+                    <LocalizedLink
                       key={c.id}
-                      component={LocalizedLink}
                       to={`/country/${c.slug || c.id}`}
-                      sx={{
-                        fontWeight: 500,
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' },
-                      }}
+                      className="font-medium text-primary no-underline hover:underline"
                     >
                       {c.name}
-                    </Typography>
+                    </LocalizedLink>
                   ))}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -708,9 +606,9 @@ export default function NewsDetail() {
               )}
             </CardContent>
           </Card>
-        </Box>
-      </Box>
+        </div>
+      </div>
       <SimilarItems entity={{ type: 'news', id: article.id }} className="mt-8" title="Related news" />
-    </Container>
+    </div>
   );
 }

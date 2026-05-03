@@ -253,7 +253,6 @@
   "src/pages/HelpHotlines.tsx",
   "src/pages/Marketplace.tsx",
   "src/pages/MarketplaceItemDetail.parts.tsx",
-  "src/pages/NewsDetail.tsx",
   "src/pages/NotFound.tsx",
   "src/pages/Page.tsx",
   "src/pages/Personalities.tsx",
