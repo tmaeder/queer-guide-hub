@@ -101,7 +101,6 @@
   "src/components/cms/media/MediaPickerDialog.tsx",
   "src/components/cms/revisions/RevisionHistory.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
-  "src/components/country/WorldBankDataPanel.tsx",
   "src/components/donate/DonationForm.tsx",
   "src/components/donate/DonorWall.tsx",
   "src/components/entity/EntityDetailLayout.tsx",
