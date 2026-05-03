@@ -219,7 +219,6 @@
   "src/pages/AdminAccessibilityAttributes.tsx",
   "src/pages/AdminAnalytics.tsx",
   "src/pages/AdminCities.tsx",
-  "src/pages/AdminCountries.tsx",
   "src/pages/AdminDashboard.tsx",
   "src/pages/AdminEventAmenities.tsx",
   "src/pages/AdminEventServices.tsx",
