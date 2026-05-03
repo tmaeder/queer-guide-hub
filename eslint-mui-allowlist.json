@@ -150,7 +150,6 @@
   "src/components/trips/CreateTripDialog.tsx",
   "src/components/trips/DocumentsList.tsx",
   "src/components/trips/DraggableItinerary.tsx",
-  "src/components/trips/EstimateCostsDialog.tsx",
   "src/components/trips/PackingTab.tsx",
   "src/components/trips/PlaceCommentThread.tsx",
   "src/components/trips/ReservationsTab.tsx",
