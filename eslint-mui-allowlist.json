@@ -71,7 +71,6 @@
   "src/components/trips/ReservationsTab.tsx",
   "src/components/trips/ShareTripDialog.tsx",
   "src/components/trips/SocialSignalBadges.tsx",
-  "src/components/trips/TripBookingAssistant.tsx",
   "src/components/trips/TripCard.tsx",
   "src/components/trips/TripMap.tsx",
   "src/components/trips/TripPolls.tsx",
