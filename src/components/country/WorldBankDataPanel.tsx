@@ -15,8 +15,6 @@ import {
   DollarSign,
   BarChart3,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { WorldBankData } from '@/hooks/useWorldBankData';
 
 interface WorldBankDataPanelProps {
@@ -38,25 +36,16 @@ const DataRow = ({
 }) => {
   if (value == null || value === '') return null;
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        p: 1.5,
-        borderRadius: 2,
-        bgcolor: 'action.hover',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        {Icon && <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />}
-        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{label}</Typography>
-      </Box>
-      <Typography sx={{ fontWeight: 700, textAlign: 'right' }}>
+    <div className="flex justify-between items-center p-3 rounded-lg bg-muted">
+      <div className="flex items-center gap-2">
+        {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <span className="font-bold text-right">
         {value}
         {suffix || ''}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 };
 
@@ -115,10 +104,10 @@ export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data }) 
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Income Level Badge */}
       {data.wb_income_level && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+        <div className="flex items-center gap-3 flex-wrap">
           <Badge
             variant="secondary"
             style={{
@@ -136,14 +125,14 @@ export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data }) 
             </Badge>
           )}
           {data.wb_last_synced_at && (
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            <span className="text-xs text-muted-foreground">
               World Bank data updated {new Date(data.wb_last_synced_at).toLocaleDateString()}
-            </Typography>
+            </span>
           )}
-        </Box>
+        </div>
       )}
 
-      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
         {/* Economy */}
         {hasEconomyData && (
           <Card>
@@ -346,7 +335,7 @@ export const WorldBankDataPanel: React.FC<WorldBankDataPanelProps> = ({ data }) 
             </CardContent>
           </Card>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
