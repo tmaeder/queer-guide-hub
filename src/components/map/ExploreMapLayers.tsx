@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
-import Collapse from '@mui/material/Collapse';
 import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark, Layers } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
 import { hapticTrigger } from '@/hooks/useHaptics';
@@ -47,45 +44,22 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
   const [expanded, setExpanded] = useState(!compact);
 
   return (
-    <Box
-      sx={{
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0.5,
-      }}
-    >
+    <div className="absolute top-3 left-3 z-10 flex flex-col gap-1">
       {/* Toggle button */}
-      <IconButton
-        size="small"
+      <Button
+        variant="outline"
+        size="sm"
         aria-label={expanded ? 'Hide map layers' : 'Show map layers'}
         aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
-        sx={{
-          bgcolor: 'background.paper',
-          width: 36,
-          height: 36,
-          '&:hover': { bgcolor: 'background.paper' },
-        }}
+        className="bg-background hover:bg-background h-9 w-9 p-0"
       >
         <Layers size={18} />
-      </IconButton>
+      </Button>
 
       {/* Chip grid */}
-      <Collapse in={expanded}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 0.5,
-            maxWidth: 220,
-            bgcolor: 'background.paper',
-            p: 0.75,
-          }}
-        >
+      {expanded && (
+        <div className="flex flex-wrap gap-1 max-w-[220px] bg-background p-1.5 rounded">
           {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {
             const enabled = enabledLayers.includes(type);
             const count = layerCounts[type];
@@ -94,33 +68,26 @@ export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
             if (comingSoon) return null;
 
             return (
-              <Chip
+              <button
                 key={type}
-                icon={<Icon size={13} />}
-                label={`${label}${enabled && count > 0 ? ` (${count})` : ''}`}
-                size="small"
-                variant={enabled ? 'filled' : 'outlined'}
+                type="button"
                 onClick={() => { hapticTrigger('nudge'); onToggle(type); }}
-                sx={{
-                  height: 28,
-                  fontSize: '0.75rem',
+                className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded-full border transition-colors"
+                style={{
                   fontWeight: enabled ? 600 : 400,
-                  bgcolor: enabled ? `${color}18` : 'transparent',
-                  color: enabled ? color : 'text.secondary',
-                  borderColor: enabled ? color : 'divider',
-                  '& .MuiChip-icon': { color: enabled ? color : 'text.secondary' },
-                  '&:hover': {
-                    bgcolor: `${color}25`,
-                    borderColor: color,
-                  },
-                  transition: 'all 150ms',
+                  backgroundColor: enabled ? `${color}18` : 'transparent',
+                  color: enabled ? color : 'var(--muted-foreground)',
+                  borderColor: enabled ? color : 'var(--border)',
                 }}
-              />
+              >
+                <Icon size={13} />
+                {label}{enabled && count > 0 ? ` (${count})` : ''}
+              </button>
             );
           })}
-        </Box>
-      </Collapse>
-    </Box>
+        </div>
+      )}
+    </div>
   );
 };
 
