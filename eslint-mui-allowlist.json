@@ -41,7 +41,6 @@
   "src/components/cms/AutoTagPanel.tsx",
   "src/components/cms/CMSShell.tsx",
   "src/components/cms/CMSSidebar.tsx",
-  "src/components/cms/ContentListPanel/ContentListFilters.tsx",
   "src/components/cms/ContentListPanel/ContentListTable.tsx",
   "src/components/cms/ContentListPanel/index.tsx",
   "src/components/cms/ModerationQueue.tsx",

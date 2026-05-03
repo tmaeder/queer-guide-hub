@@ -4,12 +4,17 @@
  * and a "Clear filters" button when any filter is active.
  */
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
 import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { FieldConfig, SelectOption } from '@/types/cms';
 import type { DateRange, FilterState, FilterValue, NumberRange } from './types';
 
@@ -21,6 +26,8 @@ export interface ContentListFiltersProps {
   clearFilters: () => void;
 }
 
+const SENTINEL_ALL = '__all__';
+
 export function ContentListFilters({
   filterFields,
   filters,
@@ -31,104 +38,98 @@ export function ContentListFilters({
   if (filterFields.length === 0) return null;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 1.25,
-        mb: 2,
-      }}
-    >
+    <div className="flex flex-wrap items-center gap-2.5 mb-4">
       {filterFields.map((f) => {
         const val = filters[f.name];
         if (f.type === 'select') {
           const effectiveOptions = f.dynamicOptions
             ? (dynamicOptions[f.name] ?? [])
             : (f.options ?? []);
+          const current = (val as string) ?? '';
           return (
             <Select
               key={f.name}
-              size="small"
-              displayEmpty
-              value={(val as string) ?? ''}
-              onChange={(e) => setFilter(f.name, e.target.value || undefined)}
-              sx={{ minWidth: 140, fontSize: '0.85rem' }}
-              renderValue={(v) =>
-                v
-                  ? (effectiveOptions.find((o) => o.value === v)?.label ?? String(v))
-                  : `All ${f.label}`
-              }
+              value={current === '' ? SENTINEL_ALL : current}
+              onValueChange={(v) => setFilter(f.name, v === SENTINEL_ALL ? undefined : v)}
             >
-              <MenuItem value="">
-                <em>All {f.label}</em>
-              </MenuItem>
-              {effectiveOptions.map((opt) => (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
+              <SelectTrigger className="min-w-[140px] text-sm">
+                <SelectValue placeholder={`All ${f.label}`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SENTINEL_ALL}>
+                  <em>All {f.label}</em>
+                </SelectItem>
+                {effectiveOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           );
         }
         if (f.type === 'boolean') {
-          const sv = val === undefined ? '' : val ? 'true' : 'false';
+          const sv = val === undefined ? SENTINEL_ALL : val ? 'true' : 'false';
           return (
             <Select
               key={f.name}
-              size="small"
-              displayEmpty
               value={sv}
-              onChange={(e) => {
-                const v = e.target.value;
-                setFilter(f.name, v === '' ? undefined : v === 'true');
+              onValueChange={(v) => {
+                setFilter(f.name, v === SENTINEL_ALL ? undefined : v === 'true');
               }}
-              sx={{ minWidth: 130, fontSize: '0.85rem' }}
-              renderValue={(v) =>
-                v === 'true' ? f.label : v === 'false' ? `Not ${f.label}` : `Any ${f.label}`
-              }
             >
-              <MenuItem value="">
-                <em>Any {f.label}</em>
-              </MenuItem>
-              <MenuItem value="true">{f.label}</MenuItem>
-              <MenuItem value="false">Not {f.label}</MenuItem>
+              <SelectTrigger className="min-w-[130px] text-sm">
+                <SelectValue placeholder={`Any ${f.label}`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SENTINEL_ALL}>
+                  <em>Any {f.label}</em>
+                </SelectItem>
+                <SelectItem value="true">{f.label}</SelectItem>
+                <SelectItem value="false">Not {f.label}</SelectItem>
+              </SelectContent>
             </Select>
           );
         }
         if (f.type === 'datetime' || f.type === 'date') {
           const range = (val as DateRange | undefined) ?? {};
           return (
-            <Box key={f.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <TextField
-                size="small"
-                type="date"
-                label={`${f.label} from`}
-                InputLabelProps={{ shrink: true }}
-                value={range.from?.slice(0, 10) ?? ''}
-                onChange={(e) =>
-                  setFilter(f.name, {
-                    ...range,
-                    from: e.target.value ? `${e.target.value}T00:00:00Z` : undefined,
-                  })
-                }
-                sx={{ width: 160 }}
-              />
-              <TextField
-                size="small"
-                type="date"
-                label="to"
-                InputLabelProps={{ shrink: true }}
-                value={range.to?.slice(0, 10) ?? ''}
-                onChange={(e) =>
-                  setFilter(f.name, {
-                    ...range,
-                    to: e.target.value ? `${e.target.value}T23:59:59Z` : undefined,
-                  })
-                }
-                sx={{ width: 130 }}
-              />
-            </Box>
+            <div key={f.name} className="flex items-center gap-1.5">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor={`${f.name}-from`} className="text-xs">
+                  {f.label} from
+                </Label>
+                <Input
+                  id={`${f.name}-from`}
+                  type="date"
+                  value={range.from?.slice(0, 10) ?? ''}
+                  onChange={(e) =>
+                    setFilter(f.name, {
+                      ...range,
+                      from: e.target.value ? `${e.target.value}T00:00:00Z` : undefined,
+                    })
+                  }
+                  className="w-40"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor={`${f.name}-to`} className="text-xs">
+                  to
+                </Label>
+                <Input
+                  id={`${f.name}-to`}
+                  type="date"
+                  value={range.to?.slice(0, 10) ?? ''}
+                  onChange={(e) =>
+                    setFilter(f.name, {
+                      ...range,
+                      to: e.target.value ? `${e.target.value}T23:59:59Z` : undefined,
+                    })
+                  }
+                  className="w-32"
+                />
+              </div>
+            </div>
           );
         }
         if (f.type === 'number') {
@@ -142,71 +143,69 @@ export function ContentListFilters({
               clean.min === undefined && clean.max === undefined ? undefined : clean,
             );
           };
+          const step = f.max !== undefined && f.max <= 1 ? 0.05 : 1;
           return (
-            <Box key={f.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <TextField
-                size="small"
-                type="number"
-                label={`${f.label} ≥`}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{
-                  min: f.min,
-                  max: f.max,
-                  step: f.max !== undefined && f.max <= 1 ? 0.05 : 1,
-                }}
-                value={range.min ?? ''}
-                onChange={(e) =>
-                  updateRange({
-                    ...range,
-                    min: e.target.value === '' ? undefined : Number(e.target.value),
-                  })
-                }
-                sx={{ width: 130 }}
-              />
-              <TextField
-                size="small"
-                type="number"
-                label="≤"
-                InputLabelProps={{ shrink: true }}
-                inputProps={{
-                  min: f.min,
-                  max: f.max,
-                  step: f.max !== undefined && f.max <= 1 ? 0.05 : 1,
-                }}
-                value={range.max ?? ''}
-                onChange={(e) =>
-                  updateRange({
-                    ...range,
-                    max: e.target.value === '' ? undefined : Number(e.target.value),
-                  })
-                }
-                sx={{ width: 100 }}
-              />
-            </Box>
+            <div key={f.name} className="flex items-center gap-1.5">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor={`${f.name}-min`} className="text-xs">
+                  {f.label} ≥
+                </Label>
+                <Input
+                  id={`${f.name}-min`}
+                  type="number"
+                  min={f.min}
+                  max={f.max}
+                  step={step}
+                  value={range.min ?? ''}
+                  onChange={(e) =>
+                    updateRange({
+                      ...range,
+                      min: e.target.value === '' ? undefined : Number(e.target.value),
+                    })
+                  }
+                  className="w-32"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor={`${f.name}-max`} className="text-xs">
+                  ≤
+                </Label>
+                <Input
+                  id={`${f.name}-max`}
+                  type="number"
+                  min={f.min}
+                  max={f.max}
+                  step={step}
+                  value={range.max ?? ''}
+                  onChange={(e) =>
+                    updateRange({
+                      ...range,
+                      max: e.target.value === '' ? undefined : Number(e.target.value),
+                    })
+                  }
+                  className="w-24"
+                />
+              </div>
+            </div>
           );
         }
         // text contains
         return (
-          <TextField
+          <Input
             key={f.name}
-            size="small"
             placeholder={f.label}
             value={(val as string) ?? ''}
             onChange={(e) => setFilter(f.name, e.target.value || undefined)}
-            sx={{ width: 180 }}
+            className="w-44"
           />
         );
       })}
       {Object.keys(filters).length > 0 && (
-        <Button
-          size="small"
-          onClick={clearFilters}
-          startIcon={<X size={14} />}
-          sx={{ textTransform: 'none' }}
-        >
+        <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+          <X size={14} />
           Clear filters
         </Button>
       )}
-    </Box>
+    </div>
   );
 }
