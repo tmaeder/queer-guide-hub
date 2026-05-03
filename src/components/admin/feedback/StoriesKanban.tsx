@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import Tooltip from '@mui/material/Tooltip';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MessageSquare, AlertTriangle, Archive, CheckSquare } from 'lucide-react';
 import { storyColumns, priorityFor } from './constants';
 import type {
@@ -23,15 +21,6 @@ interface Props {
   onStoryClick: (story: StoryWithCounts) => void;
 }
 
-/**
- * Stories-first kanban. Each card shows:
- *   brief_title  |  P-stripe
- *   "As a X, I Y, so that Z."   (narrative, italic, 2-line clamp)
- *   N feedback · M errors  ·  assignee
- *
- * Falls back to `title` when the narrate function hasn't filled in brief_title
- * yet, so cards never look broken on first render.
- */
 export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
   const allStoryIds = useMemo(
     () =>
@@ -72,115 +61,101 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-        data-testid="stories-kanban-toolbar"
-      >
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2" data-testid="stories-kanban-toolbar">
         {!selectMode ? (
           <Button
-            size="small"
-            variant="text"
-            startIcon={<CheckSquare size={14} />}
+            size="sm"
+            variant="ghost"
             onClick={() => setSelectMode(true)}
             data-testid="enter-select-mode"
+            className="flex gap-1.5"
           >
+            <CheckSquare size={14} />
             Select
           </Button>
         ) : (
           <>
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>
+            <span className="text-xs font-semibold">
               {selected.size} selected
-            </Typography>
+            </span>
             <Button
-              size="small"
-              variant="contained"
-              color="warning"
-              startIcon={<Archive size={14} />}
+              size="sm"
               disabled={selected.size === 0 || archive.isPending}
               onClick={handleArchiveSelected}
               data-testid="bulk-archive"
+              className="flex gap-1.5"
+              style={{ backgroundColor: '#f59e0b' }}
             >
+              <Archive size={14} />
               {archive.isPending ? 'Archiving…' : 'Archive selected'}
             </Button>
-            <Button size="small" variant="text" onClick={exitSelectMode}>
+            <Button size="sm" variant="ghost" onClick={exitSelectMode}>
               Cancel
             </Button>
           </>
         )}
-      </Box>
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: `repeat(${storyColumns.length}, minmax(0,1fr))` },
-        gap: 2,
-      }}
-    >
-      {storyColumns.map((col) => {
-        const items = grouped[col.id] ?? [];
-        return (
-          <Box key={col.id} sx={{ minWidth: 0 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                mb: 1.5,
-                px: 1,
-                py: 0.75,
-                borderTop: 3,
-                borderColor: col.color,
-                bgcolor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
-                borderRadius: '0 0 4px 4px',
-              }}
-            >
-              <Typography
-                variant="subtitle2"
-                sx={{ fontWeight: 700, color: col.color, letterSpacing: 0.3 }}
+      </div>
+      <div
+        className="grid gap-4 grid-cols-1"
+        style={{ gridTemplateColumns: `repeat(${storyColumns.length}, minmax(0,1fr))` }}
+      >
+        {storyColumns.map((col) => {
+          const items = grouped[col.id] ?? [];
+          return (
+            <div key={col.id} className="min-w-0">
+              <div
+                className="flex items-center gap-2 mb-3 px-2 py-1.5"
+                style={{
+                  borderTop: '3px solid',
+                  borderColor: col.color,
+                  backgroundColor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
+                  borderRadius: '0 0 4px 4px',
+                }}
               >
-                {col.label}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                {items.length}
-              </Typography>
-            </Box>
+                <p className="text-sm font-bold" style={{ color: col.color, letterSpacing: 0.3 }}>
+                  {col.label}
+                </p>
+                <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
+                  {items.length}
+                </span>
+              </div>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {items.length === 0 && (
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ py: 3, textAlign: 'center', fontSize: '0.7rem', opacity: 0.5 }}
-                >
-                  —
-                </Typography>
-              )}
-              {items.map((story) => {
-                const run = latest?.runByStory[story.id] ?? null;
-                const retest = run ? latest?.retestByRun[run.id] ?? null : null;
-                const isSelected = selected.has(story.id);
-                return (
-                  <StoryCard
-                    key={story.id}
-                    story={story}
-                    assignee={story.assignee_id ? adminById[story.assignee_id] ?? null : null}
-                    latestRun={run}
-                    latestRetest={retest}
-                    selectMode={selectMode}
-                    selected={isSelected}
-                    onClick={() => {
-                      if (selectMode) toggleSelected(story.id);
-                      else onStoryClick(story);
-                    }}
-                  />
-                );
-              })}
-            </Box>
-          </Box>
-        );
-      })}
-    </Box>
-    </Box>
+              <div className="flex flex-col gap-2">
+                {items.length === 0 && (
+                  <span
+                    className="text-muted-foreground py-6 text-center"
+                    style={{ fontSize: '0.7rem', opacity: 0.5 }}
+                  >
+                    —
+                  </span>
+                )}
+                {items.map((story) => {
+                  const run = latest?.runByStory[story.id] ?? null;
+                  const retest = run ? latest?.retestByRun[run.id] ?? null : null;
+                  const isSelected = selected.has(story.id);
+                  return (
+                    <StoryCard
+                      key={story.id}
+                      story={story}
+                      assignee={story.assignee_id ? adminById[story.assignee_id] ?? null : null}
+                      latestRun={run}
+                      latestRetest={retest}
+                      selectMode={selectMode}
+                      selected={isSelected}
+                      onClick={() => {
+                        if (selectMode) toggleSelected(story.id);
+                        else onStoryClick(story);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -210,70 +185,63 @@ function StoryCard({
   const showPhaseChip = phase !== 'awaiting_review' && phase !== 'resolved';
 
   return (
-    <Box
+    <div
       onClick={onClick}
       data-testid={selectMode ? `selectable-story-${story.id}` : undefined}
-      sx={{
-        position: 'relative',
-        py: 0.875,
-        pl: stripeWidth ? 1.25 : 1,
-        pr: 1,
-        border: 1,
-        borderColor: selected ? 'primary.main' : 'divider',
-        bgcolor: selected ? 'action.selected' : 'background.paper',
-        cursor: 'pointer',
-        transition: 'border-color 0.15s, background-color 0.15s',
-        '&:hover': { borderColor: 'primary.main' },
-        ...(stripeWidth && {
-          '&::before': {
-            content: '""',
-            position: 'absolute',
+      className={`relative cursor-pointer border ${selected ? 'border-primary bg-muted' : 'border-border bg-background'} hover:border-primary transition-colors`}
+      style={{
+        paddingTop: 7,
+        paddingBottom: 7,
+        paddingLeft: stripeWidth ? 10 : 8,
+        paddingRight: 8,
+      }}
+    >
+      {stripeWidth > 0 && (
+        <div
+          className="absolute"
+          style={{
             left: 0,
             top: 0,
             bottom: 0,
             width: stripeWidth,
-            bgcolor: prio.color,
-          },
-        }),
-      }}
-    >
+            backgroundColor: prio.color,
+          }}
+        />
+      )}
       {/* Title row */}
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, mb: narrative ? 0.5 : 0 }}>
+      <div className="flex items-baseline gap-1.5" style={{ marginBottom: narrative ? 4 : 0 }}>
         {selectMode && (
           <Checkbox
             checked={selected}
             tabIndex={-1}
-            size="small"
-            sx={{ p: 0, mr: 0.25, '& .MuiSvgIcon-root': { fontSize: 16 } }}
             onClick={(e) => e.stopPropagation()}
-            onChange={() => onClick()}
+            onCheckedChange={() => onClick()}
+            style={{ marginRight: 2, height: 16, width: 16 }}
           />
         )}
         {isUrgent && (
-          <Tooltip title={prio.label}>
-            <Box
-              component="span"
-              sx={{
-                display: 'inline-block',
-                px: 0.375,
-                borderRadius: 0.375,
-                bgcolor: prio.color,
-                color: '#fff',
-                fontSize: '0.55rem',
-                fontWeight: 700,
-                letterSpacing: 0.3,
-                flexShrink: 0,
-              }}
-            >
-              {prio.short}
-            </Box>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-block rounded-sm flex-shrink-0"
+                style={{
+                  paddingLeft: 3, paddingRight: 3,
+                  backgroundColor: prio.color,
+                  color: '#fff',
+                  fontSize: '0.55rem',
+                  fontWeight: 700,
+                  letterSpacing: 0.3,
+                }}
+              >
+                {prio.short}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{prio.label}</TooltipContent>
           </Tooltip>
         )}
-        <Typography
-          variant="body2"
-          sx={{
-            flex: 1,
-            fontWeight: 600,
+        <p
+          className="flex-1 font-semibold min-w-0"
+          style={{
             fontSize: '0.8rem',
             lineHeight: 1.3,
             display: '-webkit-box',
@@ -281,145 +249,128 @@ function StoryCard({
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             wordBreak: 'break-word',
-            minWidth: 0,
           }}
         >
           {displayTitle}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {/* Narrative */}
       {narrative && (
-        <Typography
-          variant="caption"
-          sx={{
+        <span
+          className="text-muted-foreground italic block"
+          style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            color: 'text.secondary',
-            fontStyle: 'italic',
             fontSize: '0.68rem',
             lineHeight: 1.35,
-            mb: 0.75,
+            marginBottom: 6,
           }}
         >
           {narrative}
-        </Typography>
+        </span>
       )}
 
-      {/* Footer: source counts · labels · assignee */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.75,
-          color: 'text.secondary',
-          fontSize: '0.6rem',
-        }}
+      {/* Footer */}
+      <div
+        className="flex items-center text-muted-foreground"
+        style={{ gap: 6, fontSize: '0.6rem' }}
       >
         {story.feedback_count > 0 && (
-          <Tooltip title={`${story.feedback_count} feedback item${story.feedback_count === 1 ? '' : 's'}`}>
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
-              <MessageSquare size={10} />
-              {story.feedback_count}
-            </Box>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center flex-shrink-0" style={{ gap: 2 }}>
+                <MessageSquare size={10} />
+                {story.feedback_count}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{`${story.feedback_count} feedback item${story.feedback_count === 1 ? '' : 's'}`}</TooltipContent>
           </Tooltip>
         )}
         {story.error_count > 0 && (
-          <Tooltip title={`${story.error_count} API error${story.error_count === 1 ? '' : 's'}`}>
-            <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.25,
-                flexShrink: 0,
-                color: '#ef4444',
-              }}
-            >
-              <AlertTriangle size={10} />
-              {story.error_count}
-            </Box>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center flex-shrink-0" style={{ gap: 2, color: '#ef4444' }}>
+                <AlertTriangle size={10} />
+                {story.error_count}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{`${story.error_count} API error${story.error_count === 1 ? '' : 's'}`}</TooltipContent>
           </Tooltip>
         )}
 
         {story.labels.length > 0 && (
-          <Tooltip title={story.labels.join(', ')}>
-            <Box
-              component="span"
-              sx={{
-                px: 0.5,
-                py: 0.125,
-                fontSize: '0.55rem',
-                bgcolor: 'action.hover',
-                color: 'text.secondary',
-                borderRadius: 0.5,
-                flexShrink: 0,
-                maxWidth: 70,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {story.labels.length === 1 ? story.labels[0] : `${story.labels.length} tags`}
-            </Box>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="bg-muted text-muted-foreground rounded-sm flex-shrink-0 truncate"
+                style={{
+                  paddingLeft: 4, paddingRight: 4, paddingTop: 1, paddingBottom: 1,
+                  fontSize: '0.55rem',
+                  maxWidth: 70,
+                }}
+              >
+                {story.labels.length === 1 ? story.labels[0] : `${story.labels.length} tags`}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{story.labels.join(', ')}</TooltipContent>
           </Tooltip>
         )}
 
         {story.origin === 'ai_suggested' && (
-          <Tooltip title="Auto-detected cluster">
-            <Box
-              component="span"
-              sx={{
-                px: 0.5,
-                fontSize: '0.55rem',
-                color: 'hsl(var(--accent-warm))',
-                fontWeight: 700,
-                flexShrink: 0,
-              }}
-            >
-              AI
-            </Box>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="font-bold flex-shrink-0"
+                style={{ paddingLeft: 4, paddingRight: 4, fontSize: '0.55rem', color: 'hsl(var(--accent-warm))' }}
+              >
+                AI
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Auto-detected cluster</TooltipContent>
           </Tooltip>
         )}
 
         {showPhaseChip && (
-          <Tooltip title={`Phase: ${PHASE_LABELS[phase]}`}>
-            <Box
-              component="span"
-              data-testid="story-phase-chip"
-              data-phase={phase}
-              sx={{
-                px: 0.5,
-                py: 0.125,
-                fontSize: '0.55rem',
-                fontWeight: 700,
-                color: PHASE_COLORS[phase],
-                bgcolor: `color-mix(in srgb, ${PHASE_COLORS[phase]} 14%, transparent)`,
-                border: `1px solid ${PHASE_COLORS[phase]}`,
-                borderRadius: 0.5,
-                flexShrink: 0,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {PHASE_LABELS[phase]}
-            </Box>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                data-testid="story-phase-chip"
+                data-phase={phase}
+                className="font-bold flex-shrink-0 whitespace-nowrap rounded-sm"
+                style={{
+                  paddingLeft: 4, paddingRight: 4, paddingTop: 1, paddingBottom: 1,
+                  fontSize: '0.55rem',
+                  color: PHASE_COLORS[phase],
+                  backgroundColor: `color-mix(in srgb, ${PHASE_COLORS[phase]} 14%, transparent)`,
+                  border: `1px solid ${PHASE_COLORS[phase]}`,
+                }}
+              >
+                {PHASE_LABELS[phase]}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{`Phase: ${PHASE_LABELS[phase]}`}</TooltipContent>
           </Tooltip>
         )}
 
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
 
         {assignee && (
-          <Tooltip title={`Assigned to ${assignee.display_name ?? 'admin'}`}>
-            <Avatar
-              src={assignee.avatar_url || undefined}
-              sx={{ width: 16, height: 16, fontSize: '0.55rem' }}
-            >
-              {(assignee.display_name || '?').slice(0, 1).toUpperCase()}
-            </Avatar>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Avatar style={{ width: 16, height: 16 }}>
+                <AvatarImage src={assignee.avatar_url || undefined} />
+                <AvatarFallback style={{ fontSize: '0.55rem' }}>
+                  {(assignee.display_name || '?').slice(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </TooltipTrigger>
+            <TooltipContent>{`Assigned to ${assignee.display_name ?? 'admin'}`}</TooltipContent>
           </Tooltip>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
