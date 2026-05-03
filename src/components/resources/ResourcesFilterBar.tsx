@@ -1,7 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -70,10 +67,10 @@ export function ResourcesFilterBar({
   categoriesTree,
 }: ResourcesFilterBarProps) {
   return (
-    <Paper variant="outlined" sx={{ p: { xs: 2, md: 3 }, mb: 3, bgcolor: 'background.paper' }}>
+    <div className="rounded-md border border-border bg-background p-4 md:p-6 mb-6">
       {/* Row 1: Search + View toggles */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
-        <Box sx={{ position: 'relative', flex: 1 }}>
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <div className="relative flex-1">
           <Search
             style={{
               position: 'absolute',
@@ -91,8 +88,8 @@ export function ResourcesFilterBar({
             onChange={(e) => onSearch(e.target.value)}
             style={{ paddingLeft: 48, height: 44, fontSize: '1rem' }}
           />
-        </Box>
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        </div>
+        <div className="flex gap-1">
           {[
             { mode: 'chips' as DisplayMode, icon: Tag, label: 'Chips' },
             { mode: 'grid' as DisplayMode, icon: LayoutGrid, label: 'Grid' },
@@ -109,7 +106,7 @@ export function ResourcesFilterBar({
               <Icon style={{ width: 18, height: 18 }} />
             </Button>
           ))}
-          <Box sx={{ width: '1px', bgcolor: 'divider', mx: 0.5 }} />
+          <div className="w-px bg-border mx-1" />
           <Button
             variant={viewMode === 'graph' ? 'default' : 'secondary'}
             size="lg"
@@ -119,11 +116,11 @@ export function ResourcesFilterBar({
           >
             <Network style={{ width: 18, height: 18 }} />
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Row 2: Filters + Sort */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+      <div className="flex flex-wrap gap-3 items-center">
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
           <SelectTrigger style={{ width: 220, height: 40 }}>
             <Filter style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
@@ -172,7 +169,7 @@ export function ResourcesFilterBar({
           Has Image
         </Button>
 
-        <Box sx={{ ml: 'auto', display: 'flex', gap: 1, alignItems: 'center' }}>
+        <div className="ml-auto flex gap-2 items-center">
           <Select
             value={sortBy}
             onValueChange={(value: string) => onSortByChange(value as SortOption)}
@@ -200,89 +197,53 @@ export function ResourcesFilterBar({
               <SortDesc style={{ width: 16, height: 16 }} />
             )}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Active filters summary */}
       {(filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter) && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2, alignItems: 'center' }}>
-          <Typography variant="caption" color="text.secondary">
-            Active:
-          </Typography>
+        <div className="flex flex-wrap gap-2 mt-4 items-center">
+          <span className="text-xs text-muted-foreground">Active:</span>
           {filterCategory !== 'all' && (
-            <Box
+            <button
+              type="button"
               onClick={() => onFilterCategoryChange('all')}
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1,
-                py: 0.25,
-                borderRadius: 1,
-                cursor: 'pointer',
-                bgcolor: 'secondary.main',
-                fontSize: '0.75rem',
-                '&:hover': { opacity: 0.8 },
-              }}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
               {getCategoryShortName(filterCategory)} ✕
-            </Box>
+            </button>
           )}
           {usageFilter !== 'all' && (
-            <Box
+            <button
+              type="button"
               onClick={() => onUsageFilterChange('all')}
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1,
-                py: 0.25,
-                borderRadius: 1,
-                cursor: 'pointer',
-                bgcolor: 'secondary.main',
-                fontSize: '0.75rem',
-                '&:hover': { opacity: 0.8 },
-              }}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
               {usageFilter === 'used' ? 'Used' : 'Unused'} ✕
-            </Box>
+            </button>
           )}
           {hasImageFilter && (
-            <Box
+            <button
+              type="button"
               onClick={() => onHasImageFilterChange(false)}
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1,
-                py: 0.25,
-                borderRadius: 1,
-                cursor: 'pointer',
-                bgcolor: 'secondary.main',
-                fontSize: '0.75rem',
-                '&:hover': { opacity: 0.8 },
-              }}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
               Has Image ✕
-            </Box>
+            </button>
           )}
-          <Box
+          <button
+            type="button"
             onClick={() => {
               onFilterCategoryChange('all');
               onUsageFilterChange('all');
               onHasImageFilterChange(false);
             }}
-            sx={{
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-              color: 'text.secondary',
-              '&:hover': { color: 'primary.main' },
-            }}
+            className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
           >
             Clear all
-          </Box>
-        </Box>
+          </button>
+        </div>
       )}
-    </Paper>
+    </div>
   );
 }
