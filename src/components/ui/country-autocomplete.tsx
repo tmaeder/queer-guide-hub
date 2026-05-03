@@ -1,9 +1,17 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import MuiAutocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { listFrom } from '@/hooks/usePageFetchers';
 
 export interface Country {
@@ -39,18 +47,7 @@ export function CountryAutocomplete({
 }: CountryAutocompleteProps) {
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(false);
-  const [inputValue, setInputValue] = useState(value || '');
-
-  // Sync internal inputValue when the parent updates `value` externally
-  // (e.g. address autocomplete populating country). Without this, MUI sees
-  // a stale inputValue and would call onChange(null) on blur to "reset"
-  // invalid input, clobbering dependent fields.
-  useEffect(() => {
-    if (typeof value === 'string' && value !== inputValue) {
-      setInputValue(value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -62,8 +59,8 @@ export function CountryAutocomplete({
           { col: 'name' },
         );
         setCountries(data);
-      } catch (error) {
-        console.error('Error fetching countries:', error);
+      } catch (err) {
+        console.error('Error fetching countries:', err);
       } finally {
         setLoading(false);
       }
@@ -75,72 +72,76 @@ export function CountryAutocomplete({
   const selectedCountry = countries.find((country) => country.name === value) || null;
 
   return (
-    <MuiAutocomplete
-      id={id}
-      options={countries}
-      loading={loading}
-      value={selectedCountry}
-      inputValue={inputValue}
-      onInputChange={(_, newInputValue) => {
-        setInputValue(newInputValue);
-      }}
-      disabled={disabled}
-      onChange={(_, newValue, reason) => {
-        // Ignore blur reconciliation. MUI can fire onChange(null) with
-        // reason='blur' when the input doesn't match an option; that would
-        // wipe dependent fields (e.g. city) without user intent.
-        if (newValue === null && reason !== 'clear') return;
-        onValueChange(newValue ? newValue.name : '');
-        onCountrySelect?.(newValue);
-      }}
-      clearOnBlur={false}
-      autoSelect={false}
-      selectOnFocus={false}
-      handleHomeEndKeys
-      getOptionLabel={(option) => option.name}
-      isOptionEqualToValue={(option, val) => option.code === val.code}
-      renderOption={(props, option) => {
-        const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & { key: string };
-        return (
-          <Box
-            component="li"
-            key={key}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-            {...rest}
-          >
-            {option.flag_emoji && <span style={{ fontSize: '1.25rem' }}>{option.flag_emoji}</span>}
-            <span>{option.name}</span>
-          </Box>
-        );
-      }}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          placeholder={placeholder}
-          required={required}
-          size="small"
-          error={error}
-          slotProps={{
-            input: {
-              ...params.InputProps,
-              'aria-invalid': error || undefined,
-              'aria-describedby': ariaDescribedBy,
-              startAdornment: selectedCountry?.flag_emoji ? (
-                <span style={{ fontSize: '1.25rem', marginRight: 4 }}>
-                  {selectedCountry.flag_emoji}
-                </span>
-              ) : undefined,
-              endAdornment: (
-                <>
-                  {loading ? <CircularProgress color="inherit" size={20} aria-label="Loading" /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            },
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          aria-required={required}
+          aria-invalid={error || undefined}
+          aria-describedby={ariaDescribedBy}
+          disabled={disabled}
+          className={cn(
+            'w-full justify-between font-normal',
+            !selectedCountry && 'text-muted-foreground',
+            error && 'border-destructive',
+          )}
+        >
+          <span className="flex items-center gap-2 truncate">
+            {selectedCountry?.flag_emoji && (
+              <span style={{ fontSize: '1.25rem' }}>{selectedCountry.flag_emoji}</span>
+            )}
+            <span className="truncate">{selectedCountry ? selectedCountry.name : placeholder}</span>
+          </span>
+          {loading ? (
+            <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" aria-label="Loading" />
+          ) : (
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command
+          filter={(itemValue, search) => {
+            return itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0;
           }}
-        />
-      )}
-      sx={{ width: '100%' }}
-    />
+        >
+          <CommandInput placeholder="Search country..." />
+          <CommandList>
+            <CommandEmpty>No country found.</CommandEmpty>
+            <CommandGroup>
+              {countries.map((country) => (
+                <CommandItem
+                  key={country.id}
+                  value={country.name}
+                  onSelect={(selectedName) => {
+                    const next = countries.find((c) => c.name === selectedName) || null;
+                    onValueChange(next ? next.name : '');
+                    onCountrySelect?.(next);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      selectedCountry?.code === country.code ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
+                  {country.flag_emoji && (
+                    <span className="mr-2" style={{ fontSize: '1.25rem' }}>
+                      {country.flag_emoji}
+                    </span>
+                  )}
+                  <span>{country.name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
