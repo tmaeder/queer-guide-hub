@@ -10,8 +10,7 @@ import {
   type VisibilityState,
   type GroupingState,
 } from '@tanstack/react-table';
-import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 import { MoreVertical } from 'lucide-react';
 import {
   DropdownMenu,
@@ -185,10 +184,7 @@ export function AdminDataTable<TData extends { id: string }>({
     onBulkEditSuccess?.();
   };
   return (
-    <Paper
-      elevation={0}
-      sx={{ border: '1px solid var(--border, #e4e4e7)', borderRadius: 2, overflow: 'hidden' }}
-    >
+    <div className="border border-border rounded-md overflow-hidden bg-background">
       <DataTableToolbar
         search={state.search}
         onSearchChange={setSearch}
@@ -239,13 +235,11 @@ export function AdminDataTable<TData extends { id: string }>({
               {enableSelection && (
                 <th style={{ width: 44, padding: '0 8px' }}>
                   <Checkbox
-                    checked={allSelected}
-                    indeterminate={someSelected}
-                    onChange={() => {
+                    checked={someSelected ? 'indeterminate' : allSelected}
+                    onCheckedChange={() => {
                       if (allSelected) clearSelection();
                       else selectAll(allRowIds);
                     }}
-                    size="small"
                   />
                 </th>
               )}
@@ -273,8 +267,7 @@ export function AdminDataTable<TData extends { id: string }>({
                     <TableCell style={{ width: 44, padding: '0 8px' }}>
                       <Checkbox
                         checked={isSelected}
-                        onChange={() => toggleRow(row.original.id)}
-                        size="small"
+                        onCheckedChange={() => toggleRow(row.original.id)}
                       />
                     </TableCell>
                   )}
@@ -329,6 +322,6 @@ export function AdminDataTable<TData extends { id: string }>({
         onPageSizeChange={setPageSize}
         selectedCount={state.selectedIds.size}
       />
-    </Paper>
+    </div>
   );
 }
