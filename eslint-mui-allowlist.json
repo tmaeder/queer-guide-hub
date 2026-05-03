@@ -79,7 +79,6 @@
   "src/pages/NotFound.tsx",
   "src/pages/QueerVillageDetail.parts.tsx",
   "src/pages/SearchResults.tsx",
-  "src/pages/Travel.tsx",
   "src/pages/Venues.tsx",
   "src/pages/trips/SharedTripPage.tsx",
   "src/pages/trips/TripPlannerPage.tsx",
