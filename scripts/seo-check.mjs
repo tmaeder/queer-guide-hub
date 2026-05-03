@@ -49,10 +49,6 @@ async function check(path) {
   ]);
   const html = await humanRes.text();
   const botHtml = await botRes.text();
-async function check(path) {
-  const url = `${BASE.replace(/\/$/, '')}${path}`;
-  const res = await fetch(url, { headers: { 'User-Agent': 'queer-guide-seo-check/1' } });
-  const html = await res.text();
   const title = pick(html, /<title[^>]*>([\s\S]*?)<\/title>/i);
   const description = pick(html, /<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
   const canonical = pick(html, /<link\s+rel=["']canonical["']\s+href=["']([^"']*)["']/i);
@@ -73,7 +69,6 @@ async function check(path) {
     botH1,
     botBodySize,
   };
-  return { path, url, status: res.status, title, description, canonical, ogImage, hasJsonLd };
 }
 
 const fail = (msg, ctx) => {
