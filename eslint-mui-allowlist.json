@@ -110,7 +110,6 @@
   "src/components/personalization/TravelPrefsPrompt.tsx",
   "src/components/posts/CommentsSection.tsx",
   "src/components/posts/PostCard.tsx",
-  "src/components/profile/AvatarSettings.tsx",
   "src/components/profile/TravelPreferencesEditor.tsx",
   "src/components/profile/UrlValidator.tsx",
   "src/components/profile/UserRelationshipActions.tsx",
