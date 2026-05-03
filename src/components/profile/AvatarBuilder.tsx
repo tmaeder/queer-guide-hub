@@ -4,8 +4,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RefreshCw, Save } from "lucide-react";
 import { BigHead } from "@bigheads/core";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface AvatarBuilderProps {
   onSave: (avatarConfig: AvatarConfig) => void;
@@ -89,18 +87,18 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
   return (
     <Card>
       <CardHeader>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6">Avatar Builder</Typography>
+        <div className="flex items-center justify-between">
+          <h6 className="text-lg font-semibold">Avatar Builder</h6>
           <Button variant="outline" onClick={randomize} size="sm">
             <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
             Randomize
           </Button>
-        </Box>
+        </div>
       </CardHeader>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-            <Box sx={{ width: 128, height: 128 }}>
+        <div className="flex flex-col gap-6">
+          <div className="flex justify-center mb-6">
+            <div style={{ width: 128, height: 128 }}>
               <BigHead
                 accessory={config.accessory}
                 body={config.body}
@@ -121,15 +119,15 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
                 skinTone={config.skinTone}
                 circleColor={config.circleColor}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, maxHeight: 384, overflowY: 'auto' }}>
+          <div className="grid grid-cols-2 gap-4 overflow-y-auto" style={{ maxHeight: 384 }}>
             {Object.entries(avatarOptions).map(([key, options]) => (
-              <Box key={key}>
-                <Typography variant="body2" sx={{ fontWeight: 500, textTransform: 'capitalize', mb: 1, display: 'block' }}>
+              <div key={key}>
+                <p className="text-sm font-medium capitalize mb-2 block">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
-                </Typography>
+                </p>
                 <Select
                   value={String(config[key as keyof AvatarConfig])}
                   onValueChange={(value) => {
@@ -143,32 +141,28 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
                   <SelectContent>
                     {options.map((option: string | boolean) => (
                       <SelectItem key={String(option)} value={String(option)}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <span className="flex items-center gap-2">
                           {key.includes('Color') && typeof option === 'string' && (
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: 1,
-                              }}
-                              style={{ backgroundColor: option }}
+                            <span
+                              className="rounded"
+                              style={{ width: 16, height: 16, backgroundColor: option, display: 'inline-block' }}
                             />
                           )}
                           {String(option)}
-                        </Box>
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </Box>
+              </div>
             ))}
-          </Box>
+          </div>
 
           <Button onClick={() => onSave(config)} style={{ width: '100%' }}>
             <Save style={{ width: 16, height: 16, marginRight: 8 }} />
             Save Avatar
           </Button>
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

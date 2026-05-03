@@ -41,8 +41,6 @@ import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface TagRow {
   id: string;
@@ -171,12 +169,7 @@ export default function AdminTags() {
       columnHelper.accessor('slug', {
         header: 'Slug',
         cell: (info) => (
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: 'monospace', fontSize: 12, color: 'text.secondary' }}
-          >
-            {info.getValue()}
-          </Typography>
+          <span className="font-mono text-xs text-muted-foreground">{info.getValue()}</span>
         ),
         meta: {
           serverSortable: true,
@@ -218,23 +211,11 @@ export default function AdminTags() {
         cell: (info) => {
           const desc = info.getValue();
           if (!desc)
-            return (
-              <Typography variant="body2" color="text.secondary">
-                -
-              </Typography>
-            );
+            return <span className="text-sm text-muted-foreground">-</span>;
           return (
-            <Typography
-              variant="body2"
-              sx={{
-                maxWidth: 300,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <span className="text-sm max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap block">
               {desc}
-            </Typography>
+            </span>
           );
         },
         meta: { defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
@@ -309,7 +290,7 @@ export default function AdminTags() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           <TagsCsvImport onImportComplete={() => window.location.reload()} />
           <ExportExcelButton
             onExport={async () => {
@@ -334,13 +315,13 @@ export default function AdminTags() {
           <BatchAutoTagDialog onComplete={() => window.location.reload()} />
           <BatchGeoLinkDialog onComplete={() => window.location.reload()} />
           <Button variant="outline" size="sm" onClick={handleBulkEditDescriptions}>
-            <Edit style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Edit className="h-3.5 w-3.5 mr-1" />
             Bulk Descriptions
           </Button>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" onClick={resetForm}>
-                <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
+                <Plus className="h-3.5 w-3.5 mr-1" />
                 Create
               </Button>
             </DialogTrigger>
@@ -348,12 +329,8 @@ export default function AdminTags() {
               <DialogHeader>
                 <DialogTitle>{editingTag ? 'Edit Tag' : 'Create New Tag'}</DialogTitle>
               </DialogHeader>
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-              >
-                <Box>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div>
                   <Label htmlFor="name">Tag Name</Label>
                   <Input
                     id="name"
@@ -361,8 +338,8 @@ export default function AdminTags() {
                     onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                     required
                   />
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label htmlFor="category">Category</Label>
                   <Select
                     value={formData.category}
@@ -386,8 +363,8 @@ export default function AdminTags() {
                       ))}
                     </SelectContent>
                   </Select>
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
@@ -395,20 +372,20 @@ export default function AdminTags() {
                     onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
                     rows={3}
                   />
-                </Box>
+                </div>
                 <TagImageUpload
                   currentImageUrl={formData.image_url}
                   onImageChange={(url) => setFormData((p) => ({ ...p, image_url: url }))}
                   tagName={formData.name}
                 />
                 {editingTag && <TagAliasesSection tagId={editingTag.id} />}
-                <Button type="submit" style={{ width: '100%' }}>
+                <Button type="submit" className="w-full">
                   {editingTag ? 'Update Tag' : 'Create Tag'}
                 </Button>
-              </Box>
+              </form>
             </DialogContent>
           </Dialog>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are stable, adding would defeat memoization
@@ -422,34 +399,31 @@ export default function AdminTags() {
       config={tableConfig}
       beforeTable={
         <>
-          <Box sx={{ mb: 3 }}>
+          <div className="mb-6">
             <TagCategorizer />
-          </Box>
+          </div>
           <TagMergeCandidates />
         </>
       }
       afterTable={
         <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
-          <DialogContent style={{ maxWidth: 896, maxHeight: '80vh', overflowY: 'auto' }}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Bulk Edit Tag Descriptions</DialogTitle>
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-sm text-muted-foreground">
                 Add descriptions to tags that don't have them.
-              </Typography>
+              </p>
             </DialogHeader>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               {Object.entries(bulkEditTags).map(([tagId, description]) => {
                 const tag = tags.find((t) => t.id === tagId);
                 if (!tag) return null;
                 return (
-                  <Box
-                    key={tagId}
-                    sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <span style={{ fontWeight: 500 }}>{tag.name}</span>
+                  <div key={tagId} className="border border-border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium">{tag.name}</span>
                       <Badge variant="outline">{tag.category}</Badge>
-                    </Box>
+                    </div>
                     <Textarea
                       value={description}
                       onChange={(e) =>
@@ -458,27 +432,25 @@ export default function AdminTags() {
                       placeholder="Enter description..."
                       rows={2}
                     />
-                  </Box>
+                  </div>
                 );
               })}
               {Object.keys(bulkEditTags).length === 0 && (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    All tags have descriptions!
-                  </Typography>
-                </Box>
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">All tags have descriptions!</p>
+                </div>
               )}
               {Object.keys(bulkEditTags).length > 0 && (
-                <Box sx={{ display: 'flex', gap: 1, pt: 2 }}>
-                  <Button onClick={saveBulkDescriptions} style={{ flex: 1 }}>
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={saveBulkDescriptions} className="flex-1">
                     Save All ({Object.keys(bulkEditTags).length} tags)
                   </Button>
                   <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
                     Cancel
                   </Button>
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
           </DialogContent>
         </Dialog>
       }

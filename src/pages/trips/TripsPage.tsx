@@ -1,8 +1,4 @@
 import { useMemo, useState } from 'react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Skeleton from '@mui/material/Skeleton';
 import { Plus, Map, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -24,6 +20,7 @@ import {
 } from '@/components/trips/tripsFilters';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TripsPage() {
   const { t } = useTranslation();
@@ -50,42 +47,24 @@ export default function TripsPage() {
   const isFiltered = search.trim() !== '' || statusFilter !== 'all';
 
   return (
-    <Container sx={{ py: { xs: 4, md: 6 } }}>
+    <div className="container mx-auto py-8 md:py-12 px-4">
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { sm: 'center' },
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 4,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h3"
-            sx={{ fontSize: { xs: '1.75rem', md: '2.25rem' }, mb: 0.5 }}
-          >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h3 className="text-3xl md:text-4xl mb-1">
             {t('trips.title')}
             {hasAnyTrips && (
-              <Box
-                component="span"
-                sx={{
-                  ml: 1.25,
-                  color: 'text.secondary',
-                  fontSize: '0.65em',
-                  fontWeight: 500,
-                  fontVariantNumeric: 'tabular-nums',
-                }}
+              <span
+                className="ml-3 text-muted-foreground font-medium tabular-nums"
+                style={{ fontSize: '0.65em' }}
               >
                 · {trips?.length}
-              </Box>
+              </span>
             )}
-          </Typography>
-          <Typography color="text.secondary">{t('trips.subtitle')}</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+          </h3>
+          <p className="text-muted-foreground">{t('trips.subtitle')}</p>
+        </div>
+        <div className="flex gap-2">
           <Button
             variant="outline"
             size="lg"
@@ -105,13 +84,12 @@ export default function TripsPage() {
             <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
             {t('trips.create')}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Travel inbox — unattached reservations, suggestions, forwarding address */}
+      {/* Travel inbox */}
       <TripsInboxSection />
 
-      {/* Toolbar — hide while loading or completely empty */}
       {hasAnyTrips && (
         <TripsToolbar
           search={search}
@@ -124,31 +102,14 @@ export default function TripsPage() {
         />
       )}
 
-      {/* Loading */}
       {isLoading && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              lg: 'repeat(3, 1fr)',
-            },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton
-              key={i}
-              variant="rounded"
-              height={240}
-              sx={{ borderRadius: 2 }}
-            />
+            <Skeleton key={i} className="h-60 rounded-md" />
           ))}
-        </Box>
+        </div>
       )}
 
-      {/* Error */}
       {error && !isLoading && (
         <ErrorState
           message={t('trips.error')}
@@ -158,9 +119,8 @@ export default function TripsPage() {
         />
       )}
 
-      {/* Empty — no trips at all */}
       {!isLoading && !error && !hasAnyTrips && (
-        <Box sx={{ mt: 2 }}>
+        <div className="mt-4">
           <EmptyState
             icon={Map}
             title={t('trips.empty.title')}
@@ -173,10 +133,9 @@ export default function TripsPage() {
             }}
           />
           <TripTemplates />
-        </Box>
+        </div>
       )}
 
-      {/* Filtered empty — user has trips but the filter hides them */}
       {!isLoading &&
         !error &&
         hasAnyTrips &&
@@ -196,40 +155,21 @@ export default function TripsPage() {
           />
         )}
 
-      {/* Populated grid */}
       {!isLoading && !error && visibleTrips.length > 0 && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              lg: 'repeat(3, 1fr)',
-            },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleTrips.map((trip) => (
             <TripCard key={trip.id} trip={trip} />
           ))}
-        </Box>
+        </div>
       )}
 
-      {/* Show templates below grid when user has few trips */}
       {!isLoading && !error && hasAnyTrips && !isFiltered && (
-        <Box
-          sx={{
-            mt: 6,
-            pt: 5,
-            borderTop: 1,
-            borderColor: 'divider',
-          }}
-        >
+        <div className="mt-12 pt-10 border-t border-border">
           <TripTemplates />
-        </Box>
+        </div>
       )}
 
       <CreateTripDialog open={createOpen} onClose={() => setCreateOpen(false)} />
-    </Container>
+    </div>
   );
 }

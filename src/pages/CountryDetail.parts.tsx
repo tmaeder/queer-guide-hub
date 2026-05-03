@@ -15,11 +15,8 @@ import {
   Activity,
   Shield,
   Info,
+  Loader2,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -87,31 +84,10 @@ export function getWeatherIcon(condition: string) {
 
 export function SectionLoader({ label }: { label: string }) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        py: 6,
-        gap: 1.5,
-      }}
-    >
-      <Box
-        sx={{
-          animation: 'spin 1s linear infinite',
-          height: 24,
-          width: 24,
-          border: '2px solid',
-          borderColor: 'primary.main',
-          borderTopColor: 'transparent',
-          borderRadius: '50%',
-        }}
-      />
-      <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-        Loading {label}...
-      </Typography>
-    </Box>
+    <div className="flex flex-col items-center justify-center py-12 gap-3">
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <p className="text-sm text-muted-foreground">Loading {label}...</p>
+    </div>
   );
 }
 
@@ -127,75 +103,40 @@ export function CountryHero({ country, cities, weatherData }: CountryHeroProps) 
   const subtitle = [continentName, regionName].filter(Boolean).join(', ');
 
   return (
-    <Box>
-      <Box sx={{ position: 'relative', mb: 3 }}>
+    <div>
+      <div className="relative mb-6">
         <CountryHeroImages country={country} />
-      </Box>
+      </div>
 
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 2,
-          mb: 1.5,
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontSize: { xs: '2rem', lg: '2.75rem' },
-                fontWeight: 700,
-                color: 'text.primary',
-              }}
-            >
+      <div className="flex items-start justify-between flex-wrap gap-4 mb-3">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-4">
+            <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
               {country.flag_emoji} {country.name}
-            </Typography>
-          </Box>
+            </h3>
+          </div>
           {subtitle && (
-            <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary' }}>
-              {subtitle}
-            </Typography>
+            <p className="text-lg text-muted-foreground">{subtitle}</p>
           )}
-        </Box>
+        </div>
 
         {weatherData?.current && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              bgcolor: 'action.hover',
-              borderRadius: '9999px',
-              px: 2,
-              py: 1,
-            }}
-          >
+          <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2">
             {(() => {
               const WeatherIcon = getWeatherIcon(weatherData.current.condition);
               return <WeatherIcon style={{ height: 20, width: 20 }} />;
             })()}
-            <Box component="span" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
+            <span className="text-lg font-semibold">
               {Math.round(weatherData.current.temperature)}°C
-            </Box>
-            <Box
-              component="span"
-              sx={{
-                fontSize: '0.875rem',
-                color: 'text.secondary',
-                display: { xs: 'none', sm: 'inline' },
-              }}
-            >
+            </span>
+            <span className="text-sm text-muted-foreground hidden sm:inline">
               {country.capital || country.name}
-            </Box>
-          </Box>
+            </span>
+          </div>
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1, alignItems: 'center' }}>
+      <div className="flex gap-2 flex-wrap mb-2 items-center">
         <ReportButton contentType="countries" contentId={country.id} contentName={country.name} />
         <AdminEditButton
           contentType="countries"
@@ -205,39 +146,31 @@ export function CountryHero({ country, cities, weatherData }: CountryHeroProps) 
           onSaved={() => window.location.reload()}
         />
         {country.capital && (
-          <Chip
-            icon={<Star style={{ height: 14, width: 14 }} />}
-            label={`Capital: ${country.capital}`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Star style={{ height: 14, width: 14 }} />
+            Capital: {country.capital}
+          </Badge>
         )}
         {country.population && (
-          <Chip
-            icon={<Users style={{ height: 14, width: 14 }} />}
-            label={`${(country.population / 1e6).toFixed(1)}M people`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Users style={{ height: 14, width: 14 }} />
+            {(country.population / 1e6).toFixed(1)}M people
+          </Badge>
         )}
         {country.area_km2 && (
-          <Chip
-            icon={<MapIcon style={{ height: 14, width: 14 }} />}
-            label={`${country.area_km2.toLocaleString()} km²`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <MapIcon style={{ height: 14, width: 14 }} />
+            {country.area_km2.toLocaleString()} km²
+          </Badge>
         )}
         {cities.length > 0 && (
-          <Chip
-            icon={<Building2 style={{ height: 14, width: 14 }} />}
-            label={`${cities.length} cities`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Building2 style={{ height: 14, width: 14 }} />
+            {cities.length} cities
+          </Badge>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -253,15 +186,9 @@ export function CountryOverviewTab({
   sdgData,
 }: CountryOverviewTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       <ScrollReveal direction="up">
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' },
-            gap: 3,
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
           <Card>
             <CardHeader>
               <CardTitle>
@@ -270,10 +197,10 @@ export function CountryOverviewTab({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+              <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                 {country.description ||
                   `Discover everything about ${country.name} – from major cities and cultural landmarks to local venues and upcoming events.`}
-              </Typography>
+              </p>
             </CardContent>
           </Card>
 
@@ -316,7 +243,7 @@ export function CountryOverviewTab({
               )}
             </CardContent>
           </Card>
-        </Box>
+        </div>
       </ScrollReveal>
 
       <LocationInfo
@@ -340,7 +267,7 @@ export function CountryOverviewTab({
 
       <WorldBankDataPanel data={worldBankData} countryName={country.name} />
       <SDGDataPanel data={sdgData} countryName={country.name} />
-    </Box>
+    </div>
   );
 }
 
@@ -353,29 +280,18 @@ interface FactRowProps {
 
 function FactRow({ icon: Icon, label, value, alignRight }: FactRowProps) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        p: 1.5,
-        borderRadius: 2,
-        bgcolor: 'action.hover',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+      <div className="flex items-center gap-2">
         <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
-        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{label}</Typography>
-      </Box>
-      <Typography
-        sx={{
-          fontWeight: 700,
-          ...(alignRight ? { textAlign: 'right', maxWidth: '60%' } : {}),
-        }}
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <span
+        className="font-bold"
+        style={alignRight ? { textAlign: 'right', maxWidth: '60%' } : undefined}
       >
         {value}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 }
 
@@ -385,26 +301,21 @@ export interface CountryRightsTabProps {
 
 export function CountryRightsTab({ country }: CountryRightsTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography
-            variant="h2"
-            sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
-          >
-            LGBTI Rights
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">LGBTI Rights</h2>
+          <p className="text-muted-foreground mt-1">
             Legal protections and rights status in {country.name}
-          </Typography>
-        </Box>
-      </Box>
+          </p>
+        </div>
+      </div>
 
       <LGBTJurisdictionInfo
         country={country}
         style={{ boxShadow: 'none', borderColor: 'inherit' }}
       />
-    </Box>
+    </div>
   );
 }
 
@@ -416,47 +327,27 @@ export interface CountryCitiesTabProps {
 
 export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCitiesTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography
-            variant="h2"
-            sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
-          >
-            Major Cities
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Major Cities</h2>
+          <p className="text-muted-foreground mt-1">
             Explore the most important cities in {country.name}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
           {cities.length} cities
         </Badge>
-      </Box>
+      </div>
 
       {citiesLoading ? (
         <SectionLoader label="cities" />
       ) : cities.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: '1fr 1fr',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {cities.map((city: CityRelation) => (
-            <Box
+            <div
               key={city.id}
-              sx={{
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                '&:hover': { transform: 'scale(1.03)' },
-              }}
+              className="cursor-pointer transition-transform duration-200 hover:scale-[1.03]"
             >
               <DirectoryCard
                 type="city"
@@ -464,9 +355,9 @@ export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCiti
                 data={city}
                 onClick={() => (window.location.href = `/city/${city.slug || city.id}`)}
               />
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       ) : (
         <EmptyCard
           icon={Building2}
@@ -474,7 +365,7 @@ export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCiti
           description="No cities are currently listed for this country."
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -486,46 +377,32 @@ export interface CountryVenuesTabProps {
 
 export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography
-            variant="h2"
-            sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
-          >
-            Local Venues
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Local Venues</h2>
+          <p className="text-muted-foreground mt-1">
             Discover amazing places to visit in {country.name}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
           {venues.length} venues
         </Badge>
-      </Box>
+      </div>
 
       {loading ? (
         <SectionLoader label="venues" />
       ) : venues.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-            gap: 3,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {venues.map((venue: VenueRelation) => (
-            <Box
+            <div
               key={venue.id}
-              sx={{
-                transition: 'transform 0.2s',
-                '&:hover': { transform: 'scale(1.03)' },
-              }}
+              className="transition-transform duration-200 hover:scale-[1.03]"
             >
               <VenueCard venue={venue} />
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       ) : (
         <EmptyCard
           icon={MapPin}
@@ -533,7 +410,7 @@ export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabP
           description={`Be the first to add venues from ${country.name}!`}
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -545,46 +422,32 @@ export interface CountryEventsTabProps {
 
 export function CountryEventsTab({ country, events, eventsLoading }: CountryEventsTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography
-            variant="h2"
-            sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
-          >
-            Upcoming Events
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Upcoming Events</h2>
+          <p className="text-muted-foreground mt-1">
             Don't miss out on exciting events happening in {country.name}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
           {events.length} events
         </Badge>
-      </Box>
+      </div>
 
       {eventsLoading ? (
         <SectionLoader label="events" />
       ) : events.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-            gap: 3,
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((event: EventRelation) => (
-            <Box
+            <div
               key={event.id}
-              sx={{
-                transition: 'transform 0.2s',
-                '&:hover': { transform: 'scale(1.03)' },
-              }}
+              className="transition-transform duration-200 hover:scale-[1.03]"
             >
               <EventCard event={event} />
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       ) : (
         <EmptyCard
           icon={Calendar}
@@ -592,7 +455,7 @@ export function CountryEventsTab({ country, events, eventsLoading }: CountryEven
           description="No events are currently scheduled for this country."
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -602,18 +465,13 @@ export interface CountryTravelTabProps {
 
 export function CountryTravelTab({ country }: CountryTravelTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography
-          variant="h2"
-          sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
-        >
-          Travel & Tours
-        </Typography>
-        <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+    <div className="flex flex-col gap-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Travel & Tours</h2>
+        <p className="text-muted-foreground mt-1">
           Find flights and experiences in {country.name}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       <TravelDealsSection
         destinationCity={country.capital || country.name}
@@ -635,7 +493,7 @@ export function CountryTravelTab({ country }: CountryTravelTabProps) {
           />
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }
 
@@ -653,46 +511,32 @@ export function CountryNewsTab({
   onViewArticle,
 }: CountryNewsTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography
-            variant="h2"
-            sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
-          >
-            Local News
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Local News</h2>
+          <p className="text-muted-foreground mt-1">
             Stay updated with the latest news from {country.name}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
           {articles.length} articles
         </Badge>
-      </Box>
+      </div>
 
       {newsLoading ? (
         <SectionLoader label="news" />
       ) : articles.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-            gap: 3,
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((article: ArticleRelation) => (
-            <Box
+            <div
               key={article.id}
-              sx={{
-                transition: 'transform 0.2s',
-                '&:hover': { transform: 'scale(1.03)' },
-              }}
+              className="transition-transform duration-200 hover:scale-[1.03]"
             >
               <NewsCard article={article} onViewArticle={onViewArticle} />
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       ) : (
         <EmptyCard
           icon={Newspaper}
@@ -700,7 +544,7 @@ export function CountryNewsTab({
           description={`No news articles are currently available for ${country.name}.`}
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -715,9 +559,9 @@ export function CountryMapTab({ country, ExploreMap, Suspense }: CountryMapTabPr
   return (
     <Suspense
       fallback={
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={32} aria-label="Loading" />
-        </Box>
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+        </div>
       }
     >
       <ExploreMap
@@ -743,27 +587,15 @@ function EmptyCard({ icon: Icon, title, description }: EmptyCardProps) {
   return (
     <Card>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box
-            sx={{
-              p: 2,
-              bgcolor: 'action.hover',
-              borderRadius: '50%',
-              width: 80,
-              height: 80,
-              mx: 'auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <div className="flex flex-col gap-4">
+          <div className="p-4 bg-muted rounded-full w-20 h-20 mx-auto flex items-center justify-center">
             <Icon style={{ height: 40, width: 40, color: 'hsl(var(--muted-foreground))' }} />
-          </Box>
-          <Box>
-            <Typography sx={{ fontSize: '1.125rem', fontWeight: 600 }}>{title}</Typography>
-            <Typography sx={{ color: 'text.secondary' }}>{description}</Typography>
-          </Box>
-        </Box>
+          </div>
+          <div>
+            <p className="text-lg font-semibold">{title}</p>
+            <p className="text-muted-foreground">{description}</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

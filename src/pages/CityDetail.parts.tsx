@@ -23,11 +23,8 @@ import {
   Map as MapIcon,
   ChevronDown,
   Luggage,
+  Loader2,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -105,33 +102,18 @@ export function CityHero({
         countryName={city.countries?.name || ''}
       />
 
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 1,
-        }}
-      >
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0.5 }}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontSize: { xs: '2rem', lg: '2.75rem' },
-                fontWeight: 700,
-                color: 'text.primary',
-              }}
-            >
+      <div className="flex items-start justify-between gap-4 mb-2">
+        <div>
+          <div className="flex items-center gap-4 mb-1">
+            <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
               {city.countries?.flag_emoji && <>{city.countries.flag_emoji} </>}
               {city.name}
-            </Typography>
+            </h3>
             {city.countries?.equality_score != null && (
               <EqualityScoreBadge score={city.countries.equality_score} size="md" />
             )}
-          </Box>
-          <Typography sx={{ fontSize: '1.125rem', color: 'text.secondary', mb: 1 }}>
+          </div>
+          <p className="text-lg text-muted-foreground mb-2">
             {city.region_name && `${city.region_name}, `}
             {city.countries ? (
               <LocalizedLink
@@ -146,10 +128,10 @@ export function CityHero({
                 {city.countries.name}
               </LocalizedLink>
             ) : null}
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, mt: 1, flexWrap: 'wrap' }}>
+        <div className="flex gap-2 flex-shrink-0 mt-2 flex-wrap">
           <ReportButton contentType="cities" contentId={city.id} contentName={city.name} />
           <AdminEditButton
             contentType="cities"
@@ -177,69 +159,53 @@ export function CityHero({
               </a>
             </Button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+      <div className="flex gap-2 flex-wrap mb-4">
         {city.is_capital && (
-          <Chip
-            icon={<Building style={{ height: 14, width: 14 }} />}
-            label="Capital City"
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Building style={{ height: 14, width: 14 }} />
+            Capital City
+          </Badge>
         )}
         {city.is_major_city && (
-          <Chip
-            icon={<MapPin style={{ height: 14, width: 14 }} />}
-            label="Major City"
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <MapPin style={{ height: 14, width: 14 }} />
+            Major City
+          </Badge>
         )}
         {city.population && (
-          <Chip
-            icon={<Users style={{ height: 14, width: 14 }} />}
-            label={formatPopulation(city.population)}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Users style={{ height: 14, width: 14 }} />
+            {formatPopulation(city.population)}
+          </Badge>
         )}
         {city.timezone && (
-          <Chip
-            icon={<Clock style={{ height: 14, width: 14 }} />}
-            label={city.timezone}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Clock style={{ height: 14, width: 14 }} />
+            {city.timezone}
+          </Badge>
         )}
         {effectiveIata && (
-          <Chip
-            icon={<Plane style={{ height: 14, width: 14 }} />}
-            label={hasAirport ? effectiveIata : `~${effectiveIata} (nearest)`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Plane style={{ height: 14, width: 14 }} />
+            {hasAirport ? effectiveIata : `~${effectiveIata} (nearest)`}
+          </Badge>
         )}
         {city.climate_type && (
-          <Chip
-            icon={<Thermometer style={{ height: 14, width: 14 }} />}
-            label={city.climate_type}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Thermometer style={{ height: 14, width: 14 }} />
+            {city.climate_type}
+          </Badge>
         )}
         {city.lgbt_friendly_rating && (
-          <Chip
-            icon={
-              <Star style={{ height: 14, width: 14, fill: 'currentColor', color: 'inherit' }} />
-            }
-            label={`${city.lgbt_friendly_rating}/5 LGBTQ+ Friendly`}
-            size="small"
-            variant="outlined"
-          />
+          <Badge variant="outline" className="gap-1">
+            <Star style={{ height: 14, width: 14, fill: 'currentColor', color: 'inherit' }} />
+            {city.lgbt_friendly_rating}/5 LGBTQ+ Friendly
+          </Badge>
         )}
-      </Box>
+      </div>
     </>
   );
 }
@@ -262,9 +228,9 @@ export function CityOverviewTab({
   nearestAirport,
 }: CityOverviewTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+    <div className="flex flex-col gap-6 mt-6">
       <ScrollReveal direction="up">
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '3fr 2fr' }, gap: 3 }}>
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6">
           <Card>
             <CardHeader>
               <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -273,10 +239,10 @@ export function CityOverviewTab({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+              <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                 {city.description ||
                   `Discover ${city.name} – from local venues and cultural landmarks to upcoming events.`}
-              </Typography>
+              </p>
             </CardContent>
           </Card>
 
@@ -308,7 +274,7 @@ export function CityOverviewTab({
               )}
             </CardContent>
           </Card>
-        </Box>
+        </div>
       </ScrollReveal>
 
       <LocationInfo name={city.name} type="city" />
@@ -372,51 +338,24 @@ export function CityOverviewTab({
               </CardHeader>
               <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {city.climate_type && (
-                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                      <Thermometer
-                        style={{
-                          height: 16,
-                          width: 16,
-                          color: 'hsl(var(--muted-foreground))',
-                        }}
-                      />
-                      <Typography
-                        component="span"
-                        sx={{ fontSize: '0.875rem', fontWeight: 500 }}
-                      >
-                        Climate
-                      </Typography>
-                    </Box>
-                    <Typography component="span" sx={{ fontWeight: 700 }}>
-                      {city.climate_type}
-                    </Typography>
-                  </Box>
+                  <div className="p-3 rounded-lg bg-muted">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Thermometer style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                      <span className="text-sm font-medium">Climate</span>
+                    </div>
+                    <span className="font-bold">{city.climate_type}</span>
+                  </div>
                 )}
                 {city.latitude && city.longitude && (
-                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                      <MapPin
-                        style={{
-                          height: 16,
-                          width: 16,
-                          color: 'hsl(var(--muted-foreground))',
-                        }}
-                      />
-                      <Typography
-                        component="span"
-                        sx={{ fontSize: '0.875rem', fontWeight: 500 }}
-                      >
-                        Coordinates
-                      </Typography>
-                    </Box>
-                    <Typography
-                      component="span"
-                      sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
-                    >
+                  <div className="p-3 rounded-lg bg-muted">
+                    <div className="flex items-center gap-2 mb-1">
+                      <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                      <span className="text-sm font-medium">Coordinates</span>
+                    </div>
+                    <span className="font-mono text-sm">
                       {city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -430,14 +369,9 @@ export function CityOverviewTab({
               </CardHeader>
               <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {city.postal_codes && city.postal_codes.length > 0 && (
-                  <Box>
-                    <Typography
-                      component="span"
-                      sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}
-                    >
-                      Postal Codes
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div>
+                    <span className="text-sm font-medium mb-2 block">Postal Codes</span>
+                    <div className="flex flex-wrap gap-1">
                       {city.postal_codes.slice(0, 3).map((code: string, index: number) => (
                         <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                           {code}
@@ -448,53 +382,37 @@ export function CityOverviewTab({
                           +{city.postal_codes.length - 3} more
                         </Badge>
                       )}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
                 {city.area_codes && city.area_codes.length > 0 && (
-                  <Box>
-                    <Typography
-                      component="span"
-                      sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1, display: 'block' }}
-                    >
-                      Area Codes
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div>
+                    <span className="text-sm font-medium mb-2 block">Area Codes</span>
+                    <div className="flex flex-wrap gap-1">
                       {city.area_codes.map((code: string, index: number) => (
                         <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                           <Phone style={{ height: 12, width: 12, marginRight: 4 }} />
                           {code}
                         </Badge>
                       ))}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
                 {effectiveIata && (
-                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                      <Plane
-                        style={{
-                          height: 16,
-                          width: 16,
-                          color: 'hsl(var(--muted-foreground))',
-                        }}
-                      />
-                      <Typography
-                        component="span"
-                        sx={{ fontSize: '0.875rem', fontWeight: 500 }}
-                      >
+                  <div className="p-3 rounded-lg bg-muted">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Plane style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                      <span className="text-sm font-medium">
                         {hasAirport ? 'Major Airport' : 'Nearest Airport'}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                     <Badge variant="outline">{effectiveIata}</Badge>
                     {!hasAirport && nearestAirport && (
-                      <Typography
-                        sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}
-                      >
+                      <p className="text-xs text-muted-foreground mt-1">
                         {nearestAirport.city_name} — {nearestAirport.distanceKm} km
-                      </Typography>
+                      </p>
                     )}
-                  </Box>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -508,48 +426,21 @@ export function CityOverviewTab({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        md: 'repeat(2, 1fr)',
-                        lg: 'repeat(3, 1fr)',
-                      },
-                      gap: 2,
-                    }}
-                  >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {Object.entries(city.demographics).map(([key, value]) => (
-                      <Box key={key} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                        <Typography
-                          component="span"
-                          sx={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            textTransform: 'capitalize',
-                            display: 'block',
-                            mb: 0.5,
-                          }}
-                        >
+                      <div key={key} className="p-3 rounded-lg bg-muted">
+                        <span className="text-sm font-medium capitalize block mb-1">
                           {key.replace(/_/g, ' ')}
-                        </Typography>
-                        <Typography component="span" sx={{ fontWeight: 700 }}>
-                          {String(value)}
-                        </Typography>
-                      </Box>
+                        </span>
+                        <span className="font-bold">{String(value)}</span>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-                gap: 3,
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {city.economy_sectors && city.economy_sectors.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -559,13 +450,13 @@ export function CityOverviewTab({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <div className="flex flex-wrap gap-2">
                       {city.economy_sectors.map((sector: string, index: number) => (
                         <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                           {sector}
                         </Badge>
                       ))}
-                    </Box>
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -578,39 +469,23 @@ export function CityOverviewTab({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <div className="flex flex-col gap-3">
                       {Object.entries(city.cost_of_living).map(([key, value]) => (
-                        <Box
+                        <div
                           key={key}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'action.hover',
-                          }}
+                          className="flex items-center justify-between p-3 rounded-lg bg-muted"
                         >
-                          <Typography
-                            component="span"
-                            sx={{
-                              fontSize: '0.875rem',
-                              fontWeight: 500,
-                              textTransform: 'capitalize',
-                            }}
-                          >
+                          <span className="text-sm font-medium capitalize">
                             {key.replace(/_/g, ' ')}
-                          </Typography>
-                          <Typography component="span" sx={{ fontWeight: 700 }}>
-                            {String(value)}
-                          </Typography>
-                        </Box>
+                          </span>
+                          <span className="font-bold">{String(value)}</span>
+                        </div>
                       ))}
-                    </Box>
+                    </div>
                   </CardContent>
                 </Card>
               )}
-            </Box>
+            </div>
 
             {city.universities && city.universities.length > 0 && (
               <Card>
@@ -621,42 +496,21 @@ export function CityOverviewTab({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        md: 'repeat(2, 1fr)',
-                        lg: 'repeat(3, 1fr)',
-                      },
-                      gap: 1.5,
-                    }}
-                  >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {city.universities.map((university: string, index: number) => (
-                      <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div key={index} className="p-3 rounded-lg bg-muted">
+                        <div className="flex items-center gap-2">
                           <GraduationCap style={{ height: 16, width: 16 }} />
-                          <Typography
-                            component="span"
-                            sx={{ fontWeight: 500, fontSize: '0.875rem' }}
-                          >
-                            {university}
-                          </Typography>
-                        </Box>
-                      </Box>
+                          <span className="font-medium text-sm">{university}</span>
+                        </div>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-                gap: 3,
-              }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {city.notable_landmarks && city.notable_landmarks.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -666,18 +520,16 @@ export function CityOverviewTab({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'grid', gap: 1.5 }}>
+                    <div className="grid gap-3">
                       {city.notable_landmarks.map((landmark: string, index: number) => (
-                        <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <div key={index} className="p-3 rounded-lg bg-muted">
+                          <div className="flex items-center gap-2">
                             <Landmark style={{ height: 16, width: 16 }} />
-                            <Typography component="span" sx={{ fontWeight: 500 }}>
-                              {landmark}
-                            </Typography>
-                          </Box>
-                        </Box>
+                            <span className="font-medium">{landmark}</span>
+                          </div>
+                        </div>
                       ))}
-                    </Box>
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -690,22 +542,20 @@ export function CityOverviewTab({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'grid', gap: 1.5 }}>
+                    <div className="grid gap-3">
                       {city.sister_cities.map((sisterCity: string, index: number) => (
-                        <Box key={index} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <div key={index} className="p-3 rounded-lg bg-muted">
+                          <div className="flex items-center gap-2">
                             <Globe style={{ height: 16, width: 16 }} />
-                            <Typography component="span" sx={{ fontWeight: 500 }}>
-                              {sisterCity}
-                            </Typography>
-                          </Box>
-                        </Box>
+                            <span className="font-medium">{sisterCity}</span>
+                          </div>
+                        </div>
                       ))}
-                    </Box>
+                    </div>
                   </CardContent>
                 </Card>
               )}
-            </Box>
+            </div>
           </StaggerGrid>
 
           {city.local_customs && (
@@ -717,9 +567,9 @@ export function CityOverviewTab({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
+                <p className="text-muted-foreground" style={{ lineHeight: 1.7 }}>
                   {city.local_customs}
-                </Typography>
+                </p>
               </CardContent>
             </Card>
           )}
@@ -735,25 +585,15 @@ export function CityOverviewTab({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  md: 'repeat(3, 1fr)',
-                },
-                gap: 2,
-              }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {villages.map((village: VillageRelation) => (
                 <VillageCard key={village.id} village={village} />
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -766,29 +606,15 @@ interface FactRowProps {
 
 function FactRow({ icon: Icon, label, value, valueSize }: FactRowProps) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        p: 1.5,
-        borderRadius: 2,
-        bgcolor: 'action.hover',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+      <div className="flex items-center gap-2">
         <Icon style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
-        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-          {label}
-        </Typography>
-      </Box>
-      <Typography
-        component="span"
-        sx={{ fontWeight: 700, ...(valueSize ? { fontSize: valueSize } : {}) }}
-      >
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <span className="font-bold" style={valueSize ? { fontSize: valueSize } : undefined}>
         {value}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 }
 
@@ -800,16 +626,11 @@ export interface CityRightsTabProps {
 
 export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography
-            variant="h2"
-            sx={{ fontSize: '1.875rem', fontWeight: 700, letterSpacing: '-0.025em' }}
-          >
-            LGBTI Rights
-          </Typography>
-          <Typography sx={{ color: 'text.secondary', mt: 0.5 }}>
+    <div className="flex flex-col gap-6 mt-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">LGBTI Rights</h2>
+          <p className="text-muted-foreground mt-1">
             Legal protections and rights status in{' '}
             {city.countries ? (
               <LocalizedLink
@@ -821,41 +642,32 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
             ) : (
               'this country'
             )}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         {city.countries?.equality_score != null && (
           <EqualityScoreBadge score={city.countries.equality_score} size="lg" />
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
-        <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+      <div className="p-4 rounded-lg bg-muted">
+        <p className="text-sm text-muted-foreground" style={{ fontSize: '0.8125rem' }}>
           The rights information below applies to {city.countries?.name || 'this country'} at the
           national level. Local laws and enforcement in {city.name} may vary.
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {countryLoading ? (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            py: 8,
-            gap: 2,
-          }}
-        >
+        <div className="flex flex-col items-center justify-center py-16 gap-4">
           <InlineLoading text="Loading rights data..." size="md" />
-        </Box>
+        </div>
       ) : fullCountry ? (
         <LGBTJurisdictionInfo country={fullCountry} />
       ) : (
-        <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 4 }}>
+        <p className="text-muted-foreground text-center py-8">
           Rights data is not available for this location.
-        </Typography>
+        </p>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -875,46 +687,30 @@ export function CityVenuesTab({
   onCreateTrip,
 }: CityVenuesTabProps) {
   return (
-    <Box sx={{ mt: 3 }}>
+    <div className="mt-6">
       {showCreateTrip && (
         <Card style={{ marginBottom: 16 }}>
           <CardContent style={{ paddingTop: 20 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 1,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3">
                 <Luggage style={{ width: 20, height: 20, opacity: 0.6 }} />
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  Planning a trip to {city.name}?
-                </Typography>
-              </Box>
+                <p className="font-medium">Planning a trip to {city.name}?</p>
+              </div>
               <Button variant="outline" size="sm" onClick={onCreateTrip}>
                 Create Trip
               </Button>
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
       {venuesLoading ? (
         <InlineLoading text="Loading venues..." size="md" />
       ) : venues.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {venues.map((venue: VenueRelation) => (
             <VenueCard key={venue.id} venue={venue} />
           ))}
-        </Box>
+        </div>
       ) : (
         <EmptyState
           icon={Building}
@@ -923,7 +719,7 @@ export function CityVenuesTab({
           mood="encouraging"
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -935,21 +731,15 @@ export interface CityEventsTabProps {
 
 export function CityEventsTab({ city, events, eventsLoading }: CityEventsTabProps) {
   return (
-    <Box sx={{ mt: 3 }}>
+    <div className="mt-6">
       {eventsLoading ? (
         <InlineLoading text="Loading events..." size="md" />
       ) : events.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {events.map((event: EventRelation) => (
             <EventCard key={event.id} event={event} />
           ))}
-        </Box>
+        </div>
       ) : (
         <EmptyState
           icon={Calendar}
@@ -958,7 +748,7 @@ export function CityEventsTab({ city, events, eventsLoading }: CityEventsTabProp
           mood="encouraging"
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -976,7 +766,7 @@ export function CityTravelTab({
   nearestAirport,
 }: CityTravelTabProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+    <div className="flex flex-col gap-6 mt-6">
       <CityTravelHub
         destinationIata={effectiveIata}
         destinationCity={city.name}
@@ -992,13 +782,7 @@ export function CityTravelTab({
         latitude={city.latitude}
       />
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-          gap: 3,
-        }}
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1008,51 +792,38 @@ export function CityTravelTab({
           </CardHeader>
           <CardContent>
             {city.major_airport_code && (
-              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <div className="p-3 rounded-lg bg-muted mb-4">
+                <div className="flex items-center gap-2 mb-1">
                   <Plane style={{ height: 16, width: 16 }} />
-                  <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                    Major Airport
-                  </Typography>
-                </Box>
-                <Typography component="span" sx={{ fontWeight: 700 }}>
-                  {city.major_airport_code}
-                </Typography>
-              </Box>
+                  <span className="text-sm font-medium">Major Airport</span>
+                </div>
+                <span className="font-bold">{city.major_airport_code}</span>
+              </div>
             )}
             {!hasAirport && nearestAirport && (
-              <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <div className="p-3 rounded-lg bg-muted mb-4">
+                <div className="flex items-center gap-2 mb-1">
                   <Plane style={{ height: 16, width: 16 }} />
-                  <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                    Nearest Airport
-                  </Typography>
-                </Box>
-                <Typography component="span" sx={{ fontWeight: 700 }}>
-                  {nearestAirport.iata_code}
-                </Typography>
-                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
+                  <span className="text-sm font-medium">Nearest Airport</span>
+                </div>
+                <span className="font-bold">{nearestAirport.iata_code}</span>
+                <p className="text-xs text-muted-foreground mt-1">
                   {nearestAirport.city_name} — {nearestAirport.distanceKm} km away
-                </Typography>
-              </Box>
+                </p>
+              </div>
             )}
             {city.airport_codes && city.airport_codes.length > 0 && (
-              <Box>
-                <Typography
-                  component="span"
-                  sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1.5, display: 'block' }}
-                >
-                  All Airport Codes
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <div>
+                <span className="text-sm font-medium mb-3 block">All Airport Codes</span>
+                <div className="flex flex-wrap gap-2">
                   {city.airport_codes.map((code: string, index: number) => (
                     <Badge key={index} variant="outline">
                       <Plane style={{ height: 12, width: 12, marginRight: 4 }} />
                       {code}
                     </Badge>
                   ))}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -1066,43 +837,28 @@ export function CityTravelTab({
           </CardHeader>
           <CardContent>
             {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <div className="flex flex-col gap-3">
                 {Object.entries(city.transportation_info).map(([key, value]) => (
-                  <Box key={key} sx={{ p: 1.5, borderRadius: 2, bgcolor: 'action.hover' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                      <Bus
-                        style={{
-                          height: 16,
-                          width: 16,
-                          color: 'hsl(var(--muted-foreground))',
-                        }}
-                      />
-                      <Typography
-                        component="span"
-                        sx={{
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          textTransform: 'capitalize',
-                        }}
-                      >
+                  <div key={key} className="p-3 rounded-lg bg-muted">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Bus style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+                      <span className="text-sm font-medium capitalize">
                         {key.replace(/_/g, ' ')}
-                      </Typography>
-                    </Box>
-                    <Typography component="span" sx={{ fontSize: '0.875rem' }}>
-                      {String(value)}
-                    </Typography>
-                  </Box>
+                      </span>
+                    </div>
+                    <span className="text-sm">{String(value)}</span>
+                  </div>
                 ))}
-              </Box>
+              </div>
             ) : (
-              <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
+              <p className="text-muted-foreground text-center py-4">
                 No transportation information available.
-              </Typography>
+              </p>
             )}
           </CardContent>
         </Card>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -1114,21 +870,15 @@ export interface CityNewsTabProps {
 
 export function CityNewsTab({ city, articles, newsLoading }: CityNewsTabProps) {
   return (
-    <Box sx={{ mt: 3 }}>
+    <div className="mt-6">
       {newsLoading ? (
         <InlineLoading text="Loading news..." size="md" />
       ) : articles.length > 0 ? (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {articles.slice(0, 6).map((article: ArticleRelation) => (
             <NewsCard key={article.id} article={article} />
           ))}
-        </Box>
+        </div>
       ) : (
         <EmptyState
           icon={FileText}
@@ -1137,7 +887,7 @@ export function CityNewsTab({ city, articles, newsLoading }: CityNewsTabProps) {
           mood="neutral"
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -1152,9 +902,9 @@ export function CityMapTab({ city, ExploreMap, Suspense }: CityMapTabProps) {
   return (
     <Suspense
       fallback={
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={32} aria-label="Loading" />
-        </Box>
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+        </div>
       }
     >
       <ExploreMap

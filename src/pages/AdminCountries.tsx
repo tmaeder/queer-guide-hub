@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -180,19 +178,17 @@ export default function AdminCountries() {
       columnHelper.accessor('name', {
         header: 'Country',
         cell: (info) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             {info.row.original.flag_emoji && (
               <span style={{ fontSize: 18, lineHeight: 1 }}>{info.row.original.flag_emoji}</span>
             )}
-            <Box>
+            <div>
               <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
               {info.row.original.code && (
-                <Typography variant="body2" color="text.secondary">
-                  {info.row.original.code}
-                </Typography>
+                <p className="text-sm text-muted-foreground">{info.row.original.code}</p>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -220,7 +216,7 @@ export default function AdminCountries() {
         header: 'LGBT legal status',
         cell: (info) => {
           const v = info.getValue();
-          if (!v) return <span style={{ color: 'var(--muted-foreground)' }}>-</span>;
+          if (!v) return <span className="text-muted-foreground">-</span>;
           const lower = v.toLowerCase();
           const tone =
             lower.includes('legal') || lower.includes('protected') || lower.includes('marriage')
@@ -410,73 +406,73 @@ export default function AdminCountries() {
       config={tableConfig}
       afterTable={
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent style={{ maxWidth: 672 }}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Country</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, py: 2 }}>
-            <Box>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <div>
               <Label>Country Name</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Country Code</Label>
               <Input
                 value={formData.code}
                 onChange={(e) => setFormData((p) => ({ ...p, code: e.target.value }))}
                 maxLength={3}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Capital City</Label>
               <Input
                 value={formData.capital}
                 onChange={(e) => setFormData((p) => ({ ...p, capital: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Currency</Label>
               <Input
                 value={formData.currency}
                 onChange={(e) => setFormData((p) => ({ ...p, currency: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Population</Label>
               <Input
                 type="number"
                 value={formData.population}
                 onChange={(e) => setFormData((p) => ({ ...p, population: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Area (km2)</Label>
               <Input
                 type="number"
                 value={formData.area_km2}
                 onChange={(e) => setFormData((p) => ({ ...p, area_km2: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>GDP (USD)</Label>
               <Input
                 type="number"
                 value={formData.gdp_usd}
                 onChange={(e) => setFormData((p) => ({ ...p, gdp_usd: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Flag emoji</Label>
               <Input
                 value={formData.flag_emoji}
                 onChange={(e) => setFormData((p) => ({ ...p, flag_emoji: e.target.value }))}
                 maxLength={8}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>LGBT legal status</Label>
               <Input
                 value={formData.lgbt_legal_status}
@@ -484,8 +480,8 @@ export default function AdminCountries() {
                   setFormData((p) => ({ ...p, lgbt_legal_status: e.target.value }))
                 }
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>LGBT rights status</Label>
               <Input
                 value={formData.lgbt_rights_status}
@@ -493,16 +489,16 @@ export default function AdminCountries() {
                   setFormData((p) => ({ ...p, lgbt_rights_status: e.target.value }))
                 }
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Equality score</Label>
               <Input
                 type="number"
                 value={formData.equality_score}
                 onChange={(e) => setFormData((p) => ({ ...p, equality_score: e.target.value }))}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
               Cancel
