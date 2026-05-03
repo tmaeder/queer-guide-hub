@@ -131,7 +131,7 @@ async function fetchEventsInBbox(
     )
     .eq('status', 'active')
     .gte('start_date', new Date().toISOString())
-    .order('featured', { ascending: false })
+    .order('is_featured', { ascending: false })
     .order('start_date', { ascending: true });
 
   if (filters?.search) {
