@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye } from 'lucide-react';
+import { Copy, Trash2, Check, Link2, Lock, Calendar, Eye, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -45,7 +44,6 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [icalMenu, setIcalMenu] = useState<{ anchor: HTMLElement; token: string } | null>(null);
 
   const [showBudget, setShowBudget] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
@@ -58,8 +56,6 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
     enabled: open && !!tripId,
   });
 
-  // Aggregated view counts per share. Cheap server aggregate, refetched
-  // every dialog open. Empty result = no views logged yet.
   const { data: viewStats } = useQuery({
     queryKey: ['trip-share-view-stats', tripId],
     queryFn: async () => {
@@ -133,11 +129,6 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
   const shareUrl = (token: string) =>
     `${window.location.origin}/trips/shared/${token}`;
 
-  /**
-   * iCal subscription URL — `webcal://` is the well-known scheme that
-   * triggers Apple/Google Calendar to subscribe (with periodic refresh)
-   * rather than one-shot import.
-   */
   type IcalCategory = 'all' | 'places' | 'events' | 'reservations';
 
   const icalSubscriptionUrl = (token: string, category: IcalCategory = 'all') => {
@@ -187,19 +178,15 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
 
           {/* Existing shares */}
           {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-              <CircularProgress size={24} />
-            </Box>
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
           ) : (
             (shares || []).length > 0 && (
-              <Box sx={{ mb: 2, mt: 1 }}>
-                <Typography
-                  variant="subtitle2"
-                  color="text.secondary"
-                  gutterBottom
-                >
+              <div className="mb-4 mt-2">
+                <p className="text-sm text-muted-foreground mb-2">
                   {t('trips.share.activeLinks', { count: activeShares.length })}
-                </Typography>
+                </p>
                 {(shares || []).map((share) => {
                   const isExpired =
                     share.expires_at && new Date(share.expires_at) < new Date();
@@ -211,25 +198,13 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                       style={{ opacity: isExpired ? 0.5 : 1 }}
                     >
                       <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <div className="flex items-center gap-2">
                           <Link2 size={14} style={{ flexShrink: 0, opacity: 0.5 }} />
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography
-                              variant="body2"
-                              noWrap
-                              sx={{ fontFamily: 'monospace', fontSize: 12 }}
-                            >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm truncate font-mono" style={{ fontSize: 12 }}>
                               {shareUrl(share.token)}
-                            </Typography>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 0.75,
-                                mt: 0.5,
-                                flexWrap: 'wrap',
-                              }}
-                            >
+                            </p>
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                               <Badge variant="secondary">
                                 {t('trips.tabs.itinerary')}
                               </Badge>
@@ -249,10 +224,9 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                                 </Badge>
                               )}
                               {share.expires_at && (
-                                <Typography
-                                  variant="caption"
-                                  color={isExpired ? 'error' : 'text.secondary'}
-                                  sx={{ fontSize: 10 }}
+                                <span
+                                  className={isExpired ? 'text-destructive' : 'text-muted-foreground'}
+                                  style={{ fontSize: 10 }}
                                 >
                                   {isExpired
                                     ? t('trips.share.expired')
@@ -261,17 +235,12 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                                           share.expires_at,
                                         ).toLocaleDateString(),
                                       })}
-                                </Typography>
+                                </span>
                               )}
                               {stats && stats.total > 0 && (
-                                <Box
-                                  sx={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                    color: 'text.secondary',
-                                    fontSize: 11,
-                                  }}
+                                <span
+                                  className="inline-flex items-center gap-1 text-muted-foreground"
+                                  style={{ fontSize: 11 }}
                                   title={
                                     stats.lastAt
                                       ? t('trips.share.lastViewedAt', {
@@ -296,19 +265,19 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                                       })}
                                     </span>
                                   )}
-                                </Box>
+                                </span>
                               )}
-                            </Box>
-                          </Box>
-                          <IconButton
-                            size="small"
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-10 w-10 p-0"
                             onClick={() => copyToClipboard(shareUrl(share.token))}
                             aria-label={t('trips.share.copyAria')}
-                            sx={{
-                              minWidth: 40,
-                              minHeight: 40,
+                            style={{
                               color:
-                                copied === shareUrl(share.token) ? 'success.main' : undefined,
+                                copied === shareUrl(share.token) ? 'hsl(var(--success))' : undefined,
                             }}
                           >
                             {copied === shareUrl(share.token) ? (
@@ -316,115 +285,107 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
                             ) : (
                               <Copy size={14} />
                             )}
-                          </IconButton>
+                          </Button>
                           {icalSubscriptionUrl(share.token) && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) =>
-                                setIcalMenu({ anchor: e.currentTarget, token: share.token })
-                              }
-                              aria-label={t(
-                                'trips.share.icalAria',
-                                'Copy calendar subscription URL',
-                              )}
-                              sx={{ minWidth: 40, minHeight: 40 }}
-                            >
-                              <Calendar size={14} />
-                            </IconButton>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-10 w-10 p-0"
+                                  aria-label={t(
+                                    'trips.share.icalAria',
+                                    'Copy calendar subscription URL',
+                                  )}
+                                >
+                                  <Calendar size={14} />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                {(['all', 'places', 'events', 'reservations'] as const).map((cat) => (
+                                  <DropdownMenuItem
+                                    key={cat}
+                                    onClick={() => {
+                                      copyToClipboard(icalSubscriptionUrl(share.token, cat), 'ical');
+                                    }}
+                                  >
+                                    {t(`trips.share.icalCategory.${cat}`, {
+                                      defaultValue: {
+                                        all: 'Subscribe to everything',
+                                        places: 'Itinerary stops only',
+                                        events: 'Events only',
+                                        reservations: 'Reservations only',
+                                      }[cat],
+                                    })}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
-                          <IconButton
-                            size="small"
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-10 w-10 p-0 opacity-50 hover:opacity-100 hover:text-destructive"
                             onClick={() => setDeleteConfirmId(share.id)}
                             aria-label={t('trips.share.deleteAria')}
-                            sx={{
-                              opacity: 0.5,
-                              '&:hover': { opacity: 1, color: 'error.main' },
-                              minWidth: 40,
-                              minHeight: 40,
-                            }}
                           >
                             <Trash2 size={14} />
-                          </IconButton>
-                        </Box>
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   );
                 })}
-              </Box>
+              </div>
             )
           )}
 
-          <Divider sx={{ my: 2 }} />
+          <hr className="my-4 border-border" />
 
-          <Typography variant="subtitle2" gutterBottom>
-            {t('trips.share.createNew')}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+          <p className="text-sm font-semibold mb-1">{t('trips.share.createNew')}</p>
+          <p className="text-xs text-muted-foreground mb-2 block">
             {t('trips.share.previewLabel')}
-          </Typography>
+          </p>
 
           {/* Permissions preview */}
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 0.25,
-              mb: 2,
-            }}
-          >
-            <FormControlLabel
-              control={<Switch checked disabled size="small" />}
-              label={
-                <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-                  <Lock size={12} style={{ opacity: 0.5 }} />
-                  <Typography variant="body2">
-                    {t('trips.share.itineraryAlways')}
-                  </Typography>
-                </Box>
-              }
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showBudget}
-                  onChange={(e) => setShowBudget(e.target.checked)}
-                  size="small"
-                />
-              }
-              label={<Typography variant="body2">{t('trips.tabs.budget')}</Typography>}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showNotes}
-                  onChange={(e) => setShowNotes(e.target.checked)}
-                  size="small"
-                />
-              }
-              label={<Typography variant="body2">{t('trips.collaborate.notes')}</Typography>}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showPacking}
-                  onChange={(e) => setShowPacking(e.target.checked)}
-                  size="small"
-                />
-              }
-              label={<Typography variant="body2">{t('trips.tabs.packing')}</Typography>}
-            />
-          </Box>
+          <div className="flex flex-col gap-1 mb-4">
+            <div className="flex items-center gap-2">
+              <Switch checked disabled id="perm-itinerary" />
+              <Label htmlFor="perm-itinerary" className="inline-flex items-center gap-1.5">
+                <Lock size={12} style={{ opacity: 0.5 }} />
+                <span className="text-sm">{t('trips.share.itineraryAlways')}</span>
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={showBudget} onCheckedChange={setShowBudget} id="perm-budget" />
+              <Label htmlFor="perm-budget" className="text-sm">
+                {t('trips.tabs.budget')}
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={showNotes} onCheckedChange={setShowNotes} id="perm-notes" />
+              <Label htmlFor="perm-notes" className="text-sm">
+                {t('trips.collaborate.notes')}
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={showPacking} onCheckedChange={setShowPacking} id="perm-packing" />
+              <Label htmlFor="perm-packing" className="text-sm">
+                {t('trips.tabs.packing')}
+              </Label>
+            </div>
+          </div>
 
-          <TextField
-            label={t('trips.share.expiresLabel')}
-            type="date"
-            fullWidth
-            size="small"
-            value={expiresAt}
-            onChange={(e) => setExpiresAt(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            inputProps={{ min: new Date().toISOString().slice(0, 10) }}
-          />
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="share-expires">{t('trips.share.expiresLabel')}</Label>
+            <Input
+              id="share-expires"
+              type="date"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              min={new Date().toISOString().slice(0, 10)}
+            />
+          </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>
@@ -436,7 +397,7 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
               disabled={createShare.isPending}
             >
               {createShare.isPending ? (
-                <CircularProgress size={16} sx={{ mr: 1, color: 'inherit' }} />
+                <Loader2 size={16} className="mr-1 animate-spin" />
               ) : (
                 <Link2 size={16} style={{ marginRight: 6 }} />
               )}
@@ -445,34 +406,6 @@ export function ShareTripDialog({ open, onClose, tripId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Calendar category menu */}
-      <Menu
-        anchorEl={icalMenu?.anchor ?? null}
-        open={!!icalMenu}
-        onClose={() => setIcalMenu(null)}
-      >
-        {(['all', 'places', 'events', 'reservations'] as const).map((cat) => (
-          <MenuItem
-            key={cat}
-            onClick={() => {
-              if (icalMenu) {
-                copyToClipboard(icalSubscriptionUrl(icalMenu.token, cat), 'ical');
-              }
-              setIcalMenu(null);
-            }}
-          >
-            {t(`trips.share.icalCategory.${cat}`, {
-              defaultValue: {
-                all: 'Subscribe to everything',
-                places: 'Itinerary stops only',
-                events: 'Events only',
-                reservations: 'Reservations only',
-              }[cat],
-            })}
-          </MenuItem>
-        ))}
-      </Menu>
 
       {/* Delete confirmation */}
       <Dialog
