@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
 import { Sparkles, TrendingUp, Shield } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import {
@@ -30,7 +28,6 @@ export function PersonalizedFeed() {
     limit: 6,
   });
 
-  // Resolve city IDs to full city data
   const cityIds = (recommendations || [])
     .filter((r) => r.entity_type === 'city')
     .map((r) => r.entity_id);
@@ -58,7 +55,6 @@ export function PersonalizedFeed() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fallback: show trending cities when no personalized recs
   const { data: trendingCities, isLoading: trendingLoading } = useQuery({
     queryKey: ['trending-cities'],
     queryFn: async (): Promise<CityRec[]> => {
@@ -83,12 +79,12 @@ export function PersonalizedFeed() {
 
   if (isLoading) {
     return (
-      <Box sx={{ mb: 4 }}>
-        <Skeleton variant="text" width={200} height={28} sx={{ mb: 2 }} />
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+      <div className="mb-8">
+        <Skeleton variant="text" width={200} height={28} className="mb-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={100} />)}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
@@ -107,51 +103,45 @@ export function PersonalizedFeed() {
   };
 
   return (
-    <Box sx={{ mb: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
         {isPersonalized ? (
           <Sparkles style={{ height: 20, width: 20, color: 'var(--primary)' }} />
         ) : (
           <TrendingUp style={{ height: 20, width: 20, color: 'var(--primary)' }} />
         )}
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+        <h6 className="font-bold" style={{ fontSize: '1.1rem' }}>
           {isPersonalized ? 'Recommended for You' : 'Popular Destinations'}
-        </Typography>
+        </h6>
         {!user && isPersonalized === false && (
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 'auto' }}>
+          <span className="text-xs text-muted-foreground ml-auto">
             Sign in for personalized picks
-          </Typography>
+          </span>
         )}
-      </Box>
+      </div>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-          gap: 2,
-        }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {displayCities.map((city) => (
           <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
             <Card className="hover:shadow-md transition-shadow h-full">
               <CardContent style={{ padding: 16 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                  <Box>
-                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem' }}>{city.name}</Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{city.country_name}</Typography>
-                  </Box>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-bold" style={{ fontSize: '0.95rem' }}>{city.name}</p>
+                    <p className="text-muted-foreground" style={{ fontSize: '0.75rem' }}>{city.country_name}</p>
+                  </div>
                   {city.equality_score != null && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <div className="flex items-center gap-1">
                       <Shield
                         style={{
                           height: 14, width: 14,
                           color: city.equality_score >= 70 ? 'var(--success)' : city.equality_score >= 40 ? 'var(--warning)' : 'var(--destructive)',
                         }}
                       />
-                      <Typography sx={{ fontSize: '0.7rem', fontWeight: 600 }}>{city.equality_score}</Typography>
-                    </Box>
+                      <span className="font-semibold" style={{ fontSize: '0.7rem' }}>{city.equality_score}</span>
+                    </div>
                   )}
-                </Box>
+                </div>
                 {city.reason !== 'trending' && (
                   <Badge variant="outline">
                     {reasonLabels[city.reason] || city.reason}
@@ -161,7 +151,7 @@ export function PersonalizedFeed() {
             </Card>
           </LocalizedLink>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
