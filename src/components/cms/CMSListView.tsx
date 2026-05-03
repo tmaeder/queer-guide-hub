@@ -58,6 +58,7 @@ import { useCMSFilters } from '@/hooks/useCMSFilters';
 import { useCMSShortcuts } from '@/hooks/useCMSShortcuts';
 import { getContentType } from '@/config/contentTypeRegistry';
 import { supabase } from '@/integrations/supabase/client';
+import { updateRow } from '@/hooks/usePageFetchers';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 
@@ -168,13 +169,10 @@ export function CMSListView({
       setEditingId(null);
       return;
     }
-    const { error } = await supabase
-      .from(tableName)
-      .update({ [titleField]: newVal })
-      .eq('id', item.id);
+    const { error } = await updateRow(tableName, item.id, { [titleField]: newVal });
     setEditingId(null);
     if (error) {
-      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+      toast({ title: 'Save failed', description: (error as { message: string }).message, variant: 'destructive' });
     } else {
       toast({ title: 'Saved' });
       onRefresh();

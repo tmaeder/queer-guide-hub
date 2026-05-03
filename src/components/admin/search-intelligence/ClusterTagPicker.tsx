@@ -7,6 +7,7 @@ import Alert from '@mui/material/Alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { searchUnifiedTagsByName } from '@/hooks/usePageFetchers';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 
 interface UnifiedTag {
@@ -73,14 +74,8 @@ export function ClusterTagPicker({ clusterId, onChange }: Props) {
       return;
     }
     const id = setTimeout(async () => {
-      const { data } = await supabase
-        .from('unified_tags')
-        .select('id, name, slug')
-        .ilike('name', `%${q}%`)
-        .eq('status', 'active')
-        .is('merged_into_id', null)
-        .limit(15);
-      setResults((data ?? []) as UnifiedTag[]);
+      const data = await searchUnifiedTagsByName<UnifiedTag>(q);
+      setResults(data);
     }, 200);
     return () => clearTimeout(id);
   }, [query]);
