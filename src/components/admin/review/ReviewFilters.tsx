@@ -5,12 +5,16 @@
  */
 
 import React from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
 import { Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export interface ReviewFilterState {
   search: string;
@@ -45,66 +49,56 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+    <div className="flex flex-row gap-2 flex-wrap mb-4">
       {/* Search */}
-      <TextField
-        size="small"
-        placeholder="Search..."
-        value={filters.search}
-        onChange={(e) => update('search', e.target.value)}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={16} />
-              </InputAdornment>
-            ),
-            ...(filters.search
-              ? {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => update('search', '')}>
-                        <X size={14} />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }
-              : {}),
-          },
-        }}
-        sx={{ flex: 1, minWidth: 200, '& .MuiInputBase-root': { height: 36 } }}
-      />
+      <div className="relative flex-1 min-w-[200px]">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search..."
+          value={filters.search}
+          onChange={(e) => update('search', e.target.value)}
+          className="pl-9 pr-9 h-9"
+        />
+        {filters.search && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+            onClick={() => update('search', '')}
+          >
+            <X size={14} />
+          </Button>
+        )}
+      </div>
 
       {/* Status filter */}
-      <TextField
-        select
-        size="small"
-        value={filters.status}
-        onChange={(e) => update('status', e.target.value)}
-        sx={{ minWidth: 130, '& .MuiInputBase-root': { height: 36 } }}
-      >
-        {statusOptions.map((opt) => (
-          <MenuItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </MenuItem>
-        ))}
-      </TextField>
+      <Select value={filters.status} onValueChange={(v) => update('status', v)}>
+        <SelectTrigger className="min-w-[130px] h-9">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {statusOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* Content type filter */}
-      <TextField
-        select
-        size="small"
-        value={filters.contentType}
-        onChange={(e) => update('contentType', e.target.value)}
-        sx={{ minWidth: 130, '& .MuiInputBase-root': { height: 36 } }}
-      >
-        {contentTypeOptions.map((opt) => (
-          <MenuItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </MenuItem>
-        ))}
-      </TextField>
-    </Box>
+      <Select value={filters.contentType} onValueChange={(v) => update('contentType', v)}>
+        <SelectTrigger className="min-w-[130px] h-9">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {contentTypeOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 
