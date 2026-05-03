@@ -40,20 +40,28 @@ export async function rewriteQuery(
 	const gateway = env.AI_GATEWAY_NAME ? { id: env.AI_GATEWAY_NAME, cacheTtl: 86400 * 7 } : undefined;
 	let res: { response?: string } | undefined;
 	try {
-		res = (await env.AI.run(
-			MODEL as Parameters<typeof env.AI.run>[0],
-			{
-				messages: [
-					{ role: "system", content: SYS },
-					{ role: "user", content: `Query (lang=${lang}): ${query}` },
-				],
-				max_tokens: 120,
-				temperature: 0.1,
-			} as Parameters<typeof env.AI.run>[1],
-			gateway ? { gateway } : undefined,
-		)) as { response?: string };
+		// 5s hard timeout — the rewrite is a nice-to-have, never hold up search
+		// for it. Bug observed 2026-05-03 when AI Gateway stalled.
+		const REWRITE_TIMEOUT_MS = 5000;
+		res = (await Promise.race([
+			env.AI.run(
+				MODEL as Parameters<typeof env.AI.run>[0],
+				{
+					messages: [
+						{ role: "system", content: SYS },
+						{ role: "user", content: `Query (lang=${lang}): ${query}` },
+					],
+					max_tokens: 120,
+					temperature: 0.1,
+				} as Parameters<typeof env.AI.run>[1],
+				gateway ? { gateway } : undefined,
+			) as Promise<unknown>,
+			new Promise<never>((_, reject) =>
+				setTimeout(() => reject(new Error(`rewrite timeout after ${REWRITE_TIMEOUT_MS}ms`)), REWRITE_TIMEOUT_MS),
+			),
+		])) as { response?: string };
 	} catch (e) {
-		console.warn("rewrite failed", e);
+		console.warn("rewrite failed", (e as Error).message);
 		return null;
 	}
 
