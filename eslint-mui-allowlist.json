@@ -28,7 +28,6 @@
   "src/components/admin/ScrapeSourcesDashboard.tsx",
   "src/components/admin/TagAliasesSection.tsx",
   "src/components/admin/ValidationReport.tsx",
-  "src/components/admin/VideoUpload.tsx",
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/admin/automation/AutomationDashboard.tsx",
   "src/components/admin/automation/ModuleCard.tsx",
