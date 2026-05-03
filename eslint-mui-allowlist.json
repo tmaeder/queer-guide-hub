@@ -42,7 +42,6 @@
   "src/components/admin/shell/AdminShell.tsx",
   "src/components/admin/shell/AdminSidebar.tsx",
   "src/components/admin/users/UserDetailSheet.tsx",
-  "src/components/analytics/UmamiAnalyticsDashboard.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/components/booking/HotelBookingFlow.tsx",
   "src/components/booking/HotelSearchForm.tsx",
