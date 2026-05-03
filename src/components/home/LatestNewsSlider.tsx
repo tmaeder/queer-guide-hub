@@ -1,10 +1,8 @@
 import React, { useMemo } from 'react';
-import Box from '@mui/material/Box';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useNews } from '@/hooks/useNews';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
-import { container } from '@/lib/sx';
 import { useTranslation } from 'react-i18next';
 
 type Article = {
@@ -17,8 +15,6 @@ type Article = {
   publisher_name?: string | null;
 };
 
-// Decode common HTML entities without touching innerHTML. Covers what news
-// feeds typically ship (&amp;, &#39;, &quot;, &lt;, &gt;, &nbsp;, numeric refs).
 const ENTITY_MAP: Record<string, string> = {
   amp: '&',
   lt: '<',
@@ -39,16 +35,9 @@ const decodeHtmlEntities = (text: string): string =>
     return ENTITY_MAP[body.toLowerCase()] ?? _;
   });
 
-const Hairline = () => <Box sx={{ height: '1px', bgcolor: 'currentColor', opacity: 0.12 }} />;
+const Hairline = () => <div className="h-px bg-current opacity-10" />;
 
-// Editorial display font for headlines on this magazine-style block.
-// Body text inherits Inter from the MUI theme (see src/theme/muiTheme.ts).
 const DISPLAY_FONT = "'Plus Jakarta Sans', sans-serif";
-
-const pulse = {
-  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-  bgcolor: 'action.hover',
-};
 
 const LatestNewsSlider = React.memo(() => {
   const { articles, loading, error } = useNews();
@@ -61,26 +50,18 @@ const LatestNewsSlider = React.memo(() => {
 
   if (loading && latest.length === 0) {
     return (
-      <Box component="section" sx={{ ...container, py: { xs: 4, md: 8 } }}>
-        <Box sx={{ ...pulse, height: 32, width: { xs: 160, md: 240 }, mb: 2 }} />
+      <section className="w-full px-4 py-8 sm:px-6 md:px-8 md:py-16">
+        <div className="mb-4 h-8 w-40 animate-pulse bg-muted md:w-60" />
         <Hairline />
-        <Box
-          sx={{
-            mt: { xs: 3, md: 4 },
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '11fr 9fr' },
-            columnGap: { md: 4 },
-            rowGap: { xs: 3, md: 0 },
-          }}
-        >
-          <Box sx={{ ...pulse, aspectRatio: '3 / 2', width: '100%' }} />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="mt-6 grid grid-cols-1 gap-y-6 md:mt-8 md:grid-cols-[11fr_9fr] md:gap-x-8 md:gap-y-0">
+          <div className="aspect-[3/2] w-full animate-pulse bg-muted" />
+          <div className="flex flex-col gap-4">
             {Array.from({ length: isMobile ? 3 : 5 }).map((_, i) => (
-              <Box key={i} sx={{ ...pulse, height: 56 }} />
+              <div key={i} className="h-14 animate-pulse bg-muted" />
             ))}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -90,232 +71,128 @@ const LatestNewsSlider = React.memo(() => {
   const list = rest.slice(0, 5);
 
   return (
-    <Box component="section" sx={{ ...container, py: { xs: 4, md: 8 } }}>
+    <section className="w-full px-4 py-8 sm:px-6 md:px-8 md:py-16">
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 2,
-        }}
-      >
-        <Box
-          component="h2"
-          sx={{
-            m: 0,
-            fontFamily: DISPLAY_FONT,
-            fontWeight: 800,
-            fontSize: { xs: '1.75rem', md: '2.25rem' },
-            letterSpacing: '-0.01em',
-            lineHeight: 1.1,
-          }}
+      <div className="mb-4 flex items-baseline justify-between gap-4">
+        <h2
+          className="m-0 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight md:text-[2.25rem]"
+          style={{ fontFamily: DISPLAY_FONT }}
         >
           {t('home.news.title', 'Latest News')}
-        </Box>
-        <Box
-          component={LocalizedLink}
+        </h2>
+        <LocalizedLink
           to="/news"
-          sx={{
-            fontSize: { xs: '0.8125rem', md: '0.875rem' },
-            color: 'text.primary',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-            transition: 'opacity 0.2s',
-            '&:hover': { opacity: 0.7 },
-          }}
+          className="whitespace-nowrap text-[0.8125rem] text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
         >
           {t('common.allStories', 'All stories')} →
-        </Box>
-      </Box>
+        </LocalizedLink>
+      </div>
       <Hairline />
 
       {/* Feature + list */}
-      <Box
-        sx={{
-          mt: { xs: 3, md: 4 },
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '11fr 9fr' },
-          columnGap: { md: 4 },
-          rowGap: { xs: 3, md: 0 },
-        }}
-      >
+      <div className="mt-6 grid grid-cols-1 gap-y-6 md:mt-8 md:grid-cols-[11fr_9fr] md:gap-x-8 md:gap-y-0">
         {/* Feature story */}
-        <Box
-          component={LocalizedLink}
+        <LocalizedLink
           to={`/news/${feature.slug}`}
-          sx={{
-            display: 'block',
-            textDecoration: 'none',
-            color: 'text.primary',
-            transition: 'opacity 0.2s',
-            '&:hover': { opacity: 0.85 },
-          }}
+          className="block text-foreground no-underline transition-opacity hover:opacity-85"
         >
           {feature.image_url && (
-            <Box
-              sx={{
-                width: '100%',
-                aspectRatio: '3 / 2',
-                overflow: 'hidden',
-                bgcolor: 'action.hover',
-                mb: 2,
-              }}
-            >
-              <Box
-                component="img"
+            <div className="mb-4 aspect-[3/2] w-full overflow-hidden bg-muted">
+              <img
                 src={feature.image_url}
                 alt=""
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
+                className="block h-full w-full object-cover"
               />
-            </Box>
+            </div>
           )}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              color: 'text.secondary',
-              fontSize: '0.75rem',
-              fontWeight: 500,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              mb: 1.5,
-            }}
+          <div
+            className="mb-3 flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground"
+            style={{ letterSpacing: '0.06em' }}
           >
             {feature.publisher_name && (
               <>
-                <Box component="span">{feature.publisher_name}</Box>
-                <Box component="span" sx={{ opacity: 0.4 }}>
-                  ·
-                </Box>
+                <span>{feature.publisher_name}</span>
+                <span className="opacity-40">·</span>
               </>
             )}
-            <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+            <span style={{ fontVariantNumeric: 'tabular-nums' }}>
               {format(new Date(feature.published_at), 'MMM d, yyyy')}
-            </Box>
-          </Box>
-          <Box
-            component="h3"
-            sx={{
-              m: 0,
+            </span>
+          </div>
+          <h3
+            className="m-0 mb-3 overflow-hidden font-extrabold leading-[1.1]"
+            style={{
               fontFamily: DISPLAY_FONT,
-              fontWeight: 800,
               fontSize: 'clamp(1.75rem, 4vw, 3rem)',
-              lineHeight: 1.1,
-              mb: 1.5,
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
             }}
           >
             {decodeHtmlEntities(feature.title)}
-          </Box>
+          </h3>
           {feature.excerpt && (
-            <Box
-              sx={{
-                fontSize: { xs: '0.9375rem', md: '1rem' },
-                color: 'text.secondary',
-                lineHeight: 1.5,
+            <div
+              className="overflow-hidden text-[0.9375rem] leading-normal text-muted-foreground md:text-base"
+              style={{
                 display: '-webkit-box',
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
               }}
             >
               {decodeHtmlEntities(feature.excerpt)}
-            </Box>
+            </div>
           )}
-        </Box>
+        </LocalizedLink>
 
         {/* List */}
-        <Box>
+        <div>
           {list.map((a, idx) => (
             <React.Fragment key={a.id}>
               {idx > 0 && <Hairline />}
-              <Box
-                component={LocalizedLink}
+              <LocalizedLink
                 to={`/news/${a.slug}`}
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'auto 1fr',
-                  columnGap: 2,
-                  alignItems: 'baseline',
-                  py: { xs: 1.5, md: 2 },
-                  textDecoration: 'none',
-                  color: 'text.primary',
-                  '&:hover .qg-news-title': {
-                    color: 'brand.main',
-                  },
-                }}
+                className="group grid grid-cols-[auto_1fr] items-baseline gap-x-4 py-3 text-foreground no-underline md:py-4"
               >
-                <Box
-                  sx={{
-                    fontFamily: DISPLAY_FONT,
-                    fontWeight: 400,
-                    fontSize: '0.875rem',
-                    color: 'text.secondary',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
+                <div
+                  className="text-sm font-normal text-muted-foreground"
+                  style={{ fontFamily: DISPLAY_FONT, fontVariantNumeric: 'tabular-nums' }}
                 >
                   {String(idx + 2).padStart(2, '0')}
-                </Box>
-                <Box sx={{ minWidth: 0 }}>
-                  <Box
-                    sx={{
-                      fontSize: '0.6875rem',
-                      fontWeight: 500,
-                      letterSpacing: '0.06em',
-                      textTransform: 'uppercase',
-                      color: 'text.secondary',
-                      mb: 0.5,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.75,
-                    }}
+                </div>
+                <div className="min-w-0">
+                  <div
+                    className="mb-1 flex items-center gap-1.5 text-[0.6875rem] font-medium uppercase text-muted-foreground"
+                    style={{ letterSpacing: '0.06em' }}
                   >
                     {a.publisher_name && (
                       <>
-                        <Box component="span">{a.publisher_name}</Box>
-                        <Box component="span" sx={{ opacity: 0.4 }}>
-                          ·
-                        </Box>
+                        <span>{a.publisher_name}</span>
+                        <span className="opacity-40">·</span>
                       </>
                     )}
-                    <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {format(new Date(a.published_at), 'MMM d')}
-                    </Box>
-                  </Box>
-                  <Box
-                    className="qg-news-title"
-                    sx={{
+                    </span>
+                  </div>
+                  <div
+                    className="overflow-hidden text-[0.9375rem] font-semibold leading-[1.3] transition-colors group-hover:text-[hsl(var(--brand))] md:text-base"
+                    style={{
                       fontFamily: DISPLAY_FONT,
-                      fontWeight: 600,
-                      fontSize: { xs: '0.9375rem', md: '1rem' },
-                      lineHeight: 1.3,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      transition: 'color 0.2s',
                     }}
                   >
                     {decodeHtmlEntities(a.title)}
-                  </Box>
-                </Box>
-              </Box>
+                  </div>
+                </div>
+              </LocalizedLink>
             </React.Fragment>
           ))}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </section>
   );
 });
 LatestNewsSlider.displayName = 'LatestNewsSlider';
