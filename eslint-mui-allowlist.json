@@ -16,7 +16,6 @@
   "src/components/admin/EnrichmentDashboard.tsx",
   "src/components/admin/ImageOptimizationManager.tsx",
   "src/components/admin/ImportJobCreator.tsx",
-  "src/components/admin/IngestionSourcesManager.tsx",
   "src/components/admin/LinkHealthDashboard.tsx",
   "src/components/admin/ModerationQueue.tsx",
   "src/components/admin/NewsQualityReviewTab.tsx",
