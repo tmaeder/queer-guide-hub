@@ -63,7 +63,6 @@
   "src/components/trips/AddToTripDialog.tsx",
   "src/components/trips/AddToTripMenuItem.tsx",
   "src/components/trips/BudgetTab.tsx",
-  "src/components/trips/CreateTripDialog.tsx",
   "src/components/trips/DraggableItinerary.tsx",
   "src/components/trips/PackingTab.tsx",
   "src/components/trips/ReservationsTab.tsx",
