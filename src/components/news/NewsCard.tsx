@@ -7,8 +7,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
 import { safeText } from '@/utils/safeDisplay';
 import { Skeleton } from 'boneyard-js/react';
@@ -22,20 +20,20 @@ type NewsArticle = Tables<'news_articles'> & {
 const NewsCardFixture = () => (
   <Card>
     <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.125rem' }}>Sample News Headline</Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <h6 className="text-base font-semibold" style={{ fontSize: '1.125rem' }}>Sample News Headline</h6>
+      <div className="flex items-center gap-2">
         <Badge style={{ backgroundColor: 'hsl(var(--brand))', color: 'hsl(var(--background))' }}>Politics</Badge>
         <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Source</Badge>
-      </Box>
+      </div>
     </CardHeader>
     <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <Typography variant="body2">A sample excerpt for the news article.</Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <p className="text-sm">A sample excerpt for the news article.</p>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
           <Clock style={{ height: 14, width: 14 }} />
-          <Typography variant="caption">2 hours ago</Typography>
-        </Box>
-      </Box>
+          <span className="text-xs">2 hours ago</span>
+        </div>
+      </div>
     </CardContent>
   </Card>
 );
@@ -84,8 +82,6 @@ export const NewsCard = ({
     );
   }
 
-  // Resolve display name: publisher_name (for API sources) → source name (for RSS).
-  // Empty string when nothing is known — caller suppresses the source badge.
   const publisherName = safeText((article as Record<string, unknown>).publisher_name);
   const sourceFallback = safeText(sourcesMap[article.source_id]?.name);
   const displaySource = publisherName || sourceFallback;
@@ -95,7 +91,6 @@ export const NewsCard = ({
       c => c.slug === category || c.name.toLowerCase() === category.toLowerCase()
     );
     if (catEntry) return catEntry.color;
-    // TODO(polish): no token match — news category accent palette
     const fallback: Record<string, string> = {
       politics: '#3b82f6', 'human-rights': '#ef4444', entertainment: '#8b5cf6',
       culture: '#8b5cf6', health: '#10b981', sports: '#f97316', business: '#f59e0b',
@@ -132,27 +127,16 @@ export const NewsCard = ({
   // Headline variant: ultra-compact, no image
   if (variant === 'headline') {
     return (
-      <Box
-        sx={{
-          display: 'flex', alignItems: 'center', gap: 2, py: 1.5, px: 2,
-          cursor: 'pointer', transition: 'background 0.15s',
-          '&:hover': { bgcolor: 'action.hover' },
-          borderBottom: '1px solid', borderColor: 'divider',
-        }}
+      <div
+        className="flex items-center gap-4 py-3 px-4 cursor-pointer transition-colors hover:bg-muted border-b border-border"
         onClick={() => navigate(`/news/${article.slug}`)}
       >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold truncate">
             {safeTitle}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
           {displayCategory && (
             <Badge
               style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))', fontSize: '0.65rem', padding: '1px 6px' }}
@@ -161,36 +145,31 @@ export const NewsCard = ({
             </Badge>
           )}
           {displaySource && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
               {displaySource}
-            </Typography>
+            </span>
           )}
           {article.published_at && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
               {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-            </Typography>
+            </span>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   // Featured variant: large hero card
   if (variant === 'featured') {
     return (
-      <Box
-        component={LocalizedLink}
+      <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        sx={{
-          display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3,
-          textDecoration: 'none', color: 'inherit', cursor: 'pointer',
-          transition: 'all 0.2s',
-          '&:hover': { opacity: 0.9 },
-        }}
+        className="flex flex-col md:flex-row gap-6 cursor-pointer transition-opacity hover:opacity-90"
+        style={{ textDecoration: 'none', color: 'inherit' }}
       >
         {hasImage && (
-          <Box sx={{ flex: { md: '0 0 45%' }, borderRadius: 2, overflow: 'hidden' }}>
+          <div className="md:flex-[0_0_45%] rounded-lg overflow-hidden">
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
             <img
               loading="lazy"
@@ -201,37 +180,37 @@ export const NewsCard = ({
               style={{ width: '100%', height: 240, objectFit: 'cover', display: 'block' }}
               onError={() => setImgFailed(true)}
             />
-          </Box>
+          </div>
         )}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex-1 flex flex-col justify-center gap-3">
+          <div className="flex items-center gap-2">
             {displayCategory && (
               <Badge style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))' }}>
                 {getCategoryLabel(displayCategory)}
               </Badge>
             )}
             {displaySource && (
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>{displaySource}</Typography>
+              <span className="text-xs text-muted-foreground">{displaySource}</span>
             )}
-          </Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.3 }}>
+          </div>
+          <h5 className="text-xl font-bold leading-tight">
             {safeTitle}
-          </Typography>
+          </h5>
           {excerptText && (
-            <Typography variant="body2" sx={{ color: 'text.secondary', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            <p className="text-sm text-muted-foreground" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {excerptText}
-            </Typography>
+            </p>
           )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary' }}>
-            {authorName && <Typography variant="caption">By {authorName}</Typography>}
+          <div className="flex items-center gap-4 text-muted-foreground">
+            {authorName && <span className="text-xs">By {authorName}</span>}
             {article.published_at && (
-              <Typography variant="caption">
+              <span className="text-xs">
                 {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-              </Typography>
+              </span>
             )}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </LocalizedLink>
     );
   }
 
@@ -247,9 +226,8 @@ export const NewsCard = ({
       onClick={() => navigate(`/news/${article.slug}`)}
     >
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {/* Image — only render if article has one */}
         {hasImage && (
-          <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
+          <div className="relative overflow-hidden rounded-lg">
             <img
               loading="lazy"
               decoding="async"
@@ -265,30 +243,31 @@ export const NewsCard = ({
                 Featured
               </Badge>
             )}
-          </Box>
+          </div>
         )}
 
-        {/* Featured badge when no image */}
         {!hasImage && article.is_featured && (
           <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', alignSelf: 'flex-start' }}>
             Featured
           </Badge>
         )}
 
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 600, fontSize: '1.125rem',
-              display: '-webkit-box', WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        <div className="flex items-start justify-between gap-3">
+          <h6
+            className="font-semibold"
+            style={{
+              fontSize: '1.125rem',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
             }}
           >
             {safeTitle}
-          </Typography>
-        </Box>
+          </h6>
+        </div>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap items-center gap-2">
           {displayCategory && (
             <Badge
               style={{
@@ -309,7 +288,6 @@ export const NewsCard = ({
               {fallbackCategoryFromTag}
             </Badge>
           )}
-          {/* Source badge — suppressed when publisher is unknown */}
           {displaySource && (
             <Badge
               variant="outline"
@@ -332,9 +310,7 @@ export const NewsCard = ({
               {displaySource}
             </Badge>
           )}
-          {/* Subtle external link icon */}
-          <Box
-            component="a"
+          <a
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
@@ -342,66 +318,58 @@ export const NewsCard = ({
               e.stopPropagation();
               onViewArticle?.(article.id);
             }}
-            sx={{
-              display: 'inline-flex', alignItems: 'center', color: 'text.secondary',
-              opacity: 0.5, '&:hover': { opacity: 1 }, transition: 'opacity 0.2s',
-            }}
+            className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity"
             title="Open original article"
           >
             <ExternalLink style={{ height: 14, width: 14 }} />
-          </Box>
-        </Box>
+          </a>
+        </div>
       </CardHeader>
 
       <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {excerptText && (
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'var(--muted-foreground)',
+          <p
+            className="text-sm text-muted-foreground"
+            style={{
               display: '-webkit-box', WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical', overflow: 'hidden',
             }}
           >
             {excerptText}
-          </Typography>
+          </p>
         )}
 
         {/* Meta row: date, views, author */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap items-center gap-4">
           {article.published_at && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <Clock style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+              <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           )}
           {typeof article.views_count === 'number' && article.views_count > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <Eye style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+              <span className="text-xs text-muted-foreground">
                 {article.views_count} view{article.views_count !== 1 ? 's' : ''}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           )}
           {authorName && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--muted-foreground)',
-                cursor: onFilterByAuthor ? 'pointer' : 'default',
-                '&:hover': onFilterByAuthor ? { color: 'var(--primary)' } : {},
-              }}
+            <span
+              className="text-xs text-muted-foreground"
+              style={{ cursor: onFilterByAuthor ? 'pointer' : 'default' }}
               onClick={(e) => { e.stopPropagation(); onFilterByAuthor?.(authorName); }}
             >
               By {authorName}
-            </Typography>
+            </span>
           )}
-        </Box>
+        </div>
 
         {showFullContent && article.content && (
-          <Box sx={{ maxWidth: 'none', color: 'var(--foreground)' }} />
+          <div style={{ maxWidth: 'none', color: 'var(--foreground)' }} />
         )}
 
         {/* Tags */}
@@ -411,7 +379,7 @@ export const NewsCard = ({
             .filter((t) => t && t !== fallbackCategoryFromTag);
           if (displayTags.length === 0) return null;
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+            <div className="flex flex-wrap items-center gap-1.5">
               <Tag style={{ height: 14, width: 14, color: 'var(--muted-foreground)', flexShrink: 0 }} />
               {displayTags.slice(0, 4).map((tag) => (
                 <Badge
@@ -428,14 +396,15 @@ export const NewsCard = ({
                   +{displayTags.length - 4} more
                 </Badge>
               )}
-            </Box>
+            </div>
           );
         })()}
 
         {/* Location */}
         {hasLocation && (
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted-foreground)' }}
+          <div
+            className="flex flex-wrap items-center gap-1.5 text-muted-foreground"
+            style={{ fontSize: '0.8rem' }}
             onClick={(e) => e.stopPropagation()}
           >
             <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
@@ -455,13 +424,13 @@ export const NewsCard = ({
                 {i < linkedCountries.length - 1 && ', '}
               </span>
             ))}
-          </Box>
+          </div>
         )}
 
-        {/* Favorite button — no more "Read Full Article" button */}
-        <Box sx={{ display: 'flex', alignItems: 'center', pt: 0.5 }} onClick={(e) => e.stopPropagation()}>
+        {/* Favorite button */}
+        <div className="flex items-center pt-1" onClick={(e) => e.stopPropagation()}>
           <FavoriteButton itemId={article.id} type="news" />
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );
