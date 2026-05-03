@@ -6,10 +6,7 @@
 
 import { useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Camera, Upload, AlertCircle, RotateCcw, FileText } from 'lucide-react';
@@ -122,18 +119,18 @@ export function FlyerScanUpload({
     return (
       <Card>
         <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+          <div className="flex items-start gap-3">
             <AlertCircle
               style={{ width: 20, height: 20, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
             />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+            <div className="flex-1">
+              <p className="text-sm font-semibold mb-1">
                 {t('submission.errors.title')}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
+              </p>
+              <p className="text-xs text-muted-foreground whitespace-pre-line">
                 {errorCopy}
-              </Typography>
-            </Box>
+              </p>
+            </div>
             {showRetry && (
               <Button
                 variant="outline"
@@ -145,7 +142,7 @@ export function FlyerScanUpload({
                 {t('submission.errors.retry')}
               </Button>
             )}
-          </Box>
+          </div>
         </CardContent>
       </Card>
     );
@@ -158,36 +155,28 @@ export function FlyerScanUpload({
         : scanState === 'uploading'
           ? 'Uploading...'
           : 'Analyzing...';
+    const pct = ((currentFileIndex + (scanState === 'analyzing' ? 0.5 : 0)) / totalFiles) * 100;
 
     return (
       <Card>
         <CardContent>
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, py: 1 }}
-          >
-            <CircularProgress size={32} sx={{ color: '#ec4899' }} aria-label="Loading" />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {progressText}
-            </Typography>
+          <div className="flex flex-col items-center gap-3 py-2">
+            <Loader2 className="animate-spin h-8 w-8" style={{ color: '#ec4899' }} aria-label="Loading" />
+            <p className="text-sm font-medium">{progressText}</p>
             {totalFiles > 1 && (
-              <LinearProgress
-                variant="determinate"
-                value={
-                  ((currentFileIndex + (scanState === 'analyzing' ? 0.5 : 0)) / totalFiles) * 100
-                }
-                sx={{
-                  width: '100%',
-                  borderRadius: 2,
-                  '& .MuiLinearProgress-bar': { bgcolor: '#ec4899' },
-                }}
-              />
+              <div className="w-full h-1 bg-muted rounded overflow-hidden">
+                <div
+                  className="h-full transition-[width]"
+                  style={{ width: `${pct}%`, backgroundColor: '#ec4899' }}
+                />
+              </div>
             )}
             {scanState === 'analyzing' && (
-              <Typography variant="caption" color="text.secondary">
+              <p className="text-xs text-muted-foreground">
                 This usually takes 5-10 seconds per file
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
         </CardContent>
       </Card>
     );
@@ -213,55 +202,47 @@ export function FlyerScanUpload({
           onChange={handleInputChange}
           style={{ display: 'none' }}
         />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: 2,
-              bgcolor: '#ec489915',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+            style={{ backgroundColor: '#ec489915' }}
           >
             {isMobile ? (
               <Camera style={{ width: 20, height: 20, color: '#ec4899' }} />
             ) : (
               <Upload style={{ width: 20, height: 20, color: '#ec4899' }} />
             )}
-          </Box>
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          </div>
+          <div>
+            <p className="text-sm font-semibold">
               {isMobile ? 'Scan a flyer' : 'Upload flyers or documents'}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+            </p>
+            <p className="text-xs text-muted-foreground">
               {isMobile
                 ? 'Take a photo or choose files to auto-fill the form'
                 : 'Drag & drop or click to upload images, PDFs, or documents'}
-            </Typography>
-          </Box>
+            </p>
+          </div>
           {!isMobile && (
             <FileText
               style={{ width: 16, height: 16, color: '#9ca3af', flexShrink: 0, marginLeft: 'auto' }}
             />
           )}
-        </Box>
+        </div>
         {rejectionMessage && (
-          <Box
+          <div
             role="alert"
             aria-live="polite"
-            sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 1.5 }}
+            className="flex items-start gap-2 mt-3"
             onClick={(e) => e.stopPropagation()}
           >
             <AlertCircle
               style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 2 }}
             />
-            <Typography variant="caption" sx={{ color: '#ef4444' }}>
+            <p className="text-xs" style={{ color: '#ef4444' }}>
               {rejectionMessage}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>
