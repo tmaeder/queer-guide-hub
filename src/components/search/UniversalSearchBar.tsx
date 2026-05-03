@@ -429,15 +429,61 @@ export const UniversalSearchBar = () => {
         </PopoverTrigger>
 
         <PopoverContent
-          style={{
-            width: isMobile ? 'calc(100vw - 2rem)' : 600,
-            padding: 0,
-            zIndex: 50,
-          }}
+          style={
+            isMobile
+              ? {
+                  // Bug #20: full-screen sheet on mobile so the search popover
+                  // doesn't bury the page beneath an undismissable overlay.
+                  position: 'fixed',
+                  inset: 0,
+                  width: '100vw',
+                  height: '100dvh',
+                  maxHeight: '100dvh',
+                  borderRadius: 0,
+                  padding: 0,
+                  zIndex: 50,
+                }
+              : { width: 600, padding: 0, zIndex: 50 }
+          }
           align="start"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onCloseAutoFocus={(e) => e.preventDefault()}
+          // Restore focus to the input when opening, and back to the trigger
+          // on close (assistive tech expects the focus ring to land back where
+          // it came from).
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }}
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            inputRef.current?.focus();
+          }}
+          onEscapeKeyDown={() => setIsOpen(false)}
         >
+          {isMobile && (
+            <div className="flex items-center justify-between border-b border-border px-3 py-2">
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="text-sm font-medium text-primary px-2 py-1 -ml-2"
+                aria-label="Close search"
+              >
+                Cancel
+              </button>
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery('');
+                    inputRef.current?.focus();
+                  }}
+                  className="text-sm text-muted-foreground px-2 py-1 -mr-2"
+                  aria-label="Clear search"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
           <Command shouldFilter={false} style={{ background: 'transparent' }}>
             {showFilters && (
               <>
