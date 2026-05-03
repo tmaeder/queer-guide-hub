@@ -73,7 +73,6 @@
   "src/components/layout/AuthGate.tsx",
   "src/components/layout/LayoutShell.tsx",
   "src/components/messaging/StartConversationButton.tsx",
-  "src/components/moderation/ReportDialog.tsx",
   "src/components/notifications/NotificationBell.tsx",
   "src/components/personalities/PersonalitiesFiltersBar.tsx",
   "src/components/personalization/TravelPrefsPrompt.tsx",

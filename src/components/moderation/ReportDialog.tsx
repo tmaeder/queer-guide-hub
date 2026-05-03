@@ -1,16 +1,13 @@
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useModeration, CreateFlagParams } from '@/hooks/useModeration';
 import { toast } from 'sonner';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import CircularProgress from '@mui/material/CircularProgress';
 
 interface ReportDialogProps {
   open: boolean;
@@ -77,54 +74,56 @@ export function ReportDialog({ open, onOpenChange, contentType, contentId, conte
           </DialogDescription>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 2 }}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Issue Type</InputLabel>
+        <div className="flex flex-col gap-5 mt-2">
+          <div className="flex flex-col gap-1.5">
+            <Label>Issue Type</Label>
             <Select
               value={flagType}
-              label="Issue Type"
-              onChange={(e) => setFlagType(e.target.value as CreateFlagParams['flag_type'])}
+              onValueChange={(v) => setFlagType(v as CreateFlagParams['flag_type'])}
             >
-              {FLAG_TYPE_OPTIONS.map(opt => (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FLAG_TYPE_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-          </FormControl>
+          </div>
 
           {selectedType && (
-            <Typography variant="caption" color="text.secondary">
+            <p className="text-xs text-muted-foreground">
               {selectedType.description}
-            </Typography>
+            </p>
           )}
 
-          <TextField
-            label="Description"
-            multiline
-            rows={4}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Please describe the issue in detail (at least 10 characters)..."
-            fullWidth
-            size="small"
-            helperText={`${reason.length}/2000`}
-            inputProps={{ maxLength: 2000 }}
-          />
+          <div className="flex flex-col gap-1.5">
+            <Label>Description</Label>
+            <Textarea
+              rows={4}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Please describe the issue in detail (at least 10 characters)..."
+              maxLength={2000}
+            />
+            <span className="text-xs text-muted-foreground">{`${reason.length}/2000`}</span>
+          </div>
 
           {flagType === 'CORRECTION' && (
-            <TextField
-              label="Suggested Changes"
-              multiline
-              rows={3}
-              value={suggestedChanges}
-              onChange={(e) => setSuggestedChanges(e.target.value)}
-              placeholder="What should the correct information be?"
-              fullWidth
-              size="small"
-            />
+            <div className="flex flex-col gap-1.5">
+              <Label>Suggested Changes</Label>
+              <Textarea
+                rows={3}
+                value={suggestedChanges}
+                onChange={(e) => setSuggestedChanges(e.target.value)}
+                placeholder="What should the correct information be?"
+              />
+            </div>
           )}
-        </Box>
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
@@ -135,7 +134,7 @@ export function ReportDialog({ open, onOpenChange, contentType, contentId, conte
             disabled={loading || reason.trim().length < 10}
           >
             {loading ? (
-              <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" />
+              <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-label="Loading" />
             ) : null}
             Submit Report
           </Button>
