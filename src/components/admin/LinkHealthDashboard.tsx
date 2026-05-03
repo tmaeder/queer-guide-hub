@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContentLinks, type ContentLink } from '@/hooks/useContentLinks';
 import { supabase } from '@/integrations/supabase/client';
+import { countRowsWhere, fetchById } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { EditLinkDialog } from './EditLinkDialog';
 import { ConfirmBulkActionDialog } from './ConfirmBulkActionDialog';
@@ -61,14 +62,11 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
   // Pending broken_link flags from automation system
   const { data: autoFlagCount = 0 } = useQuery({
     queryKey: ['broken-link-flags-count'],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from('content_flags' as const)
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-        .eq('flag_type', 'broken_link');
-      return count ?? 0;
-    },
+    queryFn: () =>
+      countRowsWhere('content_flags', [
+        { col: 'status', val: 'pending' },
+        { col: 'flag_type', val: 'broken_link' },
+      ]),
     staleTime: 60_000,
   });
 
@@ -188,8 +186,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
       await scanLink(scanResultLink.id);
       toast.success('Scan complete');
       // Refresh the dialog link data
-      const { data } = await supabase.from('content_links').select('*').eq('id', scanResultLink.id).single();
-      if (data) setScanResultLink(data as ContentLink);
+      const data = await fetchById<ContentLink>('content_links', scanResultLink.id);
+      if (data) setScanResultLink(data);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message :'Scan failed');
     } finally {

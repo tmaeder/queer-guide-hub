@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useSecureRoleManagement } from '@/hooks/useSecureRoleManagement';
 
@@ -99,8 +99,10 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
     if (!user) return;
     setRolesLoading(true);
     try {
-      const { data } = await supabase.from('user_roles').select('role').eq('user_id', user.user_id);
-      setUserRoles((data ?? []).map((r) => r.role));
+      const data = await listFromWhere<{ role: AppRole }>('user_roles', 'role', [
+        { col: 'user_id', val: user.user_id },
+      ]);
+      setUserRoles(data.map((r) => r.role));
     } finally {
       setRolesLoading(false);
     }
@@ -108,12 +110,19 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
 
   const fetchFullProfile = async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('profiles')
-      .select('bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth')
-      .eq('user_id', user.user_id)
-      .single();
-    setFullProfile(data);
+    const rows = await listFromWhere<{
+      bio: string | null;
+      gender_identity: string | null;
+      pronouns: string | null;
+      sexual_orientation: string | null;
+      location: string | null;
+      date_of_birth: string | null;
+    }>(
+      'profiles',
+      'bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth',
+      [{ col: 'user_id', val: user.user_id }],
+    );
+    setFullProfile(rows[0] ?? null);
   };
 
   const handleAssignRole = async (role: AppRole) => {

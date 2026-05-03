@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import type { BookingResult } from '@/lib/booking/types';
 import { formatPrice, hasValidPrice } from '@/lib/booking/price';
 import { supabase } from '@/integrations/supabase/client';
+import { insertRow, insertReturningId } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 
 interface HotelBookingFlowProps {
@@ -65,7 +66,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
         setBookingId(data.bookingId);
 
         if (tripId) {
-          await supabase.from('reservations').insert({
+          await insertRow('reservations', {
             user_id: user.id,
             trip_id: tripId,
             source: 'provider_api',
@@ -83,27 +84,23 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
         // Affiliate flow: track in reservations and open the affiliate URL.
         // Single insert replaces the legacy split between trip_reservations
         // (per-trip line item) and bookings (user-wide tracking).
-        const { data: booking } = await supabase
-          .from('reservations')
-          .insert({
-            user_id: user.id,
-            trip_id: tripId || null,
-            source: 'provider_api',
-            type: 'hotel',
-            title: hotel.title,
-            status: 'pending',
-            provider: hotel.provider,
-            booking_url: hotel.bookingUrl,
-            total_amount: hotel.price,
-            currency: hotel.currency,
-            // guest_name folded into the provider blob since the unified
-            // table doesn't reserve a column for it.
-            raw_provider_data: { ...(hotel.providerData || {}), guest_name: guestName },
-          })
-          .select('id')
-          .single();
+        const { id: bookingIdNew } = await insertReturningId('reservations', {
+          user_id: user.id,
+          trip_id: tripId || null,
+          source: 'provider_api',
+          type: 'hotel',
+          title: hotel.title,
+          status: 'pending',
+          provider: hotel.provider,
+          booking_url: hotel.bookingUrl,
+          total_amount: hotel.price,
+          currency: hotel.currency,
+          // guest_name folded into the provider blob since the unified
+          // table doesn't reserve a column for it.
+          raw_provider_data: { ...(hotel.providerData || {}), guest_name: guestName },
+        });
 
-        if (booking) setBookingId(booking.id);
+        if (bookingIdNew) setBookingId(bookingIdNew);
 
         // Open affiliate link
         if (hotel.bookingUrl) {
