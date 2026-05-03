@@ -1,163 +1,69 @@
 import * as React from "react"
-import MuiButton, { type ButtonProps as MuiButtonProps } from "@mui/material/Button"
-import MuiIconButton from "@mui/material/IconButton"
-import CircularProgress from "@mui/material/CircularProgress"
 import { Slot } from "@radix-ui/react-slot"
-import { motion, useReducedMotion } from "motion/react"
-import { springs } from "@/lib/motion"
+import { cva, type VariantProps } from "class-variance-authority"
+import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-const MotionMuiButton = motion.create(MuiButton)
-const MotionMuiIconButton = motion.create(MuiIconButton)
-const MotionSlot = motion.create(Slot)
-
-// Variant mapping: shadcn → MUI
-type ShadcnVariant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand";
-type ShadcnSize = "default" | "sm" | "lg" | "icon";
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+        brand: "bg-primary text-primary-foreground hover:bg-primary/90",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: { variant: "default", size: "default" },
+  }
+)
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ShadcnVariant;
-  size?: ShadcnSize;
-  asChild?: boolean;
-  /** P6-1 — show a spinner and block clicks. Width is preserved. */
-  loading?: boolean;
-}
-
-function mapVariantToMui(variant: ShadcnVariant = "default"): {
-  muiVariant: MuiButtonProps["variant"];
-  muiColor: MuiButtonProps["color"];
-} {
-  switch (variant) {
-    case "default":
-      return { muiVariant: "contained", muiColor: "primary" };
-    case "destructive":
-      return { muiVariant: "contained", muiColor: "error" };
-    case "outline":
-      return { muiVariant: "outlined", muiColor: "inherit" };
-    case "secondary":
-      return { muiVariant: "contained", muiColor: "secondary" };
-    case "ghost":
-      return { muiVariant: "text", muiColor: "inherit" };
-    case "link":
-      return { muiVariant: "text", muiColor: "primary" };
-    case "brand":
-      return { muiVariant: "contained", muiColor: "brand" as MuiButtonProps["color"] };
-    default:
-      return { muiVariant: "contained", muiColor: "primary" };
-  }
-}
-
-function mapSizeToMui(size: ShadcnSize = "default"): MuiButtonProps["size"] {
-  switch (size) {
-    case "sm": return "small";
-    case "lg": return "large";
-    case "default": return "medium";
-    case "icon": return "medium";
-    default: return "medium";
-  }
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  loading?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", asChild = false, loading = false, children, style, disabled, ...props }, ref) => {
-    const reduced = useReducedMotion();
-    const isInert = disabled || loading;
-    const motionInteractions = reduced || isInert
-      ? {}
-      : {
-          whileTap: { opacity: 0.7 },
-          transition: springs.snappy,
-        };
-
-    const renderContent = (node: React.ReactNode) =>
-      loading ? (
-        <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-          <span style={{ visibility: "hidden", display: "inline-flex", alignItems: "center" }}>
-            {node}
-          </span>
-          <CircularProgress
-            size={16}
-            color="inherit"
-            sx={{ position: "absolute", left: "50%", top: "50%", marginLeft: "-8px", marginTop: "-8px" }}
-          />
-        </span>
-      ) : (
-        node
-      );
-
-    // asChild pattern: render children as the root element
-    // This is used for <Button asChild><Link to="...">...</Link></Button>
-    if (asChild) {
-      return (
-        <MotionSlot
-          ref={ref as React.Ref<HTMLButtonElement>}
-          className={className}
-          style={style}
-          {...motionInteractions}
-          {...(props as Record<string, unknown>)}
-        >
-          {renderContent(children)}
-        </MotionSlot>
-      );
-    }
-
-    // Icon button — square with icon only
-    if (size === "icon") {
-      return (
-        <MotionMuiIconButton
-          ref={ref as React.Ref<HTMLButtonElement>}
-          className={className}
-          color={variant === "destructive" ? "error" : variant === "default" ? "primary" : "default"}
-          disabled={isInert}
-          aria-busy={loading || undefined}
-          sx={{
-            minWidth: 44,
-            minHeight: 44,
-            width: 44,
-            height: 44,
-          }}
-          style={style}
-          {...motionInteractions}
-          {...(props as Record<string, unknown>)}
-        >
-          {renderContent(children)}
-        </MotionMuiIconButton>
-      );
-    }
-
-    const { muiVariant, muiColor } = mapVariantToMui(variant);
-    const muiSize = mapSizeToMui(size);
-
+  ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    const isInert = disabled || loading
+    const content = loading ? (
+      <span className="relative inline-flex items-center">
+        <span className="invisible inline-flex items-center">{children}</span>
+        <Loader2 className="absolute left-1/2 top-1/2 -ml-2 -mt-2 h-4 w-4 animate-spin" />
+      </span>
+    ) : (
+      children
+    )
     return (
-      <MotionMuiButton
-        ref={ref as React.Ref<HTMLButtonElement>}
-        variant={muiVariant}
-        color={muiColor}
-        size={muiSize}
-        className={className}
-        style={style}
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
         disabled={isInert}
         aria-busy={loading || undefined}
-        sx={{
-          // Preserve existing icon sizing behavior
-          '& svg': {
-            width: 16,
-            height: 16,
-            flexShrink: 0,
-            pointerEvents: 'none',
-          },
-        }}
-        {...motionInteractions}
-        {...(props as Record<string, unknown>)}
+        {...props}
       >
-        {renderContent(children)}
-      </MotionMuiButton>
-    );
+        {content}
+      </Comp>
+    )
   }
 )
 Button.displayName = "Button"
-
-// Keep buttonVariants export for compatibility (some files import it)
-const buttonVariants = (() => "") as unknown as Record<string, unknown>;
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }

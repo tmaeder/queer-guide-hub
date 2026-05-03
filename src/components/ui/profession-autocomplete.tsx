@@ -1,18 +1,25 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
-import MuiAutocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
-import { listWhereNotNull } from "@/hooks/usePageFetchers";
-
-const filter = createFilterOptions<string>();
+import * as React from "react"
+import { useState, useEffect } from "react"
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { listWhereNotNull } from "@/hooks/usePageFetchers"
 
 interface ProfessionAutocompleteProps {
-  value?: string;
-  onValueChange: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  id?: string;
+  value?: string
+  onValueChange: (value: string) => void
+  placeholder?: string
+  required?: boolean
+  id?: string
 }
 
 export function ProfessionAutocomplete({
@@ -22,89 +29,104 @@ export function ProfessionAutocomplete({
   required,
   id,
 }: ProfessionAutocompleteProps) {
-  const [professions, setProfessions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [professions, setProfessions] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
 
   useEffect(() => {
     const fetchProfessions = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
         const data = await listWhereNotNull<{ profession: string | null }>(
-          'personalities',
-          'profession',
-          'profession',
-          'profession',
-        ).then((rows) => rows.filter((r) => r.profession && r.profession !== ''));
+          "personalities",
+          "profession",
+          "profession",
+          "profession",
+        ).then((rows) => rows.filter((r) => r.profession && r.profession !== ""))
 
-        // Extract unique professions and handle comma-separated values
-        const uniqueProfessions = new Set<string>();
-
+        const unique = new Set<string>()
         data.forEach((item) => {
           if (item.profession) {
-            const professionList = item.profession.split(',').map((p: string) => p.trim());
-            professionList.forEach((profession: string) => {
-              if (profession) {
-                uniqueProfessions.add(profession);
-              }
-            });
+            item.profession.split(",").forEach((p) => {
+              const trimmed = p.trim()
+              if (trimmed) unique.add(trimmed)
+            })
           }
-        });
-
-        setProfessions(Array.from(uniqueProfessions).sort());
-      } catch (error) {
-        console.error('Error fetching professions:', error);
+        })
+        setProfessions(Array.from(unique).sort())
+      } catch (err) {
+        console.error("Error fetching professions:", err)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
+    fetchProfessions()
+  }, [])
 
-    fetchProfessions();
-  }, []);
+  const showCreate = search && !professions.some((p) => p.toLowerCase() === search.toLowerCase())
 
   return (
-    <MuiAutocomplete
-      id={id}
-      freeSolo
-      options={professions}
-      loading={loading}
-      value={value || null}
-      onChange={(_, newValue) => {
-        onValueChange(typeof newValue === 'string' ? newValue : "");
-      }}
-      onInputChange={(_, newInputValue, reason) => {
-        if (reason === 'input') {
-          onValueChange(newInputValue);
-        }
-      }}
-      filterOptions={(options, params) => {
-        const filtered = filter(options, params);
-        const { inputValue } = params;
-        // Suggest creating a new value if it doesn't exist
-        if (inputValue !== '' && !options.includes(inputValue)) {
-          filtered.push(inputValue);
-        }
-        return filtered;
-      }}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          placeholder={placeholder}
-          required={required}
-          size="small"
-          slotProps={{
-            input: {
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {loading ? <CircularProgress color="inherit" size={20} aria-label="Loading" /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            },
-          }}
-        />
-      )}
-      sx={{ width: '100%' }}
-    />
-  );
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          aria-required={required}
+          className={cn("w-full justify-between font-normal", !value && "text-muted-foreground")}
+        >
+          <span className="truncate">{value || placeholder}</span>
+          {loading ? (
+            <Loader2 className="ml-2 h-4 w-4 shrink-0 animate-spin opacity-50" aria-label="Loading" />
+          ) : (
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput
+            placeholder="Search profession..."
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            <CommandEmpty>No profession found.</CommandEmpty>
+            <CommandGroup>
+              {professions.map((profession) => (
+                <CommandItem
+                  key={profession}
+                  value={profession}
+                  onSelect={(selected) => {
+                    onValueChange(selected)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn("mr-2 h-4 w-4", value === profession ? "opacity-100" : "opacity-0")}
+                  />
+                  {profession}
+                </CommandItem>
+              ))}
+              {showCreate && (
+                <CommandItem
+                  value={search}
+                  onSelect={() => {
+                    onValueChange(search)
+                    setOpen(false)
+                  }}
+                >
+                  <Check className="mr-2 h-4 w-4 opacity-0" />
+                  Use "{search}"
+                </CommandItem>
+              )}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
 }

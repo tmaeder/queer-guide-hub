@@ -1,51 +1,32 @@
 import * as React from "react"
-import Chip, { type ChipProps } from "@mui/material/Chip"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
 
-type ShadcnBadgeVariant = "default" | "secondary" | "destructive" | "outline";
-
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: ShadcnBadgeVariant;
-}
-
-function mapVariant(variant: ShadcnBadgeVariant = "default"): {
-  muiVariant: ChipProps["variant"];
-  muiColor: ChipProps["color"];
-} {
-  switch (variant) {
-    case "default":
-      return { muiVariant: "filled", muiColor: "primary" };
-    case "secondary":
-      return { muiVariant: "filled", muiColor: "default" };
-    case "destructive":
-      return { muiVariant: "filled", muiColor: "error" };
-    case "outline":
-      return { muiVariant: "outlined", muiColor: "default" };
-    default:
-      return { muiVariant: "filled", muiColor: "primary" };
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: { variant: "default" },
   }
+)
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return <div className={cn(badgeVariants({ variant }), className)} {...props} />
 }
-
-function Badge({ className, variant = "default", children, ...props }: BadgeProps) {
-  const { muiVariant, muiColor } = mapVariant(variant);
-
-  return (
-    <Chip
-      label={children}
-      variant={muiVariant}
-      color={muiColor}
-      size="small"
-      className={className}
-      sx={{
-        fontWeight: 600,
-        fontSize: '0.75rem',
-      }}
-      {...(props as Record<string, unknown>)}
-    />
-  )
-}
-
-// Keep badgeVariants export for compatibility
-const badgeVariants = (() => "") as unknown as Record<string, unknown>;
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { Badge, badgeVariants }

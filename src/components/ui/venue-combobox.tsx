@@ -1,28 +1,36 @@
-import React from "react";
-import MuiAutocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import * as React from "react"
+import { useState } from "react"
+import { Check, ChevronsUpDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 interface Venue {
-  id: string;
-  name: string;
-  city: string;
-  state: string;
-  address?: string;
+  id: string
+  name: string
+  city: string
+  state: string
+  address?: string
 }
 
 interface VenueComboboxProps {
-  venues: Venue[];
-  value: string;
-  onValueChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
+  venues: Venue[]
+  value: string
+  onValueChange: (value: string) => void
+  placeholder?: string
+  disabled?: boolean
+  className?: string
 }
 
-// Special option for custom location
-const CUSTOM_OPTION: Venue = { id: "custom", name: "Custom Location", city: "", state: "" };
+const CUSTOM_OPTION: Venue = { id: "custom", name: "Custom Location", city: "", state: "" }
 
 export function VenueCombobox({
   venues,
@@ -32,62 +40,73 @@ export function VenueCombobox({
   disabled = false,
   className,
 }: VenueComboboxProps) {
-  const venueOptions = [CUSTOM_OPTION, ...venues];
-  const selectedVenue = venueOptions.find((venue) => venue.id === value) || null;
+  const [open, setOpen] = useState(false)
+  const venueOptions = [CUSTOM_OPTION, ...venues]
+  const selected = venueOptions.find((v) => v.id === value) || null
+
+  const labelFor = (v: Venue) =>
+    v.id === "custom" ? "Custom Location" : `${v.name} - ${v.city}${v.state ? `, ${v.state}` : ""}`
 
   return (
-    <MuiAutocomplete
-      options={venueOptions}
-      value={selectedVenue}
-      disabled={disabled}
-      onChange={(_, newValue) => {
-        onValueChange(newValue ? newValue.id : "");
-      }}
-      getOptionLabel={(option) => {
-        if (option.id === "custom") return "Custom Location";
-        return `${option.name} - ${option.city}${option.state ? `, ${option.state}` : ""}`;
-      }}
-      isOptionEqualToValue={(option, val) => option.id === val.id}
-      filterOptions={(options, { inputValue }) => {
-        const lowerInput = inputValue.toLowerCase();
-        return options.filter((option) => {
-          if (option.id === "custom") return true;
-          return (
-            option.name.toLowerCase().includes(lowerInput) ||
-            option.city.toLowerCase().includes(lowerInput) ||
-            option.state.toLowerCase().includes(lowerInput) ||
-            (option.address || "").toLowerCase().includes(lowerInput)
-          );
-        });
-      }}
-      renderOption={(props, option) => {
-        const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & { key: string };
-        return (
-          <Box component="li" key={key} {...rest}>
-            <Box>
-              <Typography variant="body2" fontWeight={500}>
-                {option.id === "custom" ? "Custom Location" : option.name}
-              </Typography>
-              {option.id !== "custom" && (
-                <Typography variant="caption" color="text.secondary">
-                  {option.city}
-                  {option.state && `, ${option.state}`}
-                  {option.address && ` • ${option.address}`}
-                </Typography>
-              )}
-            </Box>
-          </Box>
-        );
-      }}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          placeholder={placeholder}
-          size="small"
-        />
-      )}
-      className={className}
-      sx={{ width: '100%' }}
-    />
-  );
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={cn("w-full justify-between font-normal", !selected && "text-muted-foreground", className)}
+        >
+          <span className="truncate">{selected ? labelFor(selected) : placeholder}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command
+          filter={(itemValue, search) => {
+            if (itemValue === "custom") return 1
+            return itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+          }}
+        >
+          <CommandInput placeholder={placeholder} />
+          <CommandList>
+            <CommandEmpty>No venue found.</CommandEmpty>
+            <CommandGroup>
+              {venueOptions.map((venue) => (
+                <CommandItem
+                  key={venue.id}
+                  value={
+                    venue.id === "custom"
+                      ? "custom"
+                      : `${venue.name} ${venue.city} ${venue.state} ${venue.address || ""}`
+                  }
+                  onSelect={() => {
+                    onValueChange(venue.id)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn("mr-2 h-4 w-4", value === venue.id ? "opacity-100" : "opacity-0")}
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">
+                      {venue.id === "custom" ? "Custom Location" : venue.name}
+                    </span>
+                    {venue.id !== "custom" && (
+                      <span className="text-xs text-muted-foreground">
+                        {venue.city}
+                        {venue.state && `, ${venue.state}`}
+                        {venue.address && ` • ${venue.address}`}
+                      </span>
+                    )}
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
 }
