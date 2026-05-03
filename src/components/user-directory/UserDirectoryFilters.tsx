@@ -1,7 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -67,6 +64,8 @@ interface UserDirectoryFiltersProps {
   isAuthed: boolean;
 }
 
+const labelCls = 'text-sm font-medium flex items-center gap-2';
+
 export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
   filters,
   setFilters,
@@ -83,11 +82,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
   isAuthed,
 }) => {
   return (
-    <Paper variant="outlined" sx={{ bgcolor: 'background.paper' }}>
+    <div className="border border-border rounded-md bg-background">
       <CardContent style={{ padding: 20 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
-            <Box sx={{ position: 'relative', flex: 1 }}>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
               <Search
                 style={{
                   position: 'absolute',
@@ -111,8 +110,8 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                   transition: 'border-color 0.2s',
                 }}
               />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            </div>
+            <div className="flex gap-2">
               <Button
                 variant={nearMe ? 'default' : 'outline'}
                 onClick={handleNearMeToggle}
@@ -164,27 +163,19 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                   </Badge>
                 )}
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           {showFilters && isAuthed && (
-            <Box>
+            <div>
               <Card style={{}}>
                 <CardContent style={{ padding: 24 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
                         <Star style={{ height: 20, width: 20 }} />
-                        <Typography variant="h6" sx={{ fontSize: '1.125rem', fontWeight: 600 }}>
-                          Advanced Filters
-                        </Typography>
-                      </Box>
+                        <h2 className="text-lg font-semibold">Advanced Filters</h2>
+                      </div>
                       {activeFiltersCount > 0 && (
                         <Button
                           variant="ghost"
@@ -196,25 +187,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                           Clear All ({activeFiltersCount})
                         </Button>
                       )}
-                    </Box>
+                    </div>
 
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' },
-                        gap: 3,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Label
-                          style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="flex flex-col gap-3">
+                        <Label className={labelCls}>
                           <MapPin style={{ height: 16, width: 16 }} />
                           Location
                         </Label>
@@ -224,20 +201,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                           onChange={(e) =>
                             setFilters((prev) => ({ ...prev, location: e.target.value }))
                           }
-                          style={{}}
                         />
-                      </Box>
+                      </div>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Label
-                          style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
+                      <div className="flex flex-col gap-3">
+                        <Label className={labelCls}>
                           <Calendar style={{ height: 16, width: 16 }} />
                           Age Range
                         </Label>
@@ -247,10 +215,10 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, ageRange: value }))
                           }
                         >
-                          <SelectTrigger style={{}}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Select age range" />
                           </SelectTrigger>
-                          <SelectContent style={{}}>
+                          <SelectContent>
                             <SelectItem value="all">All ages</SelectItem>
                             {ageRanges.map((range) => (
                               <SelectItem key={range} value={range}>
@@ -259,18 +227,10 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             ))}
                           </SelectContent>
                         </Select>
-                      </Box>
+                      </div>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Label
-                          style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
+                      <div className="flex flex-col gap-3">
+                        <Label className={labelCls}>
                           <Heart style={{ height: 16, width: 16 }} />
                           Relationship Status
                         </Label>
@@ -280,10 +240,10 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, relationshipStatus: value }))
                           }
                         >
-                          <SelectTrigger style={{}}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
-                          <SelectContent style={{}}>
+                          <SelectContent>
                             <SelectItem value="all">Any status</SelectItem>
                             {relationshipStatuses.map((status) => (
                               <SelectItem key={status} value={status}>
@@ -292,18 +252,10 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             ))}
                           </SelectContent>
                         </Select>
-                      </Box>
+                      </div>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Label
-                          style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
+                      <div className="flex flex-col gap-3">
+                        <Label className={labelCls}>
                           <Briefcase style={{ height: 16, width: 16 }} />
                           Occupation
                         </Label>
@@ -313,20 +265,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                           onChange={(e) =>
                             setFilters((prev) => ({ ...prev, occupation: e.target.value }))
                           }
-                          style={{}}
                         />
-                      </Box>
+                      </div>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Label
-                          style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
+                      <div className="flex flex-col gap-3">
+                        <Label className={labelCls}>
                           <GraduationCap style={{ height: 16, width: 16 }} />
                           Education
                         </Label>
@@ -336,10 +279,10 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, education: value }))
                           }
                         >
-                          <SelectTrigger style={{}}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Select education" />
                           </SelectTrigger>
-                          <SelectContent style={{}}>
+                          <SelectContent>
                             <SelectItem value="all">Any education</SelectItem>
                             {educationLevels.map((level) => (
                               <SelectItem key={level} value={level}>
@@ -348,18 +291,10 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             ))}
                           </SelectContent>
                         </Select>
-                      </Box>
+                      </div>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Label
-                          style={{
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
+                      <div className="flex flex-col gap-3">
+                        <Label className={labelCls}>
                           <Users style={{ height: 16, width: 16 }} />
                           Gender Identity
                         </Label>
@@ -369,10 +304,10 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, genderIdentity: value }))
                           }
                         >
-                          <SelectTrigger style={{}}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
-                          <SelectContent style={{}}>
+                          <SelectContent>
                             <SelectItem value="all">Any gender</SelectItem>
                             {genderIdentities.map((gender) => (
                               <SelectItem key={gender} value={gender}>
@@ -381,19 +316,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             ))}
                           </SelectContent>
                         </Select>
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      <Label
-                        style={{
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                        }}
-                      >
+                    <div className="flex flex-col gap-3">
+                      <Label className={labelCls}>
                         <Sparkles style={{ height: 16, width: 16 }} />
                         Interests
                       </Label>
@@ -454,7 +381,7 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                         </PopoverContent>
                       </Popover>
                       {filters.interests.length > 0 && (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                        <div className="flex flex-wrap gap-2 mt-2">
                           {filters.interests.map((interest) => (
                             <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
                               <Sparkles style={{ height: 12, width: 12 }} />
@@ -465,18 +392,12 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                               />
                             </Badge>
                           ))}
-                        </Box>
+                        </div>
                       )}
-                    </Box>
+                    </div>
 
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
-                        gap: 2,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id="verified"
                           checked={filters.isVerified}
@@ -484,11 +405,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, isVerified: !!checked }))
                           }
                         />
-                        <Label htmlFor="verified" style={{ fontSize: '0.875rem' }}>
+                        <Label htmlFor="verified" className="text-sm">
                           Verified profiles
                         </Label>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id="business"
                           checked={filters.isBusiness}
@@ -496,11 +417,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, isBusiness: !!checked }))
                           }
                         />
-                        <Label htmlFor="business" style={{ fontSize: '0.875rem' }}>
+                        <Label htmlFor="business" className="text-sm">
                           Business accounts
                         </Label>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id="children"
                           checked={filters.hasChildren}
@@ -508,11 +429,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, hasChildren: !!checked }))
                           }
                         />
-                        <Label htmlFor="children" style={{ fontSize: '0.875rem' }}>
+                        <Label htmlFor="children" className="text-sm">
                           Has children
                         </Label>
-                      </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      </div>
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id="pets"
                           checked={filters.hasPets}
@@ -520,22 +441,14 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                             setFilters((prev) => ({ ...prev, hasPets: !!checked }))
                           }
                         />
-                        <Label htmlFor="pets" style={{ fontSize: '0.875rem' }}>
+                        <Label htmlFor="pets" className="text-sm">
                           Has pets
                         </Label>
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                      <Label
-                        style={{
-                          fontSize: '0.875rem',
-                          fontWeight: 500,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                        }}
-                      >
+                    <div className="flex flex-col gap-3">
+                      <Label className={labelCls}>
                         <TrendingUp style={{ height: 16, width: 16 }} />
                         Sort By
                       </Label>
@@ -551,48 +464,27 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                         <SelectTrigger style={{ width: 200, border: '2px solid' }}>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent style={{}}>
+                        <SelectContent>
                           <SelectItem value="newest">Newest members</SelectItem>
                           <SelectItem value="oldest">Oldest members</SelectItem>
                           <SelectItem value="alphabetical">Alphabetical</SelectItem>
                           <SelectItem value="last_active">Last active</SelectItem>
                         </SelectContent>
                       </Select>
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           )}
 
           {activeFiltersCount > 0 && !showFilters && (
-            <Box>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  p: 2,
-                  bgcolor: 'action.hover',
-                  borderRadius: 2,
-                }}
-              >
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: 'text.secondary',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                  }}
-                >
+            <div>
+              <div className="flex flex-wrap gap-2 items-center justify-center p-4 bg-muted rounded-lg">
+                <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Filter style={{ height: 16, width: 16 }} />
                   Active filters:
-                </Typography>
+                </span>
                 {nearMe && (
                   <Badge
                     variant="secondary"
@@ -641,11 +533,11 @@ export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
                     />
                   </Badge>
                 ))}
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
-        </Box>
+        </div>
       </CardContent>
-    </Paper>
+    </div>
   );
 };

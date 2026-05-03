@@ -140,7 +140,6 @@
   "src/components/ui/card.tsx",
   "src/components/ui/country-autocomplete.tsx",
   "src/components/ui/sheet.tsx",
-  "src/components/user-directory/UserDirectoryFilters.tsx",
   "src/lib/sx.ts",
   "src/pages/About.tsx",
   "src/pages/AdminEvents.tsx",
