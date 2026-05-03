@@ -10,7 +10,6 @@ import { SearchFilters } from '@/hooks/useSearch';
 import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
-import Box from '@mui/material/Box';
 
 interface SearchFiltersPanelProps {
   filters: SearchFilters;
@@ -114,10 +113,10 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   const { clusters, loading: clustersLoading } = useTopicClusters();
 
   return (
-    <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="p-4 flex flex-col gap-4">
       {/* Content Types */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
           <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Content Types</Label>
           {(filters.types && filters.types.length > 0) && (
             <Button
@@ -129,8 +128,8 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
               Clear
             </Button>
           )}
-        </Box>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        </div>
+        <div className="flex flex-wrap gap-2">
           {contentTypes.map((type) => {
             const IconComponent = type.icon;
             return (
@@ -145,16 +144,16 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
               </Badge>
             );
           })}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Location Filter */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <div className="flex flex-col gap-2">
         <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
           <MapPin style={{ height: 12, width: 12 }} />
           Location
         </Label>
-        <Box sx={{ position: 'relative' }}>
+        <div className="relative">
           <Input
             placeholder="Enter city, state, or country..."
             value={filters.location || ''}
@@ -171,14 +170,14 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
               <X style={{ height: 12, width: 12 }} />
             </Button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Quick Categories */}
       {getRelevantCategories().length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div className="flex flex-col gap-2">
           <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Popular Categories</Label>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          <div className="flex flex-wrap gap-1">
             {getRelevantCategories().map((category) => (
               <Badge
                 key={category}
@@ -193,15 +192,14 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 {category}
               </Badge>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
-      {/* Topic Clusters (#PRODUCT-1 from QA sweep — exposes the filterable
-          cluster_ids field that PR #225 added to every Meili index). */}
+      {/* Topic Clusters */}
       {!clustersLoading && clusters.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
             <Label
               style={{
                 fontSize: '0.875rem',
@@ -226,8 +224,8 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 Clear
               </Button>
             )}
-          </Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          </div>
+          <div className="flex flex-wrap gap-1">
             {clusters.map((cluster) => (
               <Badge
                 key={cluster.id}
@@ -239,12 +237,12 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 {cluster.name}
               </Badge>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Advanced Filters Toggle */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
+      <div className="flex items-center justify-between pt-2">
         <Button
           variant="ghost"
           size="sm"
@@ -265,13 +263,13 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
             Clear All
           </Button>
         )}
-      </Box>
+      </div>
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+        <div className="flex flex-col gap-4 pt-2">
           {/* Date Range */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
               <CalendarIcon style={{ height: 12, width: 12 }} />
               Date Range
@@ -289,15 +287,15 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 }
               }}
             />
-          </Box>
+          </div>
 
           {/* Price Range */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
               <DollarSign style={{ height: 12, width: 12 }} />
               Price Range
             </Label>
-            <Box sx={{ px: 1 }}>
+            <div className="px-2">
               <Slider
                 value={filters.priceRange || [0, 1000]}
                 onValueChange={updatePriceRange}
@@ -305,20 +303,20 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 step={10}
                 style={{ width: '100%' }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
                 <span>${filters.priceRange?.[0] || 0}</span>
                 <span>${filters.priceRange?.[1] || 1000}</span>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
 
           {/* Rating Filter */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
               <Star style={{ height: 12, width: 12 }} />
               Minimum Rating
             </Label>
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <Button
                   key={rating}
@@ -330,12 +328,12 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                   <Star style={{ height: 12, width: 12 }} />
                 </Button>
               ))}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           {/* Featured/Verified Toggle */}
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <Switch
                 id="featured"
                 checked={filters.featured || false}
@@ -344,9 +342,9 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 }
               />
               <Label htmlFor="featured" style={{ fontSize: '0.875rem' }}>Featured only</Label>
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Switch
                 id="verified"
                 checked={filters.verified || false}
@@ -355,10 +353,10 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
                 }
               />
               <Label htmlFor="verified" style={{ fontSize: '0.875rem' }}>Verified only</Label>
-            </Box>
-          </Box>
-        </Box>
+            </div>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
