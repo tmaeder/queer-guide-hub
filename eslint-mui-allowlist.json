@@ -34,7 +34,6 @@
   "src/components/admin/feedback/ReplyThread.tsx",
   "src/components/admin/feedback/RoutineLoopSection.tsx",
   "src/components/admin/feedback/ShortcutHelpDialog.tsx",
-  "src/components/admin/feedback/StoriesKanban.tsx",
   "src/components/admin/feedback/StoryDetailDrawer.tsx",
   "src/components/admin/feedback/analytics/AnalyticsTab.tsx",
   "src/components/admin/import-hub/ReviewQueueEnhanced.tsx",
