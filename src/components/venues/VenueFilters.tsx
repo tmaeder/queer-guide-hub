@@ -313,7 +313,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-
+            className="pl-10"
           />
         </div>
         <div className="flex gap-2">
