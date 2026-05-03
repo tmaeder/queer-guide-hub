@@ -91,15 +91,37 @@ Set on the Cloudflare Pages project (`queer-guide`) under Settings → Environme
 
 Without these, the dynamic sitemaps return an empty `<urlset>` and detail pages fall back to slug-derived static metadata. The static sitemap and Phase 1/2 head rewriting still work.
 
+## Landing pages
+
+Some URLs don't exist as SPA routes — handing them to the SPA would render 404, which is a cloaking risk if we then served different content to bots. For these we serve a complete standalone HTML response from the middleware (bypassing `next()`):
+
+| Pattern | Source | Schema.org @type |
+|---|---|---|
+| `/spaces/:tag` | `venues` filtered by `tags` | `ItemList` + `BreadcrumbList` |
+| `/pride/:year` | `events` where `event_type=pride` for the given year | `BreadcrumbList` |
+| `/pride/:year/:city` | `events` filtered by `event_type=pride` + `city_id` | `BreadcrumbList` |
+
+Identity tag list, supported Pride year range, and the per-tag editorial copy live in `functions/_lib/landing.ts` (`IDENTITY_TAGS`, `PRIDE_YEAR_MIN`, `PRIDE_YEAR_MAX`). Add new identity tags by editing that file.
+
+These pages are HTML-only (no JS, minimal inline CSS). Every link is a regular `<a href>` to a real SPA route, so users land back in the SPA on the next click.
+
 ## CI guardrails
 
 | Workflow | Trigger | Asserts |
 |---|---|---|
-| `seo-check.yml` | After every Pages deploy + daily 06:00 UTC | Per-route title uniqueness, length bounds, canonical correctness, og:image absoluteness, JSON-LD on `/`, bot-UA `<h1>` injection |
+| `seo-check.yml` | After every Pages deploy + daily 06:00 UTC | Per-route title uniqueness, length bounds, canonical correctness, og:image absoluteness, JSON-LD on `/`, hreflang count, bot-UA `<h1>` injection |
 | `lighthouse.yml` | After every Pages deploy + Mondays 07:00 UTC | Lighthouse scores for performance/a11y/SEO/best-practices on 6 key routes. Reports uploaded as artifacts. |
 | `sitemap-freshness.yml` | Daily 05:00 UTC | Each sub-sitemap returns 200, has ≥ N entries, freshest `<lastmod>` ≤ 14 days old |
+| `search-console-report.yml` | Mondays 08:00 UTC | Pulls top queries / pages / totals from the GSC API and commits a markdown report to `reports/seo-weekly-YYYY-WW.md`. Skips with exit 78 if `GOOGLE_SERVICE_ACCOUNT_KEY` and `SEARCH_CONSOLE_PROPERTY` secrets aren't set. |
 
-All three workflows accept a `base_url` `workflow_dispatch` input so you can run them against a Pages preview manually.
+All workflows accept a `workflow_dispatch` invocation so you can run them on demand.
+
+### Wiring up Search Console reporting
+
+1. Create a Google Cloud service account.
+2. In Search Console → Settings → Users and permissions, grant the service account's email "Full" access on the property.
+3. Add two repository secrets: `GOOGLE_SERVICE_ACCOUNT_KEY` (the full JSON, single line) and `SEARCH_CONSOLE_PROPERTY` (e.g. `sc-domain:queer.guide`).
+4. The next Monday run produces `reports/seo-weekly-YYYY-WW.md`. The workflow has `permissions: contents: write` and commits the report itself.
 
 ## Submitting to search engines
 
