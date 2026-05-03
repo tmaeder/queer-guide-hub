@@ -1,18 +1,12 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Skeleton from '@mui/material/Skeleton';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import { Plane, Hotel, Ticket, TrendingUp } from 'lucide-react';
+import { Plane, Hotel, Ticket, TrendingUp, X } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { FlightSearchForm } from '@/components/travel/FlightSearchForm';
 import {
   HotelSearchForm,
@@ -77,7 +71,6 @@ interface HotelSearchState {
 }
 
 export default function Travel() {
-  const theme = useTheme();
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get('tab') as BookingTab) || 'flights';
@@ -154,7 +147,7 @@ export default function Travel() {
     });
   };
 
-  const handleTabChange = (_: unknown, value: BookingTab) => {
+  const handleTabChange = (value: BookingTab) => {
     setActiveTab(value);
     setSearchParams((prev) => {
       prev.set('tab', value);
@@ -207,46 +200,40 @@ export default function Travel() {
       hotelSearch.priceMax !== undefined);
 
   return (
-    <Container sx={{ py: { xs: 6, md: 10 } }}>
+    <div className="container mx-auto px-4 py-12 md:py-20 max-w-screen-xl">
       <TravelPrefsPrompt />
       <SpecialOffersSection />
 
       {/* Hero */}
-      <Paper
-        variant="outlined"
-        sx={{ p: { xs: 3, sm: 4 }, mb: 4, bgcolor: 'background.paper', textAlign: 'center' }}
-      >
-        <Typography variant="h3" sx={{ fontWeight: 800, letterSpacing: '-0.02em', mb: 1 }}>
+      <div className="border border-border bg-background p-6 sm:p-8 mb-8 text-center rounded">
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
           {t('pages.travel.title', 'Book Travel')}
-        </Typography>
-        <Typography sx={{ color: 'text.secondary', maxWidth: 480, mx: 'auto' }}>
+        </h1>
+        <p className="text-muted-foreground max-w-[480px] mx-auto">
           {t('pages.travel.subtitle', 'Find flights, hotels, and activities for LGBTQ+ friendly destinations')}
-        </Typography>
-      </Paper>
+        </p>
+      </div>
 
       {/* Tabs */}
-      <Paper variant="outlined" sx={{ mb: 4, bgcolor: 'background.paper' }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-        >
-          {TAB_CONFIG.map(({ value, label, icon: Icon }) => (
-            <Tab
-              key={value}
-              value={value}
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Icon style={{ height: 18, width: 18 }} />
-                  {label}
-                </Box>
-              }
-            />
-          ))}
-        </Tabs>
+      <div className="border border-border bg-background mb-8 rounded">
+        <div className="flex border-b border-border">
+          {TAB_CONFIG.map(({ value, label, icon: Icon }) => {
+            const active = activeTab === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => handleTabChange(value)}
+                className={`flex-1 px-4 py-3 inline-flex items-center justify-center gap-2 text-sm font-medium border-b-2 ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+              >
+                <Icon style={{ height: 18, width: 18 }} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
 
-        <Box sx={{ p: 3 }}>
+        <div className="p-6">
           {/* Flights Tab */}
           {activeTab === 'flights' && (
             <FlightSearchForm initialDestination={initialTo} />
@@ -268,44 +255,42 @@ export default function Travel() {
 
           {/* Activities Tab */}
           {activeTab === 'activities' && (
-            <Box
-              component="form"
-              onSubmit={(e: React.FormEvent) => { e.preventDefault(); }}
-              sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-end' }}
+            <form
+              onSubmit={(e) => { e.preventDefault(); }}
+              className="flex gap-3 items-end"
             >
-              <Box sx={{ flex: 1 }}>
-                <TextField
-                  label="City"
+              <div className="flex-1 flex flex-col gap-1">
+                <Label htmlFor="travel-city">City</Label>
+                <Input
+                  id="travel-city"
                   value={activityCity}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setActivityCity(e.target.value)}
-                  size="small"
-                  fullWidth
+                  onChange={(e) => setActivityCity(e.target.value)}
                   placeholder="Barcelona, Berlin, Bangkok..."
                 />
-              </Box>
+              </div>
               <Button type="submit" size="sm" onClick={() => setActivityCity(activityCity.trim())}>
                 <Ticket style={{ height: 16, width: 16, marginRight: 6 }} />
                 Search Activities
               </Button>
-            </Box>
+            </form>
           )}
-        </Box>
-      </Paper>
+        </div>
+      </div>
 
       {/* Results */}
       {activeTab === 'flights' && (
-        <Paper variant="outlined" sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <TrendingUp style={{ height: 20, width: 20, color: theme.palette.brand.main }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
+        <div className="border border-border bg-background p-6 mb-8 rounded">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
+            <h2 className="text-xl font-bold tracking-tight">
               {originCity ? `Popular Deals from ${originCity}` : 'Popular Flight Deals'}
-            </Typography>
-          </Box>
+            </h2>
+          </div>
 
           {originLoading || flightsLoading ? (
             <ResultsGrid>
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Skeleton key={i} variant="rounded" height={140} />
+                <Skeleton key={i} className="h-[140px] rounded" />
               ))}
             </ResultsGrid>
           ) : popularDeals && popularDeals.length > 0 ? (
@@ -325,51 +310,54 @@ export default function Travel() {
                 : 'Enable location services to see personalized deals, or search for a route above.'}
             </EmptyState>
           )}
-        </Paper>
+        </div>
       )}
 
       {activeTab === 'hotels' && (
-        <Paper variant="outlined" sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <Hotel style={{ height: 20, width: 20, color: theme.palette.brand.main }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
+        <div className="border border-border bg-background p-6 mb-8 rounded">
+          <div className="flex items-center gap-2 mb-4">
+            <Hotel style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
+            <h2 className="text-xl font-bold tracking-tight">
               {hotelSearch?.city ? `Hotels in ${hotelSearch.city}` : 'Search for Hotels'}
-            </Typography>
-          </Box>
+            </h2>
+          </div>
 
           {hasActiveHotelFilters && hotelSearch && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2, alignItems: 'center' }}>
+            <div className="flex flex-wrap gap-2 mb-4 items-center">
               {hotelSearch.hotelType && (
-                <Chip
-                  label={`${t('pages.travel.hotels.typeLabel', 'Type')}: ${t(`pages.travel.hotels.type.${hotelSearch.hotelType}`, HOTEL_TYPE_LABEL_FALLBACK[hotelSearch.hotelType])}`}
-                  size="small"
-                  onDelete={() => clearHotelFilter('hotelType')}
-                />
+                <Badge variant="secondary" className="inline-flex items-center gap-1">
+                  {`${t('pages.travel.hotels.typeLabel', 'Type')}: ${t(`pages.travel.hotels.type.${hotelSearch.hotelType}`, HOTEL_TYPE_LABEL_FALLBACK[hotelSearch.hotelType])}`}
+                  <button type="button" onClick={() => clearHotelFilter('hotelType')} aria-label="Clear">
+                    <X size={12} />
+                  </button>
+                </Badge>
               )}
               {hotelSearch.priceMin !== undefined && (
-                <Chip
-                  label={`≥ €${hotelSearch.priceMin}`}
-                  size="small"
-                  onDelete={() => clearHotelFilter('priceMin')}
-                />
+                <Badge variant="secondary" className="inline-flex items-center gap-1">
+                  {`≥ €${hotelSearch.priceMin}`}
+                  <button type="button" onClick={() => clearHotelFilter('priceMin')} aria-label="Clear">
+                    <X size={12} />
+                  </button>
+                </Badge>
               )}
               {hotelSearch.priceMax !== undefined && (
-                <Chip
-                  label={`≤ €${hotelSearch.priceMax}`}
-                  size="small"
-                  onDelete={() => clearHotelFilter('priceMax')}
-                />
+                <Badge variant="secondary" className="inline-flex items-center gap-1">
+                  {`≤ €${hotelSearch.priceMax}`}
+                  <button type="button" onClick={() => clearHotelFilter('priceMax')} aria-label="Clear">
+                    <X size={12} />
+                  </button>
+                </Badge>
               )}
               <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
                 {t('pages.travel.hotels.clearFilters', 'Clear filters')}
               </Button>
-            </Box>
+            </div>
           )}
 
           {hotelsLoading ? (
             <ResultsGrid>
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Skeleton key={i} variant="rounded" height={240} />
+                <Skeleton key={i} className="h-[240px] rounded" />
               ))}
             </ResultsGrid>
           ) : hotelResults && hotelResults.length > 0 ? (
@@ -380,34 +368,34 @@ export default function Travel() {
             </ResultsGrid>
           ) : hotelSearch && hasActiveHotelFilters ? (
             <EmptyState>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+              <div className="flex flex-col items-center gap-3">
                 <span>{t('pages.travel.hotels.noResultsWithFilters', 'No hotels match your filters in {{city}}.', { city: hotelSearch.city })}</span>
                 <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
                   Clear filters
                 </Button>
-              </Box>
+              </div>
             </EmptyState>
           ) : hotelSearch ? (
             <EmptyState>No hotels found in {hotelSearch.city}. Try a different city.</EmptyState>
           ) : (
             <EmptyState>Search for a city above to find hotels.</EmptyState>
           )}
-        </Paper>
+        </div>
       )}
 
       {activeTab === 'activities' && (
-        <Paper variant="outlined" sx={{ p: 3, mb: 4, bgcolor: 'background.paper' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <Ticket style={{ height: 20, width: 20, color: theme.palette.brand.main }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
+        <div className="border border-border bg-background p-6 mb-8 rounded">
+          <div className="flex items-center gap-2 mb-4">
+            <Ticket style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
+            <h2 className="text-xl font-bold tracking-tight">
               {activityCity ? `Activities in ${activityCity}` : 'Search for Activities'}
-            </Typography>
-          </Box>
+            </h2>
+          </div>
 
           {activitiesLoading ? (
             <ResultsGrid>
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Skeleton key={i} variant="rounded" height={200} />
+                <Skeleton key={i} className="h-[200px] rounded" />
               ))}
             </ResultsGrid>
           ) : activityResults && activityResults.length > 0 ? (
@@ -421,45 +409,37 @@ export default function Travel() {
           ) : (
             <EmptyState>Search for a city above to find activities and tours.</EmptyState>
           )}
-        </Paper>
+        </div>
       )}
 
       {/* CTA */}
-      <Paper variant="outlined" sx={{ textAlign: 'center', py: 3, px: 3, bgcolor: 'background.paper' }}>
-        <Typography sx={{ fontWeight: 600, mb: 1 }}>
+      <div className="border border-border bg-background text-center py-6 px-6 rounded">
+        <p className="font-semibold mb-2">
           {t('pages.travel.exploreCta', 'Explore LGBTQ+ Friendly Destinations')}
-        </Typography>
-        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+        </p>
+        <p className="text-muted-foreground text-sm mb-4">
           {t('pages.travel.exploreDescription', 'Discover cities and countries with detailed safety information and travel guides')}
-        </Typography>
+        </p>
         <LocalizedLink to="/places">
           <Button variant="outline">{t('pages.travel.browseDestinations', 'Browse Destinations')}</Button>
         </LocalizedLink>
-      </Paper>
-    </Container>
+      </div>
+    </div>
   );
 }
 
 function ResultsGrid({ children }: { children: React.ReactNode }) {
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-        gap: 2,
-      }}
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {children}
-    </Box>
+    </div>
   );
 }
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <Box sx={{ textAlign: 'center', py: 4, bgcolor: 'action.hover', borderRadius: 2 }}>
-      <Typography component="div" sx={{ color: 'text.secondary' }}>
-        {children}
-      </Typography>
-    </Box>
+    <div className="text-center py-8 bg-muted rounded-md">
+      <div className="text-muted-foreground">{children}</div>
+    </div>
   );
 }

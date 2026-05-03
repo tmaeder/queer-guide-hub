@@ -23,12 +23,14 @@ export function personalizedRank(
 		home_city?: string | null;
 	},
 	seenRecently: Set<string>,
+	query?: string,
 ): RankableHit[] {
 	const interestSet = new Set((signal.interests || []).map(normalize));
 	const tagSet = new Set((signal.recent_tags || []).map(normalize));
 	const citySet = new Set(
 		[signal.home_city, ...(signal.recent_cities || [])].filter(Boolean).map((x) => normalize(x as string)),
 	);
+	const q = query ? normalize(query) : "";
 
 	return fused
 		.map((h) => {
@@ -41,6 +43,18 @@ export function personalizedRank(
 			if (h.city && citySet.has(normalize(h.city))) boost += 0.1;
 			if (h.featured) boost += 0.04;
 			if (seenRecently.has(`${h.content_type}:${h.id || h.content_id}`)) boost -= 0.15;
+
+			// Exact-title boost (bug #4 fallback): Meilisearch's index ranking
+			// rules don't yet have `exactness` ahead of `attribute`, so the
+			// engine returns Bremerhaven for "berlin" before Berlin. We compensate
+			// here. Magnitude is large enough to dominate every other signal but
+			// small enough that filtered results still look organic.
+			if (q && typeof h.title === "string") {
+				const t = normalize(h.title as string);
+				if (t === q) boost += 1.0;
+				else if (t.startsWith(q + " ") || t.startsWith(q + ",")) boost += 0.5;
+				else if (t.includes(" " + q + " ") || t.endsWith(" " + q)) boost += 0.25;
+			}
 			return { ...h, _personalScore: (h._fused || 0) + boost };
 		})
 		.sort((a, b) => (b._personalScore || 0) - (a._personalScore || 0));

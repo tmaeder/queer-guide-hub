@@ -175,15 +175,23 @@ export async function meiliMultiSearch(
 	}));
 
 	type MeiliQuery = (typeof queries)[number];
-	const run = async (q: Array<MeiliQuery | Omit<MeiliQuery, "hybrid">>) =>
-		fetch(`${env.MEILISEARCH_URL}/multi-search`, {
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${env.MEILISEARCH_SEARCH_KEY}`,
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ queries: q }),
-		});
+	const run = async (q: Array<MeiliQuery | Omit<MeiliQuery, "hybrid">>) => {
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort("meili-timeout"), 6000);
+		try {
+			return await fetch(`${env.MEILISEARCH_URL}/multi-search`, {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${env.MEILISEARCH_SEARCH_KEY}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ queries: q }),
+				signal: controller.signal,
+			});
+		} finally {
+			clearTimeout(timer);
+		}
+	};
 
 	let res = await run(queries);
 	if (!res.ok && args.useHybrid) {
