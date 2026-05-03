@@ -101,7 +101,6 @@
   "src/components/messaging/StartConversationButton.tsx",
   "src/components/moderation/ReportDialog.tsx",
   "src/components/news/NewsCard.tsx",
-  "src/components/news/NewsFilters.tsx",
   "src/components/notifications/NotificationBell.tsx",
   "src/components/notifications/NotificationList.tsx",
   "src/components/personalities/AddPersonalityDialog.tsx",
