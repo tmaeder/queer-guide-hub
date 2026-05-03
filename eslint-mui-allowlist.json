@@ -73,7 +73,6 @@
   "src/components/cms/MediaLibrary/index.tsx",
   "src/components/cms/ModerationQueue.tsx",
   "src/components/cms/ReviewQueue.tsx",
-  "src/components/cms/UniversalContentCreator.tsx",
   "src/components/cms/UniversalContentDashboard.tsx",
   "src/components/cms/UniversalContentEditor.tsx",
   "src/components/cms/editor/CMSEditorLayout.tsx",
@@ -201,7 +200,6 @@
   "src/pages/admin/EmailTemplates.tsx",
   "src/pages/trips/SharedTripPage.tsx",
   "src/pages/trips/TripPlannerPage.tsx",
-  "src/routes.tsx",
   "src/test/__tests__/test-utils.test.tsx",
   "src/test/test-utils.tsx",
   "src/theme/muiTheme.ts"
