@@ -36,9 +36,6 @@ import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile } from '@/hooks/useProfile';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { PageHeader } from '@/components/layout/PageHeader';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -220,7 +217,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
   }, [formData, hasUnsavedChanges, handleSave]);
 
   return (
-    <Container sx={{ py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
       {/* Header */}
       <PageHeader
         title="Profile Settings"
@@ -234,46 +231,36 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
       >
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Profile Completion</Typography>
-              <Typography variant="body2" color="text.secondary">{profileCompletion}%</Typography>
-            </Box>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium">Profile Completion</p>
+              <p className="text-sm text-muted-foreground">{profileCompletion}%</p>
+            </div>
             <Progress value={profileCompletion} style={{ height: 8 }} />
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            <p className="text-xs text-muted-foreground mt-2 block">
               Complete your profile to connect better with the community
-            </Typography>
+            </p>
           </CardContent>
         </Card>
       </PageHeader>
 
       {/* Tabs */}
-      <Box sx={{ bgcolor: 'background.paper', p: 3 }}>
+      <div className="bg-background p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
           <TabsList>
             <TabsTrigger value="basic">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <User style={{ width: 16, height: 16 }} /> Basic
-              </Box>
+              <span className="flex items-center gap-2"><User style={{ width: 16, height: 16 }} /> Basic</span>
             </TabsTrigger>
             <TabsTrigger value="identity">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Heart style={{ width: 16, height: 16 }} /> Identity
-              </Box>
+              <span className="flex items-center gap-2"><Heart style={{ width: 16, height: 16 }} /> Identity</span>
             </TabsTrigger>
             <TabsTrigger value="travel">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Plane style={{ width: 16, height: 16 }} /> Travel
-              </Box>
+              <span className="flex items-center gap-2"><Plane style={{ width: 16, height: 16 }} /> Travel</span>
             </TabsTrigger>
             <TabsTrigger value="relationships">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Users style={{ width: 16, height: 16 }} /> Relationships
-              </Box>
+              <span className="flex items-center gap-2"><Users style={{ width: 16, height: 16 }} /> Relationships</span>
             </TabsTrigger>
             <TabsTrigger value="privacy">
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Lock style={{ width: 16, height: 16 }} /> Privacy
-              </Box>
+              <span className="flex items-center gap-2"><Lock style={{ width: 16, height: 16 }} /> Privacy</span>
             </TabsTrigger>
           </TabsList>
 
@@ -289,9 +276,9 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
             <TravelPreferencesEditor />
             <EmailForwardingSettings />
             <PushNotificationSettings />
-            <Box sx={{ mt: 4 }}>
+            <div className="mt-8">
               <DocumentsList tripId={null} />
-            </Box>
+            </div>
           </TabsContent>
 
           <TabsContent value="relationships">
@@ -304,29 +291,29 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         </Tabs>
 
         {/* Search personalization entry point */}
-        <Box sx={{ mt: 4, p: 3, borderRadius: 2, bgcolor: 'action.hover' }}>
-          <Box sx={{ fontWeight: 600, mb: 1 }}>Personalize your search</Box>
-          <Box sx={{ fontSize: '0.875rem', mb: 2, color: 'text.secondary' }}>
+        <div className="mt-8 p-6 rounded-lg bg-muted">
+          <p className="font-semibold mb-2">Personalize your search</p>
+          <p className="text-sm mb-4 text-muted-foreground">
             Pick vibes, home city, and languages so search results learn what you like.
-          </Box>
+          </p>
           <LocalizedLink to="/onboarding/search" style={{ color: 'inherit', fontWeight: 500 }}>
             Personalize →
           </LocalizedLink>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Auto-save status bar */}
-      <Box sx={{ bgcolor: 'background.paper', p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1 }}>
+      <div className="bg-background p-4 flex justify-center items-center gap-2">
         {saveStatus === 'saving' && (
           <>
             <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
-            <Typography variant="body2" color="text.secondary">Saving...</Typography>
+            <p className="text-sm text-muted-foreground">Saving...</p>
           </>
         )}
         {saveStatus === 'saved' && (
           <>
             <Check style={{ width: 14, height: 14 }} />
-            <Typography variant="body2" color="text.secondary">All changes saved</Typography>
+            <p className="text-sm text-muted-foreground">All changes saved</p>
           </>
         )}
         {saveStatus === 'unsaved' && (
@@ -335,7 +322,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         {saveStatus === 'error' && (
           <Badge variant="destructive">Save failed — retrying...</Badge>
         )}
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 }
