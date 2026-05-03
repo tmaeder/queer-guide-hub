@@ -2,7 +2,6 @@
   "src/components/admin/NewsQualityReviewTab.tsx",
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/animation/StaggerGrid.tsx",
-  "src/components/booking/HotelBookingFlow.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
   "src/components/home/LatestNewsSlider.tsx",
   "src/components/home/RegionalEventsCalendar.tsx",
