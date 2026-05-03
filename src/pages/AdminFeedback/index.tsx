@@ -1,7 +1,5 @@
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
+import { Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { updateCommunitySubmission } from '@/hooks/usePageFetchers';
 import { AnalyticsTab } from '@/components/admin/feedback/analytics/AnalyticsTab';
@@ -21,9 +19,9 @@ export default function AdminFeedback() {
 
   if (c.isLoading || c.errorsLoading) {
     return (
-      <Box sx={{ p: 6, textAlign: 'center' }}>
-        <CircularProgress />
-      </Box>
+      <div className="p-12 text-center">
+        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+      </div>
     );
   }
 
@@ -36,53 +34,36 @@ export default function AdminFeedback() {
     tabIdx === 1 ? 'spam' : tabIdx === 2 ? 'analytics' : 'stories';
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 1 }}>
-        <Box sx={{ flex: 1 }}>
+    <div className="p-4 sm:p-6">
+      <div className="flex items-start gap-4 mb-2">
+        <div className="flex-1">
           <PageHeader
             title="Feedback & Errors"
             subtitle="Community feedback and automated API error reports"
           />
-        </Box>
-        <Box
-          component="button"
+        </div>
+        <button
           onClick={() => c.setHelpOpen(true)}
           aria-label="Keyboard shortcuts"
           title="Keyboard shortcuts (?)"
-          sx={{
-            // Flat inline hint matching the project design system
-            // (0 radius / 0 borders / 0 shadows) — the "?" is a scanable
-            // cue, not a chrome-heavy button.
-            border: 0,
-            bgcolor: 'transparent',
-            p: 0,
-            cursor: 'pointer',
-            fontSize: '0.75rem',
-            color: 'text.secondary',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            mt: 1.25,
-            letterSpacing: 0.3,
-            transition: 'color 0.15s, opacity 0.15s',
-            '&:hover': { color: 'primary.main' },
-            '&:active': { opacity: 0.7 },
-          }}
+          className="border-0 bg-transparent p-0 cursor-pointer text-xs text-muted-foreground inline-flex items-center gap-1 mt-2.5 tracking-wide transition-colors hover:text-primary active:opacity-70"
         >
           press <strong style={{ fontWeight: 700 }}>?</strong> for shortcuts
-        </Box>
-      </Box>
+        </button>
+      </div>
 
       <Tabs
-        value={tabIdx}
-        onChange={(_, v) =>
-          c.update({ tab: v === 1 ? 'spam' : v === 2 ? 'analytics' : 'stories' })
+        value={tabValue}
+        onValueChange={(v) =>
+          c.update({ tab: v as 'stories' | 'spam' | 'analytics' })
         }
-        sx={{ mb: 2 }}
+        className="mb-4"
       >
-        <Tab label={`Stories (${c.stories.length})`} />
-        <Tab label={`Spam (${c.spamCount})`} />
-        <Tab label="Analytics" />
+        <TabsList>
+          <TabsTrigger value="stories">{`Stories (${c.stories.length})`}</TabsTrigger>
+          <TabsTrigger value="spam">{`Spam (${c.spamCount})`}</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
       </Tabs>
 
       {tabValue === 'spam' && (
@@ -389,6 +370,6 @@ export default function AdminFeedback() {
       />
 
       <ShortcutHelpDialog open={c.helpOpen} onClose={() => c.setHelpOpen(false)} />
-    </Box>
+    </div>
   );
 }

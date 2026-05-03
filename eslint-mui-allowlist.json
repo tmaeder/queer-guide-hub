@@ -128,7 +128,6 @@
   "src/lib/sx.ts",
   "src/pages/About.tsx",
   "src/pages/AdminEvents.tsx",
-  "src/pages/AdminFeedback/index.tsx",
   "src/pages/AdminHotels.tsx",
   "src/pages/AdminQueerVillages.tsx",
   "src/pages/AdminRedirects.tsx",
