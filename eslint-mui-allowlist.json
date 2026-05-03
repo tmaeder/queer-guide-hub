@@ -177,7 +177,6 @@
   "src/components/user-directory/UserDirectoryGrid.tsx",
   "src/lib/sx.ts",
   "src/pages/About.tsx",
-  "src/pages/AdminAccessibilityAttributes.tsx",
   "src/pages/AdminCities.tsx",
   "src/pages/AdminDashboard.tsx",
   "src/pages/AdminEvents.tsx",
