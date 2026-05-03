@@ -138,7 +138,7 @@ export const useSearch = (query: string, filters: SearchFilters = {}, page = 0) 
       setFacets({});
       setTotalHits(0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [debouncedQuery, filtersKey, page]);
 
   return {

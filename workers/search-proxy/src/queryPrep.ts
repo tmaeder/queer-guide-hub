@@ -51,7 +51,7 @@ export function detectScript(s: string): Script {
 export function tokenize(s: string): string[] {
 	// Replace anything that isn't a letter, digit, hyphen, apostrophe or whitespace.
 	const cleaned = s
-		.replace(/[​-‍﻿]/g, "") // zero-width
+		.replace(/[\u200B-\u200D\uFEFF]/g, "") // zero-width chars
 		.replace(/[^\p{L}\p{N}\-'\s]/gu, " ")
 		.replace(/\s+/g, " ")
 		.trim();

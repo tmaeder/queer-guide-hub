@@ -928,7 +928,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
                 <Badge variant="outline">
                   {content.content_type.replace('_', ' ')}
                 </Badge>
-                <span className="text-sm text-muted-foreground">ID: {content.id}</div>
+                <span className="text-sm text-muted-foreground">ID: {content.id}</span>
               </div>
             </div>
           </div>
@@ -1091,7 +1091,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               <ScrollArea>
                 <pre className="text-xs bg-accent p-2 rounded-md overflow-auto">
                   {JSON.stringify(content, null, 2)}
-                </div>
+                </pre>
               </ScrollArea>
             </CardContent>
           </Card>
