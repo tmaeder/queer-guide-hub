@@ -67,7 +67,6 @@
   "src/components/security/AdminRouteGuard.tsx",
   "src/components/trips/AddDocumentDialog.tsx",
   "src/components/trips/AddPlaceDialog.tsx",
-  "src/components/trips/AddReservationDialog.tsx",
   "src/components/trips/AddToTripDialog.tsx",
   "src/components/trips/AddToTripMenuItem.tsx",
   "src/components/trips/AiPlanTab.tsx",
