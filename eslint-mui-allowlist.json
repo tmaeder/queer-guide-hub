@@ -20,7 +20,6 @@
   "src/components/admin/feedback/RoutineLoopSection.tsx",
   "src/components/admin/feedback/ShortcutHelpDialog.tsx",
   "src/components/admin/feedback/StoryDetailDrawer.tsx",
-  "src/components/admin/import-hub/ReviewQueueEnhanced.tsx",
   "src/components/admin/search-intelligence/OverviewTab.tsx",
   "src/components/admin/search-intelligence/SynonymsTab.tsx",
   "src/components/admin/search-intelligence/TopicsTab.tsx",

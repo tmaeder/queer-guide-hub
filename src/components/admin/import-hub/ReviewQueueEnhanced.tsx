@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -89,7 +86,6 @@ export function ReviewQueueEnhanced() {
   const total = pageResult?.total || 0;
   const totalPages = pageResult?.total_pages || 0;
 
-  // Load the matched existing record when comparing
   const expandedItem = items.find((i) => i.id === compareItemId);
   const { data: matchedEntity } = useEntityById(
     expandedItem?.target_table || null,
@@ -103,19 +99,19 @@ export function ReviewQueueEnhanced() {
       const currentIdx = items.findIndex((i) => i.id === expandedId);
 
       switch (e.key.toLowerCase()) {
-        case 'j': // Next
+        case 'j':
           if (currentIdx < items.length - 1) setExpandedId(items[currentIdx + 1].id);
           break;
-        case 'k': // Previous
+        case 'k':
           if (currentIdx > 0) setExpandedId(items[currentIdx - 1].id);
           break;
-        case 'a': // Approve
+        case 'a':
           if (expandedId) handleApprove(expandedId);
           break;
-        case 'r': // Reject
+        case 'r':
           if (expandedId) handleReject(expandedId);
           break;
-        case ' ': // Toggle select
+        case ' ':
           e.preventDefault();
           if (expandedId) toggleSelect(expandedId);
           break;
@@ -123,7 +119,7 @@ export function ReviewQueueEnhanced() {
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleApprove/handleReject are stable handlers, only re-bind on expandedId/items change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expandedId, items]);
 
   const handleApprove = (id: string) => {
@@ -177,7 +173,6 @@ export function ReviewQueueEnhanced() {
     if (selectedIds.size > 0) {
       setSelectedIds(new Set());
     } else {
-      // Use lightweight RPC returning JSON array (bypasses PostgREST row limit)
       const { data } = await supabase.rpc('get_staging_ids', {
         p_target_table: filters.target_table || null,
         p_dedup_status: filters.dedup_status || null,
@@ -203,21 +198,13 @@ export function ReviewQueueEnhanced() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-3">
       {/* Filters */}
       <Card>
         <CardContent>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              gap: 2,
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-              <Filter style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+          <div className="flex flex-col md:flex-row gap-2 items-center justify-between">
+            <div className="flex gap-2 items-center flex-wrap">
+              <Filter className="h-4 w-4 text-muted-foreground" />
 
               <Select
                 value={filters.target_table || 'all'}
@@ -251,28 +238,23 @@ export function ReviewQueueEnhanced() {
                 </SelectContent>
               </Select>
 
-              <TextField
-                size="small"
-                placeholder="Search data..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                sx={{ width: 200 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search data..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="w-[200px] pl-7 h-9"
+                />
+              </div>
 
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => toggleSort('created_at')}
-                style={{ display: 'flex', gap: 6 }}
+                className="flex gap-1.5"
               >
-                <ArrowUpDown style={{ height: 14, width: 14 }} />
+                <ArrowUpDown className="h-3.5 w-3.5" />
                 Date{' '}
                 {sort.field === 'created_at' ? (sort.dir === 'asc' ? '(oldest)' : '(newest)') : ''}
               </Button>
@@ -281,9 +263,9 @@ export function ReviewQueueEnhanced() {
                 variant="outline"
                 size="sm"
                 onClick={() => toggleSort('dedup_match_score')}
-                style={{ display: 'flex', gap: 6 }}
+                className="flex gap-1.5"
               >
-                <ArrowUpDown style={{ height: 14, width: 14 }} />
+                <ArrowUpDown className="h-3.5 w-3.5" />
                 Match Score
               </Button>
 
@@ -292,30 +274,23 @@ export function ReviewQueueEnhanced() {
                 size="sm"
                 onClick={() => refetch()}
                 disabled={isLoading}
-                style={{ display: 'flex', gap: 6 }}
+                className="flex gap-1.5"
               >
-                <RefreshCw
-                  style={{
-                    height: 14,
-                    width: 14,
-                    ...(isLoading ? { animation: 'spin 1s linear infinite' } : {}),
-                  }}
-                />
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
-            </Box>
+            </div>
 
             {selectedIds.size > 0 && (
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
-                  {selectedIds.size} selected
-                </Typography>
+              <div className="flex gap-1 items-center">
+                <span className="text-sm text-muted-foreground">{selectedIds.size} selected</span>
                 <Button
                   size="sm"
                   onClick={handleBulkApprove}
                   disabled={stagingAction.isPending}
-                  style={{ display: 'flex', gap: 6, backgroundColor: '#16a34a', color: 'white' }}
+                  className="flex gap-1.5"
+                  style={{ backgroundColor: '#16a34a', color: 'white' }}
                 >
-                  <ThumbsUp style={{ height: 14, width: 14 }} />
+                  <ThumbsUp className="h-3.5 w-3.5" />
                   Approve
                 </Button>
                 <Button
@@ -323,81 +298,64 @@ export function ReviewQueueEnhanced() {
                   size="sm"
                   onClick={handleBulkReject}
                   disabled={stagingAction.isPending}
-                  style={{ display: 'flex', gap: 6 }}
+                  className="flex gap-1.5"
                 >
-                  <ThumbsDown style={{ height: 14, width: 14 }} />
+                  <ThumbsDown className="h-3.5 w-3.5" />
                   Reject
                 </Button>
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
       {/* Keyboard shortcut hint */}
-      <Typography
-        variant="caption"
-        sx={{ color: 'var(--muted-foreground)', display: 'flex', alignItems: 'center', gap: 0.5 }}
-      >
-        <Keyboard style={{ height: 12, width: 12 }} />
+      <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+        <Keyboard className="h-3 w-3" />
         J/K nav &middot; A approve &middot; R reject &middot; Space select
-      </Typography>
+      </span>
 
       {/* Loading */}
       {isLoading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={28} aria-label="Loading" />
-        </Box>
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-7 w-7 animate-spin" aria-label="Loading" />
+        </div>
       )}
 
       {/* Empty State */}
       {!isLoading && items.length === 0 && (
         <Card>
           <CardContent>
-            <Box
-              sx={{
-                mx: 'auto',
-                width: 96,
-                height: 96,
-                bgcolor: 'var(--muted)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 2,
-              }}
-            >
-              <Inbox style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
-            </Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-              No Items Found
-            </Typography>
-            <Typography sx={{ color: 'var(--muted-foreground)' }}>
+            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-2">
+              <Inbox className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <h6 className="font-semibold text-lg mb-1">No Items Found</h6>
+            <p className="text-muted-foreground">
               {filters.search
                 ? 'No items match your search.'
                 : 'No items pending review with current filters.'}
-            </Typography>
+            </p>
           </CardContent>
         </Card>
       )}
 
       {/* Items */}
       {!isLoading && items.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col gap-1.5">
           {/* Select All */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1 }}>
+          <div className="flex items-center gap-1 px-1">
             <input
               type="checkbox"
               checked={selectedIds.size > 0 && selectedIds.size >= total}
               onChange={toggleSelectAll}
-              style={{ width: 16, height: 16, cursor: 'pointer' }}
+              className="w-4 h-4 cursor-pointer"
             />
-            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+            <span className="text-sm text-muted-foreground">
               {selectedIds.size > 0
                 ? `${selectedIds.size} selected (all pages)`
                 : `Select all (${total})`}
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
           {items.map((item) => {
             const confidence = getConfidenceLevel(item.ai_confidence_score);
@@ -411,38 +369,25 @@ export function ReviewQueueEnhanced() {
               <Card
                 key={item.id}
                 style={{
-                  backgroundColor: isExpanded ? 'var(--accent)' : 'var(--card)',
+                  backgroundColor: isExpanded ? 'hsl(var(--accent))' : 'hsl(var(--card))',
                   borderLeft: `3px solid ${dedupColor}`,
                   transition: 'background-color 0.15s',
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                  <div className="flex items-start gap-2">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(item.id)}
                       onChange={() => toggleSelect(item.id)}
-                      style={{ width: 16, height: 16, cursor: 'pointer', marginTop: 4 }}
+                      className="w-4 h-4 cursor-pointer mt-1"
                     />
 
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex-1 min-w-0">
                       {/* Header */}
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          mb: 0.5,
-                          flexWrap: 'wrap',
-                          gap: 1,
-                        }}
-                      >
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
-                        >
-                          <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                            {title}
-                          </Typography>
+                      <div className="flex items-center justify-between mb-0.5 flex-wrap gap-1">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="font-semibold text-[0.9rem]">{title}</span>
                           <Badge variant="outline">{item.target_table}</Badge>
                           {item.dedup_status !== 'pending' && item.dedup_status !== 'unique' && (
                             <Badge
@@ -457,28 +402,22 @@ export function ReviewQueueEnhanced() {
                                 ` (${(item.dedup_match_score * 100).toFixed(0)}%)`}
                             </Badge>
                           )}
-                          <Box
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 0.5,
-                              px: 0.75,
-                              py: 0.15,
-                              borderRadius: 0.5,
-                              bgcolor: `${confidence.color}15`,
+                          <span
+                            className="inline-flex items-center gap-0.5 px-1.5 rounded text-[0.7rem] font-semibold"
+                            style={{
+                              backgroundColor: `${confidence.color}15`,
                               color: confidence.color,
-                              fontSize: '0.7rem',
-                              fontWeight: 600,
+                              padding: '1px 6px',
                             }}
                           >
                             AI:{' '}
                             {item.ai_confidence_score !== null
                               ? `${(item.ai_confidence_score * 100).toFixed(0)}%`
                               : 'N/A'}
-                          </Box>
-                        </Box>
+                          </span>
+                        </div>
 
-                        <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                        <div className="flex gap-0.5 flex-shrink-0">
                           <Button
                             variant="outline"
                             size="sm"
@@ -487,7 +426,7 @@ export function ReviewQueueEnhanced() {
                               setCompareItemId(null);
                             }}
                           >
-                            <Eye style={{ height: 14, width: 14 }} />
+                            <Eye className="h-3.5 w-3.5" />
                           </Button>
                           {item.dedup_match_id && (
                             <>
@@ -498,9 +437,9 @@ export function ReviewQueueEnhanced() {
                                   setCompareItemId(isComparing ? null : item.id);
                                   setExpandedId(item.id);
                                 }}
-                                style={{ display: 'flex', gap: 4 }}
+                                className="flex gap-1"
                               >
-                                <Merge style={{ height: 14, width: 14 }} />
+                                <Merge className="h-3.5 w-3.5" />
                                 Compare
                               </Button>
                               {item.target_table === 'venues' && (
@@ -508,16 +447,15 @@ export function ReviewQueueEnhanced() {
                                   size="sm"
                                   onClick={() => handleMerge(item.id, item.dedup_match_id as string)}
                                   disabled={stagingAction.isPending}
+                                  className="flex gap-1"
                                   style={{
                                     backgroundColor: '#ca8a04',
                                     color: 'white',
                                     padding: '4px 8px',
-                                    display: 'flex',
-                                    gap: 4,
                                   }}
                                   title="Merge this staging item into the matched venue"
                                 >
-                                  <Merge style={{ height: 14, width: 14 }} />
+                                  <Merge className="h-3.5 w-3.5" />
                                   Merge
                                 </Button>
                               )}
@@ -533,7 +471,7 @@ export function ReviewQueueEnhanced() {
                               padding: '4px 8px',
                             }}
                           >
-                            <ThumbsUp style={{ height: 14, width: 14 }} />
+                            <ThumbsUp className="h-3.5 w-3.5" />
                           </Button>
                           <Button
                             variant="destructive"
@@ -542,10 +480,10 @@ export function ReviewQueueEnhanced() {
                             disabled={stagingAction.isPending}
                             style={{ padding: '4px 8px' }}
                           >
-                            <ThumbsDown style={{ height: 14, width: 14 }} />
+                            <ThumbsDown className="h-3.5 w-3.5" />
                           </Button>
-                        </Box>
-                      </Box>
+                        </div>
+                      </div>
 
                       {/* Compact Summary */}
                       {!isExpanded && (
@@ -558,18 +496,18 @@ export function ReviewQueueEnhanced() {
 
                       {/* Expanded Details */}
                       {isExpanded && (
-                        <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div className="mt-1.5 flex flex-col gap-2">
                           {/* AI Reasoning */}
                           {item.ai_validation_result?.reasoning && (
                             <Alert>
-                              <AlertTriangle style={{ height: 16, width: 16 }} />
+                              <AlertTriangle className="h-4 w-4" />
                               <AlertDescription>
                                 <strong>AI:</strong> {item.ai_validation_result.reasoning}
                               </AlertDescription>
                             </Alert>
                           )}
 
-                          {/* Side-by-side comparison with matched entity */}
+                          {/* Side-by-side comparison */}
                           {isComparing && matchedEntity ? (
                             <SideBySideComparison
                               entityType={item.target_table}
@@ -587,24 +525,19 @@ export function ReviewQueueEnhanced() {
                           )}
 
                           {/* Review Notes */}
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 500, fontSize: '0.8rem' }}
-                            >
-                              Review Notes
-                            </Typography>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-medium text-[0.8rem]">Review Notes</span>
                             <Textarea
                               placeholder="Add notes..."
                               value={reviewNotes}
                               onChange={(e) => setReviewNotes(e.target.value)}
                               style={{ minHeight: 50 }}
                             />
-                          </Box>
-                        </Box>
+                          </div>
+                        </div>
                       )}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             );
@@ -612,42 +545,34 @@ export function ReviewQueueEnhanced() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 2,
-                pt: 2,
-              }}
-            >
+            <div className="flex items-center justify-center gap-2 pt-2">
               <Button
                 variant="outline"
                 size="sm"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => p - 1)}
-                style={{ display: 'flex', gap: 6 }}
+                className="flex gap-1.5"
               >
-                <ChevronLeft style={{ height: 16, width: 16 }} />
+                <ChevronLeft className="h-4 w-4" />
                 Previous
               </Button>
-              <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+              <span className="text-sm text-muted-foreground">
                 Page {page} of {totalPages} ({total} items)
-              </Typography>
+              </span>
               <Button
                 variant="outline"
                 size="sm"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                style={{ display: 'flex', gap: 6 }}
+                className="flex gap-1.5"
               >
                 Next
-                <ChevronRight style={{ height: 16, width: 16 }} />
+                <ChevronRight className="h-4 w-4" />
               </Button>
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
