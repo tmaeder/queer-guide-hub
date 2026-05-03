@@ -5,7 +5,6 @@
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/animation/StaggerGrid.tsx",
   "src/components/booking/HotelBookingFlow.tsx",
-  "src/components/cms/ContentListPanel/ContentListTable.tsx",
   "src/components/cms/fields/CityAutocompleteField.tsx",
   "src/components/country/LGBTJurisdictionInfo.tsx",
   "src/components/home/LatestNewsSlider.tsx",
