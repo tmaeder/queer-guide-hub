@@ -36,8 +36,6 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -197,22 +195,12 @@ export default function AdminNewsSources() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                fontSize: '0.75rem',
-                maxWidth: 200,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <p className="text-sm text-muted-foreground">
               {info.row.original.url}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -221,14 +209,14 @@ export default function AdminNewsSources() {
         cell: (info) => {
           const val = info.getValue();
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               {val === 'rss' ? (
                 <Rss style={{ height: 14, width: 14 }} />
               ) : (
                 <Globe style={{ height: 14, width: 14 }} />
               )}
               <Badge variant="secondary">{val.toUpperCase()}</Badge>
-            </Box>
+            </div>
           );
         },
         meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
@@ -244,7 +232,7 @@ export default function AdminNewsSources() {
           const row = info.row.original;
           const active = info.getValue();
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               {row.status === 'error' ? (
                 <AlertCircle style={{ height: 14, width: 14, color: '#ef4444' }} />
               ) : (
@@ -257,7 +245,7 @@ export default function AdminNewsSources() {
               >
                 {active ? row.status || 'Active' : 'Inactive'}
               </Badge>
-            </Box>
+            </div>
           );
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
@@ -377,7 +365,7 @@ export default function AdminNewsSources() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <ExportExcelButton
             onExport={async () => {
               const cols: ExportColumnDef<Record<string, unknown>>[] = [
@@ -407,7 +395,7 @@ export default function AdminNewsSources() {
             <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
             Add Source
           </Button>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast/triggerFetch are stable, adding would defeat memoization
@@ -427,11 +415,7 @@ export default function AdminNewsSources() {
           <DialogHeader>
             <DialogTitle>{editingSource ? 'Edit News Source' : 'Add News Source'}</DialogTitle>
           </DialogHeader>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <Label htmlFor="name">Source Name</Label>
               <Input
@@ -453,7 +437,7 @@ export default function AdminNewsSources() {
                 required
               />
             </div>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Source Type</Label>
                 <Select
@@ -487,7 +471,7 @@ export default function AdminNewsSources() {
                   </SelectContent>
                 </Select>
               </div>
-            </Box>
+            </div>
             <div>
               <Label>Fetch Frequency</Label>
               <Select
@@ -506,21 +490,21 @@ export default function AdminNewsSources() {
                 </SelectContent>
               </Select>
             </div>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Switch
                 id="is_active"
                 checked={formData.is_active}
                 onCheckedChange={(c) => setFormData({ ...formData, is_active: c })}
               />
               <Label htmlFor="is_active">Active</Label>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit">{editingSource ? 'Update' : 'Create'}</Button>
-            </Box>
-          </Box>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -530,10 +514,10 @@ export default function AdminNewsSources() {
           <DialogHeader>
             <DialogTitle>Manage Keywords - {editingSource?.name}</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             <div>
               <Label>Current Keywords</Label>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              <div className="flex flex-wrap gap-2 mt-2">
                 {editingKeywords.map((kw, i) => (
                   <Badge
                     key={i}
@@ -555,11 +539,11 @@ export default function AdminNewsSources() {
                     </button>
                   </Badge>
                 ))}
-              </Box>
+              </div>
             </div>
             <div>
               <Label htmlFor="newKeyword">Add Keyword</Label>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+              <div className="flex gap-2 mt-2">
                 <Input
                   id="newKeyword"
                   value={newKeyword}
@@ -570,15 +554,15 @@ export default function AdminNewsSources() {
                 <Button type="button" onClick={addKeyword} disabled={!newKeyword.trim()}>
                   Add
                 </Button>
-              </Box>
+              </div>
             </div>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+            <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setKeywordsDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={saveKeywords}>Save Keywords</Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
         </>

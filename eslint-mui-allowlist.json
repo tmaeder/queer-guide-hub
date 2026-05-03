@@ -167,8 +167,6 @@
   "src/pages/AdminEvents.tsx",
   "src/pages/AdminFeedback/index.tsx",
   "src/pages/AdminHotels.tsx",
-  "src/pages/AdminNewsSources.tsx",
-  "src/pages/AdminPersonalities.tsx",
   "src/pages/AdminQueerVillages.tsx",
   "src/pages/AdminRedirects.tsx",
   "src/pages/AdminReview.tsx",

@@ -1,6 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -253,14 +251,14 @@ export default function AdminPersonalities() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
             {info.row.original.pronouns && (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-sm text-muted-foreground">
                 {info.row.original.pronouns}
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -274,10 +272,10 @@ export default function AdminPersonalities() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 12, width: 12 }} />
               {val}
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -293,11 +291,11 @@ export default function AdminPersonalities() {
           const died =
             !p.is_living && p.death_date ? ` - ${new Date(p.death_date).getFullYear()}` : '';
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <Calendar style={{ height: 12, width: 12 }} />
               {born}
               {died}
-            </Box>
+            </div>
           );
         },
         meta: {
@@ -324,7 +322,7 @@ export default function AdminPersonalities() {
       columnHelper.accessor('visibility', {
         header: 'Visibility',
         cell: (info) => (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <div className="flex flex-col gap-1">
             <VisibilityBadge visibility={info.getValue()} />
             {info.row.original.is_featured && (
               <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
@@ -332,7 +330,7 @@ export default function AdminPersonalities() {
                 Featured
               </Badge>
             )}
-          </Box>
+          </div>
         ),
         meta: {
           serverSortable: true,
@@ -352,10 +350,10 @@ export default function AdminPersonalities() {
       columnHelper.accessor('view_count', {
         header: 'Views',
         cell: (info) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <div className="flex items-center gap-1">
             <Eye style={{ height: 12, width: 12 }} />
             {info.getValue()?.toLocaleString() ?? 0}
-          </Box>
+          </div>
         ),
         meta: {
           serverSortable: true,
@@ -493,11 +491,11 @@ export default function AdminPersonalities() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           <PersonalitiesCsvImport onImportComplete={refetchPersonalities} />
           <AdultModelsCsvImport onImportComplete={refetchPersonalities} />
           <ExportExcelButton onExport={handleExportExcel} />
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are stable, adding would defeat memoization
@@ -511,9 +509,9 @@ export default function AdminPersonalities() {
       backHref={null}
       config={tableConfig}
       beforeTable={
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3, mb: 3 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <BulkCreatePersonalities />
-        </Box>
+        </div>
       }
       afterTable={
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -522,9 +520,9 @@ export default function AdminPersonalities() {
             <DialogTitle>Edit Personality</DialogTitle>
           </DialogHeader>
           {selectedPersonality && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label>Verification Status</Label>
                   <Select
                     value={selectedPersonality.verification_status}
@@ -539,8 +537,8 @@ export default function AdminPersonalities() {
                       <SelectItem value="disputed">Disputed</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label>Visibility</Label>
                   <Select
                     value={selectedPersonality.visibility}
@@ -555,9 +553,9 @@ export default function AdminPersonalities() {
                       <SelectItem value="draft">Draft</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="featured"
@@ -565,12 +563,12 @@ export default function AdminPersonalities() {
                   onChange={(e) => handleFeaturedToggle(selectedPersonality.id, e.target.checked)}
                 />
                 <Label htmlFor="featured">Featured Personality</Label>
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label htmlFor="internal-notes">Interne Notizen</Label>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                <p className="text-xs text-muted-foreground">
                   Nur intern sichtbar — wird nicht öffentlich angezeigt.
-                </Typography>
+                </p>
                 <Textarea
                   id="internal-notes"
                   value={internalNotes}
@@ -579,7 +577,7 @@ export default function AdminPersonalities() {
                   rows={5}
                   disabled={notesLoading || notesSaving}
                 />
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                <div className="flex justify-end mt-2">
                   <Button
                     type="button"
                     size="sm"
@@ -590,9 +588,9 @@ export default function AdminPersonalities() {
                   >
                     {notesSaving ? 'Speichern…' : 'Notizen speichern'}
                   </Button>
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
