@@ -20,7 +20,6 @@
   "src/components/admin/NewsQualityReviewTab.tsx",
   "src/components/admin/ScrapeSourcesDashboard.tsx",
   "src/components/admin/TagAliasesSection.tsx",
-  "src/components/admin/ValidationReport.tsx",
   "src/components/admin/WorkflowDashboard.tsx",
   "src/components/admin/automation/ModuleSettingsDialog.tsx",
   "src/components/admin/automation/ReviewQueue.tsx",
