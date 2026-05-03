@@ -6,18 +6,19 @@
  */
 
 import { useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Alert from '@mui/material/Alert';
-import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X } from 'lucide-react';
+import { CheckCheck, Archive, EyeOff, Languages, ChevronDown, X, Loader2 } from 'lucide-react';
 import { upsertCMSContentMetadata, insertContentActions } from '@/hooks/useCMSContentMetadata';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
 import type { WorkflowState } from '@/types/cms';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export interface BulkSelection {
   contentType: string;
@@ -33,7 +34,6 @@ interface BulkActionsBarProps {
 
 export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsBarProps) {
   const [busy, setBusy] = useState(false);
-  const [translateAnchor, setTranslateAnchor] = useState<HTMLElement | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string | null>(null);
 
@@ -66,7 +66,9 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
     async (locale: SupportedLocale) => {
       setBusy(true);
       setError(null);
-      setProgress(`Queuing ${selections.length} translation job${selections.length === 1 ? '' : 's'}…`);
+      setProgress(
+        `Queuing ${selections.length} translation job${selections.length === 1 ? '' : 's'}…`,
+      );
       const rows = selections.map((sel) => ({
         op: 'translate' as const,
         content_type: sel.contentType,
@@ -78,7 +80,6 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
       const { error: e } = await insertContentActions(rows);
       setBusy(false);
       setProgress(null);
-      setTranslateAnchor(null);
       if (e) {
         setError(`Failed to enqueue: ${e.message}`);
       } else {
@@ -94,103 +95,88 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
   const nonDefaultLocales = SUPPORTED_LOCALES.filter((l) => l !== DEFAULT_LOCALE);
 
   return (
-    <Box
-      sx={{
-        position: 'sticky',
-        bottom: 16,
-        zIndex: 5,
-        mx: 'auto',
-        maxWidth: 720,
-        bgcolor: 'background.paper',
-        border: '1px solid',
-        borderColor: 'primary.main',
-        borderRadius: 2,
-        boxShadow: 3,
-        p: 1.5,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        flexWrap: 'wrap',
-      }}
-    >
-      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-        {selections.length} selected
-      </Typography>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        {progress && (
-          <Typography variant="caption" color="text.secondary">
-            {progress}
-          </Typography>
-        )}
-      </Box>
+    <div className="sticky bottom-4 z-[5] mx-auto max-w-[720px] bg-background border border-primary rounded-lg shadow-lg p-3 flex items-center gap-3 flex-wrap">
+      <p className="text-sm font-semibold">{selections.length} selected</p>
+      <div className="flex-1 min-w-0">
+        {progress && <span className="text-xs text-muted-foreground">{progress}</span>}
+      </div>
       <Button
-        size="small"
-        variant="contained"
-        color="success"
+        size="sm"
         disabled={busy}
         onClick={() => updateState('published')}
-        startIcon={busy ? <CircularProgress size={14} color="inherit" /> : <CheckCheck size={14} />}
-        sx={{ textTransform: 'none', fontWeight: 600 }}
+        className="bg-green-600 hover:bg-green-700 text-white normal-case font-semibold"
       >
+        {busy ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+        ) : (
+          <CheckCheck size={14} className="mr-1" />
+        )}
         Publish
       </Button>
       <Button
-        size="small"
-        variant="outlined"
+        size="sm"
+        variant="outline"
         disabled={busy}
         onClick={() => updateState('draft')}
-        startIcon={<EyeOff size={14} />}
-        sx={{ textTransform: 'none', fontWeight: 600 }}
+        className="normal-case font-semibold"
       >
+        <EyeOff size={14} className="mr-1" />
         Unpublish
       </Button>
       <Button
-        size="small"
-        variant="outlined"
-        color="warning"
+        size="sm"
+        variant="outline"
         disabled={busy}
         onClick={() => updateState('archived')}
-        startIcon={<Archive size={14} />}
-        sx={{ textTransform: 'none', fontWeight: 600 }}
+        className="border-yellow-500 text-yellow-700 hover:bg-yellow-50 normal-case font-semibold"
       >
+        <Archive size={14} className="mr-1" />
         Archive
       </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            className="normal-case font-semibold"
+          >
+            <Languages size={14} className="mr-1" />
+            Translate
+            <ChevronDown size={12} className="ml-1" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {nonDefaultLocales.map((loc) => (
+            <DropdownMenuItem key={loc} onClick={() => enqueueTranslate(loc)}>
+              Translate to {loc.toUpperCase()}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button
-        size="small"
-        variant="outlined"
-        disabled={busy}
-        onClick={(e) => setTranslateAnchor(e.currentTarget)}
-        startIcon={<Languages size={14} />}
-        endIcon={<ChevronDown size={12} />}
-        sx={{ textTransform: 'none', fontWeight: 600 }}
-      >
-        Translate
-      </Button>
-      <Menu
-        anchorEl={translateAnchor}
-        open={Boolean(translateAnchor)}
-        onClose={() => setTranslateAnchor(null)}
-      >
-        {nonDefaultLocales.map((loc) => (
-          <MenuItem key={loc} onClick={() => enqueueTranslate(loc)}>
-            Translate to {loc.toUpperCase()}
-          </MenuItem>
-        ))}
-      </Menu>
-      <Button
-        size="small"
-        variant="text"
+        size="sm"
+        variant="ghost"
         onClick={onClear}
-        startIcon={<X size={14} />}
-        sx={{ textTransform: 'none', color: 'text.secondary' }}
+        className="normal-case text-muted-foreground"
       >
+        <X size={14} className="mr-1" />
         Clear
       </Button>
       {error && (
-        <Alert severity="error" sx={{ width: '100%', mt: 1 }} onClose={() => setError(null)}>
-          {error}
+        <Alert variant="destructive" className="w-full mt-2">
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="ml-2 underline text-xs"
+            >
+              Dismiss
+            </button>
+          </AlertDescription>
         </Alert>
       )}
-    </Box>
+    </div>
   );
 }
