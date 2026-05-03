@@ -1,10 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { MessageSquarePlus, Check, Camera } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
-import Fab from '@mui/material/Fab';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { insertRow } from '@/hooks/usePageFetchers';
@@ -137,55 +134,37 @@ export function FeedbackButton() {
 
   return (
     <>
-      <Tooltip title="Share Feedback" placement="left">
-        <Fab
-          size="medium"
-          aria-label="Share feedback"
-          onClick={handleOpenClick}
-          disabled={capturing}
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            zIndex: 1200,
-            bgcolor: 'hsl(var(--accent-warm))',
-            color: '#fff',
-            '&:hover': { bgcolor: 'hsl(var(--accent-warm))', filter: 'brightness(0.92)' },
-            // Hide the FAB itself during capture so it doesn't show up in the
-            // screenshot, but reserve the space so layout doesn't shift.
-            visibility: capturing ? 'hidden' : 'visible',
-          }}
-        >
-          <MessageSquarePlus style={{ width: 22, height: 22 }} />
-        </Fab>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label="Share feedback"
+            onClick={handleOpenClick}
+            disabled={capturing}
+            className="fixed bottom-6 right-6 z-[1200] flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-all hover:brightness-90 disabled:opacity-50"
+            style={{
+              backgroundColor: 'hsl(var(--accent-warm))',
+              visibility: capturing ? 'hidden' : 'visible',
+            }}
+          >
+            <MessageSquarePlus style={{ width: 22, height: 22 }} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">Share Feedback</TooltipContent>
       </Tooltip>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent style={{ maxWidth: 480 }}>
           {status === 'submitted' ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Box
-                sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  bgcolor: '#22c55e',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mx: 'auto',
-                  mb: 2,
-                }}
-              >
+            <div className="text-center py-8">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#22c55e' }}>
                 <Check style={{ width: 24, height: 24, color: '#fff' }} />
-              </Box>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                Thank you!
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              </div>
+              <h6 className="text-base font-semibold mb-2">Thank you!</h6>
+              <p className="text-sm text-muted-foreground mb-6">
                 Your feedback helps make Queer Guide better for everyone.
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+              </p>
+              <div className="flex gap-3 justify-center">
                 <Button variant="outline" onClick={handleClose}>
                   Close
                 </Button>
@@ -197,8 +176,8 @@ export function FeedbackButton() {
                 >
                   View Feedback Board
                 </Button>
-              </Box>
-            </Box>
+              </div>
+            </div>
           ) : (
             <>
               <DialogHeader>
@@ -206,42 +185,45 @@ export function FeedbackButton() {
               </DialogHeader>
 
               {/* Category selector */}
-              <Box sx={{ mb: 2 }}>
+              <div className="mb-4">
                 <Label>What type of feedback?</Label>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, mt: 1 }}>
+                <div className="grid grid-cols-2 gap-2 mt-2">
                   {feedbackCategories.map((cat) => {
                     const Icon = cat.icon;
                     const selected = form.category === cat.value;
                     return (
-                      <Box
+                      <div
                         key={cat.value}
                         onClick={() => setForm((f) => ({ ...f, category: cat.value }))}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 1.5,
-                          border: 2,
-                          borderColor: selected ? cat.color : 'divider',
-                          bgcolor: selected ? `${cat.color}10` : 'transparent',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          transition: 'all 0.15s',
-                          '&:hover': { borderColor: cat.color },
+                        className="flex items-center gap-2 cursor-pointer rounded-md transition-all"
+                        style={{
+                          padding: 12,
+                          borderWidth: 2,
+                          borderStyle: 'solid',
+                          borderColor: selected ? cat.color : 'hsl(var(--border))',
+                          backgroundColor: selected ? `${cat.color}10` : 'transparent',
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLDivElement).style.borderColor = cat.color;
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLDivElement).style.borderColor = selected
+                            ? cat.color
+                            : 'hsl(var(--border))';
                         }}
                       >
                         <Icon style={{ width: 16, height: 16, color: cat.color, flexShrink: 0 }} />
-                        <Typography variant="body2" sx={{ fontWeight: selected ? 600 : 400 }}>
+                        <p className="text-sm" style={{ fontWeight: selected ? 600 : 400 }}>
                           {cat.label}
-                        </Typography>
-                      </Box>
+                        </p>
+                      </div>
                     );
                   })}
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               {/* Title */}
-              <Box sx={{ mb: 2 }}>
+              <div className="mb-4">
                 <Label htmlFor="feedback-title">Title *</Label>
                 <Input
                   id="feedback-title"
@@ -251,10 +233,10 @@ export function FeedbackButton() {
                   maxLength={200}
                   style={{ marginTop: 4 }}
                 />
-              </Box>
+              </div>
 
               {/* Description */}
-              <Box sx={{ mb: 2 }}>
+              <div className="mb-4">
                 <Label htmlFor="feedback-desc">Description *</Label>
                 <Textarea
                   id="feedback-desc"
@@ -265,11 +247,11 @@ export function FeedbackButton() {
                   }
                   style={{ marginTop: 4, minHeight: 100 }}
                 />
-              </Box>
+              </div>
 
               {/* Optional email for anonymous users */}
               {!user && (
-                <Box sx={{ mb: 2 }}>
+                <div className="mb-4">
                   <Label htmlFor="feedback-email">Email (optional)</Label>
                   <Input
                     id="feedback-email"
@@ -279,12 +261,12 @@ export function FeedbackButton() {
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                     style={{ marginTop: 4 }}
                   />
-                </Box>
+                </div>
               )}
 
               {/* Screenshot toggle + thumbnail preview */}
-              <Box sx={{ mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="mb-4">
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="feedback-screenshot"
                     checked={includeScreenshot}
@@ -297,57 +279,43 @@ export function FeedbackButton() {
                     <Camera style={{ width: 14, height: 14 }} />
                     Include screenshot of this page
                   </Label>
-                </Box>
+                </div>
                 {includeScreenshot && screenshotUrlRef.current && (
-                  <Box
-                    sx={{
-                      mt: 1,
-                      ml: 3.5,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      maxWidth: 220,
-                    }}
+                  <div
+                    className="mt-2 border border-border rounded overflow-hidden"
+                    style={{ marginLeft: 28, maxWidth: 220 }}
                   >
                     <img
                       src={screenshotUrlRef.current}
                       alt="Screenshot preview"
                       style={{ display: 'block', width: '100%', height: 'auto' }}
                     />
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
 
               {/* Context preview */}
-              <Box
-                sx={{
-                  mb: 2,
-                  p: 1.25,
-                  borderRadius: 1,
-                  bgcolor: 'action.hover',
-                  fontSize: '0.7rem',
-                }}
+              <div
+                className="mb-4 rounded bg-muted"
+                style={{ padding: 10, fontSize: '0.7rem' }}
               >
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                <p className="block text-xs text-muted-foreground">
                   Automatically included: current page URL, browser info, recent errors
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    display: 'block',
+                </p>
+                <p
+                  className="block text-muted-foreground"
+                  style={{
                     fontFamily: 'monospace',
                     fontSize: '0.65rem',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    mt: 0.25,
+                    marginTop: 2,
                   }}
                 >
                   {pageUrl}
-                </Typography>
-              </Box>
+                </p>
+              </div>
 
               {/* Honeypot */}
               <input
@@ -362,7 +330,7 @@ export function FeedbackButton() {
               />
 
               <DialogFooter>
-                <Box sx={{ display: 'flex', gap: 1.5, width: '100%', justifyContent: 'flex-end' }}>
+                <div className="flex gap-3 w-full justify-end">
                   <Button variant="outline" onClick={handleClose}>
                     Cancel
                   </Button>
@@ -372,7 +340,7 @@ export function FeedbackButton() {
                   >
                     {status === 'submitting' ? 'Submitting...' : 'Submit'}
                   </Button>
-                </Box>
+                </div>
               </DialogFooter>
             </>
           )}
