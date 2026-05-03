@@ -2,88 +2,54 @@
 
 The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guide](https://queer.guide).
 
-## Tech Stack
+## Tech stack
 
-- **Frontend:** Vite + React 18 + TypeScript + Tailwind CSS + MUI + shadcn/ui
-- **State Management:** TanStack React Query
-- **Backend:** [Supabase](https://supabase.com) (PostgreSQL 15, Edge Functions, Auth, Storage, Realtime)
-- **Hosting:** Cloudflare Pages
-- **Search:** PostgreSQL Full-Text Search with pg_trgm fuzzy matching + Algolia
+- **Frontend:** Vite 6 + React 19 + TypeScript 5.8 + Tailwind + MUI 7 + shadcn/ui
+- **Routing/data:** TanStack Router + Query + Table
+- **Backend:** [Supabase](https://supabase.com) — PostgreSQL 17.4, Auth, Storage, Realtime, Edge Functions (Deno)
+- **Hosting:** Cloudflare Pages (`queer-guide.pages.dev`) + Cloudflare Workers
+- **Search:** Self-hosted Meilisearch (hybrid keyword + semantic) + pgvector + Cloudflare Workers AI (bge embeddings, reranker) via AI Gateway
 - **Maps:** MapLibre GL with Protomaps basemaps + Mapbox geocoding
-- **AI:** OpenAI GPT-4o-mini (tag categorisation, content tagging, RAG)
-- **Analytics:** Umami self-hosted analytics
-- **i18n:** i18next with 11 languages (ar, de, en, es, fr, it, ja, ko, pt, ru, zh)
+- **Editor:** Tiptap
+- **AI:** Anthropic Claude (Haiku for relevance gating) + OpenAI GPT-4o-mini (tagging, RAG)
+- **Workflows:** pgmq + `workflow-dispatcher` edge function (24 workflow definitions)
+- **Payments:** Stripe
+- **Analytics:** Umami (self-hosted)
+- **i18n:** i18next — 11 languages (ar, de, en, es, fr, it, ja, ko, pt, ru, zh)
 
-## Local Development
+## Local development
 
 Requirements: Node.js 18+ and npm.
 
 ```sh
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
+npm install --legacy-peer-deps   # date-fns v4 vs react-day-picker v8 peer conflict
+npm run dev                       # port 8080
 ```
-
-Available scripts:
 
 | Script | Purpose |
 |---|---|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Production build to `dist/` |
-| `npm run build:dev` | Development build |
-| `npm run lint` | Run ESLint |
-| `npm run test` | Run Vitest tests |
-| `npm run test:watch` | Run Vitest in watch mode |
-| `npm run preview` | Preview production build locally |
+| `npm run dev` | Vite dev server |
+| `npm run build` | Production build → `dist/` |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest |
+| `npm run preview` | Preview production build |
 
-## Project Structure
+## Project structure
 
 ```
-src/
-├── pages/              # Route-level page components (~90 pages)
-├── components/         # Feature-grouped UI components
-│   ├── admin/          # Admin dashboard components
-│   ├── auth/           # Authentication flows
-│   ├── city/           # City detail & listings
-│   ├── cms/            # Content management system
-│   ├── events/         # Events & festivals
-│   ├── groups/         # Community groups
-│   ├── home/           # Homepage
-│   ├── hotels/         # Hotel search & detail
-│   ├── layout/         # App shell, navigation, headers
-│   ├── map/            # Interactive map components
-│   ├── marketplace/    # Marketplace listings
-│   ├── messaging/      # Direct messaging
-│   ├── news/           # News articles
-│   ├── personalities/  # LGBTQ+ personalities
-│   ├── resources/      # Resources filter bar, tag list renderer
-│   ├── search/         # Global search
-│   ├── security/       # Security dashboard
-│   ├── tags/           # Tag selector, related tags, graph
-│   ├── travel/         # Flights, hotels, travel deals
-│   ├── ui/             # Shared UI primitives (shadcn/ui)
-│   ├── venues/         # Venue listings & detail
-│   ├── villages/       # Queer villages / neighbourhoods
-│   └── weather/        # Weather display
-├── hooks/              # Custom React hooks
-├── config/             # App configuration (navigation, map style, workflows)
-├── i18n/               # Internationalisation (11 locales)
-├── integrations/       # Third-party service clients (Supabase)
-├── lib/                # Utility libraries
-├── theme/              # MUI theme configuration
-├── types/              # TypeScript type definitions
-└── utils/              # Shared utility functions
-
+src/                       # React app (~90 pages, feature-grouped components)
 supabase/
-├── functions/          # 88 Supabase Edge Functions (Deno)
-│   ├── _shared/        # Shared utilities (auth, scraping, AI validation)
-│   └── ...             # Individual function directories
-├── migrations/         # 409 PostgreSQL migration files
-└── config.toml         # Supabase project configuration
-
-scripts/                # Image generation & optimisation utilities
+├── functions/             # 118 Edge Functions (Deno)
+└── migrations/            # 435+ PostgreSQL migrations
+workers/                   # Cloudflare Workers (email-ingest, scraper-api, search-proxy, …)
+scraper/                   # Scraping pipeline (Cheerio + Playwright)
+meilisearch/               # Self-hosted Meili config (Docker Compose, Caddy, index scripts)
+client-sdk/                # Search client SDK (browser + node)
+infra/                     # Self-hosted infra (Plane, Caddy)
+e2e/                       # Playwright E2E tests
+extension/                 # Browser extension
+scripts/                   # Operational scripts
+docs/                      # Project documentation
 ```
 
 ## Features
@@ -92,188 +58,101 @@ scripts/                # Image generation & optimisation utilities
 
 | Feature | Pages | Description |
 |---|---|---|
-| **Venues** | `/venues`, `/venues/:id` | LGBTQ+-friendly bars, clubs, restaurants, and community spaces with ratings, images, and amenities |
-| **Events** | `/events`, `/events/:id` | Community events with date ranges, venue links, and target group filters |
-| **Festivals** | `/festivals`, `/festivals/:id` | LGBTQ+ festivals and pride celebrations |
-| **Personalities** | `/personalities`, `/personalities/:id` | Notable LGBTQ+ figures with bios, professions, and linked content |
-| **News** | `/news`, `/news/:id` | Aggregated LGBTQ+ news from multiple sources |
-| **Community Groups** | `/groups`, `/groups/:id` | User-created community groups with membership and messaging |
-| **Marketplace** | `/marketplace` | Community marketplace for listings |
-| **Hotels** | `/hotels`, `/hotels/:id` | LGBTQ+-friendly hotel search with booking integration |
+| **Venues** | `/venues`, `/venues/:id` | LGBTQ+-friendly bars, clubs, restaurants, community spaces |
+| **Events** | `/events`, `/events/:id` | Community events with date ranges and venue links |
+| **Festivals** | `/festivals`, `/festivals/:id` | Festivals and pride celebrations |
+| **Personalities** | `/personalities`, `/personalities/:id` | Notable LGBTQ+ figures with bios and linked content |
+| **News** | `/news`, `/news/:id` | Aggregated LGBTQ+ news from RSS sources |
+| **Marketplace** | `/marketplace` | Affiliate-aware product listings (Awin, Shopify, Etsy) |
+| **Community Groups** | `/groups`, `/groups/:id` | User-created groups with membership and messaging |
+| **Hotels** | `/hotels`, `/hotels/:id` | LGBTQ+-friendly hotel search with booking |
 | **Queer Villages** | `/queer-villages` | Notable LGBTQ+ neighbourhoods worldwide |
 | **Videos** | `/videos` | Community video content |
 
-### Discovery & Navigation
+### Discovery
 
 | Feature | Pages | Description |
 |---|---|---|
-| **Interactive Map** | `/map` | MapLibre GL map with venue/event markers and area rendering |
-| **City Pages** | `/cities/:slug` | City guides with venues, events, weather, and safety info |
-| **Country Pages** | `/countries/:slug` | Country guides with ILGA legal data and safety ratings |
-| **Resources / Tag Wiki** | `/resources`, `/resources/:tag` | Browseable tag taxonomy with categories, search, and linked content |
-| **Travel** | `/travel` | Flight search, hotel search, and travel deals |
-| **Search** | `/search` | Global search across all content types |
-| **Directory** | `/directory` | Comprehensive directory of LGBTQ+ resources |
+| **Interactive Map** | `/map` | MapLibre GL with venue/event markers and area rendering |
+| **City Pages** | `/cities/:slug` | City guides — venues, events, weather, safety |
+| **Country Pages** | `/countries/:slug` | Country guides with ILGA legal data + safety ratings |
+| **Resources / Tag Wiki** | `/resources`, `/resources/:tag` | Browseable tag taxonomy with linked content |
+| **Travel** | `/travel` | Flight + hotel search, travel deals |
+| **Search** | `/search` | Hybrid personalized search across all entity types |
 
 ### Community
 
-| Feature | Pages | Description |
-|---|---|---|
-| **User Profiles** | `/profile/:id` | User profiles with privacy settings |
-| **Friends** | `/friends` | Friend connections |
-| **Messaging** | `/messages` | Direct messaging between users |
-| **Feed** | `/feed` | Community feed / timeline |
-| **Favourites** | `/favourites` | Saved venues, events, and content |
-| **Submit Content** | `/submit-venue`, `/submit-event` | User-submitted venues and events |
+User profiles, friends, direct messaging, feed, favourites, user-submitted venues/events.
 
 ### Admin
 
-All admin pages require the `canManageContent` role.
-
-| Feature | Path | Description |
-|---|---|---|
-| **Dashboard** | `/admin` | Overview with statistics and quick actions |
-| **Content CMS** | `/admin/cms` | Rich text page editor (Tiptap) with dynamic routing |
-| **Import Hub** | `/admin/import-hub` | Bulk data import from CSV, Foursquare, TripAdvisor, Eventbrite, Ticketmaster, etc. |
-| **Security** | `/admin/security` | Audit logs, RLS policy monitoring, threat detection |
-| **Analytics** | `/admin/analytics` | Umami analytics dashboard integration |
-| **Workflows** | `/admin/workflows` | Background job orchestration with pgmq queues |
-| **Content Management** | `/admin/venues`, `/admin/events`, etc. | CRUD management for all content types |
-| **Tag Management** | `/admin/tags` | Tag wiki management with bulk operations |
+Admin pages require the `canManageContent` role: dashboard, CMS (Tiptap), import hub, security audit, analytics, workflow builder, content CRUD, tag management, pipeline observability.
 
 ## Architecture
 
-### Tag & Resources System
+### Search
 
-The tag system powers the Resources page and cross-content categorisation across the platform.
-
-**Database layer:**
-
-| Table / View | Purpose |
-|---|---|
-| `unified_tags` | All tags with name, slug, description, image, usage_count |
-| `tag_categories` | Hierarchical category tree (parent/child, sort_order) |
-| `tag_category_assignments` | Many-to-many tag-to-category mapping with `is_primary` flag |
-| `unified_tag_assignments` | Tag-to-entity mapping (venues, events, personalities, etc.) |
-| `tag_suggestions` | AI-generated tag suggestions with confidence scores |
-| `tag_usage_summary` (view) | Pre-aggregated usage counts per entity type |
-
-**AI categorisation pipeline** (Supabase Edge Functions):
-
-| Function | Role |
-|---|---|
-| `categorize-tags` | Batch-categorise uncategorised tags via GPT-4o-mini; loads categories from `tag_categories` table dynamically |
-| `auto-tag-content` | Suggest tags for content items (venues, events, etc.) with confidence-based auto-approval |
-| `bulk-create-ai-tags` | Create new tags from term lists with AI-generated descriptions and categories |
-
-All three functions load category slugs from the DB at runtime and write to `tag_category_assignments` for multi-category support.
-
-**Frontend:**
-
-| Path | Purpose |
-|---|---|
-| `src/pages/Ressources.tsx` | Resources page orchestrator (view modes, routing, state) |
-| `src/components/resources/` | Extracted sub-components: `ResourcesFilterBar`, `TagListRenderer`, `categoryMeta` |
-| `src/hooks/useCentralizedTags.tsx` | React Query hook for cached tag+category data; also exports `useTagUsageCounts` |
-| `src/components/tags/` | Reusable tag components: `TagSelector`, `RelatedTagsCard`, `TagLinkedContent`, `TagRelationshipGraph` |
-
-### Edge Functions by Domain
-
-88 Supabase Edge Functions organised by domain:
-
-| Domain | Functions | Description |
-|---|---|---|
-| **Data Import** | `import-venues-csv`, `import-events-csv`, `import-foursquare-venues`, `import-google-places-venues`, `import-tripadvisor-venues`, `import-tomtom-venues`, `import-eventbrite-events`, `import-ticketmaster-events`, `import-city-data`, `import-country-data`, `import-airports-data`, `import-personalities-csv`, `import-tags-csv`, `import-kinktionary`, `import-awin-products`, `import-ilga-data`, `import-refuge-restrooms`, `import-adult-models-csv` | Bulk data import from CSV files and third-party APIs |
-| **AI & Tagging** | `categorize-tags`, `auto-tag-content`, `bulk-create-ai-tags`, `intelligent-rag`, `populate-embeddings` | AI-powered categorisation, tagging, RAG, and vector embeddings |
-| **Search** | `search`, `algolia-search`, `algolia-sync`, `search-gifs` | Full-text search, Algolia sync, and GIF search |
-| **Travel** | `search-flights`, `search-hotels`, `travel-deals`, `resolve-origin-airport` | Flight and hotel search, travel deal aggregation |
-| **Scraping** | `scrape-gaycities-events`, `scrape-spartacus`, `bulk-scrape-events`, `fetch-news`, `fetch-personality-data`, `fetch-wikipedia-data`, `fetch-city-images`, `fetch-ilga-data` | Web scraping and data enrichment from external sources |
-| **Geo & Maps** | `mapbox-geocoding`, `secure-mapbox-proxy`, `secure-mapbox-token`, `secure-google-maps-key`, `geo-link-content`, `link-locations`, `resolve-or-create-city` | Geocoding, map tile proxying, and geographic content linking |
-| **Media** | `get-pexels-images`, `store-tag-images`, `optimize-images-batch`, `scan-project-images`, `manage-placeholder-images`, `process-audio`, `process-video`, `reimport-personality-images` | Image/video/audio processing and optimisation |
-| **Notifications & Email** | `send-bulk-email`, `send-templated-email`, `send-group-notifications`, `manage-email-templates` | Email delivery and push notifications |
-| **Calendar** | `calendar-export`, `calendar-feed`, `calendar-token` | iCal export and calendar feed generation |
-| **Weather** | `get-current-weather`, `get-weather-forecast` | Weather data for city pages |
-| **Security** | `verify-turnstile`, `get-turnstile-config`, `secure-passkey-operations`, `manage-api-keys`, `get-api-key` | Turnstile CAPTCHA, passkey auth, API key management |
-| **Caching** | `redis-get`, `redis-set`, `redis-delete`, `redis-keys` | Redis cache operations |
-| **Infrastructure** | `cloudflare-api`, `redirect-handler`, `generate-sitemap`, `scan-links`, `validate-links`, `populate-optimization-status`, `workflow-dispatcher`, `background-import-manager`, `ingestion-pipeline`, `ingestion-review-api`, `enrich-venue`, `update-musician-concerts` | CDN management, SEO, link validation, and workflow orchestration |
-| **Analytics** | `umami-analytics`, `umami-dashboard` | Self-hosted analytics integration |
-| **Venues** | `get-refuge-restrooms` | Refuge Restrooms safe bathroom data |
-
-### Auth & Security
-
-- **Authentication:** Supabase Auth with email/password, OAuth, and passkey support
-- **Authorisation:** Row Level Security (RLS) on all tables; admin roles via `admin_roles` table with `canManageContent` permission
-- **Bot Protection:** Cloudflare Turnstile CAPTCHA on forms
-- **Audit Trail:** Comprehensive audit logging for admin actions
-- **Security Headers:** CSP, HSTS, X-Frame-Options configured in `wrangler.toml`
-
-### Data Flow
+Hybrid (keyword + semantic) personalized search with reranking. See [SEARCH_SYSTEM.md](SEARCH_SYSTEM.md).
 
 ```
-External Sources (Foursquare, TripAdvisor, Eventbrite, etc.)
-        │
-        ▼
-  Edge Functions (import-*, scrape-*, fetch-*)
-        │
-        ▼
-  PostgreSQL (unified_tags, venues, events, etc.)
-        │
-        ├──▶ AI Pipeline (categorize-tags, auto-tag-content)
-        │         │
-        │         ▼
-        │    tag_category_assignments, tag_suggestions
-        │
-        ▼
-  React Query Cache (useCentralizedTags, useTagUsageCounts, etc.)
-        │
-        ▼
-  React Components (Resources page, Venue detail, etc.)
+Frontend ──► search-proxy (CF Worker)
+                ├── AI Gateway → Workers AI (bge embed + reranker)
+                ├── Meilisearch (multi-search, facets, geo, synonyms)
+                └── Supabase RPC (pgvector ANN + bias signal + popular)
+
+Supabase ──DB webhook──► search-ingest (CF Worker) ──► embeddings + Meili upsert
 ```
+
+Indexes: `venues`, `events`, `cities`, `countries`, `news`, `marketplace`, `personalities`, `tags`, `queer_villages`.
+
+### Pipelines
+
+Workflow orchestration via `pgmq` + `workflow-dispatcher` edge function. Tables: `workflow_definitions`, `workflow_runs`. Queues: `scheduled_jobs`, `import_jobs`, `content_processing`, `dead_letter`. Exponential backoff, concurrency limits, idempotency keys.
+
+`source-*` functions fetch raw data → `pipeline-*` functions normalize, validate, deduplicate, quality-score, gate, and commit. Visible at `/admin/pipelines` (Builder, Sources, Staging, Dedup audit).
+
+**News pipeline** (cron `0 * * * *`): `source-rss-news` → `pipeline-normalize` → `pipeline-enrich-news` (LLM tags + summary + geo, circuit-broken) → `pipeline-validate` → `pipeline-deduplicate` → `pipeline-review-gate` → `pipeline-commit`. Idempotent commit via `news_commit_staging_batch` RPC, UNIQUE on `news_articles.fingerprint` (SHA-256 of normalized title + published day + source). Source health auto-managed: exp backoff (5min × 2ⁿ, cap 24h), auto-pause at 8 consecutive failures.
+
+**Marketplace pipeline** (cron `0 4 * * *`, multi-source fan-in): `source-awin` + `source-shopify` + `source-etsy` → `fan-in` → `pipeline-normalize` → `pipeline-validate` → `marketplace-relevance` (Claude Haiku LGBTQ+ gate, < 0.5 confidence rejected) → `pipeline-deduplicate` → `pipeline-quality-score` → `pipeline-review-gate` → `pipeline-commit` → parallel `marketplace-image-mirror` + `embedding-generator`. Atomic commit with advisory lock + price-history delta. `price_usd` auto-computed from daily-refreshed `fx_rates` (23 currencies). Weekly `marketplace-link-checker` sweeps for link rot.
+
+### Tag & resources system
+
+Cross-content categorisation across the platform.
+
+| Table / view | Purpose |
+|---|---|
+| `unified_tags` | All tags (name, slug, description, image, usage_count) |
+| `tag_categories` | Hierarchical category tree |
+| `tag_category_assignments` | Many-to-many tag-to-category with `is_primary` |
+| `unified_tag_assignments` | Tag-to-entity mapping (venues, events, personalities, …) |
+| `tag_suggestions` | AI-generated suggestions with confidence scores |
+
+**AI pipeline:** `categorize-tags`, `auto-tag-content`, `bulk-create-ai-tags` — all load categories from DB at runtime.
+
+**Frontend:** `src/pages/Ressources.tsx`, `src/components/resources/`, `src/components/tags/`, `src/hooks/useCentralizedTags.tsx`.
+
+### Auth & security
+
+- Supabase Auth (email/password, OAuth, passkeys)
+- RLS on all tables; admin via `admin_roles.canManageContent`
+- Cloudflare Turnstile on forms
+- Audit logging for admin actions
+- CSP / HSTS / X-Frame-Options via `wrangler.toml`
 
 ## Testing
 
-- **Unit & Component Tests:** Vitest + @testing-library/react
-- **E2E Tests:** Playwright (configured in `playwright.config.ts`)
-- **Type Checking:** `npx tsc --noEmit`
-
-## Architecture
-
-### Tag & Resources System
-
-The tag system powers the Resources page and cross-content categorisation across the platform.
-
-**Database layer:**
-
-| Table / View | Purpose |
-|---|---|
-| `unified_tags` | All tags with name, slug, description, image, usage_count |
-| `tag_categories` | Hierarchical category tree (parent/child, sort_order) |
-| `tag_category_assignments` | Many-to-many tag-to-category mapping with `is_primary` flag |
-| `unified_tag_assignments` | Tag-to-entity mapping (venues, events, personalities, etc.) |
-| `tag_suggestions` | AI-generated tag suggestions with confidence scores |
-| `tag_usage_summary` (view) | Pre-aggregated usage counts per entity type |
-
-**AI categorisation pipeline** (Supabase Edge Functions):
-
-| Function | Role |
-|---|---|
-| `categorize-tags` | Batch-categorise uncategorised tags via GPT-4o-mini; loads categories from `tag_categories` table dynamically |
-| `auto-tag-content` | Suggest tags for content items (venues, events, etc.) with confidence-based auto-approval |
-| `bulk-create-ai-tags` | Create new tags from term lists with AI-generated descriptions and categories |
-
-All three functions load category slugs from the DB at runtime and write to `tag_category_assignments` for multi-category support.
-
-**Frontend:**
-
-| Path | Purpose |
-|---|---|
-| `src/pages/Ressources.tsx` | Resources page orchestrator (view modes, routing, state) |
-| `src/components/resources/` | Extracted sub-components: `ResourcesFilterBar`, `TagListRenderer`, `categoryMeta` |
-| `src/hooks/useCentralizedTags.tsx` | React Query hook for cached tag+category data; also exports `useTagUsageCounts` |
-| `src/components/tags/` | Reusable tag components: `TagSelector`, `RelatedTagsCard`, `TagLinkedContent`, `TagRelationshipGraph` |
+- **Unit/component:** Vitest + @testing-library/react
+- **E2E:** Playwright (`playwright.config.ts`)
+- **Types:** `npx tsc --noEmit`
 
 ## Deployment
 
-Deployments are automatic via Cloudflare Pages on push to `main`.
+- **Frontend:** push to `main` → Cloudflare Pages auto-deploys
+- **Edge functions:** `supabase functions deploy <name>`
+- **Workers:** `wrangler deploy` per worker directory
+- **DB migrations:** Supabase CLI / dashboard
+- **Scraper:** GitHub Actions cron — daily full refresh + hourly events
 
-Edge Functions are deployed to Supabase and configured in `supabase/config.toml`.
+## Compliance (scraper)
+
+`robots.txt` checked per domain (1h cache), `Crawl-delay` honored, ≥3s polite delays + jitter. No anti-bot bypassing, no CAPTCHA solving, no login-walled sources. Per-source kill switches via `DISABLE_SOURCE_<NAME>=true`.
