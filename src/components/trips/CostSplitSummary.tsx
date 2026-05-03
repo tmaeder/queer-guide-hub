@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
 import { ArrowRight, Scale } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { listFromWhere } from '@/hooks/usePageFetchers';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   computeBalances,
   convertAmount,
@@ -113,80 +111,59 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
   };
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+    <div className="mt-8">
+      <div className="flex items-center gap-2 mb-4">
         <Scale size={18} style={{ color: 'var(--primary)' }} />
-        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+        <p className="text-base font-bold">
           {t('trips.split.title', 'Settle up')}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {/* Per-member balances */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+      <div className="flex flex-col gap-2 mb-4">
         {balances.map((b) => (
-          <Box key={b.user_id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Avatar src={avatarFor(b.user_id)} sx={{ width: 28, height: 28 }}>
-              {displayName(b.user_id).slice(0, 1).toUpperCase()}
+          <div key={b.user_id} className="flex items-center gap-3">
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={avatarFor(b.user_id)} />
+              <AvatarFallback>{displayName(b.user_id).slice(0, 1).toUpperCase()}</AvatarFallback>
             </Avatar>
-            <Typography sx={{ flex: 1, fontSize: '0.875rem' }}>
-              {displayName(b.user_id)}
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                color: b.net > 0 ? 'success.main' : 'error.main',
-                fontVariantNumeric: 'tabular-nums',
-              }}
+            <p className="flex-1 text-sm">{displayName(b.user_id)}</p>
+            <p
+              className="text-sm font-bold tabular-nums"
+              style={{ color: b.net > 0 ? 'var(--success, #16a34a)' : 'var(--destructive)' }}
             >
               {b.net > 0 ? '+' : ''}
               {fmt(b.net)}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ))}
-      </Box>
+      </div>
 
       {settlements.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 0.5 }}>
+        <div className="flex flex-col gap-1.5">
+          <p className="text-xs text-muted-foreground mb-1">
             {t('trips.split.suggestedTransfers', 'Suggested transfers')}
-          </Typography>
+          </p>
           {settlements.map((s, i) => (
-            <Box
-              key={i}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                p: 1,
-                bgcolor: 'action.hover',
-                fontSize: '0.875rem',
-              }}
-            >
-              <Typography sx={{ fontSize: '0.875rem' }}>
-                {displayName(s.from_user_id)}
-              </Typography>
+            <div key={i} className="flex items-center gap-2 p-2 bg-muted text-sm">
+              <p className="text-sm">{displayName(s.from_user_id)}</p>
               <ArrowRight size={14} style={{ color: 'var(--muted-foreground)' }} />
-              <Typography sx={{ fontSize: '0.875rem' }}>{displayName(s.to_user_id)}</Typography>
-              <Box sx={{ flex: 1 }} />
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                {fmt(s.amount)}
-              </Typography>
-            </Box>
+              <p className="text-sm">{displayName(s.to_user_id)}</p>
+              <div className="flex-1" />
+              <p className="text-sm font-bold tabular-nums">{fmt(s.amount)}</p>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       {skippedCount > 0 && (
-        <Typography
-          sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 1.5, fontStyle: 'italic' }}
-        >
+        <p className="text-xs text-muted-foreground mt-3 italic">
           {t('trips.split.skipped', {
             count: skippedCount,
             defaultValue: '{{count}} items in other currencies excluded',
           })}
-        </Typography>
+        </p>
       )}
-    </Box>
+    </div>
   );
 }
