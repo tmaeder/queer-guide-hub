@@ -1,7 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
 import { useSearchTelemetry } from '@/providers/SearchTelemetryProvider';
 import { AdminRouteGuard } from '@/components/security/AdminRouteGuard';
 import { LocaleRouter } from '@/components/routing/LocaleRouter';
@@ -178,45 +177,31 @@ export const AppRoutes = () => {
   return (
     <>
       {/* Screen reader route change announcements (a11y: WCAG 4.1.3) */}
-      <Box
+      <div
         aria-live="polite"
         aria-atomic="true"
         role="status"
-        sx={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          overflow: 'hidden',
-          clip: 'rect(0 0 0 0)',
-          clipPath: 'inset(50%)',
-          whiteSpace: 'nowrap',
-        }}
+        className="absolute w-px h-px overflow-hidden whitespace-nowrap"
+        style={{ clip: 'rect(0 0 0 0)', clipPath: 'inset(50%)' }}
       >
         {routeAnnouncement}
-      </Box>
-      <Box
-        component="main"
+      </div>
+      <main
         id="main-content"
         ref={mainRef}
         tabIndex={-1}
-        sx={{ flex: 1, position: 'relative', zIndex: 1, outline: 'none' }}
+        className="flex-1 relative z-[1] outline-none"
       >
         {/* key={location.pathname} resets ErrorBoundary on every route change */}
         <ErrorBoundary key={location.pathname}>
           <Suspense
             fallback={
-              <Box sx={{ py: 5, px: { xs: 2, sm: 3 }, mx: 'auto' }}>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gap: 3,
-                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                  }}
-                >
+              <div className="py-10 px-4 sm:px-6 mx-auto">
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
                   <Skeleton />
                   <Skeleton />
-                </Box>
-              </Box>
+                </div>
+              </div>
             }
           >
             <MotionPage>
@@ -437,7 +422,7 @@ export const AppRoutes = () => {
             </MotionPage>
           </Suspense>
         </ErrorBoundary>
-      </Box>
+      </main>
     </>
   );
 };
