@@ -38,7 +38,6 @@
   "src/components/admin/feedback/StoriesKanban.tsx",
   "src/components/admin/feedback/StoryDetailDrawer.tsx",
   "src/components/admin/feedback/analytics/AnalyticsTab.tsx",
-  "src/components/admin/import-hub/DuplicatesPanel.tsx",
   "src/components/admin/import-hub/ReviewQueueEnhanced.tsx",
   "src/components/admin/search-intelligence/ClusterTagPicker.tsx",
   "src/components/admin/search-intelligence/IngestionQualityTab.tsx",
