@@ -50,7 +50,6 @@
   "src/components/security/ContentSanitizer.tsx",
   "src/components/security/AdminRouteGuard.tsx",
   "src/components/trips/AddToTripMenuItem.tsx",
-  "src/components/trips/BudgetTab.tsx",
   "src/components/trips/ReservationsTab.tsx",
   "src/components/trips/ShareTripDialog.tsx",
   "src/components/trips/SocialSignalBadges.tsx",
