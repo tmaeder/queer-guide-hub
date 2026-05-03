@@ -1,7 +1,4 @@
 import { useState, type ReactNode } from 'react';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { ChevronRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -51,82 +48,69 @@ export function EntityDetailLayout({
 
   if (error) {
     return (
-      <Container sx={{ py: 4 }} data-testid="entity-detail-error">
+      <div className="container mx-auto py-8" data-testid="entity-detail-error">
         <Alert variant="destructive">
           <AlertTitle>Failed to load</AlertTitle>
           <AlertDescription>{error.message || 'Something went wrong.'}</AlertDescription>
         </Alert>
-      </Container>
+      </div>
     );
   }
 
   if (loading) {
     return (
-      <Container sx={{ py: 4 }} data-testid="entity-detail-loading">
+      <div className="container mx-auto py-8" data-testid="entity-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ marginBottom: 16, width: '40%' }} />
         <Skeleton variant="rectangular" height={192} style={{ marginBottom: 24, borderRadius: 12 }} />
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr' }, gap: 3 }}>
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
           <Skeleton variant="rectangular" height={320} style={{ borderRadius: 12 }} />
           <Skeleton variant="rectangular" height={240} style={{ borderRadius: 12 }} />
-        </Box>
-      </Container>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container sx={{ py: 4 }} data-testid="entity-detail-layout">
+    <div className="container mx-auto py-8" data-testid="entity-detail-layout">
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <Box
-          component="nav"
+        <nav
           aria-label="Breadcrumb"
-          sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2, flexWrap: 'wrap' }}
+          className="flex items-center gap-1 mb-4 flex-wrap"
         >
           {breadcrumbs.map((crumb, i) => {
             const isLast = i === breadcrumbs.length - 1;
             const label =
               crumb.href && !isLast ? (
                 <LocalizedLink to={crumb.href} style={{ textDecoration: 'none' }}>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ '&:hover': { color: 'primary.main' } }}
-                  >
+                  <span className="text-sm text-muted-foreground hover:text-primary">
                     {crumb.label}
-                  </Typography>
+                  </span>
                 </LocalizedLink>
               ) : (
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: isLast ? 500 : 400 }}
-                  color={isLast ? 'text.primary' : 'text.secondary'}
+                <span
+                  className={`text-sm ${isLast ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
                 >
                   {crumb.label}
-                </Typography>
+                </span>
               );
             return (
-              <Box key={i} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+              <span key={i} className="inline-flex items-center gap-1">
                 {i > 0 && (
                   <ChevronRight
                     style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }}
                   />
                 )}
                 {label}
-              </Box>
+              </span>
             );
           })}
-        </Box>
+        </nav>
       )}
 
-      <Box sx={{ mb: 3 }}>{hero}</Box>
+      <div className="mb-6">{hero}</div>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: sidebar ? '2fr 1fr' : '1fr' },
-          gap: 3,
-        }}
-      >
-        <Box>
+      <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
+        <div>
           {tabs.length > 0 && (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
@@ -143,10 +127,10 @@ export function EntityDetailLayout({
               ))}
             </Tabs>
           )}
-        </Box>
-        {sidebar && <Box>{sidebar}</Box>}
-      </Box>
-    </Container>
+        </div>
+        {sidebar && <div>{sidebar}</div>}
+      </div>
+    </div>
   );
 }
 
