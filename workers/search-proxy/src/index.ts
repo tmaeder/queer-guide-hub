@@ -30,6 +30,7 @@ import { getBiasVector, getUserSignal, trackEvent, semanticSearch, popularEntiti
 import { loadActiveSynonyms, expandWithPgSynonyms } from "./pgSynonyms";
 import { meiliMultiSearch, buildFilters, INDEX_MAP, INDEX_FACETS, ALL_INDEXES } from "./meili";
 import { detectScript, tokenize, isBareLgbtqQuery } from "./queryPrep";
+import { resolveSession } from "./sessionCookie";
 import { getCorsHeaders, getCorsHeadersOriginLocked, json, errorResponse } from "./util";
 import {
 	parseJsonBody,
@@ -67,6 +68,12 @@ export interface Env {
 	SENTRY_DSN?: string;
 	SENTRY_ENV?: string;
 	SENTRY_RELEASE?: string;
+	/**
+	 * HMAC signing key for session-id cookies (bug #14). Set via
+	 * `wrangler secret put SESSION_SIGNING_KEY`. When missing, the proxy
+	 * falls back to unsigned session ids (dev only).
+	 */
+	SESSION_SIGNING_KEY?: string;
 }
 
 // Read endpoints: corpus is public, ACAO: *.
@@ -82,10 +89,16 @@ export default {
 			: getCorsHeaders(request, env);
 		if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
-		// Rate limit: 60 rps per IP, sliding window in KV. /health bypasses.
+		// Rate limit: per-IP, per-endpoint sliding 1m window. /health bypasses.
 		if (url.pathname !== "/health") {
 			const rl = await rateLimit(env, request);
-			if (!rl.ok) return json({ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter }, 429, { ...cors, "Retry-After": String(rl.retryAfter) });
+			if (!rl.ok) {
+				return json(
+					{ error: "rate_limited", code: "rate_limited", retry_after: rl.retryAfter, limit: rl.limit, window_seconds: 60 },
+					429,
+					{ ...cors, "Retry-After": String(rl.retryAfter), "X-RateLimit-Limit": String(rl.limit) },
+				);
+			}
 		}
 
 		try {
@@ -446,7 +459,11 @@ async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promi
 	const metadata = metadataR.value;
 
 	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
-	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+	const bodySid = typeof body.session_id === "string" ? body.session_id : undefined;
+	// Bug #14: trust the signed cookie over the body. Mints a fresh signed
+	// cookie if there isn't one yet so future calls bypass the body field.
+	const session = await resolveSession(request, env, bodySid);
+	const session_id = session.sid;
 
 	const id = await trackEvent(env, { user_id, session_id, event_type, entity_type, entity_id, metadata });
 
@@ -456,7 +473,9 @@ async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promi
 		await appendRecentSeen(env, sessionKey, `${entity_type}:${entity_id}`);
 	}
 
-	return json({ ok: true, id }, 200, cors);
+	const headers: Record<string, string> = { ...(cors as Record<string, string>) };
+	if (session.setCookie) headers["Set-Cookie"] = session.setCookie;
+	return json({ ok: true, id, session_verified: session.verified }, 200, headers);
 }
 
 // Seen-recently helpers — rolling set of last 50 entity ids per session, 24h TTL.
@@ -901,18 +920,21 @@ async function handleFeedback(request: Request, env: Env, cors: HeadersInit): Pr
 		query = r.value;
 	}
 	const user_id = typeof body.user_id === "string" ? body.user_id : undefined;
-	const session_id = typeof body.session_id === "string" ? body.session_id : undefined;
+	const bodySid = typeof body.session_id === "string" ? body.session_id : undefined;
+	const session = await resolveSession(request, env, bodySid);
 
 	const event_type = body.vote === "up" ? "save" : "dismiss";
 	await trackEvent(env, {
 		user_id,
-		session_id,
+		session_id: session.sid,
 		event_type,
 		entity_type: entityTypeR.value,
 		entity_id: entityIdR.value,
 		metadata: { source: "feedback", ...(query ? { query } : {}) },
 	});
-	return json({ ok: true }, 200, cors);
+	const headers: Record<string, string> = { ...(cors as Record<string, string>) };
+	if (session.setCookie) headers["Set-Cookie"] = session.setCookie;
+	return json({ ok: true, session_verified: session.verified }, 200, headers);
 }
 
 // ─────────────────────────────────────────────
@@ -935,15 +957,39 @@ async function handleAnalytics(request: Request, env: Env, cors: HeadersInit): P
 }
 
 // ─────────────────────────────────────────────
-// Rate limit — sliding 1m window, 60 req per IP
+// Rate limit — sliding 1m window, per-IP, per-endpoint quota.
+//
+// Bug #13: 50 concurrent requests from one IP all returned 200, because the
+// previous limit was a single 60/min/IP bucket shared across every endpoint.
+// /track and /onboarding deserve much tighter caps because they write
+// state — and a runaway autocomplete loop shouldn't drain the budget for
+// /search.
+//
+// /health bypasses entirely (uptime probes).
 // ─────────────────────────────────────────────
-async function rateLimit(env: Env, request: Request): Promise<{ ok: boolean; retryAfter: number }> {
+const RATE_LIMITS: Record<string, number> = {
+	"/": 60,
+	"/search": 60,
+	"/autocomplete": 120, // typed every keystroke; needs a wider lane
+	"/trending": 60,
+	"/similar": 60,
+	"/feedback": 30,
+	"/track": 60,
+	"/onboarding": 10,
+	"/admin/analytics": 30,
+};
+const RATE_LIMIT_DEFAULT = 60;
+
+async function rateLimit(env: Env, request: Request): Promise<{ ok: boolean; retryAfter: number; limit: number }> {
 	const ip = request.headers.get("CF-Connecting-IP") || "anon";
-	const nowMin = Math.floor(Date.now() / 1000 / 60);
-	const key = `rl:${ip}:${nowMin}`;
+	const path = new URL(request.url).pathname;
+	const limit = RATE_LIMITS[path] ?? RATE_LIMIT_DEFAULT;
+	const nowSec = Math.floor(Date.now() / 1000);
+	const nowMin = Math.floor(nowSec / 60);
+	const key = `rl:${path}:${ip}:${nowMin}`;
 	const cur = Number((await env.SESSION_CACHE.get(key)) ?? 0);
-	if (cur >= 60) return { ok: false, retryAfter: 60 - (Math.floor(Date.now() / 1000) % 60) };
+	if (cur >= limit) return { ok: false, retryAfter: 60 - (nowSec % 60), limit };
 	// Fire and forget increment. Lossy under contention but fine for rate limit.
 	env.SESSION_CACHE.put(key, String(cur + 1), { expirationTtl: 120 }).catch(() => void 0);
-	return { ok: true, retryAfter: 0 };
+	return { ok: true, retryAfter: 0, limit };
 }
