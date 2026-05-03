@@ -1,7 +1,5 @@
 import type { CSSProperties } from 'react';
 import { formatCurrency } from '@/lib/currency';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { MotionCard as Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,7 +49,8 @@ export function MarketplaceCard({
   const averageRating = listing.marketplace_reviews?.length
     ? listing.marketplace_reviews.reduce((sum, review) => sum + review.rating, 0) /
       listing.marketplace_reviews.length
-    : 0;  const formatPrice = () => {
+    : 0;
+  const formatPrice = () => {
     if (!listing.price) {
       if (listing.price_type === 'free') return 'Free';
       return 'Price varies';
@@ -74,7 +73,7 @@ export function MarketplaceCard({
 
   return (
     <Card>
-      <Box sx={{ position: 'relative' }}>
+      <div className="relative">
         <CardImage
           src={listingImage}
           alt={listing.title}
@@ -82,110 +81,72 @@ export function MarketplaceCard({
           height={160}
         />
         {showFavoriteButton && (
-          <Box sx={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
+          <div className="absolute top-2 right-2 z-10">
             <FavoriteButton itemId={listing.id} type="marketplace" variant="ghost" size="sm" />
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+      <div className="p-6 flex flex-col gap-4 relative">
         {/* Header */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: 1.5,
-            }}
-          >
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 600,
-                  lineHeight: 1.2,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+        <div className="flex flex-col gap-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
                 {listing.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {listing.business_name}
-              </Typography>
-            </Box>
+              </p>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+            <div className="flex items-center gap-1 flex-shrink-0">
               <Badge variant="secondary">{listing.category}</Badge>
-              {listing.featured && <Box sx={{ width: 8, height: 8, bgcolor: 'text.primary' }} />}
-            </Box>
-          </Box>
+              {listing.featured && <div className="w-2 h-2 bg-foreground" />}
+            </div>
+          </div>
 
           {/* Location */}
           {(listing.venues?.name || listing.location) && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.75,
-                fontSize: '0.75rem',
-                color: 'text.secondary',
-              }}
-            >
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
-              <Typography
-                variant="caption"
-                sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-              >
+              <span className="overflow-hidden text-ellipsis whitespace-nowrap">
                 {listing.venues
                   ? `${listing.venues.name}, ${listing.venues.city}`
                   : listing.location}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           )}
-        </Box>
+        </div>
 
         {/* Description */}
         {listing.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              lineHeight: 1.5,
-            }}
+          <p
+            className="text-sm text-muted-foreground overflow-hidden leading-normal"
+            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
             {listing.description}
-          </Typography>
+          </p>
         )}
 
         {/* Price and Rating */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              {formatPrice()}
-            </Typography>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <p className="text-base font-bold">{formatPrice()}</p>
             {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
-          </Box>
+          </div>
 
           {averageRating > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <Star style={{ height: 14, width: 14 }} fill="currentColor" />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {averageRating.toFixed(1)}
-              </Typography>
-            </Box>
+              <p className="text-sm font-medium">{averageRating.toFixed(1)}</p>
+            </div>
           )}
-        </Box>
+        </div>
 
         {/* Actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-1">
             {listing.website && (
               <Button size="default" variant="ghost" aria-label="Visit website" asChild>
                 <a
@@ -225,27 +186,18 @@ export function MarketplaceCard({
             )}
 
             {listing.views_count && listing.views_count > 0 && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  fontSize: '0.75rem',
-                  color: 'text.secondary',
-                  ml: 1,
-                }}
-              >
+              <div className="flex items-center gap-1 text-xs text-muted-foreground ml-2">
                 <Eye style={{ height: 12, width: 12 }} />
-                <Typography variant="caption">{listing.views_count}</Typography>
-              </Box>
+                <span>{listing.views_count}</span>
+              </div>
             )}
-          </Box>
+          </div>
 
           <LocalizedLink to={`/marketplace/${listing.slug}`}>
             <Button size="sm">View</Button>
           </LocalizedLink>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Card>
   );
 }
