@@ -90,9 +90,10 @@ export const useNews = () => {
       if (filters?.location?.country_id) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('country_id', filters.location.country_id);
       }
-      if (filters?.search) {
+      if (filters?.search && filters.search.trim() !== '') {
+        const escaped = filters.search.replace(/[%_,]/g, (m) => `\\${m}`);
         queryBuilder = (queryBuilder as typeof queryBuilder).or(
-          `title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`,
+          `title.ilike.%${escaped}%,content.ilike.%${escaped}%`,
         );
       }
       if (filters?.sourceId) {

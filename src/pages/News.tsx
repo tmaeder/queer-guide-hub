@@ -502,14 +502,17 @@ export default function News() {
           )}
 
           <div className={showFilters ? 'lg:col-span-3' : 'lg:col-span-4'}>
-            {error && !loading && <ErrorState message={error} onRetry={() => fetchArticles()} />}
+            {/* Error and loading are mutually exclusive with the list. */}
+            {error && !loading ? (
+              <ErrorState message={error} onRetry={() => fetchArticles()} />
+            ) : null}
 
-            {loading && (
+            {!error && loading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (<NewsCard key={i} loading />))}
               </div>
             )}
-            {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
+            {!error && loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
             {!loading && !error && sortedArticles.length === 0 && (
               hasActiveFilters ? (
@@ -557,7 +560,7 @@ export default function News() {
               )
             )}
 
-            {!loading && paginatedArticles.length > 0 && (
+            {!loading && !error && paginatedArticles.length > 0 && (
               <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
