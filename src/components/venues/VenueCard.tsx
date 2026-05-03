@@ -1,11 +1,9 @@
 import { Card, CardImage } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { Luggage } from 'lucide-react';
@@ -31,15 +29,15 @@ interface VenueCardProps {
 const VenueCardFixture = () => (
   <Card hoverable style={{ overflow: 'hidden' }}>
     <CardImage src="" alt="Venue" fallbackIcon={MapPin} />
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.2 }}>Sample Venue Name</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'text.secondary' }}>
+    <div className="p-4">
+      <div className="flex flex-col gap-1.5">
+        <p className="text-base font-semibold leading-tight">Sample Venue Name</p>
+        <div className="flex items-center gap-1.5 text-muted-foreground">
           <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
-          <Typography variant="body2">Berlin, Germany</Typography>
-        </Box>
-      </Box>
-    </Box>
+          <p className="text-sm">Berlin, Germany</p>
+        </div>
+      </div>
+    </div>
   </Card>
 );
 
@@ -63,12 +61,8 @@ export function VenueCard({
           to={`/venues/${venue.slug}`}
           style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
         >
-          <Card
-            hoverable
-            style={{ overflow: 'hidden' }}
-
-          >
-            <Box sx={{ position: 'relative' }}>
+          <Card hoverable style={{ overflow: 'hidden' }}>
+            <div className="relative">
               <CardImage
                 src={venueImage}
                 alt={venue.name}
@@ -78,127 +72,74 @@ export function VenueCard({
 
               {/* Category label — top left */}
               {venue.category && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    bgcolor: 'hsl(var(--foreground) / 0.6)',
+                <div
+                  className="absolute top-2 left-2 px-2 py-0.5 rounded font-bold uppercase backdrop-blur-sm"
+                  style={{
+                    backgroundColor: 'hsl(var(--foreground) / 0.6)',
                     color: 'hsl(var(--background))',
-                    borderRadius: 1,
-                    px: 1,
-                    py: 0.25,
                     fontSize: '0.65rem',
-                    fontWeight: 700,
                     letterSpacing: '0.05em',
-                    textTransform: 'uppercase',
-                    backdropFilter: 'blur(4px)',
                   }}
                 >
                   {venue.category}
-                </Box>
+                </div>
               )}
 
               {/* Favorite — top right */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 4,
-                  right: 4,
-                }}
+              <div
+                className="absolute top-1 right-1"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
               >
                 <FavoriteButton itemId={venue.id} type="venue" />
-              </Box>
+              </div>
 
               {/* Closed badge */}
               {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
-                <Box sx={{ position: 'absolute', top: 8, right: 44 }}>
-                  <Chip label="Closed" color="error" size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', height: 20 }} />
-                </Box>
+                <div className="absolute top-2 right-11">
+                  <Badge variant="destructive" className="font-bold text-[0.65rem] h-5">Closed</Badge>
+                </div>
               )}
 
               {/* Trip badge */}
               {tripStatus?.isInTrip && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 8,
-                    left: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                    borderRadius: 4,
-                    px: 1,
-                    py: 0.25,
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
-                  }}
+                <div
+                  className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground"
+                  style={{ fontSize: '0.7rem' }}
                 >
                   <Luggage style={{ width: 12, height: 12 }} />
                   In trip
-                </Box>
+                </div>
               )}
 
               {/* Logo overlay */}
               {venue.logo_url && (
-                <Box
-                  component="img"
+                <img
                   src={venue.logo_url}
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  sx={{
-                    position: 'absolute',
-                    bottom: 8,
-                    right: 8,
-                    width: 28,
-                    height: 28,
-                    borderRadius: '6px',
-                    bgcolor: 'background.paper',
-                    objectFit: 'contain',
-                    boxShadow: 1,
-                    p: '2px',
-                  }}
+                  className="absolute bottom-2 right-2 w-7 h-7 rounded-md bg-background object-contain shadow p-0.5"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
               )}
-            </Box>
+            </div>
 
-            <Box sx={{ p: 1.5 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 600,
-                  lineHeight: 1.3,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
+            <div className="p-3">
+              <p className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
                 {venue.name}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.5, color: 'text.secondary' }}>
+              </p>
+              <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
                 <MapPin style={{ width: 13, height: 13, flexShrink: 0 }} />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <p className="text-xs overflow-hidden text-ellipsis whitespace-nowrap">
                   {[venue.city, venue.state].filter(Boolean).join(', ')}
-                </Typography>
-              </Box>
-            </Box>
+                </p>
+              </div>
+            </div>
           </Card>
         </LocalizedLink>
       )}
