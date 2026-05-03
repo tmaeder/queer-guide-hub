@@ -1,50 +1,54 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Switch from '@mui/material/Switch';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import ErrorIcon from '@mui/icons-material/Error';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import EventIcon from '@mui/icons-material/Event';
-import HotelIcon from '@mui/icons-material/Hotel';
-import PublicIcon from '@mui/icons-material/Public';
-import ArticleIcon from '@mui/icons-material/Article';
-import LocationCityIcon from '@mui/icons-material/LocationCity';
+import {
+  Play,
+  RefreshCw,
+  Calendar as ScheduleIcon,
+  AlertCircle,
+  CheckCircle,
+  Store,
+  CalendarDays,
+  Hotel,
+  Globe,
+  FileText,
+  Building2,
+  Loader2,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useScrapeSourcesManager, ScrapeSource, ScrapeRun } from '@/hooks/useScrapeSourcesManager';
 
 const CONTENT_TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; label: string }> =
   {
-    products: { icon: <StorefrontIcon fontSize="small" />, color: '#9c27b0', label: 'Products' },
-    events: { icon: <EventIcon fontSize="small" />, color: '#2196f3', label: 'Events' },
+    products: { icon: <Store size={14} />, color: '#9c27b0', label: 'Products' },
+    events: { icon: <CalendarDays size={14} />, color: '#2196f3', label: 'Events' },
     accommodations: {
-      icon: <HotelIcon fontSize="small" />,
+      icon: <Hotel size={14} />,
       color: '#ff9800',
       label: 'Accommodations',
     },
-    cities: { icon: <LocationCityIcon fontSize="small" />, color: '#4caf50', label: 'Cities' },
+    cities: { icon: <Building2 size={14} />, color: '#4caf50', label: 'Cities' },
     queer_villages: {
-      icon: <LocationCityIcon fontSize="small" />,
+      icon: <Building2 size={14} />,
       color: '#00bcd4',
       label: 'Queer Villages',
     },
-    news: { icon: <ArticleIcon fontSize="small" />, color: '#f44336', label: 'News' },
-    countries: { icon: <PublicIcon fontSize="small" />, color: '#607d8b', label: 'Countries' },
+    news: { icon: <FileText size={14} />, color: '#f44336', label: 'News' },
+    countries: { icon: <Globe size={14} />, color: '#607d8b', label: 'Countries' },
   };
 
 function formatRelativeTime(date: string | null): string {
@@ -114,90 +118,91 @@ export const ScrapeSourcesDashboard: React.FC = () => {
 
   if (loadingSources) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress  aria-label="Loading"/>
-      </Box>
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            Web Scraping Sources
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h5 className="text-2xl font-bold">Web Scraping Sources</h5>
+          <p className="text-sm text-muted-foreground">
             {totalSources} sources ({enabledSources} enabled) &middot; {totalItems.toLocaleString()}{' '}
             total items fetched
             {failingSources > 0 && ` · ${failingSources} failing`}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={loadData} size="small">
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={loadData} size="sm">
+            <RefreshCw size={14} />
             Refresh
           </Button>
-          <Button
-            variant="contained"
-            startIcon={loading ? <CircularProgress size={16} aria-label="Loading" /> : <ScheduleIcon />}
-            onClick={handleTriggerAll}
-            disabled={loading}
-            size="small"
-          >
+          <Button onClick={handleTriggerAll} disabled={loading} size="sm">
+            {loading ? (
+              <Loader2 size={16} className="animate-spin" aria-label="Loading" />
+            ) : (
+              <ScheduleIcon size={14} />
+            )}
             Run All Due
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Stats chips */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+      <div className="flex gap-2 mb-6 flex-wrap">
         {Object.entries(grouped).map(([type, srcs]) => {
           const config = CONTENT_TYPE_CONFIG[type] || {
-            icon: <PublicIcon fontSize="small" />,
+            icon: <Globe size={14} />,
             color: '#999',
             label: type,
           };
           return (
-            <Chip
+            <Badge
               key={type}
-              icon={config.icon as React.ReactElement}
-              label={`${config.label}: ${srcs.length}`}
-              size="small"
-              sx={{
-                bgcolor: config.color + '22',
+              variant="outline"
+              className="gap-1"
+              style={{
+                backgroundColor: config.color + '22',
                 color: config.color,
                 borderColor: config.color + '44',
               }}
-              variant="outlined"
-            />
+            >
+              {config.icon}
+              {`${config.label}: ${srcs.length}`}
+            </Badge>
           );
         })}
-      </Box>
+      </div>
 
       {/* Failing sources alert */}
       {failingSources > 0 && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          {failingSources} source(s) have consecutive failures. Check the error column for details.
+        <Alert className="mb-4 border-yellow-300 bg-yellow-50 text-yellow-900">
+          <AlertDescription>
+            {failingSources} source(s) have consecutive failures. Check the error column for details.
+          </AlertDescription>
         </Alert>
       )}
 
       {/* Sources table */}
-      <TableContainer component={Paper} variant="outlined" sx={{ mb: 4 }}>
-        <Table size="small">
-          <TableHead>
+      <div className="border border-border rounded-md mb-8 overflow-x-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell>Source</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Method</TableCell>
-              <TableCell align="right">Items</TableCell>
-              <TableCell align="right">Runs</TableCell>
-              <TableCell>Last Run</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Enabled</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableHead>Source</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead className="text-right">Items</TableHead>
+              <TableHead className="text-right">Runs</TableHead>
+              <TableHead>Last Run</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Enabled</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {sources.map((source) => {
               const typeConfig = CONTENT_TYPE_CONFIG[source.content_type] || {
@@ -208,98 +213,93 @@ export const ScrapeSourcesDashboard: React.FC = () => {
               const hasError = source.consecutive_failures > 0;
 
               return (
-                <TableRow key={source.id} sx={{ opacity: source.is_enabled ? 1 : 0.5 }}>
+                <TableRow key={source.id} style={{ opacity: source.is_enabled ? 1 : 0.5 }}>
                   <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight={600}>
-                        {source.name}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ wordBreak: 'break-all' }}
-                      >
+                    <div>
+                      <p className="text-sm font-semibold">{source.name}</p>
+                      <span className="text-xs text-muted-foreground break-all">
                         {source.url.replace(/^https?:\/\//, '').slice(0, 40)}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      size="small"
-                      label={typeConfig.label}
-                      sx={{
-                        fontSize: '0.7rem',
-                        bgcolor: typeConfig.color + '22',
+                    <Badge
+                      variant="outline"
+                      className="text-[0.7rem]"
+                      style={{
+                        backgroundColor: typeConfig.color + '22',
                         color: typeConfig.color,
                       }}
-                    />
+                    >
+                      {typeConfig.label}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption">{source.scrape_method}</Typography>
+                    <span className="text-xs">{source.scrape_method}</span>
                   </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body2">
+                  <TableCell className="text-right">
+                    <span className="text-sm">
                       {(source.total_items_fetched || 0).toLocaleString()}
-                    </Typography>
+                    </span>
                   </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body2">{source.total_runs || 0}</Typography>
+                  <TableCell className="text-right">
+                    <span className="text-sm">{source.total_runs || 0}</span>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption">
-                      {formatRelativeTime(source.last_run_at)}
-                    </Typography>
+                    <span className="text-xs">{formatRelativeTime(source.last_run_at)}</span>
                   </TableCell>
                   <TableCell>
                     {hasError ? (
-                      <Tooltip title={source.last_error || 'Unknown error'}>
-                        <Chip
-                          icon={<ErrorIcon />}
-                          label={`${source.consecutive_failures} fails`}
-                          size="small"
-                          color="error"
-                          variant="outlined"
-                          sx={{ fontSize: '0.65rem' }}
-                        />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge
+                            variant="outline"
+                            className="text-[0.65rem] gap-1 border-destructive text-destructive"
+                          >
+                            <AlertCircle size={12} />
+                            {`${source.consecutive_failures} fails`}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>{source.last_error || 'Unknown error'}</TooltipContent>
                       </Tooltip>
                     ) : source.last_success_at ? (
-                      <Chip
-                        icon={<CheckCircleIcon />}
-                        label="OK"
-                        size="small"
-                        color="success"
-                        variant="outlined"
-                        sx={{ fontSize: '0.65rem' }}
-                      />
+                      <Badge
+                        variant="outline"
+                        className="text-[0.65rem] gap-1 border-green-500 text-green-700"
+                      >
+                        <CheckCircle size={12} />
+                        OK
+                      </Badge>
                     ) : (
-                      <Chip
-                        label="New"
-                        size="small"
-                        variant="outlined"
-                        sx={{ fontSize: '0.65rem' }}
-                      />
+                      <Badge variant="outline" className="text-[0.65rem]">
+                        New
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>
                     <Switch
                       checked={source.is_enabled}
-                      onChange={() => handleToggle(source)}
-                      size="small"
+                      onCheckedChange={() => handleToggle(source)}
                     />
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="Run now">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleTrigger(source)}
-                        disabled={triggeringSlug === source.slug || loading}
-                      >
-                        {triggeringSlug === source.slug ? (
-                          <CircularProgress size={16} aria-label="Loading" />
-                        ) : (
-                          <PlayArrowIcon fontSize="small" />
-                        )}
-                      </IconButton>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleTrigger(source)}
+                          disabled={triggeringSlug === source.slug || loading}
+                        >
+                          {triggeringSlug === source.slug ? (
+                            <Loader2 size={16} className="animate-spin" aria-label="Loading" />
+                          ) : (
+                            <Play size={14} />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Run now</TooltipContent>
                     </Tooltip>
                   </TableCell>
                 </TableRow>
@@ -307,82 +307,67 @@ export const ScrapeSourcesDashboard: React.FC = () => {
             })}
           </TableBody>
         </Table>
-      </TableContainer>
+      </div>
 
       {/* Recent runs */}
-      <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-        Recent Scrape Runs
-      </Typography>
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          <TableHead>
+      <h6 className="text-lg font-semibold mb-4">Recent Scrape Runs</h6>
+      <div className="border border-border rounded-md overflow-x-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell>Source</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Pages</TableCell>
-              <TableCell align="right">Found</TableCell>
-              <TableCell align="right">Staged</TableCell>
-              <TableCell>Duration</TableCell>
-              <TableCell>Started</TableCell>
-              <TableCell>Error</TableCell>
+              <TableHead>Source</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Pages</TableHead>
+              <TableHead className="text-right">Found</TableHead>
+              <TableHead className="text-right">Staged</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>Started</TableHead>
+              <TableHead>Error</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {recentRuns.slice(0, 20).map((run) => {
               const source = sources.find((s) => s.id === run.source_id);
+              const statusClass =
+                run.status === 'completed'
+                  ? 'border-green-500 text-green-700'
+                  : run.status === 'running'
+                    ? 'border-blue-500 text-blue-700'
+                    : run.status === 'failed'
+                      ? 'border-destructive text-destructive'
+                      : '';
               return (
                 <TableRow key={run.id}>
                   <TableCell>
-                    <Typography variant="body2">
-                      {source?.name || run.source_id.slice(0, 8)}
-                    </Typography>
+                    <span className="text-sm">{source?.name || run.source_id.slice(0, 8)}</span>
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      label={run.status}
-                      size="small"
-                      color={
-                        run.status === 'completed'
-                          ? 'success'
-                          : run.status === 'running'
-                            ? 'info'
-                            : run.status === 'failed'
-                              ? 'error'
-                              : 'default'
-                      }
-                      variant="outlined"
-                      sx={{ fontSize: '0.65rem' }}
-                    />
+                    <Badge variant="outline" className={`text-[0.65rem] ${statusClass}`}>
+                      {run.status}
+                    </Badge>
                   </TableCell>
-                  <TableCell align="right">{run.pages_crawled}</TableCell>
-                  <TableCell align="right">{run.items_found}</TableCell>
-                  <TableCell align="right">{run.items_staged}</TableCell>
+                  <TableCell className="text-right">{run.pages_crawled}</TableCell>
+                  <TableCell className="text-right">{run.items_found}</TableCell>
+                  <TableCell className="text-right">{run.items_staged}</TableCell>
                   <TableCell>
-                    <Typography variant="caption">
+                    <span className="text-xs">
                       {run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : '-'}
-                    </Typography>
+                    </span>
                   </TableCell>
                   <TableCell>
-                    <Typography variant="caption">
+                    <span className="text-xs">
                       {run.started_at ? formatRelativeTime(run.started_at) : '-'}
-                    </Typography>
+                    </span>
                   </TableCell>
                   <TableCell>
                     {run.error_message && (
-                      <Tooltip title={run.error_message}>
-                        <Typography
-                          variant="caption"
-                          color="error"
-                          sx={{
-                            maxWidth: 200,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            display: 'block',
-                          }}
-                        >
-                          {run.error_message.slice(0, 50)}
-                        </Typography>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs text-destructive max-w-[200px] truncate block">
+                            {run.error_message.slice(0, 50)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>{run.error_message}</TooltipContent>
                       </Tooltip>
                     )}
                   </TableCell>
@@ -391,16 +376,16 @@ export const ScrapeSourcesDashboard: React.FC = () => {
             })}
             {recentRuns.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} align="center">
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                <TableCell colSpan={8} className="text-center">
+                  <p className="text-sm text-muted-foreground py-4">
                     No scrape runs yet. Click "Run All Due" or trigger individual sources.
-                  </Typography>
+                  </p>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </TableContainer>
-    </Box>
+      </div>
+    </div>
   );
 };
