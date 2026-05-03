@@ -132,7 +132,6 @@
   "src/components/personalities/BulkCreatePersonalities.tsx",
   "src/components/personalities/PersonalitiesFiltersBar.tsx",
   "src/components/personalities/PersonalityCard.tsx",
-  "src/components/personalization/PersonalizedFeed.tsx",
   "src/components/personalization/TravelPrefsPrompt.tsx",
   "src/components/posts/CommentsSection.tsx",
   "src/components/posts/CreatePostDialog.tsx",
