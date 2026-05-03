@@ -57,7 +57,6 @@
   "src/components/country/LGBTJurisdictionInfo.tsx",
   "src/components/donate/DonorWall.tsx",
   "src/components/events/EventCard.tsx",
-  "src/components/events/RecurrencePicker.tsx",
   "src/components/home/LatestNewsSlider.tsx",
   "src/components/home/RegionalEventsCalendar.tsx",
   "src/components/layout/AuthGate.tsx",
