@@ -161,7 +161,6 @@
   "src/components/personalization/PersonalizedFeed.tsx",
   "src/components/personalization/SimilarCities.tsx",
   "src/components/personalization/TravelPrefsPrompt.tsx",
-  "src/components/places/PlacesCard.tsx",
   "src/components/places/PlacesSearch.tsx",
   "src/components/posts/CommentsSection.tsx",
   "src/components/posts/CreatePostDialog.tsx",
