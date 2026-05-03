@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Lock, Eye, DollarSign } from 'lucide-react';
 import Box from '@mui/material/Box';
@@ -53,14 +54,13 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('donations')
-        .select('id, amount_encrypted, status, created_at, donor_name, email')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setFinancialData(data || []);
+      const data = await listFromWhere<Record<string, unknown>>(
+        'donations',
+        'id, amount_encrypted, status, created_at, donor_name, email',
+        [{ col: 'user_id', val: userId }],
+        { order: { col: 'created_at', ascending: false } },
+      );
+      setFinancialData(data as never);
     } catch (error) {
       console.error('Error fetching financial data:', error);
       toast({

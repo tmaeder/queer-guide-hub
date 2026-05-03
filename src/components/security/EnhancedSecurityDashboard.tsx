@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import { Shield, AlertTriangle, CheckCircle, Activity, Users, MapPin, DollarSign } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -54,15 +54,14 @@ export function EnhancedSecurityDashboard() {
       setLoading(true);
 
       // Fetch recent security events
-      const { data: events, error: eventsError } = await supabase
-        .from('security_events')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const events = await listFrom<SecurityMetric & { event_type: string }>(
+        'security_events',
+        '*',
+        { col: 'created_at', ascending: false },
+        50,
+      );
 
-      if (eventsError) throw eventsError;
-
-      setSecurityEvents(events || []);
+      setSecurityEvents(events);
 
       // Calculate stats - determine severity from event type
       const eventStats = events?.reduce((acc, event) => {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle, CheckCircle, Eye, Lock, RefreshCw } from 'lucide-react';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -51,11 +51,12 @@ export function SecurityDashboard() {
       setLoading(true);
 
       // Load recent security events
-      const { data: eventsData } = await supabase
-        .from('security_events')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const eventsData = await listFrom<SecurityEvent>(
+        'security_events',
+        '*',
+        { col: 'created_at', ascending: false },
+        50,
+      );
 
       if (eventsData) {
         setEvents(eventsData);

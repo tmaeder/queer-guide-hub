@@ -5,7 +5,7 @@ import Avatar from '@mui/material/Avatar';
 import { ArrowRight, Scale } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import {
   computeBalances,
   convertAmount,
@@ -43,14 +43,12 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
     queryKey: ['trip-budget-items', tripId],
     enabled: !!tripId,
     staleTime: 60 * 1000,
-    queryFn: async (): Promise<BudgetItemRow[]> => {
-      const { data, error } = await supabase
-        .from('trip_budget_items')
-        .select('paid_by, split_among, amount, currency')
-        .eq('trip_id', tripId);
-      if (error) throw error;
-      return (data ?? []) as BudgetItemRow[];
-    },
+    queryFn: () =>
+      listFromWhere<BudgetItemRow>(
+        'trip_budget_items',
+        'paid_by, split_among, amount, currency',
+        [{ col: 'trip_id', val: tripId }],
+      ),
   });
 
   const { data: fxRates } = useFxRates();

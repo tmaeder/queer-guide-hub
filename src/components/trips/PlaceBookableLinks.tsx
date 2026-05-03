@@ -1,5 +1,5 @@
 import { Hotel, Ticket } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { logTripBookingClick } from '@/hooks/useBundledCheckout';
 import { useAuth } from '@/hooks/useAuth';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -41,7 +41,7 @@ export function PlaceBookableLinks({
   if (links.length === 0) return null;
 
   const onClick = (link: BookableLink) => {
-    void supabase.from('trip_booking_clicks').insert({
+    void logTripBookingClick({
       trip_id: tripId,
       trip_place_id: tripPlaceId,
       user_id: user?.id ?? null,

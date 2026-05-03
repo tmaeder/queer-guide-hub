@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,14 +31,13 @@ export function SecurityMonitoringDashboard() {
   const fetchSecurityEvents = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('security_monitoring')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setEvents(data || []);
+      const data = await listFrom<SecurityEvent>(
+        'security_monitoring',
+        '*',
+        { col: 'created_at', ascending: false },
+        50,
+      );
+      setEvents(data);
     } catch (err) {
       console.error('Error fetching security events:', err);
       setError('Failed to load security events');

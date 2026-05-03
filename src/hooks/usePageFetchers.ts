@@ -924,6 +924,16 @@ export async function deleteRowsByIds(
   return { error: error ? { message: error.message } : null };
 }
 
+/** Insert multiple rows. */
+export async function insertRows(
+  table: string,
+  rows: Array<Record<string, unknown>>,
+): Promise<{ error: { message: string } | null }> {
+  if (rows.length === 0) return { error: null };
+  const { error } = await supabase.from(table as never).insert(rows as never);
+  return { error: error ? { message: error.message } : null };
+}
+
 /** Insert without expecting a return. */
 export async function insertRow(
   table: string,
