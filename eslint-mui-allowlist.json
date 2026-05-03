@@ -162,7 +162,6 @@
   "src/pages/HelpHotlines.tsx",
   "src/pages/NotFound.tsx",
   "src/pages/Page.tsx",
-  "src/pages/PersonalityDetail.parts.tsx",
   "src/pages/Places.tsx",
   "src/pages/QueerVillageDetail.parts.tsx",
   "src/pages/SearchResults.tsx",

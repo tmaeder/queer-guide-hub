@@ -19,8 +19,6 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import type { Personality } from '@/hooks/usePersonalities';
 import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 export interface SimilarPersonality {
   id: string;
@@ -124,16 +122,8 @@ export function PersonalityHero({
   onProfessionClick,
 }: PersonalityHeroProps) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        alignItems: { md: 'flex-start' },
-        justifyContent: { md: 'space-between' },
-        gap: 2,
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <div className="flex items-start gap-4">
         <Avatar style={{ height: 96, width: 96 }}>
           <AvatarImage
             src={personality.image_url || ''}
@@ -146,10 +136,8 @@ export function PersonalityHero({
         </Avatar>
 
         <div>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-            <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-              {personality.name}
-            </Typography>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold">{personality.name}</h1>
             {personality.is_featured && (
               <Badge
                 variant="secondary"
@@ -160,70 +148,42 @@ export function PersonalityHero({
               </Badge>
             )}
             <VerificationBadge status={personality.verification_status} />
-          </Box>
+          </div>
 
           {personality.pronouns && (
-            <Typography sx={{ color: 'text.secondary', mb: 1 }}>
-              ({personality.pronouns})
-            </Typography>
+            <p className="text-muted-foreground mb-2">({personality.pronouns})</p>
           )}
 
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2,
-              color: 'text.secondary',
-              mb: 1.5,
-              flexWrap: 'wrap',
-            }}
-          >
+          <div className="flex items-center gap-4 text-muted-foreground mb-3 flex-wrap">
             {personality.profession && (
-              <Box
-                component="a"
+              <a
                 href={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   onProfessionClick(personality.profession!);
                 }}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  color: 'primary.main',
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                  '&:hover': { textDecoration: 'underline' },
-                }}
+                className="flex items-center gap-1 cursor-pointer text-primary no-underline hover:underline"
               >
                 <Briefcase style={{ height: 16, width: 16 }} />
                 <span>{personality.profession}</span>
-              </Box>
+              </a>
             )}
             {personality.nationality &&
               (countryId ? (
-                <Box
-                  component={LocalizedLink}
+                <LocalizedLink
                   to={`/country/${countryId}`}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    color: 'primary.main',
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' },
-                  }}
+                  className="flex items-center gap-1 text-primary no-underline hover:underline"
                 >
                   <MapPin style={{ height: 16, width: 16 }} />
                   <span>{personality.nationality}</span>
-                </Box>
+                </LocalizedLink>
               ) : (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center gap-1">
                   <MapPin style={{ height: 16, width: 16 }} />
                   <span>{personality.nationality}</span>
-                </Box>
+                </div>
               ))}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               {personality.is_living ? (
                 <>
                   <Heart style={{ height: 16, width: 16, color: '#16a34a' }} />
@@ -235,29 +195,29 @@ export function PersonalityHero({
                   <span>Historical</span>
                 </>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           {personality.birth_date && (
-            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5 }}>
+            <p className="text-sm text-muted-foreground mb-3">
               Age: {calculateAge(personality.birth_date, personality.death_date || undefined)}
               {personality.is_living ? ' years old' : ' years'}
-            </Typography>
+            </p>
           )}
 
           {personality.fields.length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <div className="flex flex-wrap gap-2">
               {personality.fields.map((field, index) => (
                 <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                   {field}
                 </Badge>
               ))}
-            </Box>
+            </div>
           )}
         </div>
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <div className="flex items-center gap-2">
         <ReportButton
           contentType="personalities"
           contentId={personality.id}
@@ -282,8 +242,8 @@ export function PersonalityHero({
             </a>
           </Button>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -295,7 +255,7 @@ export function PersonalityOverview({
   similarPersonalities: SimilarPersonality[];
 }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+    <div className="flex flex-col gap-6 mt-4">
       {personality.description && (
         <Card>
           <CardHeader>
@@ -313,7 +273,7 @@ export function PersonalityOverview({
             <CardTitle>Biography</CardTitle>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               {personality.bio.split('\n').map(
                 (paragraph, index) =>
                   paragraph.trim() && (
@@ -322,7 +282,7 @@ export function PersonalityOverview({
                     </p>
                   ),
               )}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -333,27 +293,17 @@ export function PersonalityOverview({
             <CardTitle>Notable Achievements</CardTitle>
           </CardHeader>
           <CardContent>
-            <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <ul className="flex flex-col gap-2">
               {personality.achievements.map((achievement, index) => (
-                <Box
-                  component="li"
-                  key={index}
-                  sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}
-                >
-                  <Box
-                    sx={{
-                      height: 8,
-                      width: 8,
-                      bgcolor: 'primary.main',
-                      borderRadius: '50%',
-                      mt: 1,
-                      flexShrink: 0,
-                    }}
+                <li key={index} className="flex items-start gap-2">
+                  <div
+                    className="bg-primary rounded-full mt-2 flex-shrink-0"
+                    style={{ height: 8, width: 8 }}
                   />
                   <span style={{ color: 'hsl(var(--muted-foreground))' }}>{achievement}</span>
-                </Box>
+                </li>
               ))}
-            </Box>
+            </ul>
           </CardContent>
         </Card>
       )}
@@ -364,29 +314,12 @@ export function PersonalityOverview({
             <CardTitle>Similar Personalities</CardTitle>
           </CardHeader>
           <CardContent>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-                gap: 2,
-              }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {similarPersonalities.map((similar) => (
-                <Box
+                <LocalizedLink
                   key={similar.id}
-                  component={LocalizedLink}
                   to={`/personalities/${similar.slug || similar.id}`}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    p: 1.5,
-                    borderRadius: 1,
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    transition: 'all 0.2s',
-                    '&:hover': { bgcolor: 'action.hover' },
-                  }}
+                  className="flex items-center gap-3 p-3 rounded no-underline text-inherit transition-all hover:bg-muted"
                 >
                   <Avatar style={{ height: 40, width: 40, flexShrink: 0 }}>
                     <AvatarImage
@@ -398,39 +331,37 @@ export function PersonalityOverview({
                       {getInitials(similar.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: '0.875rem',
+                  <div className="min-w-0">
+                    <p
+                      className="font-semibold text-sm"
+                      style={{
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                       }}
                     >
                       {similar.name}
-                    </Typography>
+                    </p>
                     {similar.profession && (
-                      <Typography
-                        sx={{
-                          fontSize: '0.75rem',
-                          color: 'text.secondary',
+                      <p
+                        className="text-xs text-muted-foreground"
+                        style={{
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}
                       >
                         {similar.profession}
-                      </Typography>
+                      </p>
                     )}
-                  </Box>
-                </Box>
+                  </div>
+                </LocalizedLink>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -444,96 +375,74 @@ export function PersonalitySidebar({
   onTagClick: (tag: string) => void;
 }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
         </CardHeader>
         <CardContent style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {personality.birth_date && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
               <div>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                  Born
-                </Typography>
-                <Typography sx={{ fontWeight: 500 }}>
+                <p className="text-sm text-muted-foreground">Born</p>
+                <p className="font-medium">
                   {new Date(personality.birth_date).toLocaleDateString()}
-                </Typography>
+                </p>
               </div>
-            </Box>
+            </div>
           )}
           {personality.death_date && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Calendar style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
               <div>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                  Died
-                </Typography>
-                <Typography sx={{ fontWeight: 500 }}>
+                <p className="text-sm text-muted-foreground">Died</p>
+                <p className="font-medium">
                   {new Date(personality.death_date).toLocaleDateString()}
-                </Typography>
+                </p>
               </div>
-            </Box>
+            </div>
           )}
           {personality.nationality && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
               <div>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                  Nationality
-                </Typography>
+                <p className="text-sm text-muted-foreground">Nationality</p>
                 {countryId ? (
-                  <Typography
-                    component={LocalizedLink}
+                  <LocalizedLink
                     to={`/country/${countryId}`}
-                    sx={{
-                      fontWeight: 500,
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      '&:hover': { textDecoration: 'underline' },
-                    }}
+                    className="font-medium text-primary no-underline hover:underline"
                   >
                     {personality.nationality}
-                  </Typography>
+                  </LocalizedLink>
                 ) : (
-                  <Typography sx={{ fontWeight: 500 }}>{personality.nationality}</Typography>
+                  <p className="font-medium">{personality.nationality}</p>
                 )}
               </div>
-            </Box>
+            </div>
           )}
           {personality.profession && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Briefcase style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
               <div>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                  Profession
-                </Typography>
-                <Typography
-                  component={LocalizedLink}
+                <p className="text-sm text-muted-foreground">Profession</p>
+                <LocalizedLink
                   to={`/personalities?profession=${encodeURIComponent(personality.profession)}`}
-                  sx={{
-                    fontWeight: 500,
-                    color: 'primary.main',
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' },
-                  }}
+                  className="font-medium text-primary no-underline hover:underline"
                 >
                   {personality.profession}
-                </Typography>
+                </LocalizedLink>
               </div>
-            </Box>
+            </div>
           )}
           {personality.birth_place && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
               <div>
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                  Birth Place
-                </Typography>
-                <Typography sx={{ fontWeight: 500 }}>{personality.birth_place}</Typography>
+                <p className="text-sm text-muted-foreground">Birth Place</p>
+                <p className="font-medium">{personality.birth_place}</p>
               </div>
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -558,7 +467,7 @@ export function PersonalitySidebar({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <div className="flex flex-wrap gap-2">
               {personality.tags.map((tag, index) => (
                 <Badge
                   key={index}
@@ -569,10 +478,10 @@ export function PersonalitySidebar({
                   {tag}
                 </Badge>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
-    </Box>
+    </div>
   );
 }
