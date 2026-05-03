@@ -1,18 +1,15 @@
 import {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   useCallback,
 } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Popper from '@mui/material/Popper';
-import Paper from '@mui/material/Paper';
 import { MapPin, Loader2, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export interface GeoSelection {
   cityId: string;
@@ -69,15 +66,8 @@ export function CityCountryAutocomplete({
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
   const [composing, setComposing] = useState(false);
-  const [anchorReady, setAnchorReady] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const lastSyncedCityId = useRef<string | null>(null);
-
-  // Popper needs a non-null anchorEl on first open — force a re-render
-  // after mount so anchorEl is populated before open flips to true.
-  useLayoutEffect(() => {
-    setAnchorReady(true);
-  }, []);
 
   // Sync external value → input text, but only when the city id actually
   // changes. Prevents the value-effect clobbering user typing.
@@ -170,100 +160,87 @@ export function CityCountryAutocomplete({
   };
 
   const normalizedQueryLen = normalize(debounced).length;
+  const showDropdown = open && (options.length > 0 || (!loading && normalizedQueryLen >= 2));
 
   return (
-    <Box ref={rootRef} sx={{ position: 'relative' }}>
-      <TextField
-        id={id}
-        fullWidth
-        label={label ?? t('trips.dialog.create.cityCountryLabel')}
-        required={required}
-        autoFocus={autoFocus}
-        placeholder={t('trips.dialog.create.cityCountryPlaceholder')}
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-          setHighlight(0);
-          if (value) {
-            lastSyncedCityId.current = null;
-            onChange(null);
-          }
-        }}
-        onFocus={() => setOpen(true)}
-        onCompositionStart={() => setComposing(true)}
-        onCompositionEnd={(e) => {
-          setComposing(false);
-          setQuery((e.target as HTMLInputElement).value);
-          setOpen(true);
-        }}
-        onKeyDown={handleKeyDown}
-        InputProps={{
-          startAdornment: (
-            <Box sx={{ mr: 1, color: 'text.secondary', display: 'flex' }}>
-              <MapPin size={16} />
-            </Box>
-          ),
-          endAdornment: loading ? (
+    <div ref={rootRef} className="relative">
+      <Label htmlFor={id}>
+        {label ?? t('trips.dialog.create.cityCountryLabel')}
+        {required && ' *'}
+      </Label>
+      <div className="relative mt-1">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground flex">
+          <MapPin size={16} />
+        </span>
+        <Input
+          id={id}
+          required={required}
+          autoFocus={autoFocus}
+          placeholder={t('trips.dialog.create.cityCountryPlaceholder')}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+            setHighlight(0);
+            if (value) {
+              lastSyncedCityId.current = null;
+              onChange(null);
+            }
+          }}
+          onFocus={() => setOpen(true)}
+          onCompositionStart={() => setComposing(true)}
+          onCompositionEnd={(e) => {
+            setComposing(false);
+            setQuery((e.target as HTMLInputElement).value);
+            setOpen(true);
+          }}
+          onKeyDown={handleKeyDown}
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls={`${id}-listbox`}
+          className="pl-9 pr-9"
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 flex">
+          {loading ? (
             <Loader2 size={16} className="animate-spin" />
           ) : value ? (
             <Check size={16} style={{ color: '#10B981' }} />
-          ) : null,
-        }}
-        aria-autocomplete="list"
-        aria-expanded={open}
-        aria-controls={`${id}-listbox`}
-      />
+          ) : null}
+        </span>
+      </div>
 
-      <Popper
-        open={
-          anchorReady &&
-          open &&
-          (options.length > 0 || (!loading && normalizedQueryLen >= 2))
-        }
-        anchorEl={rootRef.current}
-        placement="bottom-start"
-        style={{ zIndex: 1500, width: rootRef.current?.clientWidth }}
-      >
-        <Paper
+      {showDropdown && (
+        <div
           id={`${id}-listbox`}
           role="listbox"
-          elevation={6}
-          sx={{ mt: 0.5, maxHeight: 320, overflowY: 'auto' }}
+          className="absolute left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-background border border-border rounded-md shadow-lg"
+          style={{ zIndex: 1500 }}
         >
           {options.length === 0 && !loading && (
-            <Box sx={{ p: 2 }}>
-              <Box sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
+            <div className="p-4">
+              <div className="text-[13px] text-muted-foreground mb-2">
                 {t('trips.dialog.create.noCityMatch')}
-              </Box>
+              </div>
               {onFallbackRequested && (
-                <Box
-                  component="button"
+                <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
                     onFallbackRequested(normalize(debounced));
                     setOpen(false);
                   }}
-                  sx={{
-                    border: 0,
-                    background: 'transparent',
-                    color: 'brand.main',
-                    fontWeight: 600,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    p: 0,
-                  }}
+                  className="border-0 bg-transparent font-semibold text-[13px] cursor-pointer p-0"
+                  style={{ color: 'hsl(var(--brand))' }}
                 >
                   {t('trips.dialog.create.addNewPlace', {
                     query: normalize(debounced),
                   })}
-                </Box>
+                </button>
               )}
-            </Box>
+            </div>
           )}
           {options.map((opt, i) => (
-            <Box
+            <div
               key={opt.cityId}
               role="option"
               aria-selected={i === highlight}
@@ -272,39 +249,25 @@ export function CityCountryAutocomplete({
                 handleSelect(opt);
               }}
               onMouseEnter={() => setHighlight(i)}
-              sx={{
-                px: 2,
-                py: 1.25,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                cursor: 'pointer',
-                bgcolor: i === highlight ? 'action.hover' : 'transparent',
-              }}
+              className={`px-4 py-2.5 flex items-center gap-2.5 cursor-pointer ${i === highlight ? 'bg-muted' : ''}`}
             >
-              <Box
-                component="span"
-                sx={{
-                  fontSize: 18,
-                  lineHeight: 1,
-                  minWidth: 22,
-                  textAlign: 'center',
-                }}
+              <span
+                className="text-lg leading-none min-w-[22px] text-center"
                 aria-hidden
               >
                 {flagEmoji(opt.countryCode)}
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ fontSize: 14, fontWeight: 600 }}>{opt.cityName}</Box>
-                <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold">{opt.cityName}</div>
+                <div className="text-xs text-muted-foreground">
                   {opt.countryName}
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
           ))}
-        </Paper>
-      </Popper>
-    </Box>
+        </div>
+      )}
+    </div>
   );
 }
 
