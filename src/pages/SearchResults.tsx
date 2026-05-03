@@ -104,7 +104,7 @@ export default function SearchResults() {
     cluster_ids: initialClusterIds.length > 0 ? initialClusterIds : undefined,
   });
 
-  const { results, loading } = useSearch(query, {
+  const { results, loading, error, errorKind, totalHits } = useSearch(query, {
     ...filters,
     types: selectedTab === 'all' ? filters.types : [selectedTab],
   });
@@ -784,8 +784,40 @@ export default function SearchResults() {
             </Card>
           )}
 
-          {/* No results -- shown when there IS a query but no results */}
-          {query && query.trim() !== '' && (
+          {/* No results -- shown when there IS a query but no results.
+              Bug #22: when the search hook reports an `unavailable` error
+              we don't know whether the corpus has matches; the previous
+              copy ("Try adjusting your filters") was actively misleading
+              when the actual problem was a CSP block / 5xx upstream. */}
+          {query && query.trim() !== '' && errorKind === 'unavailable' && (
+            <Box
+              role="alert"
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 6,
+                textAlign: 'center',
+              }}
+            >
+              <Search
+                style={{
+                  width: 48,
+                  height: 48,
+                  color: theme.palette.text.secondary,
+                  marginBottom: 16,
+                }}
+              />
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                Search is temporarily unavailable
+              </Typography>
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
+                {error ?? "We've been notified and are looking into it."}
+              </Typography>
+            </Box>
+          )}
+          {query && query.trim() !== '' && errorKind !== 'unavailable' && (
             <Box
               sx={{
                 display: 'flex',
