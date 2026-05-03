@@ -6,24 +6,15 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import IconButton from '@mui/material/IconButton';
-import Collapse from '@mui/material/Collapse';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Skeleton from '@mui/material/Skeleton';
 import { ChevronDown, ChevronRight, Mail, Calendar, MapPin, AlertCircle, Clock } from 'lucide-react';
 import { Link } from 'react-router';
 import { listFromWhere } from '@/hooks/usePageFetchers';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface EmailIngestion {
   id: string;
@@ -42,11 +33,11 @@ interface EmailIngestion {
   created_at: string;
 }
 
-const STATUS_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
-  completed: 'success',
-  processing: 'warning',
-  failed: 'error',
-  no_content: 'default',
+const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  completed: 'default',
+  processing: 'secondary',
+  failed: 'destructive',
+  no_content: 'outline',
 };
 
 export const EmailIngestionsPanel: React.FC = () => {
@@ -57,7 +48,7 @@ export const EmailIngestionsPanel: React.FC = () => {
 
   useEffect(() => {
     fetchIngestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchIngestions defined below, re-run on statusFilter change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
   const fetchIngestions = async () => {
@@ -78,193 +69,162 @@ export const EmailIngestionsPanel: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ p: 2 }}>
+      <div className="p-4">
         {[1, 2, 3].map((i) => (
-          <Skeleton key={i} variant="rectangular" height={48} sx={{ mb: 1, borderRadius: 1 }} />
+          <Skeleton key={i} className="h-12 mb-2 rounded" />
         ))}
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
           <Mail size={20} />
-          <Typography variant="h6">Email Ingestions</Typography>
-          <Chip label={ingestions.length} size="small" />
-        </Box>
-        <TextField
-          select
-          size="small"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          sx={{ minWidth: 140 }}
-        >
-          <MenuItem value="all">All Statuses</MenuItem>
-          <MenuItem value="completed">Completed</MenuItem>
-          <MenuItem value="processing">Processing</MenuItem>
-          <MenuItem value="failed">Failed</MenuItem>
-          <MenuItem value="no_content">No Content</MenuItem>
-        </TextField>
-      </Box>
+          <h6 className="text-lg font-medium">Email Ingestions</h6>
+          <Badge variant="secondary">{ingestions.length}</Badge>
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="min-w-[140px] h-9 w-auto"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="no_content">No Content</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {ingestions.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-          <Mail size={32} style={{ opacity: 0.3, marginBottom: 8 }} />
-          <Typography>No email ingestions found</Typography>
-        </Box>
+        <div className="text-center py-8 text-muted-foreground">
+          <Mail size={32} style={{ opacity: 0.3, marginBottom: 8 }} className="mx-auto" />
+          <p>No email ingestions found</p>
+        </div>
       ) : (
-        <TableContainer component={Paper} variant="outlined">
-          <Table size="small">
-            <TableHead>
+        <div className="rounded-md border bg-card">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell width={40} />
-                <TableCell>From</TableCell>
-                <TableCell>Subject</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="center">Events</TableCell>
-                <TableCell align="center">Venues</TableCell>
-                <TableCell>Received</TableCell>
+                <TableHead className="w-10" />
+                <TableHead>From</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Events</TableHead>
+                <TableHead className="text-center">Venues</TableHead>
+                <TableHead>Received</TableHead>
               </TableRow>
-            </TableHead>
+            </TableHeader>
             <TableBody>
               {ingestions.map((ing) => (
                 <React.Fragment key={ing.id}>
                   <TableRow
-                    hover
                     onClick={() => toggleExpand(ing.id)}
-                    sx={{ cursor: 'pointer', '& > td': { borderBottom: expandedId === ing.id ? 'none' : undefined } }}
+                    className="cursor-pointer"
                   >
                     <TableCell>
-                      <IconButton size="small">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
                         {expandedId === ing.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      </IconButton>
+                      </Button>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                        {ing.from_address}
-                      </Typography>
+                      <span className="font-mono text-xs">{ing.from_address}</span>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" noWrap sx={{ maxWidth: 250 }}>
+                      <span className="text-sm truncate block max-w-[250px]">
                         {ing.subject || '(no subject)'}
-                      </Typography>
+                      </span>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={ing.status}
-                        size="small"
-                        color={STATUS_COLORS[ing.status] || 'default'}
-                        variant="outlined"
-                      />
+                      <Badge variant={STATUS_VARIANT[ing.status] || 'outline'}>
+                        {ing.status}
+                      </Badge>
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell className="text-center">
                       {ing.extracted_events > 0 && (
-                        <Chip icon={<Calendar size={12} />} label={ing.extracted_events} size="small" variant="outlined" />
+                        <Badge variant="outline" className="gap-1">
+                          <Calendar size={12} />{ing.extracted_events}
+                        </Badge>
                       )}
                     </TableCell>
-                    <TableCell align="center">
+                    <TableCell className="text-center">
                       {ing.extracted_venues > 0 && (
-                        <Chip icon={<MapPin size={12} />} label={ing.extracted_venues} size="small" variant="outlined" />
+                        <Badge variant="outline" className="gap-1">
+                          <MapPin size={12} />{ing.extracted_venues}
+                        </Badge>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="caption" color="text.secondary">
+                      <span className="text-xs text-muted-foreground">
                         {new Date(ing.received_at).toLocaleString()}
-                      </Typography>
+                      </span>
                     </TableCell>
                   </TableRow>
 
-                  {/* Expanded row */}
                   <TableRow>
-                    <TableCell colSpan={7} sx={{ py: 0, px: 0 }}>
-                      <Collapse in={expandedId === ing.id}>
-                        <Box sx={{ p: 2, bgcolor: 'action.hover' }}>
-                          {/* Processing info */}
-                          <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-                            {ing.processing_ms != null && (
-                              <Chip icon={<Clock size={12} />} label={`${ing.processing_ms}ms`} size="small" />
-                            )}
-                            {ing.error_message && (
-                              <Chip icon={<AlertCircle size={12} />} label={ing.error_message} size="small" color="error" variant="outlined" />
-                            )}
-                          </Box>
+                    <TableCell colSpan={7} className="p-0">
+                      <Collapsible open={expandedId === ing.id}>
+                        <CollapsibleContent>
+                          <div className="p-4 bg-muted">
+                            <div className="flex gap-4 mb-4 flex-wrap">
+                              {ing.processing_ms != null && (
+                                <Badge variant="secondary" className="gap-1">
+                                  <Clock size={12} />{ing.processing_ms}ms
+                                </Badge>
+                              )}
+                              {ing.error_message && (
+                                <Badge variant="destructive" className="gap-1">
+                                  <AlertCircle size={12} />{ing.error_message}
+                                </Badge>
+                              )}
+                            </div>
 
-                          {/* Created entities */}
-                          {ing.inserted_event_ids?.length > 0 && (
-                            <Box sx={{ mb: 1 }}>
-                              <Typography variant="caption" fontWeight={600}>Created Events:</Typography>
-                              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
-                                {ing.inserted_event_ids.map((id) => (
-                                  <Chip
-                                    key={id}
-                                    label={id.slice(0, 8)}
-                                    size="small"
-                                    component={Link}
-                                    to={`/events/${id}`}
-                                    clickable
-                                    variant="outlined"
-                                    color="primary"
-                                  />
-                                ))}
-                              </Box>
-                            </Box>
-                          )}
-                          {ing.inserted_venue_ids?.length > 0 && (
-                            <Box sx={{ mb: 1 }}>
-                              <Typography variant="caption" fontWeight={600}>Created Venues:</Typography>
-                              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
-                                {ing.inserted_venue_ids.map((id) => (
-                                  <Chip
-                                    key={id}
-                                    label={id.slice(0, 8)}
-                                    size="small"
-                                    component={Link}
-                                    to={`/venues/${id}`}
-                                    clickable
-                                    variant="outlined"
-                                    color="secondary"
-                                  />
-                                ))}
-                              </Box>
-                            </Box>
-                          )}
+                            {ing.inserted_event_ids?.length > 0 && (
+                              <div className="mb-2">
+                                <span className="text-xs font-semibold">Created Events:</span>
+                                <div className="flex gap-1 flex-wrap mt-1">
+                                  {ing.inserted_event_ids.map((id) => (
+                                    <Link key={id} to={`/events/${id}`}>
+                                      <Badge variant="outline" className="cursor-pointer">{id.slice(0, 8)}</Badge>
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {ing.inserted_venue_ids?.length > 0 && (
+                              <div className="mb-2">
+                                <span className="text-xs font-semibold">Created Venues:</span>
+                                <div className="flex gap-1 flex-wrap mt-1">
+                                  {ing.inserted_venue_ids.map((id) => (
+                                    <Link key={id} to={`/venues/${id}`}>
+                                      <Badge variant="outline" className="cursor-pointer">{id.slice(0, 8)}</Badge>
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
-                          {/* AI Extraction preview */}
-                          {ing.ai_extraction && (
-                            <Box sx={{ mt: 1 }}>
-                              <Typography variant="caption" fontWeight={600}>AI Extraction:</Typography>
-                              <Box
-                                component="pre"
-                                sx={{
-                                  mt: 0.5,
-                                  p: 1,
-                                  bgcolor: 'background.paper',
-                                  borderRadius: 1,
-                                  fontSize: '0.7rem',
-                                  overflow: 'auto',
-                                  maxHeight: 200,
-                                  border: '1px solid',
-                                  borderColor: 'divider',
-                                }}
-                              >
-                                {JSON.stringify(ing.ai_extraction, null, 2)}
-                              </Box>
-                            </Box>
-                          )}
-                        </Box>
-                      </Collapse>
+                            {ing.ai_extraction && (
+                              <div className="mt-2">
+                                <span className="text-xs font-semibold">AI Extraction:</span>
+                                <pre className="mt-1 p-2 bg-card rounded text-[0.7rem] overflow-auto max-h-[200px] border">
+                                  {JSON.stringify(ing.ai_extraction, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     </TableCell>
                   </TableRow>
                 </React.Fragment>
               ))}
             </TableBody>
           </Table>
-        </TableContainer>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
