@@ -2,8 +2,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import {
   Trash2,
   Download,
@@ -15,6 +13,7 @@ import {
   Zap,
   Star,
   ExternalLink,
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -63,9 +62,9 @@ export function MediaGrid(props: MediaGridProps) {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 6 }}>
-        <Box sx={{ width: 32, height: 32, border: 2, borderColor: 'primary.main', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }} />
-      </Box>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
@@ -74,13 +73,13 @@ export function MediaGrid(props: MediaGridProps) {
       <Card>
         <CardContent style={{ paddingTop: 48, paddingBottom: 48, textAlign: 'center' }}>
           <ImageIcon style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
-          <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>No Media Found</Typography>
-          <Typography variant="body2" color="text.secondary">
+          <h6 className="font-medium mb-2 text-lg">No Media Found</h6>
+          <p className="text-sm text-muted-foreground">
             {searchQuery || hasFilter
               ? 'Try adjusting your search or filters'
               : 'Upload your first media file to get started'
             }
-          </Typography>
+          </p>
         </CardContent>
       </Card>
     );
@@ -88,35 +87,34 @@ export function MediaGrid(props: MediaGridProps) {
 
   if (viewMode === 'grid') {
     return (
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(6, 1fr)' }, gap: 2 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         {items.map((item) => (
           <Card key={item.id} style={{ overflow: 'hidden', position: 'relative' }}>
             {bulkMode && (
-              <Box sx={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}>
+              <div className="absolute top-2 left-2 z-10">
                 <Checkbox
                   checked={selectedItems.has(item.id)}
                   onCheckedChange={() => onToggleSelect(item.id)}
                   style={{ backgroundColor: 'white', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                 />
-              </Box>
+              </div>
             )}
 
-            <Box sx={{ aspectRatio: '1/1', position: 'relative' }}>
+            <div className="relative aspect-square">
               {item.mime_type.startsWith('image/') ? (
-                <Box
-                  component="img"
+                <img
                   src={getImageUrl(item)}
                   alt={item.original_filename}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
               ) : (
-                <Box sx={{ width: '100%', height: '100%', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="w-full h-full bg-muted flex items-center justify-center">
                   {getFileIcon(item.mime_type)}
-                </Box>
+                </div>
               )}
 
-              <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 0.5 }}>
+              <div className="absolute top-2 right-2 flex gap-1">
                 {item.starred && (
                   <Badge variant="secondary" style={{ height: 24, width: 24, padding: 0, borderRadius: '50%', backgroundColor: '#fef9c3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Star style={{ height: 12, width: 12, color: '#ca8a04', fill: 'currentColor' }} />
@@ -137,9 +135,9 @@ export function MediaGrid(props: MediaGridProps) {
                     <RefreshCw style={{ height: 12, width: 12, color: '#2563eb', animation: 'spin 1s linear infinite' }} />
                   </Badge>
                 )}
-              </Box>
+              </div>
 
-              <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.5)', opacity: 0, '&:hover': { opacity: 1 }, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+              <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 <Button size="sm" variant="ghost" style={{ color: 'white' }}>
                   <Eye style={{ height: 16, width: 16 }} />
                 </Button>
@@ -176,74 +174,74 @@ export function MediaGrid(props: MediaGridProps) {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             <CardContent style={{ padding: 12 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', mb: 1 }}>{item.original_filename}</Typography>
+              <p className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap mb-2">{item.original_filename}</p>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="caption" color="text.secondary">{formatFileSize(item.file_size)}</Typography>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{formatFileSize(item.file_size)}</span>
                   <Badge variant={item.usage_count ? 'default' : 'secondary'} style={{ fontSize: '0.75rem' }}>
                     {item.usage_count || 0}
                   </Badge>
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div className="flex items-center justify-between">
                   {getOptimizationStatusBadge(item.optimization_status)}
                   {item.width && item.height && (
                     <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                       {item.width}x{item.height}
                     </Badge>
                   )}
-                </Box>
+                </div>
 
                 {item.formats_available && item.formats_available.length > 0 && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div className="flex flex-wrap gap-1">
                     {item.formats_available.map((format, idx) => (
                       <Badge key={idx} variant="secondary" style={{ fontSize: '10px', padding: '0 4px' }}>
                         {format}
                       </Badge>
                     ))}
-                  </Box>
+                  </div>
                 )}
 
                 {item.optimization_metadata?.compression_ratio && (
-                  <Typography variant="caption" sx={{ color: 'success.main' }}>
+                  <span className="text-xs text-green-600">
                     {item.optimization_metadata.compression_ratio}% smaller
-                  </Typography>
+                  </span>
                 )}
 
                 {item.optimization_metadata?.formats && item.optimization_metadata.formats.length > 1 && (
-                  <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>Optimized versions:</Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <div className="pt-2 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-1">Optimized versions:</p>
+                    <div className="flex flex-col gap-1">
                       {item.optimization_metadata.formats.map((formatInfo, idx) => (
-                        <Box key={idx} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Box
-                            component="a"
+                        <div key={idx} className="flex items-center justify-between">
+                          <a
                             href={`${getImageUrl(item).split('.')[0]}.${formatInfo.format.toLowerCase()}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' }, display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.625rem' }}
+                            className="text-primary no-underline hover:underline flex items-center gap-1"
+                            style={{ fontSize: '0.625rem' }}
                           >
                             <ExternalLink style={{ height: 8, width: 8 }} />
                             {formatInfo.format}
-                          </Box>
-                          <Typography sx={{ fontSize: '0.625rem' }} color="text.secondary">
+                          </a>
+                          <span className="text-muted-foreground" style={{ fontSize: '0.625rem' }}>
                             {formatFileSize(formatInfo.size)}
-                          </Typography>
-                        </Box>
+                          </span>
+                        </div>
                       ))}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
-              </Box>
+              </div>
             </CardContent>
           </Card>
         ))}
-      </Box>
+      </div>
     );
   }
 
@@ -251,9 +249,9 @@ export function MediaGrid(props: MediaGridProps) {
     return (
       <Card>
         <CardContent style={{ padding: 0 }}>
-          <Box sx={{ '& > *:not(:last-child)': { borderBottom: 1, borderColor: 'divider' } }}>
+          <div className="[&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-border">
             {items.map((item) => (
-              <Box key={item.id} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, '&:hover': { bgcolor: 'action.hover' } }}>
+              <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-muted">
                 {bulkMode && (
                   <Checkbox
                     checked={selectedItems.has(item.id)}
@@ -261,76 +259,74 @@ export function MediaGrid(props: MediaGridProps) {
                   />
                 )}
 
-                <Box sx={{ width: 64, height: 64, borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover', flexShrink: 0 }}>
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
                   {item.mime_type.startsWith('image/') ? (
-                    <Box
-                      component="img"
+                    <img
                       src={getImageUrl(item)}
                       alt={item.original_filename}
-                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="w-full h-full flex items-center justify-center">
                       {getFileIcon(item.mime_type)}
-                    </Box>
+                    </div>
                   )}
-                </Box>
+                </div>
 
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.original_filename}</Typography>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">{item.original_filename}</p>
                     {item.starred && <Star style={{ height: 16, width: 16, fill: 'currentColor', color: '#eab308' }} />}
                     {getOptimizationStatusBadge(item.optimization_status)}
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
-                    <Typography variant="body2" color="text.secondary">{formatFileSize(item.file_size)}</Typography>
-                    <Typography variant="body2" color="text.secondary">{new Date(item.created_at).toLocaleDateString()}</Typography>
+                  </div>
+                  <div className="flex items-center gap-4 mt-1">
+                    <span className="text-sm text-muted-foreground">{formatFileSize(item.file_size)}</span>
+                    <span className="text-sm text-muted-foreground">{new Date(item.created_at).toLocaleDateString()}</span>
                     {item.width && item.height && (
-                      <Typography variant="body2" color="text.secondary">{item.width} x {item.height}</Typography>
+                      <span className="text-sm text-muted-foreground">{item.width} x {item.height}</span>
                     )}
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                  <div className="flex items-center gap-2 mt-1">
                     {item.formats_available && item.formats_available.length > 0 && (
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">Formats:</Typography>
+                      <div className="flex gap-1">
+                        <span className="text-xs text-muted-foreground">Formats:</span>
                         {item.formats_available.map((format, idx) => (
                           <Badge key={idx} variant="secondary" style={{ fontSize: '0.75rem', padding: '0 4px' }}>
                             {format}
                           </Badge>
                         ))}
-                      </Box>
+                      </div>
                     )}
                     {item.optimization_metadata?.compression_ratio && (
                       <Badge variant="outline" style={{ fontSize: '0.75rem', color: '#16a34a' }}>
                         -{item.optimization_metadata.compression_ratio}%
                       </Badge>
                     )}
-                  </Box>
+                  </div>
 
                   {item.optimization_metadata?.formats && item.optimization_metadata.formats.length > 1 && (
-                    <Box sx={{ mt: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>Optimized versions:</Typography>
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <p className="text-xs text-muted-foreground mb-1">Optimized versions:</p>
+                      <div className="flex gap-2 flex-wrap">
                         {item.optimization_metadata.formats.map((formatInfo, idx) => (
-                          <Box
+                          <a
                             key={idx}
-                            component="a"
                             href={`${getImageUrl(item).split('.')[0]}.${formatInfo.format.toLowerCase()}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' }, fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 0.5 }}
+                            className="text-primary no-underline hover:underline text-xs flex items-center gap-1"
                           >
                             <ExternalLink style={{ height: 12, width: 12 }} />
                             {formatInfo.format} ({formatFileSize(formatInfo.size)})
-                          </Box>
+                          </a>
                         ))}
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                   )}
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Badge variant={item.usage_count ? 'default' : 'secondary'}>
                     {item.usage_count || 0}
                   </Badge>
@@ -368,10 +364,10 @@ export function MediaGrid(props: MediaGridProps) {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </Box>
-              </Box>
+                </div>
+              </div>
             ))}
-          </Box>
+          </div>
         </CardContent>
       </Card>
     );
@@ -381,9 +377,9 @@ export function MediaGrid(props: MediaGridProps) {
   return (
     <Card>
       <CardContent style={{ padding: 16 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <div className="flex flex-col gap-1">
           {items.map((item) => (
-            <Box key={item.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1, '&:hover': { bgcolor: 'action.hover' }, borderRadius: 1 }}>
+            <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-muted rounded-md">
               {bulkMode && (
                 <Checkbox
                   checked={selectedItems.has(item.id)}
@@ -393,17 +389,17 @@ export function MediaGrid(props: MediaGridProps) {
 
               {getFileIcon(item.mime_type)}
 
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.original_filename}</Typography>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">{item.original_filename}</p>
                   {item.starred && <Star style={{ height: 12, width: 12, fill: 'currentColor', color: '#eab308' }} />}
                   {getOptimizationStatusBadge(item.optimization_status)}
-                </Box>
-              </Box>
+                </div>
+              </div>
 
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 {formatFileSize(item.file_size)}
-              </Typography>
+              </span>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -429,9 +425,9 @@ export function MediaGrid(props: MediaGridProps) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );
