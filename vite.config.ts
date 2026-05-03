@@ -68,9 +68,6 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/react-router-dom/') || id.includes('node_modules/react-router/') || id.includes('node_modules/@remix-run/')) {
             return 'router';
           }
-          if (id.includes('node_modules/@mui/') || id.includes('node_modules/@emotion/')) {
-            return 'mui';
-          }
           if (id.includes('node_modules/date-fns/')) {
             return 'utils';
           }

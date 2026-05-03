@@ -24,17 +24,8 @@ import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityD
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
 
-const GRID_SX = {
-  display: 'grid',
-  gridTemplateColumns: {
-    xs: 'repeat(2, minmax(0, 1fr))',
-    sm: 'repeat(3, minmax(0, 1fr))',
-    md: 'repeat(4, minmax(0, 1fr))',
-    lg: 'repeat(5, minmax(0, 1fr))',
-  },
-  gap: { xs: 1.5, sm: 2, md: 2.5 },
-  '& > *': { minWidth: 0 },
-} as const;
+const GRID_CLASS =
+  'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 [&>*]:min-w-0';
 
 function filtersFromParams(params: URLSearchParams): PersonalityFilters {
   return {
@@ -359,7 +350,7 @@ export default function Personalities() {
         {/* Grid */}
         {personalities.length > 0 && (
           <>
-            <StaggerGrid sx={GRID_SX as Record<string, unknown>}>
+            <StaggerGrid className={GRID_CLASS}>
               {personalities.map((p) => (
                 <PersonalityCard key={p.id} personality={p} />
               ))}

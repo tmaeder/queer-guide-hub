@@ -32,7 +32,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 type AppRole = Database['public']['Enums']['app_role'];
 

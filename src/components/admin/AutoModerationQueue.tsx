@@ -44,7 +44,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 const SEVERITY_COLORS: Record<string, string> = {
   info: '#3b82f6',

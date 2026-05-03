@@ -24,13 +24,6 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => (
     {/* Background — solid color, no decorative effects */}
     <div
       aria-hidden="true"
-      sx={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 0,
-        pointerEvents: 'none',
-        bgcolor: 'background.default',
-      }}
       className="fixed inset-0 z-0 pointer-events-none bg-background"
     />
     <AnalyticsTracker />

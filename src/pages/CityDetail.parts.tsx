@@ -295,13 +295,7 @@ export function CityOverviewTab({
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <StaggerGrid
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-              gap: 3,
-            }}
-          >
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

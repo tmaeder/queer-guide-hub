@@ -532,13 +532,7 @@ export function VenuePhotos({ venue, t }: VenuePhotosProps) {
     );
   }
   return (
-    <StaggerGrid
-      sx={{
-        gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
-        gap: 2,
-        mt: 1,
-      }}
-    >
+    <StaggerGrid className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2">
       {venue.images.map((imageUrl, index) => (
         <div
           key={index}

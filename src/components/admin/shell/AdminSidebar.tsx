@@ -21,7 +21,7 @@ import {
 
 import { adminNavSections } from '@/config/adminNavigation';
 import type { AdminNavItem } from '@/config/adminNavigation';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';

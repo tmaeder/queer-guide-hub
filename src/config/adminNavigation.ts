@@ -37,7 +37,7 @@ import {
   Search,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 

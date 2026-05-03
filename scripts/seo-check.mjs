@@ -58,6 +58,7 @@ async function check(path) {
   const canonical = pick(html, /<link\s+rel=["']canonical["']\s+href=["']([^"']*)["']/i);
   const ogImage = pick(html, /<meta\s+property=["']og:image["']\s+content=["']([^"']*)["']/i);
   const hasJsonLd = /application\/ld\+json/.test(html);
+  const hreflangs = (html.match(/<link\s+rel=["']alternate["']\s+hreflang=/gi) ?? []).length;
   const botH1 = pick(botHtml, /<h1[^>]*>([\s\S]*?)<\/h1>/i);
   const botBodySize = botHtml.length;
   return {
@@ -74,6 +75,10 @@ async function check(path) {
     botBodySize,
   };
   return { path, url, status: res.status, title, description, canonical, ogImage, hasJsonLd };
+    hreflangs,
+    botH1,
+    botBodySize,
+  };
 }
 
 const fail = (msg, ctx) => {
@@ -141,6 +146,10 @@ async function main() {
 
     if (r.path === '/' && !r.hasJsonLd) failures += fail('homepage missing JSON-LD');
     else if (r.path === '/') pass('JSON-LD present');
+
+    // hreflang: expect 11 supported locales + 1 x-default = 12 alternates.
+    if (r.hreflangs < 12) failures += fail(`hreflang alternates: ${r.hreflangs} (expected ≥ 12)`);
+    else pass(`hreflang: ${r.hreflangs} alternates`);
 
     // Bot UA: middleware should inject route-specific body content. We expect
     // an <h1> in the raw HTML and a non-trivial body size.

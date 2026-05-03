@@ -285,19 +285,10 @@ const Marketplace = () => {
                     </div>
 
                     <StaggerGrid
-                      sx={
+                      className={
                         viewMode === 'grid'
-                          ? {
-                              display: 'grid',
-                              gridTemplateColumns: {
-                                xs: '1fr',
-                                sm: '1fr 1fr',
-                                lg: 'repeat(3, 1fr)',
-                                '2xl': 'repeat(4, 1fr)',
-                              },
-                              gap: { xs: 2, sm: 3 },
-                            }
-                          : { display: 'flex', flexDirection: 'column', gap: 1.5 }
+                          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6'
+                          : 'flex flex-col gap-3'
                       }
                     >
                       {getFilteredListings(category.id === 'all' ? undefined : category.id).map(

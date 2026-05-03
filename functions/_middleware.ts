@@ -19,6 +19,20 @@ import { buildBodyHtml } from './_lib/routeBody';
  */
 import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib/routeMeta';
 import { homepageJsonLd } from './_lib/jsonLd';
+import {
+  resolveMeta,
+  isIndexable,
+  DEFAULT_OG_IMAGE,
+  splitLocale,
+  localizedUrl,
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+} from './_lib/routeMeta';
+import { homepageJsonLd } from './_lib/jsonLd';
+import { isBotUserAgent } from './_lib/botUa';
+import { buildBodyHtml } from './_lib/routeBody';
+import { resolveDetailRoute } from './_lib/detail';
+import type { Env } from './_lib/sitemap';
 
 const SKIP_PREFIXES = ['/api/', '/functions/', '/assets/', '/icons/', '/images/', '/fonts/'];
 const SKIP_SUFFIXES = [
@@ -71,6 +85,8 @@ class RootBodyInjector {
 
 export const onRequest: PagesFunction = async (context) => {
   const { request, next } = context;
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const { request, next, env } = context;
   const url = new URL(request.url);
   const { pathname } = url;
 
@@ -85,6 +101,20 @@ export const onRequest: PagesFunction = async (context) => {
   const canonical = canonicalUrl(pathname);
   const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
   const indexable = isIndexable(pathname);
+  // Strip the optional /:locale prefix so route resolution operates on the
+  // canonical (default-locale) path. Each translated URL keeps its own
+  // self-canonical and exposes hreflang alternates to its 10 siblings.
+  const { locale, basePath } = splitLocale(pathname);
+
+  // Phase 3: detail routes look up the row in Supabase and override
+  // meta/body/JSON-LD with type-specific values (LocalBusiness, Event, etc.).
+  // Returns null if the path isn't a detail route or the row isn't found.
+  const detail = await resolveDetailRoute(env, basePath);
+
+  const meta = detail?.meta ?? resolveMeta(basePath);
+  const canonical = localizedUrl(locale, basePath);
+  const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
+  const indexable = isIndexable(basePath);
 
   // Tags appended to <head>. We append rather than replace for og:* / twitter:*
   // because the source HTML may also have them — duplicates are tolerated by
@@ -104,12 +134,31 @@ export const onRequest: PagesFunction = async (context) => {
     `<meta name="twitter:image" content="${escapeAttr(ogImage)}">`,
   ];
 
+  // hreflang alternates: one link per supported locale, plus x-default. Each
+  // locale's URL points to itself; the default locale is no-prefix English.
+  if (indexable) {
+    for (const l of SUPPORTED_LOCALES) {
+      headInjections.push(
+        `<link rel="alternate" hreflang="${l}" href="${escapeAttr(localizedUrl(l, basePath))}">`,
+      );
+    }
+    headInjections.push(
+      `<link rel="alternate" hreflang="x-default" href="${escapeAttr(localizedUrl(DEFAULT_LOCALE, basePath))}">`,
+    );
+  }
+
   if (!indexable) {
     headInjections.push('<meta name="robots" content="noindex,nofollow">');
   }
 
   if (pathname === '/' || pathname === '') {
     headInjections.push(homepageJsonLd());
+  }
+  if (basePath === '/' || basePath === '') {
+    headInjections.push(homepageJsonLd());
+  }
+  if (detail?.jsonLd) {
+    headInjections.push(detail.jsonLd);
   }
 
   const rewriter = new HTMLRewriter()
@@ -123,6 +172,10 @@ export const onRequest: PagesFunction = async (context) => {
       '#root',
       new RootBodyInjector(buildBodyHtml(pathname, { title: meta.title, description: meta.description })),
     );
+    const bodyHtml =
+      detail?.body ??
+      buildBodyHtml(basePath, { title: meta.title, description: meta.description });
+    rewriter.on('#root', new RootBodyInjector(bodyHtml));
   }
 
   const rewritten = rewriter.transform(response);
@@ -136,5 +189,10 @@ export const onRequest: PagesFunction = async (context) => {
 
   // Preserve original cache headers but ensure Vary on User-Agent isn't needed
   // since we don't branch on UA in Phase 1.
+  // Detail pages are dynamic but the row content changes infrequently — let
+  // the edge cache hold for 5 minutes to bound Supabase load.
+  if (detail) {
+    rewritten.headers.set('Cache-Control', 'public, s-maxage=300, max-age=60');
+  }
   return rewritten;
 };

@@ -18,8 +18,6 @@ import {
 } from 'lucide-react';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -60,71 +58,29 @@ const Index = React.memo(() => {
     loading || (!statsError && stats.some((s) => typeof s.value === 'number' && s.value >= 100));
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
+    <div className="min-h-screen">
       {/* ── Hero + Map ───────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          minHeight: { xs: 'auto', md: 'calc(100vh - 64px)' },
-          bgcolor: 'background.default',
-        }}
-      >
+      <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background">
         {/* Text panel */}
-        <Box
-          sx={{
-            flex: { xs: 'none', md: '0 0 35%' },
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            px: { xs: 2, sm: 3, md: 4 },
-            py: { xs: 6, sm: 8, md: 0 },
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          <Typography
-            variant="h1"
-            className="reveal-up"
-            sx={{
-              fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem', lg: '4rem' },
-              fontWeight: 800,
-              letterSpacing: '-0.04em',
-              lineHeight: 1.05,
-              mb: 2,
-              color: 'text.primary',
-            }}
+        <div className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0 relative z-[1]">
+          <h1
+            className="reveal-up text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] lg:text-[4rem] font-extrabold leading-[1.05] mb-4 text-foreground"
+            style={{ letterSpacing: '-0.04em' }}
           >
             {t('home.heroLine1', 'Discover.')}
             <br />
             {t('home.heroLine2', 'Connect.')}
             <br />
-            <Box component="span" sx={{ color: 'brand.main' }}>
+            <span style={{ color: 'hsl(var(--brand))' }}>
               {t('home.heroLine3', 'Belong.')}
-            </Box>
-          </Typography>
+            </span>
+          </h1>
 
-          <Typography
-            className="reveal-up reveal-delay-1"
-            sx={{
-              fontSize: { xs: '0.9375rem', md: '1.0625rem' },
-              color: 'text.secondary',
-              mb: 3,
-              lineHeight: 1.6,
-            }}
-          >
+          <p className="reveal-up reveal-delay-1 text-[0.9375rem] md:text-[1.0625rem] text-muted-foreground mb-6 leading-[1.6]">
             {t('home.subtitle', 'Safe venues, vibrant events, and communities that get you — wherever you are.')}
-          </Typography>
+          </p>
 
-          <Box
-            className="reveal-up reveal-delay-2"
-            sx={{
-              display: 'flex',
-              gap: 1.5,
-              flexWrap: 'wrap',
-            }}
-          >
+          <div className="reveal-up reveal-delay-2 flex gap-3 flex-wrap">
             <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/venues')}>
               <MapPin size={16} aria-hidden="true" style={{ marginRight: 8 }} />
               {t('home.browseVenues', 'Browse Venues')}
@@ -133,27 +89,15 @@ const Index = React.memo(() => {
               <Calendar size={16} aria-hidden="true" style={{ marginRight: 8 }} />
               {t('home.viewEvents', 'View Events')}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Map panel */}
-        <Box
-          sx={{
-            flex: { xs: 'none', md: 1 },
-            minHeight: { xs: '55vh', md: 0 },
-            position: 'relative',
-          }}
-        >
+        <div className="md:flex-1 min-h-[55vh] md:min-h-0 relative">
           <ErrorBoundary section="map" fallback={null}>
             <React.Suspense
               fallback={
-                <Box
-                  sx={{
-                    height: '100%',
-                    minHeight: { xs: '55vh', md: 'calc(100vh - 64px)' },
-                    bgcolor: 'action.hover',
-                  }}
-                />
+                <div className="h-full min-h-[55vh] md:min-h-[calc(100vh-64px)] bg-muted" />
               }
             >
               <ExploreMap
@@ -165,72 +109,48 @@ const Index = React.memo(() => {
               />
             </React.Suspense>
           </ErrorBoundary>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* ── Stats Strip ──────────────────────────────────────────────── */}
       {showStatsStrip && (
-        <Box
+        <div
           data-testid="homepage-stats-strip"
-          sx={{
-            bgcolor: 'text.primary',
-            color: 'background.default',
-            py: { xs: 5, md: 7 },
-            px: { xs: 2, sm: 3, md: 4 },
-          }}
+          className="bg-foreground text-background py-10 md:py-14 px-4 sm:px-6 md:px-8"
         >
           <StaggerGrid
             stagger={0.1}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'repeat(2, 1fr)',
-                md: 'repeat(4, 1fr)',
-              },
-              gap: { xs: 3, md: 4 },
-            }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
           >
             {stats.map((stat, i) => {
               const inner = (
                 <>
-                <Typography
-                  component="div"
-                  sx={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontWeight: 800,
-                    fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
-                    letterSpacing: '-0.03em',
-                    lineHeight: 1.1,
-                    // Use brand.light on dark text.primary bg — magenta on near-black is 2.9:1 (WCAG 1.4.3 fail).
-                    color: 'brand.light',
-                  }}
-                >
-                  {loading ? (
-                    <Skeleton className="mx-auto h-[1em] w-24" />
-                  ) : typeof stat.value === 'number' && stat.value >= 100 ? (
-                    <AnimatedCounter value={stat.value} suffix="+" />
-                  ) : (
-                    '\u2014'
-                  )}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'inherit',
-                    opacity: 0.6,
-                    mt: 0.5,
-                    fontWeight: 500,
-                    letterSpacing: '0.02em',
-                    textTransform: 'uppercase',
-                    fontSize: '0.75rem',
-                  }}
-                >
-                  {stat.label}
-                </Typography>
+                  <div
+                    className="font-extrabold text-[2.5rem] sm:text-[3rem] md:text-[4rem] leading-[1.1]"
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      letterSpacing: '-0.03em',
+                      color: 'hsl(var(--brand-light, var(--brand)))',
+                    }}
+                  >
+                    {loading ? (
+                      <Skeleton className="mx-auto h-[1em] w-24" />
+                    ) : typeof stat.value === 'number' && stat.value >= 100 ? (
+                      <AnimatedCounter value={stat.value} suffix="+" />
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                  <p
+                    className="opacity-60 mt-1 font-medium uppercase text-xs"
+                    style={{ letterSpacing: '0.02em', color: 'inherit' }}
+                  >
+                    {stat.label}
+                  </p>
                 </>
               );
               return (
-                <Box key={i} sx={{ textAlign: 'center' }}>
+                <div key={i} className="text-center">
                   {stat.link ? (
                     <LocalizedLink
                       to={stat.link}
@@ -241,45 +161,26 @@ const Index = React.memo(() => {
                   ) : (
                     inner
                   )}
-                </Box>
+                </div>
               );
             })}
           </StaggerGrid>
-        </Box>
+        </div>
       )}
 
       {/* ── Discovery widgets (search v2) ────────────────────────────── */}
-      <Box component="section" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 4, md: 6 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <section className="px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col gap-8">
         <RecommendedForYou />
         <TrendingStrip />
-      </Box>
+      </section>
 
       {/* ── Features Grid ────────────────────────────────────────────── */}
-      <Box component="section" className="content-enter" sx={{ py: { xs: 6, md: 8 }, px: { xs: 2, sm: 3, md: 4 } }}>
-        <Typography
-          variant="h2"
-          className="reveal-up"
-          sx={{
-            fontWeight: 800,
-            mb: { xs: 4, md: 5 },
-            fontSize: { xs: '1.75rem', md: '2.25rem' },
-          }}
-        >
+      <section className="content-enter py-12 md:py-16 px-4 sm:px-6 md:px-8">
+        <h2 className="reveal-up font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">
           {t('home.explore', 'Explore')}
-        </Typography>
+        </h2>
 
-        <StaggerGrid
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            },
-            gap: 2.5,
-          }}
-        >
+        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {featureDefs.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -303,16 +204,9 @@ const Index = React.memo(() => {
                       gap: 12,
                     }}
                   >
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        fontWeight: 700,
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontSize: { xs: '1rem', md: '1.0625rem' },
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}
+                    <div
+                      className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2"
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                       <Icon
                         size={20}
@@ -320,23 +214,17 @@ const Index = React.memo(() => {
                         style={{ flexShrink: 0 }}
                       />
                       {t(feature.titleKey)}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        lineHeight: 1.5,
-                      }}
-                    >
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-[1.5]">
                       {t(feature.descKey)}
-                    </Typography>
+                    </p>
                   </CardContent>
                 </Card>
               </LocalizedLink>
             );
           })}
         </StaggerGrid>
-      </Box>
+      </section>
 
       {/* ── Upcoming Events Near You (hero + index + 14-day strip) ───── */}
       <ErrorBoundary section="regional-calendar" fallback={null}>
@@ -351,7 +239,7 @@ const Index = React.memo(() => {
           <LatestNewsSlider />
         </React.Suspense>
       </ErrorBoundary>
-    </Box>
+    </div>
   );
 });
 

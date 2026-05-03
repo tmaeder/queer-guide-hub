@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 // Lightweight alpha helper for hex colors
 function alphaHex(color: string, a: number): string {

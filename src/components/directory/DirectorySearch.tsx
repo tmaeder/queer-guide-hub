@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 
 export interface DirectoryFilters {
@@ -189,6 +190,7 @@ export const DirectorySearch = ({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-medium text-muted-foreground">Continent</label>
+                  <Label className="text-xs font-medium text-muted-foreground">Continent</Label>
                   <Select value={filters.continent} onValueChange={(value) => handleFilterChange("continent", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Continents" />
@@ -208,6 +210,7 @@ export const DirectorySearch = ({
 
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-medium text-muted-foreground">Population Range</label>
+                  <Label className="text-xs font-medium text-muted-foreground">Population Range</Label>
                   <Select value={filters.populationRange} onValueChange={(value) => handleFilterChange("populationRange", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Sizes" />
@@ -224,6 +227,7 @@ export const DirectorySearch = ({
 
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-medium text-muted-foreground">Capital Cities</label>
+                  <Label className="text-xs font-medium text-muted-foreground">Capital Cities</Label>
                   <Select value={filters.isCapital} onValueChange={(value) => handleFilterChange("isCapital", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Cities" />
@@ -238,6 +242,7 @@ export const DirectorySearch = ({
 
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-medium text-muted-foreground">Major Cities</label>
+                  <Label className="text-xs font-medium text-muted-foreground">Major Cities</Label>
                   <Select value={filters.isMajorCity} onValueChange={(value) => handleFilterChange("isMajorCity", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Cities" />
@@ -252,6 +257,7 @@ export const DirectorySearch = ({
 
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-medium text-muted-foreground">Sort By</label>
+                  <Label className="text-xs font-medium text-muted-foreground">Sort By</Label>
                   <Select value={filters.sortBy} onValueChange={(value) => handleFilterChange("sortBy", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Sort by..." />
@@ -266,6 +272,7 @@ export const DirectorySearch = ({
 
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-medium text-muted-foreground">Sort Order</label>
+                  <Label className="text-xs font-medium text-muted-foreground">Sort Order</Label>
                   <Button
                     variant="outline"
                     onClick={handleSortOrderToggle}

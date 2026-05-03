@@ -1,7 +1,0 @@
-[
-  "src/components/animation/StaggerGrid.tsx",
-  "src/lib/sx.ts",
-  "src/test/__tests__/test-utils.test.tsx",
-  "src/test/test-utils.tsx",
-  "src/theme/muiTheme.ts"
-]
