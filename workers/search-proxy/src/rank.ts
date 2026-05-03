@@ -8,6 +8,7 @@ export interface RankableHit {
 	content_type?: string;
 	city?: string;
 	tags?: string[];
+	aliases?: string[];
 	featured?: boolean;
 	_fused?: number;
 	_personalScore?: number;
@@ -44,16 +45,21 @@ export function personalizedRank(
 			if (h.featured) boost += 0.04;
 			if (seenRecently.has(`${h.content_type}:${h.id || h.content_id}`)) boost -= 0.15;
 
-			// Exact-title boost (bug #4 fallback): Meilisearch's index ranking
-			// rules don't yet have `exactness` ahead of `attribute`, so the
-			// engine returns Bremerhaven for "berlin" before Berlin. We compensate
-			// here. Magnitude is large enough to dominate every other signal but
-			// small enough that filtered results still look organic.
-			if (q && typeof h.title === "string") {
-				const t = normalize(h.title as string);
-				if (t === q) boost += 1.0;
-				else if (t.startsWith(q + " ") || t.startsWith(q + ",")) boost += 0.5;
-				else if (t.includes(" " + q + " ") || t.endsWith(" " + q)) boost += 0.25;
+			// Exact-title boost (bug #4 fallback). Also matches the city aliases
+			// array so 'köln'/'münchen' rank Cologne/Munich first via their
+			// English-name docs (which have the alias seeded by the
+			// apply-meili-relevance-config edge function).
+			if (q) {
+				const candidates: string[] = [];
+				if (typeof h.title === "string") candidates.push(normalize(h.title as string));
+				if (Array.isArray(h.aliases)) {
+					for (const a of h.aliases) candidates.push(normalize(String(a)));
+				}
+				for (const t of candidates) {
+					if (t === q) { boost += 1.0; break; }
+					if (t.startsWith(q + " ") || t.startsWith(q + ",")) { boost += 0.5; break; }
+					if (t.includes(" " + q + " ") || t.endsWith(" " + q)) { boost += 0.25; break; }
+				}
 			}
 			return { ...h, _personalScore: (h._fused || 0) + boost };
 		})
