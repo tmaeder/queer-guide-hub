@@ -17,14 +17,11 @@ import {
   parentOrder,
 } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Alert from '@mui/material/Alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Tag, ChevronRight, Network, Briefcase, Zap, AlertTriangle, Phone } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -43,25 +40,9 @@ type ViewMode =
 type DisplayMode = 'chips' | 'grid' | 'list';
 type SortOption = 'alphabetical' | 'usage' | 'recent';
 
-// ─────────────── Shared hover-card sx ───────────────
-const hoverCardSx = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 1.5,
-  minHeight: 44,
-  px: 2,
-  py: 1.5,
-  borderRadius: 2,
-  cursor: 'pointer',
-  bgcolor: 'background.paper',
-  textAlign: 'left',
-  font: 'inherit',
-  color: 'inherit',
-  width: '100%',
-  transition: 'all 0.15s',
-  '&:hover': { bgcolor: 'action.hover' },
-  '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
-} as const;
+// ─────────────── Shared hover-card class ───────────────
+const hoverCardCls =
+  'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer bg-background text-left text-inherit w-full transition-all duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary border-0';
 
 export default function Ressources() {
   const { tagName } = useParams<{ tagName: string }>();
@@ -270,19 +251,19 @@ export default function Ressources() {
 
   if (loading) {
     return (
-      <Container sx={{ py: { xs: 4, md: 8 } }}>
+      <div className="container mx-auto py-8 md:py-16 px-4">
         <PageLoadingState count={12} />
-      </Container>
+      </div>
     );
   }
   if (error) {
     return (
-      <Container sx={{ py: { xs: 4, md: 8 } }}>
+      <div className="container mx-auto py-8 md:py-16 px-4">
         <ErrorState
           message="Something went wrong while loading resources. Please try again later."
           onRetry={() => window.location.reload()}
         />
-      </Container>
+      </div>
     );
   }
 
@@ -293,182 +274,113 @@ export default function Ressources() {
     const parentName = primary?.parent_name ?? undefined;
     const childName = primary?.level === 1 ? primary.name : undefined;
     return (
-      <Container sx={{ py: { xs: 4, md: 8 } }}>
+      <div className="container mx-auto py-8 md:py-16 px-4">
         {/* Breadcrumbs */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            mb: 2,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Box
-            component="button"
+        <div className="flex items-center gap-1 mb-4 flex-wrap">
+          <button
             onClick={() => {
               navigate('/resources');
               setViewMode('overview');
             }}
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.5,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              p: 0,
-              color: 'text.secondary',
-              '&:hover': { color: 'primary.main' },
-            }}
+            className="inline-flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
           >
             <ArrowLeft style={{ width: 14, height: 14 }} />
-            <Typography variant="body2" color="inherit">
-              Resources
-            </Typography>
-          </Box>
+            <span className="text-sm">Resources</span>
+          </button>
           {parentName && (
             <>
               <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-              <Box
-                component="button"
+              <button
                 onClick={() => {
                   setSelectedCategory(parentName);
                   setSelectedSubcategory('');
                   setViewMode('category');
                   navigate('/resources');
                 }}
-                sx={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  p: 0,
-                  color: 'text.secondary',
-                  '&:hover': { color: 'primary.main' },
-                }}
+                className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
               >
-                <Typography variant="body2" color="inherit">
-                  {getCategoryShortName(parentName)}
-                </Typography>
-              </Box>
+                <span className="text-sm">{getCategoryShortName(parentName)}</span>
+              </button>
             </>
           )}
           {childName && (
             <>
               <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-              <Box
-                component="button"
+              <button
                 onClick={() => {
                   setSelectedCategory(parentName || childName);
                   setSelectedSubcategory(childName);
                   setViewMode('subcategory');
                   navigate('/resources');
                 }}
-                sx={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  p: 0,
-                  color: 'text.secondary',
-                  '&:hover': { color: 'primary.main' },
-                }}
+                className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
               >
-                <Typography variant="body2" color="inherit">
-                  {getCategoryShortName(childName)}
-                </Typography>
-              </Box>
+                <span className="text-sm">{getCategoryShortName(childName)}</span>
+              </button>
             </>
           )}
           <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            {selectedTag.name}
-          </Typography>
-        </Box>
+          <span className="text-sm font-medium">{selectedTag.name}</span>
+        </div>
 
         {/* Hero — only show image box when tag has an image */}
         {selectedTag.image_url ? (
-          <Box
-            sx={{
-              width: '100%',
-              aspectRatio: { xs: '16 / 9', md: '16 / 6' },
-              borderRadius: 3,
-              overflow: 'hidden',
-              mb: 3,
-              position: 'relative',
-              bgcolor: 'action.hover',
-            }}
+          <div
+            className="w-full rounded-2xl overflow-hidden mb-6 relative bg-muted"
+            style={{ aspectRatio: '16 / 9' }}
           >
-            <Box
-              component="img"
+            <img
               src={selectedTag.image_url}
               alt={selectedTag.name}
-              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              className="w-full h-full object-cover"
               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
-            <Box
-              sx={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-                p: { xs: 2.5, sm: 3 },
-              }}
+            <div
+              className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)' }}
             >
               {primary && (
-                <Typography sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.65)', mb: 0.25, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                <p className="font-semibold mb-1 uppercase" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.65)', letterSpacing: '0.04em' }}>
                   {parentName ? `${getCategoryShortName(parentName)} › ` : ''}
                   {getCategoryShortName(primary.name)}
-                </Typography>
+                </p>
               )}
-              <Typography variant="h4" component="h1" sx={{ fontWeight: 800, color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,0.3)', lineHeight: 1.1 }}>
+              <h1 className="text-2xl font-extrabold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)', lineHeight: 1.1 }}>
                 {selectedTag.name}
-              </Typography>
-            </Box>
-          </Box>
+              </h1>
+            </div>
+          </div>
         ) : (
-          <Box sx={{ mb: 3 }}>
+          <div className="mb-6">
             {primary && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              <p className="text-sm text-muted-foreground mb-1">
                 {parentName ? `${getCategoryShortName(parentName)} › ` : ''}
                 {getCategoryShortName(primary.name)}
-              </Typography>
+              </p>
             )}
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-              {selectedTag.name}
-            </Typography>
-          </Box>
+            <h1 className="text-2xl font-bold">{selectedTag.name}</h1>
+          </div>
         )}
 
         {selectedTag.description && (
-          <Typography color="text.secondary" sx={{ lineHeight: 1.7, mb: 3, maxWidth: 680, fontSize: '0.9rem' }}>
+          <p className="text-muted-foreground mb-6" style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.9rem' }}>
             {selectedTag.description}
-          </Typography>
+          </p>
         )}
 
         {/* Content grid */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3, minWidth: 0 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 min-w-0">
           <TagLinkedContent tagId={selectedTag.id} tagName={selectedTag.name} />
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 3,
-              position: { lg: 'sticky' },
-              top: { lg: 80 },
-              alignSelf: 'start',
-            }}
-          >
+          <div className="flex flex-col gap-6 lg:sticky self-start" style={{ top: 80 }}>
             <RelatedTagsCard
               tagId={selectedTag.id}
               onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
             />
-          </Box>
-        </Box>
-      </Container>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -487,16 +399,16 @@ export default function Ressources() {
       (searchQuery || filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter));
 
   return (
-    <Container sx={{ py: { xs: 4, md: 8 } }}>
+    <div className="container mx-auto py-8 md:py-16 px-4">
       <PageHeader
         title="Resources"
         subtitle="LGBTQ+ terms, concepts and topics — organised into a clean, browsable taxonomy"
         center
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+        <div className="flex items-center justify-center gap-3">
           <Badge variant="secondary">{allTags.length} tags</Badge>
           <Badge variant="secondary">{orderedParents.length} categories</Badge>
-        </Box>
+        </div>
       </PageHeader>
 
       <ResourcesFilterBar
@@ -525,25 +437,23 @@ export default function Ressources() {
           <Card style={{ marginBottom: 24 }}>
             <CardHeader>
               <CardTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Network style={{ width: 20, height: 20 }} />
-                  <Typography variant="h6" component="span">
-                    Tag Relationship Graph
-                  </Typography>
-                </Box>
+                  <span className="text-base">Tag Relationship Graph</span>
+                </div>
               </CardTitle>
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-sm text-muted-foreground">
                 Explore how tags relate by semantic similarity and co-occurrence
-              </Typography>
+              </p>
             </CardHeader>
             <CardContent>
-              <Box sx={{ width: '100%', height: { xs: 400, md: 600 } }}>
+              <div className="w-full h-[400px] md:h-[600px]">
                 <TagRelationshipGraph
                   onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
                   categoryFilter={filterCategory !== 'all' ? filterCategory : null}
                   categories={orderedParents.map((p) => p.name)}
                 />
-              </Box>
+              </div>
             </CardContent>
           </Card>
         </Suspense>
@@ -551,191 +461,114 @@ export default function Ressources() {
 
       {/* ───────── Overview ───────── */}
       {viewMode === 'overview' && !showFilteredResults && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="flex flex-col gap-8">
           {popularTags.length > 0 && (
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <div>
+              <div className="flex items-center gap-2 mb-4">
                 <Zap style={{ width: 18, height: 18 }} />
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Popular tags
-                </Typography>
-              </Box>
+                <h6 className="text-base font-semibold">Popular tags</h6>
+              </div>
               <TagListRenderer
                 tags={popularTags}
                 displayMode="chips"
                 tagUsageCounts={tagUsageCounts}
                 onTagClick={handleTagClick}
               />
-            </Box>
+            </div>
           )}
 
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-              Browse by category
-            </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  lg: 'repeat(3, 1fr)',
-                },
-                gap: 1.5,
-              }}
-            >
+          <div>
+            <h6 className="text-base font-semibold mb-4">Browse by category</h6>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {orderedParents.map((cat) => {
                 const Icon = getCategoryIcon(cat.name);
                 const activeChildren = cat.children?.filter((c) => c.tag_count > 0) ?? [];
                 return (
-                  <Box
+                  <button
                     key={cat.id}
-                    component="button"
                     onClick={() => {
                       setSelectedCategory(cat.name);
                       setSelectedSubcategory('');
                       setFilterCategory('all');
                       setViewMode('category');
                     }}
-                    sx={{
-                      ...hoverCardSx,
-                      flexDirection: 'column',
-                      alignItems: 'stretch',
-                      gap: 0.75,
-                      minHeight: 96,
-                    }}
+                    className={`${hoverCardCls} flex-col items-stretch gap-1.5`}
+                    style={{ minHeight: 96 }}
                   >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 1,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
                         <Icon style={{ width: 18, height: 18, opacity: 0.75 }} />
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                        <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
                           {getCategoryShortName(cat.name)}
-                        </Typography>
-                      </Box>
+                        </span>
+                      </div>
                       <Badge variant="secondary">{cat.total_tag_count}</Badge>
-                    </Box>
+                    </div>
                     {activeChildren.length > 0 && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
+                      <span
+                        className="text-xs text-muted-foreground overflow-hidden"
+                        style={{
                           fontSize: '0.7rem',
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
                           lineHeight: 1.4,
                         }}
                       >
                         {activeChildren
-                          .map(
-                            (c) => `${getCategoryShortName(c.name)} (${c.tag_count})`,
-                          )
+                          .map((c) => `${getCategoryShortName(c.name)} (${c.tag_count})`)
                           .join(' · ')}
-                      </Typography>
+                      </span>
                     )}
-                  </Box>
+                  </button>
                 );
               })}
-              <Box
-                component="button"
+              <button
                 onClick={() => setViewMode('professions')}
-                sx={{
-                  ...hoverCardSx,
-                  flexDirection: 'column',
-                  alignItems: 'stretch',
-                  gap: 0.75,
-                  minHeight: 96,
-                }}
+                className={`${hoverCardCls} flex-col items-stretch gap-1.5`}
+                style={{ minHeight: 96 }}
               >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 1,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <Briefcase style={{ width: 18, height: 18, opacity: 0.75 }} />
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                    <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
                       Professions
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                   <Badge variant="secondary">{professions.length}</Badge>
-                </Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontSize: '0.7rem', lineHeight: 1.4 }}
-                >
+                </div>
+                <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem', lineHeight: 1.4 }}>
                   Browse LGBTQ+ personalities by profession
-                </Typography>
-              </Box>
+                </span>
+              </button>
               {/* Crisis help card */}
-              <Box
-                component={LocalizedLink}
+              <LocalizedLink
                 to="/help"
-                sx={{
-                  ...hoverCardSx,
-                  flexDirection: 'column',
-                  alignItems: 'stretch',
-                  gap: 0.75,
-                  minHeight: 96,
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  borderLeft: '3px solid',
-                  borderColor: 'error.main',
-                }}
+                className={`${hoverCardCls} flex-col items-stretch gap-1.5 no-underline text-inherit border-l-[3px] border-destructive`}
+                style={{ minHeight: 96 }}
               >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 1,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <Phone style={{ width: 18, height: 18, opacity: 0.75 }} />
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                    <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
                       Crisis Hotlines
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                   <ChevronRight style={{ width: 16, height: 16, opacity: 0.4 }} />
-                </Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontSize: '0.7rem', lineHeight: 1.4 }}
-                >
+                </div>
+                <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem', lineHeight: 1.4 }}>
                   Free, anonymous LGBTQIA+ crisis support worldwide
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+                </span>
+              </LocalizedLink>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ───────── Category ───────── */}
       {viewMode === 'category' && selectedCategory && (
-        <Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              mb: 3,
-              flexWrap: 'wrap',
-            }}
-          >
+        <div>
+          <div className="flex items-center gap-3 mb-6 flex-wrap">
             <Button variant="secondary" size="sm" onClick={handleBack}>
               <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
               Back
@@ -744,30 +577,25 @@ export default function Ressources() {
               const Icon = getCategoryIcon(selectedCategory);
               return <Icon style={{ width: 18, height: 18 }} />;
             })()}
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              {getCategoryShortName(selectedCategory)}
-            </Typography>
+            <h6 className="text-base font-semibold">{getCategoryShortName(selectedCategory)}</h6>
             <Badge variant="secondary">
               {categoriesTree.find((c) => c.name === selectedCategory)?.total_tag_count ?? 0}
             </Badge>
-          </Box>
+          </div>
 
           {/* Crisis help banner in Support & News */}
           {selectedCategory === 'Support & News' && (
-            <Alert
-              severity="info"
-              icon={<AlertTriangle size={20} />}
-              sx={{ mb: 3 }}
-              action={
+            <Alert className="mb-6">
+              <AlertTriangle size={20} />
+              <AlertDescription className="flex items-center justify-between gap-4 flex-wrap">
+                <span>Need immediate help? Browse our curated crisis hotlines directory.</span>
                 <Button asChild variant="outline" size="sm">
                   <LocalizedLink to="/help">
                     <Phone size={14} className="mr-1" />
                     Crisis Hotlines
                   </LocalizedLink>
                 </Button>
-              }
-            >
-              Need immediate help? Browse our curated crisis hotlines directory.
+              </AlertDescription>
             </Alert>
           )}
 
@@ -794,47 +622,35 @@ export default function Ressources() {
               );
             }
             return (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: {
-                      xs: '1fr',
-                      sm: 'repeat(2, 1fr)',
-                      md: 'repeat(3, 1fr)',
-                      lg: 'repeat(4, 1fr)',
-                    },
-                    gap: 1.5,
-                  }}
-                >
+              <div className="flex flex-col gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {activeChildren.map((child) => {
                     const Icon = getCategoryIcon(child.name);
                     return (
-                      <Box
+                      <button
                         key={child.id}
-                        component="button"
                         onClick={() => {
                           setSelectedSubcategory(child.name);
                           setViewMode('subcategory');
                         }}
-                        sx={hoverCardSx}
+                        className={hoverCardCls}
                       >
                         <Icon style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.65 }} />
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold" style={{ fontSize: '0.85rem' }}>
                             {getCategoryShortName(child.name)}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          </p>
+                          <span className="text-xs text-muted-foreground">
                             {child.tag_count} tags
-                          </Typography>
-                        </Box>
+                          </span>
+                        </div>
                         <ChevronRight
                           style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }}
                         />
-                      </Box>
+                      </button>
                     );
                   })}
-                </Box>
+                </div>
 
                 {activeChildren.map((child) => {
                   const childTags = allTags
@@ -845,62 +661,36 @@ export default function Ressources() {
                     .slice(0, 10);
                   if (childTags.length === 0) return null;
                   return (
-                    <Box key={child.id}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          mb: 1.5,
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                            {getCategoryShortName(child.name)}
-                          </Typography>
+                    <div key={child.id}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold">{getCategoryShortName(child.name)}</p>
                           <Badge variant="secondary">{child.tag_count}</Badge>
-                        </Box>
-                        <Box
-                          component="button"
+                        </div>
+                        <button
                           onClick={() => {
                             setSelectedSubcategory(child.name);
                             setViewMode('subcategory');
                           }}
-                          sx={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            p: 0,
-                            color: 'primary.main',
-                            fontSize: '0.75rem',
-                            '&:hover': { textDecoration: 'underline' },
-                          }}
+                          className="bg-transparent border-0 cursor-pointer p-0 text-primary text-xs hover:underline"
                         >
                           View all →
-                        </Box>
-                      </Box>
+                        </button>
+                      </div>
                       {renderTagList(childTags)}
-                    </Box>
+                    </div>
                   );
                 })}
-              </Box>
+              </div>
             );
           })()}
-        </Box>
+        </div>
       )}
 
       {/* ───────── Subcategory ───────── */}
       {viewMode === 'subcategory' && selectedSubcategory && (
-        <Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              mb: 3,
-              flexWrap: 'wrap',
-            }}
-          >
+        <div>
+          <div className="flex items-center gap-3 mb-6 flex-wrap">
             <Button variant="secondary" size="sm" onClick={handleBack}>
               <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
               Back
@@ -916,37 +706,25 @@ export default function Ressources() {
               return (
                 <>
                   {parent && (
-                    <Box
-                      component="button"
+                    <button
                       onClick={() => {
                         setSelectedCategory(parent.name);
                         setSelectedSubcategory('');
                         setViewMode('category');
                       }}
-                      sx={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        p: 0,
-                        color: 'text.secondary',
-                        '&:hover': { color: 'primary.main' },
-                      }}
+                      className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
                     >
-                      <Typography variant="body2" color="inherit">
-                        {getCategoryShortName(parent.name)}
-                      </Typography>
-                    </Box>
+                      <span className="text-sm">{getCategoryShortName(parent.name)}</span>
+                    </button>
                   )}
                   <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
                   <Icon style={{ width: 18, height: 18 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {getCategoryShortName(selectedSubcategory)}
-                  </Typography>
+                  <h6 className="text-base font-semibold">{getCategoryShortName(selectedSubcategory)}</h6>
                   <Badge variant="secondary">{subTags.length}</Badge>
                 </>
               );
             })()}
-          </Box>
+          </div>
           {(() => {
             const subTags = allTags
               .filter((t) => t.categories?.some((c) => c.name === selectedSubcategory))
@@ -962,67 +740,51 @@ export default function Ressources() {
               />
             );
           })()}
-        </Box>
+        </div>
       )}
 
       {/* ───────── Professions ───────── */}
       {viewMode === 'professions' && (
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
+        <div>
+          <div className="flex items-center gap-3 mb-6">
             <Button variant="secondary" size="sm" onClick={handleBack}>
               <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
               Back
             </Button>
             <Briefcase style={{ width: 18, height: 18 }} />
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Professions
-            </Typography>
+            <h6 className="text-base font-semibold">Professions</h6>
             <Badge variant="secondary">{professions.length}</Badge>
-          </Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          </div>
+          <div className="flex flex-wrap gap-2">
             {professions.map((profession) => (
-              <Box
+              <button
                 key={profession}
-                component="button"
                 onClick={() =>
                   navigate(`/personalities?profession=${encodeURIComponent(profession)}`)
                 }
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  minHeight: 36,
-                  px: 1.75,
-                  py: 0.75,
-                  borderRadius: 999,
-                  cursor: 'pointer',
-                  bgcolor: 'background.paper',
-                  font: 'inherit',
-                  color: 'inherit',
-                  '&:hover': { bgcolor: 'action.hover' },
-                  '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
-                  transition: 'all 0.15s',
-                }}
+                className="inline-flex items-center px-3.5 py-1.5 rounded-full cursor-pointer bg-background text-inherit border-0 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary transition-all duration-150"
+                style={{ minHeight: 36 }}
               >
-                <Typography sx={{ fontWeight: 500, fontSize: '0.8rem' }}>{profession}</Typography>
-              </Box>
+                <span className="font-medium" style={{ fontSize: '0.8rem' }}>{profession}</span>
+              </button>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* ───────── Search / Filtered ───────── */}
       {showFilteredResults && (
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <h6 className="text-base font-semibold">
               {viewMode === 'search'
                 ? 'Search results'
                 : filterCategory !== 'all'
                   ? `${getCategoryShortName(filterCategory)} tags`
                   : 'Filtered tags'}
-            </Typography>
+            </h6>
             <Badge variant="secondary">{filteredAndSortedTags.length}</Badge>
-          </Box>
+          </div>
           {filteredAndSortedTags.length > 0 ? (
             renderTagList(filteredAndSortedTags)
           ) : (
@@ -1033,8 +795,8 @@ export default function Ressources() {
               mood="encouraging"
             />
           )}
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
