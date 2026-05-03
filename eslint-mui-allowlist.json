@@ -20,7 +20,6 @@
   "src/components/admin/feedback/FeedbackBulkBar.tsx",
   "src/components/admin/feedback/FeedbackDetailDrawer.tsx",
   "src/components/admin/feedback/FeedbackFilters.tsx",
-  "src/components/admin/feedback/HandoffSection.tsx",
   "src/components/admin/feedback/RoutineLoopSection.tsx",
   "src/components/admin/feedback/ShortcutHelpDialog.tsx",
   "src/components/admin/feedback/StoryDetailDrawer.tsx",
