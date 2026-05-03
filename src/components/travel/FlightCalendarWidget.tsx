@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
 import { Calendar, TrendingDown } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useVisitorOrigin } from '@/hooks/useVisitorOrigin';
 
@@ -34,10 +32,10 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
 
   if (!originIata || isLoading) {
     return (
-      <Box>
+      <div>
         <Skeleton variant="text" width={200} height={24} />
-        <Skeleton variant="rounded" height={60} sx={{ mt: 1 }} />
-      </Box>
+        <Skeleton variant="rounded" height={60} className="mt-2" />
+      </div>
     );
   }
 
@@ -50,44 +48,39 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
     const cheapest = months.reduce((min, m) => m.price < min.price ? m : min, months[0]);
 
     return (
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+      <div>
+        <div className="flex items-center gap-2 mb-3">
           <Calendar style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-          <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+          <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
             Best Time to Fly to {destinationCity}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
+          </span>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-2">
           {months.slice(0, 12).map((m) => {
             const isCheapest = m.date === cheapest.date;
             return (
-              <Box
+              <div
                 key={m.date}
-                sx={{
-                  minWidth: 72,
-                  p: 1,
-                  textAlign: 'center',
-                  bgcolor: isCheapest ? 'primary.main' : 'action.hover',
-                  color: isCheapest ? 'primary.contrastText' : 'text.primary',
-                  borderRadius: 1,
-                  flexShrink: 0,
-                }}
+                className={`text-center rounded flex-shrink-0 ${
+                  isCheapest ? 'bg-primary text-primary-foreground' : 'bg-accent text-foreground'
+                }`}
+                style={{ minWidth: 72, padding: 8 }}
               >
-                <Typography sx={{ fontSize: '0.65rem', fontWeight: 500, opacity: 0.8 }}>{m.month}</Typography>
-                <Typography sx={{ fontSize: '0.875rem', fontWeight: 700 }}>
+                <div style={{ fontSize: '0.65rem', fontWeight: 500, opacity: 0.8 }}>{m.month}</div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 700 }}>
                   €{Math.round(m.price)}
-                </Typography>
+                </div>
                 {isCheapest && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3, mt: 0.3 }}>
+                  <div className="flex items-center justify-center" style={{ gap: 2, marginTop: 2 }}>
                     <TrendingDown style={{ height: 10, width: 10 }} />
-                    <Typography sx={{ fontSize: '0.55rem', fontWeight: 600 }}>Cheapest</Typography>
-                  </Box>
+                    <span style={{ fontSize: '0.55rem', fontWeight: 600 }}>Cheapest</span>
+                  </div>
                 )}
-              </Box>
+              </div>
             );
           })}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
@@ -98,41 +91,36 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
   const cheapest = prices.reduce((min, p) => p.price < min.price ? p : min, prices[0]);
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+    <div>
+      <div className="flex items-center gap-2 mb-2">
         <Calendar style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+        <span className="font-semibold" style={{ fontSize: '0.95rem' }}>
           Cheapest Days to Fly
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 0.5, overflowX: 'auto', pb: 1 }}>
+        </span>
+      </div>
+      <div className="flex gap-1 overflow-x-auto pb-2">
         {prices.slice(0, 14).map((p) => {
           const d = new Date(p.date);
           const isCheapest = p.date === cheapest.date;
           return (
-            <Box
+            <div
               key={p.date}
-              sx={{
-                minWidth: 56,
-                p: 0.75,
-                textAlign: 'center',
-                bgcolor: isCheapest ? 'primary.main' : 'action.hover',
-                color: isCheapest ? 'primary.contrastText' : 'text.primary',
-                borderRadius: 1,
-                flexShrink: 0,
-              }}
+              className={`text-center rounded flex-shrink-0 ${
+                isCheapest ? 'bg-primary text-primary-foreground' : 'bg-accent text-foreground'
+              }`}
+              style={{ minWidth: 56, padding: 6 }}
             >
-              <Typography sx={{ fontSize: '0.55rem', opacity: 0.7 }}>
+              <div style={{ fontSize: '0.55rem', opacity: 0.7 }}>
                 {d.toLocaleDateString('en-US', { weekday: 'short' })}
-              </Typography>
-              <Typography sx={{ fontSize: '0.65rem' }}>
+              </div>
+              <div style={{ fontSize: '0.65rem' }}>
                 {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </Typography>
-              <Typography sx={{ fontSize: '0.8rem', fontWeight: 700 }}>€{Math.round(p.price)}</Typography>
-            </Box>
+              </div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700 }}>€{Math.round(p.price)}</div>
+            </div>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
