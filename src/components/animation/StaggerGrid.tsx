@@ -1,5 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
 import { motion, type Variants } from 'motion/react';
 import { staggerContainerVariants, staggerItem } from '@/lib/motion';
 import { stagger as staggerTokens } from '@/lib/animation';
@@ -10,10 +9,8 @@ interface StaggerGridProps {
   /** @deprecated motion cascades via variants; prop kept for source compat */
   childSelector?: string;
   className?: string;
-  sx?: Record<string, unknown>;
+  style?: React.CSSProperties;
 }
-
-const MotionBox = motion.create(Box);
 
 /**
  * Wraps a grid of direct children and staggers their entrance animation.
@@ -24,7 +21,7 @@ export const StaggerGrid: React.FC<StaggerGridProps> = ({
   children,
   stagger = staggerTokens.normal,
   className,
-  sx,
+  style,
 }) => {
   const variants: Variants = React.useMemo(
     () => staggerContainerVariants(stagger),
@@ -32,9 +29,9 @@ export const StaggerGrid: React.FC<StaggerGridProps> = ({
   );
 
   return (
-    <MotionBox
+    <motion.div
       className={className}
-      sx={sx}
+      style={style}
       variants={variants}
       initial="hidden"
       whileInView="visible"
@@ -52,6 +49,6 @@ export const StaggerGrid: React.FC<StaggerGridProps> = ({
           child
         ),
       )}
-    </MotionBox>
+    </motion.div>
   );
 };

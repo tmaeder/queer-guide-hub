@@ -39,7 +39,7 @@ import {
   type ReviewQueueItem,
   type QualityDistribution,
 } from '@/hooks/useEnrichmentDashboard';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
 
 // Lightweight alpha helper
 function alphaHex(color: string, a: number): string {

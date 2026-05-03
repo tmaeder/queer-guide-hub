@@ -120,14 +120,7 @@ const Index = React.memo(() => {
         >
           <StaggerGrid
             stagger={0.1}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: 'repeat(2, 1fr)',
-                md: 'repeat(4, 1fr)',
-              },
-              gap: { xs: 3, md: 4 },
-            }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
           >
             {stats.map((stat, i) => {
               const inner = (
@@ -187,18 +180,7 @@ const Index = React.memo(() => {
           {t('home.explore', 'Explore')}
         </h2>
 
-        <StaggerGrid
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            },
-            gap: 2.5,
-          }}
-        >
+        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {featureDefs.map((feature) => {
             const Icon = feature.icon;
             return (
