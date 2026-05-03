@@ -149,7 +149,6 @@
   "src/components/ui/country-autocomplete.tsx",
   "src/components/ui/sheet.tsx",
   "src/components/user-directory/UserDirectoryFilters.tsx",
-  "src/components/user-directory/UserDirectoryGrid.tsx",
   "src/lib/sx.ts",
   "src/pages/About.tsx",
   "src/pages/AdminDashboard.tsx",

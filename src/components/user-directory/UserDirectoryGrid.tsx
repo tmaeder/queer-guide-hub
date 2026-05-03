@@ -1,7 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,30 +46,20 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
 }) => {
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className="flex flex-col gap-6">
         {profiles && profiles.length > 0 && (
-          <Paper
-            variant="outlined"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              p: 2,
-              bgcolor: 'action.hover',
-              borderRadius: 2,
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border">
+            <div className="flex items-center gap-2">
               <Users style={{ height: 20, width: 20 }} />
-              <Typography component="span" sx={{ fontWeight: 500 }}>
+              <span className="font-medium">
                 {profiles.length} member{profiles.length !== 1 ? 's' : ''} found
-              </Typography>
+              </span>
               {activeFiltersCount > 0 && (
                 <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                   Filtered
                 </Badge>
               )}
-            </Box>
+            </div>
             <Select
               value={filters.sortBy}
               onValueChange={(value) =>
@@ -92,16 +79,10 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
                 <SelectItem value="last_active">Last active</SelectItem>
               </SelectContent>
             </Select>
-          </Paper>
+          </div>
         )}
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', xl: '1fr 1fr 1fr' },
-            gap: 3,
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {profiles?.map((profile) => (
             <LocalizedLink
               key={profile.user_id}
@@ -116,8 +97,8 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
                   padding: 24,
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-                  <Box sx={{ position: 'relative' }}>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="relative">
                     <Avatar style={{ height: 64, width: 64 }}>
                       <AvatarImage src={profile.avatar_url || undefined} />
                       <AvatarFallback
@@ -132,80 +113,45 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
                       </AvatarFallback>
                     </Avatar>
                     {profile.verified_identity && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
+                      <div
+                        className="absolute rounded-full flex items-center justify-center shadow-md"
+                        style={{
                           top: -4,
                           right: -4,
                           width: 24,
                           height: 24,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: 3,
-                          bgcolor: '#333333',
+                          backgroundColor: '#333333',
                           animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         }}
                       >
                         <Check style={{ height: 12, width: 12, color: '#ffffff' }} />
-                      </Box>
+                      </div>
                     )}
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 700,
-                        fontSize: '1.125rem',
-                        color: 'text.primary',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h6 className="font-bold text-foreground truncate" style={{ fontSize: '1.125rem' }}>
                       {profile.display_name || 'Anonymous User'}
-                    </Typography>
+                    </h6>
                     {isAuthed && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          fontSize: '0.875rem',
-                          color: 'text.secondary',
-                          mb: 1,
-                        }}
-                      >
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                         {profile.pronouns && (
-                          <Typography
-                            component="span"
-                            sx={{ fontWeight: 500, fontSize: 'inherit', color: 'inherit' }}
-                          >
+                          <span className="font-medium">
                             {profile.pronouns}
-                          </Typography>
+                          </span>
                         )}
                         {profile.age_range && (
                           <>
                             {profile.pronouns && (
-                              <Typography
-                                component="span"
-                                sx={{ fontSize: 'inherit', color: 'inherit' }}
-                              >
-                                &#8226;
-                              </Typography>
+                              <span>•</span>
                             )}
-                            <Typography
-                              component="span"
-                              sx={{ fontSize: 'inherit', color: 'inherit' }}
-                            >
+                            <span>
                               {profile.age_range}
-                            </Typography>
+                            </span>
                           </>
                         )}
-                      </Box>
+                      </div>
                     )}
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    <div className="flex flex-wrap gap-1">
                       {(profile as Record<string, unknown>)?.user_mode && (
                         <UserModeBadge
                           mode={(profile as Record<string, unknown>).user_mode}
@@ -240,16 +186,14 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
                           Verified
                         </Badge>
                       )}
-                    </Box>
-                  </Box>
-                </Box>
+                    </div>
+                  </div>
+                </div>
 
                 {isAuthed && profile.bio && (
-                  <Typography
-                    sx={{
-                      fontSize: '0.875rem',
-                      color: 'text.secondary',
-                      mb: 2,
+                  <p
+                    className="text-sm text-muted-foreground mb-4"
+                    style={{
                       lineHeight: 1.75,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -258,69 +202,41 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
                     }}
                   >
                     {profile.bio}
-                  </Typography>
+                  </p>
                 )}
 
                 {isAuthed && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                  <div className="flex flex-col gap-2 mb-4">
                     {profile.location && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          fontSize: '0.875rem',
-                          color: 'text.secondary',
-                        }}
-                      >
+                      <div className="flex items-center text-sm text-muted-foreground">
                         <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />
                         {profile.location}
-                      </Box>
+                      </div>
                     )}
 
                     {profile.occupation && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          fontSize: '0.875rem',
-                          color: 'text.secondary',
-                        }}
-                      >
+                      <div className="flex items-center text-sm text-muted-foreground">
                         <Briefcase style={{ height: 16, width: 16, marginRight: 8 }} />
                         {profile.occupation}
-                      </Box>
+                      </div>
                     )}
 
                     {profile.education && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          fontSize: '0.875rem',
-                          color: 'text.secondary',
-                        }}
-                      >
+                      <div className="flex items-center text-sm text-muted-foreground">
                         <GraduationCap style={{ height: 16, width: 16, marginRight: 8 }} />
                         {profile.education}
-                      </Box>
+                      </div>
                     )}
 
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        fontSize: '0.875rem',
-                        color: 'text.secondary',
-                      }}
-                    >
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar style={{ height: 16, width: 16, marginRight: 8 }} />
                       Joined {new Date(profile.created_at).toLocaleDateString()}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
 
                 {isAuthed && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {profile.relationship_status && (
                       <Badge
                         variant="outline"
@@ -369,44 +285,27 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
                         {profile.gender_identity}
                       </Badge>
                     )}
-                  </Box>
+                  </div>
                 )}
 
-                <Box
-                  sx={{
-                    mt: 'auto',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    pt: 2,
-                  }}
-                >
+                <div className="flex items-center justify-between pt-4 mt-auto">
                   {profile.website ? (
-                    <Box
-                      component="a"
+                    <a
                       href={profile.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      sx={{
-                        fontSize: '0.875rem',
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        fontWeight: 500,
-                        '&:hover': { textDecoration: 'underline' },
-                      }}
+                      className="text-sm font-medium flex items-center gap-1 hover:underline"
+                      style={{ color: 'hsl(var(--primary))', textDecoration: 'none' }}
                       onClick={(e: React.MouseEvent) => e.stopPropagation()}
                     >
                       Visit Website
                       <ExternalLink style={{ height: 12, width: 12 }} />
-                    </Box>
+                    </a>
                   ) : (
-                    <Box />
+                    <div />
                   )}
 
-                  <Box onClick={(e) => e.stopPropagation()}>
+                  <div onClick={(e) => e.stopPropagation()}>
                     <StartConversationButton
                       userId={profile.user_id}
                       userName={profile.display_name || 'Anonymous User'}
@@ -414,16 +313,16 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
                       size="sm"
                       style={{ transition: 'all 0.2s' }}
                     />
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </Card>
             </LocalizedLink>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {profiles && profiles.length === 0 && (
-        <Card style={{}}>
+        <Card>
           <CardContent
             style={{
               padding: 48,
@@ -433,38 +332,25 @@ export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
               gap: 24,
             }}
           >
-            <Box sx={{ position: 'relative', display: 'inline-block', mx: 'auto' }}>
+            <div className="relative inline-block mx-auto">
               <Users style={{ height: 64, width: 64 }} />
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  width: 32,
-                  height: 32,
-                  bgcolor: 'action.hover',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+              <div
+                className="absolute bg-muted rounded-full flex items-center justify-center"
+                style={{ top: -8, right: -8, width: 32, height: 32 }}
               >
                 <Search style={{ height: 16, width: 16 }} />
-              </Box>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography
-                variant="h6"
-                sx={{ fontSize: '1.25rem', fontWeight: 600, color: 'text.primary' }}
-              >
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <h6 className="font-semibold text-foreground" style={{ fontSize: '1.25rem' }}>
                 No members found
-              </Typography>
-              <Typography sx={{ color: 'text.secondary', maxWidth: '28rem', mx: 'auto' }}>
+              </h6>
+              <p className="text-muted-foreground mx-auto" style={{ maxWidth: '28rem' }}>
                 {filters.searchQuery || activeFiltersCount > 0
                   ? 'Try adjusting your search terms or filters to discover more amazing people in our community.'
                   : 'Be among the first to join our growing community of inclusive and welcoming members!'}
-              </Typography>
-            </Box>
+              </p>
+            </div>
             {(filters.searchQuery || activeFiltersCount > 0) && (
               <Button variant="outline" onClick={clearAllFilters} style={{ gap: 8 }}>
                 <X style={{ height: 16, width: 16 }} />
