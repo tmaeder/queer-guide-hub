@@ -185,8 +185,6 @@
   "src/pages/AdminReview.tsx",
   "src/pages/AdminSubmissions.tsx",
   "src/pages/AdminUsers.tsx",
-  "src/pages/AdminVenueAmenities.tsx",
-  "src/pages/AdminVenueServices.tsx",
   "src/pages/AdminVenues.tsx",
   "src/pages/CMSRoutePage.tsx",
   "src/pages/Directory.tsx",
