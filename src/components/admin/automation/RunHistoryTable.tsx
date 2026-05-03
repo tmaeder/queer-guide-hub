@@ -3,15 +3,15 @@
  */
 
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Chip from '@mui/material/Chip';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
 import type { AutomationRunLog, AutomationModule } from '@/hooks/useAutomation';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -36,105 +36,101 @@ export function RunHistoryTable({ runs, modules }: Props) {
 
   if (runs.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
+      <div className="text-center py-12">
         <Clock size={48} style={{ color: '#94a3b8', margin: '0 auto 16px' }} />
-        <Typography variant="h6" color="text.secondary">
+        <h6 className="text-base font-semibold text-muted-foreground">
           No run history yet
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </h6>
+        <p className="text-sm text-muted-foreground">
           Run a module to see execution logs here.
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   return (
-    <TableContainer>
-      <Table size="small">
-        <TableHead>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell>Module</TableCell>
-            <TableCell>Time</TableCell>
-            <TableCell align="right">Scanned</TableCell>
-            <TableCell align="right">Proposed</TableCell>
-            <TableCell align="right">Auto-Approved</TableCell>
-            <TableCell align="right">Pending</TableCell>
-            <TableCell align="right">Errors</TableCell>
-            <TableCell align="right">Duration</TableCell>
+            <TableHead>Module</TableHead>
+            <TableHead>Time</TableHead>
+            <TableHead className="text-right">Scanned</TableHead>
+            <TableHead className="text-right">Proposed</TableHead>
+            <TableHead className="text-right">Auto-Approved</TableHead>
+            <TableHead className="text-right">Pending</TableHead>
+            <TableHead className="text-right">Errors</TableHead>
+            <TableHead className="text-right">Duration</TableHead>
           </TableRow>
-        </TableHead>
+        </TableHeader>
         <TableBody>
           {runs.map((run) => {
             const mod = moduleMap.get(run.module_id);
             const hasErrors = run.errors > 0;
             return (
-              <TableRow key={run.id} hover>
+              <TableRow key={run.id}>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
+                  <p className="text-sm font-semibold">
                     {mod?.display_name ?? run.module_id.slice(0, 8)}
-                  </Typography>
+                  </p>
                   {run.content_type && (
-                    <Chip
-                      label={run.content_type}
-                      size="small"
-                      variant="outlined"
-                      sx={{ height: 18, fontSize: '0.65rem', mt: 0.25 }}
-                    />
+                    <Badge
+                      variant="outline"
+                      className="h-[18px] text-[0.65rem] mt-0.5"
+                    >
+                      {run.content_type}
+                    </Badge>
                   )}
                 </TableCell>
                 <TableCell>
-                  <Typography variant="caption" title={format(new Date(run.created_at), 'PPpp')}>
+                  <span className="text-xs" title={format(new Date(run.created_at), 'PPpp')}>
                     {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
-                  </Typography>
+                  </span>
                 </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">{run.items_scanned}</Typography>
+                <TableCell className="text-right">
+                  <p className="text-sm">{run.items_scanned}</p>
                 </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2" fontWeight={run.changes_proposed > 0 ? 600 : 400}>
+                <TableCell className="text-right">
+                  <p className={`text-sm ${run.changes_proposed > 0 ? 'font-semibold' : ''}`}>
                     {run.changes_proposed}
-                  </Typography>
+                  </p>
                 </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    variant="body2"
-                    color={run.changes_auto_approved > 0 ? 'success.main' : 'text.secondary'}
+                <TableCell className="text-right">
+                  <p
+                    className={`text-sm ${run.changes_auto_approved > 0 ? 'text-green-600' : 'text-muted-foreground'}`}
                   >
                     {run.changes_auto_approved}
-                  </Typography>
+                  </p>
                 </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    variant="body2"
-                    color={run.changes_pending_review > 0 ? 'warning.main' : 'text.secondary'}
+                <TableCell className="text-right">
+                  <p
+                    className={`text-sm ${run.changes_pending_review > 0 ? 'text-yellow-600' : 'text-muted-foreground'}`}
                   >
                     {run.changes_pending_review}
-                  </Typography>
+                  </p>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell className="text-right">
                   {hasErrors ? (
-                    <Chip
-                      label={run.errors}
-                      size="small"
-                      color="error"
-                      sx={{ height: 20, fontSize: '0.7rem' }}
-                    />
+                    <Badge
+                      variant="destructive"
+                      className="h-5 text-[0.7rem]"
+                    >
+                      {run.errors}
+                    </Badge>
                   ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      0
-                    </Typography>
+                    <p className="text-sm text-muted-foreground">0</p>
                   )}
                 </TableCell>
-                <TableCell align="right">
-                  <Typography variant="caption" fontFamily="monospace">
+                <TableCell className="text-right">
+                  <span className="text-xs font-mono">
                     {formatDuration(run.duration_ms)}
-                  </Typography>
+                  </span>
                 </TableCell>
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
-    </TableContainer>
+    </div>
   );
 }
