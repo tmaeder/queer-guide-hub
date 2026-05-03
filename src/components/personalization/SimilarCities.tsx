@@ -5,7 +5,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { Sparkles, Shield } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchSimilarCitiesPool, fetchSameCountryCities } from '@/hooks/useSimilarCities';
 
 interface SimilarCitiesProps {
   cityId: string;
@@ -20,58 +20,40 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
   const { data: cities, isLoading } = useQuery({
     queryKey: ['similar-cities', cityId, countryId, limit],
     queryFn: async () => {
-      // Find cities with similar characteristics
-      const query = supabase
-        .from('cities')
-        .select('id, name, population, countries:country_id(name, equality_score)')
-        .neq('id', cityId)
-        .gte('population', 100000)
-        .order('population', { ascending: false })
-        .limit(limit * 3); // Fetch extra to filter
-
-      // Prefer same region / similar safety
       if (countryId) {
-        // First try same country
-        const { data: sameCountry } = await supabase
-          .from('cities')
-          .select('id, name, population, countries:country_id(name, equality_score)')
-          .eq('country_id', countryId)
-          .neq('id', cityId)
-          .gte('population', 50000)
-          .order('population', { ascending: false })
-          .limit(3);
-
-        const { data: otherCities } = await query;
-
-        const all = [...(sameCountry || []), ...(otherCities || [])];
-
-        // Score and rank
-        const scored = all
-          .filter((c, i, arr) => arr.findIndex((a) => a.id === c.id) === i) // dedupe
+        const [sameCountry, otherCities] = await Promise.all([
+          fetchSameCountryCities(countryId, cityId),
+          fetchSimilarCitiesPool(cityId, limit * 3),
+        ]);
+        const all = [...sameCountry, ...otherCities];
+        return all
+          .filter((c, i, arr) => arr.findIndex((a) => a.id === c.id) === i)
           .map((c) => {
-            const country = c.countries as { name: string; equality_score: number | null } | null;
             let score = 0;
-            // Similar equality score
-            if (equalityScore != null && country?.equality_score != null) {
-              const diff = Math.abs(equalityScore - country.equality_score);
+            if (equalityScore != null && c.countries?.equality_score != null) {
+              const diff = Math.abs(equalityScore - c.countries.equality_score);
               if (diff <= 15) score += 3;
               else if (diff <= 30) score += 1;
             }
-            // Same country bonus
             if (c.country_id === countryId) score += 4;
-            return { ...c, country_name: country?.name || '', eq_score: country?.equality_score, similarity: score };
+            return {
+              ...c,
+              country_name: c.countries?.name || '',
+              eq_score: c.countries?.equality_score,
+              similarity: score,
+            };
           })
           .sort((a, b) => b.similarity - a.similarity)
           .slice(0, limit);
-
-        return scored;
       }
 
-      const { data } = await query;
-      return (data || []).slice(0, limit).map((c) => {
-        const country = c.countries as { name: string; equality_score: number | null } | null;
-        return { ...c, country_name: country?.name || '', eq_score: country?.equality_score, similarity: 0 };
-      });
+      const data = await fetchSimilarCitiesPool(cityId, limit * 3);
+      return data.slice(0, limit).map((c) => ({
+        ...c,
+        country_name: c.countries?.name || '',
+        eq_score: c.countries?.equality_score,
+        similarity: 0,
+      }));
     },
     staleTime: 30 * 60 * 1000,
   });

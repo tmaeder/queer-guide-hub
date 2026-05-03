@@ -17,6 +17,30 @@ export interface CMSContentMetadata {
   scheduled_publish_at: string | null;
 }
 
+export async function fetchCMSReviewQueueMetadata<T = unknown>(): Promise<T[]> {
+  const { data, error } = await supabase
+    .from('cms_content_metadata' as 'events')
+    .select('*')
+    .eq('workflow_state', 'review')
+    .order('last_edited_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as T[];
+}
+
+export async function fetchRecordTitle(
+  table: string,
+  primaryKey: string,
+  id: string,
+  titleField: string,
+): Promise<unknown> {
+  const { data } = await supabase
+    .from(table as 'events')
+    .select(titleField)
+    .eq(primaryKey, id)
+    .single();
+  return data;
+}
+
 export async function loadCMSContentMetadata(
   sourceTable: string,
   sourceId: string,

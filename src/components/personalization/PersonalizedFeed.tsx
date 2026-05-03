@@ -8,7 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchPersonalizedCitiesByIds,
+  fetchTrendingCities,
+} from '@/hooks/usePersonalizedCities';
 
 interface CityRec {
   id: string;
@@ -35,27 +38,21 @@ export function PersonalizedFeed() {
   const { data: cities, isLoading: citiesLoading } = useQuery({
     queryKey: ['rec-cities', cityIds],
     queryFn: async (): Promise<CityRec[]> => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, population, countries:country_id(name, equality_score)')
-        .in('id', cityIds);
-
-      if (error || !data) return [];
-
-      return data.map((city) => {
-        const rec = recommendations!.find((r) => r.entity_id === city.id);
-        const country = city.countries as { name: string; equality_score: number | null } | null;
-        return {
-          id: city.id,
-          name: city.name,
-          country_name: country?.name || '',
-          equality_score: country?.equality_score ?? null,
-          population: city.population,
-          reason: rec?.reason || 'trending',
-          score: rec?.score || 0,
-        };
-      }).sort((a, b) => b.score - a.score);
+      const data = await fetchPersonalizedCitiesByIds(cityIds);
+      return data
+        .map((city) => {
+          const rec = recommendations!.find((r) => r.entity_id === city.id);
+          return {
+            id: city.id,
+            name: city.name,
+            country_name: city.countries?.name || '',
+            equality_score: city.countries?.equality_score ?? null,
+            population: city.population,
+            reason: rec?.reason || 'trending',
+            score: rec?.score || 0,
+          };
+        })
+        .sort((a, b) => b.score - a.score);
     },
     enabled: cityIds.length > 0,
     staleTime: 5 * 60 * 1000,
@@ -65,26 +62,16 @@ export function PersonalizedFeed() {
   const { data: trendingCities, isLoading: trendingLoading } = useQuery({
     queryKey: ['trending-cities'],
     queryFn: async (): Promise<CityRec[]> => {
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, population, countries:country_id(name, equality_score)')
-        .gte('population', 500000)
-        .order('population', { ascending: false })
-        .limit(6);
-
-      if (error || !data) return [];
-      return data.map((city) => {
-        const country = city.countries as { name: string; equality_score: number | null } | null;
-        return {
-          id: city.id,
-          name: city.name,
-          country_name: country?.name || '',
-          equality_score: country?.equality_score ?? null,
-          population: city.population,
-          reason: 'trending',
-          score: 0,
-        };
-      });
+      const data = await fetchTrendingCities();
+      return data.map((city) => ({
+        id: city.id,
+        name: city.name,
+        country_name: city.countries?.name || '',
+        equality_score: city.countries?.equality_score ?? null,
+        population: city.population,
+        reason: 'trending',
+        score: 0,
+      }));
     },
     enabled: cityIds.length === 0 && !recsLoading,
     staleTime: 30 * 60 * 1000,

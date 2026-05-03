@@ -660,12 +660,15 @@ export async function countRows(
 export async function listFromWhere<T = unknown>(
   table: string,
   select: string,
-  filters: Array<{ col: string; val: unknown }>,
+  filters: Array<{ col: string; val: unknown; op?: 'eq' | 'in' }>,
   opts?: { order?: { col: string; ascending?: boolean }; limit?: number },
 ): Promise<T[]> {
   let q = supabase.from(table as never).select(select as never);
   for (const f of filters) {
-    q = (q as unknown as { eq: (c: string, v: unknown) => typeof q }).eq(f.col, f.val);
+    const op = f.op ?? 'eq';
+    q = (
+      q as unknown as Record<string, (c: string, v: unknown) => typeof q>
+    )[op](f.col, f.val);
   }
   if (opts?.order) {
     q = (
