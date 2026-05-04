@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -44,7 +45,33 @@ export function EntityDetailLayout({
   entityType: _entityType,
   entityId: _entityId,
 }: EntityDetailLayoutProps) {
-  const [activeTab, setActiveTab] = useState<string>(tabs[0]?.id ?? '');
+  // Tab state is encoded in the URL query string so /city/rabat?tab=map is
+  // deep-linkable and browser back/forward steps through tabs naturally.
+  // Falls back to the first tab when ?tab is missing or unknown.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabIds = tabs.map((t) => t.id);
+  const urlTab = searchParams.get('tab');
+  const initialTab = urlTab && tabIds.includes(urlTab) ? urlTab : (tabs[0]?.id ?? '');
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  // Sync state ← URL when the user navigates back/forward.
+  useEffect(() => {
+    if (urlTab && tabIds.includes(urlTab) && urlTab !== activeTab) setActiveTab(urlTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
+  const handleTabChange = (next: string) => {
+    setActiveTab(next);
+    setSearchParams(
+      (prev) => {
+        const p = new URLSearchParams(prev);
+        if (next === tabs[0]?.id) p.delete('tab');
+        else p.set('tab', next);
+        return p;
+      },
+      { replace: true },
+    );
+  };
 
   if (error) {
     return (
@@ -112,7 +139,7 @@ export function EntityDetailLayout({
       <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
         <div>
           {tabs.length > 0 && (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList>
                 {tabs.map((tab) => (
                   <TabsTrigger key={tab.id} value={tab.id}>
