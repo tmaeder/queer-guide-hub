@@ -115,6 +115,21 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
       };
     }, [open, onOpenChange]);
 
+    const dialogRefCallback = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        if (typeof ref === 'function') ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        if (!node) return;
+        requestAnimationFrame(() => {
+          const focusable = node.querySelector<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          );
+          (focusable || node).focus();
+        });
+      },
+      [ref],
+    );
+
     if (!open) return null;
 
     return (
@@ -125,9 +140,10 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           aria-hidden="true"
         />
         <div
-          ref={ref}
+          ref={dialogRefCallback}
           role="dialog"
           aria-modal="true"
+          tabIndex={-1}
           data-state={open ? 'open' : 'closed'}
           className={cn(
             'fixed bg-background p-6 shadow-lg transition-transform duration-200 overflow-auto',

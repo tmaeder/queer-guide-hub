@@ -442,6 +442,7 @@ export function Header() {
               src="/images/logo.png"
               alt=""
               aria-hidden="true"
+              tabIndex={-1}
               className="brightness-0 dark:invert"
               style={{ height: 32, width: 32 }}
               whileHover={{ rotate: -6, scale: 1.08 }}
