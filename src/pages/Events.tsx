@@ -53,7 +53,7 @@ import { dedupeCitiesByNormalized, normalizeCityLabel } from '@/utils/dateRange'
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 
 
 type Event = Database['public']['Tables']['events']['Row'];

@@ -342,7 +342,9 @@ export const UniversalSearchBar = () => {
                   placeholders={
                     isMobile
                       ? [t('search.placeholders.generic', 'Search...')]
-                      : [
+                      : location.pathname.startsWith('/hotels')
+                        ? [t('search.placeholders.hotels', 'Search hotels...')]
+                        : [
                           t('search.placeholders.venues', 'Search venues...'),
                           t('search.placeholders.events', 'Find events...'),
                           t('search.placeholders.marketplace', 'Browse marketplace...'),
