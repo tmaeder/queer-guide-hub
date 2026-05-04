@@ -1,19 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { isAdultCategoryName } from '@/components/resources/categoryMeta';
 
 const STORAGE_KEY = 'qg_safe_mode';
-
-// Parent + leaf categories considered adult content. Match the strings
-// used in src/components/resources/categoryMeta.ts so a future enum
-// (P2-1) can replace this list without changing the gate semantics.
-const ADULT_CATEGORIES: ReadonlySet<string> = new Set([
-  'Sexuality & Kink',
-  'Sexual Roles',
-  'BDSM & Power Exchange',
-  'Fetishes & Interests',
-  'Practices & Play',
-  'Gear & Aesthetics',
-  'Body Types & Archetypes',
-]);
 
 type SafeMode = 'on' | 'off';
 
@@ -68,8 +56,7 @@ export function SafeModeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<SafeModeCtx>(() => {
-    const isAdultCategory = (name: string | null | undefined): boolean =>
-      !!name && ADULT_CATEGORIES.has(name);
+    const isAdultCategory = isAdultCategoryName;
     const shouldHide = (categoryNames: ReadonlyArray<string | null | undefined>): boolean =>
       mode === 'on' && categoryNames.some(isAdultCategory);
     return {
