@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Image, ImageOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
@@ -157,6 +157,25 @@ export default function AdminTags() {
 
   const columns = useMemo(
     () => [
+      columnHelper.accessor('image_url', {
+        header: 'Image',
+        cell: (info) => {
+          const url = info.getValue();
+          if (!url) return <ImageOff className="h-4 w-4 text-muted-foreground opacity-40" />;
+          return (
+            <img
+              src={url}
+              alt=""
+              className="h-8 w-8 rounded object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          );
+        },
+        meta: {
+          defaultVisible: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => <span style={{ fontWeight: 500 }}>{info.getValue()}</span>,
@@ -264,6 +283,16 @@ export default function AdminTags() {
             { value: 'merged', label: 'Merged' },
           ],
         },
+        {
+          key: 'has_image',
+          label: 'Has Image',
+          type: 'select',
+          column: 'image_url',
+          options: [
+            { value: 'not.is.null', label: 'With image' },
+            { value: 'is.null', label: 'Without image' },
+          ],
+        },
       ],
       bulkEditFields: [
         { key: 'category', label: 'Category', type: 'text', column: 'category' },
@@ -281,6 +310,20 @@ export default function AdminTags() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
+        {
+          key: 'clear-image',
+          label: 'Clear Image',
+          icon: ImageOff,
+          onClick: async (tag: TagRow) => {
+            if (!tag.image_url) return;
+            try {
+              await updateTag(tag.id, { image_url: null });
+              toast({ title: 'Image cleared', description: `Removed image from "${tag.name}"` });
+            } catch {
+              toast({ title: 'Error', description: 'Failed to clear image', variant: 'destructive' });
+            }
+          },
+        },
         {
           key: 'delete',
           label: 'Delete',
