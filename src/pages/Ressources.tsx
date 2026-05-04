@@ -997,8 +997,8 @@ export default function Ressources() {
           ) : (
             <EmptyState
               icon={Tag}
-              title="Nothing here yet"
-              description="Try broadening your filters or searching for something else."
+              title="No results"
+              description="Try a broader query or clearing your filters."
               mood="encouraging"
             />
           )}
