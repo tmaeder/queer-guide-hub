@@ -1440,5 +1440,14 @@
       "turnOn": "켜기",
       "turnOff": "끄기"
     }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "자세히 보기",
+      "share": "공유",
+      "linkCopied": "링크 복사됨",
+      "linkCopiedDescription": "이제 붙여넣을 수 있습니다",
+      "shareFailed": "공유 실패"
+    }
   }
 }
