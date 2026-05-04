@@ -103,6 +103,8 @@ export function ResourcesFilterBar({
               style={{ height: 44, width: 44, padding: 0 }}
               onClick={() => onDisplayModeChange(mode)}
               title={`${label} view`}
+              aria-label={`${label} view`}
+              aria-pressed={displayMode === mode}
             >
               <Icon style={{ width: 18, height: 18 }} />
             </Button>
@@ -113,7 +115,9 @@ export function ResourcesFilterBar({
             size="lg"
             style={{ height: 44, width: 44, padding: 0 }}
             onClick={onToggleGraph}
-            title="Tag Relationship Graph"
+            title="Tag relationship graph"
+            aria-label="Tag relationship graph"
+            aria-pressed={viewMode === 'graph'}
           >
             <Network style={{ width: 18, height: 18 }} />
           </Button>
@@ -187,6 +191,10 @@ export function ResourcesFilterBar({
               <SelectItem value="recent">Newest</SelectItem>
             </SelectContent>
           </Select>
+          <div
+            aria-hidden="true"
+            style={{ width: 1, height: 24, backgroundColor: 'hsl(var(--border))' }}
+          />
           <Button
             variant="secondary"
             size="sm"
