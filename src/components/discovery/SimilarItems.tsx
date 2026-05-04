@@ -16,6 +16,13 @@ interface Props {
 	limit?: number;
 	title?: string;
 	className?: string;
+	/**
+	 * Restrict results to specific content types. Default behavior keeps the
+	 * cross-type semantic neighbors (matches legacy callers). Pass a single-
+	 * element array (e.g. `['personality']`) on detail pages where mixing in
+	 * scraped articles or other entity kinds would be misleading.
+	 */
+	contentTypes?: string[];
 }
 
 const TYPE_PATH: Record<string, string> = {
@@ -43,19 +50,25 @@ interface SimItem {
 	metadata: { city?: string; country?: string; category?: string; slug?: string; image_url?: string; tags?: string[] };
 }
 
-export function SimilarItems({ entity, limit = 6, title = "More like this", className }: Props) {
+export function SimilarItems({ entity, limit = 6, title = "More like this", className, contentTypes }: Props) {
 	const [items, setItems] = useState<SimItem[] | null>(null);
 	const [error, setError] = useState(false);
 	const trackClick = useTrackClick();
+	const contentTypesKey = contentTypes ? contentTypes.join(",") : "";
 
 	useEffect(() => {
 		let cancelled = false;
 		setItems(null);
 		setError(false);
-		fetchSimilar(entity, limit)
+		const types = contentTypesKey ? contentTypesKey.split(",") : undefined;
+		// Over-fetch when restricting types so we still have `limit` rows after
+		// the (defensive) client-side filter trims any off-type leakage.
+		fetchSimilar(entity, types ? Math.min(50, limit * 3) : limit, types)
 			.then((res) => {
 				if (cancelled) return;
-				setItems(res as unknown as SimItem[]);
+				let next = res as unknown as SimItem[];
+				if (types) next = next.filter((r) => types.includes(r.content_type));
+				setItems(next.slice(0, limit));
 			})
 			.catch(() => {
 				if (cancelled) return;
@@ -65,7 +78,7 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 			cancelled = true;
 		};
 	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [entity.type, entity.id, limit]);
+	}, [entity.type, entity.id, limit, contentTypesKey]);
 
 	if (error) return null;
 	if (items?.length === 0) return null;
