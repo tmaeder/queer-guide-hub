@@ -150,7 +150,11 @@ const INTRO_HTML_CSS = `
 `;
 
 export default function HelpHotlines() {
-  const { t } = useTranslation();
+  // `ready` is authoritative when react-i18next is configured with
+  // `useSuspense: false` (see src/i18n/index.ts). Gate first paint on it so
+  // we never render fallback defaults during the brief init window — that
+  // was the source of the EN/DE bleed reported on /help.
+  const { t, ready } = useTranslation();
   const { user } = useAuth();
   const { bookmarkedIds, isBookmarked, toggle: toggleBookmark } = useHotlineBookmarks();
 
@@ -164,10 +168,10 @@ export default function HelpHotlines() {
   const [countryInitialized, setCountryInitialized] = useState(false);
 
   useMeta({
-    title: t('help.title', 'Hilfe & Krisen-Hotlines'),
+    title: t('help.title', 'Help & Crisis Hotlines'),
     description: t(
       'help.meta_description',
-      'Kostenlose, anonyme LGBTQIA+ Krisenhotlines und Beratungsstellen weltweit. Du bist nicht allein.',
+      'Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.',
     ),
     canonicalPath: '/help',
   });
@@ -273,7 +277,7 @@ export default function HelpHotlines() {
     setSearchQuery('');
   };
 
-  if (loading) {
+  if (loading || !ready) {
     return (
       <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
         <Skeleton className="mb-2 h-14 w-2/5" />
@@ -289,10 +293,13 @@ export default function HelpHotlines() {
     return (
       <div className="mx-auto w-full max-w-screen-lg px-4 py-16 text-center sm:px-6">
         <h1 className="mb-2 text-3xl font-bold">
-          {t('help.error_title', 'Hilfe-Seite nicht verfügbar')}
+          {t('help.error_title', 'Help page unavailable')}
         </h1>
         <p className="mb-6 text-muted-foreground">
-          {t('help.error_body', 'Bei akuter Gefahr wähle den Notruf: 112 (EU) oder 911 (US/CA).')}
+          {t(
+            'help.error_body',
+            'In acute danger, call your local emergency number: 112 (EU) or 911 (US/CA).',
+          )}
         </p>
       </div>
     );
@@ -323,10 +330,10 @@ export default function HelpHotlines() {
       </div>
 
       <PageHeader
-        title={page.title || t('help.title', 'Hilfe & Krisen-Hotlines')}
+        title={page.title || t('help.title', 'Help & Crisis Hotlines')}
         subtitle={
           page.subtitle ||
-          t('help.subtitle', 'Du bist nicht allein. Hier findest du sofortige Unterstützung.')
+          t('help.subtitle', 'You are not alone. Find immediate support here.')
         }
       />
 
@@ -335,12 +342,12 @@ export default function HelpHotlines() {
         <Alert variant="destructive" className="rounded-lg">
           <AlertTriangle className="h-6 w-6" />
           <AlertTitle className="font-bold">
-            {t('help.emergency_title', 'Akute Gefahr?')}
+            {t('help.emergency_title', 'In acute danger?')}
           </AlertTitle>
           <AlertDescription>
             {t(
               'help.emergency_body',
-              'Wähle sofort den Notruf: 112 (EU) oder 911 (US/CA). Bei unmittelbarer Lebensgefahr zählt jede Sekunde.',
+              'Call emergency services immediately: 112 (EU) or 911 (US/CA). Every second counts.',
             )}
           </AlertDescription>
         </Alert>
@@ -411,7 +418,7 @@ export default function HelpHotlines() {
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
           <div className="min-w-[220px] flex-[1_1_220px]">
             <Label className="mb-1 block text-xs font-semibold">
-              {t('help.filter_country', 'Land')}
+              {t('help.filter_country', 'Country')}
             </Label>
             <Select value={countryFilter} onValueChange={setCountryFilter}>
               <SelectTrigger>
@@ -419,7 +426,7 @@ export default function HelpHotlines() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">
-                  {t('help.filter_country_all', 'Alle Länder')}
+                  {t('help.filter_country_all', 'All countries')}
                 </SelectItem>
                 {availableCountries.map((c) => (
                   <SelectItem key={c} value={c}>
@@ -432,7 +439,7 @@ export default function HelpHotlines() {
 
           <div className="min-w-[220px] flex-[1_1_220px]">
             <Label className="mb-1 block text-xs font-semibold">
-              {t('help.filter_topic', 'Thema')}
+              {t('help.filter_topic', 'Topic')}
             </Label>
             <Select value={topicFilter} onValueChange={setTopicFilter}>
               <SelectTrigger>
@@ -440,7 +447,7 @@ export default function HelpHotlines() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">
-                  {t('help.filter_topic_all', 'Alle Themen')}
+                  {t('help.filter_topic_all', 'All topics')}
                 </SelectItem>
                 {availableTopics.map((tp) => (
                   <SelectItem key={tp} value={tp}>
@@ -480,7 +487,7 @@ export default function HelpHotlines() {
           title={t('help.no_results_title', 'No hotlines found')}
           description={t(
             'help.no_results',
-            'Keine Hotlines mit diesen Filtern gefunden. Versuche "Alle Länder" oder prüfe die internationalen Verzeichnisse.',
+            'No hotlines match these filters. Try "All countries" or check the international directories.',
           )}
           primaryAction={{
             label: t('help.reset_filters', 'Reset filters'),
@@ -537,7 +544,7 @@ export default function HelpHotlines() {
       </div>
 
       <p className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
-        {t('help.disclaimer', 'Queer Guide ersetzt keine professionelle Hilfe.')}
+        {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
       </p>
     </div>
   );
