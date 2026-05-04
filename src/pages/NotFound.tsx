@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
+import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 
 const NotFound = () => {
   const location = useLocation();
@@ -15,6 +16,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center bg-background">
+      <NotFoundMeta title={t('pages.notFound.title', 'Page not found')} />
       <div className="text-center max-w-md mx-auto px-4">
         <h2 className="text-5xl font-bold mb-4">404</h2>
         <h6 className="text-base font-semibold mb-2">
