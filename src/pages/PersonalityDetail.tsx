@@ -200,7 +200,11 @@ export default function PersonalityDetail() {
       />
       {personality && (
         <div className="mx-auto px-4">
-          <SimilarItems entity={{ type: 'personality', id: personality.id }} className="mt-8" />
+          <SimilarItems
+            entity={{ type: 'personality', id: personality.id }}
+            contentTypes={['personality']}
+            className="mt-8"
+          />
         </div>
       )}
     </>
