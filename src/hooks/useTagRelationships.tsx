@@ -74,7 +74,11 @@ export function useSimilarTags(tagId: string | null, limit: number = 10) {
 }
 
 /**
- * Fetch full graph data for the graph visualization
+ * Fetch full graph data for the graph visualization.
+ *
+ * Errors from the RPC (e.g. a missing GRANT producing 403) propagate via
+ * TanStack Query's `error` channel — callers must render a distinct error
+ * state, not silently fall back to "no data" UI.
  */
 export function useTagGraph(minScore: number = 0.8, categoryFilter: string | null = null) {
   return useQuery({
@@ -86,8 +90,7 @@ export function useTagGraph(minScore: number = 0.8, categoryFilter: string | nul
       const { data, error } = await supabase.rpc('get_tag_graph_data', params as Record<string, unknown>);
 
       if (error) {
-        console.error('Error fetching tag graph data:', error);
-        return { nodes: [], edges: [] };
+        throw error;
       }
 
       const result = data as unknown as GraphData;
