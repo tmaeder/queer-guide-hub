@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 
 const fetchArticles = vi.fn();
 const useNewsState = {
@@ -57,7 +58,11 @@ describe('News empty state', () => {
   beforeEach(resetState);
 
   it('renders neutral copy when no filters are active and no articles', () => {
-    render(<News />);
+    render(
+      <MemoryRouter>
+        <News />
+      </MemoryRouter>,
+    );
     expect(screen.getByText('The newsroom is quiet')).toBeInTheDocument();
     expect(screen.getByText('No stories right now. Check back soon.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reset filters' })).not.toBeInTheDocument();
@@ -67,7 +72,11 @@ describe('News empty state', () => {
   });
 
   it('renders filtered empty state with primary Reset filters button when search is active', () => {
-    const { container } = render(<News />);
+    const { container } = render(
+      <MemoryRouter>
+        <News />
+      </MemoryRouter>,
+    );
     const searchInput = screen.getByPlaceholderText('Quick search articles...') as HTMLInputElement;
     fireEvent.change(searchInput, { target: { value: 'zzznoresults' } });
 
@@ -102,7 +111,11 @@ describe('News empty state', () => {
       },
     ] as unknown as typeof useNewsState.articles;
 
-    render(<News />);
+    render(
+      <MemoryRouter>
+        <News />
+      </MemoryRouter>,
+    );
     const searchInput = screen.getByPlaceholderText('Quick search articles...') as HTMLInputElement;
     fireEvent.change(searchInput, { target: { value: 'hello' } });
 
