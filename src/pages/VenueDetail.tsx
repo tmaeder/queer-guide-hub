@@ -1,6 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
+import { useMeta } from '@/hooks/useMeta';
+import { buildVenueJsonLd, buildVenueMeta } from './VenueDetail.meta';
 import {
   fetchVenue,
   type VenueWithRelations,
@@ -53,6 +55,31 @@ export default function VenueDetail() {
   const reviews: VenueReview[] = data?.reviews ?? [];
   const notFound = data?.notFound ?? false;
 
+  const averageRatingForMeta = useMemo(
+    () =>
+      reviews.length
+        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+        : 0,
+    [reviews],
+  );
+  const metaOptions = useMemo(
+    () => (venue ? buildVenueMeta(venue) : null),
+    [venue],
+  );
+  const jsonLd = useMemo(
+    () =>
+      venue
+        ? buildVenueJsonLd(venue, {
+            ratingValue: averageRatingForMeta,
+            ratingCount: reviews.length,
+          })
+        : null,
+    [venue, averageRatingForMeta, reviews.length],
+  );
+  useMeta(
+    venue && metaOptions ? { ...metaOptions, jsonLd: jsonLd ?? undefined } : {},
+  );
+
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
   const { data: socialSignals } = useVenueSocialSignals(venue?.id ? [venue.id] : []);
 
@@ -84,10 +111,12 @@ export default function VenueDetail() {
     const didYouMeanSection = slug && sectionSlugs.includes(slug) ? slug : null;
     return (
       <div className="container mx-auto py-8 px-4 text-center">
-        <NotFoundMeta />
-        <h5 className="text-xl font-bold mb-4">
+        <NotFoundMeta
+          title={t('pages.venueDetail.notFoundTitle', 'Venue not found')}
+        />
+        <h1 className="text-xl font-bold mb-4">
           {t('pages.venueDetail.notFoundTitle', 'Venue not found')}
-        </h5>
+        </h1>
         <p className="text-muted-foreground mb-6">
           {t(
             'pages.venueDetail.notFoundBody',
@@ -116,7 +145,7 @@ export default function VenueDetail() {
   if (!isLoading && error && !venue) {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
-        <h5 className="text-xl font-bold mb-4">Failed to Load</h5>
+        <h1 className="text-xl font-bold mb-4">Failed to Load</h1>
         <p className="text-muted-foreground mb-6">
           Could not load venue details. Check your connection and try again.
         </p>

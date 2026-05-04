@@ -169,7 +169,7 @@ export function VenueHero({
                 }}
               />
             )}
-            <h4 className="text-2xl font-bold">{venue.name}</h4>
+            <h1 className="text-2xl font-bold">{venue.name}</h1>
             {venue.verified && (
               <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
             )}
