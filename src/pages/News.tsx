@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router";
 import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 import { useNews } from "@/hooks/useNews";
 import type { NewsCategory } from "@/hooks/useNews";
@@ -75,15 +76,101 @@ export default function News() {
     getTrendingTags,
     loadingTimedOut
   } = useNews();
+
+  // ---- URL state (Group D) -------------------------------------------------
+  // Filter, sort, view, search and pagination are all reflected in the
+  // querystring so users can copy URLs, refresh, or use back/forward.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const validViewModes: ViewMode[] = ['grid', 'list', 'headlines', 'magazine'];
+  const isViewMode = (v: string | null): v is ViewMode =>
+    !!v && (validViewModes as string[]).includes(v);
+  const validSorts = sortOptions.map((o) => o.value);
+  const initialView: ViewMode = isViewMode(searchParams.get('view')) ? (searchParams.get('view') as ViewMode) : 'grid';
+  const initialSort = validSorts.includes(searchParams.get('sort') ?? '') ? (searchParams.get('sort') as string) : 'date-desc';
+  const initialPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1);
+  const initialCategory = searchParams.get('category');
+  const initialSearch = searchParams.get('q') ?? '';
+  const initialFilters: Record<string, unknown> = {};
+  const sourceParam = searchParams.get('source');
+  if (sourceParam) initialFilters.sourceId = sourceParam;
+  if (searchParams.get('featured') === '1') initialFilters.featured = true;
+  const dateFrom = searchParams.get('date_from');
+  const dateTo = searchParams.get('date_to');
+  if (dateFrom || dateTo) {
+    initialFilters.dateRange = {
+      ...(dateFrom ? { from: dateFrom } : {}),
+      ...(dateTo ? { to: dateTo } : {}),
+    };
+  }
+  const countryParam = searchParams.get('country');
+  if (countryParam) initialFilters.countryIds = [countryParam];
+  const cityParam = searchParams.get('city');
+  if (cityParam) initialFilters.cityIds = [cityParam];
+
   const [featuredArticles, setFeaturedArticles] = useState<FeaturedArticle[]>([]);
   const [trendingTags, setTrendingTags] = useState<{ tag: string; count: number; }[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState('date-desc');
-  const [quickSearch, setQuickSearch] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>(initialView);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const [quickSearch, setQuickSearch] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
-  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(initialFilters);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory);
+
+  // Write the canonical state back to the URL whenever it changes. We push for
+  // explicit user actions (filter/sort/view/page) and replace for the search
+  // input as the user types so back-button history isn't a flood of keystrokes.
+  const writeUrl = useCallback((opts?: { replace?: boolean }) => {
+    const next = new URLSearchParams();
+    if (viewMode !== 'grid') next.set('view', viewMode);
+    if (sortBy !== 'date-desc') next.set('sort', sortBy);
+    if (quickSearch) next.set('q', quickSearch);
+    if (activeCategory) next.set('category', activeCategory);
+    if (currentPage > 1) next.set('page', String(currentPage));
+    const f = currentFilters;
+    if (typeof f.sourceId === 'string' && f.sourceId) next.set('source', f.sourceId);
+    if (f.featured === true) next.set('featured', '1');
+    const dr = f.dateRange as { from?: string; to?: string } | undefined;
+    if (dr?.from) next.set('date_from', dr.from);
+    if (dr?.to) next.set('date_to', dr.to);
+    const cIds = f.countryIds as string[] | undefined;
+    if (cIds?.length) next.set('country', cIds[0]);
+    const ciIds = f.cityIds as string[] | undefined;
+    if (ciIds?.length) next.set('city', ciIds[0]);
+    setSearchParams(next, { replace: opts?.replace ?? false });
+  }, [viewMode, sortBy, quickSearch, activeCategory, currentPage, currentFilters, setSearchParams]);
+
+  // Push history entry for filter/sort/view/category/page changes.
+  useEffect(() => {
+    writeUrl();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, sortBy, currentPage, activeCategory, currentFilters]);
+
+  // Replace history entry as the user types in the quick-search box so the
+  // back button doesn't have to walk through every keystroke.
+  useEffect(() => {
+    writeUrl({ replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickSearch]);
+
+  // Apply URL-derived filters on mount so a deep link like
+  // /news?category=politics&source=<id>&q=trump cold-loads the right slice
+  // (the default useNews mount only fetches with no filters).
+  const didApplyInitialUrlRef = useRef(false);
+  useEffect(() => {
+    if (didApplyInitialUrlRef.current) return;
+    didApplyInitialUrlRef.current = true;
+    const opt = sortOptions.find((o) => o.value === initialSort);
+    const f: Record<string, unknown> = {
+      ...initialFilters,
+      sortField: opt?.field || 'published_at',
+      sortOrder: opt?.order || 'desc',
+    };
+    if (initialCategory) f.category = initialCategory;
+    if (initialSearch) f.search = initialSearch;
+    fetchArticles(f);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
