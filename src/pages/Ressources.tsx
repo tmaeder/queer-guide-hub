@@ -36,7 +36,8 @@ type ViewMode =
   | 'search'
   | 'tag-detail'
   | 'professions'
-  | 'graph';
+  | 'graph'
+  | 'not-found';
 type DisplayMode = 'chips' | 'grid' | 'list';
 type SortOption = 'alphabetical' | 'usage' | 'recent';
 
@@ -55,6 +56,7 @@ export default function Ressources() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [selectedTag, setSelectedTag] = useState<CentralizedTag | null>(null);
+  const [tagNotFound, setTagNotFound] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<CentralizedTag[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('usage');
@@ -108,12 +110,16 @@ export default function Ressources() {
 
   // Load individual tag from route param
   useEffect(() => {
-    if (!tagName) return;
+    if (!tagName) {
+      setTagNotFound(false);
+      return;
+    }
     const decoded = decodeURIComponent(tagName);
     if (allTags.length > 0) {
       const found = allTags.find((t) => t.name.toLowerCase() === decoded.toLowerCase());
       if (found) {
         setSelectedTag(found);
+        setTagNotFound(false);
         setViewMode('tag-detail');
         return;
       }
@@ -121,8 +127,16 @@ export default function Ressources() {
     if (allTags.length > 0 || !loading) {
       (async () => {
         const tag = await fetchTagWithCategories(decoded);
-        if (!tag) return;
+        if (!tag) {
+          // P1-4 — render an explicit 404 instead of silently falling
+          // back to the overview.
+          setSelectedTag(null);
+          setTagNotFound(true);
+          setViewMode('not-found');
+          return;
+        }
         setSelectedTag(tag as CentralizedTag);
+        setTagNotFound(false);
         setViewMode('tag-detail');
       })();
     }
@@ -263,6 +277,32 @@ export default function Ressources() {
           message="Something went wrong while loading resources. Please try again later."
           onRetry={() => window.location.reload()}
         />
+      </div>
+    );
+  }
+
+  // ───────── Tag Not Found (P1-4) ─────────
+  if (viewMode === 'not-found' || (tagName && tagNotFound)) {
+    return (
+      <div
+        className="container mx-auto py-16 md:py-24 px-4 text-center"
+        data-testid="tag-not-found"
+      >
+        <h1 className="text-3xl font-bold mb-2">Tag not found</h1>
+        <p className="text-muted-foreground mb-6">
+          We couldn&apos;t find a tag matching{' '}
+          <code className="px-1 py-0.5 rounded bg-muted">/{tagName ?? ''}</code>.
+        </p>
+        <Button
+          onClick={() => {
+            setTagNotFound(false);
+            setSelectedTag(null);
+            setViewMode('overview');
+            navigate('/resources');
+          }}
+        >
+          Browse all resources
+        </Button>
       </div>
     );
   }
