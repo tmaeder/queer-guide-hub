@@ -45,6 +45,24 @@ type ViewMode =
 type DisplayMode = 'chips' | 'grid' | 'list';
 type SortOption = 'alphabetical' | 'usage' | 'recent';
 
+/**
+ * P2-4 — "Has image" filter must exclude gradient placeholders. Without
+ * width/height/MIME info on the client, use a URL heuristic: require an
+ * http(s) or storage path, reject data: URIs and obvious placeholder
+ * markers in the path. False negatives (real images named "*placeholder*")
+ * are acceptable; false positives (gradient placeholders showing up
+ * under "Has image") are not.
+ */
+function isRealTagImage(url: string | null | undefined): boolean {
+  if (!url) return false;
+  const trimmed = url.trim();
+  if (trimmed.length === 0) return false;
+  if (trimmed.startsWith('data:')) return false;
+  const lower = trimmed.toLowerCase();
+  if (lower.includes('placeholder') || lower.includes('gradient')) return false;
+  return /^https?:\/\//i.test(trimmed) || trimmed.startsWith('/');
+}
+
 // ─────────────── Shared hover-card class ───────────────
 const hoverCardCls =
   'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer bg-background text-left text-inherit w-full transition-all duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary border-0';
@@ -190,7 +208,7 @@ export default function Ressources() {
     } else if (usageFilter === 'unused') {
       filtered = filtered.filter((t) => (tagUsageCounts[t.name] || 0) === 0);
     }
-    if (hasImageFilter) filtered = filtered.filter((t) => t.image_url);
+    if (hasImageFilter) filtered = filtered.filter((t) => isRealTagImage(t.image_url));
 
     const dir = sortDirection === 'asc' ? 1 : -1;
     return [...filtered].sort((a, b) => {
