@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
+import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import {
   fetchVenue,
   type VenueWithRelations,
@@ -79,8 +80,11 @@ export default function VenueDetail() {
 
   // NotFound branch
   if (!isLoading && notFound) {
+    const sectionSlugs = ['hotels', 'events', 'news', 'marketplace', 'travel', 'groups', 'resources'];
+    const didYouMeanSection = slug && sectionSlugs.includes(slug) ? slug : null;
     return (
       <div className="container mx-auto py-8 px-4 text-center">
+        <NotFoundMeta />
         <h5 className="text-xl font-bold mb-4">
           {t('pages.venueDetail.notFoundTitle', 'Venue not found')}
         </h5>
@@ -90,6 +94,15 @@ export default function VenueDetail() {
             'No venue matches this URL. It may have been removed or the link is incorrect.',
           )}
         </p>
+        {didYouMeanSection && (
+          <p className="text-sm mb-6">
+            {t('pages.venueDetail.didYouMean', 'Did you mean')}{' '}
+            <LocalizedLink to={`/${didYouMeanSection}`} className="underline font-medium">
+              /{didYouMeanSection}
+            </LocalizedLink>
+            ?
+          </p>
+        )}
         <LocalizedLink to="/venues">
           <Button variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />

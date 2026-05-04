@@ -288,9 +288,9 @@ function Section({ title, count, children }: { title: string; count: number; chi
   return (
     <div>
       <div className="flex items-baseline gap-2 mb-4">
-        <h6 className="font-bold" style={{ fontSize: '1.1rem' }}>
+        <h2 className="font-bold" style={{ fontSize: '1.1rem' }}>
           {title}
-        </h6>
+        </h2>
         <p className="text-sm text-muted-foreground">
           {count}
         </p>

@@ -179,8 +179,8 @@ export function ResourcesFilterBar({
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="usage">Most Used</SelectItem>
-              <SelectItem value="alphabetical">A-Z</SelectItem>
+              <SelectItem value="usage">Most used</SelectItem>
+              <SelectItem value="alphabetical">Alphabetical</SelectItem>
               <SelectItem value="recent">Newest</SelectItem>
             </SelectContent>
           </Select>
@@ -189,7 +189,9 @@ export function ResourcesFilterBar({
             size="sm"
             style={{ height: 40, width: 40, padding: 0 }}
             onClick={onSortDirectionToggle}
-            title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+            title={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
+            aria-label={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
+            aria-pressed={sortDirection === 'desc'}
           >
             {sortDirection === 'asc' ? (
               <SortAsc style={{ width: 16, height: 16 }} />

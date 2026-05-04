@@ -18,6 +18,9 @@ import {
 } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
 import { useMeta } from '@/hooks/useMeta';
+import { useSafeMode } from '@/providers/SafeModeProvider';
+import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
+import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +40,8 @@ type ViewMode =
   | 'search'
   | 'tag-detail'
   | 'professions'
-  | 'graph';
+  | 'graph'
+  | 'not-found';
 type DisplayMode = 'chips' | 'grid' | 'list';
 type SortOption = 'alphabetical' | 'usage' | 'recent';
 
@@ -51,11 +55,14 @@ export default function Ressources() {
   const [searchParams] = useSearchParams();
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
   const { data: tagUsageCounts = {} } = useTagUsageCounts();
+  const safeMode = useSafeMode();
+  const ageAffirmation = useAgeAffirmation();
 
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [selectedTag, setSelectedTag] = useState<CentralizedTag | null>(null);
+  const [tagNotFound, setTagNotFound] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<CentralizedTag[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('usage');
@@ -109,12 +116,26 @@ export default function Ressources() {
 
   // Load individual tag from route param
   useEffect(() => {
-    if (!tagName) return;
+    if (!tagName) {
+      setTagNotFound(false);
+      return;
+    }
     const decoded = decodeURIComponent(tagName);
+    // P1-7 — canonicalize slug case to lowercase. SPA equivalent of a 301:
+    // we replace the URL so back/forward and copy-paste land on the
+    // canonical form. Crawlers that don't execute JS won't see a 301
+    // status — accepted SPA trade-off.
+    if (decoded !== decoded.toLowerCase()) {
+      navigate(`/resources/${encodeURIComponent(decoded.toLowerCase())}`, {
+        replace: true,
+      });
+      return;
+    }
     if (allTags.length > 0) {
       const found = allTags.find((t) => t.name.toLowerCase() === decoded.toLowerCase());
       if (found) {
         setSelectedTag(found);
+        setTagNotFound(false);
         setViewMode('tag-detail');
         return;
       }
@@ -122,12 +143,20 @@ export default function Ressources() {
     if (allTags.length > 0 || !loading) {
       (async () => {
         const tag = await fetchTagWithCategories(decoded);
-        if (!tag) return;
+        if (!tag) {
+          // P1-4 — render an explicit 404 instead of silently falling
+          // back to the overview.
+          setSelectedTag(null);
+          setTagNotFound(true);
+          setViewMode('not-found');
+          return;
+        }
         setSelectedTag(tag as CentralizedTag);
+        setTagNotFound(false);
         setViewMode('tag-detail');
       })();
     }
-  }, [tagName, allTags, loading]);
+  }, [tagName, allTags, loading, navigate]);
 
   // Filter + sort pipeline (used in search / filtered mode)
   const filteredAndSortedTags = useMemo(() => {
@@ -189,9 +218,16 @@ export default function Ressources() {
     () =>
       [...allTags]
         .filter((t) => (tagUsageCounts[t.name] || 0) > 0)
+        .filter(
+          (t) =>
+            !safeMode.shouldHide([
+              ...(t.categories?.map((c) => c.name) ?? []),
+              ...(t.categories?.map((c) => c.parent_name ?? null) ?? []),
+            ]),
+        )
         .sort((a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0))
         .slice(0, 24),
-    [allTags, tagUsageCounts],
+    [allTags, tagUsageCounts, safeMode],
   );
 
   // P1-5 — per-page metadata for the tag-detail view. SPA caveat: meta
@@ -296,13 +332,52 @@ export default function Ressources() {
     );
   }
 
+  // ───────── Tag Not Found (P1-4) ─────────
+  if (viewMode === 'not-found' || (tagName && tagNotFound)) {
+    return (
+      <div
+        className="container mx-auto py-16 md:py-24 px-4 text-center"
+        data-testid="tag-not-found"
+      >
+        <h1 className="text-3xl font-bold mb-2">Tag not found</h1>
+        <p className="text-muted-foreground mb-6">
+          We couldn&apos;t find a tag matching{' '}
+          <code className="px-1 py-0.5 rounded bg-muted">/{tagName ?? ''}</code>.
+        </p>
+        <Button
+          onClick={() => {
+            setTagNotFound(false);
+            setSelectedTag(null);
+            setViewMode('overview');
+            navigate('/resources');
+          }}
+        >
+          Browse all resources
+        </Button>
+      </div>
+    );
+  }
+
   // ───────── Tag Detail ─────────
   if (viewMode === 'tag-detail' && selectedTag) {
     const primary =
       selectedTag.categories?.find((c) => c.is_primary) ?? selectedTag.categories?.[0];
     const parentName = primary?.parent_name ?? undefined;
     const childName = primary?.level === 1 ? primary.name : undefined;
+    const tagCategoryNames = [
+      ...(selectedTag.categories?.map((c) => c.name) ?? []),
+      ...(selectedTag.categories?.map((c) => c.parent_name ?? null) ?? []),
+    ];
+    const isAdult = tagCategoryNames.some((n) => safeMode.isAdultCategory(n));
     return (
+      <TagDetailWithGate
+        isAdult={isAdult}
+        affirmed={ageAffirmation.affirmed}
+        onDecline={() => {
+          navigate('/resources');
+          setViewMode('overview');
+        }}
+      >
       <div className="container mx-auto py-8 md:py-16 px-4">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-1 mb-4 flex-wrap">
@@ -410,6 +485,7 @@ export default function Ressources() {
           </div>
         </div>
       </div>
+      </TagDetailWithGate>
     );
   }
 
@@ -496,6 +572,16 @@ export default function Ressources() {
               <div className="flex items-center gap-2 mb-4">
                 <Zap style={{ width: 18, height: 18 }} />
                 <h6 className="text-base font-semibold">Popular tags</h6>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto text-xs"
+                  onClick={() => safeMode.toggle()}
+                  data-testid="safe-mode-toggle"
+                  aria-pressed={!safeMode.enabled}
+                >
+                  {safeMode.enabled ? 'Show 18+ content' : 'Hide 18+ content'}
+                </Button>
               </div>
               <TagListRenderer
                 tags={popularTags}
@@ -531,7 +617,13 @@ export default function Ressources() {
                           {getCategoryShortName(cat.name)}
                         </span>
                       </div>
-                      <Badge variant="secondary">{cat.total_tag_count}</Badge>
+                      <Badge
+                        variant="secondary"
+                        title={`${cat.total_tag_count} tags total (across all subcategories)`}
+                        aria-label={`${cat.total_tag_count} tags total across all subcategories`}
+                      >
+                        {cat.total_tag_count}
+                      </Badge>
                     </div>
                     {activeChildren.length > 0 && (
                       <span
@@ -543,6 +635,7 @@ export default function Ressources() {
                           WebkitBoxOrient: 'vertical',
                           lineHeight: 1.4,
                         }}
+                        title="Each subcategory's count is the number of tags directly assigned to it"
                       >
                         {activeChildren
                           .map((c) => `${getCategoryShortName(c.name)} (${c.tag_count})`)
@@ -812,7 +905,13 @@ export default function Ressources() {
                   ? `${getCategoryShortName(filterCategory)} tags`
                   : 'Filtered tags'}
             </h6>
-            <Badge variant="secondary">{filteredAndSortedTags.length}</Badge>
+            <Badge
+              variant="secondary"
+              title={`${filteredAndSortedTags.length} matching tags`}
+              aria-label={`${filteredAndSortedTags.length} matching tags`}
+            >
+              {filteredAndSortedTags.length}
+            </Badge>
           </div>
           {filteredAndSortedTags.length > 0 ? (
             renderTagList(filteredAndSortedTags)

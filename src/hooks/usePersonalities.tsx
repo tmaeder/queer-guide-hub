@@ -49,13 +49,6 @@ export interface PersonalityFilters {
   sortBy?: PersonalitySort;
 }
 
-const ADULT_PATTERNS = [
-  '%adult performer%',
-  '%adult model%',
-  '%adult film%',
-  '%porn%',
-];
-
 function transformRow(row: PersonalityRow): Personality {
   return {
     ...row,
@@ -112,9 +105,7 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
   }
 
   if (filters.exclude_adult !== false) {
-    for (const pattern of ADULT_PATTERNS) {
-      query = query.not('profession', 'ilike', pattern);
-    }
+    query = query.eq('is_adult', false);
   }
 
   if (filters.name_starts_with) {
@@ -131,24 +122,27 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
 }
 
 function applySort(query: ReturnType<typeof supabase.from>, sortBy: PersonalitySort = 'featured') {
+  // Stable secondary order on `id` keeps pagination deterministic when the
+  // primary sort key has ties (very common for view_count / created_at).
   switch (sortBy) {
     case 'az':
-      return query
-        .order('is_featured', { ascending: false })
-        .order('name', { ascending: true });
+      return query.order('name', { ascending: true }).order('id', { ascending: true });
     case 'za':
-      return query
-        .order('is_featured', { ascending: false })
-        .order('name', { ascending: false });
+      return query.order('name', { ascending: false }).order('id', { ascending: true });
     case 'popular':
-      return query.order('view_count', { ascending: false });
+      return query
+        .order('view_count', { ascending: false })
+        .order('id', { ascending: true });
     case 'newest':
-      return query.order('created_at', { ascending: false });
+      return query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true });
     case 'featured':
     default:
       return query
         .order('is_featured', { ascending: false })
-        .order('view_count', { ascending: false });
+        .order('view_count', { ascending: false })
+        .order('id', { ascending: true });
   }
 }
 

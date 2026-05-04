@@ -19,6 +19,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import type { Personality } from '@/hooks/usePersonalities';
 import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
+import { formatPersonDate, isoDateAttr } from '@/lib/personDate';
 
 export interface SimilarPersonality {
   id: string;
@@ -387,7 +388,9 @@ export function PersonalitySidebar({
               <div>
                 <p className="text-sm text-muted-foreground">Born</p>
                 <p className="font-medium">
-                  {new Date(personality.birth_date).toLocaleDateString()}
+                  <time dateTime={isoDateAttr(personality.birth_date) ?? undefined}>
+                    {formatPersonDate(personality.birth_date) ?? personality.birth_date}
+                  </time>
                 </p>
               </div>
             </div>
@@ -398,7 +401,9 @@ export function PersonalitySidebar({
               <div>
                 <p className="text-sm text-muted-foreground">Died</p>
                 <p className="font-medium">
-                  {new Date(personality.death_date).toLocaleDateString()}
+                  <time dateTime={isoDateAttr(personality.death_date) ?? undefined}>
+                    {formatPersonDate(personality.death_date) ?? personality.death_date}
+                  </time>
                 </p>
               </div>
             </div>

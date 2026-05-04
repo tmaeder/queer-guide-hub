@@ -1,4 +1,5 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -60,6 +61,7 @@ export default function HotelDetail() {
   if (!loading && !hotel && !primaryError) {
     return (
       <div className="container mx-auto py-16 text-center">
+        <NotFoundMeta />
         <h5 className="text-xl font-semibold mb-4">Hotel not found</h5>
         <Button asChild variant="outline">
           <LocalizedLink to="/hotels">Back to Hotels</LocalizedLink>

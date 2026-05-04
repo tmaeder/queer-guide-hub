@@ -114,15 +114,23 @@ export async function submitOnboarding(
 	await post("/onboarding", { user_id: userId, ...prefs });
 }
 
-/** "More like this" — semantic neighbors of a given entity. */
+/**
+ * "More like this" — semantic neighbors of a given entity.
+ *
+ * `contentTypes` restricts the result set to specific entity types — pass
+ * `['personality']` from a personality detail page to keep articles and
+ * other cross-type hits out of the related rail.
+ */
 export async function fetchSimilar(
 	entity: { type: string; id: string },
 	limit = 10,
+	contentTypes?: string[],
 ): Promise<SearchHit[]> {
 	const data = await post<{ results: SearchHit[] }>("/similar", {
 		entity_type: entity.type,
 		entity_id: entity.id,
 		limit,
+		...(contentTypes && contentTypes.length > 0 ? { content_types: contentTypes } : {}),
 	});
 	return data.results ?? [];
 }

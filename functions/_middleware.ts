@@ -238,30 +238,91 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   return rewritten;
 };
 
+type NotFoundKind = {
+  title: string;
+  heading: string;
+  body: string;
+  backLabel: string;
+  backHref: string;
+};
+
+const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
+  personality: {
+    title: 'Personality not found',
+    heading: "We couldn't find that personality",
+    body: 'The personality you\'re looking for was moved, removed, or never existed.',
+    backLabel: 'Back to personalities',
+    backHref: '/personalities',
+  },
+  news: {
+    title: 'Article not found',
+    heading: "We couldn't find that article",
+    body: 'The article you\'re looking for was moved or removed.',
+    backLabel: 'Back to news',
+    backHref: '/news',
+  },
+  venue: {
+    title: 'Venue not found',
+    heading: "We couldn't find that venue",
+    body: 'The venue you\'re looking for was moved or removed.',
+    backLabel: 'Browse venues',
+    backHref: '/venues',
+  },
+  event: {
+    title: 'Event not found',
+    heading: "We couldn't find that event",
+    body: 'The event you\'re looking for was moved or removed.',
+    backLabel: 'Browse events',
+    backHref: '/events',
+  },
+};
+
+function notFoundKindFor(pathname: string): NotFoundKind {
+  // Match /<segment>/<slug>; segment normalized to a singular kind key.
+  const m = pathname.match(/^\/([^/]+)\//);
+  const segRaw = (m?.[1] ?? '').toLowerCase();
+  if (segRaw.startsWith('personalit')) return NOT_FOUND_KINDS.personality;
+  if (segRaw === 'news') return NOT_FOUND_KINDS.news;
+  if (segRaw.startsWith('venue')) return NOT_FOUND_KINDS.venue;
+  if (segRaw.startsWith('event')) return NOT_FOUND_KINDS.event;
+  return {
+    title: 'Page not found',
+    heading: "This page doesn't exist",
+    body: 'The page you\'re looking for was moved or removed.',
+    backLabel: 'Home',
+    backHref: '/',
+  };
+}
+
 function notFoundHtml(pathname: string): string {
   const safePath = escapeAttr(pathname);
+  const kind = notFoundKindFor(pathname);
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Not found · Queer Guide</title>
+<title>${escapeAttr(kind.title)} · Queer Guide</title>
 <link rel="canonical" href="https://queer.guide${safePath}">
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0a0a0a; color: #fafafa; padding: 1.5rem; }
-  main { max-width: 32rem; text-align: center; }
+  html, body { height: 100%; }
+  body { font-family: system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #0a0a0a; color: #fafafa; }
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+  .card { max-width: 32rem; text-align: center; }
   h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
   p { color: #a1a1aa; margin: 0 0 1.5rem; }
   a { color: #fafafa; }
+  footer { padding: 1rem; text-align: center; color: #71717a; font-size: 0.875rem; }
 </style>
 </head>
 <body>
-<main>
-<h1>This page doesn't exist</h1>
-<p>The article or page you're looking for was moved or removed.</p>
-<p><a href="/news">Back to news</a> · <a href="/">Home</a></p>
-</main>
+<main><div class="card">
+<h1>${escapeAttr(kind.heading)}</h1>
+<p>${escapeAttr(kind.body)}</p>
+<p><a href="${escapeAttr(kind.backHref)}">${escapeAttr(kind.backLabel)}</a> · <a href="/">Home</a></p>
+</div></main>
+<footer>Queer Guide</footer>
 </body>
 </html>`;
 }
