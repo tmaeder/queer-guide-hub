@@ -563,6 +563,7 @@ export default function Ressources() {
           <div className="flex flex-col gap-6 lg:sticky self-start" style={{ top: 80 }}>
             <RelatedTagsCard
               tagId={selectedTag.id}
+              sourceCategory={primary?.name}
               onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
             />
           </div>
