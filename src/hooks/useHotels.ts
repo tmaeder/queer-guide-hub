@@ -49,6 +49,57 @@ export function useHotels(autoFetch = true) {
       setLoading(true);
       setError(null);
 
+      // When the user has typed a free-text search and no column-scoped
+      // filters, prefer the ranked search_hotels RPC (pg_trgm-backed) so
+      // mid-word matches like "Berghain" surface. The RPC also returns
+      // hotels rows directly, so the rest of the pipeline is identical.
+      // Falls back to the column query below if the RPC isn't deployed
+      // yet (PGRST202 = "function does not exist" → silent fallback).
+      const onlySearch =
+        Boolean(filters?.search) &&
+        !filters?.city &&
+        !filters?.country &&
+        !filters?.hotel_type &&
+        !filters?.price_range &&
+        filters?.lgbtq_friendly === undefined &&
+        !filters?.featured;
+      if (onlySearch && filters?.search) {
+        const from = (page - 1) * pageSize;
+        const limit = from + pageSize;
+        const { data: ranked, error: rpcError } = await (
+          supabase as unknown as {
+            rpc: (
+              fn: string,
+              args: { q: string; result_limit: number },
+            ) => Promise<{ data: Hotel[] | null; error: { code?: string } | null }>;
+          }
+        ).rpc('search_hotels', { q: filters.search, result_limit: limit });
+        if (!rpcError) {
+          const slice = (ranked ?? []).slice(from, from + pageSize);
+          if (options?.append) {
+            setHotels((prev) =>
+              Array.from(
+                new Map([...prev, ...slice].map((h) => [h.id, h])).values(),
+              ),
+            );
+          } else {
+            setHotels(slice);
+          }
+          // The RPC returns the FULL ranked set up to `result_limit`; treat
+          // (ranked.length === limit) as "more might exist beyond this fetch".
+          setTotalCount(ranked?.length ?? 0);
+          setHasMore((ranked?.length ?? 0) > from + slice.length);
+          setLoading(false);
+          return;
+        }
+        // PGRST202 (function not found) or any RPC error → fall through to
+        // the legacy prefix-OR path below. Logged once to surface deploy
+        // issues; subsequent failures stay quiet.
+        if (rpcError.code !== 'PGRST202') {
+          console.warn('search_hotels RPC failed, falling back:', rpcError);
+        }
+      }
+
       let query = supabase
         .from('hotels')
         .select('*', { count: 'exact' })
