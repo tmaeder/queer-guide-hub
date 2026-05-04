@@ -120,6 +120,16 @@ export default function Ressources() {
       return;
     }
     const decoded = decodeURIComponent(tagName);
+    // P1-7 — canonicalize slug case to lowercase. SPA equivalent of a 301:
+    // we replace the URL so back/forward and copy-paste land on the
+    // canonical form. Crawlers that don't execute JS won't see a 301
+    // status — accepted SPA trade-off.
+    if (decoded !== decoded.toLowerCase()) {
+      navigate(`/resources/${encodeURIComponent(decoded.toLowerCase())}`, {
+        replace: true,
+      });
+      return;
+    }
     if (allTags.length > 0) {
       const found = allTags.find((t) => t.name.toLowerCase() === decoded.toLowerCase());
       if (found) {
@@ -145,7 +155,7 @@ export default function Ressources() {
         setViewMode('tag-detail');
       })();
     }
-  }, [tagName, allTags, loading]);
+  }, [tagName, allTags, loading, navigate]);
 
   // Filter + sort pipeline (used in search / filtered mode)
   const filteredAndSortedTags = useMemo(() => {
