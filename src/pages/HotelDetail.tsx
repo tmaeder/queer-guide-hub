@@ -17,6 +17,7 @@ import {
   HotelPhotos,
   type HotelWithRelations,
 } from './HotelDetail.parts';
+import { getHotelPhotosToShow } from './hotelPhotosUtil';
 
 const JOIN_SPEC = '*, cities:city_id(id, name), countries:country_id(id, name)';
 
@@ -73,11 +74,12 @@ export default function HotelDetail() {
   const cityName = hotel?.cities?.name || hotel?.city || '';
   const countryName = hotel?.countries?.name || hotel?.country || '';
 
+  const photosToShow = hotel ? getHotelPhotosToShow(hotel.images) : [];
   const tabs: EntityDetailTab[] = hotel
     ? [
         { id: 'overview', label: t('pages.hotelDetail.overview', 'Overview'), content: <HotelOverview hotel={hotel} t={t} /> },
-        ...(hotel.images && hotel.images.length > 1
-          ? [{ id: 'photos', label: `Photos (${hotel.images.length})`, content: <HotelPhotos hotel={hotel} /> }]
+        ...(photosToShow.length > 0
+          ? [{ id: 'photos', label: `Photos (${photosToShow.length})`, content: <HotelPhotos hotel={hotel} /> }]
           : []),
       ]
     : [];
