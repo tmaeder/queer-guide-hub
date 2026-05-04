@@ -110,16 +110,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (SKIP_PREFIXES.some((p) => pathname.startsWith(p))) return next();
   if (SKIP_SUFFIXES.some((s) => pathname.endsWith(s))) return next();
 
-  // Standalone landing pages (/spaces/:tag, /pride/:year, /pride/:year/:city)
-  // bypass the SPA shell entirely and return a complete HTML document.
-  const { basePath: landingBasePath } = splitLocale(pathname);
-  const landing = await resolveLandingRoute(env, landingBasePath);
   // Strip the optional /:locale prefix so route resolution operates on the
   // canonical (default-locale) path. Each translated URL keeps its own
   // self-canonical and exposes hreflang alternates to its 10 siblings.
   const { locale, basePath } = splitLocale(pathname);
 
-  // Phase 3.7: standalone landing pages bypass the SPA shell.
+  // Phase 3.7: standalone landing pages (/spaces/:tag, /pride/:year,
+  // /pride/:year/:city) bypass the SPA shell and return a complete HTML
+  // document.
   const landing = await resolveLandingRoute(env, basePath);
   if (landing) return landing;
 
@@ -127,12 +125,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('text/html')) return response;
 
-  // Phase 3: detail routes look up the row in Supabase. Returns null if
-  // the path isn't a detail route or the row isn't found.
-  // Strip the optional /:locale prefix so route resolution operates on the
-  // canonical (default-locale) path. Each translated URL keeps its own
-  // self-canonical and exposes hreflang alternates to its 10 siblings.
-  const { locale, basePath } = splitLocale(pathname);
   const indexable = isIndexable(basePath);
 
   // Detail routes look up the row in Supabase and override meta/body/JSON-LD.
@@ -275,6 +267,13 @@ const NOT_FOUND_KINDS: Record<string, NotFoundKind> = {
     backLabel: 'Browse events',
     backHref: '/events',
   },
+  hotel: {
+    title: 'Hotel not found',
+    heading: "We couldn't find that hotel",
+    body: 'The hotel you\'re looking for was moved or removed.',
+    backLabel: 'Browse hotels',
+    backHref: '/hotels',
+  },
 };
 
 function notFoundKindFor(pathname: string): NotFoundKind {
@@ -285,6 +284,7 @@ function notFoundKindFor(pathname: string): NotFoundKind {
   if (segRaw === 'news') return NOT_FOUND_KINDS.news;
   if (segRaw.startsWith('venue')) return NOT_FOUND_KINDS.venue;
   if (segRaw.startsWith('event')) return NOT_FOUND_KINDS.event;
+  if (segRaw.startsWith('hotel')) return NOT_FOUND_KINDS.hotel;
   return {
     title: 'Page not found',
     heading: "This page doesn't exist",
