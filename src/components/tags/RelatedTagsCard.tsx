@@ -13,7 +13,7 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
   if (isLoading) {
     return (
       <div>
-        <h6 className="font-bold text-lg mb-4">Related</h6>
+        <h2 className="font-bold text-lg mb-4">Related</h2>
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Skeleton key={i} className="h-8 rounded-full" style={{ width: 70 + i * 12 }} />
@@ -27,7 +27,7 @@ export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
 
   return (
     <div>
-      <h6 className="font-bold text-lg mb-4">Related</h6>
+      <h2 className="font-bold text-lg mb-4">Related</h2>
       <div className="flex flex-wrap gap-2">
         {similarTags.map((tag) => (
           <Badge
