@@ -70,11 +70,46 @@ const hoverCardCls =
 export default function Ressources() {
   const { tagName, categorySlug } = useParams<{ tagName: string; categorySlug: string }>();
   const navigate = useLocalizedNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
   const { data: tagUsageCounts = {} } = useTagUsageCounts();
   const safeMode = useSafeMode();
   const ageAffirmation = useAgeAffirmation();
+
+  // P1-1 — filter / sort / view state lives in URL query params so links
+  // are shareable, back/forward works, and view-mode survives reloads.
+  // Defaults are kept implicit (omitted from the URL) for clean links.
+  const updateParam = useCallback(
+    (key: string, value: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const p = new URLSearchParams(prev);
+          if (value === null || value === '') p.delete(key);
+          else p.set(key, value);
+          return p;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  const searchQuery = searchParams.get('q') ?? '';
+  const sortBy = (searchParams.get('sort') as SortOption | null) ?? 'usage';
+  const sortDirection: 'asc' | 'desc' = searchParams.get('dir') === 'asc' ? 'asc' : 'desc';
+  const filterCategory = searchParams.get('cat') ?? 'all';
+  const displayMode = (searchParams.get('view') as DisplayMode | null) ?? 'grid';
+  const usageFilter = searchParams.get('usage') ?? 'all';
+  const hasImageFilter = searchParams.get('hasImage') === '1';
+
+  const setSortBy = (next: SortOption) => updateParam('sort', next === 'usage' ? null : next);
+  const setSortDirection = (next: 'asc' | 'desc') =>
+    updateParam('dir', next === 'desc' ? null : 'asc');
+  const setFilterCategory = (next: string) => updateParam('cat', next === 'all' ? null : next);
+  const setDisplayMode = (next: DisplayMode) =>
+    updateParam('view', next === 'grid' ? null : next);
+  const setUsageFilter = (next: string) => updateParam('usage', next === 'all' ? null : next);
+  const setHasImageFilter = (next: boolean) => updateParam('hasImage', next ? '1' : null);
 
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -82,13 +117,6 @@ export default function Ressources() {
   const [selectedTag, setSelectedTag] = useState<CentralizedTag | null>(null);
   const [tagNotFound, setTagNotFound] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<CentralizedTag[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('usage');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('grid');
-  const [usageFilter, setUsageFilter] = useState<string>('all');
-  const [hasImageFilter, setHasImageFilter] = useState(false);
   const [professions, setProfessions] = useState<string[]>([]);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -102,9 +130,9 @@ export default function Ressources() {
   useEffect(() => {
     if (professionParam) {
       setViewMode('search');
-      setSearchQuery(professionParam);
+      updateParam('q', professionParam);
     }
-  }, [professionParam]);
+  }, [professionParam, updateParam]);
 
   // Category deep-link from URL.
   // P1-6 — preferred path: /resources/c/<categorySlug> (matched by `slug`).
@@ -146,7 +174,27 @@ export default function Ressources() {
       const decoded = decodeURIComponent(categoryParam);
       matchAgainst((c) => c.name === decoded);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryParam, categorySlug, categoriesTree]);
+
+  // P1-1 — hydrate search-mode results from `?q=...` on initial mount /
+  // direct visit. Subsequent keystrokes go through handleSearch.
+  useEffect(() => {
+    if (!searchQuery || allTags.length === 0) return;
+    if (viewMode === 'search') return; // already populated
+    if (tagName || categorySlug) return; // tag-detail / category routes own the page
+    const lower = searchQuery.toLowerCase();
+    const local = allTags
+      .filter(
+        (t) =>
+          t.name.toLowerCase().includes(lower) ||
+          (t.description && t.description.toLowerCase().includes(lower)),
+      )
+      .slice(0, 50);
+    setSearchResults(local);
+    setViewMode('search');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, allTags, tagName, categorySlug]);
 
   // Load individual tag from route param
   useEffect(() => {
@@ -294,7 +342,7 @@ export default function Ressources() {
 
   const handleSearch = useCallback(
     (query: string) => {
-      setSearchQuery(query);
+      updateParam('q', query.trim() ? query : null);
       if (!query.trim()) {
         setViewMode('overview');
         setSearchResults([]);
@@ -317,7 +365,7 @@ export default function Ressources() {
         setSearchResults([...local, ...server.filter((t) => !ids.has(t.id))]);
       }, 300);
     },
-    [allTags, searchTags],
+    [allTags, searchTags, updateParam],
   );
 
   const handleTagClick = (tag: CentralizedTag) => {
@@ -343,7 +391,7 @@ export default function Ressources() {
       setViewMode('overview');
     } else if (viewMode === 'search') {
       setViewMode('overview');
-      setSearchQuery('');
+      updateParam('q', null);
       setSearchResults([]);
     }
   };
@@ -566,7 +614,9 @@ export default function Ressources() {
         sortBy={sortBy}
         onSortByChange={setSortBy}
         sortDirection={sortDirection}
-        onSortDirectionToggle={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
+        onSortDirectionToggle={() =>
+          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+        }
         categoriesTree={categoriesTree}
       />
 
