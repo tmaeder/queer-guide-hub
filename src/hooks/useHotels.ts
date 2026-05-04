@@ -65,7 +65,9 @@ export function useHotels(autoFetch = true) {
         query = query.ilike('country', `%${filters.country}%`);
       }
       if (filters?.hotel_type && filters.hotel_type !== 'all') {
-        query = query.eq('hotel_type', filters.hotel_type);
+        // ilike (no wildcards) = case-insensitive equality. Defensive against
+        // ingestion writing display-cased values like "Apartment" or "B&B".
+        query = query.ilike('hotel_type', filters.hotel_type);
       }
       if (filters?.price_range) {
         query = query.eq('price_range', filters.price_range);

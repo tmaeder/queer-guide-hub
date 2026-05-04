@@ -12,7 +12,13 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
-function FeaturedItem({ p }: { p: Personality }) {
+// Number of carousel items above the fold on every viewport tested. These get
+// loading="eager" + fetchpriority="high" so they don't pop in after first paint;
+// the rest stay lazy so we don't blow the LCP budget on cards the user may
+// never see.
+const ABOVE_FOLD_COUNT = 5;
+
+function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
   const href = `/personalities/${p.slug ?? p.id}`;
   return (
     <LocalizedLink
@@ -35,7 +41,10 @@ function FeaturedItem({ p }: { p: Personality }) {
           <img
             src={p.image_url}
             alt={p.name}
-            loading="lazy"
+            loading={eager ? 'eager' : 'lazy'}
+            // fetchpriority is widely supported but not in React's typings yet
+            // — pass via a typed cast inline.
+            {...(eager ? ({ fetchpriority: 'high' } as { fetchpriority: 'high' }) : {})}
             decoding="async"
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
@@ -102,7 +111,9 @@ export function FeaturedPersonalityRail() {
                 <div className="h-3 bg-muted w-3/4 mx-auto" />
               </div>
             ))
-          : featured.map((p) => <FeaturedItem key={p.id} p={p} />)}
+          : featured.map((p, i) => (
+              <FeaturedItem key={p.id} p={p} eager={i < ABOVE_FOLD_COUNT} />
+            ))}
       </div>
     </div>
   );

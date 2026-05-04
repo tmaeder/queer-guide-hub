@@ -28,6 +28,16 @@ const AUTO_LOAD_CAP = 48;
 const GRID_CLASS =
   'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 [&>*]:min-w-0';
 
+const MAX_DEEP_LINK_PAGE = 50;
+
+function pageFromParams(params: URLSearchParams): number {
+  const raw = params.get('page');
+  if (!raw) return 1;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, MAX_DEEP_LINK_PAGE);
+}
+
 function activeFilterCount(f: PersonalityFilters): number {
   let c = 0;
   if (f.search) c++;
@@ -71,7 +81,8 @@ export default function Personalities() {
   const [filters, setFilters] = useState<PersonalityFilters>(
     () => parseFilters(searchParams).filters,
   );
-  const [page, setPage] = useState(1);
+  const initialPageRef = useRef<number>(pageFromParams(searchParams));
+  const [page, setPage] = useState(initialPageRef.current);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -84,13 +95,27 @@ export default function Personalities() {
     fetchPersonalities,
   } = usePersonalities(false);
 
-  // Initial + filter-change fetch
+  // Initial + filter-change fetch. Honors ?page=N on first mount by loading
+  // N pages worth in a single Supabase range request, so deep links restore
+  // the visible card set without forcing the user to re-scroll.
   useEffect(() => {
     setPage(1);
     setAutoLoadedCount(0);
     fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
     // Sync URL
     const nextParams = serializeFilters(filters);
+    const targetPage = initialPageRef.current;
+    initialPageRef.current = 1; // only deep-link on the very first mount
+    setPage(targetPage);
+    setAutoLoadedCount(targetPage > 1 ? (targetPage - 1) * PAGE_SIZE : 0);
+    fetchPersonalities(filters, {
+      page: 1,
+      pageSize: targetPage * PAGE_SIZE,
+      append: false,
+    });
+    // Sync URL — serializeFilters from PR 1 + the page param from PR 5.
+    const nextParams = serializeFilters(filters);
+    if (targetPage > 1) nextParams.set('page', String(targetPage));
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
     }
@@ -164,6 +189,7 @@ export default function Personalities() {
           });
           const fetched = result?.fetched ?? PAGE_SIZE;
           setAutoLoadedCount((c) => Math.min(AUTO_LOAD_CAP, c + fetched));
+          syncPageToUrl(nextPage);
         }
       },
       { rootMargin: '200px' },
@@ -171,7 +197,23 @@ export default function Personalities() {
 
     observer.observe(el);
     return () => observer.unobserve(el);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
+
+  const syncPageToUrl = useCallback(
+    (n: number) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (n <= 1) next.delete('page');
+          else next.set('page', String(n));
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   const loadMoreManual = useCallback(async () => {
     const nextPage = page + 1;
@@ -181,7 +223,8 @@ export default function Personalities() {
       pageSize: PAGE_SIZE,
       append: true,
     });
-  }, [page, filters, fetchPersonalities]);
+    syncPageToUrl(nextPage);
+  }, [page, filters, fetchPersonalities, syncPageToUrl]);
 
   const hasAnyFilter = useMemo(() => activeFilterCount(filters) > 0, [filters]);
 
@@ -296,8 +339,17 @@ export default function Personalities() {
           </div>
         )}
 
-        {/* Results toolbar */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Results toolbar — wrapped in a labelled <section> so the All
+            personalities heading gives screen reader users a landmark to jump
+            to (the page previously had H1 → H2 "Featured icons" → H3 cards
+            with no H2 above the main grid). */}
+        <h2 id="all-personalities-heading" className="sr-only">
+          All personalities
+        </h2>
+        <div
+          className="flex items-center justify-between mb-4"
+          aria-labelledby="all-personalities-heading"
+        >
           <p className="text-sm">
             {loading && personalities.length === 0
               ? 'Loading…'

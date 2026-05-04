@@ -17,6 +17,9 @@ interface PlacesFilters {
   populationRange?: [number, number];
   limit?: number;
   offset?: number;
+  /** Skip the network fetch when false. Used by /map to defer the
+   *  cities + countries fetch until those layers are toggled on. */
+  enabled?: boolean;
 }
 
 const COUNTRIES_QUERY_KEY = 'countries';
@@ -59,6 +62,7 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
   } = useQuery({
     queryKey: [COUNTRIES_QUERY_KEY, filters],
     queryFn: fetchCountries,
+    enabled: filters?.enabled !== false,
     gcTime: CACHE_TIME,
     staleTime: STALE_TIME,
     refetchOnWindowFocus: false,
@@ -113,6 +117,7 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
   } = useQuery({
     queryKey: [CITIES_QUERY_KEY, filters],
     queryFn: fetchCities,
+    enabled: filters?.enabled !== false,
     gcTime: CACHE_TIME,
     staleTime: STALE_TIME,
     refetchOnWindowFocus: false,

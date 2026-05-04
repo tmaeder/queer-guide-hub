@@ -720,6 +720,32 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
         style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 5, paddingBottom: 5, fontSize: 13 }}
       />
 
+      {/* Visually-hidden list of currently-visible markers — alternative
+          presentation for screen readers and keyboard users (WCAG 1.3.1 / 2.1.1).
+          The map canvas itself can't expose individual pins to AT, so this
+          mirrors them as a flat list of links updated on each fetch. */}
+      <ul
+        className="sr-only"
+        aria-label="Visible map results"
+        role="region"
+      >
+        {pointsGeoJSON.features.slice(0, 200).map((f) => {
+          const p = f.properties;
+          const href = p.linkTo || undefined;
+          const label = p.subtitle ? `${p.name} — ${p.subtitle}` : p.name;
+          return (
+            <li key={p.id}>
+              {href ? <a href={href}>{label}</a> : <span>{label}</span>}
+            </li>
+          );
+        })}
+        {areaMarkers.slice(0, 200).map((m) => (
+          <li key={m.id}>
+            {m.linkTo ? <a href={m.linkTo}>{m.name}</a> : <span>{m.name}</span>}
+          </li>
+        ))}
+      </ul>
+
       {/* Loading overlay */}
       {!mapReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-background opacity-70 z-[5]">
