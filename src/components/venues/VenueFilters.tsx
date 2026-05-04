@@ -39,15 +39,34 @@ interface VenueFiltersProps {
 const categories = [
   'bar',
   'restaurant',
-  'cafe',
   'club',
   'hotel',
-  'bookstore',
+  'sauna',
+  'community_center',
+  'theater',
+  'gallery',
   'gym',
   'salon',
-  'healthcare',
-  'sauna',
-];
+  'organization',
+  'event-venue',
+  'other',
+] as const;
+
+const categoryLabels: Record<string, string> = {
+  bar: 'Bar',
+  restaurant: 'Restaurant',
+  club: 'Club',
+  hotel: 'Hotel',
+  sauna: 'Sauna',
+  community_center: 'Community',
+  theater: 'Theater',
+  gallery: 'Gallery',
+  gym: 'Gym',
+  salon: 'Salon',
+  organization: 'Organization',
+  'event-venue': 'Event Venue',
+  other: 'Other',
+};
 
 const commonAmenities = [
   'wifi',
@@ -382,7 +401,7 @@ export function VenueFilters({
             onClick={() => handleCategoryClick(cat)}
 
           >
-            {cat}
+            {categoryLabels[cat] ?? cat}
           </Button>
         ))}
       </div>

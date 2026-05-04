@@ -57,6 +57,12 @@ const Venues = () => {
   });
   const { events } = useEvents();
   const [_selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const mapFilters = useMemo(() => {
+    const f: Record<string, string> = {};
+    if (urlSearch) f.search = urlSearch;
+    if (urlCategory) f.category = urlCategory;
+    return f;
+  }, [urlSearch, urlCategory]);
 
   // URL is the source of truth for filter / sort / view state.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -388,8 +394,31 @@ const Venues = () => {
             )}
           </div>
         ) : (
-          <div className="h-[700px] w-full overflow-hidden rounded-lg">
-            <ExploreMap height={700} defaultLayers={['venues']} showLayerToggles showFilters />
+          <div className="relative h-[700px] w-full overflow-hidden rounded-lg">
+            <ExploreMap
+              key={`map-${urlSearch}|${urlCategory}`}
+              height={700}
+              defaultLayers={['venues']}
+              defaultFilters={mapFilters}
+              showLayerToggles
+              showFilters
+            />
+            {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
+                <div className="pointer-events-auto rounded-lg bg-background p-6 text-center shadow-lg">
+                  <MapPin className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm font-medium">{t('pages.venues.filteredEmpty.title', 'No venues match your filters')}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => handleFiltersChange({})}
+                  >
+                    {t('pages.venues.clearFilters', 'Clear Filters')}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

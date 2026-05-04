@@ -43,8 +43,8 @@ test.describe('Venues — URL ↔ state contract', () => {
     await page.getByRole('button', { name: /^bar$/i }).first().click();
     await expect(page).toHaveURL(/category=bar/);
 
-    await page.getByRole('button', { name: /^cafe$/i }).first().click();
-    await expect(page).toHaveURL(/category=cafe/);
+    await page.getByRole('button', { name: /^club$/i }).first().click();
+    await expect(page).toHaveURL(/category=club/);
 
     await page.goBack();
     await expect(page).toHaveURL(/category=bar/);
