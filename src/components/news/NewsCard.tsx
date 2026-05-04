@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Eye, Clock, MapPin, Tag } from 'lucide-react';
+import { ExternalLink, Eye, Clock, MapPin, Tag, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -52,7 +52,7 @@ interface NewsCardProps {
   sourcesMap?: Record<string, { id: string; name: string; url?: string }>;
   tags?: string[];
   categoriesMap?: Record<string, NewsCategory>;
-  variant?: 'default' | 'headline' | 'featured';
+  variant?: 'default' | 'headline' | 'featured' | 'compact';
   priority?: boolean;
   hideDate?: boolean;
 }
@@ -242,6 +242,67 @@ export const NewsCard = ({
     );
   }
 
+  // Compact list variant: thumbnail left, text right (F5)
+  if (variant === 'compact') {
+    return (
+      <LocalizedLink
+        to={`/news/${article.slug}`}
+        aria-label={safeTitle}
+        className="flex gap-3 p-3 rounded-md border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {hasImage ? (
+          <img
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            src={article.image_url!}
+            alt=""
+            width={160}
+            height={120}
+            style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0, borderRadius: 6 }}
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            style={{ width: 160, height: 120, flexShrink: 0, borderRadius: 6, background: 'hsl(var(--muted))' }}
+          />
+        )}
+        <div className="flex flex-col gap-1 min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {displayCategory && (
+              <Badge style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))', fontSize: '0.65rem', padding: '1px 6px' }}>
+                {getCategoryLabel(displayCategory)}
+              </Badge>
+            )}
+            {(article as Record<string, unknown>).is_premium === true && (
+              <Badge style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', padding: '1px 6px' }}>
+                <Lock style={{ height: 9, width: 9 }} aria-hidden="true" /> Premium
+              </Badge>
+            )}
+            {displaySource && (
+              <span className="text-xs text-muted-foreground truncate">{displaySource}</span>
+            )}
+          </div>
+          <h3 className="text-base font-semibold leading-snug m-0" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {safeTitle}
+          </h3>
+          {excerptText && (
+            <p className="text-sm text-muted-foreground" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {excerptText}
+            </p>
+          )}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto">
+            {authorName && <span>By {authorName}</span>}
+            {!hideDate && article.published_at && (
+              <span>{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
+            )}
+          </div>
+        </div>
+      </LocalizedLink>
+    );
+  }
+
   // Default card variant
   return (
     <Card
@@ -268,6 +329,11 @@ export const NewsCard = ({
               style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }}
               onError={() => setImgFailed(true)}
             />
+            {(article as Record<string, unknown>).is_premium === true && (
+              <Badge style={{ position: 'absolute', top: 8, right: 8, backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <Lock style={{ height: 10, width: 10 }} aria-hidden="true" /> Premium
+              </Badge>
+            )}
             {article.is_featured && (
               <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>
                 Featured
@@ -276,6 +342,11 @@ export const NewsCard = ({
           </div>
         )}
 
+        {!hasImage && (article as Record<string, unknown>).is_premium === true && (
+          <Badge style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <Lock style={{ height: 10, width: 10 }} aria-hidden="true" /> Premium
+          </Badge>
+        )}
         {!hasImage && article.is_featured && (
           <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', alignSelf: 'flex-start' }}>
             Featured

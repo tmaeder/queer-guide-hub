@@ -68,7 +68,7 @@ export const useNews = () => {
         .select(
           `
           id, slug, title, excerpt, url, image_url, author,
-          published_at, source_id, views_count, is_featured,
+          published_at, source_id, views_count, is_featured, is_premium,
           country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,
         )
@@ -244,11 +244,12 @@ export const useNews = () => {
         .select(
           `
           id, slug, title, excerpt, url, image_url, author,
-          published_at, source_id, views_count, is_featured,
+          published_at, source_id, views_count, is_featured, is_premium,
           country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,
         )
         .eq('is_featured', true)
+        .eq('is_premium', false)
         .not('published_at', 'is', null)
         .or('quality_status.is.null,quality_status.eq.passed')
         .order('published_at', { ascending: false })

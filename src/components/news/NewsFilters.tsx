@@ -14,7 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
-import { listFrom } from '@/hooks/usePageFetchers';
+import { supabase } from '@/integrations/supabase/client';
 import type { NewsCategory } from '@/hooks/useNews';
 
 type NewsSource = Tables<'news_sources'>;
@@ -22,11 +22,13 @@ type NewsSource = Tables<'news_sources'>;
 interface CountryOption {
   id: string;
   name: string;
+  article_count?: number;
 }
 
 interface CityOption {
   id: string;
   name: string;
+  article_count?: number;
 }
 
 interface NewsFiltersProps {
@@ -67,15 +69,21 @@ export const NewsFilters = ({
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
 
-  // Fetch countries and cities
+  // Fetch only countries/cities that actually have news content (E2). The
+  // RPCs come from migration news_qa_countries_with_articles_rpc and return
+  // {id, name, article_count} so the Select can show counts.
   useEffect(() => {
     const fetchData = async () => {
-      const [countriesData, citiesData] = await Promise.all([
-        listFrom<CountryOption>('countries', 'id, name', { col: 'name' }),
-        listFrom<CityOption>('cities', 'id, name', { col: 'name' }),
+      const [countriesRes, citiesRes] = await Promise.all([
+        supabase.rpc('news_countries_with_articles'),
+        supabase.rpc('news_cities_with_articles'),
       ]);
-      setCountries(countriesData);
-      setCities(citiesData);
+      if (!countriesRes.error && Array.isArray(countriesRes.data)) {
+        setCountries(countriesRes.data as CountryOption[]);
+      }
+      if (!citiesRes.error && Array.isArray(citiesRes.data)) {
+        setCities(citiesRes.data as CityOption[]);
+      }
     };
     fetchData();
   }, []);
@@ -358,6 +366,7 @@ export const NewsFilters = ({
               {countries.map((country) => (
                 <SelectItem key={country.id} value={country.id}>
                   {country.name}
+                  {country.article_count ? ` (${country.article_count})` : ''}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -398,6 +407,7 @@ export const NewsFilters = ({
               {cities.map((city) => (
                 <SelectItem key={city.id} value={city.id}>
                   {city.name}
+                  {city.article_count ? ` (${city.article_count})` : ''}
                 </SelectItem>
               ))}
             </SelectContent>

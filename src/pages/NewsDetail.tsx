@@ -461,21 +461,23 @@ export default function NewsDetail() {
                     <LocalizedLink
                       key={related.id}
                       to={`/news/${related.slug || related.id}`}
-                      className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted"
+                      className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted border border-border"
                     >
-                      {related.image_url && (
-                        <div className="overflow-hidden">
+                      <div className="overflow-hidden" style={{ height: 120, background: 'hsl(var(--muted))' }}>
+                        {related.image_url ? (
                           <img
                             src={related.image_url}
-                            alt={decodeHtmlEntities(related.title)}
-                            className="w-full object-cover"
-                            style={{ height: 120 }}
+                            alt=""
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                            width={400}
+                            height={120}
                             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
-                        </div>
-                      )}
+                        ) : null}
+                      </div>
                       <div className="p-3">
                         <p
                           className="text-sm font-semibold mb-1 overflow-hidden"
@@ -483,6 +485,8 @@ export default function NewsDetail() {
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
+                            textTransform: 'none',
+                            color: 'hsl(var(--foreground))',
                           }}
                         >
                           {decodeHtmlEntities(related.title)}

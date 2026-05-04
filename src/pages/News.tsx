@@ -664,12 +664,13 @@ export default function News() {
                 {(viewMode === 'grid' || viewMode === 'list') && (
                   <StaggerGrid className={viewMode === 'grid'
                     ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
-                    : 'flex flex-col gap-4'
+                    : 'flex flex-col gap-3'
                   }>
                     {paginatedArticles.map((article) => (
                       <NewsCard
                         key={article.id}
                         article={article}
+                        variant={viewMode === 'list' ? 'compact' : undefined}
                         onViewArticle={handleViewArticle}
                         onFilterByTag={handleFilterByTag}
                         onFilterBySource={handleFilterBySource}
