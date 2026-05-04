@@ -307,8 +307,17 @@ export default function Personalities() {
           </div>
         )}
 
-        {/* Results toolbar */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Results toolbar — wrapped in a labelled <section> so the All
+            personalities heading gives screen reader users a landmark to jump
+            to (the page previously had H1 → H2 "Featured icons" → H3 cards
+            with no H2 above the main grid). */}
+        <h2 id="all-personalities-heading" className="sr-only">
+          All personalities
+        </h2>
+        <div
+          className="flex items-center justify-between mb-4"
+          aria-labelledby="all-personalities-heading"
+        >
           <p className="text-sm">
             {loading && personalities.length === 0
               ? 'Loading…'

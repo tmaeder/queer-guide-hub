@@ -440,7 +440,8 @@ export function Header() {
           >
             <motion.img
               src="/images/logo.png"
-              alt="Queer Guide Logo"
+              alt=""
+              aria-hidden="true"
               className="brightness-0 dark:invert"
               style={{ height: 32, width: 32 }}
               whileHover={{ rotate: -6, scale: 1.08 }}
