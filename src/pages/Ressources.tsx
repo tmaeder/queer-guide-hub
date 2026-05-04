@@ -174,7 +174,6 @@ export default function Ressources() {
       const decoded = decodeURIComponent(categoryParam);
       matchAgainst((c) => c.name === decoded);
     }
-  }, [categoryParam, categorySlug, categoriesTree]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryParam, categorySlug, categoriesTree]);
 

@@ -53,10 +53,23 @@ export function useHotels(autoFetch = true) {
         .from('hotels')
         .select('*', { count: 'exact' })
         .order('featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        // Stable tiebreaker. Without it, rows that share `featured` and
+        // `created_at` (108/312 hotels are featured; all 312 share a single
+        // created_at on prod) shuffle between range() requests, producing
+        // duplicate IDs across Load More pages.
+        .order('id', { ascending: true });
 
       if (filters?.search) {
-        query = query.ilike('name', `%${filters.search}%`);
+        // Tier-1 prefix match on city / country / name. Prefix (no leading
+        // wildcard) keeps "Berlin" from matching hosts who happen to drop
+        // "Berlin" mid-name (e.g. "Modern flat Berlin Alexander Platz...").
+        // PostgREST .or() takes a single comma-separated filter string; we
+        // escape commas/parens just in case.
+        const q = filters.search.replace(/[,()]/g, ' ');
+        query = query.or(
+          `city.ilike.${q}%,country.ilike.${q}%,name.ilike.${q}%`,
+        );
       }
       if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
