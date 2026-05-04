@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
+import { useMeta } from '@/hooks/useMeta';
 import { toast } from '@/hooks/use-toast';
 import {
   fetchMarketplaceListingBundle,
@@ -51,6 +52,14 @@ export default function MarketplaceItemDetail() {
 
   const listing = data?.listing ?? null;
   const reviews = data?.reviews ?? [];
+
+  useMeta({
+    title: listing?.title,
+    description: listing?.description?.slice(0, 160),
+    ogTitle: listing?.title,
+    ogImage: listing?.images?.[0],
+    canonicalPath: listing?.slug ? `/marketplace/${listing.slug}` : undefined,
+  });
 
   useEffect(() => {
     if (data) setIsFavorited(data.isFavorited);

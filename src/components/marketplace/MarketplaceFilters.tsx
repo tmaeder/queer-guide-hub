@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
 
 interface MarketplaceFiltersProps {
+  initialSearch?: string;
   onFiltersChange: (filters: {
     search?: string;
     category?: string;
@@ -41,8 +42,8 @@ const businessTypes = [
   'both'
 ];
 
-export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps) {
-  const [search, setSearch] = useState('');
+export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: MarketplaceFiltersProps) {
+  const [search, setSearch] = useState(initialSearch);
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [location, setLocation] = useState('');
@@ -52,22 +53,41 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
 
-  const handleSearch = () => {
+  const buildFilters = () => {
     const priceRange = minPrice || maxPrice ? {
       min: parseFloat(minPrice) || 0,
       max: parseFloat(maxPrice) || 10000
     } : undefined;
 
-    onFiltersChange({
-      search: search || undefined,
+    const cleanSearch = search.replace(/[,()]/g, ' ').trim();
+
+    return {
+      search: cleanSearch || undefined,
       category: category === 'all' ? undefined : category || undefined,
       subcategory: subcategory === 'all' ? undefined : subcategory || undefined,
       location: location || undefined,
       businessType: businessType === 'all' ? undefined : businessType || undefined,
       priceRange,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
-    });
+    };
   };
+
+  const handleSearch = () => {
+    onFiltersChange(buildFilters());
+  };
+
+  const isFirstRun = useRef(true);
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
+    const t = setTimeout(() => {
+      onFiltersChange(buildFilters());
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, category, subcategory, location, businessType, minPrice, maxPrice, selectedTags]);
 
   const clearFilters = () => {
     setSearch('');
@@ -83,7 +103,6 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
 
   const hasActiveFilters = search || (category && category !== 'all') || (subcategory && subcategory !== 'all') || location || (businessType && businessType !== 'all') || minPrice || maxPrice || selectedTags.length > 0;
 
-  // Reset subcategory when category changes
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
     setSubcategory('');
@@ -91,7 +110,6 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-background">
-      {/* Search Bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
@@ -100,7 +118,8 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-
+            style={{ paddingLeft: 36 }}
+            aria-label="Search products and services"
           />
         </div>
         <Button onClick={handleSearch} size="icon" aria-label="Search">
@@ -116,7 +135,6 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
         </Button>
       </div>
 
-      {/* Extended Filters */}
       {showAllFilters && (
         <div className="flex flex-col gap-4 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -206,17 +224,14 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
             </div>
           </div>
 
-          {/* Tags */}
           <TagSelector
             selectedTags={selectedTags}
             onTagsChange={setSelectedTags}
             placeholder="Select marketplace tags..."
             maxTags={10}
             categories={['business', 'commerce', 'product', 'service', 'identity']}
-
           />
 
-          {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSearch}>
               <Sliders style={{ height: 16, width: 16 }} />
@@ -232,7 +247,6 @@ export function MarketplaceFilters({ onFiltersChange }: MarketplaceFiltersProps)
         </div>
       )}
 
-      {/* Active Filters Display */}
       {hasActiveFilters && !showAllFilters && (
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-sm text-muted-foreground">Active filters:</span>
