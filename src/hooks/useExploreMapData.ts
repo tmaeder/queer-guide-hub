@@ -181,14 +181,11 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Cities ─────────────────────────────────────────────────────────────────
   const citiesEnabled = enabledLayers.includes('cities');
-  const { cities: rawCities = [], isFetching: citiesFetching } = useOptimizedCities(
-    citiesEnabled
-      ? {
-          limit: 500,
-          ...(filters?.search ? { search: filters.search } : {}),
-        }
-      : { limit: 0 },
-  );
+  const { cities: rawCities = [], isFetching: citiesFetching } = useOptimizedCities({
+    enabled: citiesEnabled,
+    limit: 500,
+    ...(filters?.search ? { search: filters.search } : {}),
+  });
 
   const cityMarkers = useMemo<MapMarker[]>(() => {
     if (!citiesEnabled) return [];
@@ -214,14 +211,11 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Countries ──────────────────────────────────────────────────────────────
   const countriesEnabled = enabledLayers.includes('countries');
-  const { countries: rawCountries = [], isFetching: countriesFetching } = useOptimizedCountries(
-    countriesEnabled
-      ? {
-          limit: 250,
-          ...(filters?.search ? { search: filters.search } : {}),
-        }
-      : { limit: 0 },
-  );
+  const { countries: rawCountries = [], isFetching: countriesFetching } = useOptimizedCountries({
+    enabled: countriesEnabled,
+    limit: 250,
+    ...(filters?.search ? { search: filters.search } : {}),
+  });
 
   const countryMarkers = useMemo<MapMarker[]>(() => {
     if (!countriesEnabled) return [];
