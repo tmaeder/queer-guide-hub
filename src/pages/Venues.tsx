@@ -216,8 +216,8 @@ const Venues = () => {
     'grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10">
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10 min-w-0">
         <VenueFilters
           // Re-mount on URL-driven filter changes (e.g. back button) so the
           // search input and chip selection re-hydrate from URL.

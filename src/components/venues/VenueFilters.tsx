@@ -320,7 +320,7 @@ export function VenueFilters({
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
       {/* Search Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -392,7 +392,7 @@ export function VenueFilters({
       </div>
 
       {/* Category Chips */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap max-w-full">
         {categories.map((cat) => (
           <Button
             key={cat}
