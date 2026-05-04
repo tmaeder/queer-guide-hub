@@ -206,11 +206,39 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   const { location: visitorGeo } = useVisitorLocation();
 
+  // Berlin — used as a curated fallback when neither URL state, an
+  // explicit prop, nor IP geolocation provides a center within ~2.5 s.
+  // Avoids the cold-load Sahara view (DEFAULT_CENTER = [0, 20] is in the
+  // empty desert and shows no markers, which reads as "the site is broken").
+  const FALLBACK_CENTER: [number, number] = [13.405, 52.52];
+  const FALLBACK_ZOOM = 10;
+  const fallbackFiredRef = useRef(false);
+
   useEffect(() => {
     if (skipAutoFly || initialCenter || !visitorGeo) return;
     setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
     flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
-  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter]);
+    toast({
+      title: 'Showing your area',
+      description: visitorGeo.city ?? undefined,
+    });
+  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter, toast]);
+
+  useEffect(() => {
+    if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;
+    const timer = setTimeout(() => {
+      if (visitorGeo || fallbackFiredRef.current) return;
+      fallbackFiredRef.current = true;
+      setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
+      flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
+      toast({
+        title: 'Showing Berlin',
+        description: 'Search to change',
+      });
+    }, 2500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipAutoFly, initialCenter]);
 
   // ── Helper: extract bbox from map ────────────────────────────────────────
   const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {

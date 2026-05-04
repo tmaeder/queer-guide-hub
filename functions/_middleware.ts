@@ -24,6 +24,7 @@
  */
 import {
   resolveMeta,
+  canonicalUrl,
   isIndexable,
   DEFAULT_OG_IMAGE,
   splitLocale,
@@ -110,10 +111,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   // Phase 3: detail routes look up the row in Supabase. Returns null if
   // the path isn't a detail route or the row isn't found.
+  // Strip the optional /:locale prefix so route resolution operates on the
+  // canonical (default-locale) path. Each translated URL keeps its own
+  // self-canonical and exposes hreflang alternates to its 10 siblings.
+  const { locale, basePath } = splitLocale(pathname);
+
+  // Phase 3: detail routes look up the row in Supabase and override
+  // meta/body/JSON-LD with type-specific values (LocalBusiness, Event, etc.).
+  // Returns null if the path isn't a detail route or the row isn't found.
   const detail = await resolveDetailRoute(env, basePath);
 
   const meta = detail?.meta ?? resolveMeta(basePath);
-  const canonical = localizedUrl(locale, basePath);
+  const canonical = locale ? localizedUrl(locale, basePath) : canonicalUrl(basePath);
   const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
   const indexable = isIndexable(basePath);
 

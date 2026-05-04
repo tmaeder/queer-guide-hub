@@ -5,29 +5,39 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, BookOpen, Plane, Tag, Layers } from 'lucide-react';
+import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, Tag, Layers } from 'lucide-react';
 import { SearchFilters } from '@/hooks/useSearch';
 import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
+import { CONTENT_TYPES } from '@/lib/searchTaxonomy';
 
 interface SearchFiltersPanelProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
+  /** P1-7: optional escape hatch so the parent can also clear its own search input. */
+  onClearAll?: () => void;
 }
 
-const contentTypes = [
-  { id: 'venue', label: 'Venues', icon: Building2 },
-  { id: 'event', label: 'Events', icon: CalendarDays },
-  { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag },
-  { id: 'user', label: 'Users', icon: Users },
-  { id: 'news', label: 'News', icon: Newspaper },
-  { id: 'location', label: 'Locations', icon: Globe },
-  { id: 'content', label: 'Wiki', icon: BookOpen },
-  { id: 'travel', label: 'Travel', icon: Plane },
-  { id: 'personality', label: 'Personalities', icon: Users },
-  { id: 'ressource', label: 'Resources', icon: Tag }
-];
+// P3-12: filter chips draw their id/label/icon from the taxonomy module so
+// they can never drift from the worker contract or other UI surfaces again.
+const TYPE_ICONS: Record<string, typeof Building2> = {
+  venue: Building2,
+  event: CalendarDays,
+  marketplace: ShoppingBag,
+  news: Newspaper,
+  personality: Users,
+  city: Globe,
+  country: Globe,
+  tag: Tag,
+  queer_village: MapPin,
+};
+
+const contentTypes = CONTENT_TYPES.map((t) => ({
+  id: t.id,
+  label: t.label,
+  icon: TYPE_ICONS[t.id] || Tag,
+}));
 
 const popularCategories = {
   venue: ['Restaurant', 'Bar', 'Hotel', 'Club', 'Gallery', 'Theater'],
@@ -38,7 +48,7 @@ const popularCategories = {
   ressource: ['Health', 'Education', 'Legal', 'Community', 'Support', 'Resources']
 };
 
-export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPanelProps) => {
+export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll }: SearchFiltersPanelProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const selectedRange: DateRange | undefined = filters.dateRange
@@ -99,7 +109,12 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange }: SearchFiltersPa
   };
 
   const clearAllFilters = () => {
-    onFiltersChange({});
+    if (onClearAll) {
+      // P1-7: parent owns the search input value, so it must be the one to clear it.
+      onClearAll();
+    } else {
+      onFiltersChange({});
+    }
   };
 
   const getRelevantCategories = () => {
