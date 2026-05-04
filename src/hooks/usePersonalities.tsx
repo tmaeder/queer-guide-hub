@@ -49,13 +49,6 @@ export interface PersonalityFilters {
   sortBy?: PersonalitySort;
 }
 
-const ADULT_PATTERNS = [
-  '%adult performer%',
-  '%adult model%',
-  '%adult film%',
-  '%porn%',
-];
-
 function transformRow(row: PersonalityRow): Personality {
   return {
     ...row,
@@ -112,9 +105,7 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
   }
 
   if (filters.exclude_adult !== false) {
-    for (const pattern of ADULT_PATTERNS) {
-      query = query.not('profession', 'ilike', pattern);
-    }
+    query = query.eq('is_adult', false);
   }
 
   if (filters.name_starts_with) {
