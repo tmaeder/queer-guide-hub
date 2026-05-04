@@ -588,7 +588,13 @@ export default function Ressources() {
                           {getCategoryShortName(cat.name)}
                         </span>
                       </div>
-                      <Badge variant="secondary">{cat.total_tag_count}</Badge>
+                      <Badge
+                        variant="secondary"
+                        title={`${cat.total_tag_count} tags total (across all subcategories)`}
+                        aria-label={`${cat.total_tag_count} tags total across all subcategories`}
+                      >
+                        {cat.total_tag_count}
+                      </Badge>
                     </div>
                     {activeChildren.length > 0 && (
                       <span
@@ -600,6 +606,7 @@ export default function Ressources() {
                           WebkitBoxOrient: 'vertical',
                           lineHeight: 1.4,
                         }}
+                        title="Each subcategory's count is the number of tags directly assigned to it"
                       >
                         {activeChildren
                           .map((c) => `${getCategoryShortName(c.name)} (${c.tag_count})`)
@@ -869,7 +876,13 @@ export default function Ressources() {
                   ? `${getCategoryShortName(filterCategory)} tags`
                   : 'Filtered tags'}
             </h6>
-            <Badge variant="secondary">{filteredAndSortedTags.length}</Badge>
+            <Badge
+              variant="secondary"
+              title={`${filteredAndSortedTags.length} matching tags`}
+              aria-label={`${filteredAndSortedTags.length} matching tags`}
+            >
+              {filteredAndSortedTags.length}
+            </Badge>
           </div>
           {filteredAndSortedTags.length > 0 ? (
             renderTagList(filteredAndSortedTags)
