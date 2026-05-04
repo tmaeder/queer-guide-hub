@@ -84,8 +84,6 @@ class RootBodyInjector {
   }
 }
 
-export const onRequest: PagesFunction = async (context) => {
-  const { request, next } = context;
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, next, env } = context;
   const url = new URL(request.url);
@@ -106,10 +104,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('text/html')) return response;
 
-  const meta = resolveMeta(pathname);
-  const canonical = canonicalUrl(pathname);
-  const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
-  const indexable = isIndexable(pathname);
   // Strip the optional /:locale prefix so route resolution operates on the
   // canonical (default-locale) path. Each translated URL keeps its own
   // self-canonical and exposes hreflang alternates to its 10 siblings.
@@ -121,7 +115,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const detail = await resolveDetailRoute(env, basePath);
 
   const meta = detail?.meta ?? resolveMeta(basePath);
-  const canonical = localizedUrl(locale, basePath);
+  const canonical = locale ? localizedUrl(locale, basePath) : canonicalUrl(basePath);
   const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
   const indexable = isIndexable(basePath);
 
@@ -160,9 +154,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     headInjections.push('<meta name="robots" content="noindex,nofollow">');
   }
 
-  if (pathname === '/' || pathname === '') {
-    headInjections.push(homepageJsonLd());
-  }
   if (basePath === '/' || basePath === '') {
     headInjections.push(homepageJsonLd());
   }
@@ -177,10 +168,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   const isBot = indexable && isBotUserAgent(request.headers.get('user-agent'));
   if (isBot) {
-    rewriter.on(
-      '#root',
-      new RootBodyInjector(buildBodyHtml(pathname, { title: meta.title, description: meta.description })),
-    );
     const bodyHtml =
       detail?.body ??
       buildBodyHtml(basePath, { title: meta.title, description: meta.description });
@@ -194,7 +181,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (isBot || indexable) {
     rewritten.headers.append('Vary', 'User-Agent');
   }
-  const rewritten = rewriter.transform(response);
 
   // Preserve original cache headers but ensure Vary on User-Agent isn't needed
   // since we don't branch on UA in Phase 1.
