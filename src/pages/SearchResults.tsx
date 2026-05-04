@@ -41,10 +41,15 @@ import {
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
+import { SearchPagination } from '@/components/search/SearchPagination';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useTranslation } from 'react-i18next';
+import { CONTENT_TYPES, supportsPriceSort, resolveType } from '@/lib/searchTaxonomy';
+
+const HITS_PER_PAGE = 20;
+const MAX_HEADING_QUERY_LEN = 80;
 
 const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   venue: MapPin,
@@ -81,6 +86,9 @@ export default function SearchResults() {
   const [sortBy, setSortBy] = useState(initialSort);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [searchQuery, setSearchQuery] = useState('');
+  // P0-4: 1-indexed page param survives reload; resets to 1 when q/sort/filters change.
+  const initialPage = Math.max(1, Number(searchParams.get('page') || 1));
+  const [page, setPage] = useState(initialPage);
 
   const query = searchParams.get('q') || '';
   const initialTypes = searchParams.get('types')?.split(',') || [];
@@ -99,13 +107,16 @@ export default function SearchResults() {
     cluster_ids: initialClusterIds.length > 0 ? initialClusterIds : undefined,
   });
 
-  const { results, loading, error, errorKind } = useSearch(query, {
-    ...filters,
-    types: selectedTab === 'all' ? filters.types : [selectedTab],
-  });
+  const activeTypes = selectedTab === 'all' ? filters.types : [selectedTab];
+  const { results, loading, error, errorKind, totalHits, tooShort } = useSearch(
+    query,
+    { ...filters, types: activeTypes },
+    page,
+  );
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
+    setPage(1); // P0-4: any filter change resets paging.
     const params = new URLSearchParams(searchParams);
     if (newFilters.types && newFilters.types.length > 0) {
       params.set('types', newFilters.types.join(','));
@@ -127,6 +138,17 @@ export default function SearchResults() {
     } else {
       params.delete('clusters');
     }
+    params.delete('page');
+    setSearchParams(params);
+  };
+
+  // P1-7: Clear All in the filters panel must also clear the visible search input.
+  const handleClearAll = () => {
+    setSearchQuery('');
+    setFilters({});
+    setPage(1);
+    const params = new URLSearchParams();
+    if (sortBy && sortBy !== 'relevance') params.set('sort', sortBy);
     setSearchParams(params);
   };
 
@@ -137,9 +159,25 @@ export default function SearchResults() {
     } else {
       params.delete('sort');
     }
+    params.delete('page');
     setSearchParams(params);
+    setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams/setSearchParams are from useSearchParams, stable refs; only re-run on sortBy
   }, [sortBy]);
+
+  // P0-4: keep page param in URL in sync with state, removing when on page 1.
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (page > 1) params.set('page', String(page));
+    else params.delete('page');
+    setSearchParams(params);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  // Reset to page 1 whenever the query string itself changes.
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
 
   const getResultsByType = () => {
     return results.reduce(
@@ -245,6 +283,15 @@ export default function SearchResults() {
   };
 
   const renderResultCard = (result: SearchResult) => {
+    // P0-2: never render a card without an objectID — clicking would build a
+    // /search?q=undefined link. P1-6: fall back to name/title legacy variants
+    // so a personality with `name` but no `title` still shows its label.
+    if (!result?.objectID) return null;
+    const displayTitle =
+      result.title ||
+      (result as unknown as { name?: string }).name ||
+      '';
+    if (!displayTitle) return null;
     const Icon = contentTypeIcons[result.type] || HelpCircle;
 
     if (viewMode === 'grid') {
@@ -514,7 +561,11 @@ export default function SearchResults() {
           loading
             ? 'Searching across all content...'
             : query
-              ? `${totalResults} results found for "${query}"`
+              ? `${totalResults} results found for "${
+                  query.length > MAX_HEADING_QUERY_LEN
+                    ? query.slice(0, MAX_HEADING_QUERY_LEN) + '…'
+                    : query
+                }"`
               : undefined
         }
         actions={
@@ -565,7 +616,11 @@ export default function SearchResults() {
       {/* Filters Panel */}
       {showFilters && (
         <Card>
-          <SearchFiltersPanel filters={filters} onFiltersChange={handleFiltersChange} />
+          <SearchFiltersPanel
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onClearAll={handleClearAll}
+          />
         </Card>
       )}
 
@@ -613,8 +668,13 @@ export default function SearchResults() {
                       Most Popular
                     </span>
                   </SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  {/* P2-11: only show price sort when every active type can have a price. */}
+                  {supportsPriceSort(activeTypes) && (
+                    <>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    </>
+                  )}
                   <SelectItem value="alpha-asc">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <ArrowUpDown style={{ width: 12, height: 12 }} />A - Z
@@ -658,6 +718,22 @@ export default function SearchResults() {
       {/* Results */}
       {loading ? (
         <PageLoadingState count={6} variant={viewMode === 'grid' ? 'card' : 'list'} />
+      ) : tooShort ? (
+        // P2-8: helpful guidance instead of "0 results" for sub-MIN_QUERY_LEN inputs.
+        <div
+          className="flex flex-col items-center justify-center text-center"
+          style={{ paddingTop: 48, paddingBottom: 48 }}
+        >
+          <Search
+            style={{ width: 48, height: 48, color: 'hsl(var(--muted-foreground))', marginBottom: 16 }}
+          />
+          <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+            Keep typing
+          </h3>
+          <p className="text-muted-foreground">
+            Enter at least 2 characters to start searching.
+          </p>
+        </div>
       ) : results.length === 0 ? (
         <>
           {/* Search Suggestions -- shown when query is empty */}
@@ -795,14 +871,20 @@ export default function SearchResults() {
             <TabsTrigger value="all">All ({totalResults})</TabsTrigger>
             {Object.entries(resultsByType).map(([type, typeResults]) => {
               const Icon = contentTypeIcons[type] || HelpCircle;
+              // P2-10/P3-12: never render `undefined (n)` — fall back to taxonomy
+              // label or a neutral "Other" bucket.
+              const canonicalId = resolveType(type);
+              const label =
+                CONTENT_TYPES.find((t) => t.id === canonicalId)?.label ??
+                (type && type !== 'undefined' ? type : 'Other');
               return (
                 <TabsTrigger
-                  key={type}
+                  key={type || 'other'}
                   value={type}
                   style={{ display: 'flex', alignItems: 'center', gap: 4 }}
                 >
                   <Icon style={{ width: 12, height: 12 }} />
-                  {type} ({typeResults.length})
+                  {label} ({typeResults.length})
                 </TabsTrigger>
               );
             })}
@@ -812,6 +894,12 @@ export default function SearchResults() {
             <div className={viewMode === 'grid' ? gridClass : listClass}>
               {sortedResults.map(renderResultCard)}
             </div>
+            <SearchPagination
+              page={page}
+              hitsPerPage={HITS_PER_PAGE}
+              totalHits={totalHits}
+              onPageChange={setPage}
+            />
           </TabsContent>
 
           {Object.entries(sortedResultsByType).map(([type, typeResults]) => (

@@ -14,9 +14,30 @@
  * If the row is missing, the middleware returns a real 404 instead of
  * silently serving the SPA shell (which would let the SPA bounce the user
  * to /news with an HTTP 200 — bad for crawlers, bad for users).
+ * absolute OG/Twitter tags, hreflang alternates, and (on the homepage or
+ * matching detail rows) JSON-LD.
+ *
+ * Phase 2: for crawler user agents on indexable routes, also injects
+ * route-specific body content into <div id="root">. Real users get the SPA
+ * shell unchanged; React's createRoot() replaces children on mount, so
+ * even when Googlebot's JS-rendering pass runs the SPA mounts cleanly
+ * over the injected content with no hydration mismatch (we use createRoot,
+ * not hydrateRoot).
+ *
+ * Phase 3: detail routes (/venues/:slug, /events/:slug, …) look up the
+ * row in Supabase and override meta/body/JSON-LD with type-specific
+ * values (LocalBusiness, Event, …). Detail responses are cached at the
+ * edge for 5 minutes.
+ *
+ * Phase 3.7: standalone landing pages (/spaces/:tag, /pride/:year,
+ * /pride/:year/:city) bypass the SPA shell entirely and return a
+ * complete HTML document. These URLs don't exist as SPA routes, so
+ * handing them to the SPA would render 404 — a cloaking risk if we then
+ * served different content to bots.
  */
 import {
   resolveMeta,
+  canonicalUrl,
   isIndexable,
   DEFAULT_OG_IMAGE,
   splitLocale,
@@ -93,12 +114,24 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // bypass the SPA shell entirely and return a complete HTML document.
   const { basePath: landingBasePath } = splitLocale(pathname);
   const landing = await resolveLandingRoute(env, landingBasePath);
+  // Strip the optional /:locale prefix so route resolution operates on the
+  // canonical (default-locale) path. Each translated URL keeps its own
+  // self-canonical and exposes hreflang alternates to its 10 siblings.
+  const { locale, basePath } = splitLocale(pathname);
+
+  // Phase 3.7: standalone landing pages bypass the SPA shell.
+  const landing = await resolveLandingRoute(env, basePath);
   if (landing) return landing;
 
   const response = await next();
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('text/html')) return response;
 
+  // Phase 3: detail routes look up the row in Supabase. Returns null if
+  // the path isn't a detail route or the row isn't found.
+  // Strip the optional /:locale prefix so route resolution operates on the
+  // canonical (default-locale) path. Each translated URL keeps its own
+  // self-canonical and exposes hreflang alternates to its 10 siblings.
   const { locale, basePath } = splitLocale(pathname);
   const indexable = isIndexable(basePath);
 
@@ -120,7 +153,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const meta = detail?.meta ?? resolveMeta(basePath);
-  const canonical = localizedUrl(locale, basePath);
+  const canonical = locale ? localizedUrl(locale, basePath) : canonicalUrl(basePath);
   const ogImage = meta.ogImage ?? DEFAULT_OG_IMAGE;
   // og:type stays 'website' — crawlers rely on JSON-LD @type for fine-grained
   // typing (NewsArticle / Place / Event). og:type=article would be wrong for
@@ -129,6 +162,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   // Tags appended to <head>. Append (rather than replace) so duplicates from
   // the source HTML are tolerated; crawlers honor the *last* tag.
+  // Tags appended to <head>. We append rather than replace for og:* /
+  // twitter:* because the source HTML may also have them — duplicates
+  // are tolerated by crawlers but we want the *last* tag to win, which
+  // append guarantees.
   const headInjections: string[] = [
     `<link rel="canonical" href="${escapeAttr(canonical)}">`,
     `<meta property="og:url" content="${escapeAttr(canonical)}">`,
@@ -145,6 +182,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   ];
 
   // hreflang alternates: one link per supported locale + x-default.
+  // hreflang alternates: one link per supported locale, plus x-default.
+  // Each locale's URL points to itself; the default locale is no-prefix
+  // English.
   if (indexable) {
     for (const l of SUPPORTED_LOCALES) {
       headInjections.push(
@@ -180,12 +220,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const rewritten = rewriter.transform(response);
 
   // Vary on UA so downstream caches don't serve bot HTML to humans.
+  // We branch on User-Agent for indexable HTML responses, so downstream
+  // caches must vary on UA to avoid serving bot HTML to humans (or vice
+  // versa).
   if (isBot || indexable) {
     rewritten.headers.append('Vary', 'User-Agent');
   }
 
   // Detail pages are dynamic but row content changes infrequently — let the
   // edge cache hold for 5 minutes to bound Supabase load.
+  // Detail pages are dynamic but the row content changes infrequently —
+  // let the edge cache hold for 5 minutes to bound Supabase load.
   if (detail) {
     rewritten.headers.set('Cache-Control', 'public, s-maxage=300, max-age=60');
   }

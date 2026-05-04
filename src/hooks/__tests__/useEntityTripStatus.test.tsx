@@ -28,8 +28,12 @@ describe('useEntityTripStatus', () => {
     expect(result.current.data).toEqual({ isInTrip: false, tripNames: [], tripIds: [], count: 0 });
   });
 
-  it('should not fetch when no entityId', () => {
+  it('should return empty status when no entityId', () => {
+    // After the P0.2 batching refactor, a single per-user trip_places
+    // query is shared across every card on the page (instead of one
+    // fetch per entity). When no entityId is passed we still get the
+    // empty placeholder back without doing any extra work.
     const { result } = renderHook(() => useEntityTripStatus('venue', undefined), { wrapper: w() });
-    expect(result.current.isFetching).toBe(false);
+    expect(result.current.data).toEqual({ isInTrip: false, tripNames: [], tripIds: [], count: 0 });
   });
 });

@@ -1464,5 +1464,14 @@
       "turnOn": "Turn on",
       "turnOff": "Turn off"
     }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "View details",
+      "share": "Share",
+      "linkCopied": "Link copied",
+      "linkCopiedDescription": "You can paste it now",
+      "shareFailed": "Share failed"
+    }
   }
 }

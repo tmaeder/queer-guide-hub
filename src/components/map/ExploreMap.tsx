@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import i18next from 'i18next';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -103,6 +104,11 @@ export interface ExploreMapProps {
   initialZoom?: number;
   /** Skip visitor geo auto-fly */
   skipAutoFly?: boolean;
+  /** Fired on map idle / moveend with the new viewport. Use to encode
+   *  state in the URL or persist preferences. */
+  onViewportChange?: (viewport: { center: [number, number]; zoom: number }) => void;
+  /** Fired when the enabled layer set changes. */
+  onLayersChange?: (layers: LayerType[]) => void;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -118,6 +124,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   initialCenter,
   initialZoom,
   skipAutoFly = false,
+  onViewportChange: onViewportChangeProp,
+  onLayersChange: onLayersChangeProp,
 }) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
@@ -184,9 +192,11 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   // ── Layer toggle ─────────────────────────────────────────────────────────
   const toggleLayer = useCallback((layer: LayerType) => {
-    setEnabledLayers((prev) =>
-      prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer],
-    );
+    setEnabledLayers((prev) => {
+      const next = prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer];
+      onLayersChangeProp?.(next);
+      return next;
+    });
   }, []);
 
   // ── Geolocation ──────────────────────────────────────────────────────────
@@ -196,11 +206,39 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   const { location: visitorGeo } = useVisitorLocation();
 
+  // Berlin — used as a curated fallback when neither URL state, an
+  // explicit prop, nor IP geolocation provides a center within ~2.5 s.
+  // Avoids the cold-load Sahara view (DEFAULT_CENTER = [0, 20] is in the
+  // empty desert and shows no markers, which reads as "the site is broken").
+  const FALLBACK_CENTER: [number, number] = [13.405, 52.52];
+  const FALLBACK_ZOOM = 10;
+  const fallbackFiredRef = useRef(false);
+
   useEffect(() => {
     if (skipAutoFly || initialCenter || !visitorGeo) return;
     setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
     flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
-  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter]);
+    toast({
+      title: 'Showing your area',
+      description: visitorGeo.city ?? undefined,
+    });
+  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter, toast]);
+
+  useEffect(() => {
+    if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;
+    const timer = setTimeout(() => {
+      if (visitorGeo || fallbackFiredRef.current) return;
+      fallbackFiredRef.current = true;
+      setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
+      flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
+      toast({
+        title: 'Showing Berlin',
+        description: 'Search to change',
+      });
+    }, 2500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipAutoFly, initialCenter]);
 
   // ── Helper: extract bbox from map ────────────────────────────────────────
   const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {
@@ -250,12 +288,12 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
               try {
                 await navigator.clipboard.writeText(absoluteUrl);
                 toast({
-                  title: 'Link kopiert / Link copied',
-                  description: 'Du kannst ihn jetzt einfügen / You can paste it now',
+                  title: i18next.t('map.popup.linkCopied', { defaultValue: 'Link copied' }),
+                  description: i18next.t('map.popup.linkCopiedDescription', { defaultValue: 'You can paste it now' }),
                 });
               } catch {
                 toast({
-                  title: 'Teilen fehlgeschlagen / Share failed',
+                  title: i18next.t('map.popup.shareFailed', { defaultValue: 'Share failed' }),
                   variant: 'destructive',
                 });
               }
@@ -330,6 +368,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       const z = map.getZoom();
       onViewportChange(bbox, z);
       setCurrentZoom(z);
+      const c = map.getCenter();
+      onViewportChangeProp?.({ center: [c.lng, c.lat], zoom: z });
     });
 
     return () => {

@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useMeta } from '@/hooks/useMeta';
 import { toast } from '@/hooks/use-toast';
 import { upsertEventAttendance } from '@/hooks/usePageFetchers';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
@@ -51,6 +52,46 @@ export default function EventDetail() {
   });
 
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
+
+  const cityForMeta = event?.cities?.name ?? event?.city ?? null;
+  const eventOgImage = event ? resolveEntityImage(event, 'event') : undefined;
+  useMeta({
+    title: event?.title ?? undefined,
+    description: event
+      ? (event.description?.slice(0, 160) ??
+        `Queer Guide event${cityForMeta ? ` in ${cityForMeta}` : ''}.`)
+      : undefined,
+    canonicalPath: event ? `/events/${event.slug}` : undefined,
+    ogImage: eventOgImage || undefined,
+    ogType: 'event',
+    jsonLd: event
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Event',
+          name: event.title,
+          startDate: event.start_date,
+          endDate: event.end_date ?? undefined,
+          eventStatus: 'https://schema.org/EventScheduled',
+          location: event.venues
+            ? {
+                '@type': 'Place',
+                name: event.venues.name,
+                address: [
+                  event.venues.address,
+                  event.venues.city,
+                  event.venues.country,
+                ]
+                  .filter(Boolean)
+                  .join(', '),
+              }
+            : cityForMeta
+              ? { '@type': 'Place', name: cityForMeta }
+              : undefined,
+          image: eventOgImage || undefined,
+          description: event.description ?? undefined,
+        }
+      : undefined,
+  });
 
   useEffect(() => {
     if (!user || !event) {

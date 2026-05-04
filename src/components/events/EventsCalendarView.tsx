@@ -86,56 +86,74 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
   };
   return (
     <div className="flex flex-col gap-6">
-      {/* Enhanced Month Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {monthlyStats.totalEvents === 0 ? (
         <Card>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-muted rounded-lg relative">
-                <CalendarIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <h5 className="text-2xl font-bold text-primary">
-                  {monthlyStats.totalEvents}
-                </h5>
-                <p className="text-sm text-muted-foreground">Total Events</p>
-              </div>
+          <CardContent className="py-8 text-center">
+            <div className="mx-auto mb-3 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+              <CalendarIcon className="h-6 w-6 text-muted-foreground" />
             </div>
+            <h3 className="text-lg font-semibold mb-1">
+              No events yet for {format(currentMonth, 'MMMM yyyy')}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Be the first — submit one to fill the month.
+            </p>
+            <Button asChild>
+              <a href="/submit/event">Submit an Event</a>
+            </Button>
           </CardContent>
         </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted rounded-lg relative">
+                  <CalendarIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h5 className="text-2xl font-bold text-primary">
+                    {monthlyStats.totalEvents}
+                  </h5>
+                  <p className="text-sm text-muted-foreground">Total Events</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg relative">
-                <Ticket className="h-5 w-5 text-green-600" />
+          <Card>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/10 rounded-lg relative">
+                  <Ticket className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h5 className="text-2xl font-bold text-green-600">
+                    {monthlyStats.freeEvents}
+                  </h5>
+                  <p className="text-sm text-muted-foreground">Free Events</p>
+                </div>
               </div>
-              <div>
-                <h5 className="text-2xl font-bold text-green-600">
-                  {monthlyStats.freeEvents}
-                </h5>
-                <p className="text-sm text-muted-foreground">Free Events</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-muted relative">
-                <Star className="h-5 w-5 text-muted-foreground" />
+          <Card>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-muted relative">
+                  <Star className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <h5 className="text-2xl font-bold text-secondary-foreground">
+                    {monthlyStats.eventTypes}
+                  </h5>
+                  <p className="text-sm text-muted-foreground">Categories</p>
+                </div>
               </div>
-              <div>
-                <h5 className="text-2xl font-bold text-secondary-foreground">
-                  {monthlyStats.eventTypes}
-                </h5>
-                <p className="text-sm text-muted-foreground">Categories</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Main Calendar Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -186,6 +204,8 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                     backgroundColor: 'hsl(var(--primary) / 0.1)',
                     color: 'hsl(var(--primary))',
                     fontWeight: 'bold',
+                    // Visible dot indicator under days with events.
+                    boxShadow: 'inset 0 -3px 0 0 hsl(var(--primary))',
                   },
                 }}
               />

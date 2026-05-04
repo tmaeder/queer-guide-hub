@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { format } from 'date-fns';
 import {
@@ -162,6 +163,7 @@ export function EventHero({
   heroImage,
   locationLabel,
 }: HeroProps) {
+  const { t } = useTranslation();
   return (
     <>
       {heroImage && (
@@ -187,7 +189,7 @@ export function EventHero({
       {isPast && (
         <Alert className="mb-6">
           <AlertDescription>
-            Dieses Event hat bereits stattgefunden. / This event has ended.
+            {t('pages.eventDetail.pastEvent', 'This event has ended.')}
           </AlertDescription>
         </Alert>
       )}
@@ -206,9 +208,9 @@ export function EventHero({
                 }}
               />
             )}
-            <h4 className="text-2xl font-bold min-w-0 flex-[1_1_100%] sm:flex-[1_1_auto] break-words pl-[1px]" style={{ overflowWrap: 'anywhere' }}>
+            <h1 className="text-2xl font-bold min-w-0 flex-[1_1_100%] sm:flex-[1_1_auto] break-words pl-[1px]" style={{ overflowWrap: 'anywhere' }}>
               {event.title}
-            </h4>
+            </h1>
             {event.is_featured && (
               <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
             )}
@@ -521,7 +523,11 @@ interface SidebarProps {
 export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps) {
   const lat = event.latitude ?? event.venues?.latitude;
   const lng = event.longitude ?? event.venues?.longitude;
-  const hasMap = typeof lat === 'number' && typeof lng === 'number';
+  // Hide the map when no venue / venue_name is set, even if we happen to have
+  // raw coords — leaking a precise pin while showing "Location TBA" in the
+  // header confuses users and can leak the host's address before reveal.
+  const hasNamedVenue = Boolean(event.venues?.name || event.venue_name);
+  const hasMap = hasNamedVenue && typeof lat === 'number' && typeof lng === 'number';
 
   return (
     <div className="flex flex-col gap-6">
