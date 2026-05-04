@@ -53,11 +53,47 @@ test.describe('Hotels — Phase 1 quick wins', () => {
     expect(robots).toContain('noindex');
   });
 
-  test.skip('Phase 4: Load More adds 24 unique cards per click', () => {
-    // Implemented in fix/hotels-phase-4-pagination-search.
+  test('Load More yields disjoint pages (no duplicate IDs)', async ({ page }) => {
+    await page.goto('/hotels', { waitUntil: 'networkidle' });
+
+    const collectIds = () =>
+      page.evaluate(() =>
+        Array.from(document.querySelectorAll('a[href^="/hotels/"]')).map(
+          (a) => (a as HTMLAnchorElement).getAttribute('href') ?? '',
+        ),
+      );
+
+    const beforeIds = new Set(await collectIds());
+    expect(beforeIds.size).toBeGreaterThan(0);
+
+    const loadMore = page.getByRole('button', { name: /Load More/i });
+    if (!(await loadMore.isVisible().catch(() => false))) {
+      // Total < pageSize — nothing to test.
+      return;
+    }
+
+    await loadMore.click();
+    await page.waitForLoadState('networkidle');
+
+    const afterIds = await collectIds();
+    expect(afterIds.length).toBeGreaterThan(beforeIds.size);
+    // No duplicates within the rendered list.
+    expect(new Set(afterIds).size).toBe(afterIds.length);
   });
 
-  test.skip('Phase 4: searching Berlin returns only city=Berlin rows', () => {
-    // Implemented in fix/hotels-phase-4-pagination-search.
+  test('searching "Berlin" returns only Berlin-y results', async ({ page }) => {
+    await page.goto('/hotels?q=Berlin', { waitUntil: 'networkidle' });
+
+    // Card subtitles include "City, Country" — every visible card should
+    // mention Berlin somewhere (city OR country prefix matches).
+    const cards = page.locator('a[href^="/hotels/"]');
+    const count = await cards.count();
+    expect(count).toBeGreaterThan(0);
+    expect(count).toBeLessThanOrEqual(20);
+
+    for (let i = 0; i < Math.min(count, 10); i++) {
+      const text = (await cards.nth(i).innerText()).toLowerCase();
+      expect(text).toContain('berlin');
+    }
   });
 });
