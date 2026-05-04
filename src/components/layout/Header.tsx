@@ -234,7 +234,7 @@ export function Header() {
                   <Avatar style={{ height: 40, width: 40 }}>
                     <AvatarImage
                       src={avatarSrc}
-                      alt=""
+                      alt={(profile?.display_name || 'Account') as string}
                     />
                     <AvatarFallback>
                       {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
@@ -549,7 +549,7 @@ export function Header() {
                       <Avatar style={{ height: 36, width: 36 }}>
                         <AvatarImage
                           src={avatarSrc}
-                          alt=""
+                          alt={(profile?.display_name || 'Account menu') as string}
                         />
                         <AvatarFallback>
                           {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}

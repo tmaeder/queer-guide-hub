@@ -84,11 +84,11 @@ export function MarketplaceHero({
   return (
     <>
       {heroImage && (
-        <div className="w-full h-40 md:h-48 rounded-xl overflow-hidden mb-6">
+        <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6 bg-muted flex items-center justify-center">
           <img
             src={heroImage}
             alt={listing.title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}

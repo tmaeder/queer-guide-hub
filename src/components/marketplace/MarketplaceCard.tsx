@@ -92,9 +92,9 @@ export function MarketplaceCard({
         <div className="flex flex-col gap-2">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+              <h2 className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap text-base">
                 {listing.title}
-              </p>
+              </h2>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {listing.business_name}
               </p>
