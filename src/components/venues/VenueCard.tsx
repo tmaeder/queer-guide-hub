@@ -12,6 +12,9 @@ import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
 
+const categoryLabel = (cat: string) =>
+  cat.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
 interface VenueCardProps {
   venue?: Venue & {
     venue_reviews?: Array<{
@@ -81,7 +84,7 @@ export function VenueCard({
                     letterSpacing: '0.05em',
                   }}
                 >
-                  {venue.category}
+                  {categoryLabel(venue.category)}
                 </div>
               )}
 

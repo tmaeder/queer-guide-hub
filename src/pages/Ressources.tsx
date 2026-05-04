@@ -550,9 +550,13 @@ export default function Ressources() {
           </div>
         )}
 
-        {selectedTag.description && (
+        {selectedTag.description ? (
           <p className="text-muted-foreground mb-6" style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.9rem' }}>
             {selectedTag.description}
+          </p>
+        ) : (
+          <p className="text-muted-foreground mb-6 italic" style={{ fontSize: '0.85rem', opacity: 0.6 }}>
+            No definition yet for this term.
           </p>
         )}
 
@@ -803,8 +807,8 @@ export default function Ressources() {
 
           {(() => {
             const node = categoriesTree.find((c) => c.name === selectedCategory);
-            const activeChildren = node?.children?.filter((c) => c.tag_count > 0) ?? [];
-            if (!node || activeChildren.length === 0) {
+            const allChildren = node?.children ?? [];
+            if (!node || allChildren.length === 0) {
               const flat = allTags
                 .filter((t) =>
                   t.categories?.some(
@@ -826,16 +830,20 @@ export default function Ressources() {
             return (
               <div className="flex flex-col gap-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {activeChildren.map((child) => {
+                  {allChildren.map((child) => {
                     const Icon = getCategoryIcon(child.name);
+                    const isEmpty = child.tag_count === 0;
                     return (
                       <button
                         key={child.id}
                         onClick={() => {
+                          if (isEmpty) return;
                           setSelectedSubcategory(child.name);
                           setViewMode('subcategory');
                         }}
                         className={hoverCardCls}
+                        style={isEmpty ? { opacity: 0.45, cursor: 'default' } : undefined}
+                        aria-disabled={isEmpty || undefined}
                       >
                         <Icon style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.65 }} />
                         <div className="flex-1 min-w-0">
@@ -843,18 +851,20 @@ export default function Ressources() {
                             {getCategoryShortName(child.name)}
                           </p>
                           <span className="text-xs text-muted-foreground">
-                            {child.tag_count} tags
+                            {isEmpty ? 'Coming soon' : `${child.tag_count} tags`}
                           </span>
                         </div>
-                        <ChevronRight
-                          style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }}
-                        />
+                        {!isEmpty && (
+                          <ChevronRight
+                            style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }}
+                          />
+                        )}
                       </button>
                     );
                   })}
                 </div>
 
-                {activeChildren.map((child) => {
+                {allChildren.filter((c) => c.tag_count > 0).map((child) => {
                   const childTags = allTags
                     .filter((t) => t.categories?.some((c) => c.id === child.id))
                     .sort(
