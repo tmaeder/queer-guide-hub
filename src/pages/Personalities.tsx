@@ -6,9 +6,10 @@ import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
 import {
   usePersonalities,
+  useProfessionFacets,
   type PersonalityFilters,
-  type PersonalitySort,
 } from '@/hooks/usePersonalities';
+import { parseFilters, serializeFilters } from '@/lib/personalitiesFilters';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -27,34 +28,14 @@ const AUTO_LOAD_CAP = 48;
 const GRID_CLASS =
   'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 [&>*]:min-w-0';
 
-function filtersFromParams(params: URLSearchParams): PersonalityFilters {
-  return {
-    profession: params.get('profession') || undefined,
-    search: params.get('q') || undefined,
-    name_starts_with: params.get('letter') || undefined,
-    sortBy: (params.get('sort') as PersonalitySort) || 'featured',
-    is_living:
-      params.get('status') === 'living'
-        ? true
-        : params.get('status') === 'historical'
-          ? false
-          : undefined,
-    featured_only: params.get('featured') === '1' || undefined,
-    exclude_adult: params.get('include_adult') === '1' ? false : true,
-  };
-}
+const MAX_DEEP_LINK_PAGE = 50;
 
-function paramsFromFilters(filters: PersonalityFilters): URLSearchParams {
-  const p = new URLSearchParams();
-  if (filters.profession) p.set('profession', filters.profession);
-  if (filters.search) p.set('q', filters.search);
-  if (filters.name_starts_with) p.set('letter', filters.name_starts_with);
-  if (filters.sortBy && filters.sortBy !== 'featured') p.set('sort', filters.sortBy);
-  if (filters.is_living === true) p.set('status', 'living');
-  if (filters.is_living === false) p.set('status', 'historical');
-  if (filters.featured_only) p.set('featured', '1');
-  if (filters.exclude_adult === false) p.set('include_adult', '1');
-  return p;
+function pageFromParams(params: URLSearchParams): number {
+  const raw = params.get('page');
+  if (!raw) return 1;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, MAX_DEEP_LINK_PAGE);
 }
 
 function activeFilterCount(f: PersonalityFilters): number {
@@ -90,10 +71,18 @@ export default function Personalities() {
     },
   });
 
-  const [filters, setFilters] = useState<PersonalityFilters>(() =>
-    filtersFromParams(searchParams),
+  // Profession facets are loaded once and used to validate the URL `profession` param.
+  const { facets: professionFacets } = useProfessionFacets(60);
+  const validProfessions = useMemo(
+    () => professionFacets.map((f) => f.profession),
+    [professionFacets],
   );
-  const [page, setPage] = useState(1);
+
+  const [filters, setFilters] = useState<PersonalityFilters>(
+    () => parseFilters(searchParams).filters,
+  );
+  const initialPageRef = useRef<number>(pageFromParams(searchParams));
+  const [page, setPage] = useState(initialPageRef.current);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -106,13 +95,22 @@ export default function Personalities() {
     fetchPersonalities,
   } = usePersonalities(false);
 
-  // Initial + filter-change fetch
+  // Initial + filter-change fetch. Honors ?page=N on first mount by loading
+  // N pages worth in a single Supabase range request, so deep links restore
+  // the visible card set without forcing the user to re-scroll.
   useEffect(() => {
-    setPage(1);
-    setAutoLoadedCount(0);
-    fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
-    // Sync URL
-    const nextParams = paramsFromFilters(filters);
+    const targetPage = initialPageRef.current;
+    initialPageRef.current = 1; // only deep-link on the very first mount
+    setPage(targetPage);
+    setAutoLoadedCount(targetPage > 1 ? (targetPage - 1) * PAGE_SIZE : 0);
+    fetchPersonalities(filters, {
+      page: 1,
+      pageSize: targetPage * PAGE_SIZE,
+      append: false,
+    });
+    // Sync URL — serializeFilters from PR 1 + the page param from PR 5.
+    const nextParams = serializeFilters(filters);
+    if (targetPage > 1) nextParams.set('page', String(targetPage));
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
     }
@@ -130,8 +128,7 @@ export default function Personalities() {
 
   // React to browser back/forward (external URL changes)
   useEffect(() => {
-    const fromUrl = filtersFromParams(searchParams);
-    // Only overwrite local filters if URL has genuinely different content
+    const { filters: fromUrl } = parseFilters(searchParams, validProfessions.length ? validProfessions : null);
     const a = JSON.stringify(fromUrl);
     const b = JSON.stringify(filters);
     if (a !== b) {
@@ -139,6 +136,18 @@ export default function Personalities() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Once facets load, re-validate the current `profession` against the allowlist
+  // and rewrite the URL if it was stale (e.g. ?profession=Foo).
+  useEffect(() => {
+    if (!validProfessions.length) return;
+    const { filters: cleaned, changed } = parseFilters(searchParams, validProfessions);
+    if (changed) {
+      setFilters(cleaned);
+      setSearchParams(serializeFilters(cleaned), { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validProfessions]);
 
   const handleFiltersChange = useCallback((next: PersonalityFilters) => {
     setFilters((prev) => ({ ...prev, ...next }));
@@ -175,6 +184,7 @@ export default function Personalities() {
           });
           const fetched = result?.fetched ?? PAGE_SIZE;
           setAutoLoadedCount((c) => Math.min(AUTO_LOAD_CAP, c + fetched));
+          syncPageToUrl(nextPage);
         }
       },
       { rootMargin: '200px' },
@@ -182,7 +192,23 @@ export default function Personalities() {
 
     observer.observe(el);
     return () => observer.unobserve(el);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
+
+  const syncPageToUrl = useCallback(
+    (n: number) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (n <= 1) next.delete('page');
+          else next.set('page', String(n));
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   const loadMoreManual = useCallback(async () => {
     const nextPage = page + 1;
@@ -192,7 +218,8 @@ export default function Personalities() {
       pageSize: PAGE_SIZE,
       append: true,
     });
-  }, [page, filters, fetchPersonalities]);
+    syncPageToUrl(nextPage);
+  }, [page, filters, fetchPersonalities, syncPageToUrl]);
 
   const hasAnyFilter = useMemo(() => activeFilterCount(filters) > 0, [filters]);
 
