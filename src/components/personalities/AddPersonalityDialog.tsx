@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -85,6 +85,10 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [selectionDialogOpen, setSelectionDialogOpen] = useState(false);
   const [candidates, setCandidates] = useState<Array<{ id: string; name: string; description?: string }>>([]);
+
+  // Per-field validation errors. Keyed by field name; empty/undefined ⇒ no error.
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string }>({});
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleFieldToggle = (field: string) => {
     setFormData(prev => ({
@@ -333,15 +337,18 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Name is required",
-        variant: "destructive"
-      });
+    const errors: { name?: string } = {};
+    if (!formData.name.trim()) errors.name = 'Name is required';
+    if (formData.name.length > 120) errors.name = 'Name is too long (max 120 characters)';
+
+    if (errors.name) {
+      setFieldErrors(errors);
+      // Focus the first invalid field so screen readers announce the error.
+      nameInputRef.current?.focus();
       return;
     }
 
+    setFieldErrors({});
     setLoading(true);
 
     try {
@@ -452,11 +459,23 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
+                    ref={nameInputRef}
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, name: e.target.value }));
+                      // Clear the error as soon as the user starts typing.
+                      if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: undefined }));
+                    }}
                     placeholder="Full name"
                     required
+                    aria-invalid={!!fieldErrors.name}
+                    aria-describedby={fieldErrors.name ? 'name-error' : undefined}
                   />
+                  {fieldErrors.name && (
+                    <p id="name-error" role="alert" className="text-destructive text-sm mt-1">
+                      {fieldErrors.name}
+                    </p>
+                  )}
                 </div>
 
                 <div>
