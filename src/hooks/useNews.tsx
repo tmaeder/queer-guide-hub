@@ -76,6 +76,9 @@ export const useNews = () => {
         // Hide articles flagged or rejected by the news quality pipeline.
         // Legacy rows (quality_status NULL) and approved ones (passed) stay visible.
         .or('quality_status.is.null,quality_status.eq.passed')
+        // Hide rows that the canonical_url-dedup pass marked as duplicates of
+        // an older row (Group A4).
+        .is('duplicate_of_id', null)
         .order(sortField, { ascending: sortOrder });
 
       if (filters?.cityIds && filters.cityIds.length > 0) {
@@ -252,6 +255,7 @@ export const useNews = () => {
         .eq('is_premium', false)
         .not('published_at', 'is', null)
         .or('quality_status.is.null,quality_status.eq.passed')
+        .is('duplicate_of_id', null)
         .order('published_at', { ascending: false })
         .limit(5);
 
