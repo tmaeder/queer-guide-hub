@@ -210,6 +210,14 @@ async function indexRow(env: Env, table: string, row: any): Promise<void> {
 	const tm = TABLE_MAP[table];
 	if (!tm) return;
 
+	// P0-1: drop unpublished/draft rows and rows with no displayable title.
+	// If a row was indexed previously and has now become unpublished, remove it
+	// from both stores so it stops appearing in search results.
+	if (shouldSkipRow(table, row)) {
+		await deleteRow(env, table, row.id);
+		return;
+	}
+
 	// 1. Compose embed text (multilingual concat when available).
 	const text = composeEmbedText(table, row);
 	const vec = await embedText(env, text);
@@ -220,6 +228,26 @@ async function indexRow(env: Env, table: string, row: any): Promise<void> {
 	// 3. Upsert Meili doc.
 	const doc = toMeiliDoc(table, row);
 	await meiliUpsert(env, tm.index, [doc]);
+}
+
+// P0-1: a row is index-worthy only if it is publicly visible AND has a title.
+// `is_published`/`status`/`published_at` shapes vary per table, so we accept
+// any of the common conventions defensively.
+export function shouldSkipRow(table: string, row: any): boolean {
+	if (!row) return true;
+	if (!row.title && !row.name) return true;
+	if (row.is_published === false) return true;
+	if (row.is_public === false) return true;
+	if (row.is_private === true) return true;
+	const status = typeof row.status === "string" ? row.status.toLowerCase() : null;
+	if (status && ["draft", "pending", "rejected", "unpublished", "archived", "hidden"].includes(status)) {
+		return true;
+	}
+	// events: explicit approved/published required for non-null status workflows.
+	if (table === "events" && status && !["approved", "published", "active"].includes(status)) {
+		return true;
+	}
+	return false;
 }
 
 async function deleteRow(env: Env, table: string, id?: string): Promise<void> {

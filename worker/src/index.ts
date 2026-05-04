@@ -106,9 +106,12 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 	const started = Date.now();
 	const body = (await request.json()) as SearchBody;
 	const { query, filters = {}, hitsPerPage = 20, user_id, session_id, lang = "en" } = body;
+	// P0-4: 1-indexed page param. Bound to a sensible max so a runaway client
+	// can't ask for offset = page * 20 in the millions.
+	const page = Math.max(1, Math.min(50, Number(body.page) || 1));
 
 	if (!query?.trim()) {
-		return json({ hits: [], facetDistribution: {}, processingTimeMS: 0 }, 200, cors);
+		return json({ hits: [], facetDistribution: {}, processingTimeMS: 0, page, hitsPerPage, totalHits: 0 }, 200, cors);
 	}
 
 	const q = query.trim();
@@ -126,9 +129,19 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		mergedFilters.types = [tMap[rewrite.type_hint] || rewrite.type_hint];
 	}
 
-	const requestedIndexes: string[] = mergedFilters.types?.length
-		? [...new Set<string>(mergedFilters.types.map((t: string) => INDEX_MAP[t] || t).filter((t: string) => ALL_INDEXES.includes(t)))]
-		: ALL_INDEXES;
+	// P0-3: validate type filter strictly. Unknown types previously fell through
+	// to "search every index", silently widening filtered queries.
+	let requestedIndexes: string[];
+	if (mergedFilters.types?.length) {
+		const mapped = mergedFilters.types.map((t: string) => ({ raw: t, idx: INDEX_MAP[t] || t }));
+		const unknown = mapped.filter((m) => !ALL_INDEXES.includes(m.idx)).map((m) => m.raw);
+		if (unknown.length) {
+			return json({ error: "unknown_type", unknown_types: unknown, allowed: Object.keys(INDEX_MAP) }, 400, cors);
+		}
+		requestedIndexes = [...new Set<string>(mapped.map((m) => m.idx))];
+	} else {
+		requestedIndexes = ALL_INDEXES;
+	}
 
 	const filterParts = buildFilters(mergedFilters);
 
@@ -162,6 +175,7 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			facets: INDEX_FACETS,
 			hitsPerPage,
 			useHybrid,
+			offset: (page - 1) * hitsPerPage,
 		}),
 		semanticSearch(env, {
 			queryVec: blendedVec,
@@ -246,6 +260,8 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 			suggestions: final.slice(0, 5),
 			nbHits: final.length,
 			totalHits: meili.estimatedTotalHits,
+			page,
+			hitsPerPage,
 			processingTimeMS,
 			facetDistribution: reorderedFacets,
 			debug: body.debug
@@ -372,6 +388,7 @@ type SearchBody = {
 	query: string;
 	filters?: any;
 	hitsPerPage?: number;
+	page?: number; // P0-4: 1-indexed
 	user_id?: string;
 	session_id?: string;
 	lang?: "en" | "de" | "es" | "fr";

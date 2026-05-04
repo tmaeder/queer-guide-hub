@@ -107,12 +107,18 @@ export async function meiliMultiSearch(
 		facets: Record<string, string[]>;
 		hitsPerPage: number;
 		useHybrid: boolean;
+		offset?: number;
 	},
 ) {
+	// P0-4: per-index limit accounts for cross-index fusion in handleSearch —
+	// keep the 1.5× headroom and add the offset when paginating.
+	const perIndexLimit = Math.max(5, Math.ceil(args.hitsPerPage * 1.5));
+	const offset = args.offset ?? 0;
 	const queries = args.indexes.map((indexUid) => ({
 		indexUid,
 		q: args.query,
-		limit: Math.max(5, Math.ceil(args.hitsPerPage * 1.5)),
+		limit: perIndexLimit,
+		offset,
 		// Strip filter clauses that reference attributes the index doesn't have as filterable.
 		filter: scopeFilterToIndex(args.filter, indexUid),
 		facets: args.facets[indexUid] || ["type"],
@@ -148,13 +154,24 @@ export async function meiliMultiSearch(
 	let totalHits = 0;
 	for (const r of data.results) {
 		for (const h of r.hits) {
-			hits.push(mapHit(h, r.indexUid));
+			const mapped = mapHit(h, r.indexUid);
+			// P0-1: belt-and-braces — never surface a hit without a displayable
+			// title even if a stale Meili doc somehow slipped past ingest gating.
+			if (!mapped.title) {
+				console.warn(`meili: dropping titleless hit ${r.indexUid}/${mapped.id}`);
+				continue;
+			}
+			hits.push(mapped);
 		}
 		totalHits += r.estimatedTotalHits || 0;
 		if (r.facetDistribution) {
 			for (const [k, vs] of Object.entries(r.facetDistribution as Record<string, Record<string, number>>)) {
 				if (!mergedFacets[k]) mergedFacets[k] = {};
-				for (const [v, c] of Object.entries(vs)) mergedFacets[k][v] = (mergedFacets[k][v] || 0) + c;
+				for (const [v, c] of Object.entries(vs)) {
+					// P2-10: never emit `undefined`/`null`/empty as a facet bucket key.
+					const key = v && v !== "undefined" && v !== "null" ? v : "Other";
+					mergedFacets[k][key] = (mergedFacets[k][key] || 0) + c;
+				}
 			}
 		}
 	}
