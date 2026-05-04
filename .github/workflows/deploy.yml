@@ -42,6 +42,9 @@ jobs:
         run: npm run build
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
+          # Point MapLibre at our R2-backed mirror instead of protomaps.github.io.
+          # The protomaps-tiles worker serves /basemaps-assets/* from R2 (see #809).
+          VITE_BASEMAP_ASSETS_URL: "https://protomaps-tiles.maeder-tobiassimon.workers.dev/basemaps-assets"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
