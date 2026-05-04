@@ -1,8 +1,9 @@
 import { useParams } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
+import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { EntityDetailLayout } from '@/components/entity/EntityDetailLayout';
@@ -56,33 +57,27 @@ export default function PersonalityDetail() {
     }
   }, [error, navigate]);
 
-  // Render the in-app Not Found state instead of silently bouncing the user
-  // back to /personalities — that hid the 404 and made the SPA disagree with
-  // the edge-rendered HTTP 404 from functions/_middleware.ts.
-  useEffect(() => {
-    if (isLoading || error) return;
-    if (slug && personality === null) {
-      document.title = 'Personality not found · Queer Guide';
-    }
-  }, [isLoading, error, personality, slug]);
-
-  useEffect(() => {
-    if (!personality) return;
-    document.title = `${personality.name} - Queer Guide`;
-    const metaDescription =
+  const metaDescription = useMemo(() => {
+    if (!personality) return undefined;
+    return (
       personality.description ||
       personality.bio?.substring(0, 160) ||
-      `Learn about ${personality.name}, a notable LGBTQ+ personality.`;
-    const existingMeta = document.querySelector('meta[name="description"]');
-    if (existingMeta) {
-      existingMeta.setAttribute('content', metaDescription);
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = metaDescription;
-      document.head.appendChild(meta);
-    }
+      `Learn about ${personality.name}, a notable LGBTQ+ personality.`
+    );
   }, [personality]);
+
+  const metaTitle = useMemo(() => {
+    if (!isLoading && !error && personality === null) return 'Personality not found';
+    return personality?.name ?? undefined;
+  }, [isLoading, error, personality]);
+
+  useMeta({
+    title: metaTitle,
+    description: metaDescription,
+    canonicalPath: personality ? `/personalities/${personality.slug ?? personality.id}` : undefined,
+    ogType: 'profile',
+    ogImage: personality?.image_url ?? undefined,
+  });
 
   // DUP-4: useCountryIdByName replaces the inline supabase.from('countries').
   const { data: resolvedCountryId } = useCountryIdByName(personality?.nationality ?? null);

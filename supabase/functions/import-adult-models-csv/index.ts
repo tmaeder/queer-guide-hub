@@ -201,6 +201,7 @@ serve(async (req) => {
           verification_status: 'pending',
           is_featured: false,
           is_living: true,
+          is_adult: true,
           fields: row['pornhub-profile'] && row['pornhub-profile'].trim() !== '' 
             ? { pornhub_profile: row['pornhub-profile'].trim() }
             : null,
