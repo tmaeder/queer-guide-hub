@@ -17,6 +17,7 @@ import {
   parentOrder,
 } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
+import { useMeta } from '@/hooks/useMeta';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -192,6 +193,34 @@ export default function Ressources() {
         .slice(0, 24),
     [allTags, tagUsageCounts],
   );
+
+  // P1-5 — per-page metadata for the tag-detail view. SPA caveat: meta
+  // is JS-injected so crawlers without JS won't pick it up; documented
+  // in the bug report's Stack Adaptation note.
+  const tagDetailMeta = useMemo(() => {
+    if (viewMode !== 'tag-detail' || !selectedTag) return null;
+    const desc =
+      selectedTag.description?.trim() ||
+      `${selectedTag.name} — Queer Guide resource term and related content.`;
+    const slug = selectedTag.slug || encodeURIComponent(selectedTag.name);
+    const jsonLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'DefinedTerm',
+      name: selectedTag.name,
+      description: desc,
+      url: `https://queer.guide/resources/${slug}`,
+    };
+    if (selectedTag.image_url) jsonLd.image = selectedTag.image_url;
+    return {
+      title: selectedTag.name,
+      description: desc,
+      ogImage: selectedTag.image_url || undefined,
+      ogType: 'article' as const,
+      canonicalPath: `/resources/${slug}`,
+      jsonLd,
+    };
+  }, [viewMode, selectedTag]);
+  useMeta(tagDetailMeta ?? {});
 
   const handleSearch = useCallback(
     (query: string) => {
