@@ -95,11 +95,28 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
             </div>
           )}
           {/*
-            Featured badge is intentionally hidden until a curated
-            \`featured_priority\` column exists. ~35% of rows have
-            \`featured=true\` today, which made the badge meaningless. Sort
-            order in useHotels still respects featured.desc.
+            Featured badge is now driven by the curated `featured_priority`
+            column added in 20260504114754_hotels_featured_priority.sql.
+            Until types.ts is regenerated we cast here; once regenerated
+            the cast can be removed.
           */}
+          {(() => {
+            const fp = (hotel as { featured_priority?: number | null })
+              .featured_priority;
+            return typeof fp === 'number' ? (
+              <Badge
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'white',
+                }}
+              >
+                Featured
+              </Badge>
+            ) : null;
+          })()}
           {typeLabel && (
             <Badge
               variant="outline"
