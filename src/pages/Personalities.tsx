@@ -6,9 +6,10 @@ import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
 import {
   usePersonalities,
+  useProfessionFacets,
   type PersonalityFilters,
-  type PersonalitySort,
 } from '@/hooks/usePersonalities';
+import { parseFilters, serializeFilters } from '@/lib/personalitiesFilters';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -26,36 +27,6 @@ const AUTO_LOAD_CAP = 48;
 
 const GRID_CLASS =
   'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 [&>*]:min-w-0';
-
-function filtersFromParams(params: URLSearchParams): PersonalityFilters {
-  return {
-    profession: params.get('profession') || undefined,
-    search: params.get('q') || undefined,
-    name_starts_with: params.get('letter') || undefined,
-    sortBy: (params.get('sort') as PersonalitySort) || 'featured',
-    is_living:
-      params.get('status') === 'living'
-        ? true
-        : params.get('status') === 'historical'
-          ? false
-          : undefined,
-    featured_only: params.get('featured') === '1' || undefined,
-    exclude_adult: params.get('include_adult') === '1' ? false : true,
-  };
-}
-
-function paramsFromFilters(filters: PersonalityFilters): URLSearchParams {
-  const p = new URLSearchParams();
-  if (filters.profession) p.set('profession', filters.profession);
-  if (filters.search) p.set('q', filters.search);
-  if (filters.name_starts_with) p.set('letter', filters.name_starts_with);
-  if (filters.sortBy && filters.sortBy !== 'featured') p.set('sort', filters.sortBy);
-  if (filters.is_living === true) p.set('status', 'living');
-  if (filters.is_living === false) p.set('status', 'historical');
-  if (filters.featured_only) p.set('featured', '1');
-  if (filters.exclude_adult === false) p.set('include_adult', '1');
-  return p;
-}
 
 function activeFilterCount(f: PersonalityFilters): number {
   let c = 0;
@@ -90,8 +61,15 @@ export default function Personalities() {
     },
   });
 
-  const [filters, setFilters] = useState<PersonalityFilters>(() =>
-    filtersFromParams(searchParams),
+  // Profession facets are loaded once and used to validate the URL `profession` param.
+  const { facets: professionFacets } = useProfessionFacets(60);
+  const validProfessions = useMemo(
+    () => professionFacets.map((f) => f.profession),
+    [professionFacets],
+  );
+
+  const [filters, setFilters] = useState<PersonalityFilters>(
+    () => parseFilters(searchParams).filters,
   );
   const [page, setPage] = useState(1);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
@@ -112,7 +90,7 @@ export default function Personalities() {
     setAutoLoadedCount(0);
     fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
     // Sync URL
-    const nextParams = paramsFromFilters(filters);
+    const nextParams = serializeFilters(filters);
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
     }
@@ -130,8 +108,7 @@ export default function Personalities() {
 
   // React to browser back/forward (external URL changes)
   useEffect(() => {
-    const fromUrl = filtersFromParams(searchParams);
-    // Only overwrite local filters if URL has genuinely different content
+    const { filters: fromUrl } = parseFilters(searchParams, validProfessions.length ? validProfessions : null);
     const a = JSON.stringify(fromUrl);
     const b = JSON.stringify(filters);
     if (a !== b) {
@@ -139,6 +116,18 @@ export default function Personalities() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Once facets load, re-validate the current `profession` against the allowlist
+  // and rewrite the URL if it was stale (e.g. ?profession=Foo).
+  useEffect(() => {
+    if (!validProfessions.length) return;
+    const { filters: cleaned, changed } = parseFilters(searchParams, validProfessions);
+    if (changed) {
+      setFilters(cleaned);
+      setSearchParams(serializeFilters(cleaned), { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validProfessions]);
 
   const handleFiltersChange = useCallback((next: PersonalityFilters) => {
     setFilters((prev) => ({ ...prev, ...next }));
