@@ -343,6 +343,14 @@ export const AppRoutes = () => {
               <Route path="/:locale?" element={<LocaleRouter />}>
                 <Route index element={<Index />} />
                 <Route path="venues" element={<Venues />} />
+                {/* Section-name slugs collide with /venues/:slug — redirect to top-level pages */}
+                <Route path="venues/hotels" element={<Navigate to="/hotels" replace />} />
+                <Route path="venues/events" element={<Navigate to="/events" replace />} />
+                <Route path="venues/news" element={<Navigate to="/news" replace />} />
+                <Route path="venues/marketplace" element={<Navigate to="/marketplace" replace />} />
+                <Route path="venues/travel" element={<Navigate to="/travel" replace />} />
+                <Route path="venues/groups" element={<Navigate to="/groups" replace />} />
+                <Route path="venues/resources" element={<Navigate to="/resources" replace />} />
                 <Route path="venues/:slug" element={<VenueDetail />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
