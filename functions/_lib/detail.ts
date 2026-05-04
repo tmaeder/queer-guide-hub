@@ -794,6 +794,18 @@ async function tagDetail(env: Env, slug: string, pathname: string): Promise<Deta
 
 // Dispatch
 
+const DETAIL_ROUTE_RE =
+  /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?)\/([^/?#]+)\/?$/;
+
+/**
+ * True if the URL matches a detail-route pattern (regardless of whether the
+ * row actually exists). The middleware uses this to decide whether a missing
+ * detail row should produce a 404 vs. fall through to the SPA.
+ */
+export function isDetailPath(pathname: string): boolean {
+  return DETAIL_ROUTE_RE.test(pathname);
+}
+
 export async function resolveDetailRoute(
   env: Env,
   pathname: string,
@@ -801,9 +813,7 @@ export async function resolveDetailRoute(
   if (!env.SUPABASE_URL || (!env.SUPABASE_ANON_KEY && !env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }
-  const m = pathname.match(
-    /^\/(venues?|events?|news|personalities|personality|city|country|hotels?|villages?|tags?)\/([^/?#]+)\/?$/,
-  );
+  const m = pathname.match(DETAIL_ROUTE_RE);
   if (!m) return null;
   const [, kindRaw, rawSlug] = m;
   const slug = decodeURIComponent(rawSlug);

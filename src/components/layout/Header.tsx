@@ -234,10 +234,10 @@ export function Header() {
                   <Avatar style={{ height: 40, width: 40 }}>
                     <AvatarImage
                       src={avatarSrc}
-                      alt={(profile?.display_name || user?.email || 'User') as string}
+                      alt=""
                     />
                     <AvatarFallback>
-                      {(profile?.display_name || user?.email || 'U')?.charAt(0).toUpperCase()}
+                      {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
@@ -548,10 +548,10 @@ export function Header() {
                       <Avatar style={{ height: 36, width: 36 }}>
                         <AvatarImage
                           src={avatarSrc}
-                          alt={(profile?.display_name || user?.email || 'User avatar') as string}
+                          alt=""
                         />
                         <AvatarFallback>
-                          {(profile?.display_name || user?.email || 'U')?.charAt(0).toUpperCase()}
+                          {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       {unreadCount > 0 && (

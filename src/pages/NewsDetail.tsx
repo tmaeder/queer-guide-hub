@@ -33,6 +33,7 @@ import {
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { useMeta } from '@/hooks/useMeta';
 
 interface NewsArticle {
   id: string;
@@ -84,6 +85,36 @@ export default function NewsDetail() {
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
 
+  // Per-article SEO tags (client-side; edge-rendered tags are tracked separately for crawlers).
+  const articleTitle = article ? decodeHtmlEntities(article.title) : undefined;
+  const articleExcerpt = article?.excerpt ? cleanExcerpt(article.excerpt).slice(0, 200) : undefined;
+  useMeta({
+    title: articleTitle,
+    description: articleExcerpt,
+    ogImage: article?.image_url || undefined,
+    ogType: 'article',
+    canonicalPath: slug ? `/news/${slug}` : undefined,
+    jsonLd: article
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'NewsArticle',
+          headline: articleTitle,
+          image: article.image_url ? [article.image_url] : undefined,
+          datePublished: article.published_at || undefined,
+          author: article.author ? { '@type': 'Person', name: cleanAuthor(article.author) } : undefined,
+          publisher: {
+            '@type': 'Organization',
+            name: 'Queer Guide',
+            logo: { '@type': 'ImageObject', url: 'https://queer.guide/icons/icon-192.png' },
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://queer.guide/news/${slug}`,
+          },
+        }
+      : undefined,
+  });
+
   useEffect(() => {
     if (!slug) {
       navigate('/news');
@@ -92,6 +123,7 @@ export default function NewsDetail() {
 
     const fetchArticle = async () => {
       setLoading(true);
+      setArticle(null);
 
       // Fetch categories once (DUP-4)
       fetchNewsCategories<DbCategory>().then((cats) => setDbCategories(cats));
@@ -99,7 +131,9 @@ export default function NewsDetail() {
       try {
         const data = await fetchNewsArticleBySlugOrId<NewsArticle>(slug);
         if (!data) {
-          navigate('/news');
+          // Show in-app 404 instead of silently bouncing back to /news.
+          // (A real HTTP 404 needs an edge handler — tracked separately.)
+          setArticle(null);
           return;
         }
 
@@ -141,7 +175,7 @@ export default function NewsDetail() {
         }
       } catch (err) {
         console.error('Error fetching article:', err);
-        navigate('/news');
+        setArticle(null);
       } finally {
         setLoading(false);
       }
@@ -212,9 +246,9 @@ export default function NewsDetail() {
   if (!article) {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
-        <h5 className="text-xl font-bold mb-4">Article Not Found</h5>
+        <h1 className="text-xl font-bold mb-4">Article Not Found</h1>
         <p className="text-muted-foreground mb-6">
-          The article you're looking for doesn't exist.
+          The article you're looking for doesn't exist or may have been removed.
         </p>
         <LocalizedLink to="/news">
           <Button>
@@ -238,7 +272,7 @@ export default function NewsDetail() {
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8 px-4 pb-24">
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 mb-4 flex-wrap">
         <LocalizedLink
@@ -290,9 +324,9 @@ export default function NewsDetail() {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <h4 className="text-2xl font-bold leading-tight">
+            <h1 className="text-2xl font-bold leading-tight m-0">
               {decodeHtmlEntities(article.title)}
-            </h4>
+            </h1>
             {article.is_featured && (
               <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
             )}
@@ -427,21 +461,23 @@ export default function NewsDetail() {
                     <LocalizedLink
                       key={related.id}
                       to={`/news/${related.slug || related.id}`}
-                      className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted"
+                      className="flex flex-col rounded overflow-hidden no-underline text-inherit transition-all duration-200 hover:bg-muted border border-border"
                     >
-                      {related.image_url && (
-                        <div className="overflow-hidden">
+                      <div className="overflow-hidden" style={{ height: 120, background: 'hsl(var(--muted))' }}>
+                        {related.image_url ? (
                           <img
                             src={related.image_url}
-                            alt={decodeHtmlEntities(related.title)}
-                            className="w-full object-cover"
-                            style={{ height: 120 }}
+                            alt=""
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                            width={400}
+                            height={120}
                             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
-                        </div>
-                      )}
+                        ) : null}
+                      </div>
                       <div className="p-3">
                         <p
                           className="text-sm font-semibold mb-1 overflow-hidden"
@@ -449,6 +485,8 @@ export default function NewsDetail() {
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
+                            textTransform: 'none',
+                            color: 'hsl(var(--foreground))',
                           }}
                         >
                           {decodeHtmlEntities(related.title)}

@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router";
 import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 import { useNews } from "@/hooks/useNews";
 import type { NewsCategory } from "@/hooks/useNews";
@@ -75,15 +76,101 @@ export default function News() {
     getTrendingTags,
     loadingTimedOut
   } = useNews();
+
+  // ---- URL state (Group D) -------------------------------------------------
+  // Filter, sort, view, search and pagination are all reflected in the
+  // querystring so users can copy URLs, refresh, or use back/forward.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const validViewModes: ViewMode[] = ['grid', 'list', 'headlines', 'magazine'];
+  const isViewMode = (v: string | null): v is ViewMode =>
+    !!v && (validViewModes as string[]).includes(v);
+  const validSorts = sortOptions.map((o) => o.value);
+  const initialView: ViewMode = isViewMode(searchParams.get('view')) ? (searchParams.get('view') as ViewMode) : 'grid';
+  const initialSort = validSorts.includes(searchParams.get('sort') ?? '') ? (searchParams.get('sort') as string) : 'date-desc';
+  const initialPage = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1);
+  const initialCategory = searchParams.get('category');
+  const initialSearch = searchParams.get('q') ?? '';
+  const initialFilters: Record<string, unknown> = {};
+  const sourceParam = searchParams.get('source');
+  if (sourceParam) initialFilters.sourceId = sourceParam;
+  if (searchParams.get('featured') === '1') initialFilters.featured = true;
+  const dateFrom = searchParams.get('date_from');
+  const dateTo = searchParams.get('date_to');
+  if (dateFrom || dateTo) {
+    initialFilters.dateRange = {
+      ...(dateFrom ? { from: dateFrom } : {}),
+      ...(dateTo ? { to: dateTo } : {}),
+    };
+  }
+  const countryParam = searchParams.get('country');
+  if (countryParam) initialFilters.countryIds = [countryParam];
+  const cityParam = searchParams.get('city');
+  if (cityParam) initialFilters.cityIds = [cityParam];
+
   const [featuredArticles, setFeaturedArticles] = useState<FeaturedArticle[]>([]);
   const [trendingTags, setTrendingTags] = useState<{ tag: string; count: number; }[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState('date-desc');
-  const [quickSearch, setQuickSearch] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>(initialView);
+  const [sortBy, setSortBy] = useState(initialSort);
+  const [quickSearch, setQuickSearch] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
-  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(initialFilters);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory);
+
+  // Write the canonical state back to the URL whenever it changes. We push for
+  // explicit user actions (filter/sort/view/page) and replace for the search
+  // input as the user types so back-button history isn't a flood of keystrokes.
+  const writeUrl = useCallback((opts?: { replace?: boolean }) => {
+    const next = new URLSearchParams();
+    if (viewMode !== 'grid') next.set('view', viewMode);
+    if (sortBy !== 'date-desc') next.set('sort', sortBy);
+    if (quickSearch) next.set('q', quickSearch);
+    if (activeCategory) next.set('category', activeCategory);
+    if (currentPage > 1) next.set('page', String(currentPage));
+    const f = currentFilters;
+    if (typeof f.sourceId === 'string' && f.sourceId) next.set('source', f.sourceId);
+    if (f.featured === true) next.set('featured', '1');
+    const dr = f.dateRange as { from?: string; to?: string } | undefined;
+    if (dr?.from) next.set('date_from', dr.from);
+    if (dr?.to) next.set('date_to', dr.to);
+    const cIds = f.countryIds as string[] | undefined;
+    if (cIds?.length) next.set('country', cIds[0]);
+    const ciIds = f.cityIds as string[] | undefined;
+    if (ciIds?.length) next.set('city', ciIds[0]);
+    setSearchParams(next, { replace: opts?.replace ?? false });
+  }, [viewMode, sortBy, quickSearch, activeCategory, currentPage, currentFilters, setSearchParams]);
+
+  // Push history entry for filter/sort/view/category/page changes.
+  useEffect(() => {
+    writeUrl();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, sortBy, currentPage, activeCategory, currentFilters]);
+
+  // Replace history entry as the user types in the quick-search box so the
+  // back button doesn't have to walk through every keystroke.
+  useEffect(() => {
+    writeUrl({ replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickSearch]);
+
+  // Apply URL-derived filters on mount so a deep link like
+  // /news?category=politics&source=<id>&q=trump cold-loads the right slice
+  // (the default useNews mount only fetches with no filters).
+  const didApplyInitialUrlRef = useRef(false);
+  useEffect(() => {
+    if (didApplyInitialUrlRef.current) return;
+    didApplyInitialUrlRef.current = true;
+    const opt = sortOptions.find((o) => o.value === initialSort);
+    const f: Record<string, unknown> = {
+      ...initialFilters,
+      sortField: opt?.field || 'published_at',
+      sortOrder: opt?.order || 'desc',
+    };
+    if (initialCategory) f.category = initialCategory;
+    if (initialSearch) f.search = initialSearch;
+    fetchArticles(f);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
@@ -301,12 +388,15 @@ export default function News() {
     return pages;
   };
 
-  // Count articles per category for chips
+  // Count articles per canonical category for the tab badges. Prefer
+  // category_canonical (from migration news_qa_backfill_category_canonical)
+  // and fall back to legacy `category` so unclassified rows still surface.
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    articles.forEach((a: { category?: string }) => {
-      if (a.category && a.category !== 'general') {
-        counts[a.category] = (counts[a.category] || 0) + 1;
+    articles.forEach((a: { category?: string; category_canonical?: string | null }) => {
+      const slug = a.category_canonical || a.category;
+      if (slug && slug !== 'general') {
+        counts[slug] = (counts[slug] || 0) + 1;
       }
     });
     return counts;
@@ -317,7 +407,8 @@ export default function News() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
+      {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
+      <div className="container mx-auto py-12 md:py-20 px-4 pb-24">
         <PageHeader
           title={t('pages.news.title', 'News')}
           subtitle={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
@@ -334,30 +425,46 @@ export default function News() {
           </div>
         </PageHeader>
 
-        {/* Category Chips */}
+        {/* Category Tabs */}
         {categories.length > 0 && (
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-            <Badge
-              variant={activeCategory === null ? 'default' : 'outline'}
-              style={{ cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem' }}
+          <div
+            role="tablist"
+            aria-label={t('pages.news.categoriesLabel', 'News categories')}
+            className="flex gap-2 mb-6 overflow-x-auto pb-2"
+            style={{ scrollbarWidth: 'none' }}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === null}
+              className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                activeCategory === null
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-transparent text-foreground border-border hover:bg-muted'
+              }`}
               onClick={() => handleCategoryClick(null)}
             >
               All
-            </Badge>
+            </button>
             {categories.map((cat) => {
               const count = categoryCounts[cat.slug] || 0;
+              const selected = activeCategory === cat.slug;
               return (
-                <Badge
+                <button
                   key={cat.id}
-                  variant={activeCategory === cat.slug ? 'default' : 'outline'}
-                  style={{
-                    cursor: 'pointer', whiteSpace: 'nowrap', padding: '6px 14px', fontSize: '0.8rem',
-                    ...(activeCategory === cat.slug ? { backgroundColor: cat.color, color: 'hsl(var(--background))' } : {}),
-                  }}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    selected
+                      ? 'border-transparent'
+                      : 'bg-transparent text-foreground border-border hover:bg-muted'
+                  }`}
+                  style={selected ? { backgroundColor: cat.color, color: 'hsl(var(--background))' } : undefined}
                   onClick={() => handleCategoryClick(cat.slug)}
                 >
                   {cat.name}{count > 0 ? ` (${count})` : ''}
-                </Badge>
+                </button>
               );
             })}
           </div>
@@ -365,16 +472,21 @@ export default function News() {
 
         {/* Featured Section */}
         {showFeatured && (
-          <div className="border border-border rounded-lg p-6 mb-6 bg-background">
-            <p className="font-bold tracking-widest mb-4 text-muted-foreground uppercase text-xs">
+          <section className="border border-border rounded-lg p-6 mb-6 bg-background" aria-labelledby="featured-stories-heading">
+            <h2
+              id="featured-stories-heading"
+              className="font-bold tracking-widest mb-4 text-muted-foreground uppercase text-xs"
+            >
               Featured Stories
-            </p>
+            </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Hero featured article */}
               {featuredArticles[0] && (
                 <NewsCard
                   article={featuredArticles[0]}
                   variant="featured"
+                  priority
+                  hideDate
                   onViewArticle={handleViewArticle}
                   sourcesMap={sourcesMap}
                   categoriesMap={categoriesMap}
@@ -388,6 +500,7 @@ export default function News() {
                     key={fa.id}
                     article={fa}
                     variant="headline"
+                    hideDate
                     onViewArticle={handleViewArticle}
                     sourcesMap={sourcesMap}
                     categoriesMap={categoriesMap}
@@ -396,7 +509,7 @@ export default function News() {
                 ))}
               </div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* Quick Search & Controls */}
@@ -480,14 +593,17 @@ export default function News() {
           )}
 
           <div className={showFilters ? 'lg:col-span-3' : 'lg:col-span-4'}>
-            {error && !loading && <ErrorState message={error} onRetry={() => fetchArticles()} />}
+            {/* Error and loading are mutually exclusive with the list. */}
+            {error && !loading ? (
+              <ErrorState message={error} onRetry={() => fetchArticles()} />
+            ) : null}
 
-            {loading && (
+            {!error && loading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (<NewsCard key={i} loading />))}
               </div>
             )}
-            {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
+            {!error && loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchArticles()} />}
 
             {!loading && !error && sortedArticles.length === 0 && (
               hasActiveFilters ? (
@@ -535,7 +651,7 @@ export default function News() {
               )
             )}
 
-            {!loading && paginatedArticles.length > 0 && (
+            {!loading && !error && paginatedArticles.length > 0 && (
               <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
@@ -635,12 +751,13 @@ export default function News() {
                 {(viewMode === 'grid' || viewMode === 'list') && (
                   <StaggerGrid className={viewMode === 'grid'
                     ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
-                    : 'flex flex-col gap-4'
+                    : 'flex flex-col gap-3'
                   }>
                     {paginatedArticles.map((article) => (
                       <NewsCard
                         key={article.id}
                         article={article}
+                        variant={viewMode === 'list' ? 'compact' : undefined}
                         onViewArticle={handleViewArticle}
                         onFilterByTag={handleFilterByTag}
                         onFilterBySource={handleFilterBySource}

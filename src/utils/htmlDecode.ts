@@ -34,6 +34,12 @@ export function cleanAuthor(raw: string): string {
   author = author.replace(/https?:\/\/\S+/g, '').trim();
   // Reddit /u/ prefix → just the username
   author = author.replace(/^\/u\//, '').trim();
+  // Reject URL-slug fragments left over from ingestion fallback (e.g. "capital;main",
+  // "/some-path"). Mirrors the news_articles_sanitize_author DB trigger so client
+  // SPA caches don't display them either.
+  if (/;/.test(author)) return '';
+  if (/^\/[a-z0-9_-]+$/i.test(author)) return '';
+  if (/^(none|null|undefined|unknown)$/i.test(author.trim())) return '';
   // If nothing useful remains, return empty
   if (!author || author.length < 2) return '';
   return author;

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Eye, Clock, MapPin, Tag } from 'lucide-react';
+import { ExternalLink, Eye, Clock, MapPin, Tag, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -20,7 +20,7 @@ type NewsArticle = Tables<'news_articles'> & {
 const NewsCardFixture = () => (
   <Card>
     <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <h6 className="text-base font-semibold" style={{ fontSize: '1.125rem' }}>Sample News Headline</h6>
+      <h3 className="text-base font-semibold" style={{ fontSize: '1.125rem' }}>Sample News Headline</h3>
       <div className="flex items-center gap-2">
         <Badge style={{ backgroundColor: 'hsl(var(--brand))', color: 'hsl(var(--background))' }}>Politics</Badge>
         <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Source</Badge>
@@ -52,7 +52,9 @@ interface NewsCardProps {
   sourcesMap?: Record<string, { id: string; name: string; url?: string }>;
   tags?: string[];
   categoriesMap?: Record<string, NewsCategory>;
-  variant?: 'default' | 'headline' | 'featured';
+  variant?: 'default' | 'headline' | 'featured' | 'compact';
+  priority?: boolean;
+  hideDate?: boolean;
 }
 
 export const NewsCard = ({
@@ -70,6 +72,8 @@ export const NewsCard = ({
   tags = [],
   categoriesMap = {},
   variant = 'default',
+  priority = false,
+  hideDate = false,
 }: NewsCardProps) => {
   const navigate = useLocalizedNavigate();
   const [imgFailed, setImgFailed] = useState(false);
@@ -112,8 +116,20 @@ export const NewsCard = ({
   const authorName = safeText(cleanAuthor(safeText(article.author)));
   const excerptText = safeText(cleanExcerpt(safeText(article.excerpt)));
   const safeTitle = safeText(decodeHtmlEntities(safeText(article.title)));
-  const displayCategory = article.category !== 'general' ? article.category : null;
-  const fallbackCategoryFromTag = !displayCategory && tags.length > 0 ? tags[0] : null;
+  const HIDDEN_CATEGORY_VALUES = new Set(['general', 'rss-news', 'rss_news']);
+  const isHiddenCategory = (v?: string | null) =>
+    !v || HIDDEN_CATEGORY_VALUES.has(String(v).toLowerCase());
+  // Prefer canonical category from the news_qa_backfill_category_canonical
+  // migration; fall back to the legacy `category` text column.
+  const articleAny = article as Record<string, unknown>;
+  const canonical = typeof articleAny.category_canonical === 'string' ? (articleAny.category_canonical as string) : null;
+  const displayCategory = !isHiddenCategory(canonical)
+    ? canonical
+    : !isHiddenCategory(article.category)
+      ? article.category
+      : null;
+  const firstUsableTag = tags.find((t) => !isHiddenCategory(t));
+  const fallbackCategoryFromTag = !displayCategory && firstUsableTag ? firstUsableTag : null;
   const hasImage = article.image_url && !imgFailed;
 
   const linkedCities = (article.city_ids || [])
@@ -127,14 +143,15 @@ export const NewsCard = ({
   // Headline variant: ultra-compact, no image
   if (variant === 'headline') {
     return (
-      <div
-        className="flex items-center gap-4 py-3 px-4 cursor-pointer transition-colors hover:bg-muted border-b border-border"
-        onClick={() => navigate(`/news/${article.slug}`)}
+      <LocalizedLink
+        to={`/news/${article.slug}`}
+        aria-label={safeTitle}
+        className="flex items-center gap-4 py-3 px-4 transition-colors hover:bg-muted border-b border-border no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate">
+          <h3 className="text-sm font-semibold truncate m-0">
             {safeTitle}
-          </p>
+          </h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {displayCategory && (
@@ -149,13 +166,18 @@ export const NewsCard = ({
               {displaySource}
             </span>
           )}
-          {article.published_at && (
+          {!hideDate && article.published_at && (
             <span className="text-xs text-muted-foreground whitespace-nowrap">
               {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
             </span>
           )}
+          {hideDate && article.is_featured && (
+            <span className="text-xs uppercase tracking-wide text-muted-foreground whitespace-nowrap">
+              Featured
+            </span>
+          )}
         </div>
-      </div>
+      </LocalizedLink>
     );
   }
 
@@ -172,11 +194,14 @@ export const NewsCard = ({
           <div className="md:flex-[0_0_45%] rounded-lg overflow-hidden">
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
             <img
-              loading="lazy"
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : 'auto'}
               decoding="async"
               referrerPolicy="no-referrer"
               src={article.image_url!}
               alt={safeTitle}
+              width={800}
+              height={240}
               style={{ width: '100%', height: 240, objectFit: 'cover', display: 'block' }}
               onError={() => setImgFailed(true)}
             />
@@ -193,9 +218,9 @@ export const NewsCard = ({
               <span className="text-xs text-muted-foreground">{displaySource}</span>
             )}
           </div>
-          <h5 className="text-xl font-bold leading-tight">
+          <h3 className="text-xl font-bold leading-tight">
             {safeTitle}
-          </h5>
+          </h3>
           {excerptText && (
             <p className="text-sm text-muted-foreground" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {excerptText}
@@ -203,10 +228,74 @@ export const NewsCard = ({
           )}
           <div className="flex items-center gap-4 text-muted-foreground">
             {authorName && <span className="text-xs">By {authorName}</span>}
-            {article.published_at && (
+            {!hideDate && article.published_at && (
               <span className="text-xs">
                 {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
               </span>
+            )}
+            {hideDate && article.is_featured && (
+              <span className="text-xs uppercase tracking-wide">Featured</span>
+            )}
+          </div>
+        </div>
+      </LocalizedLink>
+    );
+  }
+
+  // Compact list variant: thumbnail left, text right (F5)
+  if (variant === 'compact') {
+    return (
+      <LocalizedLink
+        to={`/news/${article.slug}`}
+        aria-label={safeTitle}
+        className="flex gap-3 p-3 rounded-md border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {hasImage ? (
+          <img
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            src={article.image_url!}
+            alt=""
+            width={160}
+            height={120}
+            style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0, borderRadius: 6 }}
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            style={{ width: 160, height: 120, flexShrink: 0, borderRadius: 6, background: 'hsl(var(--muted))' }}
+          />
+        )}
+        <div className="flex flex-col gap-1 min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {displayCategory && (
+              <Badge style={{ backgroundColor: getCategoryColor(displayCategory), color: 'hsl(var(--background))', fontSize: '0.65rem', padding: '1px 6px' }}>
+                {getCategoryLabel(displayCategory)}
+              </Badge>
+            )}
+            {(article as Record<string, unknown>).is_premium === true && (
+              <Badge style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', padding: '1px 6px' }}>
+                <Lock style={{ height: 9, width: 9 }} aria-hidden="true" /> Premium
+              </Badge>
+            )}
+            {displaySource && (
+              <span className="text-xs text-muted-foreground truncate">{displaySource}</span>
+            )}
+          </div>
+          <h3 className="text-base font-semibold leading-snug m-0" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {safeTitle}
+          </h3>
+          {excerptText && (
+            <p className="text-sm text-muted-foreground" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {excerptText}
+            </p>
+          )}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto">
+            {authorName && <span>By {authorName}</span>}
+            {!hideDate && article.published_at && (
+              <span>{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
             )}
           </div>
         </div>
@@ -235,9 +324,16 @@ export const NewsCard = ({
               role="presentation"
               src={article.image_url!}
               alt={safeTitle}
+              width={400}
+              height={192}
               style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }}
               onError={() => setImgFailed(true)}
             />
+            {(article as Record<string, unknown>).is_premium === true && (
+              <Badge style={{ position: 'absolute', top: 8, right: 8, backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <Lock style={{ height: 10, width: 10 }} aria-hidden="true" /> Premium
+              </Badge>
+            )}
             {article.is_featured && (
               <Badge style={{ position: 'absolute', top: 8, left: 8, backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>
                 Featured
@@ -246,6 +342,11 @@ export const NewsCard = ({
           </div>
         )}
 
+        {!hasImage && (article as Record<string, unknown>).is_premium === true && (
+          <Badge style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <Lock style={{ height: 10, width: 10 }} aria-hidden="true" /> Premium
+          </Badge>
+        )}
         {!hasImage && article.is_featured && (
           <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', alignSelf: 'flex-start' }}>
             Featured
@@ -253,8 +354,8 @@ export const NewsCard = ({
         )}
 
         <div className="flex items-start justify-between gap-3">
-          <h6
-            className="font-semibold"
+          <h3
+            className="font-semibold m-0"
             style={{
               fontSize: '1.125rem',
               display: '-webkit-box',
@@ -264,7 +365,7 @@ export const NewsCard = ({
             }}
           >
             {safeTitle}
-          </h6>
+          </h3>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -289,26 +390,19 @@ export const NewsCard = ({
             </Badge>
           )}
           {displaySource && (
-            <Badge
-              variant="outline"
-              role="button"
-              tabIndex={0}
-              style={{ fontSize: '0.75rem', cursor: onFilterBySource ? 'pointer' : 'default', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+            <button
+              type="button"
+              className="inline-flex items-center gap-1 text-xs border border-border rounded-md px-2 py-0.5 bg-transparent hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ cursor: onFilterBySource ? 'pointer' : 'default' }}
               onClick={(e) => {
                 e.stopPropagation();
                 const src = sourcesMap[article.source_id];
                 if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
               }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault(); e.stopPropagation();
-                  const src = sourcesMap[article.source_id];
-                  if (onFilterBySource && src?.id) onFilterBySource(src.id, displaySource);
-                }
-              }}
+              aria-label={onFilterBySource ? `Filter by source ${displaySource}` : `Source: ${displaySource}`}
             >
               {displaySource}
-            </Badge>
+            </button>
           )}
           <a
             href={article.url}
@@ -318,10 +412,11 @@ export const NewsCard = ({
               e.stopPropagation();
               onViewArticle?.(article.id);
             }}
-            className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity"
+            className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+            aria-label={displaySource ? `Open original article on ${displaySource} (opens in new tab)` : 'Open original article (opens in new tab)'}
             title="Open original article"
           >
-            <ExternalLink style={{ height: 14, width: 14 }} />
+            <ExternalLink style={{ height: 14, width: 14 }} aria-hidden="true" />
           </a>
         </div>
       </CardHeader>
@@ -376,7 +471,7 @@ export const NewsCard = ({
         {(() => {
           const displayTags = tags
             .map((t) => safeText(t))
-            .filter((t) => t && t !== fallbackCategoryFromTag);
+            .filter((t) => t && t !== fallbackCategoryFromTag && !isHiddenCategory(t));
           if (displayTags.length === 0) return null;
           return (
             <div className="flex flex-wrap items-center gap-1.5">

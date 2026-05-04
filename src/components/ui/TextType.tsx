@@ -53,7 +53,22 @@ const TextType = ({
   const [isVisible, setIsVisible] = useState(!startOnVisible);
   const containerRef = useRef<HTMLElement>(null);
 
-  const textArray = Array.isArray(text) ? text : [text];
+  // Filter out empty/undefined entries so a missing i18n key doesn't cause
+  // the typing animation to freeze mid-word ("Sear|"). Memoize on the joined
+  // signature so unrelated re-renders don't reset the animation.
+  const rawTextArray = Array.isArray(text) ? text : [text];
+  const textArray = rawTextArray.filter((s): s is string => typeof s === 'string' && s.length > 0);
+  const textSignature = textArray.join('');
+
+  // Reset typing state when the source text array changes (e.g. mobile/desktop
+  // breakpoint switch, i18n bundle loaded after first paint). Otherwise we'd
+  // keep `currentCharIndex` from a longer string and visually freeze.
+  useEffect(() => {
+    setDisplayedText('');
+    setCurrentCharIndex(0);
+    setIsDeleting(false);
+    setCurrentTextIndex(0);
+  }, [textSignature]);
 
   const getRandomSpeed = () => {
     if (!variableSpeed) return typingSpeed;
@@ -161,8 +176,9 @@ const TextType = ({
     onSentenceComplete,
   ]);
 
+  const currentTextLen = textArray[currentTextIndex]?.length ?? 0;
   const shouldHideCursor =
-    hideCursorWhileTyping && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
+    hideCursorWhileTyping && (currentCharIndex < currentTextLen || isDeleting);
 
   return createElement(
     Component,
