@@ -86,6 +86,7 @@ export function ResourcesFilterBar({
             placeholder="Search tags, categories, descriptions..."
             value={searchQuery}
             onChange={(e) => onSearch(e.target.value)}
+            aria-label="Search resources"
             style={{ paddingLeft: 48, height: 44, fontSize: '1rem' }}
           />
         </div>
@@ -122,7 +123,7 @@ export function ResourcesFilterBar({
       {/* Row 2: Filters + Sort */}
       <div className="flex flex-wrap gap-3 items-center">
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
-          <SelectTrigger style={{ width: 220, height: 40 }}>
+          <SelectTrigger style={{ width: 220, height: 40 }} aria-label="Filter by category">
             <Filter style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -147,7 +148,7 @@ export function ResourcesFilterBar({
         </Select>
 
         <Select value={usageFilter} onValueChange={onUsageFilterChange}>
-          <SelectTrigger style={{ width: 140, height: 40 }}>
+          <SelectTrigger style={{ width: 140, height: 40 }} aria-label="Filter by usage">
             <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
             <SelectValue placeholder="Usage" />
           </SelectTrigger>
@@ -164,6 +165,8 @@ export function ResourcesFilterBar({
           style={{ height: 40 }}
           onClick={() => onHasImageFilterChange(!hasImageFilter)}
           title="Only show tags with images"
+          aria-label="Only show tags with images"
+          aria-pressed={hasImageFilter}
         >
           <Image style={{ width: 16, height: 16, marginRight: 6 }} />
           Has Image
@@ -174,7 +177,7 @@ export function ResourcesFilterBar({
             value={sortBy}
             onValueChange={(value: string) => onSortByChange(value as SortOption)}
           >
-            <SelectTrigger style={{ width: 150, height: 40 }}>
+            <SelectTrigger style={{ width: 150, height: 40 }} aria-label="Sort by">
               <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
