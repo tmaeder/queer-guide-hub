@@ -112,7 +112,7 @@ export default function Hotels() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h4 className="text-2xl font-bold">
-            {t('pages.hotels.title', 'Hotels & BnBs')}
+            {t('pages.hotels.title', 'Stays')}
           </h4>
           <p className="text-muted-foreground mt-1">
             {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}

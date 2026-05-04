@@ -94,19 +94,12 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
               <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
             </div>
           )}
-          {hotel.featured && (
-            <Badge
-              style={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                backgroundColor: 'hsl(var(--primary))',
-                color: 'white',
-              }}
-            >
-              Featured
-            </Badge>
-          )}
+          {/*
+            Featured badge is intentionally hidden until a curated
+            \`featured_priority\` column exists. ~35% of rows have
+            \`featured=true\` today, which made the badge meaningless. Sort
+            order in useHotels still respects featured.desc.
+          */}
           {typeLabel && (
             <Badge
               variant="outline"
@@ -125,7 +118,11 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
         {/* Content */}
         <div className="p-4 flex-1 flex flex-col gap-1">
           {hotelName && (
-            <p className="font-semibold truncate" style={{ lineHeight: 1.3 }}>
+            <p
+              className="font-semibold truncate"
+              style={{ lineHeight: 1.3 }}
+              title={hotelName}
+            >
               {hotelName}
             </p>
           )}
@@ -133,7 +130,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           {location && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
-              <p className="text-sm truncate">
+              <p className="text-sm truncate" title={location}>
                 {location}
               </p>
             </div>
@@ -149,11 +146,30 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
               </div>
             )}
             <PriceIndicator range={hotel.price_range} />
-            {hotel.lgbtq_friendly && (
-              <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
-                LGBTQ+
-              </Badge>
-            )}
+            {(() => {
+              // Prefer up to 2 of the row's actual tags (e.g. clothing-optional,
+              // power-host) over a generic 'LGBTQ+' pill that's set on 100% of
+              // rows. Fall back to LGBTQ+ only if no tags exist.
+              const tags = (hotel.tags ?? [])
+                .filter((t): t is string => typeof t === 'string' && t.length > 0)
+                .slice(0, 2);
+              if (tags.length > 0) {
+                return tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    style={{ fontSize: '0.65rem', padding: '1px 5px' }}
+                  >
+                    {tag}
+                  </Badge>
+                ));
+              }
+              return hotel.lgbtq_friendly ? (
+                <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                  LGBTQ+
+                </Badge>
+              ) : null;
+            })()}
           </div>
         </div>
       </div>
