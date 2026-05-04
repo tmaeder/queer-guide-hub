@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tag, ChevronRight } from 'lucide-react';
 import { getCategoryIcon, getCategoryShortName } from './categoryMeta';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
 
 type DisplayMode = 'chips' | 'grid' | 'list';
@@ -155,18 +156,20 @@ export function TagListRenderer({
     );
   }
 
-  // Chips
+  // Chips — rendered as <a> so a single click navigates and modifier-clicks
+  // (cmd/ctrl, middle-click) work for "open in new tab" (P1-3).
   return (
     <div className="flex flex-wrap gap-2">
       {tags.map((tag) => {
         const uses = tagUsageCounts[tag.name] || 0;
+        const slug = tag.slug || encodeURIComponent(tag.name);
         return (
-          <button
+          <LocalizedLink
             key={tag.id}
-            type="button"
-            onClick={() => onTagClick(tag)}
-            className="inline-flex items-center gap-1.5 rounded-full cursor-pointer bg-background border border-border transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
-            style={{ minHeight: 36, padding: '6px 12px', font: 'inherit', color: 'inherit' }}
+            to={`/resources/${slug}`}
+            data-tag-name={tag.name}
+            className="inline-flex items-center gap-1.5 rounded-full cursor-pointer bg-background border border-border transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary no-underline text-inherit"
+            style={{ minHeight: 36, padding: '6px 12px' }}
           >
             <Tag style={{ width: 12, height: 12, opacity: 0.55 }} />
             <span style={{ fontWeight: 500, fontSize: '0.78rem' }}>{tag.name}</span>
@@ -175,7 +178,7 @@ export function TagListRenderer({
                 {uses}
               </span>
             )}
-          </button>
+          </LocalizedLink>
         );
       })}
     </div>
