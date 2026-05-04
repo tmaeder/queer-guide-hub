@@ -124,52 +124,12 @@ const Venues = () => {
       },
       { replace: true },
     );
-    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy });
   };
 
   const handleViewDetails = (venue: Venue) => {
     setSelectedVenue(venue);
   };
-
-  const sortedVenues = useMemo(() => {
-    if (!venues || venues.length === 0) return [];
-
-    if (sortBy === 'featured') {
-      return [...venues].sort((a, b) => {
-        const aFeat = a.featured ? 1 : 0;
-        const bFeat = b.featured ? 1 : 0;
-        if (aFeat !== bFeat) return bFeat - aFeat;
-        return (a.name || '').localeCompare(b.name || '');
-      });
-    }
-
-    return [...venues].sort((a, b) => {
-      let aValue: string | Date, bValue: string | Date;
-      switch (sortBy) {
-        case 'name':
-          aValue = a.name?.toLowerCase() || '';
-          bValue = b.name?.toLowerCase() || '';
-          break;
-        case 'category':
-          aValue = a.category?.toLowerCase() || '';
-          bValue = b.category?.toLowerCase() || '';
-          break;
-        case 'city':
-          aValue = a.city?.toLowerCase() || '';
-          bValue = b.city?.toLowerCase() || '';
-          break;
-        case 'created_at':
-          aValue = new Date(a.created_at);
-          bValue = new Date(b.created_at);
-          break;
-        default:
-          return 0;
-      }
-      if (aValue < bValue) return -1;
-      if (aValue > bValue) return 1;
-      return 0;
-    });
-  }, [venues, sortBy]);
 
   // Refetch when URL-driven filters change (initial mount, back/forward,
   // shared link). Reseeds page + currentFilters so internal state matches.
@@ -182,9 +142,9 @@ const Venues = () => {
     setCurrentFilters(next);
     setPage(1);
     setAutoLoadedCount(0);
-    fetchVenues(next, { page: 1, pageSize: PAGE_SIZE, append: false });
+    fetchVenues(next, { page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlSearch, urlCategory]);
+  }, [urlSearch, urlCategory, sortBy]);
 
   // Infinite scroll
   useEffect(() => {
@@ -200,6 +160,7 @@ const Venues = () => {
             page: nextPage,
             pageSize: PAGE_SIZE,
             append: true,
+            sort: sortBy,
           });
           const fetched = result?.fetched ?? PAGE_SIZE;
           setAutoLoadedCount((c) => Math.min(50, c + fetched));
@@ -357,7 +318,7 @@ const Venues = () => {
 
             {!loading && venues.length > 0 && (
               <StaggerGrid className={gridClass}>
-                {sortedVenues.map((venue, index) => (
+                {venues.map((venue, index) => (
                   <div
                     key={venue.id}
                     className={index >= PAGE_SIZE ? 'content-enter' : undefined}
@@ -383,6 +344,7 @@ const Venues = () => {
                         page: nextPage,
                         pageSize: PAGE_SIZE,
                         append: true,
+                        sort: sortBy,
                       });
                     }}
                   >

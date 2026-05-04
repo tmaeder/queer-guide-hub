@@ -195,7 +195,18 @@ export function VenueFilters({
 
   const handleSearch = () => {
     clearTimeout(debounceRef.current);
+    clearTimeout(searchDebounceRef.current);
     onFiltersChange(buildFilters());
+  };
+
+  // Debounced search-as-you-type (250ms after last keystroke).
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleSearchInput = (value: string) => {
+    setSearch(value);
+    clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      onFiltersChange(buildFilters({ search: value }));
+    }, 250);
   };
 
   const handleCategoryClick = (cat: string) => {
@@ -338,7 +349,7 @@ export function VenueFilters({
           <Input
             placeholder="Search venues & organizations..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-10"
           />
