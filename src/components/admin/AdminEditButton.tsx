@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AdminEditDialog } from './AdminEditDialog';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AdminEditButtonProps {
   contentType: string;
@@ -11,6 +12,8 @@ interface AdminEditButtonProps {
   contentName?: string;
   /** Current data for the content item — used to pre-fill the edit form */
   currentData?: Record<string, unknown>;
+  /** When provided, the owner of this content can also edit (in addition to admins/moderators). */
+  ownerUserId?: string | null;
   size?: 'sm' | 'default';
   onSaved?: () => void;
 }
@@ -20,13 +23,16 @@ export function AdminEditButton({
   contentId,
   contentName,
   currentData,
+  ownerUserId,
   size = 'sm',
   onSaved,
 }: AdminEditButtonProps) {
   const { canManageContent, loading } = useAdminRoles();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
-  if (loading || !canManageContent()) return null;
+  const isOwner = Boolean(ownerUserId && user?.id && ownerUserId === user.id);
+  if (loading || (!canManageContent() && !isOwner)) return null;
 
   return (
     <>

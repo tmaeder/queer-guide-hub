@@ -1468,5 +1468,14 @@
       "turnOn": "Включить",
       "turnOff": "Выключить"
     }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "Подробнее",
+      "share": "Поделиться",
+      "linkCopied": "Ссылка скопирована",
+      "linkCopiedDescription": "Теперь её можно вставить",
+      "shareFailed": "Не удалось поделиться"
+    }
   }
 }

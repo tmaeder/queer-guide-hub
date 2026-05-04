@@ -1440,5 +1440,14 @@
       "turnOn": "Ativar",
       "turnOff": "Desativar"
     }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "Ver detalhes",
+      "share": "Partilhar",
+      "linkCopied": "Link copiado",
+      "linkCopiedDescription": "Já podes colá-lo",
+      "shareFailed": "Falha ao partilhar"
+    }
   }
 }

@@ -17,6 +17,7 @@ import {
   parentOrder,
 } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
+import { useMeta } from '@/hooks/useMeta';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
 import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
@@ -44,6 +45,24 @@ type ViewMode =
 type DisplayMode = 'chips' | 'grid' | 'list';
 type SortOption = 'alphabetical' | 'usage' | 'recent';
 
+/**
+ * P2-4 — "Has image" filter must exclude gradient placeholders. Without
+ * width/height/MIME info on the client, use a URL heuristic: require an
+ * http(s) or storage path, reject data: URIs and obvious placeholder
+ * markers in the path. False negatives (real images named "*placeholder*")
+ * are acceptable; false positives (gradient placeholders showing up
+ * under "Has image") are not.
+ */
+function isRealTagImage(url: string | null | undefined): boolean {
+  if (!url) return false;
+  const trimmed = url.trim();
+  if (trimmed.length === 0) return false;
+  if (trimmed.startsWith('data:')) return false;
+  const lower = trimmed.toLowerCase();
+  if (lower.includes('placeholder') || lower.includes('gradient')) return false;
+  return /^https?:\/\//i.test(trimmed) || trimmed.startsWith('/');
+}
+
 // ─────────────── Shared hover-card class ───────────────
 const hoverCardCls =
   'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer bg-background text-left text-inherit w-full transition-all duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary border-0';
@@ -51,11 +70,46 @@ const hoverCardCls =
 export default function Ressources() {
   const { tagName, categorySlug } = useParams<{ tagName: string; categorySlug: string }>();
   const navigate = useLocalizedNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
   const { data: tagUsageCounts = {} } = useTagUsageCounts();
   const safeMode = useSafeMode();
   const ageAffirmation = useAgeAffirmation();
+
+  // P1-1 — filter / sort / view state lives in URL query params so links
+  // are shareable, back/forward works, and view-mode survives reloads.
+  // Defaults are kept implicit (omitted from the URL) for clean links.
+  const updateParam = useCallback(
+    (key: string, value: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const p = new URLSearchParams(prev);
+          if (value === null || value === '') p.delete(key);
+          else p.set(key, value);
+          return p;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  const searchQuery = searchParams.get('q') ?? '';
+  const sortBy = (searchParams.get('sort') as SortOption | null) ?? 'usage';
+  const sortDirection: 'asc' | 'desc' = searchParams.get('dir') === 'asc' ? 'asc' : 'desc';
+  const filterCategory = searchParams.get('cat') ?? 'all';
+  const displayMode = (searchParams.get('view') as DisplayMode | null) ?? 'grid';
+  const usageFilter = searchParams.get('usage') ?? 'all';
+  const hasImageFilter = searchParams.get('hasImage') === '1';
+
+  const setSortBy = (next: SortOption) => updateParam('sort', next === 'usage' ? null : next);
+  const setSortDirection = (next: 'asc' | 'desc') =>
+    updateParam('dir', next === 'desc' ? null : 'asc');
+  const setFilterCategory = (next: string) => updateParam('cat', next === 'all' ? null : next);
+  const setDisplayMode = (next: DisplayMode) =>
+    updateParam('view', next === 'grid' ? null : next);
+  const setUsageFilter = (next: string) => updateParam('usage', next === 'all' ? null : next);
+  const setHasImageFilter = (next: boolean) => updateParam('hasImage', next ? '1' : null);
 
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -63,13 +117,6 @@ export default function Ressources() {
   const [selectedTag, setSelectedTag] = useState<CentralizedTag | null>(null);
   const [tagNotFound, setTagNotFound] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<CentralizedTag[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('usage');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('grid');
-  const [usageFilter, setUsageFilter] = useState<string>('all');
-  const [hasImageFilter, setHasImageFilter] = useState(false);
   const [professions, setProfessions] = useState<string[]>([]);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -83,9 +130,9 @@ export default function Ressources() {
   useEffect(() => {
     if (professionParam) {
       setViewMode('search');
-      setSearchQuery(professionParam);
+      updateParam('q', professionParam);
     }
-  }, [professionParam]);
+  }, [professionParam, updateParam]);
 
   // Category deep-link from URL.
   // P1-6 — preferred path: /resources/c/<categorySlug> (matched by `slug`).
@@ -128,6 +175,27 @@ export default function Ressources() {
       matchAgainst((c) => c.name === decoded);
     }
   }, [categoryParam, categorySlug, categoriesTree]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryParam, categorySlug, categoriesTree]);
+
+  // P1-1 — hydrate search-mode results from `?q=...` on initial mount /
+  // direct visit. Subsequent keystrokes go through handleSearch.
+  useEffect(() => {
+    if (!searchQuery || allTags.length === 0) return;
+    if (viewMode === 'search') return; // already populated
+    if (tagName || categorySlug) return; // tag-detail / category routes own the page
+    const lower = searchQuery.toLowerCase();
+    const local = allTags
+      .filter(
+        (t) =>
+          t.name.toLowerCase().includes(lower) ||
+          (t.description && t.description.toLowerCase().includes(lower)),
+      )
+      .slice(0, 50);
+    setSearchResults(local);
+    setViewMode('search');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, allTags, tagName, categorySlug]);
 
   // Load individual tag from route param
   useEffect(() => {
@@ -189,7 +257,7 @@ export default function Ressources() {
     } else if (usageFilter === 'unused') {
       filtered = filtered.filter((t) => (tagUsageCounts[t.name] || 0) === 0);
     }
-    if (hasImageFilter) filtered = filtered.filter((t) => t.image_url);
+    if (hasImageFilter) filtered = filtered.filter((t) => isRealTagImage(t.image_url));
 
     const dir = sortDirection === 'asc' ? 1 : -1;
     return [...filtered].sort((a, b) => {
@@ -245,9 +313,37 @@ export default function Ressources() {
     [allTags, tagUsageCounts, safeMode],
   );
 
+  // P1-5 — per-page metadata for the tag-detail view. SPA caveat: meta
+  // is JS-injected so crawlers without JS won't pick it up; documented
+  // in the bug report's Stack Adaptation note.
+  const tagDetailMeta = useMemo(() => {
+    if (viewMode !== 'tag-detail' || !selectedTag) return null;
+    const desc =
+      selectedTag.description?.trim() ||
+      `${selectedTag.name} — Queer Guide resource term and related content.`;
+    const slug = selectedTag.slug || encodeURIComponent(selectedTag.name);
+    const jsonLd: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'DefinedTerm',
+      name: selectedTag.name,
+      description: desc,
+      url: `https://queer.guide/resources/${slug}`,
+    };
+    if (selectedTag.image_url) jsonLd.image = selectedTag.image_url;
+    return {
+      title: selectedTag.name,
+      description: desc,
+      ogImage: selectedTag.image_url || undefined,
+      ogType: 'article' as const,
+      canonicalPath: `/resources/${slug}`,
+      jsonLd,
+    };
+  }, [viewMode, selectedTag]);
+  useMeta(tagDetailMeta ?? {});
+
   const handleSearch = useCallback(
     (query: string) => {
-      setSearchQuery(query);
+      updateParam('q', query.trim() ? query : null);
       if (!query.trim()) {
         setViewMode('overview');
         setSearchResults([]);
@@ -270,7 +366,7 @@ export default function Ressources() {
         setSearchResults([...local, ...server.filter((t) => !ids.has(t.id))]);
       }, 300);
     },
-    [allTags, searchTags],
+    [allTags, searchTags, updateParam],
   );
 
   const handleTagClick = (tag: CentralizedTag) => {
@@ -296,7 +392,7 @@ export default function Ressources() {
       setViewMode('overview');
     } else if (viewMode === 'search') {
       setViewMode('overview');
-      setSearchQuery('');
+      updateParam('q', null);
       setSearchResults([]);
     }
   };
@@ -519,7 +615,9 @@ export default function Ressources() {
         sortBy={sortBy}
         onSortByChange={setSortBy}
         sortDirection={sortDirection}
-        onSortDirectionToggle={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
+        onSortDirectionToggle={() =>
+          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+        }
         categoriesTree={categoriesTree}
       />
 
@@ -558,7 +656,7 @@ export default function Ressources() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Zap style={{ width: 18, height: 18 }} />
-                <h6 className="text-base font-semibold">Popular tags</h6>
+                <h2 className="text-base font-semibold">Popular tags</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -580,7 +678,7 @@ export default function Ressources() {
           )}
 
           <div>
-            <h6 className="text-base font-semibold mb-4">Browse by category</h6>
+            <h2 className="text-base font-semibold mb-4">Browse by category</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {orderedParents.map((cat) => {
                 const Icon = getCategoryIcon(cat.name);
@@ -599,7 +697,13 @@ export default function Ressources() {
                           {getCategoryShortName(cat.name)}
                         </span>
                       </div>
-                      <Badge variant="secondary">{cat.total_tag_count}</Badge>
+                      <Badge
+                        variant="secondary"
+                        title={`${cat.total_tag_count} tags total (across all subcategories)`}
+                        aria-label={`${cat.total_tag_count} tags total across all subcategories`}
+                      >
+                        {cat.total_tag_count}
+                      </Badge>
                     </div>
                     {activeChildren.length > 0 && (
                       <span
@@ -611,6 +715,7 @@ export default function Ressources() {
                           WebkitBoxOrient: 'vertical',
                           lineHeight: 1.4,
                         }}
+                        title="Each subcategory's count is the number of tags directly assigned to it"
                       >
                         {activeChildren
                           .map((c) => `${getCategoryShortName(c.name)} (${c.tag_count})`)
@@ -880,7 +985,13 @@ export default function Ressources() {
                   ? `${getCategoryShortName(filterCategory)} tags`
                   : 'Filtered tags'}
             </h6>
-            <Badge variant="secondary">{filteredAndSortedTags.length}</Badge>
+            <Badge
+              variant="secondary"
+              title={`${filteredAndSortedTags.length} matching tags`}
+              aria-label={`${filteredAndSortedTags.length} matching tags`}
+            >
+              {filteredAndSortedTags.length}
+            </Badge>
           </div>
           {filteredAndSortedTags.length > 0 ? (
             renderTagList(filteredAndSortedTags)

@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
+import { EntityMap } from '@/components/map/EntityMap';
+import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import type { Database } from '@/integrations/supabase/types';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
@@ -44,6 +46,9 @@ interface HeroProps {
 
 export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, onAddToTrip }: HeroProps) {
   const heroImage = hotel.images && hotel.images.length > 0 ? hotel.images[0] : null;
+  // Website is only useful when it points somewhere different than the
+  // booking URL — otherwise it's a duplicate of "Book Now".
+  const showWebsite = Boolean(hotel.website) && hotel.website !== hotel.booking_url;
   return (
     <>
       {heroImage && (
@@ -82,6 +87,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
             contentType="hotels"
             contentId={hotel.id}
             contentName={hotel.name}
+            ownerUserId={hotel.created_by ?? undefined}
             currentData={hotel as Record<string, unknown>}
             onSaved={() => window.location.reload()}
           />
@@ -93,10 +99,12 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
               </a>
             </Button>
           )}
-          {hotel.website && (
-            <Button variant="outline" size="sm" onClick={() => window.open(hotel.website!, '_blank')}>
-              <Globe className="w-4 h-4 mr-1.5" />
-              Website
+          {showWebsite && (
+            <Button variant="outline" size="sm" asChild>
+              <a href={hotel.website!} target="_blank" rel="noopener noreferrer">
+                <Globe className="w-4 h-4 mr-1.5" />
+                Website
+              </a>
             </Button>
           )}
         </div>
@@ -127,6 +135,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
 }
 
 export function HotelOverview({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
+  const hasMap = typeof hotel.latitude === 'number' && typeof hotel.longitude === 'number';
   return (
     <div className="flex flex-col gap-6">
       {hotel.description && (
@@ -158,36 +167,60 @@ export function HotelOverview({ hotel, t }: { hotel: HotelWithRelations; t: (k: 
           </CardContent>
         </Card>
       )}
+      {hasMap && (
+        <Card>
+          <CardHeader><CardTitle>{t('pages.hotelDetail.location', 'Location')}</CardTitle></CardHeader>
+          <CardContent>
+            <EntityMap
+              center={[hotel.longitude as number, hotel.latitude as number]}
+              zoom={14}
+              height={320}
+              markers={[
+                {
+                  id: hotel.id,
+                  lat: hotel.latitude as number,
+                  lng: hotel.longitude as number,
+                  name: hotel.name,
+                  primary: true,
+                },
+              ]}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
 
 export function HotelSidebar({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
+  const hasContact = Boolean(hotel.address || hotel.phone || hotel.email);
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader><CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle></CardHeader>
-        <CardContent>
-          {hotel.address && (
-            <div className="flex items-start gap-2">
-              <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-              <p className="text-sm">{hotel.address}</p>
-            </div>
-          )}
-          {hotel.phone && (
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 shrink-0" />
-              <a href={`tel:${hotel.phone}`} className="text-sm">{hotel.phone}</a>
-            </div>
-          )}
-          {hotel.email && (
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 shrink-0" />
-              <a href={`mailto:${hotel.email}`} className="text-sm">{hotel.email}</a>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {hasContact && (
+        <Card>
+          <CardHeader><CardTitle>{t('pages.hotelDetail.contact', 'Contact')}</CardTitle></CardHeader>
+          <CardContent>
+            {hotel.address && (
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
+                <p className="text-sm">{hotel.address}</p>
+              </div>
+            )}
+            {hotel.phone && (
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 shrink-0" />
+                <a href={`tel:${hotel.phone}`} className="text-sm">{hotel.phone}</a>
+              </div>
+            )}
+            {hotel.email && (
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 shrink-0" />
+                <a href={`mailto:${hotel.email}`} className="text-sm">{hotel.email}</a>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
       {hotel.tags && hotel.tags.length > 0 && (
         <Card>
           <CardHeader><CardTitle>{t('pages.hotelDetail.tags', 'Tags')}</CardTitle></CardHeader>
@@ -205,11 +238,12 @@ export function HotelSidebar({ hotel, t }: { hotel: HotelWithRelations; t: (k: s
 }
 
 export function HotelPhotos({ hotel }: { hotel: HotelWithRelations }) {
-  if (!hotel.images || hotel.images.length <= 1) return null;
+  const photos = getHotelPhotosToShow(hotel.images);
+  if (photos.length === 0) return null;
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-      {hotel.images.map((img, i) => (
-        <div key={i} className="rounded-md overflow-hidden h-[200px]">
+      {photos.map((img, i) => (
+        <div key={img} className="rounded-md overflow-hidden h-[200px]">
           <img
             src={img}
             alt={`${hotel.name} ${i + 1}`}
