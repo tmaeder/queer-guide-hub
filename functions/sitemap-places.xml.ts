@@ -3,29 +3,23 @@ import { fetchRows, urlsetXml, xmlResponse, ORIGIN, type Env, type SitemapEntry 
 export const onRequest: PagesFunction<Env> = async ({ env }) => {
   const [cities, countries] = await Promise.all([
     fetchRows(env, 'cities', 'slug,updated_at', 'slug=not.is.null', 5000),
-    fetchRows(env, 'countries', 'code,updated_at', 'code=not.is.null', 500),
     fetchRows(env, 'countries', 'slug,updated_at', 'slug=not.is.null', 500),
   ]);
   const entries: SitemapEntry[] = [];
   for (const r of cities) {
     if (typeof r.slug !== 'string' || !r.slug) continue;
     entries.push({
-      loc: `${ORIGIN}/places/${encodeURIComponent(r.slug as string)}`,
-      loc: `${ORIGIN}/city/${encodeURIComponent(r.slug as string)}`,
-      lastmod: typeof r.updated_at === 'string' ? (r.updated_at as string).slice(0, 10) : undefined,
+      loc: `${ORIGIN}/city/${encodeURIComponent(r.slug)}`,
+      lastmod: typeof r.updated_at === 'string' ? r.updated_at.slice(0, 10) : undefined,
       changefreq: 'weekly',
       priority: 0.7,
     });
   }
   for (const r of countries) {
-    const code = r.code;
-    if (typeof code !== 'string' || !code) continue;
-    entries.push({
-      loc: `${ORIGIN}/places/${encodeURIComponent(code.toLowerCase())}`,
     if (typeof r.slug !== 'string' || !r.slug) continue;
     entries.push({
-      loc: `${ORIGIN}/country/${encodeURIComponent(r.slug as string)}`,
-      lastmod: typeof r.updated_at === 'string' ? (r.updated_at as string).slice(0, 10) : undefined,
+      loc: `${ORIGIN}/country/${encodeURIComponent(r.slug)}`,
+      lastmod: typeof r.updated_at === 'string' ? r.updated_at.slice(0, 10) : undefined,
       changefreq: 'weekly',
       priority: 0.6,
     });
