@@ -17,6 +17,9 @@ import {
   parentOrder,
 } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
+import { useSafeMode } from '@/providers/SafeModeProvider';
+import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
+import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,6 +53,8 @@ export default function Ressources() {
   const [searchParams] = useSearchParams();
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
   const { data: tagUsageCounts = {} } = useTagUsageCounts();
+  const safeMode = useSafeMode();
+  const ageAffirmation = useAgeAffirmation();
 
   const [viewMode, setViewMode] = useState<ViewMode>('overview');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -188,9 +193,16 @@ export default function Ressources() {
     () =>
       [...allTags]
         .filter((t) => (tagUsageCounts[t.name] || 0) > 0)
+        .filter(
+          (t) =>
+            !safeMode.shouldHide([
+              ...(t.categories?.map((c) => c.name) ?? []),
+              ...(t.categories?.map((c) => c.parent_name ?? null) ?? []),
+            ]),
+        )
         .sort((a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0))
         .slice(0, 24),
-    [allTags, tagUsageCounts],
+    [allTags, tagUsageCounts, safeMode],
   );
 
   const handleSearch = useCallback(
@@ -273,7 +285,20 @@ export default function Ressources() {
       selectedTag.categories?.find((c) => c.is_primary) ?? selectedTag.categories?.[0];
     const parentName = primary?.parent_name ?? undefined;
     const childName = primary?.level === 1 ? primary.name : undefined;
+    const tagCategoryNames = [
+      ...(selectedTag.categories?.map((c) => c.name) ?? []),
+      ...(selectedTag.categories?.map((c) => c.parent_name ?? null) ?? []),
+    ];
+    const isAdult = tagCategoryNames.some((n) => safeMode.isAdultCategory(n));
     return (
+      <TagDetailWithGate
+        isAdult={isAdult}
+        affirmed={ageAffirmation.affirmed}
+        onDecline={() => {
+          navigate('/resources');
+          setViewMode('overview');
+        }}
+      >
       <div className="container mx-auto py-8 md:py-16 px-4">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-1 mb-4 flex-wrap">
@@ -381,6 +406,7 @@ export default function Ressources() {
           </div>
         </div>
       </div>
+      </TagDetailWithGate>
     );
   }
 
@@ -467,6 +493,16 @@ export default function Ressources() {
               <div className="flex items-center gap-2 mb-4">
                 <Zap style={{ width: 18, height: 18 }} />
                 <h6 className="text-base font-semibold">Popular tags</h6>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto text-xs"
+                  onClick={() => safeMode.toggle()}
+                  data-testid="safe-mode-toggle"
+                  aria-pressed={!safeMode.enabled}
+                >
+                  {safeMode.enabled ? 'Show 18+ content' : 'Hide 18+ content'}
+                </Button>
               </div>
               <TagListRenderer
                 tags={popularTags}
