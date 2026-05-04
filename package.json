@@ -25,6 +25,7 @@
     "bones": "boneyard build",
     "bones:force": "boneyard build --force",
     "i18n:check": "tsx scripts/sync-translations.ts",
+    "i18n:check:defaults": "node scripts/check-i18n-german-defaults.mjs",
     "i18n:fill": "tsx scripts/sync-translations.ts --fill",
     "verify:gh-sync": "tsx scripts/verify-github-sync.ts",
     "prepare": "husky"
