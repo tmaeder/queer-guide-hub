@@ -9,6 +9,7 @@ import { CookieConsentProvider } from '@/hooks/useCookieConsent';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { PWAProvider } from '@/components/pwa/PWAProvider';
 import { CurrencyProvider } from '@/hooks/useCurrency';
+import { SafeModeProvider } from '@/providers/SafeModeProvider';
 import { createOptimizedQueryClient } from '@/utils/queryOptimizations';
 
 const queryClient = createOptimizedQueryClient();
@@ -28,11 +29,13 @@ export const AppProviders = ({ children }: { children: React.ReactNode }) => (
           <CookieConsentProvider>
             <AuthProvider>
               <CurrencyProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  {children}
-                </TooltipProvider>
+                <SafeModeProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Sonner />
+                    {children}
+                  </TooltipProvider>
+                </SafeModeProvider>
               </CurrencyProvider>
             </AuthProvider>
           </CookieConsentProvider>
