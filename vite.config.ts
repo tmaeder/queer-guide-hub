@@ -52,6 +52,18 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // P0 audit follow-up: boneyard-js/react bundles its own React, which
+    // ends up in a separate Vite optimizeDeps cache bucket from the app's
+    // React, producing two `useRef` implementations and the classic
+    // "Invalid hook call" error on every <Skeleton> render in dev. Force
+    // dedupe so both modules share one instance.
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    // Pre-bundle boneyard-js/react against the same React instance Vite
+    // already has cached, so the Skeleton hooks resolve to the same
+    // dispatcher as the rest of the app.
+    include: ['boneyard-js/react'],
   },
   esbuild: mode === 'production' ? {
     drop: ['console', 'debugger'],
