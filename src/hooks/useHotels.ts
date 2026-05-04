@@ -52,6 +52,11 @@ export function useHotels(autoFetch = true) {
       let query = supabase
         .from('hotels')
         .select('*', { count: 'exact' })
+        // Curated promotion rank first; rows without a priority sink to the
+        // bottom of this sub-order and fall back to the legacy `featured`
+        // boolean. Once ingestion fully populates featured_priority we can
+        // drop the boolean from the order.
+        .order('featured_priority', { ascending: false, nullsFirst: false })
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false })
         // Stable tiebreaker. Without it, rows that share `featured` and
