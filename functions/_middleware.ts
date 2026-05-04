@@ -10,17 +10,9 @@
  * over the injected content with no hydration mismatch (we use createRoot,
  * not hydrateRoot).
  */
-import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib/routeMeta';
-import { homepageJsonLd } from './_lib/jsonLd';
-import { isBotUserAgent } from './_lib/botUa';
-import { buildBodyHtml } from './_lib/routeBody';
- * The SPA still renders client-side; this only fixes the crawler-visible HTML.
- * Pre-rendered body HTML is Phase 2.
- */
-import { resolveMeta, canonicalUrl, isIndexable, DEFAULT_OG_IMAGE } from './_lib/routeMeta';
-import { homepageJsonLd } from './_lib/jsonLd';
 import {
   resolveMeta,
+  canonicalUrl,
   isIndexable,
   DEFAULT_OG_IMAGE,
   splitLocale,
