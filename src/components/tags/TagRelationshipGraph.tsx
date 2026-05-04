@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Maximize2, Filter } from 'lucide-react';
+import { Maximize2, Filter, AlertTriangle } from 'lucide-react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface TagRelationshipGraphProps {
@@ -58,7 +58,7 @@ export default function TagRelationshipGraph({
 
   const categoryFilter = externalCategoryFilter || internalCategoryFilter;
 
-  const { data: graphData, isLoading } = useTagGraph(minScore, categoryFilter);
+  const { data: graphData, isLoading, error, refetch } = useTagGraph(minScore, categoryFilter);
 
   const setContainer = useCallback((el: HTMLDivElement | null) => {
     observerRef.current?.disconnect();
@@ -192,6 +192,27 @@ export default function TagRelationshipGraph({
 
   if (isLoading) {
     return <PageLoadingState count={1} />;
+  }
+
+  if (error) {
+    return (
+      <div
+        role="alert"
+        data-testid="tag-graph-error"
+        className="flex flex-col items-center justify-center gap-3 p-8 text-center"
+      >
+        <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
+        <div>
+          <p className="text-base font-semibold">Couldn't load the tag graph</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            We hit an error fetching tag relationships. Please try again.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
   }
 
   if (isMobile) {
