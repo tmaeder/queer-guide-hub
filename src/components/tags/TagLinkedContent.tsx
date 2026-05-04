@@ -322,6 +322,29 @@ function SectionSkeleton() {
 
 const MAX_NEWS = 6;
 
+/**
+ * P2-8 — rank news by relevance to the tag. Articles whose title or excerpt
+ * mention the tag name sort first; others are demoted. This is a lightweight
+ * client-side heuristic until the ingestion pipeline gets a confidence score.
+ */
+function rankNewsByRelevance(
+  articles: TagContentResult['news'],
+  tagName: string,
+): TagContentResult['news'] {
+  if (articles.length === 0) return articles;
+  const terms = tagName.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+  if (terms.length === 0) return articles;
+
+  return [...articles].sort((a, b) => {
+    const textA = `${a.title ?? ''} ${a.excerpt ?? ''}`.toLowerCase();
+    const textB = `${b.title ?? ''} ${b.excerpt ?? ''}`.toLowerCase();
+    const scoreA = terms.filter((t) => textA.includes(t)).length;
+    const scoreB = terms.filter((t) => textB.includes(t)).length;
+    // Higher mention count first; preserve original order (by published_at) within same score
+    return scoreB - scoreA;
+  });
+}
+
 export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
   const navigate = useLocalizedNavigate();
   const { data, isLoading } = useTagContent(tagId, tagName);
@@ -337,7 +360,8 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
 
   if (!data) return null;
 
-  const { venues, news, events, personalities, groups } = data;
+  const { venues, events, personalities, groups } = data;
+  const news = rankNewsByRelevance(data.news, tagName);
   const hasAny = venues.length > 0 || news.length > 0 || events.length > 0 || personalities.length > 0 || groups.length > 0;
   if (!hasAny) return null;
 
