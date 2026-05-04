@@ -56,17 +56,15 @@ export default function PersonalityDetail() {
     }
   }, [error, navigate]);
 
+  // Render the in-app Not Found state instead of silently bouncing the user
+  // back to /personalities — that hid the 404 and made the SPA disagree with
+  // the edge-rendered HTTP 404 from functions/_middleware.ts.
   useEffect(() => {
     if (isLoading || error) return;
     if (slug && personality === null) {
-      toast({
-        title: 'Not Found',
-        description: 'Personality not found',
-        variant: 'destructive',
-      });
-      navigate('/personalities');
+      document.title = 'Personality not found · Queer Guide';
     }
-  }, [isLoading, error, personality, slug, navigate]);
+  }, [isLoading, error, personality, slug]);
 
   useEffect(() => {
     if (!personality) return;
@@ -136,15 +134,17 @@ export default function PersonalityDetail() {
 
   if (!isLoading && !error && !personality) {
     return (
-      <div className="mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold mb-4">Personality Not Found</h1>
-        <p className="text-muted-foreground mb-6">
-          The personality you&apos;re looking for doesn&apos;t exist.
-        </p>
-        <Button onClick={() => navigate('/personalities')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Personalities
-        </Button>
+      <div className="min-h-[60vh] flex items-center justify-center px-4 py-8">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4">Personality not found</h1>
+          <p className="text-muted-foreground mb-6">
+            The personality you&apos;re looking for was moved, removed, or never existed.
+          </p>
+          <Button onClick={() => navigate('/personalities')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Personalities
+          </Button>
+        </div>
       </div>
     );
   }
