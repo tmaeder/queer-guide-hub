@@ -58,14 +58,14 @@ export default function Personalities() {
   useMeta({
     title: 'Personalities',
     description:
-      'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.',
+      'Browse thousands of LGBTQ+ activists, artists, writers, athletes, and historical icons.',
     canonicalPath: '/personalities',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Notable LGBTQ+ Personalities',
       description:
-        'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.',
+        'Browse thousands of LGBTQ+ activists, artists, writers, athletes, and historical icons.',
       url: 'https://queer.guide/personalities',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
@@ -291,12 +291,43 @@ export default function Personalities() {
       <div className="container mx-auto px-4 py-8 md:py-16">
         <PageHeader
           title={t('pages.personalities.title', 'Personalities')}
-          subtitle={t('pages.personalities.subtitle', 'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.')}
+          subtitle={
+            loading && totalCount === 0
+              ? 'Loading personalities…'
+              : `Browse ${totalCount.toLocaleString()} LGBTQ+ activists, artists, writers, athletes, and historical icons.`
+          }
           center
           actions={
             user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
           }
         />
+
+        {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
+        <div className="text-center text-xs text-muted-foreground mb-6">
+          {filters.exclude_adult !== false ? (
+            <>
+              Hiding adult performers ·{' '}
+              <button
+                type="button"
+                className="underline hover:no-underline"
+                onClick={() => handleFiltersChange({ exclude_adult: false })}
+              >
+                Show all
+              </button>
+            </>
+          ) : (
+            <>
+              Including adult performers ·{' '}
+              <button
+                type="button"
+                className="underline hover:no-underline"
+                onClick={() => handleFiltersChange({ exclude_adult: true })}
+              >
+                Hide
+              </button>
+            </>
+          )}
+        </div>
 
         {/* Featured rail — only on the cold default view */}
         {!hasAnyFilter && <FeaturedPersonalityRail />}
