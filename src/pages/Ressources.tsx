@@ -542,7 +542,7 @@ export default function Ressources() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Zap style={{ width: 18, height: 18 }} />
-                <h6 className="text-base font-semibold">Popular tags</h6>
+                <h2 className="text-base font-semibold">Popular tags</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -564,7 +564,7 @@ export default function Ressources() {
           )}
 
           <div>
-            <h6 className="text-base font-semibold mb-4">Browse by category</h6>
+            <h2 className="text-base font-semibold mb-4">Browse by category</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {orderedParents.map((cat) => {
                 const Icon = getCategoryIcon(cat.name);
