@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Cloud, Droplets, Wind, Gauge, Loader2 } from 'lucide-react';
@@ -28,12 +28,38 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Lazy-load: don't hit the OpenWeather edge function until the widget
+  // is actually about to be visible. Saves a roundtrip on every city
+  // page when the user doesn't scroll down to the weather section.
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true); // SSR / older browsers — fall back to eager.
+      return;
+    }
+    const el = wrapperRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setIsVisible(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
     if (latitude && longitude) {
       fetchWeatherForecast();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latitude, longitude, cityName]);
+  }, [isVisible, latitude, longitude, cityName]);
 
   const fetchWeatherForecast = async () => {
     if (!latitude || !longitude) return;
@@ -72,24 +98,40 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
 
   if (!latitude || !longitude) return null;
 
+  // Off-screen / pre-visibility placeholder — observed by IntersectionObserver
+  // so the fetch only fires when the widget enters viewport (with 200px
+  // rootMargin so it loads just before the user gets to it).
+  if (!isVisible) {
+    return (
+      <div
+        ref={wrapperRef}
+        className={className}
+        style={{ minHeight: 120 }}
+        aria-hidden="true"
+      />
+    );
+  }
+
   if (loading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle>
-            <div className="flex items-center gap-2">
-              <Cloud style={{ height: 20, width: 20 }} />
-              Weather Forecast
+      <div ref={wrapperRef}>
+        <Card className={className}>
+          <CardHeader>
+            <CardTitle>
+              <div className="flex items-center gap-2">
+                <Cloud style={{ height: 20, width: 20 }} />
+                Weather Forecast
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2">Loading weather data...</span>
             </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span className="ml-2">Loading weather data...</span>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
