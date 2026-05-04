@@ -381,6 +381,7 @@ export const AppRoutes = () => {
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
                 <Route path="resources" element={<Resources />} />
+                <Route path="resources/c/:categorySlug" element={<Resources />} />
                 <Route path="resources/:tagName" element={<Resources />} />
                 <Route path="professions/:professionName" element={<ProfessionDetail />} />
                 <Route path="ressources" element={<Navigate to="/resources" replace />} />

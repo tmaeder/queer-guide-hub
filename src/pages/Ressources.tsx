@@ -50,7 +50,7 @@ const hoverCardCls =
   'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer bg-background text-left text-inherit w-full transition-all duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary border-0';
 
 export default function Ressources() {
-  const { tagName } = useParams<{ tagName: string }>();
+  const { tagName, categorySlug } = useParams<{ tagName: string; categorySlug: string }>();
   const navigate = useLocalizedNavigate();
   const [searchParams] = useSearchParams();
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
@@ -88,31 +88,47 @@ export default function Ressources() {
     }
   }, [professionParam]);
 
-  // Category deep-link from URL (e.g. /resources?category=Health+%26+Wellness)
+  // Category deep-link from URL.
+  // P1-6 — preferred path: /resources/c/<categorySlug> (matched by `slug`).
+  // Legacy path: /resources?category=<name> (matched by name; left in place
+  // for back-compat).
   const categoryParam = searchParams.get('category');
   useEffect(() => {
-    if (!categoryParam || categoriesTree.length === 0) return;
-    const decoded = decodeURIComponent(categoryParam);
-    // Check parent categories first
-    const parent = categoriesTree.find((c) => c.name === decoded);
-    if (parent) {
-      setSelectedCategory(parent.name);
-      setSelectedSubcategory('');
-      setFilterCategory('all');
-      setViewMode('category');
-      return;
-    }
-    // Check child categories
-    for (const p of categoriesTree) {
-      const child = p.children?.find((c) => c.name === decoded);
-      if (child) {
-        setSelectedCategory(p.name);
-        setSelectedSubcategory(child.name);
-        setViewMode('subcategory');
-        return;
+    if (categoriesTree.length === 0) return;
+    if (!categoryParam && !categorySlug) return;
+
+    const matchAgainst = (
+      predicate: (c: { name: string; slug?: string }) => boolean,
+    ): boolean => {
+      const parent = categoriesTree.find((c) => predicate(c));
+      if (parent) {
+        setSelectedCategory(parent.name);
+        setSelectedSubcategory('');
+        setFilterCategory('all');
+        setViewMode('category');
+        return true;
       }
+      for (const p of categoriesTree) {
+        const child = p.children?.find((c) => predicate(c));
+        if (child) {
+          setSelectedCategory(p.name);
+          setSelectedSubcategory(child.name);
+          setViewMode('subcategory');
+          return true;
+        }
+      }
+      return false;
+    };
+
+    if (categorySlug) {
+      const slug = decodeURIComponent(categorySlug).toLowerCase();
+      if (matchAgainst((c) => (c.slug ?? '').toLowerCase() === slug)) return;
     }
-  }, [categoryParam, categoriesTree]);
+    if (categoryParam) {
+      const decoded = decodeURIComponent(categoryParam);
+      matchAgainst((c) => c.name === decoded);
+    }
+  }, [categoryParam, categorySlug, categoriesTree]);
 
   // Load individual tag from route param
   useEffect(() => {
@@ -599,15 +615,10 @@ export default function Ressources() {
                 const Icon = getCategoryIcon(cat.name);
                 const activeChildren = cat.children?.filter((c) => c.tag_count > 0) ?? [];
                 return (
-                  <button
+                  <LocalizedLink
                     key={cat.id}
-                    onClick={() => {
-                      setSelectedCategory(cat.name);
-                      setSelectedSubcategory('');
-                      setFilterCategory('all');
-                      setViewMode('category');
-                    }}
-                    className={`${hoverCardCls} flex-col items-stretch gap-1.5`}
+                    to={`/resources/c/${encodeURIComponent(cat.slug)}`}
+                    className={`${hoverCardCls} flex-col items-stretch gap-1.5 no-underline text-inherit`}
                     style={{ minHeight: 96 }}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -642,7 +653,7 @@ export default function Ressources() {
                           .join(' · ')}
                       </span>
                     )}
-                  </button>
+                  </LocalizedLink>
                 );
               })}
               <button
