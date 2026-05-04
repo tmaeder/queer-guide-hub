@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
@@ -23,10 +24,22 @@ import { useTranslation } from 'react-i18next';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
+const VALID_SORTS = new Set(['featured', 'name', 'category', 'city', 'created_at']);
+const VALID_VIEWS = new Set(['grid', 'map']);
+
 const Venues = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { venues, loading, error, hasMore, datasetTotal, fetchVenues, loadingTimedOut } = useVenues(false);
+  const {
+    venues,
+    loading,
+    error,
+    hasMore,
+    datasetTotal,
+    filteredTotal,
+    fetchVenues,
+    loadingTimedOut,
+  } = useVenues(false);
 
   useMeta({
     title: 'Venues',
@@ -44,18 +57,67 @@ const Venues = () => {
   });
   const { events } = useEvents();
   const [_selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>({});
-  const [sortBy, setSortBy] = useState<string>('featured');
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+
+  // URL is the source of truth for filter / sort / view state.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlSearch = searchParams.get('q') ?? '';
+  const urlCategory = searchParams.get('category') ?? '';
+  const rawSort = searchParams.get('sort') ?? 'featured';
+  const sortBy = VALID_SORTS.has(rawSort) ? rawSort : 'featured';
+  const rawView = searchParams.get('view') ?? 'grid';
+  const viewMode: 'grid' | 'map' = VALID_VIEWS.has(rawView) ? (rawView as 'grid' | 'map') : 'grid';
+
+  // Filters (full record) live in component state — facets like tags /
+  // amenities aren't (yet) URL-encoded. URL drives `search` + `category`.
+  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(() => {
+    const f: Record<string, unknown> = {};
+    if (urlSearch) f.search = urlSearch;
+    if (urlCategory) f.category = urlCategory;
+    return f;
+  });
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
+  // Mutate URL params, preserving keys we don't own.
+  const updateParams = useCallback(
+    (updates: Record<string, string | undefined>, opts?: { replace?: boolean }) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          for (const [k, v] of Object.entries(updates)) {
+            if (v === undefined || v === '') next.delete(k);
+            else next.set(k, v);
+          }
+          return next;
+        },
+        { replace: opts?.replace ?? false },
+      );
+    },
+    [setSearchParams],
+  );
+
+  const setSortBy = useCallback(
+    (next: string) => updateParams({ sort: next === 'featured' ? undefined : next }),
+    [updateParams],
+  );
+  const setViewMode = useCallback(
+    (next: 'grid' | 'map') => updateParams({ view: next === 'grid' ? undefined : next }),
+    [updateParams],
+  );
+
   const handleFiltersChange = async (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
     setPage(1);
     setAutoLoadedCount(0);
+    updateParams(
+      {
+        q: typeof filters.search === 'string' ? filters.search : undefined,
+        category: typeof filters.category === 'string' ? filters.category : undefined,
+      },
+      { replace: true },
+    );
     await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
   };
 
@@ -103,15 +165,20 @@ const Venues = () => {
     });
   }, [venues, sortBy]);
 
-  // Initial fetch
+  // Refetch when URL-driven filters change (initial mount, back/forward,
+  // shared link). Reseeds page + currentFilters so internal state matches.
   useEffect(() => {
-    (async () => {
-      setPage(1);
-      setAutoLoadedCount(0);
-      await fetchVenues(currentFilters, { page: 1, pageSize: PAGE_SIZE, append: false });
-    })();
+    const next: Record<string, unknown> = { ...currentFilters };
+    if (urlSearch) next.search = urlSearch;
+    else delete next.search;
+    if (urlCategory) next.category = urlCategory;
+    else delete next.category;
+    setCurrentFilters(next);
+    setPage(1);
+    setAutoLoadedCount(0);
+    fetchVenues(next, { page: 1, pageSize: PAGE_SIZE, append: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [urlSearch, urlCategory]);
 
   // Infinite scroll
   useEffect(() => {
@@ -145,17 +212,32 @@ const Venues = () => {
   return (
     <div className="min-h-screen">
       <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10">
-        <VenueFilters onFiltersChange={handleFiltersChange} />
+        <VenueFilters
+          // Re-mount on URL-driven filter changes (e.g. back button) so the
+          // search input and chip selection re-hydrate from URL.
+          key={`${urlSearch}|${urlCategory}`}
+          initialSearch={urlSearch}
+          initialCategory={urlCategory}
+          onFiltersChange={handleFiltersChange}
+        />
 
         {/* Toolbar */}
         <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {!loading && venues.length > 0 && (
-              <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
-                {(datasetTotal ?? venues.length).toLocaleString()} venue
-                {(datasetTotal ?? venues.length) !== 1 ? 's' : ''}
-              </p>
-            )}
+            {!loading && venues.length > 0 && (() => {
+              const hasActiveFilters = Object.keys(currentFilters).length > 0;
+              const shown = filteredTotal ?? venues.length;
+              return (
+                <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
+                  {shown.toLocaleString()} venue{shown !== 1 ? 's' : ''}
+                  {!hasActiveFilters && datasetTotal !== null && datasetTotal !== shown && (
+                    <span className="ml-1 text-xs">
+                      of {datasetTotal.toLocaleString()}
+                    </span>
+                  )}
+                </p>
+              );
+            })()}
           </div>
 
           <div className="flex items-center gap-2">

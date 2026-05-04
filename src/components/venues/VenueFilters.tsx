@@ -18,6 +18,10 @@ import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
 
 interface VenueFiltersProps {
+  /** Seed initial search input. Used for URL hydration on mount. */
+  initialSearch?: string;
+  /** Seed initial category chip selection. */
+  initialCategory?: string;
   onFiltersChange: (filters: {
     search?: string;
     city?: string;
@@ -81,10 +85,14 @@ const commonServices = [
   'art-exhibitions',
 ];
 
-export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
-  const [search, setSearch] = useState('');
+export function VenueFilters({
+  initialSearch = '',
+  initialCategory = '',
+  onFiltersChange,
+}: VenueFiltersProps) {
+  const [search, setSearch] = useState(initialSearch);
   const [city, setCity] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(initialCategory);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);

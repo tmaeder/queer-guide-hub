@@ -14,6 +14,7 @@ export function useVenues(autoFetch: boolean = true) {
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
+  const [filteredTotal, setFilteredTotal] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -159,6 +160,7 @@ export function useVenues(autoFetch: boolean = true) {
       // Track fetched and total counts for callers
       fetchedCount = processedVenues.length;
       totalCount = typeof count === 'number' ? count : null;
+      setFilteredTotal(totalCount);
 
       if (typeof count === 'number') {
         if (typeof page === 'number') {
@@ -238,6 +240,7 @@ export function useVenues(autoFetch: boolean = true) {
     error,
     hasMore,
     datasetTotal,
+    filteredTotal,
     fetchVenues,
     createVenue,
     updateVenue,
