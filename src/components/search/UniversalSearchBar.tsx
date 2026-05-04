@@ -16,7 +16,7 @@ import {
   CommandGroup,
   CommandItem,
 } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
 import {
   Search,
   X,
@@ -301,7 +301,7 @@ export const UniversalSearchBar = () => {
   return (
     <div className="flex-1 min-w-0">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
+        <PopoverAnchor asChild>
           <div className="relative">
             <div
               role="search"
@@ -312,23 +312,20 @@ export const UniversalSearchBar = () => {
                 setTimeout(() => inputRef.current?.focus(), 0);
               }}
             >
-              <Button
-                variant="ghost"
-                size="sm"
+              <span
                 aria-hidden="true"
-                tabIndex={-1}
+                className="inline-flex items-center justify-center"
                 style={{
                   height: isMobile ? 48 : 40,
                   paddingLeft: isMobile ? 16 : 12,
                   paddingRight: isMobile ? 16 : 12,
-                  borderRadius: 0,
                   color: 'hsl(var(--muted-foreground))',
                   pointerEvents: 'none',
                   flexShrink: 0,
                 }}
               >
                 <Search style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />
-              </Button>
+              </span>
 
               <div className="flex-1 relative">
                 <SearchInputTyped
@@ -428,7 +425,7 @@ export const UniversalSearchBar = () => {
               </Button>
             </div>
           </div>
-        </PopoverTrigger>
+        </PopoverAnchor>
 
         <PopoverContent
           style={
