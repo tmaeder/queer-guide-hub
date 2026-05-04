@@ -53,14 +53,21 @@ export const TagSelector = ({
   const removeTag = (tagName: string) => {
     onTagsChange(selectedTags.filter(tag => tag !== tagName));
   };
+  // Filter out the placeholder "none"/empty rows that leaked in from
+  // legacy ingestion. They have no semantic value as a filter facet.
+  const dropEmpty = <T extends { name?: string | null }>(tags: T[]): T[] =>
+    tags.filter((t) => t.name && t.name.toLowerCase() !== 'none');
+
   const getTagsToShow = () => {
     if (searchQuery.trim() && searchResults.length > 0) {
-      return searchResults;
+      return dropEmpty(searchResults);
     }
     if (activeCategory === 'all') {
-      return allTags.slice(0, 50);
+      return dropEmpty(allTags).slice(0, 50);
     }
-    return tagsByCategory.find(cat => cat.category === activeCategory)?.tags || [];
+    return dropEmpty(
+      tagsByCategory.find(cat => cat.category === activeCategory)?.tags || [],
+    );
   };
   return <div className={className}>
       <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Tags</Label>

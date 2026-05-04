@@ -25,6 +25,43 @@ const tableMap: Record<FavoriteType, { table: string; idColumn: string }> = {
   queer_village: { table: 'venue_favorites', idColumn: 'venue_id' },
 };
 
+// Per-user×type request cache. Multiple useFavorites callers in the same
+// page (one per card on /events, /venues, etc.) collapse to a single
+// network round-trip and share the resulting Set. Without this, a 24-card
+// grid issues 24 identical SELECTs against event_favorites.
+const FAVORITES_CACHE = new Map<string, Promise<Set<string>>>();
+
+function fetchFavoritesOnce(
+  type: FavoriteType,
+  userId: string,
+  config: { table: string; idColumn: string },
+): Promise<Set<string>> {
+  const key = `${type}:${userId}`;
+  const cached = FAVORITES_CACHE.get(key);
+  if (cached) return cached;
+
+  const promise = (async () => {
+    const { data, error } = await supabase
+      .from(config.table as 'venues')
+      .select(config.idColumn)
+      .eq('user_id', userId);
+    if (error || !data) return new Set<string>();
+    return new Set<string>(
+      data.map((row: Record<string, unknown>) => row[config.idColumn] as string),
+    );
+  })().catch(() => new Set<string>());
+
+  FAVORITES_CACHE.set(key, promise);
+  // After the in-flight fetch resolves we keep the cached Promise so further
+  // calls during the same session reuse it without another network hit. A
+  // mutation (toggleFavorite) clears the cache so the next mount refetches.
+  return promise;
+}
+
+function invalidateFavoritesCache(type: FavoriteType, userId: string) {
+  FAVORITES_CACHE.delete(`${type}:${userId}`);
+}
+
 export function useFavorites(type: FavoriteType) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -36,30 +73,20 @@ export function useFavorites(type: FavoriteType) {
 
   useEffect(() => {
     if (!user || !config) return;
-
     let cancelled = false;
-
-    const fetchFavorites = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from(config.table as 'venues')
-        .select(config.idColumn)
-        .eq('user_id', user.id);
-
-      if (!cancelled) {
-        if (!error && data) {
-          setFavoriteIds(new Set(data.map((row: Record<string, unknown>) => row[config.idColumn] as string)));
-        }
-        setLoading(false);
-      }
-    };
-
-    fetchFavorites();
+    setLoading(true);
+    fetchFavoritesOnce(type, user.id, config).then((set) => {
+      if (cancelled) return;
+      setFavoriteIds(set);
+      setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- config derived from type; config?.table and config?.idColumn already cover it
-  }, [user, config?.table, config?.idColumn]);
+    // user object is recreated on each auth-state change but user.id is
+    // stable; depend on the id to avoid re-firing the fetch every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, type]);
 
   const isFavorited = useCallback((itemId: string) => favoriteIds.has(itemId), [favoriteIds]);
 
@@ -95,9 +122,10 @@ export function useFavorites(type: FavoriteType) {
           .eq(config.idColumn, itemId);
 
         if (error) {
-          // Revert
           setFavoriteIds((prev) => new Set([...prev, itemId]));
           toast({ title: 'Failed to remove favorite', variant: 'destructive' });
+        } else {
+          invalidateFavoritesCache(type, user.id);
         }
       } else {
         const { error } = await supabase
@@ -105,13 +133,14 @@ export function useFavorites(type: FavoriteType) {
           .insert({ user_id: user.id, [config.idColumn]: itemId } as Record<string, unknown>);
 
         if (error) {
-          // Revert
           setFavoriteIds((prev) => {
             const next = new Set(prev);
             next.delete(itemId);
             return next;
           });
           toast({ title: 'Failed to add favorite', variant: 'destructive' });
+        } else {
+          invalidateFavoritesCache(type, user.id);
         }
       }
     },
