@@ -169,7 +169,7 @@ export function VenueHero({
                 }}
               />
             )}
-            <h4 className="text-2xl font-bold">{venue.name}</h4>
+            <h1 className="text-2xl font-bold">{venue.name}</h1>
             {venue.verified && (
               <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
             )}
@@ -250,13 +250,15 @@ export function VenueHero({
             </Button>
           )}
           {venue.website && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(venue.website!, '_blank')}
-            >
-              <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
-              Website
+            <Button variant="outline" size="sm" asChild>
+              <a
+                href={venue.website}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+              >
+                <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
+                Website
+              </a>
             </Button>
           )}
         </div>
@@ -448,7 +450,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                   <a
                     href={venue.website}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noopener noreferrer nofollow"
                     className="text-sm text-primary hover:underline overflow-hidden text-ellipsis whitespace-nowrap"
                   >
                     {venue.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}

@@ -18,6 +18,10 @@ import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
 
 interface VenueFiltersProps {
+  /** Seed initial search input. Used for URL hydration on mount. */
+  initialSearch?: string;
+  /** Seed initial category chip selection. */
+  initialCategory?: string;
   onFiltersChange: (filters: {
     search?: string;
     city?: string;
@@ -35,15 +39,34 @@ interface VenueFiltersProps {
 const categories = [
   'bar',
   'restaurant',
-  'cafe',
   'club',
   'hotel',
-  'bookstore',
+  'sauna',
+  'community_center',
+  'theater',
+  'gallery',
   'gym',
   'salon',
-  'healthcare',
-  'sauna',
-];
+  'organization',
+  'event-venue',
+  'other',
+] as const;
+
+const categoryLabels: Record<string, string> = {
+  bar: 'Bar',
+  restaurant: 'Restaurant',
+  club: 'Club',
+  hotel: 'Hotel',
+  sauna: 'Sauna',
+  community_center: 'Community',
+  theater: 'Theater',
+  gallery: 'Gallery',
+  gym: 'Gym',
+  salon: 'Salon',
+  organization: 'Organization',
+  'event-venue': 'Event Venue',
+  other: 'Other',
+};
 
 const commonAmenities = [
   'wifi',
@@ -81,10 +104,14 @@ const commonServices = [
   'art-exhibitions',
 ];
 
-export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
-  const [search, setSearch] = useState('');
+export function VenueFilters({
+  initialSearch = '',
+  initialCategory = '',
+  onFiltersChange,
+}: VenueFiltersProps) {
+  const [search, setSearch] = useState(initialSearch);
   const [city, setCity] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(initialCategory);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -168,7 +195,18 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
 
   const handleSearch = () => {
     clearTimeout(debounceRef.current);
+    clearTimeout(searchDebounceRef.current);
     onFiltersChange(buildFilters());
+  };
+
+  // Debounced search-as-you-type (250ms after last keystroke).
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleSearchInput = (value: string) => {
+    setSearch(value);
+    clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      onFiltersChange(buildFilters({ search: value }));
+    }, 250);
   };
 
   const handleCategoryClick = (cat: string) => {
@@ -293,7 +331,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
       {/* Search Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -311,7 +349,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           <Input
             placeholder="Search venues & organizations..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-10"
           />
@@ -365,7 +403,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
       </div>
 
       {/* Category Chips */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap max-w-full">
         {categories.map((cat) => (
           <Button
             key={cat}
@@ -374,7 +412,7 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             onClick={() => handleCategoryClick(cat)}
 
           >
-            {cat}
+            {categoryLabels[cat] ?? cat}
           </Button>
         ))}
       </div>

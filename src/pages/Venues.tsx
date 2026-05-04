@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
@@ -23,10 +24,22 @@ import { useTranslation } from 'react-i18next';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
+const VALID_SORTS = new Set(['featured', 'name', 'category', 'city', 'created_at']);
+const VALID_VIEWS = new Set(['grid', 'map']);
+
 const Venues = () => {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
-  const { venues, loading, error, hasMore, datasetTotal, fetchVenues, loadingTimedOut } = useVenues(false);
+  const {
+    venues,
+    loading,
+    error,
+    hasMore,
+    datasetTotal,
+    filteredTotal,
+    fetchVenues,
+    loadingTimedOut,
+  } = useVenues(false);
 
   useMeta({
     title: 'Venues',
@@ -44,74 +57,94 @@ const Venues = () => {
   });
   const { events } = useEvents();
   const [_selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>({});
-  const [sortBy, setSortBy] = useState<string>('featured');
-  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const mapFilters = useMemo(() => {
+    const f: Record<string, string> = {};
+    if (urlSearch) f.search = urlSearch;
+    if (urlCategory) f.category = urlCategory;
+    return f;
+  }, [urlSearch, urlCategory]);
+
+  // URL is the source of truth for filter / sort / view state.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlSearch = searchParams.get('q') ?? '';
+  const urlCategory = searchParams.get('category') ?? '';
+  const rawSort = searchParams.get('sort') ?? 'featured';
+  const sortBy = VALID_SORTS.has(rawSort) ? rawSort : 'featured';
+  const rawView = searchParams.get('view') ?? 'grid';
+  const viewMode: 'grid' | 'map' = VALID_VIEWS.has(rawView) ? (rawView as 'grid' | 'map') : 'grid';
+
+  // Filters (full record) live in component state — facets like tags /
+  // amenities aren't (yet) URL-encoded. URL drives `search` + `category`.
+  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(() => {
+    const f: Record<string, unknown> = {};
+    if (urlSearch) f.search = urlSearch;
+    if (urlCategory) f.category = urlCategory;
+    return f;
+  });
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
 
+  // Mutate URL params, preserving keys we don't own.
+  const updateParams = useCallback(
+    (updates: Record<string, string | undefined>, opts?: { replace?: boolean }) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          for (const [k, v] of Object.entries(updates)) {
+            if (v === undefined || v === '') next.delete(k);
+            else next.set(k, v);
+          }
+          return next;
+        },
+        { replace: opts?.replace ?? false },
+      );
+    },
+    [setSearchParams],
+  );
+
+  const setSortBy = useCallback(
+    (next: string) => updateParams({ sort: next === 'featured' ? undefined : next }),
+    [updateParams],
+  );
+  const setViewMode = useCallback(
+    (next: 'grid' | 'map') => updateParams({ view: next === 'grid' ? undefined : next }),
+    [updateParams],
+  );
+
   const handleFiltersChange = async (filters: Record<string, unknown>) => {
     setCurrentFilters(filters);
     setPage(1);
     setAutoLoadedCount(0);
-    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
+    updateParams(
+      {
+        q: typeof filters.search === 'string' ? filters.search : undefined,
+        category: typeof filters.category === 'string' ? filters.category : undefined,
+      },
+      { replace: true },
+    );
+    await fetchVenues(filters, { page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy });
   };
 
   const handleViewDetails = (venue: Venue) => {
     setSelectedVenue(venue);
   };
 
-  const sortedVenues = useMemo(() => {
-    if (!venues || venues.length === 0) return [];
-
-    if (sortBy === 'featured') {
-      return [...venues].sort((a, b) => {
-        const aFeat = a.featured ? 1 : 0;
-        const bFeat = b.featured ? 1 : 0;
-        if (aFeat !== bFeat) return bFeat - aFeat;
-        return (a.name || '').localeCompare(b.name || '');
-      });
-    }
-
-    return [...venues].sort((a, b) => {
-      let aValue: string | Date, bValue: string | Date;
-      switch (sortBy) {
-        case 'name':
-          aValue = a.name?.toLowerCase() || '';
-          bValue = b.name?.toLowerCase() || '';
-          break;
-        case 'category':
-          aValue = a.category?.toLowerCase() || '';
-          bValue = b.category?.toLowerCase() || '';
-          break;
-        case 'city':
-          aValue = a.city?.toLowerCase() || '';
-          bValue = b.city?.toLowerCase() || '';
-          break;
-        case 'created_at':
-          aValue = new Date(a.created_at);
-          bValue = new Date(b.created_at);
-          break;
-        default:
-          return 0;
-      }
-      if (aValue < bValue) return -1;
-      if (aValue > bValue) return 1;
-      return 0;
-    });
-  }, [venues, sortBy]);
-
-  // Initial fetch
+  // Refetch when URL-driven filters change (initial mount, back/forward,
+  // shared link). Reseeds page + currentFilters so internal state matches.
   useEffect(() => {
-    (async () => {
-      setPage(1);
-      setAutoLoadedCount(0);
-      await fetchVenues(currentFilters, { page: 1, pageSize: PAGE_SIZE, append: false });
-    })();
+    const next: Record<string, unknown> = { ...currentFilters };
+    if (urlSearch) next.search = urlSearch;
+    else delete next.search;
+    if (urlCategory) next.category = urlCategory;
+    else delete next.category;
+    setCurrentFilters(next);
+    setPage(1);
+    setAutoLoadedCount(0);
+    fetchVenues(next, { page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [urlSearch, urlCategory, sortBy]);
 
   // Infinite scroll
   useEffect(() => {
@@ -127,6 +160,7 @@ const Venues = () => {
             page: nextPage,
             pageSize: PAGE_SIZE,
             append: true,
+            sort: sortBy,
           });
           const fetched = result?.fetched ?? PAGE_SIZE;
           setAutoLoadedCount((c) => Math.min(50, c + fetched));
@@ -143,19 +177,34 @@ const Venues = () => {
     'grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10">
-        <VenueFilters onFiltersChange={handleFiltersChange} />
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10 min-w-0">
+        <VenueFilters
+          // Re-mount on URL-driven filter changes (e.g. back button) so the
+          // search input and chip selection re-hydrate from URL.
+          key={`${urlSearch}|${urlCategory}`}
+          initialSearch={urlSearch}
+          initialCategory={urlCategory}
+          onFiltersChange={handleFiltersChange}
+        />
 
         {/* Toolbar */}
         <div className="mb-4 mt-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {!loading && venues.length > 0 && (
-              <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
-                {(datasetTotal ?? venues.length).toLocaleString()} venue
-                {(datasetTotal ?? venues.length) !== 1 ? 's' : ''}
-              </p>
-            )}
+            {!loading && venues.length > 0 && (() => {
+              const hasActiveFilters = Object.keys(currentFilters).length > 0;
+              const shown = filteredTotal ?? venues.length;
+              return (
+                <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
+                  {shown.toLocaleString()} venue{shown !== 1 ? 's' : ''}
+                  {!hasActiveFilters && datasetTotal !== null && datasetTotal !== shown && (
+                    <span className="ml-1 text-xs">
+                      of {datasetTotal.toLocaleString()}
+                    </span>
+                  )}
+                </p>
+              );
+            })()}
           </div>
 
           <div className="flex items-center gap-2">
@@ -269,7 +318,7 @@ const Venues = () => {
 
             {!loading && venues.length > 0 && (
               <StaggerGrid className={gridClass}>
-                {sortedVenues.map((venue, index) => (
+                {venues.map((venue, index) => (
                   <div
                     key={venue.id}
                     className={index >= PAGE_SIZE ? 'content-enter' : undefined}
@@ -295,6 +344,7 @@ const Venues = () => {
                         page: nextPage,
                         pageSize: PAGE_SIZE,
                         append: true,
+                        sort: sortBy,
                       });
                     }}
                   >
@@ -306,8 +356,31 @@ const Venues = () => {
             )}
           </div>
         ) : (
-          <div className="h-[700px] w-full overflow-hidden rounded-lg">
-            <ExploreMap height={700} defaultLayers={['venues']} showLayerToggles showFilters />
+          <div className="relative h-[700px] w-full overflow-hidden rounded-lg">
+            <ExploreMap
+              key={`map-${urlSearch}|${urlCategory}`}
+              height={700}
+              defaultLayers={['venues']}
+              defaultFilters={mapFilters}
+              showLayerToggles
+              showFilters
+            />
+            {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
+                <div className="pointer-events-auto rounded-lg bg-background p-6 text-center shadow-lg">
+                  <MapPin className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm font-medium">{t('pages.venues.filteredEmpty.title', 'No venues match your filters')}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => handleFiltersChange({})}
+                  >
+                    {t('pages.venues.clearFilters', 'Clear Filters')}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
