@@ -99,11 +99,6 @@ export default function Personalities() {
   // N pages worth in a single Supabase range request, so deep links restore
   // the visible card set without forcing the user to re-scroll.
   useEffect(() => {
-    setPage(1);
-    setAutoLoadedCount(0);
-    fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
-    // Sync URL
-    const nextParams = serializeFilters(filters);
     const targetPage = initialPageRef.current;
     initialPageRef.current = 1; // only deep-link on the very first mount
     setPage(targetPage);
