@@ -57,12 +57,6 @@ const Venues = () => {
   });
   const { events } = useEvents();
   const [_selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const mapFilters = useMemo(() => {
-    const f: Record<string, string> = {};
-    if (urlSearch) f.search = urlSearch;
-    if (urlCategory) f.category = urlCategory;
-    return f;
-  }, [urlSearch, urlCategory]);
 
   // URL is the source of truth for filter / sort / view state.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -72,6 +66,13 @@ const Venues = () => {
   const sortBy = VALID_SORTS.has(rawSort) ? rawSort : 'featured';
   const rawView = searchParams.get('view') ?? 'grid';
   const viewMode: 'grid' | 'map' = VALID_VIEWS.has(rawView) ? (rawView as 'grid' | 'map') : 'grid';
+
+  const mapFilters = useMemo(() => {
+    const f: Record<string, string> = {};
+    if (urlSearch) f.search = urlSearch;
+    if (urlCategory) f.category = urlCategory;
+    return f;
+  }, [urlSearch, urlCategory]);
 
   // Filters (full record) live in component state — facets like tags /
   // amenities aren't (yet) URL-encoded. URL drives `search` + `category`.
