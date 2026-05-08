@@ -115,7 +115,7 @@ export default function About() {
                 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   letterSpacing: '-0.03em',
-                  color: 'hsl(var(--brand-light, var(--brand)))',
+                  color: 'hsl(var(--background))',
                 }}
               >
                 {loading || typeof stat.value !== 'number' || stat.value <= 0 ? (
