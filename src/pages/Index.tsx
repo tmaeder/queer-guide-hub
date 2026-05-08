@@ -130,7 +130,7 @@ const Index = React.memo(() => {
                     style={{
                       fontFamily: "'Plus Jakarta Sans', sans-serif",
                       letterSpacing: '-0.03em',
-                      color: 'hsl(var(--brand-light, var(--brand)))',
+                      color: 'hsl(var(--background))',
                     }}
                   >
                     {loading ? (
