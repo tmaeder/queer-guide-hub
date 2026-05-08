@@ -20,6 +20,10 @@ on:
       - 'playwright.config.ts'
       - 'scripts/a11y-axe-scan.mjs'
       - '.github/workflows/a11y.yml'
+  # Vercel posts a deployment_status event when a Preview build completes.
+  # The browser-driven a11y jobs (axe-playwright, axe-route-sweep, lighthouse)
+  # gate on this so they actually test the PR's preview, not stale prod.
+  deployment_status:
   schedule:
     - cron: '30 6 * * *'
   workflow_dispatch:
@@ -30,12 +34,15 @@ on:
         default: 'https://queer.guide'
 
 concurrency:
-  group: a11y-${{ github.ref }}
+  group: a11y-${{ github.event.deployment_status.target_url || github.ref }}
   cancel-in-progress: true
 
 jobs:
   jsx-a11y-lint:
     name: Lint (eslint .)
+    # Lint runs on source, not on a deployed URL — skip the deployment_status
+    # echo so this check fires once per PR and once per push, not three times.
+    if: github.event_name != 'deployment_status'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -50,10 +57,21 @@ jobs:
 
   axe-playwright:
     name: Playwright + axe a11y suite
+    # Browser job — only run when we have a real URL to hit:
+    #   * deployment_status from Vercel Preview/Production (the PR-preview gate)
+    #   * push to main (post-merge sanity, hits whatever BASE_URL resolves to)
+    #   * scheduled / manual (default to prod)
+    if: |
+      github.event_name != 'pull_request' && (
+        github.event_name != 'deployment_status' || (
+          github.event.deployment_status.state == 'success' &&
+          contains(fromJSON('["Preview","preview","Production","production"]'), github.event.deployment_status.environment)
+        )
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      E2E_BASE_URL: ${{ github.event.deployment_status.target_url || inputs.base_url || 'https://queer.guide' }}
       # When these secrets are set, the `setup` Playwright project signs in
       # and writes a storageState that promotes the 8 skipped admin axe specs
       # into actual runs. When absent, admin specs skip as before.
@@ -78,10 +96,17 @@ jobs:
 
   axe-route-sweep:
     name: axe full route sweep
+    if: |
+      github.event_name != 'pull_request' && (
+        github.event_name != 'deployment_status' || (
+          github.event.deployment_status.state == 'success' &&
+          contains(fromJSON('["Preview","preview","Production","production"]'), github.event.deployment_status.environment)
+        )
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      BASE_URL: ${{ github.event.deployment_status.target_url || inputs.base_url || 'https://queer.guide' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -105,10 +130,17 @@ jobs:
 
   lighthouse:
     name: Lighthouse a11y >= 95
+    if: |
+      github.event_name != 'pull_request' && (
+        github.event_name != 'deployment_status' || (
+          github.event.deployment_status.state == 'success' &&
+          contains(fromJSON('["Preview","preview","Production","production"]'), github.event.deployment_status.environment)
+        )
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      BASE_URL: ${{ github.event.deployment_status.target_url || inputs.base_url || 'https://queer.guide' }}
       ROUTE: ${{ matrix.route }}
     strategy:
       fail-fast: false
