@@ -1,9 +1,10 @@
-// Brand Colors — importable outside React context.
+// Strict monochrome palette — importable outside React context.
 // These hex literals mirror the HSL CSS vars in `src/index.css`.
-//   --brand (light)   = 346 87% 38%   ≈ #b60d3d
-//   --brand (dark)    = 346 100% 65%  ≈ #ff7386
+//   --brand (light) = 0 0% 4%   ≈ #0a0a0a
+//   --brand (dark)  = 0 0% 100% ≈ #ffffff
+// Name kept ("brandColors") for backward compatibility with ~120 consumers.
 export const brandColors = {
-  main: '#b60d3d',
-  light: '#ff7386',
-  dark: '#a20033',
+  main: '#0a0a0a',
+  light: '#ffffff',
+  dark: '#000000',
 } as const;
