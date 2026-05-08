@@ -65,9 +65,12 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm install
+        env:
+          HUSKY: '0'
       - run: npm run build
         env:
-          NODE_OPTIONS: --max-old-space-size=6144
+          NODE_OPTIONS: --max-old-space-size=8192
+          VITE_BASEMAP_ASSETS_URL: 'https://protomaps-tiles.maeder-tobiassimon.workers.dev/basemaps-assets'
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -86,6 +89,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm install
+        env:
+          HUSKY: '0'
       - run: npm run lint
 
   axe-playwright:
@@ -106,6 +111,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm install
+        env:
+          HUSKY: '0'
       - run: npx playwright install --with-deps chromium
       - name: Download dist
         if: needs.build.result == 'success'
@@ -148,6 +155,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm install
+        env:
+          HUSKY: '0'
       - run: npx playwright install --with-deps chromium
       - name: Download dist
         if: needs.build.result == 'success'
