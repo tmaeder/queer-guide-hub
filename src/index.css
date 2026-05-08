@@ -356,10 +356,18 @@ a, button, [role="button"], input, select, textarea {
   min-height: 44px;
 }
 
-/* Inline links inside paragraphs should not enforce min-height */
+/* Inline links inside paragraphs should not enforce min-height. They are
+   also underlined — a documented exception to the strict flat rule. In a
+   pure B&W system links share the body color, so an underline is the only
+   remaining visual signal that distinguishes a link from surrounding text
+   (axe `link-in-text-block`, WCAG 1.4.1 Use of Color). Standalone links —
+   nav, buttons, cards — stay un-underlined. */
 p a, li a, td a, span a, label a {
   min-height: unset;
   display: inline;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 h1, h2, h3, h4, h5, h6 {
