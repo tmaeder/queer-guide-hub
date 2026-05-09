@@ -102,15 +102,20 @@ export const ExploreMapFiltersPanel: React.FC<ExploreMapFiltersProps> = ({
       <div className="flex gap-2 items-center">
         <Popover open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
-            <div className="relative flex-1">
+            {/* Radix forwards aria-haspopup / aria-expanded onto the asChild
+                element. role="combobox" is required for those attrs to be
+                valid on a non-button container (axe aria-allowed-attr). */}
+            <div
+              className="relative flex-1"
+              role="combobox"
+              aria-expanded={popoverOpen}
+              aria-controls="map-search-listbox"
+            >
               <Search size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 ref={inputRef}
                 placeholder="Search the map…"
                 aria-label="Search the map"
-                role="combobox"
-                aria-expanded={popoverOpen}
-                aria-controls="map-search-listbox"
                 aria-autocomplete="list"
                 value={query}
                 onChange={(e) => {

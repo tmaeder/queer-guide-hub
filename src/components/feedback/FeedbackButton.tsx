@@ -141,9 +141,8 @@ export function FeedbackButton() {
             aria-label="Share feedback"
             onClick={handleOpenClick}
             disabled={capturing}
-            className="fixed bottom-6 right-6 z-[1200] flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-all hover:brightness-90 disabled:opacity-50"
+            className="fixed bottom-6 right-6 z-[1200] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
             style={{
-              backgroundColor: 'hsl(var(--accent-warm))',
               visibility: capturing ? 'hidden' : 'visible',
             }}
           >

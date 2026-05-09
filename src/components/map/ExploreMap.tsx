@@ -723,12 +723,11 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       {/* Visually-hidden list of currently-visible markers — alternative
           presentation for screen readers and keyboard users (WCAG 1.3.1 / 2.1.1).
           The map canvas itself can't expose individual pins to AT, so this
-          mirrors them as a flat list of links updated on each fetch. */}
-      <ul
-        className="sr-only"
-        aria-label="Visible map results"
-        role="region"
-      >
+          mirrors them as a flat list of links updated on each fetch.
+          `role="region"` is not allowed on <ul>; use a labelled <nav>
+          landmark wrapper instead (axe aria-allowed-role). */}
+      <nav className="sr-only" aria-label="Visible map results">
+      <ul>
         {pointsGeoJSON.features.slice(0, 200).map((f) => {
           const p = f.properties;
           const href = p.linkTo || undefined;
@@ -745,6 +744,7 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
           </li>
         ))}
       </ul>
+      </nav>
 
       {/* Loading overlay */}
       {!mapReady && (
