@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { supabase } from "@/integrations/supabase/client"
+import { useProfessions } from "@/hooks/useProfessions"
 
 interface ProfessionAutocompleteProps {
   value?: string
@@ -28,31 +28,9 @@ export function ProfessionAutocomplete({
   required,
   id,
 }: ProfessionAutocompleteProps) {
-  const [professions, setProfessions] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
+    const { professions, loading } = useProfessions()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
-
-  useEffect(() => {
-    const fetchProfessions = async () => {
-      setLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from("professions" as never)
-          .select("name" as never)
-          .eq("is_active" as never, true as never)
-          .order("sort_order" as never, { ascending: true })
-        if (error) throw error
-        setProfessions((data as { name: string }[]).map((r) => r.name))
-      } catch (err) {
-        console.error("Error fetching professions:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchProfessions()
-  }, [])
-
   const showCreate = search && !professions.some((p) => p.toLowerCase() === search.toLowerCase())
 
   return (
