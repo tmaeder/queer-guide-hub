@@ -1,8 +1,7 @@
 name: Reconfigure Meilisearch
 
 # Runs configure-indexes.sh on the VPS via SSH.
-# Requires the SSH user to have docker group access so it can
-# reach Meilisearch directly, bypassing Infomaniak's Apache front-end.
+# Scripts piped via cat to ~/  (avoids /tmp which may be on a full disk).
 
 on:
   workflow_dispatch:
@@ -48,71 +47,31 @@ jobs:
 
       - name: Copy scripts to VPS
         run: |
-          scp -o StrictHostKeyChecking=accept-new \
-            meilisearch/configure-indexes.sh \
-            meilisearch/seed-city-aliases.sh \
-            "$SSH_USER@$SSH_HOST:/tmp/"
+          ssh "$SSH_USER@$SSH_HOST" 'cat > ~/configure-indexes.sh' < meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" 'cat > ~/seed-city-aliases.sh' < meilisearch/seed-city-aliases.sh
 
-      - name: Discover Meilisearch URL
-        id: meili
+      - name: Verify Meilisearch is reachable
         run: |
-          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            # Find Meilisearch container and its internal IP
-            MEILI_CONTAINER=$(docker ps --format '{{.Names}}' 2>/dev/null | grep -i meili | head -1)
-            if [ -z "$MEILI_CONTAINER" ]; then
-              echo "ERR: no meilisearch container found" >&2
-              docker ps 2>&1 >&2 || echo "docker not available" >&2
-              echo "NONE"
-              exit 0
-            fi
-            echo "Container: $MEILI_CONTAINER" >&2
-
-            # Get the container's IP on its Docker network
-            MEILI_IP=$(docker inspect "$MEILI_CONTAINER" \
-              --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null)
-
-            if [ -n "$MEILI_IP" ]; then
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
-                "http://$MEILI_IP:7700/health" 2>/dev/null)
-              echo "  http://$MEILI_IP:7700/health -> $code" >&2
-              if [ "$code" = "200" ]; then
-                echo "http://$MEILI_IP:7700"
-                exit 0
-              fi
-            fi
-
-            # Fallback: try localhost ports
-            for port in 7700 7701; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
-                "http://localhost:$port/health" 2>/dev/null)
-              echo "  http://localhost:$port/health -> $code" >&2
-              if [ "$code" = "200" ]; then
-                echo "http://localhost:$port"
-                exit 0
-              fi
-            done
-
-            echo "NONE"
-          REMOTE
-          )
-          echo "Discovery: $RESULT"
-          if [ "$RESULT" = "NONE" ]; then
-            echo "::error::Could not reach Meilisearch on VPS"
-            exit 1
-          fi
-          echo "meili_url=$RESULT" >> "$GITHUB_OUTPUT"
+          ssh "$SSH_USER@$SSH_HOST" \
+            curl -sf --max-time 5 http://localhost:7700/health
+          echo "Meilisearch is healthy"
 
       - name: Run configure-indexes.sh
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
+            MEILI_URL="http://localhost:7700" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash /tmp/configure-indexes.sh
+            bash ~/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
+            MEILI_URL="http://localhost:7700" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash /tmp/seed-city-aliases.sh
+            bash ~/seed-city-aliases.sh
+
+      - name: Cleanup
+        if: always()
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'rm -f ~/configure-indexes.sh ~/seed-city-aliases.sh' || true

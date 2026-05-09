@@ -2,7 +2,7 @@ import { useCallback, useRef, useState, useEffect } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { Edge } from '@xyflow/react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 import BaseNode from './nodes/BaseNode';
 import CommentNode from './nodes/CommentNode';
@@ -33,7 +33,6 @@ const nodeTypes = { baseNode: BaseNode, commentNode: CommentNode, groupNode: Gro
 function PipelineBuilderInner() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [params, setParams] = useSearchParams();
   const { data: nodeTypeList } = usePipelineNodeTypes();
   const { data: pipelineList } = usePipelineDefinitions();
@@ -94,7 +93,7 @@ function PipelineBuilderInner() {
   const actions = usePipelineActions({
     nodes, edges, setNodes, setEdges, setIsDirty,
     setSelectedNodeId, selectedNodeId,
-    pipelineName, setPipelineName, addNode, undoRedo, toast,
+    pipelineName, setPipelineName, addNode, undoRedo,
     reactFlowWrapperRef: reactFlowWrapper, nodeTypeList, isDirty, configClipboardRef,
   });
 
@@ -102,7 +101,7 @@ function PipelineBuilderInner() {
     if (isSaving) return;
     const slug = (pipelineName || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     if (!slug || slug.length < 2) {
-      toast({ title: 'Invalid name', description: 'Pipeline name must be at least 2 characters', variant: 'destructive' });
+      toast.error('Invalid name: Pipeline name must be at least 2 characters');
       return;
     }
     const conflict = pipelineList?.find(p => p.name === slug && p.id !== selectedPipelineId);
@@ -121,9 +120,9 @@ function PipelineBuilderInner() {
         draftAutosave.clearDraft();
         toast({ title: 'Pipeline saved', description: `${nodes.length} nodes, ${edges.length} edges` });
       },
-      onError: (e: Error) => toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
+      onError: (e: Error) => toast.error(`Save failed: ${e.message}`),
     } as Record<string, unknown>);
-  }, [isSaving, save, toast, nodes.length, edges.length, draftAutosave, pipelineName, pipelineList, selectedPipelineId]);
+  }, [isSaving, save, nodes.length, edges.length, draftAutosave, pipelineName, pipelineList, selectedPipelineId]);
 
   const handleRun = useCallback((opts?: { dryRun?: boolean }) => {
     if (!opts?.dryRun) {
@@ -209,7 +208,7 @@ function PipelineBuilderInner() {
         setEdges(draft.edges);
         setPipelineName(draft.pipelineName);
         setIsDirty(true);
-        toast({ title: 'Draft restored' });
+        toast.success('Draft restored');
       } else {
         draftAutosave.clearDraft();
       }
@@ -302,7 +301,7 @@ function PipelineBuilderInner() {
             handleRun={handleRun}
             loadPipeline={loadPipeline}
             nodeTypeList={nodeTypeList}
-            toastChangesDiscarded={() => toast({ title: 'Changes discarded' })}
+            toastChangesDiscarded={() => toast.success('Changes discarded')}
             resetUndo={undoRedo.reset}
             undo={undoRedo.undo}
             redo={undoRedo.redo}
@@ -384,7 +383,7 @@ function PipelineBuilderInner() {
               btn?.click();
             }}
             onImport={actions.handleImport}
-            onImportError={(msg) => toast({ title: 'Import failed', description: msg, variant: 'destructive' })}
+            onImportError={(msg) => toast.error(`Import failed: ${msg}`)}
           />
         </div>
 

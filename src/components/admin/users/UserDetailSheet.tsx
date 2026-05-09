@@ -32,7 +32,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
-import { brandColors } from '@/theme/brandColors';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -64,7 +63,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: '#ef4444',
   moderator: '#f97316',
   editor: '#3b82f6',
-  contributor: brandColors.main,
+  contributor: 'hsl(var(--foreground))',
 };
 
 const ALL_ROLES: AppRole[] = ['admin', 'moderator', 'editor'];

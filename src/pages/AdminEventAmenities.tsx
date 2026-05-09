@@ -25,7 +25,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface EventAmenityRow {
   id: string;
@@ -52,7 +52,6 @@ const emptyForm = {
 };
 
 export default function AdminEventAmenities() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const crud = useTaxonomyCRUD('event_amenities');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -83,33 +82,26 @@ export default function AdminEventAmenities() {
 
   const handleSave = async () => {
     if (!form.name.trim()) {
-      toast({ title: 'Error', description: 'Name is required', variant: 'destructive' });
+      toast.error('Error: Name is required');
       return;
     }
     try {
       const { error } = await crud.upsert(form, editingId);
       if (error) throw error;
-      toast({
-        title: 'Success',
-        description: editingId ? 'Event amenity updated' : 'Event amenity created',
-      });
+      toast.success(`Success: ${editingId}`);
       if (editingId) {
         const { error } = await crud.upsert(form, editingId);
         if (error) throw error;
-        toast({ title: 'Success', description: 'Event amenity updated' });
+        toast.success('Success: Event amenity updated');
       } else {
         const { error } = await crud.upsert(form, null);
         if (error) throw error;
-        toast({ title: 'Success', description: 'Event amenity created' });
+        toast.success('Success: Event amenity created');
       }
       setDialogOpen(false);
       invalidateTable();
     } catch (err: unknown) {
-      toast({
-        title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to save',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${err}`);
     }
   };
 
@@ -118,10 +110,10 @@ export default function AdminEventAmenities() {
     try {
       const { error } = await crud.remove(row.id);
       if (error) throw error;
-      toast({ title: 'Success', description: 'Event amenity deleted' });
+      toast.success('Success: Event amenity deleted');
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+      toast.error('Error: Failed to delete');
     }
   };
 

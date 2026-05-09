@@ -70,6 +70,16 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     phone: string | null;
     organizer_handles: Record<string, string> | null;
   } | null;
+  organizer?: {
+    id: string;
+    slug?: string;
+    name: string;
+    website: string | null;
+    email: string | null;
+    instagram: string | null;
+    phone: string | null;
+    organizer_handles: Record<string, string> | null;
+  } | null;
   event_attendees?: Array<{
     id: string;
     status: string;
@@ -83,11 +93,11 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
 
 export const EVENT_SELECT_FIELDS = `
   *,
-  venues (id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
+  venues!venue_id(id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
   cities:city_id(id, slug, name),
   countries:country_id(id, slug, name, equality_score, lgbti_criminalization),
   festivals:festival_id(id, name),
-  organizer:organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
+  organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
 `;
 
 export async function fetchEvent(

@@ -18,7 +18,7 @@ import {
   upsertPersonalityInternalNote,
 } from '@/hooks/usePageFetchers';
 import { usePersonalities } from '@/hooks/usePersonalities';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { PersonalitiesCsvImport } from '@/components/personalities/PersonalitiesCsvImport';
 import { AdultModelsCsvImport } from '@/components/personalities/AdultModelsCsvImport';
 import { BulkCreatePersonalities } from '@/components/personalities/BulkCreatePersonalities';
@@ -120,11 +120,7 @@ export default function AdminPersonalities() {
         setInternalNotesLoaded(notes);
       } catch {
         if (!cancelled) {
-          toast({
-            title: 'Error',
-            description: 'Failed to load internal notes',
-            variant: 'destructive',
-          });
+          toast.error('Error: Failed to load internal notes');
         }
       } finally {
         if (!cancelled) setNotesLoading(false);
@@ -148,45 +144,37 @@ export default function AdminPersonalities() {
     });
     setNotesSaving(false);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast.error(`Error: ${error.message}`);
       return;
     }
     setInternalNotesLoaded(internalNotes);
-    toast({ title: 'Gespeichert', description: 'Interne Notizen aktualisiert' });
+    toast.success('Gespeichert: Interne Notizen aktualisiert');
   };
 
   const handleVerificationChange = async (id: string, status: string) => {
     try {
       await updatePersonality(id, { verification_status: status });
-      toast({ title: 'Success', description: `Verification updated to ${status}` });
+      toast.success(`Verification updated to ${status}`);
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update verification',
-        variant: 'destructive',
-      });
+      toast.error('Error: Failed to update verification');
     }
   };
 
   const handleFeaturedToggle = async (id: string, featured: boolean) => {
     try {
       await updatePersonality(id, { is_featured: featured });
-      toast({ title: 'Success', description: featured ? 'Featured' : 'Unfeatured' });
+      toast.success(`Success: ${featured}`);
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update featured status',
-        variant: 'destructive',
-      });
+      toast.error('Error: Failed to update featured status');
     }
   };
 
   const handleVisibilityChange = async (id: string, visibility: string) => {
     try {
       await updatePersonality(id, { visibility });
-      toast({ title: 'Success', description: `Visibility changed to ${visibility}` });
+      toast.success(`Visibility changed to ${visibility}`);
     } catch {
-      toast({ title: 'Error', description: 'Failed to update visibility', variant: 'destructive' });
+      toast.error('Error: Failed to update visibility');
     }
   };
 

@@ -14,7 +14,7 @@ import { Eye, Edit, Save, X, Mail, Loader2, FileText, TestTube } from 'lucide-re
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEmailTemplates, upsertEmailTemplate } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
 
 interface EmailTemplate {
@@ -43,11 +43,9 @@ export default function EmailTemplates() {
   const [testEmail, setTestEmail] = useState('');
   const [isSendingTest, setIsSendingTest] = useState(false);
   const { user } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchTemplates();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const fetchTemplates = async () => {
@@ -61,11 +59,7 @@ export default function EmailTemplates() {
       setTemplates(processedTemplates);
     } catch (error) {
       console.error('Error fetching templates:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load email templates",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to load email templates');
     } finally {
       setIsLoading(false);
     }
@@ -92,21 +86,14 @@ export default function EmailTemplates() {
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Email template saved successfully",
-      });
+      toast.success('Success: Email template saved successfully');
 
       await fetchTemplates();
       setEditingTemplate(null);
       setSelectedTemplate(editingTemplate);
     } catch (error) {
       console.error('Error saving template:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save email template",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to save email template');
     } finally {
       setIsSaving(false);
     }
@@ -153,11 +140,7 @@ export default function EmailTemplates() {
       setTestEmail('');
     } catch (error) {
       console.error('Error sending test email:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send test email",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to send test email');
     } finally {
       setIsSendingTest(false);
     }
