@@ -1,12 +1,7 @@
 name: Reconfigure Meilisearch
 
-# One-shot workflow to apply the bug-#4 / #9 / #10 ranking + stop-words +
-# alias settings to the production Meilisearch instance, and to seed
-# city aliases for ~30 well-known cities.
-#
-# The deploy-only Infomaniak SSH user has no docker access, so we cannot
-# read MEILI_MASTER_KEY off the VPS .env from CI. Pass it as a secret
-# input on dispatch — it gets passed straight to curl and is never logged.
+# Runs configure-indexes.sh on the VPS via SSH because Cloudflare WAF
+# blocks direct curl from GitHub Actions datacenter IPs.
 
 on:
   workflow_dispatch:
@@ -25,33 +20,96 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      # MEILI_MASTER_KEY must be present as a repo secret. Set with:
-      #   gh secret set MEILI_MASTER_KEY
       MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
-      MEILI_URL: https://s.queer.guide
+      SSH_KEY: ${{ secrets.INFOMANIAK_SSH_PRIVATE_KEY }}
+      SSH_HOST: ${{ secrets.INFOMANIAK_SSH_HOST }}
+      SSH_USER: ${{ secrets.INFOMANIAK_SSH_USER }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify MEILI_MASTER_KEY is set
+      - name: Verify secrets
         run: |
-          if [ -z "${MEILI_MASTER_KEY:-}" ]; then
-            echo "::error::MEILI_MASTER_KEY repo secret is not set. Run: gh secret set MEILI_MASTER_KEY"
+          fail=0
+          for var in MEILI_MASTER_KEY SSH_KEY SSH_HOST SSH_USER; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Secret $var is not set"
+              fail=1
+            fi
+          done
+          [ "$fail" -eq 0 ]
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy scripts to VPS
+        run: |
+          scp -o StrictHostKeyChecking=accept-new \
+            meilisearch/configure-indexes.sh \
+            meilisearch/seed-city-aliases.sh \
+            "$SSH_USER@$SSH_HOST:/tmp/"
+
+      - name: Discover Meilisearch URL
+        id: meili
+        run: |
+          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+            check() {
+              local label="$1" url="$2" extra="${3:-}"
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 $extra "$url" 2>/dev/null || echo "000")
+              echo "  $label → $code" >&2
+              [ "$code" = "200" ]
+            }
+
+            # Direct Meilisearch port
+            for port in 7700 7701; do
+              check "localhost:$port" "http://localhost:$port/health" && echo "http://localhost:$port" && exit 0
+            done
+
+            # Caddy HTTPS with Host header (self-signed cert)
+            for host in s.queer.guide search.queer.guide; do
+              check "https+Host:$host" "https://localhost/health" "-k -H Host:$host" && echo "https://localhost" && exit 0
+              check "http+Host:$host" "http://localhost/health" "-H Host:$host" && echo "http://localhost" && exit 0
+            done
+
+            # Docker bridge IP
+            bridge=$(ip route | awk '/docker0/ {print $NF}' 2>/dev/null || true)
+            if [ -n "$bridge" ]; then
+              check "docker-bridge:7700" "http://$bridge:7700/health" && echo "http://$bridge:7700" && exit 0
+            fi
+
+            # Check what's listening
+            echo "--- Port scan ---" >&2
+            ss -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || netstat -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || true
+            echo "--- Docker ---" >&2
+            docker ps --format '{{.Names}} {{.Ports}}' 2>&1 >&2 || true
+            echo "NONE"
+          REMOTE
+          )
+          echo "Discovered: $RESULT"
+          if [ "$RESULT" = "NONE" ]; then
+            echo "::error::Could not find Meilisearch on VPS"
             exit 1
           fi
-
-      - name: Probe Meilisearch
-        run: |
-          status=$(curl -s -o /dev/null -w '%{http_code}' "$MEILI_URL/health")
-          echo "Meili /health → $status"
-          [ "$status" = "200" ]
+          echo "url=$RESULT" >> "$GITHUB_OUTPUT"
 
       - name: Run configure-indexes.sh
+        env:
+          MEILI_URL: ${{ steps.meili.outputs.url }}
         run: |
-          chmod +x meilisearch/configure-indexes.sh
-          bash meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="$MEILI_URL" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
+        env:
+          MEILI_URL: ${{ steps.meili.outputs.url }}
         run: |
-          chmod +x meilisearch/seed-city-aliases.sh
-          bash meilisearch/seed-city-aliases.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="$MEILI_URL" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/seed-city-aliases.sh
