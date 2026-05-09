@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package*.json'
+      - 'vite.config.*'
+      - 'tsconfig*.json'
+      - 'index.html'
+      - '.github/workflows/deploy.yml'
 
 concurrency:
   group: deploy-pages
@@ -49,6 +57,13 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy ./dist --project-name=queer-guide --branch=main --commit-dirty=true
+
+      - name: Upload build for mirror-deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-build
+          path: dist/
+          retention-days: 1
 
       - name: Purge Cloudflare edge cache
         # Soft-fail: uses CLOUDFLARE_PURGE_TOKEN if present (needs Zone:Cache Purge scope).

@@ -4,8 +4,8 @@ on:
   schedule:
     # Full refresh – 03:15 UTC daily
     - cron: '15 3 * * *'
-    # Events only – every hour
-    - cron: '0 * * * *'
+    # Events only – every 4 hours (was hourly; reduced for GHA cost)
+    - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       source:
@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: >
-      github.event_name == 'schedule' && github.event.schedule == '0 * * * *'
+      github.event_name == 'schedule' && github.event.schedule == '0 */4 * * *'
     concurrency:
       group: scraper-events
       cancel-in-progress: true

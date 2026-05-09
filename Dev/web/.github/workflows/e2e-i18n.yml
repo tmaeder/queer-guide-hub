@@ -17,7 +17,7 @@ on:
       - 'playwright.config.ts'
       - '.github/workflows/e2e-i18n.yml'
   schedule:
-    - cron: '15 6 * * *'
+    - cron: '15 6 * * 1-5'
   workflow_dispatch:
     inputs:
       base_url:

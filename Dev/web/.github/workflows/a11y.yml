@@ -21,7 +21,7 @@ on:
       - 'scripts/a11y-axe-scan.mjs'
       - '.github/workflows/a11y.yml'
   schedule:
-    - cron: '30 6 * * *'
+    - cron: '30 6 * * 1-5'
   workflow_dispatch:
     inputs:
       base_url:
@@ -34,48 +34,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  jsx-a11y-lint:
-    name: jsx-a11y lint
+  a11y-suite:
+    name: Lint + Playwright + axe sweep
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
-      - run: npm run lint
-
-  axe-playwright:
-    name: Playwright + axe a11y suite
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
-      - run: npx playwright install --with-deps chromium
-      - run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-a11y-report
-          path: playwright-report/
-          retention-days: 14
-
-  axe-route-sweep:
-    name: axe full route sweep
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
       BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
     steps:
       - uses: actions/checkout@v4
@@ -86,17 +50,29 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm install --legacy-peer-deps
       - run: npx playwright install --with-deps chromium
-      - run: node scripts/a11y-axe-scan.mjs
+
+      - name: jsx-a11y lint
+        run: npm run lint
+
+      - name: Playwright + axe a11y suite
+        run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
+
+      - name: axe full route sweep
+        run: node scripts/a11y-axe-scan.mjs
+
       - name: Fail on serious/critical
         run: |
           node -e "const r=require('./docs/a11y-audit/axe-postdeploy.json');const bad=r.results.flatMap(x=>(x.violations||[]).filter(v=>v.impact==='serious'||v.impact==='critical'));if(bad.length){console.error('Found',bad.length,'serious/critical');process.exit(1)}console.log('Clean: 0 serious/critical')"
+
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: axe-postdeploy
+          name: a11y-reports
           path: |
+            playwright-report/
             docs/a11y-audit/axe-postdeploy.json
             docs/a11y-audit/axe-postdeploy.md
+          retention-days: 14
 
   lighthouse:
     name: Lighthouse a11y >= 95
@@ -108,7 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        route: ['/', '/events', '/venues', '/places', '/news', '/marketplace', '/trips', '/submit']
+        route: ${{ github.event_name == 'schedule' && fromJSON('["/", "/events", "/venues", "/places", "/news", "/marketplace", "/trips", "/submit"]') || fromJSON('["/", "/events", "/submit"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -124,11 +100,6 @@ jobs:
             --output=json --output-path="lh/${slug}.json" \
             --chrome-flags="--headless=new --no-sandbox" \
             --quiet
-          # Recompute score excluding audits we accept by design:
-          #   link-in-text-block — brand mandates "links by color/opacity only"
-          #     (also disabled in axe specs).
-          #   target-size — only persistent failure is the maplibre attribution
-          #     toggle, a third-party widget control.
           score=$(node -e "
             const r=require('./lh/'+process.argv[1]+'.json');
             const skip=new Set(['link-in-text-block','target-size']);

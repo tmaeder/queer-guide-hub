@@ -49,13 +49,23 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium
+      - name: Download build from primary deploy
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-build
+          path: dist/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build SPA
+      - name: Build SPA (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
         run: npm run build
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
 
       - name: Pre-render static pages
         run: npm run prerender
