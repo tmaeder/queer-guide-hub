@@ -1,10 +1,29 @@
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Crown, Shield, User, MessageSquare } from 'lucide-react';
+import { Crown, Shield, User, MessageSquare, MoreVertical, UserMinus, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { supabase } from '@/lib/supabaseClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface GroupMember {
   user_id: string;
@@ -20,11 +39,15 @@ interface GroupMember {
 interface GroupMembersListProps {
   members: GroupMember[];
   canManage: boolean;
+  groupId?: string;
   onStartConversation?: (userId: string) => void;
+  onMembersChanged?: () => void;
 }
 
-export function GroupMembersList({ members, canManage, onStartConversation }: GroupMembersListProps) {
+export function GroupMembersList({ members, canManage, groupId, onStartConversation, onMembersChanged }: GroupMembersListProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const getRoleIcon = (role: string) => {
     switch (role) {
@@ -46,6 +69,40 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
       default:
         return 'outline';
     }
+  };
+
+  const handleRoleChange = async (member: GroupMember) => {
+    if (!groupId) return;
+    const newRole = member.role === 'moderator' ? 'member' : 'moderator';
+    const { error } = await supabase
+      .from('group_memberships')
+      .update({ role: newRole })
+      .eq('group_id', groupId)
+      .eq('user_id', member.user_id);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Role updated', description: `${member.profiles.display_name} is now ${newRole}.` });
+    onMembersChanged?.();
+  };
+
+  const handleRemove = async (member: GroupMember) => {
+    if (!groupId) return;
+    const { error } = await supabase
+      .from('group_memberships')
+      .delete()
+      .eq('group_id', groupId)
+      .eq('user_id', member.user_id);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Member removed', description: `${member.profiles.display_name} removed from group.` });
+      onMembersChanged?.();
+    }
+    setRemovingId(null);
   };
 
   return (
@@ -100,16 +157,55 @@ export function GroupMembersList({ members, canManage, onStartConversation }: Gr
                   </Button>
                 )}
 
-                {canManage && member.role !== 'admin' && member.user_id !== user?.id && (
-                  <Button variant="outline" size="sm">
-                    Manage
-                  </Button>
+                {canManage && groupId && member.role !== 'admin' && member.user_id !== user?.id && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <MoreVertical style={{ width: 16, height: 16 }} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleRoleChange(member)}>
+                        <ArrowUpDown style={{ width: 16, height: 16, marginRight: 8 }} />
+                        {member.role === 'moderator' ? 'Demote to Member' : 'Promote to Moderator'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setRemovingId(member.user_id)}
+                        className="text-destructive"
+                      >
+                        <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
+                        Remove from Group
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
             </div>
           </CardContent>
         </Card>
       ))}
+
+      <AlertDialog open={!!removingId} onOpenChange={(open) => !open && setRemovingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove this member from the group? They can rejoin later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const member = members.find(m => m.user_id === removingId);
+                if (member) handleRemove(member);
+              }}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
