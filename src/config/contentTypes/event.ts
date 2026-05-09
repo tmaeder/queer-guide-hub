@@ -148,7 +148,7 @@ export const eventFields: FieldConfig[] = [
   // Media
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   // Settings
-  { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
   { name: 'is_public', label: 'Public', type: 'boolean', group: 'settings' },
   // External (hidden FKs)
   { name: 'venue_id', label: 'Venue Reference', type: 'text', group: 'external', hidden: true },
@@ -174,7 +174,7 @@ export const eventContentType: ContentTypeConfig = {
   label: { singular: 'Event', plural: 'Events' },
   color: '#ec4899',
   fields: eventFields,
-  defaults: { featured: false, is_free: false, is_public: true, status: 'active' },
+  defaults: { is_featured: false, is_free: false, is_public: true, status: 'active' },
   validate: validateEvent,
   fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings'],
   translatableFields: ['title', 'description'],
