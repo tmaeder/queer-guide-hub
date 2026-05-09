@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import CronEditor, { describeCron } from './CronEditor';
 
 interface ScheduleDialogProps {
@@ -17,7 +17,6 @@ export default function ScheduleDialog({ pipelineId, currentSchedule }: Schedule
   const [open, setOpen] = useState(false);
   const [schedule, setSchedule] = useState<string | null>(currentSchedule ?? null);
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (open) setSchedule(currentSchedule ?? null);
@@ -30,12 +29,12 @@ export default function ScheduleDialog({ pipelineId, currentSchedule }: Schedule
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Schedule updated', description: describeCron(schedule) });
+      toast.success(`Schedule updated: ${describeCron}`);
       qc.invalidateQueries({ queryKey: ['pipeline-definitions'] });
       qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] });
       setOpen(false);
     },
-    onError: (e: Error) => toast({ title: 'Update failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Update failed: ${e.message}`),
   });
 
   return (

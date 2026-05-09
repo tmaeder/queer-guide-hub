@@ -15,6 +15,7 @@ async function axeDialog(page: import('@playwright/test').Page) {
   const results = await new AxeBuilder({ page })
     .include('[role="dialog"], [role="alertdialog"]')
         .disableRules(['link-in-text-block', 'scrollable-region-focusable', 'aria-required-children'])
+    .disableRules(['link-in-text-block', 'scrollable-region-focusable', 'aria-required-children'])
     .withTags(WCAG_TAGS)
     .analyze();
   const blocking = results.violations.filter(
@@ -80,6 +81,7 @@ test.describe('Public dialogs — automated a11y', () => {
       const results = await new AxeBuilder({ page })
         .include('[role="listbox"], [role="dialog"]')
               .disableRules(['link-in-text-block', 'scrollable-region-focusable', 'aria-required-children'])
+        .disableRules(['link-in-text-block', 'scrollable-region-focusable', 'aria-required-children'])
         .withTags(WCAG_TAGS)
         .analyze();
       const blocking = results.violations.filter(

@@ -4,7 +4,7 @@ import { Boxes, Save, Trash2, Plus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +42,6 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
   const [saveDesc, setSaveDesc] = useState('');
   const [saveCategory, setSaveCategory] = useState<string>('custom');
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['pipeline-node-templates'],
@@ -71,13 +70,13 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Template saved' });
+      toast.success('Template saved');
       qc.invalidateQueries({ queryKey: ['pipeline-node-templates'] });
       setSaveName('');
       setSaveDesc('');
       setMode('browse');
     },
-    onError: (e: Error) => toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Save failed: ${e.message}`),
   });
 
   const deleteMutation = useMutation({
@@ -86,10 +85,10 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Template deleted' });
+      toast.success('Template deleted');
       qc.invalidateQueries({ queryKey: ['pipeline-node-templates'] });
     },
-    onError: (e: Error) => toast({ title: 'Delete failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Delete failed: ${e.message}`),
   });
 
   const handleApply = async (t: Template) => {

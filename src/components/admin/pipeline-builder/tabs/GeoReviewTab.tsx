@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   approveIngestionStaging,
   rejectIngestionStaging,
@@ -23,7 +23,6 @@ interface StagingRow {
 }
 
 export default function GeoReviewTab() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: mergeCandidates = [], isLoading } = useQuery({
@@ -44,19 +43,19 @@ export default function GeoReviewTab() {
   const approve = useMutation({
     mutationFn: (stagingId: string) => approveIngestionStaging(stagingId),
     onSuccess: () => {
-      toast({ title: 'Approved', description: 'Will merge on next commit cycle' });
+      toast.success('Approved: Will merge on next commit cycle');
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
     },
-    onError: (e: Error) => toast({ title: 'Approve failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Approve failed: ${e.message}`),
   });
 
   const reject = useMutation({
     mutationFn: (stagingId: string) => rejectIngestionStaging(stagingId),
     onSuccess: () => {
-      toast({ title: 'Rejected' });
+      toast.success('Rejected');
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
     },
-    onError: (e: Error) => toast({ title: 'Reject failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Reject failed: ${e.message}`),
   });
 
   return (

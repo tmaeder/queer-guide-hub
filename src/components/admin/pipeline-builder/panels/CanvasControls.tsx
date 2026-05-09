@@ -3,7 +3,7 @@ import { useReactFlow } from '@xyflow/react';
 import { ZoomIn, ZoomOut, Maximize, Crosshair, Camera, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface CanvasControlsProps {
   pipelineName: string;
@@ -17,7 +17,6 @@ interface CanvasControlsProps {
  */
 export default function CanvasControls({ pipelineName, hasSelection }: CanvasControlsProps) {
   const { zoomIn, zoomOut, fitView, getViewport, getNodes } = useReactFlow();
-  const { toast } = useToast();
   const [zoom, setZoom] = useState(1);
   const [exporting, setExporting] = useState(false);
 
@@ -66,13 +65,13 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
         URL.revokeObjectURL(url);
       }, 'image/png');
 
-      toast({ title: 'Canvas exported as PNG' });
-    } catch (e) {
-      toast({ title: 'Export failed', description: (e as Error).message, variant: 'destructive' });
+      toast.success('Canvas exported as PNG');
+    } catch (_e) {
+      toast.error('Export failed');
     } finally {
       setExporting(false);
     }
-  }, [pipelineName, toast]);
+  }, [pipelineName]);
 
   return (
     <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 bg-popover border border-border rounded-lg shadow-lg p-1">

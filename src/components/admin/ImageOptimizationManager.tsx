@@ -18,7 +18,7 @@ import {
   Clock,
   Server
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminRoleRequest } from './AdminRoleRequest';
@@ -57,8 +57,6 @@ export function ImageOptimizationManager() {
   const [jobs, setJobs] = useState<OptimizationJob[]>([]);
   const [currentJob, setCurrentJob] = useState<OptimizationJob | null>(null);
   const [selectedTab, setSelectedTab] = useState('scan');
-
-  const { toast } = useToast();
   const { isAdmin } = useAdminRoles();
 
   const loadJobs = async () => {
@@ -142,11 +140,7 @@ export function ImageOptimizationManager() {
 
     } catch (error) {
       console.error('Scan error:', error);
-      toast({
-        title: "Scan Failed",
-        description: "Failed to scan for images",
-        variant: "destructive",
-      });
+      toast.error('Scan Failed: Failed to scan for images');
     } finally {
       setIsScanning(false);
     }

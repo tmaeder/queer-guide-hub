@@ -23,7 +23,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logAdminGeoEdit } from '@/lib/admin-audit';
 
 interface CountryRow {
@@ -64,7 +64,6 @@ const fmtCurrency = (n: number | null) =>
     : '-';
 
 export default function AdminCountries() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -113,7 +112,7 @@ export default function AdminCountries() {
       toast({ title: 'Success', description: `${country.name} deleted` });
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete country', variant: 'destructive' });
+      toast.error('Error: Failed to delete country');
     }
   };
 
@@ -141,7 +140,7 @@ export default function AdminCountries() {
       setEditingCountry(null);
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to update country', variant: 'destructive' });
+      toast.error('Error: Failed to update country');
     }
   };
 

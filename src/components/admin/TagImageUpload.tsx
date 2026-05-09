@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, X, Image } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploadErrors";
 
 interface TagImageUploadProps {
@@ -20,7 +20,6 @@ export const TagImageUpload = ({
 }: TagImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
-  const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -28,11 +27,7 @@ export const TagImageUpload = ({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file",
-        variant: "destructive"
-      });
+      toast.error('Invalid file type: Please select an image file');
       return;
     }
 
@@ -71,18 +66,11 @@ export const TagImageUpload = ({
       setPreviewUrl(imageUrl);
       onImageChange(imageUrl);
 
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully"
-      });
+      toast.success('Success: Image uploaded successfully');
 
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
-        variant: "destructive"
-      });
+      toast.error('Upload failed: Failed to upload image. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -107,10 +95,7 @@ export const TagImageUpload = ({
     setPreviewUrl(null);
     onImageChange(null);
 
-    toast({
-      title: "Success",
-      description: "Image deleted successfully"
-    });
+    toast.success('Success: Image deleted successfully');
   };
 
   return (
