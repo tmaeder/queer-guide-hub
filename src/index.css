@@ -251,17 +251,20 @@ body {
   font-family: inherit;
 }
 
-/* ── Links — black, underline on hover (editorial default) ─────────── */
+/* ── Links — inherit body color, opacity on hover (editorial default) ──
+   :where() zeroes the specificity of the `:link` / `:visited` selectors so
+   Tailwind text-* utilities (e.g. `text-background` on a dark button) can
+   actually apply. Without this, .text-background loses to a:link in the
+   cascade and links inside primary buttons render foreground-on-foreground
+   (zero contrast). */
 
-a,
-a:link,
-a:visited {
+:where(a, a:link, a:visited) {
   color: inherit;
   text-decoration: none;
   transition: opacity 0.15s ease;
 }
 
-a:hover {
+:where(a):hover {
   opacity: 0.7;
 }
 
