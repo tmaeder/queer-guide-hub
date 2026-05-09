@@ -258,7 +258,7 @@ function SubmissionsCore() {
       setSelectedSubmission(null);
       setReviewerNotes('');
       doRefresh();
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
       toast.error(`Approval failed: ${errorMessage}`);
     } finally {
       setActionLoading(false);
@@ -290,7 +290,7 @@ function SubmissionsCore() {
       setSelectedSubmission(null);
       setReviewerNotes('');
       doRefresh();
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
       toast.error(`Rejection failed: ${errorMessage}`);
     } finally {
       setActionLoading(false);

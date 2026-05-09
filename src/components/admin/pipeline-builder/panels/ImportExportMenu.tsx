@@ -99,7 +99,7 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
       toast({ title: 'Copied to clipboard', description: `${nodes.length} nodes, ${edges.length} edges` });
-    } catch (e) {
+    } catch (_e) {
       toast.error('Copy failed');
     }
   };
@@ -115,7 +115,7 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
       if (!validate(parsed)) throw new Error('Invalid pipeline format (missing version/nodes/edges)');
       onImport(parsed);
       toast({ title: 'Pipeline imported', description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
-    } catch (err) {
+    } catch (_err) {
       toast.error('Import failed');
     } finally {
       if (fileInput.current) fileInput.current.value = '';
@@ -129,7 +129,7 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
       if (!validate(parsed)) throw new Error('Clipboard does not contain a valid pipeline export');
       onImport(parsed);
       toast({ title: 'Pipeline pasted', description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
-    } catch (err) {
+    } catch (_err) {
       toast.error('Paste failed');
     }
   };

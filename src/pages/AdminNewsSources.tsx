@@ -393,7 +393,6 @@ export default function AdminNewsSources() {
         </div>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast/triggerFetch are stable, adding would defeat memoization
     [columns],
   );
 

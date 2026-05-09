@@ -42,7 +42,7 @@ export function VenueIngestStatsPanel() {
       setReplayPattern('');
       qc.invalidateQueries({ queryKey: ['pipeline-health-snapshot'] });
       qc.invalidateQueries({ queryKey: ['venue-ingest-stats'] });
-    } catch (e) {
+    } catch (_e) {
       toast.error('Replay failed');
     } finally {
       setReplayBusy(false);

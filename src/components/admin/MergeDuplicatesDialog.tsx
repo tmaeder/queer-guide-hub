@@ -87,7 +87,7 @@ export function MergeDuplicatesDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, contentType, submissionId, toast]);
+  }, [open, contentType, submissionId]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return candidates;

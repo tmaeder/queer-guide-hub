@@ -66,12 +66,12 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
       }, 'image/png');
 
       toast.success('Canvas exported as PNG');
-    } catch (e) {
+    } catch (_e) {
       toast.error('Export failed');
     } finally {
       setExporting(false);
     }
-  }, [pipelineName, toast]);
+  }, [pipelineName]);
 
   return (
     <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 bg-popover border border-border rounded-lg shadow-lg p-1">

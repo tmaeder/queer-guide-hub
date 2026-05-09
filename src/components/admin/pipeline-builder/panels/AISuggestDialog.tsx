@@ -60,7 +60,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'no suggestion returned');
       setSuggestion(data.suggestion as Suggestion);
-    } catch (e) {
+    } catch (_e) {
       toast.error('Suggestion failed');
     } finally {
       setLoading(false);

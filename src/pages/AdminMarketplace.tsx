@@ -348,7 +348,6 @@ export default function AdminMarketplace() {
         </div>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is stable in practice, adding would defeat memoization
     [columns],
   );
 

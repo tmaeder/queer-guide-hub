@@ -98,7 +98,7 @@ export function usePipelineActions(a: Args) {
     }));
     setIsDirty(true);
     toast.success('Config pasted');
-  }, [setNodes, setIsDirty, undoRedo, toast, configClipboardRef]);
+  }, [setNodes, setIsDirty, undoRedo, configClipboardRef]);
 
   const handleQuickAdd = useCallback((nt: PipelineNodeType) => {
     const bounds = reactFlowWrapperRef.current?.getBoundingClientRect();
