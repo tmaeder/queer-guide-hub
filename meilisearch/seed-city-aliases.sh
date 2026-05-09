@@ -59,8 +59,7 @@ while IFS='|' read -r english raw_aliases; do
     -H "Authorization: Bearer ${MEILI_MASTER_KEY}" \
     -H "Content-Type: application/json" \
     -d "{\"q\":\"${english}\",\"limit\":5,\"attributesToRetrieve\":[\"id\",\"title\"]}")
-  ids=$(printf '%s' "$resp" | python3 -c 'import sys,json; d=json.load(sys.stdin); print("
-".join(h["id"] for h in d.get("hits",[]) if h.get("title","").lower()==sys.argv[1].lower()))' "$english")
+  ids=$(printf '%s' "$resp" | python3 -c 'import sys,json; d=json.load(sys.stdin); print("\n".join(h["id"] for h in d.get("hits",[]) if h.get("title","").lower()==sys.argv[1].lower()))' "$english")
   if [ -z "$ids" ]; then
     echo "skip ${english}: no exact title match"
     continue
