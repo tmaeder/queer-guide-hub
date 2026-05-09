@@ -1,8 +1,8 @@
 name: Reconfigure Meilisearch
 
 # Runs configure-indexes.sh on the VPS via SSH. Cloudflare WAF blocks
-# GH Actions IPs, so we curl Caddy on the VPS public IP with the right
-# Host header, bypassing Cloudflare entirely.
+# GH Actions IPs, so we SSH to the VPS and curl Caddy locally with
+# --resolve for proper TLS SNI.
 
 on:
   workflow_dispatch:
@@ -57,16 +57,27 @@ jobs:
         id: meili
         run: |
           RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            caddy_ip=$(ss -tln | awk '/:443 / && !/127\./ && !/\[/' | head -1 | sed 's/.*LISTEN *[0-9]* *//;s/:.*//')
+            # Find Caddy's public IP listening on :443
+            # ss -tln output: State Recv-Q Send-Q Local_Address:Port Peer_Address:Port
+            # $4 = Local_Address:Port, e.g. "84.16.72.163:443"
+            caddy_ip=$(ss -tln | awk '/:443/ && $4 !~ /^127\./ && $4 !~ /^\[/ && $4 !~ /^0\.0\.0\.0/ && $4 !~ /^\*/ {
+              n = split($4, a, ":")
+              if (n >= 2) { print a[1]; exit }
+            }')
+
             if [ -z "$caddy_ip" ]; then
-              echo "no-caddy-ip" >&2
+              echo "ERR: no public IP on :443" >&2
+              ss -tln >&2
               echo "NONE"
               exit 0
             fi
+            echo "Caddy IP: $caddy_ip" >&2
+
             for host in s.queer.guide search.queer.guide; do
-              code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 5 \
-                -H "Host: $host" "https://$caddy_ip/health" 2>/dev/null)
-              echo "  https://$caddy_ip Host:$host -> $code" >&2
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+                --resolve "$host:443:$caddy_ip" \
+                "https://$host/health" 2>/dev/null)
+              echo "  --resolve $host:443:$caddy_ip -> $code" >&2
               if [ "$code" = "200" ]; then
                 echo "$host $caddy_ip"
                 exit 0
@@ -75,7 +86,7 @@ jobs:
             echo "NONE"
           REMOTE
           )
-          echo "Discovery: $RESULT"
+          echo "Discovery result: $RESULT"
           if [ "$RESULT" = "NONE" ]; then
             echo "::error::Could not reach Meilisearch on VPS via Caddy"
             exit 1
@@ -88,16 +99,16 @@ jobs:
       - name: Run configure-indexes.sh
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="https://${{ steps.meili.outputs.caddy_ip }}" \
+            MEILI_URL="https://${{ steps.meili.outputs.meili_host }}" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="-k -H Host:${{ steps.meili.outputs.meili_host }}" \
+            MEILI_CURL_OPTS="--resolve ${{ steps.meili.outputs.meili_host }}:443:${{ steps.meili.outputs.caddy_ip }}" \
             bash /tmp/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="https://${{ steps.meili.outputs.caddy_ip }}" \
+            MEILI_URL="https://${{ steps.meili.outputs.meili_host }}" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="-k -H Host:${{ steps.meili.outputs.meili_host }}" \
+            MEILI_CURL_OPTS="--resolve ${{ steps.meili.outputs.meili_host }}:443:${{ steps.meili.outputs.caddy_ip }}" \
             bash /tmp/seed-city-aliases.sh
