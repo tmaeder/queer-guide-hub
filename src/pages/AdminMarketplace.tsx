@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Trash2, Download, RefreshCw, Star, MapPin } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { deleteMarketplaceListing } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
@@ -84,7 +84,6 @@ const columnHelper = createColumnHelper<MarketplaceRow>();
 export default function AdminMarketplace() {
   const { user } = useAuth();
   const { createListing } = useMarketplace();
-  const { toast } = useToast();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAwinImportOpen, setIsAwinImportOpen] = useState(false);
@@ -146,11 +145,11 @@ export default function AdminMarketplace() {
         created_by: user?.id,
       });
       if (error) throw new Error(error);
-      toast({ title: 'Success', description: 'Listing created' });
+      toast.success('Success: Listing created');
       resetForm();
       setIsCreateDialogOpen(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to create listing', variant: 'destructive' });
+      toast.error('Error: Failed to create listing');
     }
   };
 
@@ -164,11 +163,7 @@ export default function AdminMarketplace() {
       toast({ title: 'Import Successful', description: `Imported ${data.imported} products` });
       setIsAwinImportOpen(false);
     } catch (err: unknown) {
-      toast({
-        title: 'Import Failed',
-        description: err instanceof Error ? err.message : 'Failed to import',
-        variant: 'destructive',
-      });
+      toast.error(`Import Failed: ${err}`);
     } finally {
       setIsImporting(false);
     }
@@ -309,9 +304,9 @@ export default function AdminMarketplace() {
             try {
               const { error } = await deleteMarketplaceListing(row.id);
               if (error) throw error;
-              toast({ title: 'Success', description: 'Listing deleted' });
+              toast.success('Success: Listing deleted');
             } catch {
-              toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+              toast.error('Error: Failed to delete');
             }
           },
         },

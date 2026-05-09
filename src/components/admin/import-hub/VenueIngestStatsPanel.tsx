@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,7 +25,6 @@ export function VenueIngestStatsPanel() {
   const health = useVenueIngestHealthSnapshot();
   const [replayPattern, setReplayPattern] = useState('');
   const [replayBusy, setReplayBusy] = useState(false);
-  const { toast } = useToast();
   const qc = useQueryClient();
 
   const runReplay = async () => {
@@ -44,7 +43,7 @@ export function VenueIngestStatsPanel() {
       qc.invalidateQueries({ queryKey: ['pipeline-health-snapshot'] });
       qc.invalidateQueries({ queryKey: ['venue-ingest-stats'] });
     } catch (e) {
-      toast({ title: 'Replay failed', description: (e as Error).message, variant: 'destructive' });
+      toast.error('Replay failed');
     } finally {
       setReplayBusy(false);
     }

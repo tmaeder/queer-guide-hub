@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { listFromWhere } from '@/hooks/usePageFetchers';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { submissionRegistry } from '@/config/submissionRegistry';
 
 interface CandidateRow {
@@ -47,7 +47,6 @@ export function MergeDuplicatesDialog({
   currentDuplicateOf,
   onMerged,
 }: Props) {
-  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [candidates, setCandidates] = useState<CandidateRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -79,11 +78,7 @@ export function MergeDuplicatesDialog({
         if (cancelled) return;
         setCandidates(data);
       } catch (err) {
-        toast({
-          title: 'Search failed',
-          description: err instanceof Error ? err.message : '',
-          variant: 'destructive',
-        });
+        toast.error(`Search failed: ${err}`);
         setCandidates([]);
       }
       setLoading(false);
@@ -112,15 +107,11 @@ export function MergeDuplicatesDialog({
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast({ title: 'Marked as duplicate' });
+      toast.success('Marked as duplicate');
       onOpenChange(false);
       onMerged?.();
     } catch (err) {
-      toast({
-        title: 'Merge failed',
-        description: err instanceof Error ? err.message : 'unknown',
-        variant: 'destructive',
-      });
+      toast.error(`Merge failed: ${err}`);
     } finally {
       setSubmitting(false);
     }

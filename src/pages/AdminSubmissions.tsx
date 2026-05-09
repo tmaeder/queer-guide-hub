@@ -16,7 +16,7 @@ import { AdminDataTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import {
   insertEntityFromSubmission,
@@ -189,7 +189,6 @@ function useReputation() {
 
 function SubmissionsCore() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: reputation = {} } = useReputation();
 
@@ -260,7 +259,7 @@ function SubmissionsCore() {
       setReviewerNotes('');
       doRefresh();
     } catch (err: unknown) {
-      toast({ title: 'Approval failed', description: errorMessage(err), variant: 'destructive' });
+      toast.error(`Approval failed: ${errorMessage}`);
     } finally {
       setActionLoading(false);
     }
@@ -286,13 +285,13 @@ function SubmissionsCore() {
         reviewer_notes: reviewerNotes || null,
       });
 
-      toast({ title: 'Submission rejected' });
+      toast.success('Submission rejected');
       setDialogOpen(false);
       setSelectedSubmission(null);
       setReviewerNotes('');
       doRefresh();
     } catch (err: unknown) {
-      toast({ title: 'Rejection failed', description: errorMessage(err), variant: 'destructive' });
+      toast.error(`Rejection failed: ${errorMessage}`);
     } finally {
       setActionLoading(false);
     }

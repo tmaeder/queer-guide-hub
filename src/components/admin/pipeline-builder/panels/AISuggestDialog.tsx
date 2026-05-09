@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { autoLayout } from '../utils/autoLayout';
 import type { Node, Edge } from '@xyflow/react';
 import type { PipelineNodeType } from '../hooks/usePipelineBuilder';
@@ -45,11 +45,10 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
   const [description, setDescription] = useState('');
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleGenerate = async () => {
     if (description.trim().length < 10) {
-      toast({ title: 'Describe what the pipeline should do', description: 'At least 10 characters', variant: 'destructive' });
+      toast.error('Describe what the pipeline should do: At least 10 characters');
       return;
     }
     setLoading(true);
@@ -62,7 +61,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
       if (!data?.success) throw new Error(data?.error || 'no suggestion returned');
       setSuggestion(data.suggestion as Suggestion);
     } catch (e) {
-      toast({ title: 'Suggestion failed', description: (e as Error).message, variant: 'destructive' });
+      toast.error('Suggestion failed');
     } finally {
       setLoading(false);
     }

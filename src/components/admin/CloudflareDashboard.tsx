@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cloudflareAPI, type CloudflareAnalytics, type CloudflareZoneInfo, type CloudflareSecuritySettings, type CloudflarePerformanceSettings } from '@/integrations/supabase/cloudflare';
 import { InlineLoading } from '@/components/ui/loading';
 import {
@@ -33,7 +33,6 @@ export function CloudflareDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<CloudflareStats>({});
-  const { toast } = useToast();
 
   const fetchCloudflareData = async (showRefreshToast = false) => {
     try {
@@ -60,10 +59,7 @@ export function CloudflareDashboard() {
       });
 
       if (showRefreshToast) {
-        toast({
-          title: 'Cloudflare Data Refreshed',
-          description: 'Latest statistics have been loaded successfully.',
-        });
+        toast.success('Cloudflare Data Refreshed: Latest statistics have been loaded successfully.');
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -80,11 +76,7 @@ export function CloudflareDashboard() {
         errorMessage = 'Insufficient permissions. Your API token may not have access to this zone.';
       }
 
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${errorMessage}`);
     } finally {
       setLoading(false);
       setRefreshing(false);

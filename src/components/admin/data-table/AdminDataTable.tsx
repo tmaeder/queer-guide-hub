@@ -231,10 +231,11 @@ export function AdminDataTable<TData extends { id: string }>({
       ) : (
         <Table>
           <TableHeader>
-            <TableRow style={{ backgroundColor: 'var(--muted, #f4f4f5)' }}>
+            <TableRow className="bg-muted">
               {enableSelection && (
                 <th style={{ width: 44, padding: '0 8px' }}>
                   <Checkbox
+                    aria-label="Select all rows"
                     checked={someSelected ? 'indeterminate' : allSelected}
                     onCheckedChange={() => {
                       if (allSelected) clearSelection();
@@ -257,15 +258,13 @@ export function AdminDataTable<TData extends { id: string }>({
               return (
                 <TableRow
                   key={row.id}
-                  className="content-enter"
-                  style={{
-                    backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.04)' : undefined,
-                    transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
-                  }}
+                  className={`content-enter ${isSelected ? 'bg-muted' : ''}`}
+                  style={{ transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)' }}
                 >
                   {enableSelection && (
                     <TableCell style={{ width: 44, padding: '0 8px' }}>
                       <Checkbox
+                        aria-label="Select row"
                         checked={isSelected}
                         onCheckedChange={() => toggleRow(row.original.id)}
                       />
@@ -280,7 +279,7 @@ export function AdminDataTable<TData extends { id: string }>({
                     <TableCell style={{ width: 48, padding: '0 8px' }}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" style={{ height: 28, width: 28 }}>
+                          <Button variant="ghost" size="icon" aria-label="Row actions" style={{ height: 28, width: 28 }}>
                             <MoreVertical style={{ height: 14, width: 14 }} />
                           </Button>
                         </DropdownMenuTrigger>

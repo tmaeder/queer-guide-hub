@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import type { Node, Edge } from '@xyflow/react';
 import { autoLayout } from '../utils/autoLayout';
 import type { PipelineExport } from '../panels/ImportExportMenu';
@@ -24,7 +25,6 @@ interface Args {
     canUndo: boolean;
     canRedo: boolean;
   };
-  toast: (opts: { title: string; description?: string; variant?: string }) => void;
   reactFlowWrapperRef: React.RefObject<HTMLDivElement>;
   nodeTypeList: PipelineNodeType[] | undefined;
   isDirty: boolean;
@@ -35,7 +35,7 @@ export function usePipelineActions(a: Args) {
   const {
     nodes, edges, setNodes, setEdges, setIsDirty,
     setSelectedNodeId, selectedNodeId,
-    setPipelineName, addNode, undoRedo, toast,
+    setPipelineName, addNode, undoRedo,
     reactFlowWrapperRef, nodeTypeList, isDirty, configClipboardRef,
   } = a;
 
@@ -45,7 +45,7 @@ export function usePipelineActions(a: Args) {
     setNodes(autoLayout(nodes, edges));
     setIsDirty(true);
     toast({ title: 'Layout applied', description: `${nodes.length} nodes arranged` });
-  }, [nodes, edges, setNodes, setIsDirty, undoRedo, toast]);
+  }, [nodes, edges, setNodes, setIsDirty, undoRedo]);
 
   const duplicateNode = useCallback((nodeId: string) => {
     const src = nodes.find(n => n.id === nodeId);
@@ -83,9 +83,9 @@ export function usePipelineActions(a: Args) {
       configClipboardRef.current = JSON.parse(JSON.stringify(cfg));
       toast({ title: 'Config copied', description: `${Object.keys(cfg).length} fields` });
     } else {
-      toast({ title: 'No config to copy', variant: 'destructive' });
+      toast.error('No config to copy');
     }
-  }, [nodes, toast, configClipboardRef]);
+  }, [nodes, configClipboardRef]);
 
   const pasteNodeConfig = useCallback((nodeId: string) => {
     const cfg = configClipboardRef.current;
@@ -97,7 +97,7 @@ export function usePipelineActions(a: Args) {
       return { ...n, data: { ...d, config: { ...(d.config as Record<string, unknown> || {}), ...cfg } } };
     }));
     setIsDirty(true);
-    toast({ title: 'Config pasted' });
+    toast.success('Config pasted');
   }, [setNodes, setIsDirty, undoRedo, toast, configClipboardRef]);
 
   const handleQuickAdd = useCallback((nt: PipelineNodeType) => {
@@ -135,7 +135,7 @@ export function usePipelineActions(a: Args) {
   const handleAddGroup = useCallback(() => {
     const selected = nodes.filter(n => n.selected);
     if (selected.length < 1) {
-      toast({ title: 'Select nodes first', description: 'Shift-click to multi-select, then add group' });
+      toast.success('Select nodes first: Shift-click to multi-select, then add group');
       return;
     }
     const PADDING = 40;
@@ -163,7 +163,7 @@ export function usePipelineActions(a: Args) {
     } as Node;
     setNodes(nds => [groupNode, ...nds.map(n => ({ ...n, selected: false }))]);
     setIsDirty(true);
-  }, [nodes, setNodes, setIsDirty, undoRedo, toast]);
+  }, [nodes, setNodes, setIsDirty, undoRedo]);
 
   // Comment/group inline edit listener
   useEffect(() => {
@@ -193,7 +193,7 @@ export function usePipelineActions(a: Args) {
     setSelectedNodeId(null);
     setIsDirty(true);
     toast({ title: `Deleted ${selectedIds.size} nodes` });
-  }, [nodes, setNodes, setEdges, setSelectedNodeId, setIsDirty, undoRedo, toast]);
+  }, [nodes, setNodes, setEdges, setSelectedNodeId, setIsDirty, undoRedo]);
 
   const handleBulkDuplicate = useCallback(() => {
     const selected = nodes.filter(n => n.selected);
@@ -226,7 +226,7 @@ export function usePipelineActions(a: Args) {
     setEdges(eds => [...eds, ...cloneEdges]);
     setIsDirty(true);
     toast({ title: `Duplicated ${selected.length} nodes` });
-  }, [nodes, edges, setNodes, setEdges, setIsDirty, undoRedo, toast]);
+  }, [nodes, edges, setNodes, setEdges, setIsDirty, undoRedo]);
 
   const handleLayoutSelection = useCallback(() => {
     const selected = nodes.filter(n => n.selected);
@@ -245,7 +245,7 @@ export function usePipelineActions(a: Args) {
     setNodes(nds => nds.map(n => posMap.has(n.id) ? { ...n, position: posMap.get(n.id)! } : n));
     setIsDirty(true);
     toast({ title: 'Selection arranged', description: `${selected.length} nodes` });
-  }, [nodes, edges, setNodes, setIsDirty, undoRedo, toast]);
+  }, [nodes, edges, setNodes, setIsDirty, undoRedo]);
 
   const handleDeselectAll = useCallback(() => {
     setNodes(nds => nds.map(n => n.selected ? { ...n, selected: false } : n));

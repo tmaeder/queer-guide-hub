@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Plus,
@@ -80,7 +80,6 @@ const frequencies = [
 const columnHelper = createColumnHelper<NewsSourceRow>();
 
 export default function AdminNewsSources() {
-  const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [keywordsDialogOpen, setKeywordsDialogOpen] = useState(false);
@@ -114,16 +113,16 @@ export default function AdminNewsSources() {
       if (editingSource) {
         const { error } = await updateRow('news_sources', editingSource.id, formData);
         if (error) throw error;
-        toast({ title: 'Success', description: 'News source updated' });
+        toast.success('Success: News source updated');
       } else {
         const { error } = await insertInto('news_sources', formData);
         if (error) throw error;
-        toast({ title: 'Success', description: 'News source created' });
+        toast.success('Success: News source created');
       }
       setDialogOpen(false);
       resetForm();
     } catch {
-      toast({ title: 'Error', description: 'Failed to save news source', variant: 'destructive' });
+      toast.error('Error: Failed to save news source');
     }
   };
 
@@ -180,12 +179,12 @@ export default function AdminNewsSources() {
         keywords: editingKeywords,
       });
       if (error) throw error;
-      toast({ title: 'Success', description: 'Keywords updated' });
+      toast.success('Success: Keywords updated');
       setKeywordsDialogOpen(false);
       setEditingSource(null);
       setEditingKeywords([]);
     } catch {
-      toast({ title: 'Error', description: 'Failed to update keywords', variant: 'destructive' });
+      toast.error('Error: Failed to update keywords');
     }
   };
 
@@ -353,13 +352,9 @@ export default function AdminNewsSources() {
             try {
               const { error } = await deleteRow('news_sources', row.id);
               if (error) throw error;
-              toast({ title: 'Success', description: 'Source deleted' });
+              toast.success('Success: Source deleted');
             } catch {
-              toast({
-                title: 'Error',
-                description: 'Failed to delete source',
-                variant: 'destructive',
-              });
+              toast.error('Error: Failed to delete source');
             }
           },
         },

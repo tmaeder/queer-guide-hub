@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, CheckCircle, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -28,7 +28,6 @@ const KIND_LABEL: Record<string, string> = {
 
 export default function AlertsTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [filter, setFilter] = useState<Filter>('open');
 
   const { data: alerts = [], isLoading } = useQuery<Alert[]>({
@@ -43,7 +42,7 @@ export default function AlertsTab() {
       await ackDataOpsAlert(id, u.user?.id ?? null);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['data-ops-alerts'] }),
-    onError: (e: Error) => toast({ title: 'Acknowledge failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Acknowledge failed: ${e.message}`),
   });
 
   const generateNow = useMutation({
@@ -52,10 +51,10 @@ export default function AlertsTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Alert scan complete' });
+      toast.success('Alert scan complete');
       qc.invalidateQueries({ queryKey: ['data-ops-alerts'] });
     },
-    onError: (e: Error) => toast({ title: 'Alert scan failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Alert scan failed: ${e.message}`),
   });
 
   const counts = useMemo(() => ({

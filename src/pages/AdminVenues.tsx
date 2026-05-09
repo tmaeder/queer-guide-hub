@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useVenues } from '@/hooks/useVenues';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -117,7 +117,6 @@ const commonAmenities = [
 export default function AdminVenues() {
   const { user } = useAuth();
   const { createVenue, updateVenue, deleteVenue, refetch } = useVenues(false);
-  const { toast } = useToast();
   const { resolveAddress } = useAddressResolver();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -224,11 +223,7 @@ export default function AdminVenues() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Venue name is required',
-        variant: 'destructive',
-      });
+      toast.error('Validation Error: Venue name is required');
       return;
     }
     try {
@@ -265,15 +260,11 @@ export default function AdminVenues() {
         : await createVenue(venueData);
       if (result.error) throw new Error(result.error);
 
-      toast({ title: 'Success', description: editingVenue ? 'Venue updated' : 'Venue created' });
+      toast.success(`Success: ${editingVenue}`);
       resetForm();
       setIsCreateDialogOpen(false);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save venue',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -282,9 +273,9 @@ export default function AdminVenues() {
     try {
       const { error } = await deleteVenue(venue.id);
       if (error) throw new Error(error);
-      toast({ title: 'Success', description: 'Venue deleted' });
+      toast.success('Success: Venue deleted');
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete venue', variant: 'destructive' });
+      toast.error('Error: Failed to delete venue');
     }
   };
 
@@ -297,7 +288,7 @@ export default function AdminVenues() {
         body: config ?? { trigger: 'manual' },
       });
       if (error) throw error;
-      toast({ title: 'Import Completed', description: data.message });
+      toast.success(`Import Completed: ${data.message}`);
     } catch {
       toast({
         title: 'Import Failed',
@@ -363,7 +354,7 @@ export default function AdminVenues() {
   // --- Enrichment ---
   const handleEnrichVenue = async () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Error', description: 'Enter a venue name first', variant: 'destructive' });
+      toast.error('Error: Enter a venue name first');
       return;
     }
     setIsEnrichingVenue(true);
@@ -377,14 +368,10 @@ export default function AdminVenues() {
         setEnrichmentVenueName(formData.name);
         setShowEnrichmentPreview(true);
       } else {
-        toast({
-          title: 'No Results',
-          description: 'No enrichment data found',
-          variant: 'destructive',
-        });
+        toast.error('No Results: No enrichment data found');
       }
     } catch {
-      toast({ title: 'Error', description: 'Failed to enrich venue', variant: 'destructive' });
+      toast.error('Error: Failed to enrich venue');
     } finally {
       setIsEnrichingVenue(false);
     }
@@ -402,7 +389,7 @@ export default function AdminVenues() {
     });
     setFormData(updated);
     setShowEnrichmentPreview(false);
-    toast({ title: 'Success', description: 'Venue data enriched' });
+    toast.success('Success: Venue data enriched');
   };
 
   // --- Export ---
