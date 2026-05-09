@@ -1,8 +1,6 @@
 name: Reconfigure Meilisearch
 
-# Runs configure-indexes.sh on the VPS via SSH. Cloudflare WAF blocks
-# GH Actions IPs, so we SSH to the VPS and curl Caddy on localhost
-# with --resolve for SNI and -k to skip cert verification.
+# Diagnostic round 2: understand which Caddy instance serves Meilisearch
 
 on:
   workflow_dispatch:
@@ -46,59 +44,73 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Copy scripts to VPS
+      - name: Diagnose Caddy routing
         run: |
-          scp -o StrictHostKeyChecking=accept-new \
-            meilisearch/configure-indexes.sh \
-            meilisearch/seed-city-aliases.sh \
-            "$SSH_USER@$SSH_HOST:/tmp/"
+          ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+            echo "=== All IPs on :443 and :80 ==="
+            ss -tln | grep -E ':443|:80 '
 
-      - name: Discover Meilisearch via Caddy
-        id: meili
-        run: |
-          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            # Try reaching Meilisearch through Caddy on localhost.
-            # Use --resolve for SNI and -k to skip cert verification
-            # (localhost cert won't match the domain name).
-            # No docker access on this host, so we go through Caddy.
-            for ip in 127.0.0.1 127.0.0.80; do
+            echo ""
+            echo "=== Trying all IPs with -k --resolve on HTTPS ==="
+            for ip in 127.0.0.1 127.0.0.80 10.56.63.29 84.16.72.163; do
               for host in s.queer.guide search.queer.guide; do
+                resp=$(curl -sk --max-time 5 \
+                  --resolve "$host:443:$ip" \
+                  "https://$host/health" 2>/dev/null)
                 code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 5 \
                   --resolve "$host:443:$ip" \
                   "https://$host/health" 2>/dev/null)
-                echo "  --resolve $host:443:$ip -> $code" >&2
-                if [ "$code" = "200" ]; then
-                  echo "$host $ip"
-                  exit 0
-                fi
+                echo "  https --resolve $host:443:$ip -> $code body='$resp'"
               done
             done
-            echo "NONE"
+
+            echo ""
+            echo "=== Trying HTTP (port 80) with Host header ==="
+            for ip in 127.0.0.1 127.0.0.80 10.56.63.29 84.16.72.163; do
+              for host in s.queer.guide search.queer.guide; do
+                resp=$(curl -s --max-time 5 \
+                  -H "Host: $host" \
+                  "http://$ip/health" 2>/dev/null)
+                code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+                  -H "Host: $host" \
+                  "http://$ip/health" 2>/dev/null)
+                echo "  http://$ip Host:$host -> $code body='$resp'"
+              done
+            done
+
+            echo ""
+            echo "=== Try common Meilisearch paths ==="
+            for ip in 127.0.0.1 127.0.0.80 10.56.63.29; do
+              for host in s.queer.guide search.queer.guide; do
+                # Try / and /version
+                for path in / /health /version /indexes; do
+                  code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 3 \
+                    --resolve "$host:443:$ip" \
+                    "https://$host$path" 2>/dev/null)
+                  [ "$code" != "404" ] && echo "  https --resolve $host:443:$ip $path -> $code"
+                done
+              done
+            done
+
+            echo ""
+            echo "=== Check what serves on 127.0.0.1:443 ==="
+            curl -svk --max-time 3 https://127.0.0.1/ 2>&1 | grep -E 'server:|Server:|HTTP/' || true
+
+            echo ""
+            echo "=== Check Varnish/nginx on 127.0.0.80 ==="
+            curl -sv --max-time 3 http://127.0.0.80/ 2>&1 | grep -E 'server:|Server:|HTTP/|via:|Via:' || true
+
+            echo ""
+            echo "=== Try the search subdomain via Meilisearch API key ==="
+            for ip in 127.0.0.1 127.0.0.80 10.56.63.29; do
+              for host in s.queer.guide search.queer.guide; do
+                code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 3 \
+                  --resolve "$host:443:$ip" \
+                  -H "Authorization: Bearer $MEILI_MASTER_KEY" \
+                  "https://$host/health" 2>/dev/null)
+                [ "$code" != "404" ] && echo "  AUTH https --resolve $host:443:$ip /health -> $code"
+              done
+            done
+
+            echo "=== DONE ==="
           REMOTE
-          )
-          echo "Discovery: $RESULT"
-          if [ "$RESULT" = "NONE" ]; then
-            echo "::error::Could not reach Meilisearch on VPS via Caddy"
-            exit 1
-          fi
-          MEILI_HOST=$(echo "$RESULT" | awk '{print $1}')
-          CADDY_IP=$(echo "$RESULT" | awk '{print $2}')
-          echo "meili_host=$MEILI_HOST" >> "$GITHUB_OUTPUT"
-          echo "caddy_ip=$CADDY_IP" >> "$GITHUB_OUTPUT"
-
-      - name: Run configure-indexes.sh
-        run: |
-          ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="https://${{ steps.meili.outputs.meili_host }}" \
-            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="-k --resolve ${{ steps.meili.outputs.meili_host }}:443:${{ steps.meili.outputs.caddy_ip }}" \
-            bash /tmp/configure-indexes.sh
-
-      - name: Run seed-city-aliases.sh
-        if: ${{ inputs.seed_aliases }}
-        run: |
-          ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="https://${{ steps.meili.outputs.meili_host }}" \
-            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="-k --resolve ${{ steps.meili.outputs.meili_host }}:443:${{ steps.meili.outputs.caddy_ip }}" \
-            bash /tmp/seed-city-aliases.sh
