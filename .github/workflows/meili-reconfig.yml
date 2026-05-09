@@ -55,36 +55,45 @@ jobs:
       - name: Discover Meilisearch URL
         id: meili
         run: |
-          URL=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            for url in \
-              "http://localhost:7700" \
-              "http://127.0.0.1:7700" \
-              "http://localhost:80" \
-              "http://localhost:443"; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 "$url/health" 2>/dev/null || echo "000")
-              echo "  $url/health → $code" >&2
-              if [ "$code" = "200" ]; then
-                echo "$url"
-                exit 0
-              fi
+          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+            check() {
+              local label="$1" url="$2" extra="${3:-}"
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 $extra "$url" 2>/dev/null || echo "000")
+              echo "  $label → $code" >&2
+              [ "$code" = "200" ]
+            }
+
+            # Direct Meilisearch port
+            for port in 7700 7701; do
+              check "localhost:$port" "http://localhost:$port/health" && echo "http://localhost:$port" && exit 0
             done
-            for host in "s.queer.guide" "search.queer.guide"; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 -H "Host: $host" "http://localhost/health" 2>/dev/null || echo "000")
-              echo "  localhost with Host: $host → $code" >&2
-              if [ "$code" = "200" ]; then
-                echo "http://localhost"
-                exit 0
-              fi
+
+            # Caddy HTTPS with Host header (self-signed cert)
+            for host in s.queer.guide search.queer.guide; do
+              check "https+Host:$host" "https://localhost/health" "-k -H Host:$host" && echo "https://localhost" && exit 0
+              check "http+Host:$host" "http://localhost/health" "-H Host:$host" && echo "http://localhost" && exit 0
             done
+
+            # Docker bridge IP
+            bridge=$(ip route | awk '/docker0/ {print $NF}' 2>/dev/null || true)
+            if [ -n "$bridge" ]; then
+              check "docker-bridge:7700" "http://$bridge:7700/health" && echo "http://$bridge:7700" && exit 0
+            fi
+
+            # Check what's listening
+            echo "--- Port scan ---" >&2
+            ss -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || netstat -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || true
+            echo "--- Docker ---" >&2
+            docker ps --format '{{.Names}} {{.Ports}}' 2>&1 >&2 || true
             echo "NONE"
           REMOTE
           )
-          echo "Discovered URL: $URL"
-          if [ "$URL" = "NONE" ]; then
+          echo "Discovered: $RESULT"
+          if [ "$RESULT" = "NONE" ]; then
             echo "::error::Could not find Meilisearch on VPS"
             exit 1
           fi
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "url=$RESULT" >> "$GITHUB_OUTPUT"
 
       - name: Run configure-indexes.sh
         env:
