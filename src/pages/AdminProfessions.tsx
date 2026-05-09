@@ -6,13 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -25,47 +18,40 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
-interface AccessibilityRow {
+interface ProfessionRow {
   id: string;
   name: string;
   description: string | null;
   icon: string | null;
-  category: string;
-  sort_order: number;
+  color: string;
   is_active: boolean;
+  sort_order: number;
   created_at: string;
 }
 
-const columnHelper = createColumnHelper<AccessibilityRow>();
-
-const categories = [
-  { value: 'general', label: 'General' },
-  { value: 'mobility', label: 'Mobility' },
-  { value: 'visual', label: 'Visual' },
-  { value: 'hearing', label: 'Hearing' },
-  { value: 'sensory', label: 'Sensory' },
-];
+const columnHelper = createColumnHelper<ProfessionRow>();
 
 const emptyForm = {
   name: '',
   description: '',
   icon: '',
-  category: 'general',
-  sort_order: 0,
+  color: '#6366f1',
   is_active: true,
+  sort_order: 0,
 };
 
-export default function AdminAccessibilityAttributes() {
+export default function AdminProfessions() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const crud = useTaxonomyCRUD('accessibility_attributes');
+  const crud = useTaxonomyCRUD('professions');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   const invalidateTable = () =>
-    queryClient.invalidateQueries({ queryKey: ['admin-table', 'accessibility_attributes'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-table', 'professions'] });
 
   const openCreate = () => {
     setEditingId(null);
@@ -73,44 +59,54 @@ export default function AdminAccessibilityAttributes() {
     setDialogOpen(true);
   };
 
-  const openEdit = (row: AccessibilityRow) => {
+  const openEdit = (row: ProfessionRow) => {
     setEditingId(row.id);
     setForm({
       name: row.name || '',
       description: row.description || '',
       icon: row.icon || '',
-      category: row.category || 'general',
-      sort_order: row.sort_order || 0,
+      color: row.color || '#6366f1',
       is_active: row.is_active,
+      sort_order: row.sort_order || 0,
     });
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     if (!form.name.trim()) {
-      toast.error('Error: Name is required');
+      toast({ title: 'Error', description: 'Name is required', variant: 'destructive' });
       return;
     }
     try {
-      const { error } = await crud.upsert(form, editingId);
-      if (error) throw error;
-      toast.success(`Success: ${editingId}`);
+      if (editingId) {
+        const { error } = await crud.upsert(form, editingId);
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Profession updated' });
+      } else {
+        const { error } = await crud.upsert(form, null);
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Profession created' });
+      }
       setDialogOpen(false);
       invalidateTable();
     } catch (err: unknown) {
-      toast.error(`Error: ${err}`);
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to save',
+        variant: 'destructive',
+      });
     }
   };
 
-  const handleDelete = async (row: AccessibilityRow) => {
+  const handleDelete = async (row: ProfessionRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
       const { error } = await crud.remove(row.id);
       if (error) throw error;
-      toast.success('Success: Attribute deleted');
+      toast({ title: 'Success', description: 'Profession deleted' });
       invalidateTable();
     } catch {
-      toast.error('Error: Failed to delete');
+      toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
     }
   };
 
@@ -118,13 +114,16 @@ export default function AdminAccessibilityAttributes() {
     () => [
       columnHelper.accessor('name', {
         header: 'Name',
-        cell: (info) => <span style={{ fontWeight: 500 }}>{info.getValue()}</span>,
+        cell: (info) => (
+          <div className="flex items-center gap-2">
+            <div
+              className="w-4 h-4 rounded-sm flex-shrink-0"
+              style={{ backgroundColor: info.row.original.color }}
+            />
+            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
+          </div>
+        ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('category', {
-        header: 'Category',
-        cell: (info) => <Badge variant="outline">{info.getValue()}</Badge>,
-        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('description', {
         header: 'Description',
@@ -155,46 +154,24 @@ export default function AdminAccessibilityAttributes() {
       columnHelper.accessor('sort_order', {
         header: 'Order',
         cell: (info) => info.getValue(),
-        meta: {
-          serverSortable: true,
-          defaultVisible: false,
-          hideable: true,
-        } satisfies AdminColumnMeta,
+        meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
     ],
     [],
   );
 
-  const tableConfig: AdminTableConfig<AccessibilityRow> = useMemo(
+  const tableConfig: AdminTableConfig<ProfessionRow> = useMemo(
     () => ({
-      tableName: 'accessibility_attributes',
-      select: 'id,name,description,icon,category,sort_order,is_active,created_at',
+      tableName: 'professions',
+      select: 'id,name,description,icon,color,is_active,sort_order,created_at',
       columns,
       defaultSort: { column: 'sort_order', direction: 'asc' },
       defaultPageSize: 50,
       enableSelection: true,
       enableSearch: true,
       searchColumns: ['name'],
-      entityFilters: [
-        {
-          key: 'category',
-          label: 'Category',
-          type: 'select',
-          column: 'category',
-          options: categories.map((c) => ({ value: c.value, label: c.label })),
-        },
-        { key: 'is_active', label: 'Active', type: 'boolean', column: 'is_active' },
-      ],
-      bulkEditFields: [
-        { key: 'is_active', label: 'Active', type: 'boolean', column: 'is_active' },
-        {
-          key: 'category',
-          label: 'Category',
-          type: 'select',
-          column: 'category',
-          options: categories.map((c) => ({ value: c.value, label: c.label })),
-        },
-      ],
+      entityFilters: [{ key: 'is_active', label: 'Active', type: 'boolean', column: 'is_active' }],
+      bulkEditFields: [{ key: 'is_active', label: 'Active', type: 'boolean', column: 'is_active' }],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: openEdit },
         {
@@ -208,24 +185,24 @@ export default function AdminAccessibilityAttributes() {
       toolbarActions: (
         <Button size="sm" onClick={openCreate}>
           <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
-          Add Attribute
+          Add Profession
         </Button>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [columns],
   );
 
   return (
     <AdminEntityTable
-      title="Accessibility Attributes"
-      subtitle="Manage accessibility features and attributes"
+      title="Professions"
+      subtitle="Manage profession labels for personalities"
       config={tableConfig}
       afterTable={
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 480 }}>
           <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit Attribute' : 'Create Attribute'}</DialogTitle>
+            <DialogTitle>{editingId ? 'Edit Profession' : 'Create Profession'}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4 pt-2">
             <div>
@@ -253,22 +230,12 @@ export default function AdminAccessibilityAttributes() {
                 />
               </div>
               <div>
-                <Label>Category</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Color</Label>
+                <Input
+                  type="color"
+                  value={form.color}
+                  onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
+                />
               </div>
               <div>
                 <Label>Sort Order</Label>

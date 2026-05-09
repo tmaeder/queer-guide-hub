@@ -1,36 +1,57 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Calendar, Store, Tag, Users, User } from 'lucide-react';
-import type { SearchHit } from '@/lib/searchClient';
-import { searchFetch, isSearchUnavailable, SEARCH_UNAVAILABLE_MESSAGE } from '@/lib/searchFetch';
+import { MapPin, Calendar, Store, Tag, Users, User, Newspaper, Globe } from 'lucide-react';
+import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
 
 const MIN_QUERY_LEN = 2;
+const MAX_PER_TYPE = 2;
+const MAX_SUGGESTIONS = 8;
+const DEBOUNCE_MS = 150;
 
 export interface SearchSuggestion {
   id: string;
   name: string;
-  type: 'venue' | 'event' | 'marketplace' | 'tag' | 'user' | 'personality' | 'group';
+  type: string;
   icon: React.ComponentType;
   subtitle?: string;
   title?: string;
-  location?: string;
+  slug?: string;
   city?: string;
-  business_name?: string;
-  description?: string;
+  country?: string;
 }
 
-const TYPE_ICONS: Record<string, React.ComponentType> = {
+export const TYPE_ICONS: Record<string, React.ComponentType> = {
   venue: MapPin,
   event: Calendar,
   marketplace: Store,
   tag: Tag,
   personality: User,
-  city: MapPin,
-  country: MapPin,
+  city: Globe,
+  country: Globe,
   queer_village: MapPin,
-  news: Tag,
+  news: Newspaper,
   user: Users,
   group: Users,
 };
+
+function dedupeAndCap(hits: SearchHit[]): SearchHit[] {
+  const seen = new Set<string>();
+  const typeCounts: Record<string, number> = {};
+  const out: SearchHit[] = [];
+
+  for (const h of hits) {
+    const t = h.type || 'unknown';
+    const key = t === 'event' ? `event:${h.title}:${h.city}` : `${t}:${h.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    typeCounts[t] = (typeCounts[t] || 0) + 1;
+    if (typeCounts[t] > MAX_PER_TYPE) continue;
+
+    out.push(h);
+    if (out.length >= MAX_SUGGESTIONS) break;
+  }
+  return out;
+}
 
 export function useSearchSuggestions(query: string) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
@@ -47,32 +68,28 @@ export function useSearchSuggestions(query: string) {
     setLoading(true);
     setError(null);
     try {
-      const data = await searchFetch<{ hits?: SearchHit[]; suggestions?: SearchHit[] }>(
-        '/',
-        { query: searchTerm, hitsPerPage: 8 },
-        { timeoutMs: 5000 },
-      );
+      const hits = await fetchAutocomplete(searchTerm, undefined, 12);
+      const capped = dedupeAndCap(hits);
 
-      const source = data.suggestions ?? data.hits ?? [];
-      const mapped: SearchSuggestion[] = source.map((hit: SearchHit) => ({
-        id: hit.id || hit.objectID || '',
-        name: hit.title || hit.name || '',
-        type: hit.type as SearchSuggestion['type'],
+      const mapped: SearchSuggestion[] = capped.map((hit) => ({
+        id: hit.id || '',
+        name: (hit.title || hit.name || '') as string,
+        type: hit.type,
         icon: TYPE_ICONS[hit.type] || Tag,
-        subtitle: hit.category || hit.location || hit.city || hit.description?.substring(0, 60),
-        title: hit.title,
-        location: hit.location,
+        subtitle: hit.type === 'country' ? undefined
+          : hit.type === 'city' ? (hit.country as string | undefined)
+          : (hit.city as string | undefined),
+        title: (hit.title || hit.name || '') as string,
+        slug: hit.slug as string | undefined,
         city: hit.city,
-        description: hit.description,
+        country: hit.country as string | undefined,
       }));
 
       setSuggestions(mapped);
     } catch (err) {
       console.error('Error fetching suggestions:', err);
       setSuggestions([]);
-      // Surface the unavailable state so the search popover can render an
-      // error row instead of silent emptiness (bug #2 / #22).
-      if (isSearchUnavailable(err)) setError(SEARCH_UNAVAILABLE_MESSAGE);
+      setError('Search is temporarily unavailable.');
     } finally {
       setLoading(false);
     }
@@ -81,7 +98,7 @@ export function useSearchSuggestions(query: string) {
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchSuggestions(query);
-    }, 300);
+    }, DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
   }, [query, fetchSuggestions]);

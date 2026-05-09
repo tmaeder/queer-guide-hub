@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ArrowLeft, Plus, Trash2, Pencil, Link2 } from 'lucide-react';
 
@@ -61,7 +61,6 @@ function pickConnector(url: string): { fn: string; label: string } | null {
 
 export default function AdminIngestionRules() {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const qc = useQueryClient();
 
   const [editing, setEditing] = useState<Rule | null>(null);
@@ -104,9 +103,9 @@ export default function AdminIngestionRules() {
       qc.invalidateQueries({ queryKey: ['ingestion_rules'] });
       setDialogOpen(false);
       setEditing(null);
-      toast({ title: 'Rule saved' });
+      toast.success('Rule saved');
     },
-    onError: (e: Error) => toast({ title: 'Save failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Save failed: ${e.message}`),
   });
 
   const deleteMut = useMutation({
@@ -116,7 +115,7 @@ export default function AdminIngestionRules() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ingestion_rules'] });
-      toast({ title: 'Rule deleted' });
+      toast.success('Rule deleted');
     },
   });
 
@@ -125,7 +124,7 @@ export default function AdminIngestionRules() {
     if (!url) return;
     const conn = pickConnector(url);
     if (!conn) {
-      toast({ title: 'Unsupported URL', variant: 'destructive' });
+      toast.error('Unsupported URL');
       return;
     }
     setImporting(true);
@@ -139,11 +138,7 @@ export default function AdminIngestionRules() {
       });
       setImportUrl('');
     } catch (err) {
-      toast({
-        title: 'Import failed',
-        description: err instanceof Error ? err.message : String(err),
-        variant: 'destructive',
-      });
+      toast.error(`Import failed: ${err}`);
     } finally {
       setImporting(false);
     }

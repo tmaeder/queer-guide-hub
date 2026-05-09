@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -29,7 +29,6 @@ import { LEGACY_NEWS_TRIGGER_ENABLED } from "@/lib/featureFlags";
 type NewsSource = Tables<'news_sources'>;
 
 export function NewsSourcesManager() {
-  const { toast } = useToast();
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,7 +51,6 @@ export function NewsSourcesManager() {
 
   useEffect(() => {
     fetchSources();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const fetchSources = async () => {
@@ -63,11 +61,7 @@ export function NewsSourcesManager() {
       });
       setSources(data);
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch news sources",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to fetch news sources');
     } finally {
       setLoading(false);
     }
@@ -86,11 +80,7 @@ export function NewsSourcesManager() {
         fieldErrors[err.field] = err.message;
       });
       setValidationErrors(fieldErrors);
-      toast({
-        title: "Validation Error",
-        description: result.errors[0]?.message || "Please fix the highlighted fields",
-        variant: "destructive",
-      });
+      toast.error(`Validation Error: ${result.errors}`);
       return;
     }
     setValidationErrors({});
@@ -99,22 +89,18 @@ export function NewsSourcesManager() {
       if (editingSource) {
         const { error } = await updateRow('news_sources', editingSource.id, formData);
         if (error) throw error;
-        toast({ title: 'Success', description: 'News source updated successfully' });
+        toast.success('Success: News source updated successfully');
       } else {
         const { error } = await insertInto('news_sources', formData);
         if (error) throw error;
-        toast({ title: 'Success', description: 'News source created successfully' });
+        toast.success('Success: News source created successfully');
       }
 
       setDialogOpen(false);
       resetForm();
       fetchSources();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -155,18 +141,11 @@ export function NewsSourcesManager() {
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "News source deleted successfully",
-      });
+      toast.success('Success: News source deleted successfully');
 
       fetchSources();
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete news source",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to delete news source');
     }
   };
 
@@ -183,11 +162,7 @@ export function NewsSourcesManager() {
 
       fetchSources();
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to update news source",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to update news source');
     }
   };
 
@@ -203,16 +178,9 @@ export function NewsSourcesManager() {
 
       if (error) throw error;
 
-      toast({
-        title: "Manual ingestion enqueued",
-        description: "Run progress visible at /admin/pipelines?tab=news",
-      });
+      toast.success('Manual ingestion enqueued: Run progress visible at /admin/pipelines?tab=news');
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to enqueue news ingestion",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to enqueue news ingestion');
     }
   };
 
@@ -243,21 +211,14 @@ export function NewsSourcesManager() {
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Keywords updated successfully",
-      });
+      toast.success('Success: Keywords updated successfully');
 
       setKeywordsDialogOpen(false);
       setEditingSource(null);
       setEditingKeywords([]);
       fetchSources();
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to update keywords",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to update keywords');
     }
   };
 
@@ -474,7 +435,7 @@ export function NewsSourcesManager() {
                           </Badge>
 
                           {(source as NewsSource & { auto_publish?: boolean }).auto_publish && (
-                            <Badge variant="default" style={{ background: 'hsl(var(--brand))' }}>
+                            <Badge variant="default" style={{ background: 'hsl(var(--foreground))' }}>
                               Auto-publish
                             </Badge>
                           )}

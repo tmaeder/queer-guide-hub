@@ -348,7 +348,7 @@ export function CMSShell() {
                       <button
                         type="button"
                         onClick={crumb.onClick}
-                        className="font-medium text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--brand))]"
+                        className="font-medium text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))]"
                         style={{ fontSize: '0.82rem' }}
                       >
                         {crumb.label}

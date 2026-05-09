@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, ArrowRight, Merge } from 'lucide-react';
 import { getFieldsForEntity, type FieldDef } from './StructuredFieldDisplay';
-import { brandColors } from '@/theme/brandColors';
 
 interface SideBySideComparisonProps {
   entityType: string;
@@ -130,7 +129,7 @@ export function SideBySideComparison({
             <div className="p-3 flex items-center justify-center">
               <ArrowRight style={{ width: 14, height: 14 }} className="text-muted-foreground" />
             </div>
-            <div className="p-3 font-semibold text-xs uppercase" style={{ color: brandColors.main }}>{rightLabel}</div>
+            <div className="p-3 font-semibold text-xs uppercase" style={{ color: 'hsl(var(--foreground))' }}>{rightLabel}</div>
           </div>
 
           {/* Rows */}
@@ -158,7 +157,7 @@ export function SideBySideComparison({
                   style={{
                     cursor: isDiff ? 'pointer' : 'default',
                     borderLeft: choices[field.key] === 'left' && isDiff ? '3px solid #3b82f6' : '3px solid transparent',
-                    backgroundColor: choices[field.key] === 'left' && isDiff ? 'rgba(59, 130, 246, 0.06)' : 'transparent',
+                    backgroundColor: choices[field.key] === 'left' && isDiff ? 'hsl(var(--muted))' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'left')}
                 >
@@ -172,7 +171,7 @@ export function SideBySideComparison({
                       className="flex items-center justify-center text-white font-bold"
                       style={{
                         width: 20, height: 20, borderRadius: '50%',
-                        backgroundColor: choices[field.key] === 'left' ? '#3b82f6' : brandColors.main,
+                        backgroundColor: choices[field.key] === 'left' ? '#3b82f6' : 'hsl(var(--foreground))',
                         fontSize: '0.6rem',
                       }}
                     >
@@ -186,8 +185,8 @@ export function SideBySideComparison({
                   className="p-3"
                   style={{
                     cursor: isDiff ? 'pointer' : 'default',
-                    borderLeft: choices[field.key] === 'right' && isDiff ? `3px solid ${brandColors.main}` : '3px solid transparent',
-                    backgroundColor: choices[field.key] === 'right' && isDiff ? brandColors.main + '0F' : 'transparent',
+                    borderLeft: choices[field.key] === 'right' && isDiff ? `3px solid ${'hsl(var(--foreground))'}` : '3px solid transparent',
+                    backgroundColor: choices[field.key] === 'right' && isDiff ? 'hsl(var(--muted))' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'right')}
                 >

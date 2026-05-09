@@ -105,7 +105,7 @@ export function HandoffSection({
             onClick={() => copyAndRecord('claude-code')}
             disabled={isRecording}
             className="flex items-center gap-1.5 font-semibold text-white"
-            style={{ backgroundColor: 'hsl(var(--accent-warm))' }}
+            style={{ backgroundColor: 'hsl(var(--foreground))' }}
           >
             {copyState === 'copied' ? (
               <Check style={{ width: 14, height: 14 }} />

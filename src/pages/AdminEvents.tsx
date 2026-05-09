@@ -44,7 +44,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Calendar as CalendarIcon, MapPin, Star } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 interface EventRow {
@@ -141,7 +141,6 @@ export default function AdminEvents() {
   const { user } = useAuth();
   const { createEvent, updateEvent, deleteEvent } = useEvents();
   const { venues } = useVenues();
-  const { toast } = useToast();
   const { resolveAddress } = useAddressResolver();
   const queryClient = useQueryClient();
 
@@ -245,7 +244,7 @@ export default function AdminEvents() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!startDate) {
-      toast({ title: 'Error', description: 'Please select a start date', variant: 'destructive' });
+      toast.error('Error: Please select a start date');
       return;
     }
 
@@ -269,21 +268,17 @@ export default function AdminEvents() {
       if (editingEvent) {
         const { error } = await updateEvent(editingEvent.id, eventData);
         if (error) throw new Error(error);
-        toast({ title: 'Success', description: 'Event updated' });
+        toast.success('Success: Event updated');
       } else {
         const { error } = await createEvent(eventData);
         if (error) throw new Error(error);
-        toast({ title: 'Success', description: 'Event created' });
+        toast.success('Success: Event created');
       }
       resetForm();
       setIsCreateDialogOpen(false);
       invalidateTable();
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message :'Failed to save event',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -327,14 +322,10 @@ export default function AdminEvents() {
     try {
       const { error } = await deleteEvent(event.id);
       if (error) throw new Error(error);
-      toast({ title: 'Success', description: 'Event deleted' });
+      toast.success('Success: Event deleted');
       invalidateTable();
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message :'Failed to delete',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 

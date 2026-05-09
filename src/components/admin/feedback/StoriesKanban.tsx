@@ -324,7 +324,7 @@ function StoryCard({
             <TooltipTrigger asChild>
               <span
                 className="font-bold flex-shrink-0"
-                style={{ paddingLeft: 4, paddingRight: 4, fontSize: '0.55rem', color: 'hsl(var(--accent-warm))' }}
+                style={{ paddingLeft: 4, paddingRight: 4, fontSize: '0.55rem', color: 'hsl(var(--foreground))' }}
               >
                 AI
               </span>

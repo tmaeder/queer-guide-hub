@@ -5,6 +5,12 @@ import { useAuth } from "./useAuth";
 
 export type Profile = Tables<"profiles">;
 
+export type ProfileUpdateResult = {
+  data?: Profile | null;
+  error: string | null;
+  errorKind: "auth" | "transient" | null;
+};
+
 /** Shared query key so other hooks (e.g. useCurrency) can share the cache. */
 export const profileQueryKey = (userId: string | null | undefined) =>
   ["profile", userId] as const;
@@ -42,9 +48,11 @@ export const useProfile = () => {
   const setProfile = (next: Profile | null) =>
     queryClient.setQueryData(profileQueryKey(user?.id), next);
 
-  const updateProfile = async (updates: Partial<Profile>) => {
+  const updateProfile = async (
+    updates: Partial<Profile>,
+  ): Promise<ProfileUpdateResult> => {
     if (!user) {
-      return { error: "No user found" };
+      return { error: "No user found", errorKind: "auth" };
     }
 
     // Coerce empty strings to null so CHECK-constrained enum columns
@@ -70,10 +78,15 @@ export const useProfile = () => {
 
       if (error) throw error;
       setProfile(data);
-      return { data, error: null };
+      return { data, error: null, errorKind: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
-      return { data: null, error: errorMessage };
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const errorKind = session ? "transient" : "auth";
+      return { data: null, error: errorMessage, errorKind };
     }
   };
 
@@ -98,7 +111,8 @@ export const useProfile = () => {
       setProfile(data);
       return { data, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
       return { data: null, error: errorMessage };
     }
   };
@@ -132,7 +146,8 @@ export const useProfile = () => {
       await refetch();
       return { data: data.publicUrl, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
       return { data: null, error: errorMessage };
     }
   };

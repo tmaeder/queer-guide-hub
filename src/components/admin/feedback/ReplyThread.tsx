@@ -40,7 +40,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
               <div
                 key={`${r.at}-${i}`}
                 className="p-2 border-l-[3px] bg-muted rounded"
-                style={{ borderColor: isGithub ? '#6366f1' : 'hsl(var(--brand))' }}
+                style={{ borderColor: isGithub ? '#6366f1' : 'hsl(var(--foreground))' }}
               >
                 <div className="flex items-center gap-1 mb-1">
                   <Avatar className="w-[18px] h-[18px]">

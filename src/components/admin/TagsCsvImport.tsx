@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Upload, FileText, Download, AlertCircle, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
 
 interface ImportResult {
@@ -30,18 +30,13 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
   const [isUploading, setIsUploading] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (!file.name.endsWith('.csv')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select a CSV file",
-        variant: "destructive"
-      });
+      toast.error('Invalid file type: Please select a CSV file');
       return;
     }
 
@@ -69,22 +64,14 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
         });
         onImportComplete?.();
       } else {
-        toast({
-          title: "Import failed",
-          description: data.error || "Unknown error occurred",
-          variant: "destructive"
-        });
+        toast.error(`Import failed: ${data.error}`);
       }
 
     } catch (error: unknown) {
       console.error('Import error:', error);
 
       const errorMessage = error instanceof Error ? error.message : 'Failed to import CSV file';
-      toast({
-        title: "Import error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      toast.error(`Import error: ${errorMessage}`);
 
       setImportResult({
         success: false,

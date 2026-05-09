@@ -33,7 +33,7 @@ Default · hover · active · focus · disabled. Loading where applicable.
 - **Don't** import the underlying MUI component directly when this
   wrapper exists.
 - **Don't** introduce hardcoded color literals — use theme tokens
-  (`theme.palette.*`) or CSS variables (`hsl(var(--brand))`).
+  (`theme.palette.*`) or CSS variables (`hsl(var(--foreground))`).
 
 ## Example
 

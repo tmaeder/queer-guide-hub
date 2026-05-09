@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface Integration {
   id: string;
@@ -34,7 +34,6 @@ const KIND_LABEL: Record<string, string> = {
 
 export default function IntegrationsTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<Partial<Integration>>({
     name: '', kind: 'slack', webhook_url: '', min_severity: 'warn', enabled: true,
@@ -65,12 +64,12 @@ export default function IntegrationsTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Integration added' });
+      toast.success('Integration added');
       qc.invalidateQueries({ queryKey: ['alert-integrations'] });
       setDialogOpen(false);
       setForm({ name: '', kind: 'slack', webhook_url: '', min_severity: 'warn', enabled: true });
     },
-    onError: (e: Error) => toast({ title: 'Create failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Create failed: ${e.message}`),
   });
 
   const toggle = useMutation({
@@ -79,7 +78,7 @@ export default function IntegrationsTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alert-integrations'] }),
-    onError: (e: Error) => toast({ title: 'Toggle failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Toggle failed: ${e.message}`),
   });
 
   const remove = useMutation({
@@ -88,10 +87,10 @@ export default function IntegrationsTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Integration removed' });
+      toast.success('Integration removed');
       qc.invalidateQueries({ queryKey: ['alert-integrations'] });
     },
-    onError: (e: Error) => toast({ title: 'Delete failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Delete failed: ${e.message}`),
   });
 
   const sendTest = useMutation({
@@ -105,8 +104,8 @@ export default function IntegrationsTab() {
       });
       if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
     },
-    onSuccess: (_, i) => toast({ title: 'Test message sent', description: i.name }),
-    onError: (e: Error) => toast({ title: 'Test failed', description: e.message, variant: 'destructive' }),
+    onSuccess: (_, i) => toast.success(`Test message sent: ${i.name}`),
+    onError: (e: Error) => toast.error(`Test failed: ${e.message}`),
   });
 
   const canSave = form.name && form.name.length >= 2 && form.webhook_url && form.webhook_url.startsWith('http');

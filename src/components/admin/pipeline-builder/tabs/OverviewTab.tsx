@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,7 +81,6 @@ function StatCard({ icon: Icon, color, value, label, alert }: {
 export default function OverviewTab() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { toast } = useToast();
   const { data: rows, isLoading } = useUnifiedPipelineOverview();
   const { data: counts24h } = usePipelineRunCounts24h();
   const { data: circuitBreakers } = useCircuitBreakers();
@@ -101,7 +100,7 @@ export default function OverviewTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] }),
-    onError: (e: Error) => toast({ title: 'Toggle failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Toggle failed: ${e.message}`),
   });
 
   const runNow = useMutation({
@@ -122,7 +121,7 @@ export default function OverviewTab() {
       toast({ title: `Started: ${row.display_name || row.name}` });
       setTimeout(() => qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] }), 1500);
     },
-    onError: (e: Error) => toast({ title: 'Run failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Run failed: ${e.message}`),
   });
 
   const filtered = useMemo(() => {
