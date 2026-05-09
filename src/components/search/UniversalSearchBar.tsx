@@ -63,6 +63,7 @@ export const UniversalSearchBar = () => {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [_isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const justSelectedRef = useRef(false);
   const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -72,10 +73,12 @@ export const UniversalSearchBar = () => {
   useEffect(() => {
     const prevPath = prevPathRef.current;
     prevPathRef.current = location.pathname;
-    if (prevPath !== location.pathname && prevPath.startsWith('/search') && !location.pathname.startsWith('/search')) {
-      setQuery('');
+    if (prevPath !== location.pathname) {
       setIsOpen(false);
       setShowFilters(false);
+      if (prevPath.startsWith('/search') && !location.pathname.startsWith('/search')) {
+        setQuery('');
+      }
     }
   }, [location.pathname]);
 
@@ -111,6 +114,7 @@ export const UniversalSearchBar = () => {
   };
 
   const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
+    justSelectedRef.current = true;
     const displayName = suggestion.name || suggestion.title;
     setQuery(displayName || '');
     if (suggestion.id && suggestion.type) {
@@ -170,7 +174,7 @@ export const UniversalSearchBar = () => {
                 <SearchInputTyped ref={inputRef} aria-label={t('search.ariaLabel', 'Search Queer Guide')} role="combobox" aria-autocomplete="list" aria-expanded={isOpen} aria-controls="qg-search-listbox" aria-haspopup="listbox"
                   placeholders={isMobile ? [t('search.placeholders.generic', 'Search...')] : location.pathname.startsWith('/hotels') ? [t('search.placeholders.hotels', 'Search hotels...')] : [t('search.placeholders.venues', 'Search venues...'), t('search.placeholders.events', 'Find events...'), t('search.placeholders.marketplace', 'Browse marketplace...'), t('search.placeholders.people', 'Discover people...'), t('search.placeholders.news', 'Read news...'), t('search.placeholders.resources', 'Explore resources...'), t('search.placeholders.personalities', 'Meet personalities...')]}
                   typingSpeed={75} pauseDuration={2000} showCursor={true} cursorCharacter="|" value={query}
-                  onValueChange={(value) => { setQuery(value); if (!isOpen) setIsOpen(true); }}
+                  onValueChange={(value) => { setQuery(value); if (!isOpen && !justSelectedRef.current) setIsOpen(true); justSelectedRef.current = false; }}
                   onKeyDown={handleKeyDown}
                   onFocus={() => { setIsFocused(true); setIsOpen(true); }}
                   onBlur={() => setIsFocused(false)}
