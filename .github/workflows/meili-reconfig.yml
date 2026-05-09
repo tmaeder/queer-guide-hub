@@ -1,8 +1,6 @@
 name: Reconfigure Meilisearch
 
-# Runs configure-indexes.sh on the VPS via SSH. Cloudflare WAF blocks
-# GH Actions IPs, so we SSH to the VPS and curl Caddy locally with
-# --resolve for proper TLS SNI.
+# Diagnostic run to understand VPS environment
 
 on:
   workflow_dispatch:
@@ -46,87 +44,56 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Copy scripts to VPS
+      - name: Diagnose VPS environment
         run: |
-          scp -o StrictHostKeyChecking=accept-new \
-            meilisearch/configure-indexes.sh \
-            meilisearch/seed-city-aliases.sh \
-            "$SSH_USER@$SSH_HOST:/tmp/"
+          ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+            echo "=== whoami ==="
+            whoami
+            id
 
-      - name: Discover Meilisearch via Caddy
-        id: meili
-        run: |
-          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            echo "=== ss -tln ===" >&2
-            ss -tln >&2
+            echo "=== curl version ==="
+            curl --version 2>&1 | head -3 || echo "NO CURL"
 
-            # Collect all IPs listening on :443, preferring 127.0.0.1
-            # (public IP often unreachable from localhost due to firewall)
-            ips=$(ss -tln | awk '/:443/ && $4 !~ /^\[/ && $4 !~ /^\*/ {
-              n = split($4, a, ":")
-              if (n >= 2) print a[1]
-            }' | sort -t. -k1,1n | uniq)
-
-            echo "IPs on :443: $ips" >&2
-
-            for ip in $ips; do
-              for host in s.queer.guide search.queer.guide; do
-                code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
-                  --resolve "$host:443:$ip" \
-                  "https://$host/health" 2>/dev/null)
-                echo "  --resolve $host:443:$ip -> $code" >&2
-                if [ "$code" = "200" ]; then
-                  echo "$host $ip"
-                  exit 0
-                fi
-              done
+            echo "=== test TCP with bash ==="
+            for target in 127.0.0.1:443 127.0.0.1:80 127.0.0.1:7700 127.0.0.80:443 127.0.0.80:80; do
+              host="${target%:*}"
+              port="${target##*:}"
+              timeout 3 bash -c "echo > /dev/tcp/$host/$port" 2>&1 && echo "$target -> OK" || echo "$target -> FAIL"
             done
 
-            # Fallback: try localhost directly on common Meili ports
-            for port in 7700 7701; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
-                "http://localhost:$port/health" 2>/dev/null)
-              echo "  http://localhost:$port/health -> $code" >&2
-              if [ "$code" = "200" ]; then
-                echo "DIRECT http://localhost:$port"
-                exit 0
-              fi
+            echo "=== curl verbose to 127.0.0.1:443 ==="
+            curl -vk --max-time 3 https://127.0.0.1/health 2>&1 | head -20 || true
+
+            echo "=== curl verbose to 127.0.0.1:80 ==="
+            curl -v --max-time 3 http://127.0.0.1/health 2>&1 | head -20 || true
+
+            echo "=== curl to 127.0.0.80:443 ==="
+            curl -vk --max-time 3 https://127.0.0.80/health 2>&1 | head -20 || true
+
+            echo "=== docker access ==="
+            docker ps --format '{{.Names}} | {{.Ports}} | {{.Status}}' 2>&1 || echo "NO DOCKER ACCESS"
+
+            echo "=== docker exec meilisearch ==="
+            MEILI_CONTAINER=$(docker ps --format '{{.Names}}' 2>/dev/null | grep -i meili | head -1)
+            if [ -n "$MEILI_CONTAINER" ]; then
+              echo "Found: $MEILI_CONTAINER"
+              docker exec "$MEILI_CONTAINER" curl -s http://localhost:7700/health 2>&1 || echo "exec curl failed"
+            else
+              echo "No meilisearch container found via grep"
+              echo "All containers:"
+              docker ps --format '{{.Names}}' 2>/dev/null || true
+            fi
+
+            echo "=== docker network inspect ==="
+            for net in $(docker network ls --format '{{.Name}}' 2>/dev/null); do
+              containers=$(docker network inspect "$net" --format '{{range .Containers}}{{.Name}}:{{.IPv4Address}} {{end}}' 2>/dev/null)
+              [ -n "$containers" ] && echo "$net: $containers"
             done
 
-            echo "NONE"
+            echo "=== Caddy config check ==="
+            # Find Caddy config
+            find /etc/caddy /opt -name 'Caddyfile' -o -name 'caddy.json' 2>/dev/null | head -5
+            docker exec $(docker ps --format '{{.Names}}' 2>/dev/null | grep -i caddy | head -1) cat /etc/caddy/Caddyfile 2>&1 | head -30 || true
+
+            echo "=== DONE ==="
           REMOTE
-          )
-          echo "Discovery result: $RESULT"
-          if [ "$RESULT" = "NONE" ]; then
-            echo "::error::Could not reach Meilisearch on VPS"
-            exit 1
-          fi
-
-          MODE=$(echo "$RESULT" | awk '{print $1}')
-          if [ "$MODE" = "DIRECT" ]; then
-            MEILI_URL=$(echo "$RESULT" | awk '{print $2}')
-            echo "meili_url=$MEILI_URL" >> "$GITHUB_OUTPUT"
-            echo "curl_opts=" >> "$GITHUB_OUTPUT"
-          else
-            MEILI_HOST=$(echo "$RESULT" | awk '{print $1}')
-            CADDY_IP=$(echo "$RESULT" | awk '{print $2}')
-            echo "meili_url=https://$MEILI_HOST" >> "$GITHUB_OUTPUT"
-            echo "curl_opts=--resolve $MEILI_HOST:443:$CADDY_IP" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Run configure-indexes.sh
-        run: |
-          ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
-            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="${{ steps.meili.outputs.curl_opts }}" \
-            bash /tmp/configure-indexes.sh
-
-      - name: Run seed-city-aliases.sh
-        if: ${{ inputs.seed_aliases }}
-        run: |
-          ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
-            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="${{ steps.meili.outputs.curl_opts }}" \
-            bash /tmp/seed-city-aliases.sh
