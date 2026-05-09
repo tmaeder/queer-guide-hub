@@ -11,7 +11,7 @@ styled with Tailwind. Import from `@/components/ui/<name>`.
   `borderRadius: 0`, `boxShadow: 'none'`, no borders. If a design
   needs a shadow, the design is wrong, not the component.
 - **No hardcoded colors.** Use CSS custom properties
-  (`hsl(var(--brand))`, `bg-foreground`, …). The ESLint
+  (`hsl(var(--foreground))`, `bg-foreground`, …). The ESLint
   `no-restricted-syntax` rule warns on hex/rgb/hsl literals.
 
 ## Where to look
