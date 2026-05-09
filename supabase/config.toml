@@ -170,7 +170,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.import-ilga-data]
-verify_jwt = true
+verify_jwt = false
 
 [functions.update-musician-concerts]
 verify_jwt = false
@@ -374,4 +374,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.source-email-ingestions]
+verify_jwt = false
+
+[functions.geo-link-content]
+verify_jwt = false
+
+[functions.validate-links]
+verify_jwt = false
+
+[functions.marketplace-fx-sync]
 verify_jwt = false
