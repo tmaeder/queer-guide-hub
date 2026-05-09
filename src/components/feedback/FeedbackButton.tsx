@@ -40,6 +40,25 @@ export function FeedbackButton() {
     if (open) setPageUrl(window.location.href);
   }, [open]);
 
+  // Auto-dismiss the success state after a short delay
+  useEffect(() => {
+    if (status !== 'submitted' || !open) return;
+    const timer = window.setTimeout(() => {
+      setOpen(false);
+      window.setTimeout(() => {
+        setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
+        setStatus('idle');
+        setIncludeScreenshot(true);
+        if (screenshotUrlRef.current) {
+          URL.revokeObjectURL(screenshotUrlRef.current);
+          screenshotUrlRef.current = null;
+        }
+        screenshotBlobRef.current = null;
+      }, 200);
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [status, open]);
+
   const reset = useCallback(() => {
     setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
     setStatus('idle');
