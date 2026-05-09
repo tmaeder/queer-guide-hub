@@ -35,7 +35,7 @@ import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
-import type { Profile } from '@/hooks/useProfile';
+import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
 import { PageHeader } from '@/components/layout/PageHeader';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -65,7 +65,7 @@ export default function ProfileSettings() {
 }
 
 interface LoaderProps {
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: string | null }>;
+  updateProfile: (updates: Partial<Profile>) => Promise<ProfileUpdateResult>;
   toast: ReturnType<typeof useToast>['toast'];
   navigate: ReturnType<typeof useLocalizedNavigate>;
   hasPasskey: boolean;
@@ -104,7 +104,7 @@ function ProfileSettingsLoader({ updateProfile, toast, navigate, hasPasskey, use
 
 interface ContentProps {
   profile: Profile | null | undefined;
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: string | null }>;
+  updateProfile: (updates: Partial<Profile>) => Promise<ProfileUpdateResult>;
   toast: ReturnType<typeof useToast>['toast'];
   navigate: ReturnType<typeof useLocalizedNavigate>;
   hasPasskey: boolean;
@@ -116,7 +116,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'basic');
   const [formData, setFormData] = useState<ProfileFormData>(() => initFormData(profile));
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | 'error'>('saved');
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | 'error' | 'auth-error'>('saved');
 
   const profileCompletion = calculateCompletion(formData);
 
@@ -159,7 +159,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
     async (silent = false) => {
       setSaveStatus('saving');
 
-      const { error } = await updateProfile({
+      const { error, errorKind } = await updateProfile({
         display_name: formData.display_name,
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -197,7 +197,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
       } as Partial<Profile>);
 
       if (error) {
-        setSaveStatus('error');
+        setSaveStatus(errorKind === 'auth' ? 'auth-error' : 'error');
         if (!silent) {
           toast({ title: 'Update failed', description: error, variant: 'destructive' });
         }
@@ -209,12 +209,12 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
     [formData, updateProfile, toast],
   );
 
-  // Auto-save with 3s debounce
+  // Auto-save with 3s debounce — skip when auth is broken
   useEffect(() => {
-    if (!hasUnsavedChanges) return;
+    if (!hasUnsavedChanges || saveStatus === 'auth-error') return;
     const id = setTimeout(() => handleSave(true), 3000);
     return () => clearTimeout(id);
-  }, [formData, hasUnsavedChanges, handleSave]);
+  }, [formData, hasUnsavedChanges, handleSave, saveStatus]);
 
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
@@ -320,7 +320,15 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
           <Badge variant="outline">Unsaved changes</Badge>
         )}
         {saveStatus === 'error' && (
-          <Badge variant="destructive">Save failed — retrying...</Badge>
+          <Badge variant="destructive">Save failed</Badge>
+        )}
+        {saveStatus === 'auth-error' && (
+          <div className="flex items-center gap-3">
+            <Badge variant="destructive">Session expired</Badge>
+            <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
+              Sign in
+            </Button>
+          </div>
         )}
       </div>
     </div>
