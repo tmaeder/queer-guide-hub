@@ -15,7 +15,7 @@ type Event = {
   venue_name?: string | null;
   city?: string | null;
   image_url?: string | null;
-  featured?: boolean | null;
+  is_featured?: boolean | null;
 };
 
 const Hairline = () => <div className="h-px bg-current opacity-10" />;
