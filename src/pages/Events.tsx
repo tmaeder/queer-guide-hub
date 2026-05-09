@@ -68,6 +68,7 @@ const eventTypes = [
   'social',
   'fundraiser',
   'performance',
+  'cruise',
 ];
 
 const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [

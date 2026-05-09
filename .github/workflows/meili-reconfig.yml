@@ -1,7 +1,7 @@
 name: Reconfigure Meilisearch
 
-# Applies ranking, stop-words, alias settings to the production Meilisearch
-# instance via SSH tunnel (Cloudflare WAF blocks GH Actions datacenter IPs).
+# Runs configure-indexes.sh on the VPS via SSH because Cloudflare WAF
+# blocks direct curl from GitHub Actions datacenter IPs.
 
 on:
   workflow_dispatch:
@@ -41,29 +41,75 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Open SSH tunnel
+      - name: Copy scripts to VPS
         run: |
-          ssh -f -N -L 7700:localhost:7700 "$SSH_USER@$SSH_HOST"
-          sleep 1
-          status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:7700/health)
-          echo "Meili /health via tunnel → $status"
-          [ "$status" = "200" ]
+          scp -o StrictHostKeyChecking=accept-new \
+            meilisearch/configure-indexes.sh \
+            meilisearch/seed-city-aliases.sh \
+            "$SSH_USER@$SSH_HOST:/tmp/"
+
+      - name: Discover Meilisearch URL
+        id: meili
+        run: |
+          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+            check() {
+              local label="$1" url="$2" extra="${3:-}"
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 $extra "$url" 2>/dev/null || echo "000")
+              echo "  $label → $code" >&2
+              [ "$code" = "200" ]
+            }
+
+            # Direct Meilisearch port
+            for port in 7700 7701; do
+              check "localhost:$port" "http://localhost:$port/health" && echo "http://localhost:$port" && exit 0
+            done
+
+            # Caddy HTTPS with Host header (self-signed cert)
+            for host in s.queer.guide search.queer.guide; do
+              check "https+Host:$host" "https://localhost/health" "-k -H Host:$host" && echo "https://localhost" && exit 0
+              check "http+Host:$host" "http://localhost/health" "-H Host:$host" && echo "http://localhost" && exit 0
+            done
+
+            # Docker bridge IP
+            bridge=$(ip route | awk '/docker0/ {print $NF}' 2>/dev/null || true)
+            if [ -n "$bridge" ]; then
+              check "docker-bridge:7700" "http://$bridge:7700/health" && echo "http://$bridge:7700" && exit 0
+            fi
+
+            # Check what's listening
+            echo "--- Port scan ---" >&2
+            ss -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || netstat -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || true
+            echo "--- Docker ---" >&2
+            docker ps --format '{{.Names}} {{.Ports}}' 2>&1 >&2 || true
+            echo "NONE"
+          REMOTE
+          )
+          echo "Discovered: $RESULT"
+          if [ "$RESULT" = "NONE" ]; then
+            echo "::error::Could not find Meilisearch on VPS"
+            exit 1
+          fi
+          echo "url=$RESULT" >> "$GITHUB_OUTPUT"
 
       - name: Run configure-indexes.sh
         env:
-          MEILI_URL: http://localhost:7700
+          MEILI_URL: ${{ steps.meili.outputs.url }}
         run: |
-          chmod +x meilisearch/configure-indexes.sh
-          bash meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="$MEILI_URL" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
         env:
-          MEILI_URL: http://localhost:7700
+          MEILI_URL: ${{ steps.meili.outputs.url }}
         run: |
-          chmod +x meilisearch/seed-city-aliases.sh
-          bash meilisearch/seed-city-aliases.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="$MEILI_URL" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/seed-city-aliases.sh

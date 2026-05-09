@@ -99,7 +99,7 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
                   <Badge variant="outline">Free</Badge>
                 ) : (
                   <span className="text-sm font-medium">
-                    {event.price_min ? formatCurrency(event.price_min) : 'Price TBA'}
+                    {event.price_min ? formatCurrency(event.price_min, event.currency) : 'Price TBA'}
                   </span>
                 )}
                 <Button size="sm" variant="outline">
