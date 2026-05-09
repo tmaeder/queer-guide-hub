@@ -69,6 +69,7 @@ interface EventRow {
   age_restriction: string | null;
   is_featured: boolean;
   status: string | null;
+  organizer_id: string | null;
   organizer_name: string | null;
   organizer_contact: string | null;
   website: string | null;
@@ -94,6 +95,7 @@ const eventTypes = [
   'sports',
   'theater',
   'comedy',
+  'cruise',
   'other',
 ];
 
@@ -127,6 +129,7 @@ const emptyForm = {
   age_restriction: '',
   website: '',
   ticket_url: '',
+  organizer_id: '',
   organizer_name: '',
   organizer_contact: '',
   is_featured: false,
@@ -189,6 +192,25 @@ export default function AdminEvents() {
     }
   };
 
+
+  const organizers = useMemo(() => venues.filter((v: any) => v.is_organizer), [venues]);
+
+  const handleOrganizerSelect = (organizerId: string) => {
+    if (organizerId === 'custom' || !organizerId) {
+      setFormData((prev) => ({ ...prev, organizer_id: '', organizer_name: '', organizer_contact: '' }));
+      return;
+    }
+    const org = venues.find((v) => v.id === organizerId);
+    if (org) {
+      setFormData((prev) => ({
+        ...prev,
+        organizer_id: organizerId,
+        organizer_name: org.name,
+        organizer_contact: (org as any).email || (org as any).phone || '',
+      }));
+    }
+  };
+
   const handleAddressChange = async (
     address: string,
     coordinates?: { lat: number; lng: number },
@@ -231,6 +253,7 @@ export default function AdminEvents() {
       const eventData = {
         ...formData,
         venue_id: formData.venue_id || null,
+        organizer_id: formData.organizer_id || null,
         latitude: formData.latitude,
         longitude: formData.longitude,
         age_restriction: formData.age_restriction === 'none' ? null : formData.age_restriction,
@@ -286,6 +309,7 @@ export default function AdminEvents() {
       age_restriction: event.age_restriction || '',
       website: event.website || '',
       ticket_url: event.ticket_url || '',
+      organizer_id: event.organizer_id || '',
       organizer_name: event.organizer_name || '',
       organizer_contact: event.organizer_contact || '',
       is_featured: event.is_featured,
@@ -458,7 +482,7 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
@@ -833,6 +857,15 @@ export default function AdminEvents() {
               <div className="flex flex-col gap-4">
                 <h3 className="font-semibold">Additional Information
                 </h3>
+                <div>
+                  <Label>Select Organizer (Optional)</Label>
+                  <VenueCombobox
+                    venues={organizers}
+                    value={formData.organizer_id}
+                    onValueChange={handleOrganizerSelect}
+                    placeholder="Search organizers..."
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Organizer Name</Label>
@@ -841,6 +874,7 @@ export default function AdminEvents() {
                       onChange={(e) =>
                         setFormData((p) => ({ ...p, organizer_name: e.target.value }))
                       }
+                      disabled={!!formData.organizer_id}
                     />
                   </div>
                   <div>
@@ -850,6 +884,7 @@ export default function AdminEvents() {
                       onChange={(e) =>
                         setFormData((p) => ({ ...p, organizer_contact: e.target.value }))
                       }
+                      disabled={!!formData.organizer_id}
                     />
                   </div>
                 </div>
