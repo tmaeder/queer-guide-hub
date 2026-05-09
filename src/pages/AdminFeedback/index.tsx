@@ -10,7 +10,7 @@ import { ShortcutHelpDialog } from '@/components/admin/feedback/ShortcutHelpDial
 import { StoryDetailDrawer } from '@/components/admin/feedback/StoryDetailDrawer';
 import type { StoryStatus } from '@/components/admin/feedback/types';
 import { formatClaudePrompt } from '@/components/admin/feedback/claudePrompts';
-import { SpamTab } from './SpamTab';
+import { TriageTab } from './TriageTab';
 import { StoriesTab } from './StoriesTab';
 import { useAdminFeedbackController } from './useAdminFeedbackController';
 
@@ -25,13 +25,10 @@ export default function AdminFeedback() {
     );
   }
 
-  // Stories is the primary surface. Spam + Analytics are the only escape
-  // hatches; Community + API Errors tabs folded into Stories (1-member solo
-  // stories auto-created for every item).
   const tabIdx =
-    c.state.tab === 'spam' ? 1 : c.state.tab === 'analytics' ? 2 : 0;
-  const tabValue: 'stories' | 'spam' | 'analytics' =
-    tabIdx === 1 ? 'spam' : tabIdx === 2 ? 'analytics' : 'stories';
+    c.state.tab === 'triage' ? 1 : c.state.tab === 'analytics' ? 2 : 0;
+  const tabValue: 'stories' | 'triage' | 'analytics' =
+    tabIdx === 1 ? 'triage' : tabIdx === 2 ? 'analytics' : 'stories';
 
   return (
     <div className="p-4 sm:p-6">
@@ -55,19 +52,19 @@ export default function AdminFeedback() {
       <Tabs
         value={tabValue}
         onValueChange={(v) =>
-          c.update({ tab: v as 'stories' | 'spam' | 'analytics' })
+          c.update({ tab: v as 'stories' | 'triage' | 'analytics' })
         }
         className="mb-4"
       >
         <TabsList>
           <TabsTrigger value="stories">{`Stories (${c.stories.length})`}</TabsTrigger>
-          <TabsTrigger value="spam">{`Spam (${c.spamCount})`}</TabsTrigger>
+          <TabsTrigger value="triage">{`Triage (${c.totalVisibleCount})`}</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {tabValue === 'spam' && (
-        <SpamTab
+      {tabValue === 'triage' && (
+        <TriageTab
           state={c.state}
           update={c.update}
           clearFilters={c.clearFilters}
