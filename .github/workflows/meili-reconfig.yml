@@ -1,7 +1,8 @@
 name: Reconfigure Meilisearch
 
-# Applies ranking, stop-words, alias settings to the production Meilisearch
-# instance via SSH tunnel (Cloudflare WAF blocks GH Actions datacenter IPs).
+# Runs configure-indexes.sh on the VPS via SSH. Cloudflare WAF blocks
+# GH Actions IPs, so we curl Caddy on the VPS public IP with the right
+# Host header, bypassing Cloudflare entirely.
 
 on:
   workflow_dispatch:
@@ -41,29 +42,62 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Open SSH tunnel
+      - name: Copy scripts to VPS
         run: |
-          ssh -f -N -L 7700:localhost:7700 "$SSH_USER@$SSH_HOST"
-          sleep 1
-          status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:7700/health)
-          echo "Meili /health via tunnel → $status"
-          [ "$status" = "200" ]
+          scp -o StrictHostKeyChecking=accept-new \
+            meilisearch/configure-indexes.sh \
+            meilisearch/seed-city-aliases.sh \
+            "$SSH_USER@$SSH_HOST:/tmp/"
+
+      - name: Discover Meilisearch via Caddy
+        id: meili
+        run: |
+          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+            caddy_ip=$(ss -tln | awk '/:443 / && !/127\./ && !/\[/' | head -1 | sed 's/.*LISTEN *[0-9]* *//;s/:.*//')
+            if [ -z "$caddy_ip" ]; then
+              echo "no-caddy-ip" >&2
+              echo "NONE"
+              exit 0
+            fi
+            for host in s.queer.guide search.queer.guide; do
+              code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 5 \
+                -H "Host: $host" "https://$caddy_ip/health" 2>/dev/null)
+              echo "  https://$caddy_ip Host:$host -> $code" >&2
+              if [ "$code" = "200" ]; then
+                echo "$host $caddy_ip"
+                exit 0
+              fi
+            done
+            echo "NONE"
+          REMOTE
+          )
+          echo "Discovery: $RESULT"
+          if [ "$RESULT" = "NONE" ]; then
+            echo "::error::Could not reach Meilisearch on VPS via Caddy"
+            exit 1
+          fi
+          MEILI_HOST=$(echo "$RESULT" | awk '{print $1}')
+          CADDY_IP=$(echo "$RESULT" | awk '{print $2}')
+          echo "meili_host=$MEILI_HOST" >> "$GITHUB_OUTPUT"
+          echo "caddy_ip=$CADDY_IP" >> "$GITHUB_OUTPUT"
 
       - name: Run configure-indexes.sh
-        env:
-          MEILI_URL: http://localhost:7700
         run: |
-          chmod +x meilisearch/configure-indexes.sh
-          bash meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="https://${{ steps.meili.outputs.caddy_ip }}" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            MEILI_CURL_OPTS="-k -H Host:${{ steps.meili.outputs.meili_host }}" \
+            bash /tmp/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
-        env:
-          MEILI_URL: http://localhost:7700
         run: |
-          chmod +x meilisearch/seed-city-aliases.sh
-          bash meilisearch/seed-city-aliases.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="https://${{ steps.meili.outputs.caddy_ip }}" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            MEILI_CURL_OPTS="-k -H Host:${{ steps.meili.outputs.meili_host }}" \
+            bash /tmp/seed-city-aliases.sh
