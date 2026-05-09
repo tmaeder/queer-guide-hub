@@ -1,7 +1,7 @@
 name: Reconfigure Meilisearch
 
 # Runs configure-indexes.sh on the VPS via SSH.
-# Scripts are piped via stdin to avoid disk writes (VPS disk may be full).
+# Scripts piped via cat to ~/  (avoids /tmp which may be on a full disk).
 
 on:
   workflow_dispatch:
@@ -45,6 +45,11 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
+      - name: Copy scripts to VPS
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'cat > ~/configure-indexes.sh' < meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" 'cat > ~/seed-city-aliases.sh' < meilisearch/seed-city-aliases.sh
+
       - name: Verify Meilisearch is reachable
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
@@ -56,7 +61,7 @@ jobs:
           ssh "$SSH_USER@$SSH_HOST" \
             MEILI_URL="http://localhost:7700" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash < meilisearch/configure-indexes.sh
+            bash ~/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
@@ -64,4 +69,9 @@ jobs:
           ssh "$SSH_USER@$SSH_HOST" \
             MEILI_URL="http://localhost:7700" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash < meilisearch/seed-city-aliases.sh
+            bash ~/seed-city-aliases.sh
+
+      - name: Cleanup
+        if: always()
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'rm -f ~/configure-indexes.sh ~/seed-city-aliases.sh' || true
