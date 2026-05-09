@@ -114,7 +114,7 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 	return (
 		<section className={className} aria-label="Recommended for you">
 			<h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-				<Sparkles className="h-5 w-5 text-purple-500" />
+				<Sparkles className="h-5 w-5 text-foreground" />
 				Recommended for you
 			</h2>
 			<ScrollArea className="w-full whitespace-nowrap">
@@ -136,11 +136,11 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 											className="shrink-0 w-56"
 											onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
 										>
-											<Card className="h-40 overflow-hidden hover:shadow-md transition">
+											<Card className="h-40 overflow-hidden transition">
 												{it.image_url ? (
 													<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
 												) : (
-													<div className="h-24 w-full bg-gradient-to-br from-purple-200 to-pink-200" />
+													<div className="h-24 w-full bg-muted" />
 												)}
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">

@@ -22,7 +22,7 @@ export default function Blog() {
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-3 mb-4">
           <BookOpen style={{ width: 48, height: 48 }} className="text-primary" />
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold text-foreground">
             The Queer Guide Blog
           </h1>
         </div>
@@ -109,7 +109,7 @@ export default function Blog() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {blogPosts.map((post) => (
                         <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
-                          <div className="h-48 bg-gradient-to-r from-primary to-secondary"></div>
+                          <div className="h-48 bg-muted"></div>
                           <CardContent>
                             <Badge variant="secondary">{post.category}</Badge>
                             <p className="font-semibold mt-3 mb-2 text-base">{post.title}</p>
@@ -139,7 +139,7 @@ export default function Blog() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {blogPosts.filter(post => post.category === category).map((post) => (
                           <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
-                            <div className="h-48 bg-gradient-to-r from-primary to-secondary"></div>
+                            <div className="h-48 bg-muted"></div>
                             <CardContent>
                               <Badge variant="secondary">{post.category}</Badge>
                               <p className="font-semibold mt-3 mb-2 text-base">{post.title}</p>
@@ -194,7 +194,7 @@ export default function Blog() {
                   <div className="flex flex-col gap-4">
                     {blogPosts.slice(0, 3).map((post) => (
                       <div key={post.id} className="flex gap-3">
-                        <div className="w-16 h-16 shrink-0 rounded bg-gradient-to-r from-primary to-secondary"></div>
+                        <div className="w-16 h-16 shrink-0 rounded bg-muted"></div>
                         <div className="flex-1">
                           <p className="text-sm font-medium leading-tight mb-1">{post.title}</p>
                           <span className="text-xs text-muted-foreground">

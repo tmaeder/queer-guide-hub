@@ -5,7 +5,7 @@
 
 const COLORS = [
   '#6366f1',
-  'hsl(var(--brand))',
+  'hsl(var(--foreground))',
   '#a855f7',
   '#d946ef',
   '#ec4899',

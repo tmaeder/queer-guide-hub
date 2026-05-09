@@ -321,7 +321,7 @@ export default function Directory() {
                           <div className="flex items-center gap-2 p-2 rounded-lg bg-muted">
                             <div className="flex items-center gap-1.5">
                               <div className="p-1 rounded-lg bg-muted">
-                                <Globe className="w-5 h-5" style={{ color: 'hsl(var(--brand))' }} />
+                                <Globe className="w-5 h-5" style={{ color: 'hsl(var(--foreground))' }} />
                               </div>
                               <div>
                                 <h6 className="font-semibold text-lg">{continent.name}</h6>
@@ -389,7 +389,7 @@ export default function Directory() {
                         <div className="flex items-center gap-2 p-2 rounded-lg bg-muted">
                           <div className="flex items-center gap-1.5">
                             <div className="p-1 rounded-lg bg-muted">
-                              <Globe className="w-5 h-5" style={{ color: 'hsl(var(--brand))' }} />
+                              <Globe className="w-5 h-5" style={{ color: 'hsl(var(--foreground))' }} />
                             </div>
                             <div>
                               <h6 className="font-semibold text-lg">{continent.name}</h6>

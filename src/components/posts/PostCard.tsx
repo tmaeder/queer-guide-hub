@@ -352,7 +352,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                       Edit Post
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      style={{ color: '#ef4444' }}
+                      className="text-destructive"
                       onClick={() => setShowDeleteDialog(true)}
                     >
                       <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
@@ -378,7 +378,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-              style={post.user_liked ? { color: '#ef4444' } : {}}
+              style={post.user_liked ? { color: 'hsl(var(--foreground))' } : {}}
             >
               <Heart
                 style={{
@@ -436,7 +436,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 onDelete?.(post.id);
                 setShowDeleteDialog(false);
               }}
-              style={{ backgroundColor: '#ef4444', color: 'white' }}
+              className="bg-destructive text-destructive-foreground"
             >
               Delete
             </AlertDialogAction>

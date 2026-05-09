@@ -10,7 +10,7 @@ export function DonationSuccess() {
   return (
     <Card>
       <CardContent className="py-8 text-center space-y-4">
-        <CheckCircle className="w-12 h-12 mx-auto text-green-500" />
+        <CheckCircle className="w-12 h-12 mx-auto text-foreground" />
         <h5 className="text-xl font-bold">
           {t('donate.thankYou', 'Thank you!')}
         </h5>

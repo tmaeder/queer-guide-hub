@@ -72,7 +72,7 @@ export function MemoryRecapCard({ tripId }: Props) {
           <div className="flex items-center gap-3 flex-wrap">
             <div
               className="flex items-center justify-center w-10 h-10 rounded-md text-primary-foreground"
-              style={{ backgroundColor: 'hsl(var(--brand))' }}
+              style={{ backgroundColor: 'hsl(var(--foreground))' }}
             >
               <Sparkles size={20} />
             </div>
@@ -109,7 +109,7 @@ export function MemoryRecapCard({ tripId }: Props) {
     <Card>
       <CardContent>
         <div className="flex justify-between items-start gap-2 mb-3">
-          <span className="uppercase tracking-wider font-bold text-xs" style={{ color: 'hsl(var(--brand))' }}>
+          <span className="uppercase tracking-wider font-bold text-xs" style={{ color: 'hsl(var(--foreground))' }}>
             {t('trips.recap.badge', 'Trip recap')}
           </span>
           <Button

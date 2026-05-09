@@ -104,16 +104,16 @@ export default function SecurityDashboard() {
               Comprehensive security monitoring and protection status
             </p>
           </div>
-          <Badge variant="outline" style={{ backgroundColor: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}>
+          <Badge variant="outline" style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--border))' }}>
             <Activity style={{ width: 16, height: 16, marginRight: 4 }} />
             All Systems Secure
           </Badge>
         </div>
 
-        <Alert style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' }}>
-          <Shield style={{ height: 16, width: 16, color: '#16a34a' }} />
-          <AlertTitle style={{ color: '#166534' }}>Security Status: Enhanced</AlertTitle>
-          <AlertDescription style={{ color: '#15803d' }}>
+        <Alert>
+          <Shield style={{ height: 16, width: 16 }} />
+          <AlertTitle>Security Status: Enhanced</AlertTitle>
+          <AlertDescription>
             All critical security fixes have been implemented. Your application now has enterprise-grade security protection.
           </AlertDescription>
         </Alert>
@@ -140,7 +140,7 @@ export default function SecurityDashboard() {
                             <IconComponent style={{ width: 20, height: 20 }} />
                             {feature.title}
                           </CardTitle>
-                          <Badge variant="outline" style={{ backgroundColor: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}>
+                          <Badge variant="outline" style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--border))' }}>
                             {feature.status}
                           </Badge>
                         </div>
@@ -150,7 +150,7 @@ export default function SecurityDashboard() {
                         <ul className="flex flex-col gap-1">
                           {feature.details.map((detail, index) => (
                             <li key={index} className="text-sm flex items-center gap-2">
-                              <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
                               {detail}
                             </li>
                           ))}

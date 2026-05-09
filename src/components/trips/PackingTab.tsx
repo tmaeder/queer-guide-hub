@@ -135,9 +135,9 @@ export function PackingTab({ tripId }: Props) {
       <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-2xl">
         <div
           className="w-14 h-14 rounded-lg flex items-center justify-center mx-auto mb-3"
-          style={{ background: 'hsl(var(--brand) / 0.1)' }}
+          style={{ background: 'hsl(var(--foreground) / 0.1)' }}
         >
-          <CheckSquare size={26} style={{ color: 'hsl(var(--brand))' }} />
+          <CheckSquare size={26} style={{ color: 'hsl(var(--foreground))' }} />
         </div>
         <h3 className="text-lg font-bold mb-1">{t('trips.packing.emptyTitle')}</h3>
         <p className="text-sm text-muted-foreground mb-6 max-w-[360px] mx-auto">
@@ -167,7 +167,6 @@ export function PackingTab({ tripId }: Props) {
           <p
             className="font-extrabold text-[1.375rem]"
             style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
               letterSpacing: '-0.02em',
               fontVariantNumeric: 'tabular-nums',
             }}
@@ -180,7 +179,7 @@ export function PackingTab({ tripId }: Props) {
           <span
             className="text-sm font-bold"
             style={{
-              color: 'hsl(var(--brand))',
+              color: 'hsl(var(--foreground))',
               fontVariantNumeric: 'tabular-nums',
             }}
           >
@@ -192,7 +191,7 @@ export function PackingTab({ tripId }: Props) {
             className="h-full rounded-full transition-all"
             style={{
               width: `${percentage}%`,
-              background: 'hsl(var(--brand))',
+              background: 'hsl(var(--foreground))',
             }}
           />
         </div>
@@ -243,7 +242,6 @@ export function PackingTab({ tripId }: Props) {
                       'font-bold flex-1 text-sm',
                       allChecked ? 'text-muted-foreground' : 'text-foreground',
                     )}
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                   >
                     {categoryLabel(group.category)}
                   </span>

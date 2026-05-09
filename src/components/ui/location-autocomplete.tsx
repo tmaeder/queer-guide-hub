@@ -340,7 +340,7 @@ export function LocationAutocomplete({
             disabled={disabled}
             style={{
               paddingRight: 80,
-              ...(isValidated ? { borderColor: '#22c55e' } : {}),
+              ...(isValidated ? { borderColor: 'hsl(var(--foreground))' } : {}),
             }}
           />
           <div style={{
@@ -353,7 +353,7 @@ export function LocationAutocomplete({
             gap: 4,
           }}>
             {isValidated && (
-              <Check style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Check style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
             )}
             {isLoading && (
               <Loader2 style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />

@@ -196,7 +196,7 @@
       "samples": {
         "berlin": "柏林骄傲周",
         "barcelona": "巴塞罗那：海滩与夜生活",
-        "bangkok": "曼谷与普吉岛探索"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}} 天"
     },
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "搜索城市…",
         "noCityMatch": "未找到匹配的城市。",
         "addNewPlace": "将「{{query}}」添加为新地点",
-        "datesUnlockHint": "添加日期可解锁住宿、航班和安全建议。",
+        "datesUnlockHint": "添加日期以获取住宿、航班和安全建议。",
         "defaultTitle": "前往{{city}}的行程",
         "titleField": "行程标题",
         "titlePlaceholder": "例如：柏林骄傲周 2026",
@@ -435,8 +435,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "开始打包清单",
-      "emptyDescription": "添加物品或使用模板开始。",
+      "emptyTitle": "暂无物品。",
+      "emptyDescription": "添加物品或使用模板。",
       "progress": "已打包 {{checked}} / {{total}}",
       "addItem": "添加物品…",
       "removeAria": "移除物品",
@@ -751,7 +751,7 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "可选。跳过也可以。",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
@@ -1021,9 +1021,9 @@
     "error": "发送求助失败，请重试。"
   },
   "home": {
-    "heroLine1": "发现。",
-    "heroLine2": "连接。",
-    "heroLine3": "归属。",
+    "heroLine1": "酷儿场所、",
+    "heroLine2": "活动和人物。",
+    "heroLine3": "遍布全球。",
     "subtitle": "安全的场所、丰富的活动和懂你的社群——无论你在哪里。",
     "browseVenues": "浏览场所",
     "viewEvents": "查看活动",
@@ -1134,8 +1134,8 @@
       "gridView": "网格视图",
       "mapView": "地图视图",
       "submit": "提交",
-      "emptyTitle": "还没有找到符合你风格的地点",
-      "emptyDescription": "尝试扩大搜索范围或探索其他城市。",
+      "emptyTitle": "没有匹配筛选条件的场所。",
+      "emptyDescription": "扩大搜索范围或切换城市。",
       "submitVenue": "提交场所",
       "clearFilters": "清除筛选",
       "emptyDataset": {
@@ -1211,8 +1211,8 @@
       "clearFilterPast": "清除过去活动筛选",
       "noPastEvents": "未找到过去的活动",
       "noPastEventsDesc": "没有过去的活动符合这些筛选条件。关闭切换以查看即将举办的活动。",
-      "emptyTitle": "舞池暂时空空的……",
-      "emptyDescription": "请稍后再来或扩大筛选范围来发现有趣的活动。",
+      "emptyTitle": "暂无活动。",
+      "emptyDescription": "扩大筛选范围或稍后再来。",
       "emptyDataset": {
         "title": "暂无活动",
         "body": "我们还没有在这里添加活动。欢迎提交一个,帮助我们丰富指南。"
@@ -1278,15 +1278,15 @@
       "subtitle": "查找LGBTQ+友好目的地的航班、酒店和活动",
       "activitiesComingSoon": "活动即将推出。",
       "browseDestinations": "浏览目的地",
-      "exploreCta": "探索LGBTQ+友好目的地",
-      "exploreDescription": "发现城市和国家，附带详细的安全信息和旅行指南"
+      "exploreCta": "目的地",
+      "exploreDescription": "附带安全信息和旅行指南的城市和国家。"
     },
     "marketplace": {
       "title": "市集",
       "subtitle": "发现并支持提供产品和服务的本地商家",
       "listBusiness": "登记你的商家",
-      "emptyTitle": "货架上还空空的",
-      "emptyDescription": "酷儿企业每天都在加入。",
+      "emptyTitle": "暂无列表。",
+      "emptyDescription": "每周都有新增。",
       "signInRequired": "需要登录",
       "signInList": "创建免费账户以登记你的商家。",
       "signInFavorites": "请登录以保存收藏。",
@@ -1326,8 +1326,8 @@
       "filters": "筛选",
       "activeFilters": "已选筛选条件",
       "clearAll": "全部清除",
-      "emptyTitle": "新闻编辑室很安静",
-      "emptyDescription": "目前没有故事——请稍后再来。",
+      "emptyTitle": "暂无文章。",
+      "emptyDescription": "稍后再来。",
       "previous": "上一页",
       "next": "下一页"
     },
@@ -1364,8 +1364,8 @@
       "discover": "发现",
       "myGroups": "我的小组",
       "popular": "热门",
-      "emptyTitle": "这里还没有小组",
-      "emptyDescription": "成为火花——创建第一个小组，将人们聚在一起。",
+      "emptyTitle": "暂无小组。",
+      "emptyDescription": "创建第一个。",
       "createGroup": "创建小组",
       "mostPopular": "最热门小组",
       "noPopular": "暂无热门小组。"

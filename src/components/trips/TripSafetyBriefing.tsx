@@ -179,7 +179,6 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
           </p>
           <h6
             className="text-lg font-extrabold mb-0.5"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.2 }}
           >
             {t(`trips.safety.headline.${report.overallRisk}`)}
           </h6>
@@ -239,10 +238,9 @@ function CrossBorderCard({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="p-2 mb-1 flex items-start gap-[0.3125rem] bg-amber-50 dark:bg-amber-950/40">
+    <div className="p-2 mb-1 flex items-start gap-[0.3125rem] bg-muted">
       <AlertTriangle
         className="w-[18px] h-[18px] flex-shrink-0 mt-0.5"
-        style={{ color: '#b45309' }}
         aria-hidden="true"
       />
       <div className="flex-1 min-w-0">
@@ -294,7 +292,7 @@ function CountryAccordion({
           <button
             type="button"
             className="flex items-center justify-between gap-1.5 w-full p-2 bg-transparent border-0 cursor-pointer text-left text-inherit transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:-outline-offset-2"
-            style={{ outlineColor: 'hsl(var(--brand))' }}
+            style={{ outlineColor: 'hsl(var(--foreground))' }}
           >
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {/* Score chip */}
@@ -305,7 +303,6 @@ function CountryAccordion({
               >
                 <span
                   className="text-base font-extrabold leading-none"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   {country.equality_score ?? '—'}
                 </span>
@@ -316,7 +313,6 @@ function CountryAccordion({
                 <div className="flex items-center gap-[0.1875rem] flex-wrap">
                   <p
                     className="font-bold text-base"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                   >
                     {country.name}
                   </p>
@@ -396,7 +392,7 @@ function CountryAccordion({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-0.5 mt-0.5 self-start text-[0.8125rem] font-semibold no-underline hover:underline"
-                  style={{ color: 'hsl(var(--brand))' }}
+                  style={{ color: 'hsl(var(--foreground))' }}
                 >
                   {t('trips.safety.viewOnIlga')}
                   <ExternalLink className="w-3 h-3" aria-hidden="true" />

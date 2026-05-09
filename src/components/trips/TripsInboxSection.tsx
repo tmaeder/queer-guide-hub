@@ -47,8 +47,8 @@ const TYPE_ICONS: Record<Reservation['type'], typeof Plane> = {
 };
 
 const STATUS_CLASS: Record<Reservation['status'], string> = {
-  pending: 'bg-yellow-500/15 text-yellow-700 border-yellow-500/30',
-  confirmed: 'bg-green-500/15 text-green-700 border-green-500/30',
+  pending: 'bg-muted text-muted-foreground border-border',
+  confirmed: 'bg-foreground/5 text-foreground border-foreground/20',
   completed: 'bg-muted text-muted-foreground',
   cancelled: 'bg-destructive/15 text-destructive border-destructive/30',
   failed: 'bg-destructive/15 text-destructive border-destructive/30',

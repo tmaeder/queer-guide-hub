@@ -450,7 +450,7 @@ function SortableErrorCard({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 4,
-                  backgroundColor: 'hsl(var(--accent-warm))',
+                  backgroundColor: 'hsl(var(--foreground))',
                   color: '#fff',
                 }}
               >

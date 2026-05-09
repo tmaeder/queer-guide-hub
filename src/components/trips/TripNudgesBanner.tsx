@@ -64,7 +64,7 @@ export function TripNudgesBanner({ tripId }: Props) {
                   <RouterLink
                     to={n.action_url}
                     className="inline-block mt-2 text-xs font-semibold hover:underline"
-                    style={{ color: 'hsl(var(--brand))', textDecoration: 'none' }}
+                    style={{ color: 'hsl(var(--foreground))', textDecoration: 'none' }}
                   >
                     {n.action_label} →
                   </RouterLink>
@@ -74,7 +74,7 @@ export function TripNudgesBanner({ tripId }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block mt-2 text-xs font-semibold hover:underline"
-                    style={{ color: 'hsl(var(--brand))', textDecoration: 'none' }}
+                    style={{ color: 'hsl(var(--foreground))', textDecoration: 'none' }}
                   >
                     {n.action_label} →
                   </a>

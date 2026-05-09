@@ -87,6 +87,7 @@ queer-guide-hub/
 
 ## Testing
 
+- **Always verify on production** (https://queer.guide) after deploy, not just localhost. The deploy target is Cloudflare Pages, not Vercel — Vercel is preview-only.
 - **Frontend unit (root):** `npm test` — vitest + jsdom, `src/**/*.{test,spec}.{ts,tsx}`
 - **Scraper:** `cd scraper && npm test` — vitest, `tests/**/*.test.ts`, 30s timeout, v8 coverage
 - **E2E:** Playwright config at `playwright.config.ts`; specs in `e2e/`. Run via `npm run test:e2e` (or `test:e2e:ui` for the Playwright UI). Full suite runs nightly at 03:00 UTC via `.github/workflows/e2e-nightly.yml`; an `e2e-i18n.yml` smoke job runs on PRs touching i18n / trip-planner code.
@@ -115,22 +116,27 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 
 ## Design
 
-LGBTQ+ travelers, locals, activists, researchers, allies. Warm, trusted, empowering. Safety-first, inclusive by default, content is the hero.
+LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusive by default, content is the hero.
 
-- Brand: magenta `#b60d3d` (light) / `#ff7386` (dark), monochrome + single accent. Reach for the brand color via `theme.palette.brand.main` or `hsl(var(--brand))`, never as a hex literal — ESLint warns on color literals outside `src/theme/` and `src/config/`.
-- Typography: Inter (body + most headings) + Plus Jakarta Sans (display only — homepage stats, personality cards, home widgets). Both self-hosted. See `docs/design-system/typography.md`.
-- Strict flat: 0 radius, 0 borders, 0 shadows, 0 underlines. Enforced by `src/components/ui/__tests__/flat-compliance.test.tsx`.
-- Icons inline in text flow, never in separate containers. Minimal UI labeling.
-- Links by color/opacity only. Clean hover (0.85) and active (0.7) states.
+- **Color:** strictly monochrome. Black `--foreground: 0 0% 4%`, white `--background: 0 0% 100%`, plus grayscale steps (`--muted`, `--accent`, `--border`). No brand magenta in public UI. ESLint (`no-restricted-syntax`) errors on hex/rgb/hsl literals outside allowlisted files.
+- **Typography:** Inter only. Plus Jakarta Sans removed. Self-hosted woff2 in `public/fonts/inter/`.
+- **Shape:** `--radius: 0` globally (all Tailwind `rounded-*` values override to `'0'` in `tailwind.config.ts`). ESLint warns on `rounded-(sm|md|lg|xl|2xl|3xl)` in new code. `rounded-full` allowed for avatars/dots only.
+- **Shadows:** disabled. ESLint warns on `shadow-(md|lg|xl|2xl)`. Use `border` or `bg-muted` for depth.
+- **Gradients:** not allowed in public UI. ESLint warns on `bg-gradient-to-*`. Exception: black readability scrims over images (`from-black/15 to-black/65`).
+- **Icons:** lucide-react only, inherit color from parent.
+- **Motion:** functional only (skeleton pulse, dialog/sheet transitions, accordion). No decorative animation (Aurora removed, ScrollReveal on hero removed).
+- **Copy:** direct factual voice. No "discover/explore/unlock/curated/journey/amazing/tailored/personalized for you". Empty states: "No X yet." not metaphors.
 - Full light + dark mode (system preference + header toggle).
-- Components: shadcn-as-MUI wrappers in `src/components/ui/` — read `src/components/ui/README.md` before adding new ones.
+- Components: shadcn/ui primitives in `src/components/ui/`.
 
 ### Documented exceptions
-- **Error / warning** colors (`--destructive`, `--warning`) are visually distinct red, not brand magenta — semantic clarity wins over strict monochrome.
-- **Admin chromatic palette** (`--cat-*` tokens, content-type accents) is the only place where multiple hues appear. Stay monochrome anywhere a normal user can see.
+- **`--destructive`** token for error/warning semantics (near-black with contextual meaning).
+- **Admin chromatic palette** (`--cat-*` tokens, content-type accents, data-viz) — the only place where multiple hues appear. Files in `src/components/admin/`, `src/components/cms/`, `src/pages/Admin*`, `src/pages/admin/` are exempt from the color-literal ESLint rule. Stay monochrome anywhere a normal user can see.
+- **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
 
 ### Design System Files
-- Tokens: `src/index.css` (CSS variables), `src/theme/muiTheme.ts` (MUI theme)
+- Tokens: `src/index.css` (CSS variables)
 - Animation: `src/lib/animation.ts` (durations, easings, distances)
 - Layout: `src/lib/sx.ts` (container, center, pageWrapper, stack, row)
-- Components: MUI 7 + 50 shadcn/ui components in `src/components/ui/`
+- Components: 52 shadcn/ui components in `src/components/ui/`
+- Enforcement: `eslint.config.js` (color literals, rounded, shadow, gradient rules)

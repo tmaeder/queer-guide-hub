@@ -65,7 +65,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h4 className="text-2xl font-bold">{hotel.name}</h4>
-            {hotel.verified && <Shield className="w-5 h-5" style={{ color: '#10b981' }} />}
+            {hotel.verified && <Shield className="w-5 h-5" />}
           </div>
           <p className="text-muted-foreground">
             {hotel.hotel_type && <>{TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type} &middot; </>}
@@ -112,7 +112,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
       <div className="flex flex-wrap gap-2">
         {hotel.star_rating && (
           <Badge variant="outline" className="gap-1">
-            <Star className="w-3.5 h-3.5" style={{ fill: '#f59e0b', color: '#f59e0b' }} />
+            <Star className="w-3.5 h-3.5" style={{ fill: 'currentColor' }} />
             {`${hotel.star_rating} Stars`}
           </Badge>
         )}

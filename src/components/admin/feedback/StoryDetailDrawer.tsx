@@ -21,6 +21,13 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import {
   X,
   Trash2,
   Copy,
@@ -29,6 +36,9 @@ import {
   AlertTriangle,
   Sparkles,
   AlertCircle,
+  MoreHorizontal,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { storyColumns, priorities, priorityFor } from './constants';
 import type {
@@ -100,6 +110,7 @@ export function StoryDetailDrawer({
   const [resolveModalOpen, setResolveModalOpen] = useState(false);
   const [resolveCloseItems, setResolveCloseItems] = useState(true);
   const [handoffMode, setHandoffMode] = useState<'combined' | 'per_item'>('combined');
+  const [handoffExpanded, setHandoffExpanded] = useState(false);
   const [handoffStatus, setHandoffStatus] = useState<string | null>(null);
 
   useMemo(() => {
@@ -163,8 +174,8 @@ export function StoryDetailDrawer({
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0 overflow-y-auto">
-        <div className="p-5 flex flex-col gap-4 h-full overflow-auto">
+      <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0">
+        <div className="p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
               Story · {story.origin === 'ai_suggested' ? 'AI-suggested' : 'Manual'}
@@ -201,11 +212,11 @@ export function StoryDetailDrawer({
           {onSaveNarrative && (
             <div
               className="p-3 bg-muted flex flex-col gap-2"
-              style={{ borderLeft: '3px solid hsl(var(--accent-warm))' }}
+              style={{ borderLeft: '3px solid hsl(var(--foreground))' }}
             >
               <div
                 className="flex items-center gap-2 text-[0.65rem] font-bold uppercase"
-                style={{ color: 'hsl(var(--accent-warm))', letterSpacing: 0.5 }}
+                style={{ color: 'hsl(var(--foreground))', letterSpacing: 0.5 }}
               >
                 <Sparkles size={12} />
                 Story {story.narrative_edited ? '· edited' : ''}
@@ -391,35 +402,24 @@ export function StoryDetailDrawer({
                       {item.feedback_status} · {item.data.category}
                     </span>
                   </div>
-                  {handoffMode === 'per_item' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => handlePerItemCopy(item.id, 'feedback')}
-                      aria-label="Copy prompt"
-                    >
-                      <Copy size={14} />
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => onOpenMember(item.id, 'feedback')}
-                    aria-label="Open item"
-                  >
-                    <ExternalLink size={14} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => onRemoveMember(item.id)}
-                    aria-label="Remove from story"
-                  >
-                    <Trash2 size={14} />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <MoreHorizontal size={14} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onOpenMember(item.id, 'feedback')}>
+                        <ExternalLink size={12} className="mr-2" /> Open
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handlePerItemCopy(item.id, 'feedback')}>
+                        <Copy size={12} className="mr-2" /> Copy prompt
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onRemoveMember(item.id)} className="text-destructive">
+                        <Trash2 size={12} className="mr-2" /> Remove
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))}
               {errorMembers.map((item) => (
@@ -436,35 +436,24 @@ export function StoryDetailDrawer({
                       {item.data.service} · {item.occurrence_count} occurrences
                     </span>
                   </div>
-                  {handoffMode === 'per_item' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => handlePerItemCopy(item.id, 'api_error')}
-                      aria-label="Copy prompt"
-                    >
-                      <Copy size={14} />
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => onOpenMember(item.id, 'api_error')}
-                    aria-label="Open item"
-                  >
-                    <ExternalLink size={14} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => onRemoveMember(item.id)}
-                    aria-label="Remove from story"
-                  >
-                    <Trash2 size={14} />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <MoreHorizontal size={14} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onOpenMember(item.id, 'api_error')}>
+                        <ExternalLink size={12} className="mr-2" /> Open
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handlePerItemCopy(item.id, 'api_error')}>
+                        <Copy size={12} className="mr-2" /> Copy prompt
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onRemoveMember(item.id)} className="text-destructive">
+                        <Trash2 size={12} className="mr-2" /> Remove
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))}
               {openItems > 0 && (
@@ -475,40 +464,49 @@ export function StoryDetailDrawer({
             </div>
           </div>
 
-          <div>
-            <p className="text-sm font-semibold mb-2">Handoff to Claude / GitHub</p>
-            <div className="flex items-center gap-2 mb-2">
-              <Button
-                size="sm"
-                variant={handoffMode === 'combined' ? 'default' : 'outline'}
-                onClick={() => setHandoffMode('combined')}
-              >
-                Combined prompt
-              </Button>
-              <Button
-                size="sm"
-                variant={handoffMode === 'per_item' ? 'default' : 'outline'}
-                onClick={() => setHandoffMode('per_item')}
-              >
-                Per-item
-              </Button>
-            </div>
-            {handoffMode === 'combined' ? (
-              <Button size="sm" onClick={handleCombinedCopy}>
-                <Copy size={14} />
-                Copy combined prompt
-              </Button>
-            ) : (
-              <span className="text-xs text-muted-foreground">
-                Use the copy icon on each member above.
-              </span>
-            )}
-            {handoffStatus && (
-              <span className="text-xs text-muted-foreground block mt-1">{handoffStatus}</span>
-            )}
-          </div>
+          <Collapsible open={handoffExpanded} onOpenChange={setHandoffExpanded}>
+            <button
+              type="button"
+              onClick={() => setHandoffExpanded(!handoffExpanded)}
+              className="flex items-center gap-1.5 text-sm font-semibold cursor-pointer w-full"
+            >
+              {handoffExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              Advanced handoff
+            </button>
+            <CollapsibleContent className="mt-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={handoffMode === 'combined' ? 'default' : 'outline'}
+                  onClick={() => setHandoffMode('combined')}
+                >
+                  Combined prompt
+                </Button>
+                <Button
+                  size="sm"
+                  variant={handoffMode === 'per_item' ? 'default' : 'outline'}
+                  onClick={() => setHandoffMode('per_item')}
+                >
+                  Per-item
+                </Button>
+              </div>
+              {handoffMode === 'combined' ? (
+                <Button size="sm" onClick={handleCombinedCopy}>
+                  <Copy size={14} />
+                  Copy combined prompt
+                </Button>
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  Use the ··· menu on each member above.
+                </span>
+              )}
+              {handoffStatus && (
+                <span className="text-xs text-muted-foreground block">{handoffStatus}</span>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
 
-          <div className="mt-auto flex gap-2 items-center flex-wrap">
+          <div className="flex gap-2 items-center flex-wrap">
             <Badge style={{ backgroundColor: prio.color, color: 'white' }}>{prio.short}</Badge>
             {assignee && <Badge variant="secondary">{assignee.display_name ?? 'assigned'}</Badge>}
           </div>

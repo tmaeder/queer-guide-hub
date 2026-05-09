@@ -10,12 +10,12 @@ MEILI_MASTER_KEY="${MEILI_MASTER_KEY:?Set MEILI_MASTER_KEY}"
 meili() {
   local method="$1" path="$2" body="${3:-}"
   if [ -n "$body" ]; then
-    curl -s -X "$method" "${MEILI_URL}${path}" \
+    curl -s ${MEILI_CURL_OPTS:-} -X "$method" "${MEILI_URL}${path}" \
       -H "Authorization: Bearer ${MEILI_MASTER_KEY}" \
       -H "Content-Type: application/json" \
       -d "$body"
   else
-    curl -s -X "$method" "${MEILI_URL}${path}" \
+    curl -s ${MEILI_CURL_OPTS:-} -X "$method" "${MEILI_URL}${path}" \
       -H "Authorization: Bearer ${MEILI_MASTER_KEY}"
   fi
   echo

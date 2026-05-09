@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Merge, X, CheckCircle, Wand2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -16,7 +16,6 @@ type EntityFilter = 'all' | 'venue' | 'event' | 'place' | 'stay';
 
 export default function DedupDecisionsTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all');
 
   const { data: rows = [], isLoading } = useQuery<DedupRow[]>({
@@ -29,7 +28,7 @@ export default function DedupDecisionsTab() {
     mutationFn: ({ id, decision }: { id: string; decision: 'merge' | 'skip' }) =>
       setDedupDecision(id, decision),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dedup-decisions'] }),
-    onError: (e: Error) => toast({ title: 'Update failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Update failed: ${e.message}`),
   });
 
   const autoResolve = useMutation({
@@ -42,10 +41,10 @@ export default function DedupDecisionsTab() {
       return data as number;
     },
     onSuccess: (n) => {
-      toast({ title: `Auto-resolved ${n} decisions` });
+      toast.success(`Auto-resolved ${n} decisions`);
       qc.invalidateQueries({ queryKey: ['dedup-decisions'] });
     },
-    onError: (e: Error) => toast({ title: 'Auto-resolve failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Auto-resolve failed: ${e.message}`),
   });
 
   const counts = useMemo(() => {

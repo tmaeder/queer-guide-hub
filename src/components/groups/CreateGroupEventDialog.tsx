@@ -194,6 +194,7 @@ export function CreateGroupEventDialog({ onCreateEvent, isCreating }: CreateGrou
                   <SelectItem value="sports">Sports</SelectItem>
                   <SelectItem value="cultural">Cultural</SelectItem>
                   <SelectItem value="educational">Educational</SelectItem>
+                  <SelectItem value="cruise">Cruise</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>

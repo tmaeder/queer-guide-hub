@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronUp, Clock, Github, Camera, AlertTriangle, Layers } from 'lucide-react';
+import { Clock, Github, AlertTriangle, Layers } from 'lucide-react';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
 import { priorityFor } from './constants';
@@ -39,10 +39,10 @@ interface Props {
  */
 export function FeedbackCard({
   item,
-  voteCount,
+  voteCount: _voteCount,
   selected,
   focused,
-  watchers,
+  watchers: _watchers,
   assignee,
   story,
   onStoryClick,
@@ -59,7 +59,7 @@ export function FeedbackCard({
   const isForwarded = !!item.github_issue_url;
   const withClaude = isForwarded && item.feedback_status !== 'done';
   const errorCount = item.data.context?.errors?.length ?? 0;
-  const hasScreenshot = !!item.data.screenshot_url;
+  const _hasScreenshot = !!item.data.screenshot_url;
   // Handoff chip beats GitHub chip when both are set — handoffs are the
   // primary signal for "this has been passed to someone".
   const handoff = latestHandoff(item);
@@ -135,16 +135,16 @@ export function FeedbackCard({
             style={{
               width: 7,
               height: 7,
-              background: 'hsl(var(--accent-warm))',
+              background: 'hsl(var(--foreground))',
               animation: 'feedback-pulse 1.8s infinite',
             }}
           />
         )}
         {isNew && (
           <style>{`@keyframes feedback-pulse {
-            0% { box-shadow: 0 0 0 0 hsl(var(--accent-warm) / 0.6); }
-            70% { box-shadow: 0 0 0 6px hsl(var(--accent-warm) / 0); }
-            100% { box-shadow: 0 0 0 0 hsl(var(--accent-warm) / 0); }
+            0% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0.6); }
+            70% { box-shadow: 0 0 0 6px hsl(var(--foreground) / 0); }
+            100% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0); }
           }`}</style>
         )}
 
@@ -218,17 +218,16 @@ export function FeedbackCard({
           </div>
         </div>
 
-        {/* Footer — single row, icons only, everything tooltipped */}
+        {/* Footer row 1 — time/SLA + assignee */}
         <div
           className="flex items-center gap-1.5 text-muted-foreground"
-          style={{ fontSize: '0.6rem' }}
+          style={{ fontSize: '0.65rem' }}
         >
           <Tooltip>
             <TooltipTrigger asChild>
               <span
                 className="inline-flex items-center flex-shrink-0"
                 style={{
-                  fontSize: '0.6rem',
                   color: slaColor ?? 'inherit',
                   fontWeight: slaColor ? 700 : 400,
                   gap: 2,
@@ -322,11 +321,11 @@ export function FeedbackCard({
                     background:
                       story.status === 'resolved'
                         ? 'hsl(var(--muted))'
-                        : 'hsl(var(--accent-warm) / 0.15)',
+                        : 'hsl(var(--foreground) / 0.15)',
                     color:
                       story.status === 'resolved'
                         ? 'hsl(var(--muted-foreground))'
-                        : 'hsl(var(--accent-warm))',
+                        : 'hsl(var(--foreground))',
                     borderRadius: 4,
                     maxWidth: 90,
                     textOverflow: 'ellipsis',
@@ -383,44 +382,6 @@ export function FeedbackCard({
 
           <div className="flex-1" />
 
-          {watchers.length > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center" style={{ marginLeft: 0 }}>
-                  {watchers.slice(0, 2).map((w, i) => (
-                    <Avatar
-                      key={w.user_id}
-                      className="border border-background"
-                      style={{
-                        width: 14,
-                        height: 14,
-                        marginLeft: i === 0 ? 0 : -4,
-                      }}
-                    >
-                      {w.avatar_url && <AvatarImage src={w.avatar_url} />}
-                      <AvatarFallback style={{ fontSize: '0.5rem' }}>
-                        {(w.display_name || '?').slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                  {watchers.length > 2 && (
-                    <Avatar
-                      className="border border-background"
-                      style={{ width: 14, height: 14, marginLeft: -4 }}
-                    >
-                      <AvatarFallback style={{ fontSize: '0.5rem' }}>
-                        +{watchers.length - 2}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {`Viewing: ${watchers.map((w) => w.display_name || w.user_id).join(', ')}`}
-              </TooltipContent>
-            </Tooltip>
-          )}
-
           {assignee && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -437,6 +398,101 @@ export function FeedbackCard({
             </Tooltip>
           )}
         </div>
+
+        {/* Footer row 2 — story, handoff/github, errors (conditional) */}
+        {(story || handoffChip || isForwarded || errorCount > 0) && (
+          <div
+            className="flex items-center gap-1.5 text-muted-foreground mt-1"
+            style={{ fontSize: '0.65rem' }}
+          >
+            {story && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStoryClick?.(story.story_id);
+                    }}
+                    className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
+                    style={{
+                      gap: 2,
+                      paddingLeft: 4,
+                      paddingRight: 4,
+                      paddingTop: 1,
+                      paddingBottom: 1,
+                      fontSize: '0.55rem',
+                      background:
+                        story.status === 'resolved'
+                          ? 'hsl(var(--muted))'
+                          : 'hsl(var(--accent-warm) / 0.15)',
+                      color:
+                        story.status === 'resolved'
+                          ? 'hsl(var(--muted-foreground))'
+                          : 'hsl(var(--accent-warm))',
+                      borderRadius: 4,
+                      maxWidth: 90,
+                      textOverflow: 'ellipsis',
+                      cursor: onStoryClick ? 'pointer' : 'default',
+                    }}
+                  >
+                    <Layers style={{ width: 9, height: 9 }} />
+                    {story.title}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{`Part of story: ${story.title}`}</TooltipContent>
+              </Tooltip>
+            )}
+
+            {handoffChip ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: handoffChip.bg,
+                      flexShrink: 0,
+                    }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {handoff
+                    ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}`
+                    : ''}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              isForwarded && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
+                  </TooltipContent>
+                </Tooltip>
+              )
+            )}
+
+            {errorCount > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="inline-flex items-center flex-shrink-0"
+                    style={{ gap: 1, color: '#ef4444' }}
+                  >
+                    <AlertTriangle style={{ width: 10, height: 10 }} />
+                    {errorCount}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {`${errorCount} console error${errorCount === 1 ? '' : 's'}`}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

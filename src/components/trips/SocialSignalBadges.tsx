@@ -24,7 +24,7 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
             <TooltipTrigger asChild>
               <span
                 className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold"
-                style={{ backgroundColor: 'rgba(244, 63, 94, 0.12)', color: '#e11d48' }}
+                style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
               >
                 <Heart size={10} fill="currentColor" />
                 <span className="text-[11px] font-semibold">

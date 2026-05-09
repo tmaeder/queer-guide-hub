@@ -73,7 +73,7 @@ import {
   validateSourcePath,
   detectLoop,
 } from '@/lib/redirects/validation';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { fetchRedirectById } from '@/hooks/usePageFetchers';
 import { format } from 'date-fns';
 
@@ -103,7 +103,6 @@ export default function AdminRedirects() {
   const navigate = useNavigate();
   const { createRedirect, updateRedirect, deleteRedirect, _toggleEnabled, fetchEvents, bulkImport } =
     useRedirects();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Dialog state
@@ -121,7 +120,7 @@ export default function AdminRedirects() {
 
   const handleCopyShortUrl = (slug: string) => {
     navigator.clipboard.writeText(`https://queer.guide/go/${slug}`);
-    toast({ title: 'Short URL copied!' });
+    toast.success('Short URL copied!');
   };
 
   const handleShowEvents = async (redirectId: string) => {
@@ -136,7 +135,7 @@ export default function AdminRedirects() {
     if (!confirm('Delete this redirect? This will also remove all analytics events.')) return;
     const ok = await deleteRedirect(row.id);
     if (ok) {
-      toast({ title: 'Redirect deleted' });
+      toast.success('Redirect deleted');
       doRefresh();
     }
   };
@@ -409,14 +408,14 @@ export default function AdminRedirects() {
           if (editingRedirect) {
             const updated = await updateRedirect(editingRedirect.id, formData);
             if (updated) {
-              toast({ title: 'Redirect updated' });
+              toast.success('Redirect updated');
               doRefresh();
               setDialogOpen(false);
             }
           } else {
             const created = await createRedirect(formData);
             if (created) {
-              toast({ title: 'Redirect created' });
+              toast.success('Redirect created');
               doRefresh();
               setDialogOpen(false);
             }

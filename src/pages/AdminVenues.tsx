@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useVenues } from '@/hooks/useVenues';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -77,6 +77,8 @@ interface VenueRow {
   country_id: string | null;
   created_at: string;
   created_by: string | null;
+  is_organizer: boolean;
+  organizer_handles: Record<string, string> | null;
 }
 
 const columnHelper = createColumnHelper<VenueRow>();
@@ -115,7 +117,6 @@ const commonAmenities = [
 export default function AdminVenues() {
   const { user } = useAuth();
   const { createVenue, updateVenue, deleteVenue, refetch } = useVenues(false);
-  const { toast } = useToast();
   const { resolveAddress } = useAddressResolver();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -153,6 +154,8 @@ export default function AdminVenues() {
     images: [] as string[],
     city_id: undefined as string | undefined,
     country_id: undefined as string | undefined,
+    is_organizer: false,
+    organizer_handles: {} as Record<string, string>,
   });
 
   // --- Form handlers ---
@@ -180,6 +183,8 @@ export default function AdminVenues() {
       images: [],
       city_id: undefined,
       country_id: undefined,
+      is_organizer: false,
+      organizer_handles: {},
     });
     setEditingVenue(null);
   };
@@ -209,6 +214,8 @@ export default function AdminVenues() {
       images: venue.images || [],
       city_id: venue.city_id ?? undefined,
       country_id: venue.country_id ?? undefined,
+      is_organizer: venue.is_organizer || false,
+      organizer_handles: (venue.organizer_handles as Record<string, string>) || {},
     });
     setIsCreateDialogOpen(true);
   };
@@ -216,11 +223,7 @@ export default function AdminVenues() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      toast({
-        title: 'Validation Error',
-        description: 'Venue name is required',
-        variant: 'destructive',
-      });
+      toast.error('Validation Error: Venue name is required');
       return;
     }
     try {
@@ -245,6 +248,8 @@ export default function AdminVenues() {
         images: formData.images.length > 0 ? formData.images : [],
         is_featured: formData.is_featured,
         verified: formData.verified,
+        is_organizer: formData.is_organizer,
+        organizer_handles: Object.keys(formData.organizer_handles).length > 0 ? formData.organizer_handles : null,
         created_by: user?.id,
       };
       if (formData.city_id) venueData.city_id = formData.city_id;
@@ -255,15 +260,11 @@ export default function AdminVenues() {
         : await createVenue(venueData);
       if (result.error) throw new Error(result.error);
 
-      toast({ title: 'Success', description: editingVenue ? 'Venue updated' : 'Venue created' });
+      toast.success(`Success: ${editingVenue}`);
       resetForm();
       setIsCreateDialogOpen(false);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save venue',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -272,9 +273,9 @@ export default function AdminVenues() {
     try {
       const { error } = await deleteVenue(venue.id);
       if (error) throw new Error(error);
-      toast({ title: 'Success', description: 'Venue deleted' });
+      toast.success('Success: Venue deleted');
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete venue', variant: 'destructive' });
+      toast.error('Error: Failed to delete venue');
     }
   };
 
@@ -287,7 +288,7 @@ export default function AdminVenues() {
         body: config ?? { trigger: 'manual' },
       });
       if (error) throw error;
-      toast({ title: 'Import Completed', description: data.message });
+      toast.success(`Import Completed: ${data.message}`);
     } catch {
       toast({
         title: 'Import Failed',
@@ -353,7 +354,7 @@ export default function AdminVenues() {
   // --- Enrichment ---
   const handleEnrichVenue = async () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Error', description: 'Enter a venue name first', variant: 'destructive' });
+      toast.error('Error: Enter a venue name first');
       return;
     }
     setIsEnrichingVenue(true);
@@ -367,14 +368,10 @@ export default function AdminVenues() {
         setEnrichmentVenueName(formData.name);
         setShowEnrichmentPreview(true);
       } else {
-        toast({
-          title: 'No Results',
-          description: 'No enrichment data found',
-          variant: 'destructive',
-        });
+        toast.error('No Results: No enrichment data found');
       }
     } catch {
-      toast({ title: 'Error', description: 'Failed to enrich venue', variant: 'destructive' });
+      toast.error('Error: Failed to enrich venue');
     } finally {
       setIsEnrichingVenue(false);
     }
@@ -392,7 +389,7 @@ export default function AdminVenues() {
     });
     setFormData(updated);
     setShowEnrichmentPreview(false);
-    toast({ title: 'Success', description: 'Venue data enriched' });
+    toast.success('Success: Venue data enriched');
   };
 
   // --- Export ---
@@ -557,7 +554,7 @@ export default function AdminVenues() {
     () => ({
       tableName: 'venues',
       select:
-        'id,name,description,category,address,city,state,country,postal_code,phone,email,website,instagram,is_featured,verified,price_range,foursquare_rating,latitude,longitude,amenities,tags,images,city_id,country_id,created_at,created_by',
+        'id,name,description,category,address,city,state,country,postal_code,phone,email,website,instagram,is_featured,verified,price_range,foursquare_rating,latitude,longitude,amenities,tags,images,city_id,country_id,created_at,created_by,is_organizer,organizer_handles',
       columns,
       defaultSort: { column: 'name', direction: 'asc' as const },
       defaultPageSize: 50,
@@ -594,6 +591,12 @@ export default function AdminVenues() {
           type: 'boolean',
           column: 'verified',
         },
+        {
+          key: 'is_organizer',
+          label: 'Organizer',
+          type: 'boolean',
+          column: 'is_organizer',
+        },
       ],
       bulkEditFields: [
         {
@@ -608,6 +611,7 @@ export default function AdminVenues() {
         },
         { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
         { key: 'verified', label: 'Verified', type: 'boolean', column: 'verified' },
+        { key: 'is_organizer', label: 'Organizer', type: 'boolean', column: 'is_organizer' },
       ],
       rowActions: [
         {
@@ -861,7 +865,7 @@ export default function AdminVenues() {
             <div className="flex flex-col gap-4">
               <h3 className="font-semibold">Settings
               </h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <div>
                   <Label>Price Range</Label>
                   <Select
@@ -899,8 +903,41 @@ export default function AdminVenues() {
                   />
                   <Label htmlFor="verified">Verified</Label>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="is_organizer"
+                    checked={formData.is_organizer}
+                    onCheckedChange={(c) =>
+                      setFormData((prev) => ({ ...prev, is_organizer: c as boolean }))
+                    }
+                  />
+                  <Label htmlFor="is_organizer">Organizer</Label>
+                </div>
               </div>
             </div>
+
+            {formData.is_organizer && (
+              <div className="flex flex-col gap-4">
+                <h3 className="font-semibold">Organizer Handles</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {["instagram", "telegram", "bluesky", "x", "website"].map((handle) => (
+                    <div key={handle}>
+                      <Label>{handle.charAt(0).toUpperCase() + handle.slice(1)}</Label>
+                      <Input
+                        placeholder={handle === "website" ? "https://..." : "@handle"}
+                        value={formData.organizer_handles[handle] || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            organizer_handles: { ...prev.organizer_handles, [handle]: e.target.value },
+                          }))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Tags */}
             <div className="flex flex-col gap-4">

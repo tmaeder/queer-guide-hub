@@ -129,8 +129,8 @@ export function ReservationsTab({ tripId }: Props) {
           <ReservationSuggestionsPanel tripId={tripId} />
         </div>
         <div className="rounded-3xl border border-dashed border-muted px-6 py-12 text-center md:py-20">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[hsl(var(--brand)/0.1)]">
-            <Ticket size={26} style={{ color: 'hsl(var(--brand))' }} />
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[hsl(var(--foreground)/0.1)]">
+            <Ticket size={26} style={{ color: 'hsl(var(--foreground))' }} />
           </div>
           <h3 className="mb-1 text-lg font-bold">
             {t('trips.reservations.emptyTitle')}
@@ -166,13 +166,13 @@ export function ReservationsTab({ tripId }: Props) {
     <div className="flex flex-col gap-6">
       {/* Next up card */}
       {nextUp && (
-        <div className="flex items-center gap-3 bg-[hsl(var(--brand)/0.08)] p-4">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[hsl(var(--brand))] text-[hsl(var(--brand-foreground,white))]">
+        <div className="flex items-center gap-3 bg-[hsl(var(--foreground)/0.08)] p-4">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[hsl(var(--foreground))] text-[hsl(var(--background))]">
             <CalendarClock size={18} />
           </div>
           <div className="min-w-0 flex-1">
             <span
-              className="block text-[0.68rem] font-bold uppercase text-[hsl(var(--brand))]"
+              className="block text-[0.68rem] font-bold uppercase text-[hsl(var(--foreground))]"
               style={{ letterSpacing: '0.06em' }}
             >
               {t('trips.reservations.nextUp')}
@@ -200,7 +200,6 @@ export function ReservationsTab({ tripId }: Props) {
               </div>
               <h4
                 className="text-sm font-bold"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
               >
                 {typeLabel(type)}
               </h4>

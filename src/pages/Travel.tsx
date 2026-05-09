@@ -281,7 +281,7 @@ export default function Travel() {
       {activeTab === 'flights' && (
         <div className="border border-border bg-background p-6 mb-8 rounded">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
+            <TrendingUp style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
             <h2 className="text-xl font-bold tracking-tight">
               {originCity ? `Popular Deals from ${originCity}` : 'Popular Flight Deals'}
             </h2>
@@ -316,7 +316,7 @@ export default function Travel() {
       {activeTab === 'hotels' && (
         <div className="border border-border bg-background p-6 mb-8 rounded">
           <div className="flex items-center gap-2 mb-4">
-            <Hotel style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
+            <Hotel style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
             <h2 className="text-xl font-bold tracking-tight">
               {hotelSearch?.city ? `Hotels in ${hotelSearch.city}` : 'Search for Hotels'}
             </h2>
@@ -386,7 +386,7 @@ export default function Travel() {
       {activeTab === 'activities' && (
         <div className="border border-border bg-background p-6 mb-8 rounded">
           <div className="flex items-center gap-2 mb-4">
-            <Ticket style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
+            <Ticket style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
             <h2 className="text-xl font-bold tracking-tight">
               {activityCity ? `Activities in ${activityCity}` : 'Search for Activities'}
             </h2>

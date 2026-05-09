@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { listFromIn } from '@/hooks/usePageFetchers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { GitMerge, ChevronDown, ChevronUp } from 'lucide-react';
 
 // Surfaces near-duplicate tags found by find_unified_tag_duplicates() (pg_trgm).
@@ -23,7 +23,6 @@ export function TagMergeCandidates() {
   const [open, setOpen] = useState(false);
   const [threshold, setThreshold] = useState(0.6);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const { data: dups, isLoading } = useQuery({
     queryKey: ['unified-tag-duplicates', threshold],
@@ -61,11 +60,11 @@ export function TagMergeCandidates() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Tag merged' });
+      toast.success('Tag merged');
       queryClient.invalidateQueries({ queryKey: ['unified-tag-duplicates'] });
       queryClient.invalidateQueries({ queryKey: ['centralized-tags'] });
     },
-    onError: (e: Error) => toast({ title: 'Merge failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Merge failed: ${e.message}`),
   });
 
   return (

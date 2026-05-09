@@ -136,13 +136,13 @@ export function TripPolls({ tripId }: Props) {
                           if (!isClosed && user) handleVote(poll.id, opt.id);
                         }}
                         className={`relative bg-muted rounded-md px-3 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
-                        style={hasVoted ? { outline: '2px solid hsl(var(--brand))', outlineOffset: -2 } : undefined}
+                        style={hasVoted ? { outline: '2px solid hsl(var(--foreground))', outlineOffset: -2 } : undefined}
                       >
                         <div
                           className="absolute left-0 top-0 bottom-0 transition-all"
                           style={{
                             width: `${pct}%`,
-                            backgroundColor: hasVoted ? 'hsl(var(--brand))' : 'hsl(var(--accent))',
+                            backgroundColor: hasVoted ? 'hsl(var(--foreground))' : 'hsl(var(--accent))',
                             opacity: hasVoted ? 0.2 : 0.5,
                           }}
                         />

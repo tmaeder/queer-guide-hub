@@ -78,7 +78,7 @@ const CardImage: React.FC<CardImageProps> = ({
       >
         {FallbackIcon && (
           <FallbackIcon
-            style={{ width: 28, height: 28, color: 'hsl(var(--brand))', opacity: 0.5 }}
+            className="h-7 w-7 text-muted-foreground"
             aria-hidden="true"
           />
         )}

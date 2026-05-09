@@ -72,7 +72,7 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
                   className="block w-full text-left px-2 py-1 transition-colors hover:text-foreground"
                   style={{
                     border: 'none',
-                    borderLeft: `2px solid ${activeSection === s.id ? 'hsl(var(--brand))' : 'transparent'}`,
+                    borderLeft: `2px solid ${activeSection === s.id ? 'hsl(var(--foreground))' : 'transparent'}`,
                     backgroundColor: 'transparent',
                     color: activeSection === s.id ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
                     fontWeight: activeSection === s.id ? 600 : 400,
@@ -135,7 +135,7 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
           <div className="mt-12 pt-6 border-t border-border">
             <p className="text-sm text-muted-foreground">
               Questions? We're real humans at{' '}
-              <a href="mailto:legal@queer.guide" className="hover:opacity-85" style={{ color: 'hsl(var(--brand))' }}>
+              <a href="mailto:legal@queer.guide" className="hover:opacity-85" style={{ color: 'hsl(var(--foreground))' }}>
                 legal@queer.guide
               </a>
             </p>

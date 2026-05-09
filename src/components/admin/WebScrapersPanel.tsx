@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Globe, MapPin, Calendar, Play, RefreshCw, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -51,7 +51,6 @@ const NODE_SCRAPERS = [
 ] as const;
 
 export const WebScrapersPanel = () => {
-  const { toast } = useToast();
   const [online, setOnline] = useState<boolean | null>(null);
   const [running, setRunning] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, { count: number; inserted: number }>>({});

@@ -84,7 +84,7 @@ export default function MyGroups() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>
+              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
                 Total Groups
               </CardTitle>
             </CardHeader>
@@ -98,13 +98,13 @@ export default function MyGroups() {
 
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>
+              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
                 Owned
               </CardTitle>
             </CardHeader>
             <CardContent style={{ paddingTop: 0 }}>
               <div className="flex items-center gap-2">
-                <Crown className="h-4 w-4" style={{ color: '#eab308' }} />
+                <Crown className="h-4 w-4" />
                 <span className="text-2xl font-bold">{stats.ownedGroups}</span>
               </div>
             </CardContent>
@@ -112,13 +112,13 @@ export default function MyGroups() {
 
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>
+              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
                 Member Of
               </CardTitle>
             </CardHeader>
             <CardContent style={{ paddingTop: 0 }}>
               <div className="flex items-center gap-2">
-                <UserCheck className="h-4 w-4" style={{ color: '#22c55e' }} />
+                <UserCheck className="h-4 w-4" />
                 <span className="text-2xl font-bold">{stats.memberGroups}</span>
               </div>
             </CardContent>
@@ -126,13 +126,13 @@ export default function MyGroups() {
 
           <Card>
             <CardHeader style={{ paddingBottom: '8px' }}>
-              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: '#666' }}>
+              <CardTitle style={{ fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>
                 Private
               </CardTitle>
             </CardHeader>
             <CardContent style={{ paddingTop: 0 }}>
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4" style={{ color: '#3b82f6' }} />
+                <Settings className="h-4 w-4" />
                 <span className="text-2xl font-bold">{stats.privateGroups}</span>
               </div>
             </CardContent>

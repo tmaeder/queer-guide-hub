@@ -181,7 +181,7 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
               <CardHeader>
                 <CardTitle>
                   {importResult.success ? (
-                    <CheckCircle className="w-5 h-5 inline-block mr-2 text-green-600" />
+                    <CheckCircle className="w-5 h-5 inline-block mr-2 text-foreground" />
                   ) : (
                     <XCircle className="w-5 h-5 inline-block mr-2 text-destructive" />
                   )}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -41,7 +41,6 @@ function generatePassword(): string {
 
 export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     email: '',
@@ -69,11 +68,11 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
 
   const handleSubmit = async () => {
     if (!form.email.trim()) {
-      toast({ title: 'Email is required', variant: 'destructive' });
+      toast.error('Email is required');
       return;
     }
     if (form.password.length < 8) {
-      toast({ title: 'Password must be at least 8 characters', variant: 'destructive' });
+      toast.error('Password must be at least 8 characters');
       return;
     }
 
@@ -103,11 +102,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       reset();
       onOpenChange(false);
     } catch (err: unknown) {
-      toast({
-        title: 'Failed to create user',
-        description: err instanceof Error ? err.message : 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error(`Failed to create user: ${err}`);
     } finally {
       setLoading(false);
     }

@@ -73,7 +73,7 @@ export default function Feed() {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Heart className="h-6 w-6 mx-auto mb-2" style={{ color: 'hsl(var(--brand))' }} />
+                  <Heart className="h-6 w-6 mx-auto mb-2" style={{ color: 'hsl(var(--foreground))' }} />
                   <h5 className="text-2xl font-bold">
                     {posts.reduce((sum, post) => sum + (post.likes_count || 0), 0)}
                   </h5>

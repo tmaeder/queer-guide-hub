@@ -166,9 +166,9 @@ export function TripCard({ trip }: Props) {
 
   const safetyBg =
     safetyLevel === 'safe'
-      ? 'bg-green-600'
+      ? 'bg-foreground'
       : safetyLevel === 'caution'
-        ? 'bg-yellow-500'
+        ? 'bg-muted-foreground'
         : 'bg-destructive';
 
   const visibleMembers = members.slice(0, 4);
@@ -249,7 +249,6 @@ export function TripCard({ trip }: Props) {
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
               letterSpacing: '-0.01em',
             }}
           >
@@ -280,8 +279,8 @@ export function TripCard({ trip }: Props) {
                 }}
                 className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.6875rem] font-bold uppercase border-none cursor-pointer"
                 style={{
-                  background: 'hsl(var(--brand))',
-                  color: 'hsl(var(--brand-foreground))',
+                  background: 'hsl(var(--foreground))',
+                  color: 'hsl(var(--background))',
                   letterSpacing: '0.04em',
                   fontFamily: 'inherit',
                 }}
@@ -319,8 +318,8 @@ export function TripCard({ trip }: Props) {
               style={
                 status.brand
                   ? {
-                      background: 'hsl(var(--brand))',
-                      color: 'hsl(var(--brand-foreground))',
+                      background: 'hsl(var(--foreground))',
+                      color: 'hsl(var(--background))',
                     }
                   : undefined
               }

@@ -11,7 +11,7 @@ interface Props {
  * system rule — no gradients with alpha).
  */
 export function TripProgressRing({ trip, size = 72 }: Props) {
-  const brand = 'hsl(var(--brand))';
+  const brand = 'hsl(var(--foreground))';
   const divider = 'hsl(var(--border))';
   const { percent } = computeTripProgress(trip);
 
@@ -51,7 +51,6 @@ export function TripProgressRing({ trip, size = 72 }: Props) {
       <div className="absolute inset-0 flex items-center justify-center flex-col">
         <span
           style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontWeight: 700,
             fontSize: size / 4,
             lineHeight: 1,

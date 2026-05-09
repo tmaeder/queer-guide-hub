@@ -74,7 +74,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
         style={{
           paddingTop: '133.33%',
           background:
-            'linear-gradient(135deg, hsl(var(--brand) / 0.18) 0%, hsl(var(--brand) / 0.10) 100%)',
+            'linear-gradient(135deg, hsl(var(--foreground) / 0.18) 0%, hsl(var(--foreground) / 0.10) 100%)',
         }}
       >
         {showImage ? (
@@ -91,7 +91,6 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className="w-[72px] h-[72px] rounded-full bg-background flex items-center justify-center font-bold text-foreground shadow"
-              style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '1.25rem' }}
             >
               {getInitials(personality.name)}
             </div>
@@ -103,7 +102,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
             className="absolute top-2 right-2 flex items-center gap-1 px-2 py-[3px] rounded-full bg-background text-foreground shadow pointer-events-none select-none"
             style={{ backdropFilter: 'blur(4px)', fontSize: '0.75rem', fontWeight: 600 }}
           >
-            <Star size={12} fill="hsl(var(--brand))" color="hsl(var(--brand))" aria-hidden="true" />
+            <Star size={12} fill="hsl(var(--foreground))" color="hsl(var(--foreground))" aria-hidden="true" />
             <span>Featured</span>
           </div>
         )}
@@ -114,7 +113,6 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
         <h3
           className="text-foreground overflow-hidden text-ellipsis whitespace-nowrap"
           style={{
-            fontFamily: '"Plus Jakarta Sans", sans-serif',
             fontWeight: 600,
             fontSize: '0.95rem',
             lineHeight: 1.3,

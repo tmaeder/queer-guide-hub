@@ -30,7 +30,7 @@ const SubmitHub = () => {
 
       <div className="text-center mb-8">
         <div className="flex justify-center mb-3">
-          <Heart style={{ width: 32, height: 32, color: '#ec4899' }} />
+          <Heart style={{ width: 32, height: 32 }} />
         </div>
         <h4 className="text-2xl font-bold mb-2">
           {t('pages.submit.title', 'Contribute to Queer Guide')}
@@ -63,19 +63,21 @@ const SubmitHub = () => {
           <CardContent>
             <div className="flex items-center gap-4">
               <div
-                className="flex items-center justify-center flex-shrink-0"
-                style={{ width: 44, height: 44, backgroundColor: '#ec489920' }}
+                                className="flex items-center justify-center flex-shrink-0 bg-muted"
+                                style={{ width: 44, height: 44 }}
+                className="flex items-center justify-center flex-shrink-0 bg-muted"
+                style={{ width: 44, height: 44 }}
               >
-                <Camera style={{ width: 22, height: 22, color: '#ec4899' }} />
+                <Camera style={{ width: 22, height: 22 }} />
               </div>
-              <div className="flex-1">
+              <div>
                 <p className="text-base font-semibold mb-0.5">Scan a Flyer</p>
                 <p className="text-sm text-muted-foreground">
                   Take a photo of an event flyer or venue card and we'll extract the details
                   automatically.
                 </p>
               </div>
-              <ArrowRight style={{ width: 18, height: 18, color: '#ec4899', flexShrink: 0 }} />
+              <ArrowRight style={{ width: 18, height: 18, flexShrink: 0 }} />
             </div>
           </CardContent>
         </Card>

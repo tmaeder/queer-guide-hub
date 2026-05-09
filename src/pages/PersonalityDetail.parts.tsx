@@ -98,8 +98,8 @@ function VerificationBadge({ status }: { status: Personality['verification_statu
           display: 'flex',
           alignItems: 'center',
           gap: '0.25rem',
-          backgroundColor: '#fef9e7',
-          color: '#a16207',
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--muted-foreground))',
         }}
       >
         Disputed
@@ -187,7 +187,7 @@ export function PersonalityHero({
             <div className="flex items-center gap-1">
               {personality.is_living ? (
                 <>
-                  <Heart style={{ height: 16, width: 16, color: '#16a34a' }} />
+                  <Heart style={{ height: 16, width: 16 }} />
                   <span>Living</span>
                 </>
               ) : (

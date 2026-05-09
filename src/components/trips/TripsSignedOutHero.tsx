@@ -35,8 +35,8 @@ const bullets: ValueBullet[] = [
 export function TripsSignedOutHero() {
   const { t } = useTranslation();
   const [authOpen, setAuthOpen] = useState(false);
-  const brand = 'hsl(var(--brand))';
-  const accent = '#F59E0B';
+  const brand = 'hsl(var(--foreground))';
+  const accent = 'hsl(var(--foreground))';
   const { data: templates, isLoading } = useTripTemplates();
   const previewTemplates = (templates ?? []).slice(0, 3);
 

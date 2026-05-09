@@ -2,59 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Self-hosted fonts (no external CDN) ────────────────────────────── */
+/* ── Self-hosted fonts (Inter only) ───────────────────────────────────
+   Plus Jakarta Sans was removed during the strict-monochrome overhaul
+   (refactor/bw-design-system). Inter ships in 4 woff2 files (latin/ext
+   × upright/italic), variable weight 100–900. */
 
-/* Plus Jakarta Sans — variable weight 200-800, latin */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-wght-normal.woff2') format('woff2');
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-/* Plus Jakarta Sans — variable weight 200-800, latin-ext */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-ext-wght-normal.woff2') format('woff2');
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
-    U+A720-A7FF;
-}
-
-/* Plus Jakarta Sans — variable weight 200-800, italic, latin */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-wght-italic.woff2') format('woff2');
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-/* Plus Jakarta Sans — variable weight 200-800, italic, latin-ext */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-ext-wght-italic.woff2') format('woff2');
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
-    U+A720-A7FF;
-}
-
-/* Inter — variable weight 100-900, latin */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -66,7 +18,6 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Inter — variable weight 100-900, latin-ext */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -79,7 +30,6 @@
     U+A720-A7FF;
 }
 
-/* Inter — variable weight 100-900, italic, latin */
 @font-face {
   font-family: 'Inter';
   font-style: italic;
@@ -91,7 +41,6 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Inter — variable weight 100-900, italic, latin-ext */
 @font-face {
   font-family: 'Inter';
   font-style: italic;
@@ -104,13 +53,17 @@
     U+A720-A7FF;
 }
 
-/* ── CSS Variables — Strict Monochrome + Accent ───────────────────── */
+/* ── CSS Variables — Strict Monochrome (Black & White only) ──────────
+   Only neutrals + a single semantic destructive red. The --cat-* family
+   are aliased to --foreground as documented placeholders for any future
+   admin chromatic palette (see CLAUDE.md). New code MUST use
+   --foreground or --primary directly. */
 
 :root {
   --background: 0 0% 100%;
   --foreground: 0 0% 4%;
 
-  --card: 0 0% 96%;
+  --card: 0 0% 100%;
   --card-foreground: 0 0% 4%;
 
   --popover: 0 0% 100%;
@@ -119,151 +72,138 @@
   --primary: 0 0% 4%;
   --primary-foreground: 0 0% 100%;
 
-  --brand: 346 87% 38%;
-  --brand-foreground: 0 0% 100%;
-
-  --accent-warm: 346 87% 38%;
-  --accent-warm-foreground: 0 0% 100%;
-
-  --secondary: 0 0% 40%;
+  --secondary: 0 0% 4%;
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 0 0% 94%;
-  /* WCAG 1.4.3 — was 40% (#666 ≈ 5.74:1 on white but ~3.9:1 on muted/action.hover).
-     Bumped to 35% so muted body text retains ≥4.5:1 over light tinted surfaces. */
+  --muted: 0 0% 96%;
   --muted-foreground: 0 0% 35%;
 
-  --accent: 0 0% 94%;
+  --accent: 0 0% 96%;
   --accent-foreground: 0 0% 4%;
 
-  /* P1-2 — error/warning are distinct red, NOT brand magenta. Matches muiTheme #b31b25. */
-  --destructive: 356 74% 40%;
+  /* Sole permitted hue: error semantics. */
+  --destructive: 0 70% 38%;
   --destructive-foreground: 0 0% 100%;
-
-  --warning: 356 74% 40%;
+  --warning: 0 70% 38%;
   --warning-foreground: 0 0% 100%;
 
+  /* Success / info collapse to neutral foreground — differentiated by icon + label, not color. */
   --success: 0 0% 4%;
   --success-foreground: 0 0% 100%;
 
-  --border: 0 0% 0% / 0;
-  --input: 0 0% 0% / 0;
-  --input-bg: 0 0% 96%;
-  --ring: 346 87% 38%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --input-bg: 0 0% 100%;
+  --ring: 0 0% 4%;
 
-  --sidebar-background: 0 0% 97%;
+  --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 0 0% 4%;
   --sidebar-primary: 0 0% 4%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 94%;
+  --sidebar-accent: 0 0% 96%;
   --sidebar-accent-foreground: 0 0% 4%;
-  --sidebar-border: 0 0% 0% / 0;
-  --sidebar-ring: 346 87% 38%;
+  --sidebar-border: 0 0% 88%;
+  --sidebar-ring: 0 0% 4%;
 
-  --transition-smooth: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  --radius: 0;
+  --transition-smooth: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ── Surface container hierarchy (flat tonal layering) ── */
+  /* Surface tonal layering (light) — five neutral steps. */
   --surface: 0 0% 100%;
   --surface-container-lowest: 0 0% 100%;
-  --surface-container-low: 0 0% 97%;
-  --surface-container: 0 0% 94%;
-  --surface-container-high: 0 0% 90%;
-  --surface-container-highest: 0 0% 86%;
-  --surface-dim: 0 0% 83%;
+  --surface-container-low: 0 0% 98%;
+  --surface-container: 0 0% 96%;
+  --surface-container-high: 0 0% 93%;
+  --surface-container-highest: 0 0% 90%;
+  --surface-dim: 0 0% 88%;
   --inverse-surface: 0 0% 4%;
 
-  /* ── Category accent ──
-     All categories share the brand accent today. If we ever differentiate
-     per category, redefine these individually here. New code should prefer
-     --brand directly; --cat-* exists for the categoryColors() helper. */
-  --cat-venues:      var(--brand);
-  --cat-events:      var(--brand);
-  --cat-marketplace: var(--brand);
-  --cat-places:      var(--brand);
-  --cat-hotels:      var(--brand);
-  --cat-travel:      var(--brand);
-  --cat-news:        var(--brand);
-  --cat-community:   var(--brand);
+  /* Category accents — all aliased to neutral foreground (no chromatic tint). */
+  --cat-venues:      var(--foreground);
+  --cat-events:      var(--foreground);
+  --cat-marketplace: var(--foreground);
+  --cat-places:      var(--foreground);
+  --cat-hotels:      var(--foreground);
+  --cat-travel:      var(--foreground);
+  --cat-news:        var(--foreground);
+  --cat-community:   var(--foreground);
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-toast: 1100;
+  --z-modal: 1200;
+  --z-skip-link: 2000;
+  --sidebar-width: 260px;
+  --admin-content-min-h: calc(100vh - 100px);
 }
 
 .dark {
   --background: 0 0% 4%;
-  --foreground: 0 0% 95%;
+  --foreground: 0 0% 96%;
 
-  --card: 0 0% 7%;
-  --card-foreground: 0 0% 95%;
+  --card: 0 0% 4%;
+  --card-foreground: 0 0% 96%;
 
   --popover: 0 0% 7%;
-  --popover-foreground: 0 0% 95%;
+  --popover-foreground: 0 0% 96%;
 
-  --primary: 0 0% 100%;
+  --primary: 0 0% 96%;
   --primary-foreground: 0 0% 4%;
 
-  --brand: 346 100% 65%;
-  --brand-foreground: 0 0% 4%;
-
-  --accent-warm: 346 100% 65%;
-  --accent-warm-foreground: 0 0% 4%;
-
-  --secondary: 0 0% 60%;
-  --secondary-foreground: 0 0% 95%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 4%;
 
   --muted: 0 0% 12%;
-  /* WCAG 1.4.3 — was 60% (#999 ≈ 4.98:1 on #0a0a0a borderline AA, fails on muted bg). */
   --muted-foreground: 0 0% 68%;
 
   --accent: 0 0% 12%;
-  --accent-foreground: 0 0% 95%;
+  --accent-foreground: 0 0% 96%;
 
-  /* P1-2 — distinct red in dark mode. Matches muiTheme #fb5151. */
-  --destructive: 0 96% 65%;
+  --destructive: 0 84% 62%;
   --destructive-foreground: 0 0% 100%;
-
-  --warning: 0 96% 65%;
+  --warning: 0 84% 62%;
   --warning-foreground: 0 0% 100%;
 
-  --success: 0 0% 100%;
+  --success: 0 0% 96%;
   --success-foreground: 0 0% 4%;
 
-  --border: 0 0% 0% / 0;
-  --input: 0 0% 0% / 0;
-  --input-bg: 0 0% 10%;
-  --ring: 346 100% 65%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --input-bg: 0 0% 7%;
+  --ring: 0 0% 96%;
 
-  --sidebar-background: 0 0% 7%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-primary: 0 0% 100%;
+  --sidebar-background: 0 0% 4%;
+  --sidebar-foreground: 0 0% 96%;
+  --sidebar-primary: 0 0% 96%;
   --sidebar-primary-foreground: 0 0% 4%;
   --sidebar-accent: 0 0% 12%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-border: 0 0% 0% / 0;
-  --sidebar-ring: 346 100% 65%;
+  --sidebar-accent-foreground: 0 0% 96%;
+  --sidebar-border: 0 0% 18%;
+  --sidebar-ring: 0 0% 96%;
 
-  /* ── Surface container hierarchy (dark flat tonal layering) ── */
   --surface: 0 0% 4%;
   --surface-container-lowest: 0 0% 2%;
-  --surface-container-low: 0 0% 7%;
-  --surface-container: 0 0% 10%;
-  --surface-container-high: 0 0% 13%;
+  --surface-container-low: 0 0% 6%;
+  --surface-container: 0 0% 9%;
+  --surface-container-high: 0 0% 12%;
   --surface-container-highest: 0 0% 16%;
   --surface-dim: 0 0% 8%;
-  --inverse-surface: 0 0% 90%;
+  --inverse-surface: 0 0% 96%;
 
-  /* ── Category accent (dark) — aliased to --brand. See light mode block. ── */
-  --cat-venues:      var(--brand);
-  --cat-events:      var(--brand);
-  --cat-marketplace: var(--brand);
-  --cat-places:      var(--brand);
-  --cat-hotels:      var(--brand);
-  --cat-travel:      var(--brand);
-  --cat-news:        var(--brand);
-  --cat-community:   var(--brand);
+  --cat-venues:      var(--foreground);
+  --cat-events:      var(--foreground);
+  --cat-marketplace: var(--foreground);
+  --cat-places:      var(--foreground);
+  --cat-hotels:      var(--foreground);
+  --cat-travel:      var(--foreground);
+  --cat-news:        var(--foreground);
+  --cat-community:   var(--foreground);
 }
 
-/* ── MapLibre popup theme adaptation ───────────────────────────────── */
+/* ── MapLibre popup theme (flat, monochrome) ───────────────────────── */
 .maplibregl-popup-content {
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -303,78 +243,93 @@
   border-color: hsl(var(--border));
 }
 
+html {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
   margin: 0;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-feature-settings: 'rlig' 1, 'calt' 1;
-  animation: fade-in 0.5s ease-out;
+  font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+  font-family: inherit;
 }
 
-/* ── Link defaults — color only, never underlined ────────────────── */
+/* ── Links — inherit body color, opacity on hover (editorial default) ──
+   :where() zeroes the specificity of the `:link` / `:visited` selectors so
+   Tailwind text-* utilities (e.g. `text-background` on a dark button) can
+   actually apply. Without this, .text-background loses to a:link in the
+   cascade and links inside primary buttons render foreground-on-foreground
+   (zero contrast). */
 
-a,
-a:link,
-a:visited {
-  color: hsl(var(--brand));
+:where(a, a:link, a:visited) {
+  color: inherit;
   text-decoration: none;
-  transition: opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.15s ease;
 }
 
-a:hover {
+:where(a):hover {
   opacity: 0.7;
 }
 
-/* ── Focus-visible (global accessibility, WCAG 2.4.7) ──────────────
-   Solid brand outline on any interactive element that receives
-   keyboard focus. The `.Mui-focusVisible` selector is required
-   because MUI's ButtonBase sets `outline: 0` on `.MuiButtonBase-root`
-   with higher specificity than the `*:focus-visible` rule. */
+/* ── Focus-visible — WCAG 2.4.7, 2px solid foreground ──────────────── */
 
 *:focus-visible,
-.Mui-focusVisible,
 [role="button"]:focus-visible,
 [role="tab"]:focus-visible,
 [role="option"]:focus-visible,
 [role="menuitem"]:focus-visible {
-  outline: 2px solid hsl(var(--brand)) !important;
+  outline: 2px solid hsl(var(--foreground)) !important;
   outline-offset: 2px !important;
   border-radius: 0;
 }
 
-/* Never remove focus without providing a replacement. */
 :focus:not(:focus-visible) {
   outline: none;
 }
 
-/* ── Touch target minimum ─────────────────────────────────────────── */
+/* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
 
 a, button, [role="button"], input, select, textarea {
   min-height: 44px;
 }
 
-/* Inline links inside paragraphs should not enforce min-height */
+/* Inline links inside body text are underlined. In a strict B&W system,
+   links share the foreground color with surrounding text, so the underline
+   is the only signal distinguishing them (axe `link-in-text-block`,
+   WCAG 1.4.1 Use of Color). Standalone links — nav, buttons, cards — stay
+   un-underlined. Documented exception to the editorial flat rule. */
 p a, li a, td a, span a, label a {
   min-height: unset;
   display: inline;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
+
+/* ── Typography defaults — bold, tight, editorial ──────────────────── */
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
-/* ── Gradient text utility ─────────────────────────────────────────── */
+/* ── Legacy gradient utilities — now flat solid ────────────────────── */
 .gradient-text {
   color: hsl(var(--foreground));
   -webkit-text-fill-color: hsl(var(--foreground));
+  background: none;
 }
 
 .bg-gradient-primary {
   background: hsl(var(--primary));
 }
 
-/* ── Animation Keyframes ───────────────────────────────────────────── */
+/* ── Animation Keyframes (functional only) ─────────────────────────── */
 
 @keyframes fade-in {
   from { opacity: 0; }
@@ -402,13 +357,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
 }
 
 @keyframes slide-up-in {
@@ -425,27 +375,32 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-fade-in { animation: fade-in 0.2s ease-out; }
 .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.scale-in { animation: scale-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.content-enter { animation: content-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.scale-in { animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.content-enter { animation: content-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* Skeleton shimmer — neutral grayscale only. */
 .shimmer {
-  background: linear-gradient(90deg, transparent 0%, hsl(var(--brand) / 0.06) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, hsl(var(--muted) / 0.6) 50%, transparent 100%);
   background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 /* ── Hover Utilities ───────────────────────────────────────────────── */
 
 .hover-minimal {
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 .hover-minimal:hover {
   background-color: hsl(var(--accent));
 }
 
-/* Link hover — opacity shift only */
 .story-link {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 .story-link:hover {
   opacity: 0.7;
@@ -454,36 +409,32 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Reveal & Enter Animations ─────────────────────────────────────── */
 
 .reveal-up {
-  animation: reveal-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.reveal-delay-1 { animation-delay: 0.12s; }
-.reveal-delay-2 { animation-delay: 0.24s; }
-.reveal-delay-3 { animation-delay: 0.36s; }
-.reveal-delay-4 { animation-delay: 0.48s; }
-.reveal-delay-5 { animation-delay: 0.6s; }
-
-/* ── Content crossfade (skeleton → content) ───────────────────────── */
+.reveal-delay-1 { animation-delay: 0.08s; }
+.reveal-delay-2 { animation-delay: 0.16s; }
+.reveal-delay-3 { animation-delay: 0.24s; }
+.reveal-delay-4 { animation-delay: 0.32s; }
+.reveal-delay-5 { animation-delay: 0.4s; }
 
 .content-crossfade-enter {
-  animation: fade-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* ── Extra Micro-Interaction Keyframes ────────────────────────────── */
-
-.slide-up-in { animation: slide-up-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.slide-down-in { animation: slide-down-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-up-in { animation: slide-up-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-down-in { animation: slide-down-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 /* ── Image lazy-load fade ─────────────────────────────────────────── */
 
 .img-lazy-fade {
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .img-lazy-fade.loaded {
   opacity: 1;
 }
 
-/* ── Accessibility Classes ─────────────────────────────────────────── */
+/* ── Accessibility classes ─────────────────────────────────────────── */
 
 .font-size-small { font-size: 0.875rem; }
 .font-size-medium { font-size: 1rem; }
@@ -512,11 +463,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .enhanced-focus *:focus {
-  outline: 3px solid hsl(var(--primary)) !important;
+  outline: 3px solid hsl(var(--foreground)) !important;
   outline-offset: 2px !important;
 }
-
-.screen-reader-optimized { /* Enhanced for screen readers */ }
 
 .screen-reader-optimized .sr-only {
   position: absolute;
@@ -530,15 +479,9 @@ h1, h2, h3, h4, h5, h6 {
   border: 0;
 }
 
-/* Bug #23: the in-app FeedbackButton (originally attributed to Microsoft
-   Clarity) is fixed at bottom-right and overlaps the Mapbox attribution +
-   geolocation/zoom controls on small viewports. Lift it above the map
-   chrome below md. Microsoft Clarity itself does not render a visible
-   widget on this site (verified on prod 2026-05-03), so the previous
-   clarity.* selectors never matched anything. */
+/* Mobile FeedbackButton lift above map chrome (bug #23). */
 @media (max-width: 767px) {
   button[aria-label="Share feedback"] {
     bottom: 96px !important;
   }
 }
-

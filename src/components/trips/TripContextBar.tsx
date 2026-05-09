@@ -36,7 +36,7 @@ export function TripContextBar() {
       role="region"
       aria-label={t('trips.contextBar.ariaLabel', 'Active trip context')}
       className="sticky top-0 z-[1099] border-b border-border px-4 sm:px-6 py-1.5"
-      style={{ backgroundColor: 'hsl(var(--brand) / 0.06)' }}
+      style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}
     >
       <div className="flex items-center gap-3 mx-auto" style={{ maxWidth: 1400, minHeight: 28 }}>
         <Luggage style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} aria-hidden />

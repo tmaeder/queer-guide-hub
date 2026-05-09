@@ -44,7 +44,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Calendar as CalendarIcon, MapPin, Star } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 interface EventRow {
@@ -69,6 +69,7 @@ interface EventRow {
   age_restriction: string | null;
   is_featured: boolean;
   status: string | null;
+  organizer_id: string | null;
   organizer_name: string | null;
   organizer_contact: string | null;
   website: string | null;
@@ -94,6 +95,7 @@ const eventTypes = [
   'sports',
   'theater',
   'comedy',
+  'cruise',
   'other',
 ];
 
@@ -127,6 +129,7 @@ const emptyForm = {
   age_restriction: '',
   website: '',
   ticket_url: '',
+  organizer_id: '',
   organizer_name: '',
   organizer_contact: '',
   is_featured: false,
@@ -138,7 +141,6 @@ export default function AdminEvents() {
   const { user } = useAuth();
   const { createEvent, updateEvent, deleteEvent } = useEvents();
   const { venues } = useVenues();
-  const { toast } = useToast();
   const { resolveAddress } = useAddressResolver();
   const queryClient = useQueryClient();
 
@@ -189,6 +191,25 @@ export default function AdminEvents() {
     }
   };
 
+
+  const organizers = useMemo(() => venues.filter((v) => v.is_organizer), [venues]);
+
+  const handleOrganizerSelect = (organizerId: string) => {
+    if (organizerId === 'custom' || !organizerId) {
+      setFormData((prev) => ({ ...prev, organizer_id: '', organizer_name: '', organizer_contact: '' }));
+      return;
+    }
+    const org = venues.find((v) => v.id === organizerId);
+    if (org) {
+      setFormData((prev) => ({
+        ...prev,
+        organizer_id: organizerId,
+        organizer_name: org.name,
+        organizer_contact: org.email || org.phone || '',
+      }));
+    }
+  };
+
   const handleAddressChange = async (
     address: string,
     coordinates?: { lat: number; lng: number },
@@ -223,7 +244,7 @@ export default function AdminEvents() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!startDate) {
-      toast({ title: 'Error', description: 'Please select a start date', variant: 'destructive' });
+      toast.error('Error: Please select a start date');
       return;
     }
 
@@ -231,6 +252,7 @@ export default function AdminEvents() {
       const eventData = {
         ...formData,
         venue_id: formData.venue_id || null,
+        organizer_id: formData.organizer_id || null,
         latitude: formData.latitude,
         longitude: formData.longitude,
         age_restriction: formData.age_restriction === 'none' ? null : formData.age_restriction,
@@ -246,21 +268,17 @@ export default function AdminEvents() {
       if (editingEvent) {
         const { error } = await updateEvent(editingEvent.id, eventData);
         if (error) throw new Error(error);
-        toast({ title: 'Success', description: 'Event updated' });
+        toast.success('Success: Event updated');
       } else {
         const { error } = await createEvent(eventData);
         if (error) throw new Error(error);
-        toast({ title: 'Success', description: 'Event created' });
+        toast.success('Success: Event created');
       }
       resetForm();
       setIsCreateDialogOpen(false);
       invalidateTable();
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message :'Failed to save event',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -286,6 +304,7 @@ export default function AdminEvents() {
       age_restriction: event.age_restriction || '',
       website: event.website || '',
       ticket_url: event.ticket_url || '',
+      organizer_id: event.organizer_id || '',
       organizer_name: event.organizer_name || '',
       organizer_contact: event.organizer_contact || '',
       is_featured: event.is_featured,
@@ -303,14 +322,10 @@ export default function AdminEvents() {
     try {
       const { error } = await deleteEvent(event.id);
       if (error) throw new Error(error);
-      toast({ title: 'Success', description: 'Event deleted' });
+      toast.success('Success: Event deleted');
       invalidateTable();
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message :'Failed to delete',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -458,7 +473,7 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
@@ -833,6 +848,15 @@ export default function AdminEvents() {
               <div className="flex flex-col gap-4">
                 <h3 className="font-semibold">Additional Information
                 </h3>
+                <div>
+                  <Label>Select Organizer (Optional)</Label>
+                  <VenueCombobox
+                    venues={organizers}
+                    value={formData.organizer_id}
+                    onValueChange={handleOrganizerSelect}
+                    placeholder="Search organizers..."
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Organizer Name</Label>
@@ -841,6 +865,7 @@ export default function AdminEvents() {
                       onChange={(e) =>
                         setFormData((p) => ({ ...p, organizer_name: e.target.value }))
                       }
+                      disabled={!!formData.organizer_id}
                     />
                   </div>
                   <div>
@@ -850,6 +875,7 @@ export default function AdminEvents() {
                       onChange={(e) =>
                         setFormData((p) => ({ ...p, organizer_contact: e.target.value }))
                       }
+                      disabled={!!formData.organizer_id}
                     />
                   </div>
                 </div>

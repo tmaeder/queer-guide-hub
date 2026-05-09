@@ -60,6 +60,26 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     lgbti_criminalization: Record<string, unknown> | null;
   } | null;
   festivals?: { id: string; name: string } | null;
+  organizer?: {
+    id: string;
+    slug?: string;
+    name: string;
+    website: string | null;
+    email: string | null;
+    instagram: string | null;
+    phone: string | null;
+    organizer_handles: Record<string, string> | null;
+  } | null;
+  organizer?: {
+    id: string;
+    slug?: string;
+    name: string;
+    website: string | null;
+    email: string | null;
+    instagram: string | null;
+    phone: string | null;
+    organizer_handles: Record<string, string> | null;
+  } | null;
   event_attendees?: Array<{
     id: string;
     status: string;
@@ -73,10 +93,11 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
 
 export const EVENT_SELECT_FIELDS = `
   *,
-  venues (id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
+  venues!venue_id(id, slug, name, address, city, state, country, phone, website, email, latitude, longitude),
   cities:city_id(id, slug, name),
   countries:country_id(id, slug, name, equality_score, lgbti_criminalization),
-  festivals:festival_id(id, name)
+  festivals:festival_id(id, name),
+  organizer:venues!organizer_id(id, slug, name, website, email, instagram, phone, organizer_handles)
 `;
 
 export async function fetchEvent(
@@ -212,7 +233,7 @@ export function EventHero({
               {event.title}
             </h1>
             {event.is_featured && (
-              <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
+              <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Featured</Badge>
             )}
             {event.countries?.equality_score != null && (
               <EqualityScoreBadge score={event.countries.equality_score} size="sm" />
@@ -577,19 +598,78 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
               <span className="text-sm">Max {event.max_attendees} attendees</span>
             </div>
           )}
-          {event.organizer_name && (
+          {(event.organizer || event.organizer_name) && (
             <div className="mt-2 pt-3 border-t border-border">
               <p className="text-sm font-medium mb-1">Organizer</p>
-              <button
-                onClick={() => onOrganizerClick(event.organizer_name!)}
-                className="text-sm text-primary hover:underline text-left border-0 bg-transparent cursor-pointer p-0"
-              >
-                {event.organizer_name}
-              </button>
-              {event.organizer_contact && (
-                <span className="block text-xs text-muted-foreground mt-0.5">
-                  {event.organizer_contact}
-                </span>
+              {event.organizer ? (
+                <>
+                  <LocalizedLink
+                    to={`/venues/${event.organizer.slug || event.organizer.id}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {event.organizer.name}
+                  </LocalizedLink>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(event.organizer.website || event.organizer.organizer_handles?.website) && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={event.organizer.website || event.organizer.organizer_handles?.website} target="_blank" rel="noopener noreferrer">
+                          <Globe style={{ width: 14, height: 14, marginRight: 6 }} />
+                          Website
+                        </a>
+                      </Button>
+                    )}
+                    {(event.organizer.instagram || event.organizer.organizer_handles?.instagram) && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={`https://instagram.com/${(event.organizer.instagram || event.organizer.organizer_handles?.instagram || '').replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
+                          Instagram
+                        </a>
+                      </Button>
+                    )}
+                    {event.organizer.organizer_handles?.telegram && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={`https://t.me/${event.organizer.organizer_handles.telegram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
+                          Telegram
+                        </a>
+                      </Button>
+                    )}
+                    {event.organizer.organizer_handles?.bluesky && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={`https://bsky.app/profile/${event.organizer.organizer_handles.bluesky.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer">
+                          Bluesky
+                        </a>
+                      </Button>
+                    )}
+                    {event.organizer.email && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={`mailto:${event.organizer.email}`}>
+                          Email
+                        </a>
+                      </Button>
+                    )}
+                    {event.organizer.phone && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={`tel:${event.organizer.phone}`}>
+                          <Phone style={{ width: 14, height: 14, marginRight: 6 }} />
+                          Call
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => onOrganizerClick(event.organizer_name!)}
+                    className="text-sm text-primary hover:underline text-left border-0 bg-transparent cursor-pointer p-0"
+                  >
+                    {event.organizer_name}
+                  </button>
+                  {event.organizer_contact && (
+                    <span className="block text-xs text-muted-foreground mt-0.5">
+                      {event.organizer_contact}
+                    </span>
+                  )}
+                </>
               )}
             </div>
           )}

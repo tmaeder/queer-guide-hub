@@ -29,6 +29,7 @@ export const eventFields: FieldConfig[] = [
     required: true,
     group: 'basic',
     filterable: true,
+    listColumn: true,
     options: [
       { value: 'party', label: 'Party' },
       { value: 'festival', label: 'Festival' },
@@ -40,6 +41,7 @@ export const eventFields: FieldConfig[] = [
       { value: 'fundraiser', label: 'Fundraiser' },
       { value: 'sports', label: 'Sports' },
       { value: 'community', label: 'Community' },
+      { value: 'cruise', label: 'Cruise' },
       { value: 'other', label: 'Other' },
     ],
   },
@@ -136,6 +138,7 @@ export const eventFields: FieldConfig[] = [
   { name: 'ticket_url', label: 'Ticket URL', type: 'url', group: 'details' },
   { name: 'price_min', label: 'Min Price', type: 'number', group: 'details', min: 0 },
   { name: 'price_max', label: 'Max Price', type: 'number', group: 'details', min: 0 },
+  { name: 'currency', label: 'Currency', type: 'text', group: 'details', readOnly: true, helpText: 'Auto-set from country' },
   { name: 'is_free', label: 'Free Event', type: 'boolean', group: 'details' },
   { name: 'age_restriction', label: 'Age Restriction', type: 'text', group: 'details' },
   { name: 'max_attendees', label: 'Max Attendees', type: 'number', group: 'details', min: 0 },
@@ -148,7 +151,7 @@ export const eventFields: FieldConfig[] = [
   // Media
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   // Settings
-  { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
   { name: 'is_public', label: 'Public', type: 'boolean', group: 'settings' },
   // External (hidden FKs)
   { name: 'venue_id', label: 'Venue Reference', type: 'text', group: 'external', hidden: true },
@@ -174,7 +177,7 @@ export const eventContentType: ContentTypeConfig = {
   label: { singular: 'Event', plural: 'Events' },
   color: '#ec4899',
   fields: eventFields,
-  defaults: { featured: false, is_free: false, is_public: true, status: 'active' },
+  defaults: { is_featured: false, is_free: false, is_public: true, status: 'active' },
   validate: validateEvent,
   fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings'],
   translatableFields: ['title', 'description'],

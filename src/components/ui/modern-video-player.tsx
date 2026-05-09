@@ -169,7 +169,7 @@ export function ModernVideoPlayer({
           {video.renditions.find(r => r.codec === 'h264') && (
             <a
               href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
-              style={{ color: 'hsl(var(--brand))', textDecoration: 'underline', marginLeft: 8 }}
+              style={{ color: 'inherit', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
               Download MP4

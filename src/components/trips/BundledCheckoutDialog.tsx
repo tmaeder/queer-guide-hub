@@ -177,7 +177,7 @@ export function BundledCheckoutDialog({
           </div>
         ) : isDone ? (
           <div className="py-6 text-center">
-            <CheckCircle2 size={40} style={{ color: '#059669', margin: '0 auto 12px' }} />
+            <CheckCircle2 size={40} style={{ margin: '0 auto 12px' }} />
             <h3 className="text-lg font-bold mb-1">
               {bookedCount > 0 ? t('trips.bundledCheckout.openedOf', '{{booked}} of {{total}} opened', { booked: bookedCount, total }) : t('trips.bundledCheckout.allSkipped', 'All steps skipped')}
             </h3>
@@ -195,7 +195,7 @@ export function BundledCheckoutDialog({
                   className="flex-1 h-1 transition-colors"
                   style={{
                     backgroundColor: bookedKeys.has(s.key)
-                      ? 'hsl(var(--brand))'
+                      ? 'hsl(var(--foreground))'
                       : i === index
                         ? 'hsl(var(--foreground))'
                         : 'hsl(var(--muted))',
@@ -212,7 +212,7 @@ export function BundledCheckoutDialog({
             <div className="p-5 bg-muted flex items-start gap-3 rounded">
               <div
                 className="shrink-0 w-10 h-10 flex items-center justify-center bg-background rounded"
-                style={{ color: 'hsl(var(--brand))' }}
+                style={{ color: 'hsl(var(--foreground))' }}
               >
                 {current?.kind === 'hotel' ? <Hotel size={20} /> : <Ticket size={20} />}
               </div>

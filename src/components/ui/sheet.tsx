@@ -146,7 +146,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           tabIndex={-1}
           data-state={open ? 'open' : 'closed'}
           className={cn(
-            'fixed bg-background p-6 shadow-lg transition-transform duration-200 overflow-auto',
+            'fixed bg-background p-6 border-2 border-foreground transition-transform duration-200 overflow-auto',
             sideClasses[side],
             className,
           )}

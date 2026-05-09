@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { deleteCommunityGroup } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
@@ -38,7 +38,6 @@ const columnHelper = createColumnHelper<GroupRow>();
 export default function AdminGroups() {
   const navigate = useNavigate();
   const { isAdmin } = useAdminRoles();
-  const { toast } = useToast();
 
   const columns = useMemo(
     () => [
@@ -146,9 +145,9 @@ export default function AdminGroups() {
     try {
       const { error } = await deleteCommunityGroup(row.id);
       if (error) throw error;
-      toast({ title: 'Success', description: 'Group deleted' });
+      toast.success('Success: Group deleted');
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete group', variant: 'destructive' });
+      toast.error('Error: Failed to delete group');
     }
   };
 

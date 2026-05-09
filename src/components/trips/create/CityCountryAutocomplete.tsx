@@ -230,7 +230,7 @@ export function CityCountryAutocomplete({
                     setOpen(false);
                   }}
                   className="border-0 bg-transparent font-semibold text-[13px] cursor-pointer p-0"
-                  style={{ color: 'hsl(var(--brand))' }}
+                  style={{ color: 'hsl(var(--foreground))' }}
                 >
                   {t('trips.dialog.create.addNewPlace', {
                     query: normalize(debounced),

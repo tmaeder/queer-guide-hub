@@ -56,13 +56,13 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
                 style={{
                   width: 18,
                   height: 18,
-                  color: hasVoted ? 'hsl(var(--brand))' : 'var(--muted-foreground)',
+                  color: hasVoted ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
                   transition: 'color 0.15s',
                 }}
               />
               <span
                 className="text-xs font-bold"
-                style={{ color: hasVoted ? 'hsl(var(--brand))' : 'hsl(var(--muted-foreground))' }}
+                style={{ color: hasVoted ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
               >
                 {voteCount}
               </span>

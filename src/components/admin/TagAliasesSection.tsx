@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTagAliases } from '@/hooks/useTagAliases';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +26,6 @@ interface TagAliasesSectionProps {
 
 export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
   const { aliases, isLoading, createAlias, deleteAlias } = useTagAliases(tagId);
-  const { toast } = useToast();
   const [newAlias, setNewAlias] = useState('');
   const [newType, setNewType] = useState('synonym');
 
@@ -36,9 +35,9 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
     try {
       await createAlias.mutateAsync({ alias_name: trimmed, alias_type: newType });
       setNewAlias('');
-      toast({ title: 'Synonym added' });
+      toast.success('Synonym added');
     } catch {
-      toast({ title: 'Error', description: 'Failed to add synonym', variant: 'destructive' });
+      toast.error('Error: Failed to add synonym');
     }
   };
 
@@ -46,7 +45,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
     try {
       await deleteAlias.mutateAsync(aliasId);
     } catch {
-      toast({ title: 'Error', description: 'Failed to remove synonym', variant: 'destructive' });
+      toast.error('Error: Failed to remove synonym');
     }
   };
 

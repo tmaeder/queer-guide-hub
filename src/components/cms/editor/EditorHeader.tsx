@@ -177,7 +177,7 @@ export function EditorHeader({
                   disabled={isEnriching || state.isSaving}
                   onClick={onEnrich}
                   className="hidden sm:inline-flex font-medium normal-case"
-                  style={{ borderColor: 'hsl(var(--brand))', color: 'hsl(var(--brand))' }}
+                  style={{ borderColor: 'hsl(var(--foreground))', color: 'hsl(var(--foreground))' }}
                 >
                   {isEnriching ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1" />

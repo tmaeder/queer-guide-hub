@@ -21,40 +21,22 @@ import {
 
 import { adminNavSections } from '@/config/adminNavigation';
 import type { AdminNavItem } from '@/config/adminNavigation';
-import { brandColors } from '@/theme/brandColors';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 
-function IconBadge({
-  icon: Icon,
-  color,
-  size = 16,
-}: {
-  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
-  color: string;
-  size?: number;
-}) {
+function IconBadge({ icon: Icon, size = 16 }: { icon: React.ComponentType<{ size?: number }>; size?: number }) {
   return (
-    <div
-      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-      style={{ backgroundColor: color + '18', color }}
-    >
+    <div className="w-7 h-7 flex items-center justify-center text-muted-foreground">
       <Icon size={size} />
     </div>
   );
 }
 
-function CountBadge({ count, color }: { count: number | undefined; color?: string }) {
+function CountBadge({ count }: { count: number | undefined }) {
   if (count === undefined) return null;
   return (
-    <span
-      className="inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-[0.65rem] font-semibold"
-      style={{
-        backgroundColor: color ? color + '14' : 'hsl(var(--muted))',
-        color: color || 'hsl(var(--muted-foreground))',
-      }}
-    >
+    <span className="bg-muted text-muted-foreground inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-[0.65rem] font-semibold">
       {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
     </span>
   );
@@ -152,43 +134,20 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
   return (
     <TooltipProvider>
     <div className="w-[260px] min-h-full border-r border-border bg-background flex flex-col overflow-hidden">
-      {/* Gradient Header */}
-      <div
-        className="px-5 py-5 border-b border-border"
-        style={{
-          background: `linear-gradient(135deg, ${brandColors.main}14 0%, ${brandColors.light}0A 50%, transparent 100%)`,
-        }}
-      >
+      {/* Header */}
+      <div className="px-5 py-5 border-b border-border">
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0"
-            style={{
-              background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.light})`,
-              boxShadow: `0 2px 8px ${brandColors.main}4D`,
-            }}
-          >
-            <Layers size={16} color="#fff" />
+          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0 bg-foreground text-background">
+            <Layers size={16} />
           </div>
           <div>
-            <p
-              className="text-sm font-bold tracking-tight leading-tight"
-              style={{
-                background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.main})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Admin Console
-            </p>
+            <p className="text-sm font-bold tracking-tight leading-tight">Admin Console</p>
             <p className="text-[0.7rem] text-muted-foreground/70">Manage everything</p>
           </div>
           {isAdmin && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div
-                  className="ml-auto flex items-center"
-                  style={{ color: brandColors.main }}
-                >
+                <div className="ml-auto flex items-center text-foreground">
                   <Shield size={14} />
                 </div>
               </TooltipTrigger>
@@ -213,13 +172,11 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
+                    aria-expanded={isOpen}
                     className="w-full rounded-lg mx-1.5 mb-px py-1 px-2 inline-flex items-center gap-2 hover:translate-x-0.5 transition-transform"
                     style={{ marginTop: sectionIdx === 0 ? 4 : 0, width: 'calc(100% - 12px)' }}
                   >
-                    <span
-                      className="flex items-center transition-transform"
-                      style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
-                    >
+                    <span className={`flex items-center transition-transform ${isOpen ? '' : '-rotate-90'}`}>
                       <ChevronDown size={14} />
                     </span>
                     <span className="flex-1 text-left text-[0.65rem] font-bold tracking-[0.08em] text-muted-foreground/70">
@@ -238,38 +195,24 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                       const active = isItemActive(item);
                       const count = mergedCounts[item.id];
                       const hasCount = item.countTable !== undefined;
-                      const itemColor = item.color ?? section.color;
-
                       return (
                         <button
                           key={item.id}
                           type="button"
                           onClick={() => navigate(item.route)}
-                          className="rounded-lg mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5"
-                          style={{
-                            paddingLeft: active ? 12 : 14,
-                            backgroundColor: active
-                              ? itemColor + '10'
-                              : 'transparent',
-                            borderLeft: active
-                              ? `3px solid ${itemColor || brandColors.main}`
-                              : '3px solid transparent',
-                          }}
+                          className={`rounded-lg mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 ${active ? 'bg-muted font-semibold border-l-2 border-foreground pl-3' : 'pl-3.5 border-l-2 border-transparent'}`}
                         >
                           <span className="min-w-9 flex">
-                            <IconBadge icon={item.icon} color={itemColor} size={15} />
+                            <IconBadge icon={item.icon} size={15} />
                           </span>
-                          <span
-                            className="flex-1 text-left text-[0.85rem]"
-                            style={{ fontWeight: active ? 600 : 400 }}
-                          >
+                          <span className="flex-1 text-left text-[0.85rem]">
                             {item.label}
                           </span>
                           {hasCount &&
                             (countsLoading ? (
                               <Skeleton className="w-7 h-[18px] rounded-[9px]" />
                             ) : (
-                              <CountBadge count={count} color={itemColor} />
+                              <CountBadge count={count} />
                             ))}
                         </button>
                       );
@@ -286,14 +229,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
       <div className="border-t border-border px-4 py-3 flex items-center gap-3 bg-muted/40">
         <Avatar className="h-8 w-8">
           <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
-          <AvatarFallback
-            style={{
-              backgroundColor: brandColors.main,
-              color: '#fff',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-            }}
-          >
+          <AvatarFallback className="bg-foreground text-background text-[0.8rem] font-semibold">
             {userInitial}
           </AvatarFallback>
         </Avatar>

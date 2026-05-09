@@ -1,13 +1,5 @@
 name: Reconfigure Meilisearch
 
-# One-shot workflow to apply the bug-#4 / #9 / #10 ranking + stop-words +
-# alias settings to the production Meilisearch instance, and to seed
-# city aliases for ~30 well-known cities.
-#
-# The deploy-only Infomaniak SSH user has no docker access, so we cannot
-# read MEILI_MASTER_KEY off the VPS .env from CI. Pass it as a secret
-# input on dispatch — it gets passed straight to curl and is never logged.
-
 on:
   workflow_dispatch:
     inputs:
@@ -25,33 +17,53 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      # MEILI_MASTER_KEY must be present as a repo secret. Set with:
-      #   gh secret set MEILI_MASTER_KEY
       MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
-      MEILI_URL: https://s.queer.guide
+      SSH_KEY: ${{ secrets.INFOMANIAK_SSH_PRIVATE_KEY }}
+      SSH_HOST: ${{ secrets.INFOMANIAK_SSH_HOST }}
+      SSH_USER: ${{ secrets.INFOMANIAK_SSH_USER }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify MEILI_MASTER_KEY is set
+      - name: Verify secrets
         run: |
-          if [ -z "${MEILI_MASTER_KEY:-}" ]; then
-            echo "::error::MEILI_MASTER_KEY repo secret is not set. Run: gh secret set MEILI_MASTER_KEY"
-            exit 1
-          fi
+          fail=0
+          for var in MEILI_MASTER_KEY SSH_KEY SSH_HOST SSH_USER; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Secret $var is not set"
+              fail=1
+            fi
+          done
+          [ "$fail" -eq 0 ]
 
-      - name: Probe Meilisearch
+      - name: Setup SSH
         run: |
-          status=$(curl -s -o /dev/null -w '%{http_code}' "$MEILI_URL/health")
-          echo "Meili /health → $status"
-          [ "$status" = "200" ]
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy scripts to VPS
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'cat > /tmp/configure-indexes.sh' < meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" 'cat > /tmp/seed-city-aliases.sh' < meilisearch/seed-city-aliases.sh
+
+      - name: Verify Meilisearch is reachable
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'curl -sf --max-time 5 http://localhost:7700/health'
+          echo "Meilisearch is healthy"
 
       - name: Run configure-indexes.sh
         run: |
-          chmod +x meilisearch/configure-indexes.sh
-          bash meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            "MEILI_URL=http://localhost:7700 MEILI_MASTER_KEY='${MEILI_MASTER_KEY}' bash /tmp/configure-indexes.sh"
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
         run: |
-          chmod +x meilisearch/seed-city-aliases.sh
-          bash meilisearch/seed-city-aliases.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            "MEILI_URL=http://localhost:7700 MEILI_MASTER_KEY='${MEILI_MASTER_KEY}' bash /tmp/seed-city-aliases.sh"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'rm -f /tmp/configure-indexes.sh /tmp/seed-city-aliases.sh' || true

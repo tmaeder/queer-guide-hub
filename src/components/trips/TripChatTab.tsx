@@ -80,7 +80,7 @@ export function TripChatTab({ tripId }: Props) {
         <div className="flex items-center gap-2 px-2 py-1.5 mb-2 border-b border-border">
           <span
             aria-hidden
-            className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"
+            className="w-1.5 h-1.5 rounded-full bg-foreground flex-shrink-0"
           />
           <TooltipProvider>
             <div className="flex -space-x-2">

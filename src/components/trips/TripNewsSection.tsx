@@ -65,7 +65,7 @@ export function TripNewsSection({ countryIds }: Props) {
                   height: 16,
                   flexShrink: 0,
                   marginTop: 3,
-                  color: '#b45309',
+                  color: 'hsl(var(--foreground))',
                 }}
                 aria-label={t('trips.news.safetyFlag', 'Safety-relevant')}
               />

@@ -56,7 +56,7 @@ export const MailboxSettings: React.FC = () => {
     return (
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Check className="h-5 w-5 text-green-600" />
+          <Check className="h-5 w-5 text-foreground" />
           <h6 className="text-base font-bold">Your Email Address</h6>
         </div>
         <p className="text-base font-semibold">{fullEmail || `${handle}@queer.guide`}</p>
@@ -100,14 +100,14 @@ export const MailboxSettings: React.FC = () => {
         <div className="flex items-center gap-1 mt-2">
           {availability.available ? (
             <>
-              <Check className="h-3 w-3 text-green-600" />
-              <span className="text-xs text-green-600">
+              <Check className="h-3 w-3 text-foreground" />
+              <span className="text-xs text-foreground">
                 {handle}@queer.guide is available
               </span>
             </>
           ) : (
             <>
-              <AlertCircle className="h-3 w-3 text-red-500" />
+              <AlertCircle className="h-3 w-3 text-destructive" />
               <span className="text-xs text-destructive">{availability.reason}</span>
             </>
           )}

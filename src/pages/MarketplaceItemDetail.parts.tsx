@@ -154,7 +154,7 @@ export function MarketplaceHero({
                   height: 16,
                   marginRight: 8,
                   fill: isFavorited ? 'currentColor' : 'none',
-                  color: isFavorited ? '#d32f2f' : 'inherit',
+                  color: 'inherit',
                 }}
               />
               {isFavorited ? 'Favorited' : 'Favorite'}
@@ -274,7 +274,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
                                 width: 12,
                                 height: 12,
                                 fill: i < review.rating ? 'currentColor' : 'none',
-                                color: i < review.rating ? 'inherit' : '#e0e0e0',
+                                color: i < review.rating ? 'inherit' : 'hsl(var(--muted-foreground))',
                               }}
                             />
                           ))}

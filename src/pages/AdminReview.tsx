@@ -163,7 +163,7 @@ const BULK_BUTTONS: Array<{
 }> = [
   { action: 'approve', label: 'Approve All', icon: CheckCheck, variant: 'default', tone: 'success' },
   { action: 'approve_confident', label: 'Approve High-Confidence', icon: Sparkles, variant: 'outline', color: '#0ea5e9' },
-  { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outline', color: 'hsl(var(--brand))' },
+  { action: 'enrich', label: 'Apply Enrichments', icon: Zap, variant: 'outline', color: 'hsl(var(--foreground))' },
   { action: 'dedup', label: 'Resolve Duplicates', icon: Inbox, variant: 'outline', color: '#ea580c' },
   { action: 'dismiss_low', label: 'Dismiss Low-Severity', icon: VolumeX, variant: 'outline', color: '#a855f7' },
   { action: 'reject_stale', label: 'Reject Stale', icon: Clock, variant: 'outline', color: 'hsl(var(--muted-foreground))' },
@@ -392,7 +392,7 @@ export default function AdminReview() {
           icon={Tag}
           label="Tag Suggestions"
           count={c.tagSuggestions}
-          color="hsl(var(--brand))"
+          color="hsl(var(--foreground))"
           active={activeTab === 'tags'}
           onClick={() => handleTabChange('tags')}
         />
@@ -416,7 +416,7 @@ export default function AdminReview() {
           icon={Sparkles}
           label="News Quality"
           count={newsQualityCount}
-          color="hsl(var(--brand))"
+          color="hsl(var(--foreground))"
           active={activeTab === 'news-quality'}
           onClick={() => handleTabChange('news-quality')}
         />

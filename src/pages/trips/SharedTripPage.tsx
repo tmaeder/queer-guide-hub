@@ -90,21 +90,8 @@ function formatAmount(amount: number, currency: string): string {
   }
 }
 
-function gradientForTrip(tripId: string): string {
-  const palettes = [
-    ['#7C3AED', 'hsl(var(--brand))'],
-    ['#F59E0B', '#EF4444'],
-    ['#06B6D4', '#3B82F6'],
-    ['#10B981', '#6366F1'],
-    ['#EC4899', '#8B5CF6'],
-    ['#0EA5E9', '#22C55E'],
-  ];
-  let hash = 0;
-  for (let i = 0; i < tripId.length; i += 1) {
-    hash = (hash * 31 + tripId.charCodeAt(i)) >>> 0;
-  }
-  const [a, b] = palettes[hash % palettes.length];
-  return `linear-gradient(135deg, ${a} 0%, ${b} 100%)`;
+function gradientForTrip(_tripId: string): string {
+  return 'hsl(var(--foreground))';
 }
 
 function SharedTripPage() {
@@ -307,8 +294,8 @@ function SharedTripPage() {
         {unsafeCountries.size > 0 && (
           <Card className="mb-3">
             <CardContent>
-              <div className="flex items-start gap-2 -mx-2 -mt-1 -mb-1 p-2 rounded bg-amber-100 dark:bg-amber-900/30">
-                <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 -mx-2 -mt-1 -mb-1 p-2 bg-muted">
+                <AlertTriangle size={16} className="text-foreground flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold">{t('trips.shared.safetyNotice')}</p>
                   {Array.from(unsafeCountries.entries()).map(([name, score]) => (
@@ -461,7 +448,7 @@ function SharedTripPage() {
               <div
                 className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
                 style={{
-                  background: `linear-gradient(135deg, hsl(var(--brand)) 0%, #F59E0B 100%)`,
+                  background: 'hsl(var(--foreground))',
                 }}
               >
                 <Heart size={22} />
@@ -523,8 +510,8 @@ function SharedPackingList({ items }: { items: SharedTripData['packing_items'] }
                 <div
                   className="w-4 h-4 rounded border-2"
                   style={{
-                    borderColor: item.is_checked ? '#16a34a' : 'hsl(var(--border))',
-                    backgroundColor: item.is_checked ? '#16a34a' : 'transparent',
+                    borderColor: item.is_checked ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
+                    backgroundColor: item.is_checked ? 'hsl(var(--foreground))' : 'transparent',
                   }}
                 />
                 <p

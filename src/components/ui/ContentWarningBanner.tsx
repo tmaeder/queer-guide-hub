@@ -1,12 +1,14 @@
 /**
- * ContentWarningBanner — Displays content sensitivity warnings to users.
+ * ContentWarningBanner — content sensitivity warnings.
  *
- * Reads from `content_warnings` JSONB field on venues, events, news, etc.
- * Shows appropriate warning for legal, medical, NSFW content.
+ * Reads from `content_warnings` JSONB on venues, events, news, etc.
+ * Strict-monochrome: warnings are differentiated by icon + bold label,
+ * not hue. The relevance-score badge collapses to the same neutral
+ * treatment with the score communicated by text only.
  */
 
 import React, { useState } from 'react';
-import { AlertTriangle, Scale, Stethoscope, EyeOff } from 'lucide-react';
+import { AlertTriangle, Scale, Stethoscope, EyeOff, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -26,20 +28,17 @@ const FLAG_CONFIG = {
   legal: {
     icon: Scale,
     label: 'Legal',
-    color: '#d97706' as const,
-    message: 'This content discusses legal matters, laws, or regulations.',
+    message: 'Discusses legal matters, laws, or regulations.',
   },
   medical: {
     icon: Stethoscope,
     label: 'Medical',
-    color: '#2563eb' as const,
-    message: 'This content contains medical or health-related information.',
+    message: 'Contains medical or health information.',
   },
   nsfw: {
     icon: EyeOff,
     label: 'NSFW',
-    color: '#dc2626' as const,
-    message: 'This content may contain adult or explicit material.',
+    message: 'May contain adult or explicit material.',
   },
 } as const;
 
@@ -61,18 +60,13 @@ export const ContentWarningBanner: React.FC<ContentWarningBannerProps> = ({
 
   if (compact) {
     return (
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex flex-wrap gap-1">
         {activeFlags.map((flag) => {
           const config = FLAG_CONFIG[flag];
           const Icon = config.icon;
           return (
-            <Badge
-              key={flag}
-              variant="outline"
-              className="h-[22px] text-[0.7rem] gap-1"
-              style={{ borderColor: config.color, color: config.color }}
-            >
-              <Icon size={12} />
+            <Badge key={flag} variant="outline" className="h-[22px] gap-1">
+              <Icon size={12} aria-hidden="true" />
               {config.label}
             </Badge>
           );
@@ -82,52 +76,45 @@ export const ContentWarningBanner: React.FC<ContentWarningBannerProps> = ({
   }
 
   return (
-    <div className="mb-4 flex items-start gap-3 p-4 border border-yellow-500/40 bg-yellow-500/10 rounded-md">
-      <AlertTriangle size={20} className="text-yellow-700 shrink-0 mt-0.5" />
+    <div className="mb-4 flex items-start gap-3 border border-foreground bg-background p-4">
+      <AlertTriangle size={20} className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
       <div className="flex-1">
-        <p className="text-sm font-semibold mb-1">Content Notice</p>
-        <div className={`flex gap-1 flex-wrap ${warnings.warnings?.length ? 'mb-2' : ''}`}>
+        <p className="mb-2 text-sm font-bold uppercase tracking-wide">Content Notice</p>
+        <ul className={`flex flex-col gap-1 ${warnings.warnings?.length ? 'mb-2' : ''}`}>
           {activeFlags.map((flag) => {
             const config = FLAG_CONFIG[flag];
             const Icon = config.icon;
             return (
-              <Badge key={flag} variant="secondary" className="text-xs gap-1 whitespace-normal py-1 h-auto">
-                <Icon size={12} />
-                {config.message}
-              </Badge>
+              <li key={flag} className="flex items-start gap-2 text-sm">
+                <Icon size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <span><span className="font-semibold">{config.label}.</span> {config.message}</span>
+              </li>
             );
           })}
-        </div>
+        </ul>
         {warnings.warnings?.map((w, i) => (
-          <p key={i} className="text-sm text-muted-foreground">
-            {w}
-          </p>
+          <p key={i} className="text-sm text-muted-foreground">{w}</p>
         ))}
       </div>
-      <Button variant="ghost" size="sm" onClick={() => setDismissed(true)}>
-        Dismiss
+      <Button variant="ghost" size="sm" onClick={() => setDismissed(true)} aria-label="Dismiss notice">
+        <X size={16} aria-hidden="true" />
       </Button>
     </div>
   );
 };
 
 /**
- * Compact flag badges for admin tables and review cards.
+ * Compact flag badges for admin tables and review cards. Score is text,
+ * not hue; severity reads from icon + label, not color.
  */
 export const SensitivityBadges: React.FC<{
   sensitivityFlags?: Array<{ category: string; severity: string }> | null;
   relevanceScore?: number | null;
 }> = ({ sensitivityFlags, relevanceScore }) => {
   return (
-    <div className="flex gap-1 flex-wrap items-center">
+    <div className="flex flex-wrap items-center gap-1">
       {relevanceScore != null && (
-        <Badge
-          className="h-5 text-[0.65rem] font-bold"
-          style={{
-            backgroundColor: relevanceScore >= 0.7 ? '#dcfce7' : relevanceScore >= 0.3 ? '#fef9c3' : '#fee2e2',
-            color: relevanceScore >= 0.7 ? '#166534' : relevanceScore >= 0.3 ? '#854d0e' : '#991b1b',
-          }}
-        >
+        <Badge variant="outline" className="h-5">
           {`${(relevanceScore * 100).toFixed(0)}%`}
         </Badge>
       )}
@@ -136,13 +123,8 @@ export const SensitivityBadges: React.FC<{
         if (!config) return null;
         const Icon = config.icon;
         return (
-          <Badge
-            key={flag.category}
-            variant="outline"
-            className="h-5 text-[0.65rem] gap-1"
-            style={{ borderColor: config.color, color: config.color }}
-          >
-            <Icon size={10} />
+          <Badge key={flag.category} variant="outline" className="h-5 gap-1">
+            <Icon size={10} aria-hidden="true" />
             {config.label}
           </Badge>
         );

@@ -55,7 +55,7 @@ EOF
 while IFS='|' read -r english raw_aliases; do
   [ -z "$english" ] && continue
   aliases_json=$(printf '%s' "$raw_aliases" | python3 -c 'import sys,json; print(json.dumps([s.strip() for s in sys.stdin.read().split(",") if s.strip()]))')
-  resp=$(curl -s -X POST "${MEILI_URL}/indexes/cities/search" \
+  resp=$(curl -s ${MEILI_CURL_OPTS:-} -X POST "${MEILI_URL}/indexes/cities/search" \
     -H "Authorization: Bearer ${MEILI_MASTER_KEY}" \
     -H "Content-Type: application/json" \
     -d "{\"q\":\"${english}\",\"limit\":5,\"attributesToRetrieve\":[\"id\",\"title\"]}")
@@ -67,7 +67,7 @@ while IFS='|' read -r english raw_aliases; do
   while IFS= read -r doc_id; do
     [ -z "$doc_id" ] && continue
     body=$(printf '[{"id":"%s","aliases":%s}]' "$doc_id" "$aliases_json")
-    out=$(curl -s -X PUT "${MEILI_URL}/indexes/cities/documents" \
+    out=$(curl -s ${MEILI_CURL_OPTS:-} -X PUT "${MEILI_URL}/indexes/cities/documents" \
       -H "Authorization: Bearer ${MEILI_MASTER_KEY}" \
       -H "Content-Type: application/json" \
       -d "$body")

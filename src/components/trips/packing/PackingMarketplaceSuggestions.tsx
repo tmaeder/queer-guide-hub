@@ -70,7 +70,7 @@ export function PackingMarketplaceSuggestions({ tripId }: Props) {
           disabled={smartLoading}
           onClick={onRequestSmartSuggestions}
           className="border-0 bg-transparent font-semibold text-[13px] cursor-pointer inline-flex items-center gap-1 p-0 disabled:opacity-60"
-          style={{ color: 'hsl(var(--brand))' }}
+          style={{ color: 'hsl(var(--foreground))' }}
         >
           <Sparkles size={13} />
           {smartLoading ? t('trips.packing.smartLoading') : t('trips.packing.smartCta')}

@@ -249,7 +249,7 @@ export function CountryOverviewTab({
       <LocationInfo
         name={country.name}
         type="country"
-        style={{ border: 0, backgroundColor: '#ffffff' }}
+        style={{ border: 0, backgroundColor: 'hsl(var(--background))' }}
       />
 
       {country.latitude && country.longitude && (
@@ -259,7 +259,7 @@ export function CountryOverviewTab({
               latitude={country.latitude}
               longitude={country.longitude}
               cityName={country.capital || country.name}
-              style={{ height: '100%', border: 0, backgroundColor: '#ffffff' }}
+              style={{ height: '100%', border: 0, backgroundColor: 'hsl(var(--background))' }}
             />
           </CardContent>
         </Card>

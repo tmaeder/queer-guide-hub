@@ -38,7 +38,6 @@ export function StickyLetterBar({ letter, onChange, stickyTop = 64 }: Props) {
                   ? 'bg-primary text-primary-foreground font-bold hover:bg-primary'
                   : 'bg-transparent text-foreground font-medium hover:bg-muted/40'
               } focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`}
-              style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}
             >
               {label}
             </button>

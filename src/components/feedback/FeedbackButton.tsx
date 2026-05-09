@@ -40,6 +40,25 @@ export function FeedbackButton() {
     if (open) setPageUrl(window.location.href);
   }, [open]);
 
+  // Auto-dismiss the success state after a short delay
+  useEffect(() => {
+    if (status !== 'submitted' || !open) return;
+    const timer = window.setTimeout(() => {
+      setOpen(false);
+      window.setTimeout(() => {
+        setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
+        setStatus('idle');
+        setIncludeScreenshot(true);
+        if (screenshotUrlRef.current) {
+          URL.revokeObjectURL(screenshotUrlRef.current);
+          screenshotUrlRef.current = null;
+        }
+        screenshotBlobRef.current = null;
+      }, 200);
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [status, open]);
+
   const reset = useCallback(() => {
     setForm({ category: '', title: '', description: '', email: '', honeypot: '' });
     setStatus('idle');
@@ -141,9 +160,8 @@ export function FeedbackButton() {
             aria-label="Share feedback"
             onClick={handleOpenClick}
             disabled={capturing}
-            className="fixed bottom-6 right-6 z-[1200] flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg transition-all hover:brightness-90 disabled:opacity-50"
+            className="fixed bottom-6 right-6 z-[1200] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
             style={{
-              backgroundColor: 'hsl(var(--accent-warm))',
               visibility: capturing ? 'hidden' : 'visible',
             }}
           >
@@ -157,8 +175,8 @@ export function FeedbackButton() {
         <DialogContent style={{ maxWidth: 480 }}>
           {status === 'submitted' ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#22c55e' }}>
-                <Check style={{ width: 24, height: 24, color: '#fff' }} />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-foreground">
+                <Check style={{ width: 24, height: 24, color: 'hsl(var(--background))' }} />
               </div>
               <h6 className="text-base font-semibold mb-2">Thank you!</h6>
               <p className="text-sm text-muted-foreground mb-6">

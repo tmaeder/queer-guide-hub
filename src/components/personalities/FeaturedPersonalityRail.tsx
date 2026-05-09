@@ -33,8 +33,8 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
           width: 160,
           height: 160,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, hsl(var(--brand) / 0.25) 0%, hsl(var(--brand) / 0.15) 100%)',
-          border: '2px solid hsl(var(--brand))',
+          background: 'linear-gradient(135deg, hsl(var(--foreground) / 0.25) 0%, hsl(var(--foreground) / 0.15) 100%)',
+          border: '2px solid hsl(var(--foreground))',
         }}
       >
         {p.image_url ? (
@@ -51,7 +51,6 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
         ) : (
           <span
             style={{
-              fontFamily: '"Plus Jakarta Sans", sans-serif',
               fontWeight: 700,
               fontSize: '2rem',
             }}
@@ -63,7 +62,6 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
       <p
         className="text-center truncate"
         style={{
-          fontFamily: '"Plus Jakarta Sans", sans-serif',
           fontWeight: 600,
           fontSize: '0.9rem',
         }}
@@ -88,10 +86,9 @@ export function FeaturedPersonalityRail() {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-3">
-        <Star size={18} style={{ color: 'hsl(var(--brand))' }} fill="hsl(var(--brand))" aria-hidden="true" />
+        <Star size={18} style={{ color: 'hsl(var(--foreground))' }} fill="hsl(var(--foreground))" aria-hidden="true" />
         <h2
           style={{
-            fontFamily: '"Plus Jakarta Sans", sans-serif',
             fontWeight: 700,
             fontSize: '1.125rem',
           }}

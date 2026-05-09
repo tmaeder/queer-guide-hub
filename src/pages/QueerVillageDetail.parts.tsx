@@ -233,7 +233,8 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
                     className="flex items-center gap-2 rounded-lg bg-accent p-3"
                   >
                     <Landmark
-                      style={{ width: 16, height: 16, flexShrink: 0, color: '#777777' }}
+                      className="text-muted-foreground"
+                      style={{ width: 16, height: 16, flexShrink: 0 }}
                     />
                     <p className="text-sm font-medium">{landmark}</p>
                   </div>
