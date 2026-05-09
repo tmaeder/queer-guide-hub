@@ -57,58 +57,76 @@ jobs:
         id: meili
         run: |
           RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            # Find Caddy's public IP listening on :443
-            # ss -tln output: State Recv-Q Send-Q Local_Address:Port Peer_Address:Port
-            # $4 = Local_Address:Port, e.g. "84.16.72.163:443"
-            caddy_ip=$(ss -tln | awk '/:443/ && $4 !~ /^127\./ && $4 !~ /^\[/ && $4 !~ /^0\.0\.0\.0/ && $4 !~ /^\*/ {
+            echo "=== ss -tln ===" >&2
+            ss -tln >&2
+
+            # Collect all IPs listening on :443, preferring 127.0.0.1
+            # (public IP often unreachable from localhost due to firewall)
+            ips=$(ss -tln | awk '/:443/ && $4 !~ /^\[/ && $4 !~ /^\*/ {
               n = split($4, a, ":")
-              if (n >= 2) { print a[1]; exit }
-            }')
+              if (n >= 2) print a[1]
+            }' | sort -t. -k1,1n | uniq)
 
-            if [ -z "$caddy_ip" ]; then
-              echo "ERR: no public IP on :443" >&2
-              ss -tln >&2
-              echo "NONE"
-              exit 0
-            fi
-            echo "Caddy IP: $caddy_ip" >&2
+            echo "IPs on :443: $ips" >&2
 
-            for host in s.queer.guide search.queer.guide; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
-                --resolve "$host:443:$caddy_ip" \
-                "https://$host/health" 2>/dev/null)
-              echo "  --resolve $host:443:$caddy_ip -> $code" >&2
+            for ip in $ips; do
+              for host in s.queer.guide search.queer.guide; do
+                code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+                  --resolve "$host:443:$ip" \
+                  "https://$host/health" 2>/dev/null)
+                echo "  --resolve $host:443:$ip -> $code" >&2
+                if [ "$code" = "200" ]; then
+                  echo "$host $ip"
+                  exit 0
+                fi
+              done
+            done
+
+            # Fallback: try localhost directly on common Meili ports
+            for port in 7700 7701; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
+                "http://localhost:$port/health" 2>/dev/null)
+              echo "  http://localhost:$port/health -> $code" >&2
               if [ "$code" = "200" ]; then
-                echo "$host $caddy_ip"
+                echo "DIRECT http://localhost:$port"
                 exit 0
               fi
             done
+
             echo "NONE"
           REMOTE
           )
           echo "Discovery result: $RESULT"
           if [ "$RESULT" = "NONE" ]; then
-            echo "::error::Could not reach Meilisearch on VPS via Caddy"
+            echo "::error::Could not reach Meilisearch on VPS"
             exit 1
           fi
-          MEILI_HOST=$(echo "$RESULT" | awk '{print $1}')
-          CADDY_IP=$(echo "$RESULT" | awk '{print $2}')
-          echo "meili_host=$MEILI_HOST" >> "$GITHUB_OUTPUT"
-          echo "caddy_ip=$CADDY_IP" >> "$GITHUB_OUTPUT"
+
+          MODE=$(echo "$RESULT" | awk '{print $1}')
+          if [ "$MODE" = "DIRECT" ]; then
+            MEILI_URL=$(echo "$RESULT" | awk '{print $2}')
+            echo "meili_url=$MEILI_URL" >> "$GITHUB_OUTPUT"
+            echo "curl_opts=" >> "$GITHUB_OUTPUT"
+          else
+            MEILI_HOST=$(echo "$RESULT" | awk '{print $1}')
+            CADDY_IP=$(echo "$RESULT" | awk '{print $2}')
+            echo "meili_url=https://$MEILI_HOST" >> "$GITHUB_OUTPUT"
+            echo "curl_opts=--resolve $MEILI_HOST:443:$CADDY_IP" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Run configure-indexes.sh
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="https://${{ steps.meili.outputs.meili_host }}" \
+            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="--resolve ${{ steps.meili.outputs.meili_host }}:443:${{ steps.meili.outputs.caddy_ip }}" \
+            MEILI_CURL_OPTS="${{ steps.meili.outputs.curl_opts }}" \
             bash /tmp/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="https://${{ steps.meili.outputs.meili_host }}" \
+            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            MEILI_CURL_OPTS="--resolve ${{ steps.meili.outputs.meili_host }}:443:${{ steps.meili.outputs.caddy_ip }}" \
+            MEILI_CURL_OPTS="${{ steps.meili.outputs.curl_opts }}" \
             bash /tmp/seed-city-aliases.sh
