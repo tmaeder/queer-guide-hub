@@ -379,7 +379,7 @@ export default function SearchResults() {
               )}
               {result.rating && (
                 <div className="flex items-center" style={{ gap: 4 }}>
-                  <Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }} />
+                  <Star style={{ width: 12, height: 12, fill: 'currentColor' }} />
                   <span className="text-xs text-muted-foreground">{result.rating}</span>
                 </div>
               )}
@@ -483,7 +483,7 @@ export default function SearchResults() {
                     {result.rating && (
                       <div className="flex items-center" style={{ gap: 4 }}>
                         <Star
-                          style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }}
+                          style={{ width: 12, height: 12, fill: 'currentColor' }}
                         />
                         <span className="text-sm text-muted-foreground">{result.rating}</span>
                       </div>

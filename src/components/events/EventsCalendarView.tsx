@@ -124,11 +124,11 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
           <Card>
             <CardContent>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/10 rounded-lg relative">
-                  <Ticket className="h-5 w-5 text-green-600" />
+                <div className="p-2 bg-muted relative">
+                  <Ticket className="h-5 w-5 text-foreground" />
                 </div>
                 <div>
-                  <h5 className="text-2xl font-bold text-green-600">
+                  <h5 className="text-2xl font-bold text-foreground">
                     {monthlyStats.freeEvents}
                   </h5>
                   <p className="text-sm text-muted-foreground">Free Events</p>

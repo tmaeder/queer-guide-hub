@@ -156,7 +156,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           <div className="flex items-center gap-2 mt-auto pt-2">
             {hasNumericRating && (
               <div className="flex items-center" style={{ gap: 1 }}>
-                <Star style={{ width: 14, height: 14, fill: '#f59e0b', color: '#f59e0b' }} />
+                <Star style={{ width: 14, height: 14, fill: 'currentColor' }} />
                 <p className="text-sm font-semibold">
                   {hotel.star_rating}
                 </p>

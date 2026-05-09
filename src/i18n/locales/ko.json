@@ -196,7 +196,7 @@
       "samples": {
         "berlin": "베를린 프라이드 위크",
         "barcelona": "바르셀로나: 해변과 밤",
-        "bangkok": "방콕 & 푸껫 익스플로러"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}}일"
     },
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "도시 검색…",
         "noCityMatch": "일치하는 도시가 없습니다.",
         "addNewPlace": "'{{query}}'을(를) 새 장소로 추가",
-        "datesUnlockHint": "날짜를 추가하면 숙소·항공편·안전 정보 제안이 활성화됩니다.",
+        "datesUnlockHint": "날짜를 추가하면 숙소, 항공편, 안전 제안이 표시됩니다.",
         "defaultTitle": "{{city}} 여행",
         "titleField": "여행 제목",
         "titlePlaceholder": "예: 베를린 프라이드 위크 2026",
@@ -435,8 +435,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "짐 목록을 시작하세요",
-      "emptyDescription": "항목을 추가하거나 템플릿으로 시작하세요.",
+      "emptyTitle": "아직 항목이 없습니다.",
+      "emptyDescription": "항목을 추가하거나 템플릿을 사용하세요.",
       "progress": "{{checked}} / {{total}} 완료",
       "addItem": "항목 추가…",
       "removeAria": "항목 삭제",
@@ -751,7 +751,7 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "선택 사항. 건너뛰어도 됩니다.",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
@@ -1021,9 +1021,9 @@
     "error": "알림 전송에 실패했습니다. 다시 시도해 주세요."
   },
   "home": {
-    "heroLine1": "발견.",
-    "heroLine2": "연결.",
-    "heroLine3": "소속.",
+    "heroLine1": "퀴어 장소,",
+    "heroLine2": "이벤트, 그리고 사람들.",
+    "heroLine3": "전 세계.",
     "subtitle": "안전한 장소, 활기찬 이벤트, 그리고 당신을 이해하는 커뮤니티 — 어디에 있든.",
     "browseVenues": "장소 둘러보기",
     "viewEvents": "이벤트 보기",
@@ -1134,8 +1134,8 @@
       "gridView": "그리드 보기",
       "mapView": "지도 보기",
       "submit": "제출",
-      "emptyTitle": "아직 당신의 스타일에 맞는 장소가 없어요",
-      "emptyDescription": "검색 범위를 넓히거나 다른 도시를 탐색해 보세요.",
+      "emptyTitle": "필터에 맞는 장소가 없습니다.",
+      "emptyDescription": "검색 범위를 넓히거나 도시를 변경해 보세요.",
       "submitVenue": "장소 등록",
       "clearFilters": "필터 초기화",
       "emptyDataset": {
@@ -1211,8 +1211,8 @@
       "clearFilterPast": "지난 이벤트 필터 지우기",
       "noPastEvents": "지난 이벤트를 찾을 수 없음",
       "noPastEventsDesc": "이 필터에 맞는 지난 이벤트가 없습니다. 토글을 끄면 다가오는 이벤트를 볼 수 있어요.",
-      "emptyTitle": "댄스 플로어가 아직 비어 있어요...",
-      "emptyDescription": "곧 다시 확인하거나 필터를 넓혀 재미있는 이벤트를 찾아보세요.",
+      "emptyTitle": "아직 이벤트가 없습니다.",
+      "emptyDescription": "필터를 넓히거나 나중에 다시 확인하세요.",
       "emptyDataset": {
         "title": "아직 이벤트가 없습니다",
         "body": "아직 이곳에 이벤트를 추가하지 않았습니다. 이벤트를 등록하여 가이드 성장에 도움을 주세요."
@@ -1278,15 +1278,15 @@
       "subtitle": "LGBTQ+ 친화적 여행지의 항공편, 호텔, 활동 찾기",
       "activitiesComingSoon": "활동은 곧 제공됩니다.",
       "browseDestinations": "여행지 둘러보기",
-      "exploreCta": "LGBTQ+ 친화적 여행지 탐색",
-      "exploreDescription": "상세한 안전 정보와 여행 가이드가 있는 도시와 국가를 발견하세요"
+      "exploreCta": "여행지",
+      "exploreDescription": "안전 정보와 여행 가이드가 있는 도시와 국가."
     },
     "marketplace": {
       "title": "마켓플레이스",
       "subtitle": "제품과 서비스를 제공하는 지역 업체를 발견하고 응원하세요",
       "listBusiness": "내 비즈니스 등록",
-      "emptyTitle": "아직 진열대가 비어 있어요",
-      "emptyDescription": "퀴어 운영 비즈니스가 매일 합류하고 있어요.",
+      "emptyTitle": "아직 목록이 없습니다.",
+      "emptyDescription": "매주 더 추가됩니다.",
       "signInRequired": "로그인 필요",
       "signInList": "무료 계정을 만들어 비즈니스를 등록하세요.",
       "signInFavorites": "즐겨찾기를 저장하려면 로그인하세요.",
@@ -1326,8 +1326,8 @@
       "filters": "필터",
       "activeFilters": "적용된 필터",
       "clearAll": "모두 지우기",
-      "emptyTitle": "뉴스룸이 조용해요",
-      "emptyDescription": "지금은 기사가 없어요. 곧 다시 확인해 보세요.",
+      "emptyTitle": "아직 기사가 없습니다.",
+      "emptyDescription": "나중에 다시 확인하세요.",
       "previous": "이전",
       "next": "다음"
     },
@@ -1364,8 +1364,8 @@
       "discover": "탐색",
       "myGroups": "내 그룹",
       "popular": "인기",
-      "emptyTitle": "아직 그룹이 없어요",
-      "emptyDescription": "불꽃이 되어 보세요 — 첫 번째 그룹을 만들고 사람들을 모아 보세요.",
+      "emptyTitle": "아직 그룹이 없습니다.",
+      "emptyDescription": "첫 번째 그룹을 만들어 보세요.",
       "createGroup": "그룹 만들기",
       "mostPopular": "가장 인기 있는 그룹",
       "noPopular": "아직 인기 그룹이 없습니다."

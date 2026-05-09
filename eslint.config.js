@@ -77,10 +77,10 @@ export default tseslint.config(
     },
   },
   // P2-1 — block hardcoded color literals outside theme/config files.
-  // See docs/design-system/FIX_PLAN.md and CLAUDE.md design section.
+  // See docs/design-system/README.md and CLAUDE.md design section.
   {
     files: ["src/**/*.{ts,tsx}"],
-    // Allowlist — see docs/design-system/admin-palette.md.
+    // Allowlist — see docs/design-system/README.md § Admin exceptions.
     // Admin status/data-viz files use functional traffic-light colors
     // (success/info/warning/error) by design, plus equality-score / SDG
     // gradient scales that are also functional encodings. The token rule
@@ -109,7 +109,6 @@ export default tseslint.config(
       // Risk traffic-light (low/moderate/high/critical) for travel safety.
       "src/components/trips/TripSafetyBriefing.tsx",
       // Categorical news/topic taxonomy palette (politics, health, sports…).
-      "src/pages/NewsDetail.tsx",
       "src/components/news/NewsCard.tsx",
       // Deterministic avatar gradient palette (12 distinct hues by user id).
       "src/lib/avatar.ts",
@@ -123,8 +122,6 @@ export default tseslint.config(
       // Trip cover gradient palette + status badges.
       "src/components/trips/TripCoverBand.tsx",
       "src/pages/trips/**",
-      // Roadmap status badges (new / under_review / planned / in_progress…).
-      "src/pages/FeedbackBoard.tsx",
       // Severity-tagged content warnings.
       "src/components/ui/ContentWarningBanner.tsx",
       // Categorical tag link palettes + relationship graph.
@@ -147,16 +144,10 @@ export default tseslint.config(
       // Severity rgba banners — pre-multiplied alpha for translucency.
       "src/components/trips/TripDocExpiryBanner.tsx",
       "src/components/trips/TripNudgesBanner.tsx",
-      // Validation success/state colors that don't map to existing tokens.
-      "src/components/ui/location-autocomplete.tsx",
-      // Role-icon palette (admin/owner/member).
-      "src/pages/MyGroups.tsx",
       // Categorical budget category palette (food/transport/lodging/...).
       "src/components/trips/BudgetTab.tsx",
       // Filter chip dot colors — categorical.
       "src/components/venues/VenueFilters.tsx",
-      // Star-fill yellow (semantic gold star).
-      "src/pages/Favorites.tsx",
       // Video player chrome — pure black/white overlay regardless of theme.
       "src/components/ui/modern-video-player.tsx",
       // Theme provider — owns the color tokens themselves.
@@ -165,56 +156,57 @@ export default tseslint.config(
       // for rationale on each).
       "src/components/country/EqualityScoreBadge.tsx",
       "src/components/country/CountryHeroImages.tsx",
-      "src/components/feedback/FeedbackButton.tsx",
-      "src/components/posts/PostCard.tsx",
-      "src/components/trips/TripsSignedOutHero.tsx",
-      "src/components/trips/SocialSignalBadges.tsx",
-      "src/components/trips/TripContextBar.tsx",
-      "src/components/trips/TripNewsSection.tsx",
-      "src/components/trips/BundledCheckoutDialog.tsx",
-      "src/components/trips/ReservationsTab.tsx",
-      "src/components/trips/TripLocalContext.tsx",
-      "src/components/trips/TripTemplates.tsx",
       "src/components/trips/create/CityCountryAutocomplete.tsx",
       "src/components/profile/PhotoGallery.tsx",
-      "src/components/profile/UrlValidator.tsx",
-      "src/components/profile/social/UrlValidator.tsx",
-      "src/components/hotels/HotelCard.tsx",
       "src/components/analytics/UmamiAnalyticsDashboard.tsx",
       "src/components/resources/TagListRenderer.tsx",
-      "src/components/messaging/MessagingInterface.tsx",
       "src/config/contentTypes/**",
-      // Detail-page semantic accents (gold star fills, verified-shield green,
-      // quote-box parchment, life-status pulses) — semantic by design.
-      "src/pages/SearchResults.tsx",
-      "src/pages/SubmitHub.tsx",
-      "src/pages/HotelDetail.parts.tsx",
-      "src/pages/PersonalityDetail.parts.tsx",
-      "src/pages/CountryDetail.parts.tsx",
-      "src/pages/EventDetail.parts.tsx",
-      "src/pages/MarketplaceItemDetail.parts.tsx",
-      "src/pages/VenueDetail.parts.tsx",
-      "src/pages/QueerVillageDetail.parts.tsx",
-      "src/pages/Index.tsx",
       // Hero / cover overlays — pre-multiplied black gradients on imagery.
       "src/pages/Ressources.tsx",
       "src/components/location/LocationInfo.tsx",
-      // Pages with one-off semantic colors (verified shield, etc).
-      "src/pages/Friends.tsx",
-      "src/pages/HelpHotlines.tsx",
-      "src/pages/UserDirectory.tsx",
     ],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
-          // Match hex literals AND rgb/hsl calls with NUMERIC content only —
-          // hsl(var(--brand)), rgb(var(--…)) and similar token references
-          // are deliberately allowed.
           selector:
             "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
           message:
-            "Hardcoded color literal — use theme tokens (theme.palette.*, hsl(var(--brand)), etc.). See docs/design-system/FIX_PLAN.md P1-1.",
+            "Hardcoded color literal — use design tokens (hsl(var(--foreground)), hsl(var(--muted)), etc.).",
+        },
+      ],
+    },
+  },
+  // P5 — block rounded, shadow, and gradient classes in new code.
+  // Existing uses are neutralized by tailwind.config.ts overrides but
+  // should not be added to new code.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/**/__tests__/**",
+      "src/test/**",
+      "src/components/admin/**",
+      "src/components/cms/**",
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "Literal[value=/rounded-(sm|md|lg|xl|2xl|3xl)/]",
+          message:
+            "Rounded corners are disabled — all radii are 0. Use rounded-none or remove the class.",
+        },
+        {
+          selector: "Literal[value=/shadow-(md|lg|xl|2xl)/]",
+          message:
+            "Shadows are disabled — use border or bg-muted for depth.",
+        },
+        {
+          selector: "Literal[value=/bg-gradient-to/]",
+          message:
+            "Gradients are not part of the design system — use solid bg tokens.",
         },
       ],
     },

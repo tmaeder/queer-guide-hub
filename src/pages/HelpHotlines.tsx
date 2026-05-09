@@ -622,7 +622,7 @@ function HotlineCard({
             <Badge
               variant="default"
               className="text-xs"
-              style={{ backgroundColor: 'var(--brand, #b60d3d)', color: '#fff' }}
+              style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}
             >
               <Zap size={10} className="mr-0.5" />
               {t('help.badge_24_7', '24/7')}

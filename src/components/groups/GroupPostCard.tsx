@@ -210,7 +210,7 @@ export const GroupPostCard = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleLikeToggle}
-                  style={post.user_liked ? { color: 'hsl(var(--brand))' } : undefined}
+                  style={post.user_liked ? { color: 'hsl(var(--foreground))' } : undefined}
                 >
                   <span className="flex items-center gap-2">
                     <Heart style={{ width: 16, height: 16, ...(post.user_liked && { fill: 'currentColor' }) }} />

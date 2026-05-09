@@ -242,7 +242,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
         <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-2xl">
           <div
             className="w-14 h-14 rounded-full opacity-[0.12] flex items-center justify-center mx-auto mb-3"
-            style={{ backgroundColor: 'hsl(var(--brand))' }}
+            style={{ backgroundColor: 'hsl(var(--foreground))' }}
           />
           <MapIcon
             style={{
@@ -250,7 +250,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
               height: 28,
               marginTop: -46,
               marginBottom: 18,
-              color: 'hsl(var(--brand))',
+              color: 'hsl(var(--foreground))',
             }}
             aria-hidden="true"
             className="mx-auto"
@@ -277,21 +277,21 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
                   <div
                     className="flex flex-col items-center justify-center flex-shrink-0 w-12 h-12 rounded-lg"
                     style={{
-                      backgroundColor: 'hsl(var(--brand))',
-                      color: 'hsl(var(--brand-foreground))',
+                      backgroundColor: 'hsl(var(--foreground))',
+                      color: 'hsl(var(--background))',
                     }}
                     aria-hidden="true"
                   >
                     <span className="text-[9px] font-bold uppercase opacity-85" style={{ letterSpacing: '0.06em', lineHeight: 1 }}>
                       {t('trips.itinerary.dayShort')}
                     </span>
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 800, lineHeight: 1.1 }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.1 }}>
                       {dayNumber}
                     </span>
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold leading-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    <p className="font-bold leading-tight">
                       {format(new Date(day.date), 'EEEE, MMM d')}
                     </p>
 
@@ -357,7 +357,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
                   <div
                     className="border-[1.5px] border-dashed rounded-lg py-5 text-center min-h-[48px] transition-colors"
                     style={{
-                      borderColor: activeDragId ? 'hsl(var(--brand))' : 'hsl(var(--border))',
+                      borderColor: activeDragId ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
                     }}
                   >
                     <p className="text-xs text-muted-foreground">{t('trips.itinerary.dropHere')}</p>

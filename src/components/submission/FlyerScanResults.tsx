@@ -150,7 +150,7 @@ function ItemDetail({
               fontSize: '0.75rem',
               cursor: 'pointer',
               ...(detected_type === 'venue'
-                ? { backgroundColor: 'hsl(var(--brand))', color: '#fff' }
+                ? { backgroundColor: 'hsl(var(--foreground))', color: '#fff' }
                 : {}),
             }}
             variant={detected_type === 'venue' ? 'default' : 'secondary'}
@@ -225,7 +225,7 @@ function ItemDetail({
                   ...(selectedVenueId === v.id
                     ? {
                         backgroundColor: '#DB277720',
-                        borderColor: 'hsl(var(--brand))',
+                        borderColor: 'hsl(var(--foreground))',
                         borderWidth: 1,
                         borderStyle: 'solid',
                       }
@@ -246,7 +246,7 @@ function ItemDetail({
         onClick={onApply}
         style={{
           width: '100%',
-          backgroundColor: detected_type === 'event' ? '#ec4899' : 'hsl(var(--brand))',
+          backgroundColor: detected_type === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
           color: '#fff',
         }}
       >
@@ -383,7 +383,7 @@ export function FlyerScanResults({
                   borderColor: isExpanded
                     ? effectiveType === 'event'
                       ? '#ec4899'
-                      : 'hsl(var(--brand))'
+                      : 'hsl(var(--foreground))'
                     : 'hsl(var(--border))',
                   borderRadius: 8,
                   overflow: 'hidden',
@@ -401,7 +401,7 @@ export function FlyerScanResults({
                       fontSize: '0.7rem',
                       height: 22,
                       backgroundColor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
-                      color: effectiveType === 'event' ? '#ec4899' : 'hsl(var(--brand))',
+                      color: effectiveType === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
                     }}
                     variant="outline"
                   >

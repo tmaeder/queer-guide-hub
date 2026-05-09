@@ -180,10 +180,10 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
       {unsafeCities.map((city) => (
         <Card key={city.id} className="mb-2">
           <CardContent>
-            <div className="flex items-start gap-2 -mx-2 -mt-1 -mb-1 p-2 rounded bg-yellow-100 dark:bg-yellow-900/30">
+            <div className="flex items-start gap-2 -mx-2 -mt-1 -mb-1 p-2 bg-muted">
               <Shield
                 size={16}
-                className="text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5"
+                className="text-foreground shrink-0 mt-0.5"
               />
               <p className="text-sm">
                 <strong>{city.name}</strong> ({city.countries?.name}) has a lower equality score (
@@ -240,7 +240,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                       {venue.category && <Badge variant="outline">{venue.category}</Badge>}
                       {venue.foursquare_rating && (
                         <div className="flex items-center gap-0.5">
-                          <Star size={10} className="text-yellow-600 dark:text-yellow-400" />
+                          <Star size={10} className="text-foreground" />
                           <span className="text-[11px]">{venue.foursquare_rating}</span>
                         </div>
                       )}

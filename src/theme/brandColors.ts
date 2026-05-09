@@ -1,10 +1,12 @@
-// Strict monochrome palette — importable outside React context.
-// These hex literals mirror the HSL CSS vars in `src/index.css`.
-//   --brand (light) = 0 0% 4%   ≈ #0a0a0a
-//   --brand (dark)  = 0 0% 100% ≈ #ffffff
-// Name kept ("brandColors") for backward compatibility with ~120 consumers.
+// Brand color constants — importable outside React context.
+// queer.guide ships a strict-monochrome design system: there is no
+// chromatic brand color. The export is retained as a thin compat
+// shim so legacy admin imports keep working; all values resolve to
+// the neutral foreground.
+//   --foreground (light) = 0 0% 4%   ≈ #0a0a0a
+//   --foreground (dark)  = 0 0% 96%  ≈ #f5f5f5
 export const brandColors = {
   main: '#0a0a0a',
-  light: '#ffffff',
+  light: '#f5f5f5',
   dark: '#000000',
 } as const;

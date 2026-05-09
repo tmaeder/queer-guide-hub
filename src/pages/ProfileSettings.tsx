@@ -317,7 +317,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
           </>
         )}
         {saveStatus === 'unsaved' && (
-          <Badge variant="outline" className="text-orange-600">Unsaved changes</Badge>
+          <Badge variant="outline">Unsaved changes</Badge>
         )}
         {saveStatus === 'error' && (
           <Badge variant="destructive">Save failed — retrying...</Badge>

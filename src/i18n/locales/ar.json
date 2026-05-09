@@ -196,7 +196,7 @@
       "samples": {
         "berlin": "أسبوع الفخر في برلين",
         "barcelona": "برشلونة: الشاطئ والليل",
-        "bangkok": "مستكشف بانكوك وبوكيت"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}} يوم"
     },
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "ابحث عن مدينة…",
         "noCityMatch": "لم يتم العثور على مدينة مطابقة.",
         "addNewPlace": "إضافة «{{query}}» كمكان جديد",
-        "datesUnlockHint": "إضافة التواريخ تفتح اقتراحات الإقامة والطيران والسلامة.",
+        "datesUnlockHint": "أضف تواريخ للحصول على اقتراحات الإقامة والرحلات والسلامة.",
         "defaultTitle": "رحلة إلى {{city}}",
         "titleField": "عنوان الرحلة",
         "titlePlaceholder": "مثل: أسبوع الفخر برلين 2026",
@@ -435,8 +435,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "ابدأ قائمة الأمتعة",
-      "emptyDescription": "أضف عناصر أو استخدم قالبًا للبدء.",
+      "emptyTitle": "لا عناصر بعد.",
+      "emptyDescription": "أضف عناصر أو استخدم قالبًا.",
       "progress": "{{checked}} من {{total}} جاهزة",
       "addItem": "إضافة عنصر…",
       "removeAria": "إزالة العنصر",
@@ -751,7 +751,7 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "اختياري. تخطَّ إذا تفضّل.",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
@@ -1021,9 +1021,9 @@
     "error": "فشل إرسال التنبيه. يرجى المحاولة مجدداً."
   },
   "home": {
-    "heroLine1": "اكتشف.",
-    "heroLine2": "تواصل.",
-    "heroLine3": "انتمِ.",
+    "heroLine1": "أماكن كويرية،",
+    "heroLine2": "فعاليات وأشخاص.",
+    "heroLine3": "حول العالم.",
     "subtitle": "أماكن آمنة، فعاليات نابضة بالحياة، ومجتمعات تفهمك — أينما كنت.",
     "browseVenues": "تصفح الأماكن",
     "viewEvents": "عرض الفعاليات",
@@ -1134,8 +1134,8 @@
       "gridView": "عرض شبكي",
       "mapView": "عرض الخريطة",
       "submit": "إرسال",
-      "emptyTitle": "لم نجد أماكن تناسب ذوقك بعد",
-      "emptyDescription": "حاول توسيع بحثك أو استكشاف مدينة أخرى.",
+      "emptyTitle": "لا أماكن تطابق فلاترك.",
+      "emptyDescription": "وسّع البحث أو جرّب مدينة أخرى.",
       "submitVenue": "إضافة مكان",
       "clearFilters": "مسح الفلاتر",
       "emptyDataset": {
@@ -1211,8 +1211,8 @@
       "clearFilterPast": "مسح فلتر الفعاليات السابقة",
       "noPastEvents": "لم يتم العثور على فعاليات سابقة",
       "noPastEventsDesc": "لا توجد فعاليات سابقة تطابق هذه الفلاتر. أوقف التبديل لعرض الفعاليات القادمة.",
-      "emptyTitle": "حلبة الرقص فارغة... حالياً",
-      "emptyDescription": "عد قريباً أو وسّع الفلاتر للعثور على شيء ممتع.",
+      "emptyTitle": "لا فعاليات بعد.",
+      "emptyDescription": "وسّع الفلاتر أو عد لاحقاً.",
       "emptyDataset": {
         "title": "لا توجد فعاليات بعد",
         "body": "لم نضف أي فعاليات هنا بعد. ساعدنا على تطوير الدليل بإضافة واحدة."
@@ -1278,15 +1278,15 @@
       "subtitle": "ابحث عن رحلات وفنادق وأنشطة في وجهات صديقة لمجتمع LGBTQ+",
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
-      "exploreCta": "استكشف وجهات صديقة لمجتمع LGBTQ+",
-      "exploreDescription": "اكتشف مدناً وبلداناً مع معلومات أمان مفصلة وأدلة سفر"
+      "exploreCta": "الوجهات",
+      "exploreDescription": "مدن وبلدان مع معلومات أمان وأدلة سفر."
     },
     "marketplace": {
       "title": "السوق",
       "subtitle": "اكتشف وادعم الأعمال المحلية التي تقدم منتجات وخدمات",
       "listBusiness": "أضف نشاطك التجاري",
-      "emptyTitle": "لا يوجد شيء على الرفوف بعد",
-      "emptyDescription": "أعمال مملوكة لأفراد مجتمع الكوير تنضم كل يوم.",
+      "emptyTitle": "لا إعلانات بعد.",
+      "emptyDescription": "تُضاف المزيد كل أسبوع.",
       "signInRequired": "يجب تسجيل الدخول",
       "signInList": "أنشئ حساباً مجانياً لإدراج نشاطك التجاري.",
       "signInFavorites": "يرجى تسجيل الدخول لحفظ المفضلة.",
@@ -1326,8 +1326,8 @@
       "filters": "الفلاتر",
       "activeFilters": "الفلاتر النشطة",
       "clearAll": "مسح الكل",
-      "emptyTitle": "غرفة الأخبار هادئة",
-      "emptyDescription": "لا توجد قصص حالياً — عد قريباً.",
+      "emptyTitle": "لا مقالات بعد.",
+      "emptyDescription": "عد لاحقاً.",
       "previous": "السابق",
       "next": "التالي"
     },
@@ -1364,8 +1364,8 @@
       "discover": "اكتشف",
       "myGroups": "مجموعاتي",
       "popular": "شائع",
-      "emptyTitle": "لا توجد مجموعات هنا بعد",
-      "emptyDescription": "كن الشرارة — أنشئ أول مجموعة واجمع الناس معاً.",
+      "emptyTitle": "لا مجموعات بعد.",
+      "emptyDescription": "أنشئ الأولى.",
       "createGroup": "إنشاء مجموعة",
       "mostPopular": "المجموعات الأكثر شعبية",
       "noPopular": "لا توجد مجموعات شائعة متاحة بعد."

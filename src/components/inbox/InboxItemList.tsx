@@ -64,7 +64,7 @@ export const InboxItemList: React.FC<InboxItemListProps> = ({ items, onSelect, o
                   }}
                 >
                   {item.isStarred ? (
-                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="h-4 w-4 text-foreground fill-foreground" />
                   ) : (
                     <StarOff className="h-4 w-4 text-muted-foreground" />
                   )}

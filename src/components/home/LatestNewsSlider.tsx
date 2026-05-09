@@ -37,7 +37,7 @@ const decodeHtmlEntities = (text: string): string =>
 
 const Hairline = () => <div className="h-px bg-current opacity-10" />;
 
-const DISPLAY_FONT = "'Plus Jakarta Sans', sans-serif";
+const DISPLAY_FONT = "'Inter', sans-serif";
 
 const LatestNewsSlider = React.memo(() => {
   const { articles, loading, error } = useNews();
@@ -176,7 +176,7 @@ const LatestNewsSlider = React.memo(() => {
                     </span>
                   </div>
                   <div
-                    className="overflow-hidden text-[0.9375rem] font-semibold leading-[1.3] transition-colors group-hover:text-[hsl(var(--brand))] md:text-base"
+                    className="overflow-hidden text-[0.9375rem] font-semibold leading-[1.3] transition-colors group-hover:text-[hsl(var(--foreground))] md:text-base"
                     style={{
                       fontFamily: DISPLAY_FONT,
                       display: '-webkit-box',

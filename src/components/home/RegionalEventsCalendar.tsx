@@ -20,7 +20,7 @@ type Event = {
 
 const Hairline = () => <div className="h-px bg-current opacity-10" />;
 
-const DISPLAY = "'Plus Jakarta Sans', sans-serif";
+const DISPLAY = "'Inter', sans-serif";
 const BODY = "'Inter', sans-serif";
 
 const RegionalEventsCalendar: React.FC = () => {
@@ -141,7 +141,7 @@ const RegionalEventsCalendar: React.FC = () => {
             </div>
           )}
           <div
-            className="mb-2 text-sm font-extrabold uppercase text-[hsl(var(--brand))] md:text-base"
+            className="mb-2 text-sm font-extrabold uppercase text-[hsl(var(--foreground))] md:text-base"
             style={{
               fontFamily: DISPLAY,
               letterSpacing: '0.04em',
@@ -243,7 +243,7 @@ const RegionalEventsCalendar: React.FC = () => {
                   <div
                     className={cn(
                       'mb-2 text-2xl font-light leading-none md:text-[1.75rem]',
-                      isToday && 'text-[hsl(var(--brand))]',
+                      isToday && 'text-[hsl(var(--foreground))]',
                     )}
                     style={{ fontFamily: DISPLAY, fontVariantNumeric: 'tabular-nums' }}
                   >

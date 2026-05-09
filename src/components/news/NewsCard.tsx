@@ -22,7 +22,7 @@ const NewsCardFixture = () => (
     <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <h3 className="text-base font-semibold" style={{ fontSize: '1.125rem' }}>Sample News Headline</h3>
       <div className="flex items-center gap-2">
-        <Badge style={{ backgroundColor: 'hsl(var(--brand))', color: 'hsl(var(--background))' }}>Politics</Badge>
+        <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Politics</Badge>
         <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Source</Badge>
       </div>
     </CardHeader>

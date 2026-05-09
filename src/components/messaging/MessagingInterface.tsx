@@ -722,7 +722,7 @@ export const MessagingInterface = () => {
                         right: -2,
                         width: 12,
                         height: 12,
-                        backgroundColor: '#22c55e',
+                        backgroundColor: 'hsl(var(--foreground))',
                         border: '2px solid var(--background)',
                         borderRadius: '50%',
                       }}
@@ -735,7 +735,7 @@ export const MessagingInterface = () => {
                         ?.participants?.find((p) => p.user_id !== user?.id)?.profile
                         ?.display_name || 'Unknown User'}
                     </p>
-                    <p className="text-sm" style={{ color: '#16a34a' }}>
+                    <p className="text-sm text-foreground">
                       Online
                     </p>
                   </div>

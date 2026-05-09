@@ -103,7 +103,7 @@ export function TrendingStrip({
 	return (
 		<section className={className} aria-label={headline}>
 			<h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-				<TrendingUp className="h-5 w-5 text-pink-500" />
+				<TrendingUp className="h-5 w-5 text-foreground" />
 				{headline}
 			</h2>
 			<ScrollArea className="w-full whitespace-nowrap">
@@ -131,11 +131,11 @@ export function TrendingStrip({
 												)
 											}
 										>
-											<Card className="h-40 overflow-hidden hover:shadow-md transition">
+											<Card className="h-40 overflow-hidden transition">
 												{it.image_url ? (
 													<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
 												) : (
-													<div className="h-24 w-full bg-gradient-to-br from-orange-200 to-pink-200" />
+													<div className="h-24 w-full bg-muted" />
 												)}
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">{it.title}</div>

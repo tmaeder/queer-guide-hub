@@ -22,9 +22,9 @@ const formatRange = (start: string, end: string): string => {
 const scoreClass = (score: number | null): string => {
   if (score == null) return 'bg-muted text-muted-foreground';
   if (score < 30) return 'bg-destructive text-destructive-foreground';
-  if (score < 50) return 'bg-yellow-500 text-white';
+  if (score < 50) return 'bg-muted text-foreground';
   if (score < 70) return 'bg-accent text-accent-foreground';
-  return 'bg-green-600 text-white';
+  return 'bg-foreground text-background';
 };
 
 export function PerLegSafety({ tripId, tripPlaces, tripDays }: Props) {
@@ -107,13 +107,13 @@ export function PerLegSafety({ tripId, tripPlaces, tripDays }: Props) {
                         </Badge>
                       )}
                       {!country.criminalized && country.equality_score != null && country.equality_score < 50 && (
-                        <Badge className="text-xs gap-1 bg-yellow-500 text-white hover:bg-yellow-500/80">
+                        <Badge className="text-xs gap-1 bg-foreground text-background hover:bg-foreground/80">
                           <ShieldAlert size={12} />
                           {t('trips.safety.chip.limitedRights', 'Limited LGBTQ+ rights')}
                         </Badge>
                       )}
                       {!country.criminalized && country.equality_score != null && country.equality_score >= 70 && (
-                        <Badge variant="outline" className="text-xs gap-1 border-green-600 text-green-700">
+                        <Badge variant="outline" className="text-xs gap-1">
                           <Shield size={12} />
                           {t('trips.safety.chip.protected', 'Strong legal protections')}
                         </Badge>

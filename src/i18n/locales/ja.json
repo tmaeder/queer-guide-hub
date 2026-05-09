@@ -196,7 +196,7 @@
       "samples": {
         "berlin": "ベルリン・プライドウィーク",
         "barcelona": "バルセロナ：ビーチ＆ナイトライフ",
-        "bangkok": "バンコク＆プーケット エクスプローラー"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}} 日"
     },
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "都市を検索…",
         "noCityMatch": "一致する都市が見つかりません。",
         "addNewPlace": "「{{query}}」を新しい場所として追加",
-        "datesUnlockHint": "日付を追加すると、宿泊・フライト・安全情報の提案が表示されます。",
+        "datesUnlockHint": "日付を追加すると宿泊・フライト・安全の提案が表示されます。",
         "defaultTitle": "{{city}}への旅",
         "titleField": "旅のタイトル",
         "titlePlaceholder": "例：ベルリン・プライドウィーク 2026",
@@ -435,8 +435,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "パッキングリストを始めましょう",
-      "emptyDescription": "アイテムを追加するか、テンプレートから始めましょう。",
+      "emptyTitle": "アイテムなし。",
+      "emptyDescription": "アイテムを追加するかテンプレートを使用。",
       "progress": "{{checked}} / {{total}} 完了",
       "addItem": "アイテムを追加…",
       "removeAria": "アイテムを削除",
@@ -751,7 +751,7 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "任意。スキップしても構いません。",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
@@ -1021,9 +1021,9 @@
     "error": "アラートの送信に失敗しました。もう一度お試しください。"
   },
   "home": {
-    "heroLine1": "発見。",
-    "heroLine2": "つながる。",
-    "heroLine3": "居場所。",
+    "heroLine1": "クィアな場所、",
+    "heroLine2": "イベント、人々。",
+    "heroLine3": "世界中で。",
     "subtitle": "安全なスポット、活気あるイベント、あなたを理解してくれるコミュニティ——どこにいても。",
     "browseVenues": "スポットを探す",
     "viewEvents": "イベントを見る",
@@ -1134,8 +1134,8 @@
       "gridView": "グリッド表示",
       "mapView": "マップ表示",
       "submit": "送信",
-      "emptyTitle": "まだあなたにぴったりのスポットが見つかりません",
-      "emptyDescription": "検索範囲を広げるか、別の都市を探してみてください。",
+      "emptyTitle": "フィルターに一致する場所なし。",
+      "emptyDescription": "検索範囲を広げるか都市を変更してください。",
       "submitVenue": "スポットを登録",
       "clearFilters": "フィルターをクリア",
       "emptyDataset": {
@@ -1211,8 +1211,8 @@
       "clearFilterPast": "過去のイベントフィルターをクリア",
       "noPastEvents": "過去のイベントが見つかりません",
       "noPastEventsDesc": "これらのフィルターに一致する過去のイベントはありません。トグルをオフにすると今後のイベントが表示されます。",
-      "emptyTitle": "ダンスフロアはまだ空っぽ…",
-      "emptyDescription": "また後で確認するか、フィルターを広げて楽しいイベントを見つけましょう。",
+      "emptyTitle": "イベントはまだありません。",
+      "emptyDescription": "フィルターを広げるか後で確認してください。",
       "emptyDataset": {
         "title": "まだイベントがありません",
         "body": "ここにはまだイベントを追加していません。ぜひ登録してガイドの成長にご協力ください。"
@@ -1278,15 +1278,15 @@
       "subtitle": "LGBTQ+フレンドリーな目的地のフライト、ホテル、アクティビティを検索",
       "activitiesComingSoon": "アクティビティは近日公開。",
       "browseDestinations": "目的地を探す",
-      "exploreCta": "LGBTQ+フレンドリーな目的地を探索",
-      "exploreDescription": "詳細な安全情報と旅行ガイド付きで都市と国を探索"
+      "exploreCta": "目的地",
+      "exploreDescription": "安全情報とトラベルガイド付きの都市と国。"
     },
     "marketplace": {
       "title": "マーケットプレイス",
       "subtitle": "製品やサービスを提供する地元のビジネスを発見して応援しよう",
       "listBusiness": "あなたのビジネスを掲載",
-      "emptyTitle": "まだ棚に何もありません",
-      "emptyDescription": "クィアオーナーのビジネスが毎日参加しています。",
+      "emptyTitle": "リスティングはまだありません。",
+      "emptyDescription": "毎週追加されています。",
       "signInRequired": "ログインが必要です",
       "signInList": "無料アカウントを作成してビジネスを掲載しましょう。",
       "signInFavorites": "お気に入りを保存するにはログインしてください。",
@@ -1326,8 +1326,8 @@
       "filters": "フィルター",
       "activeFilters": "適用中のフィルター",
       "clearAll": "すべてクリア",
-      "emptyTitle": "ニュースルームは静かです",
-      "emptyDescription": "現在ストーリーはありません。また後で確認してください。",
+      "emptyTitle": "記事はまだありません。",
+      "emptyDescription": "後で確認してください。",
       "previous": "前へ",
       "next": "次へ"
     },
@@ -1364,8 +1364,8 @@
       "discover": "発見",
       "myGroups": "マイグループ",
       "popular": "人気",
-      "emptyTitle": "まだグループがありません",
-      "emptyDescription": "火付け役になろう——最初のグループを作って人々をつなげよう。",
+      "emptyTitle": "グループはまだありません。",
+      "emptyDescription": "最初のグループを作成しましょう。",
       "createGroup": "グループを作成",
       "mostPopular": "最も人気のグループ",
       "noPopular": "人気のグループはまだありません。"

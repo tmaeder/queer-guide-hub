@@ -62,7 +62,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   // Brand-aligned palette (magenta first, then amber, plus a handful of
   // derived hues). No `warning`/`info`/`success` defaults — they clash with
   // the Queer Guide palette.
-  const brand = 'hsl(var(--brand))';
+  const brand = 'hsl(var(--foreground))';
   const categoryColors: Record<string, string> = {
     food: '#F59E0B',
     transport: '#06B6D4',
@@ -179,7 +179,6 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               <>
                 <span
                   className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.02em' }}
                 >
                   {formatAmount(summary.totalConverted, defaultCurrency)}
                 </span>
@@ -194,7 +193,6 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                 <span
                   key={cur}
                   className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: '-0.02em' }}
                 >
                   {formatAmount(total, cur)}
                 </span>
@@ -275,7 +273,6 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                 </div>
                 <span
                   className="font-bold text-sm"
-                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   {categoryLabel(cat)}
                 </span>

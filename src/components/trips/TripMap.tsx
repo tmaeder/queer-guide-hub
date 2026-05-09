@@ -287,7 +287,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       markersRef.current.push(marker);
     });
 
-    const eventColor = 'hsl(var(--brand))';
+    const eventColor = 'hsl(var(--foreground))';
     visibleEvents.forEach((event) => {
       const el = document.createElement('div');
       el.style.width = '10px';
@@ -414,7 +414,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
             <FilterChip
               active={showEvents}
               onClick={() => setShowEvents((v) => !v)}
-              color="hsl(var(--brand))"
+              color="hsl(var(--foreground))"
               label={t('trips.map.showEvents')}
             />
           </>
@@ -463,7 +463,7 @@ function FilterChip({
         'flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer whitespace-nowrap transition-all',
         active ? 'text-white' : 'bg-background text-foreground',
       )}
-      style={active ? { backgroundColor: 'hsl(var(--brand))' } : undefined}
+      style={active ? { backgroundColor: 'hsl(var(--foreground))' } : undefined}
     >
       <span
         className="inline-block rounded-full flex-shrink-0"

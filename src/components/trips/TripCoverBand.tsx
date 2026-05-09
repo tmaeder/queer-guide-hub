@@ -19,7 +19,7 @@ interface Props {
  */
 function gradientForTrip(tripId: string): string {
   const palettes = [
-    ['#7C3AED', 'hsl(var(--brand))'],
+    ['#7C3AED', 'hsl(var(--foreground))'],
     ['#F59E0B', '#EF4444'],
     ['#06B6D4', '#3B82F6'],
     ['#10B981', '#6366F1'],

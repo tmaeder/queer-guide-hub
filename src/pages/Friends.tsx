@@ -106,7 +106,7 @@ export default function Friends() {
                       <AlertDialogCancel>{t('common.cancel', 'Cancel')}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={sendSOS}
-                        style={{ backgroundColor: '#DC2626' }}
+                        className="bg-destructive text-destructive-foreground"
                       >
                         <Siren style={{ width: 16, height: 16, marginRight: 6 }} />
                         {sosLoading ? t('sos.sending') : t('sos.send')}

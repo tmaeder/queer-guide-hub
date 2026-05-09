@@ -623,7 +623,7 @@ export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
                           height: 13,
                           fill: i < review.rating ? 'currentColor' : 'none',
                           // TODO(polish): no token match — star rating amber/gray
-                          color: i < review.rating ? '#f59e0b' : '#d1d5db',
+                          color: i < review.rating ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
                         }}
                       />
                     ))}

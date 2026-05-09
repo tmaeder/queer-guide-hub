@@ -94,7 +94,7 @@ export default function About() {
         >
           Built by queers,
           <br />
-          for <span style={{ color: 'hsl(var(--brand))' }}>everyone.</span>
+          for <span style={{ color: 'hsl(var(--foreground))' }}>everyone.</span>
         </h1>
         <p className="reveal-up reveal-delay-1 text-[1.0625rem] sm:text-[1.1875rem] md:text-[1.375rem] text-muted-foreground leading-[1.7] max-w-[720px]">
           The Queer Guide connects LGBTQ+ people and allies with safe venues,
@@ -113,9 +113,7 @@ export default function About() {
               <div
                 className="font-extrabold leading-[1.1] text-[2.5rem] sm:text-[3rem] md:text-[4rem]"
                 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   letterSpacing: '-0.03em',
-                  color: 'hsl(var(--background))',
                 }}
               >
                 {loading || typeof stat.value !== 'number' || stat.value <= 0 ? (
@@ -213,7 +211,6 @@ export default function About() {
                   >
                     <p
                       className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                       <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
                       {feature.title}
@@ -275,7 +272,7 @@ export default function About() {
                   }}
                 >
                   <p className="font-bold">{member.name}</p>
-                  <p className="text-sm font-semibold" style={{ color: 'hsl(var(--brand))' }}>
+                  <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                     {member.role}
                   </p>
                   <p className="text-sm text-muted-foreground leading-[1.6]">{member.description}</p>

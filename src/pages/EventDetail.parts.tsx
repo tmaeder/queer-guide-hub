@@ -212,7 +212,7 @@ export function EventHero({
               {event.title}
             </h1>
             {event.is_featured && (
-              <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
+              <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Featured</Badge>
             )}
             {event.countries?.equality_score != null && (
               <EqualityScoreBadge score={event.countries.equality_score} size="sm" />

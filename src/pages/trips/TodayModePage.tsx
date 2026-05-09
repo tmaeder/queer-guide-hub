@@ -357,7 +357,7 @@ export default function TodayModePage() {
             className={`mb-6 p-4 flex items-start gap-3 ${
               activeCountrySafety.deathPenalty
                 ? 'bg-destructive text-destructive-foreground'
-                : 'bg-yellow-500 text-yellow-foreground'
+                : 'bg-muted text-foreground'
             }`}
             role="alert"
           >

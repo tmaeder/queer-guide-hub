@@ -18,7 +18,7 @@ export default function TagDetail() {
 
   if (!slug) return <div className="p-8">Missing tag.</div>;
   if (loading) return <div className="p-8">Loading…</div>;
-  if (error) return <div className="p-8 text-red-600">{error}</div>;
+  if (error) return <div className="p-8 text-destructive">{error}</div>;
   if (!tagDetails) return <div className="p-8">Tag not found.</div>;
 
   return (

@@ -111,7 +111,7 @@ export function GroupEventCard({
             {event.is_free && (
               <div className="flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-muted-foreground" />
-                <p className="text-sm text-green-600 font-medium">Free</p>
+                <p className="text-sm font-medium">Free</p>
               </div>
             )}
 

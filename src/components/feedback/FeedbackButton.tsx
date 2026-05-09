@@ -157,8 +157,8 @@ export function FeedbackButton() {
         <DialogContent style={{ maxWidth: 480 }}>
           {status === 'submitted' ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#22c55e' }}>
-                <Check style={{ width: 24, height: 24, color: '#fff' }} />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-foreground">
+                <Check style={{ width: 24, height: 24, color: 'hsl(var(--background))' }} />
               </div>
               <h6 className="text-base font-semibold mb-2">Thank you!</h6>
               <p className="text-sm text-muted-foreground mb-6">

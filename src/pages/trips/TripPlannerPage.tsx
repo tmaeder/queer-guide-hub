@@ -175,7 +175,7 @@ export default function TripPlannerPage() {
   const overlayBtnStyle: React.CSSProperties = {
     backgroundColor: 'rgba(255,255,255,0.12)',
     borderColor: 'rgba(255,255,255,0.3)',
-    color: '#ffffff',
+    color: 'hsl(var(--background))',
   };
 
   return (

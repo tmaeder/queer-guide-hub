@@ -21,18 +21,18 @@ import { useTranslation } from 'react-i18next';
 
 
 const columns = [
-  { id: 'new', label: 'New', color: '#f59e0b' },
-  { id: 'under_review', label: 'Under Review', color: '#3b82f6' },
-  { id: 'planned', label: 'Planned', color: '#8b5cf6' },
-  { id: 'in_progress', label: 'In Progress', color: '#f97316' },
-  { id: 'done', label: 'Done', color: '#22c55e' },
+  { id: 'new', label: 'New', color: 'hsl(var(--foreground))' },
+  { id: 'under_review', label: 'Under Review', color: 'hsl(var(--muted-foreground))' },
+  { id: 'planned', label: 'Planned', color: 'hsl(var(--muted-foreground))' },
+  { id: 'in_progress', label: 'In Progress', color: 'hsl(var(--foreground))' },
+  { id: 'done', label: 'Done', color: 'hsl(var(--foreground))' },
 ] as const;
 
 const categoryConfig: Record<string, { label: string; icon: typeof Bug; color: string }> = {
-  bug: { label: 'Bug', icon: Bug, color: '#ef4444' },
-  idea: { label: 'Idea', icon: Lightbulb, color: '#f59e0b' },
-  improvement: { label: 'Improvement', icon: Sparkles, color: '#8b5cf6' },
-  'content-idea': { label: 'Content', icon: BookOpen, color: '#0ea5e9' },
+  bug: { label: 'Bug', icon: Bug, color: 'hsl(var(--foreground))' },
+  idea: { label: 'Idea', icon: Lightbulb, color: 'hsl(var(--foreground))' },
+  improvement: { label: 'Improvement', icon: Sparkles, color: 'hsl(var(--foreground))' },
+  'content-idea': { label: 'Content', icon: BookOpen, color: 'hsl(var(--foreground))' },
 };
 
 export default function FeedbackBoard() {
@@ -187,7 +187,7 @@ export default function FeedbackBoard() {
                 {(() => {
                   const col = columns.find((c) => c.id === selectedItem.feedback_status);
                   return col ? (
-                    <Badge variant="secondary" style={{ backgroundColor: col.color, color: '#fff' }}>
+                    <Badge variant="secondary" style={{ backgroundColor: col.color, color: 'hsl(var(--background))' }}>
                       {col.label}
                     </Badge>
                   ) : null;
@@ -208,7 +208,7 @@ export default function FeedbackBoard() {
                     alignItems: 'center',
                     gap: 6,
                     ...(votesMap[selectedItem.id]?.hasVoted
-                      ? { backgroundColor: 'hsl(var(--accent-warm))', color: '#fff' }
+                      ? { backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }
                       : {}),
                   }}
                 >

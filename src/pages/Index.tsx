@@ -71,9 +71,7 @@ const Index = React.memo(() => {
             <br />
             {t('home.heroLine2', 'Connect.')}
             <br />
-            <span style={{ color: 'hsl(var(--brand))' }}>
-              {t('home.heroLine3', 'Belong.')}
-            </span>
+            {t('home.heroLine3', 'Belong.')}
           </h1>
 
           <p className="reveal-up reveal-delay-1 text-[0.9375rem] md:text-[1.0625rem] text-muted-foreground mb-6 leading-[1.6]">
@@ -128,9 +126,7 @@ const Index = React.memo(() => {
                   <div
                     className="font-extrabold text-[2.5rem] sm:text-[3rem] md:text-[4rem] leading-[1.1]"
                     style={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
                       letterSpacing: '-0.03em',
-                      color: 'hsl(var(--background))',
                     }}
                   >
                     {loading ? (
@@ -206,7 +202,6 @@ const Index = React.memo(() => {
                   >
                     <div
                       className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2"
-                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                     >
                       <Icon
                         size={20}

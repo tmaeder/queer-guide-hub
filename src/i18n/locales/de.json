@@ -197,7 +197,7 @@
       "samples": {
         "berlin": "Pride Week Berlin",
         "barcelona": "Barcelona: Strand und Nacht",
-        "bangkok": "Bangkok und Phuket Explorer"
+        "bangkok": "Bangkok & Phuket"
       }
     },
     "card": {
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "Stadt suchen…",
         "noCityMatch": "Keine passende Stadt gefunden.",
         "addNewPlace": "„{{query}}“ als neuen Ort hinzufügen",
-        "datesUnlockHint": "Mit Datum erhältst du Vorschläge für Unterkunft, Flug und Sicherheit.",
+        "datesUnlockHint": "Daten hinzufügen für Unterkunfts-, Flug- und Sicherheitsvorschläge.",
         "defaultTitle": "Reise nach {{city}}",
         "titleField": "Titel der Reise",
         "titlePlaceholder": "z. B. Pride Week Berlin 2026",
@@ -439,8 +439,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "Starte deine Packliste",
-      "emptyDescription": "Füge Dinge hinzu oder nutze eine Vorlage.",
+      "emptyTitle": "Noch keine Einträge.",
+      "emptyDescription": "Einträge hinzufügen oder Vorlage nutzen.",
       "progress": "{{checked}} von {{total}} gepackt",
       "addItem": "Artikel hinzufügen…",
       "removeAria": "Artikel entfernen",
@@ -805,7 +805,7 @@
       "create": "Konto erstellen",
       "orWithEmail": "Oder mit E-Mail",
       "profileBlurb": "Erzähl uns etwas über dich. Du kannst alles später ändern.",
-      "interestsBlurb": "Optional — hilft uns, deinen Guide zu personalisieren. Überspringe es, wenn du möchtest.",
+      "interestsBlurb": "Optional. Überspringe, wenn du möchtest.",
       "lookingForTitle": "Ich suche nach",
       "interestsTitle": "Interessen",
       "steps": {
@@ -1025,9 +1025,9 @@
     "backHome": "Zurück zur Startseite"
   },
   "home": {
-    "heroLine1": "Entdecken.",
-    "heroLine2": "Verbinden.",
-    "heroLine3": "Dazugehören.",
+    "heroLine1": "Queere Orte,",
+    "heroLine2": "Events und Menschen.",
+    "heroLine3": "Weltweit.",
     "subtitle": "Sichere Orte, lebendige Veranstaltungen und Communities, die dich verstehen — wo auch immer du bist.",
     "browseVenues": "Orte entdecken",
     "viewEvents": "Veranstaltungen ansehen",
@@ -1138,8 +1138,8 @@
       "gridView": "Rasteransicht",
       "mapView": "Kartenansicht",
       "submit": "Einreichen",
-      "emptyTitle": "Noch keine Orte gefunden, die zu dir passen",
-      "emptyDescription": "Erweitere deine Suche oder entdecke eine andere Stadt.",
+      "emptyTitle": "Keine Orte zu deinen Filtern.",
+      "emptyDescription": "Suche erweitern oder Stadt wechseln.",
       "submitVenue": "Ort einreichen",
       "clearFilters": "Filter löschen",
       "emptyDataset": {
@@ -1216,8 +1216,8 @@
       "clearFilterPast": "Filter für vergangene Veranstaltungen zurücksetzen",
       "noPastEvents": "Keine vergangenen Veranstaltungen gefunden",
       "noPastEventsDesc": "Keine vergangenen Veranstaltungen passen zu diesen Filtern. Schalte den Filter aus, um kommende Veranstaltungen zu sehen.",
-      "emptyTitle": "Die Tanzfläche ist leer... noch",
-      "emptyDescription": "Schau bald wieder vorbei oder erweitere deine Filter.",
+      "emptyTitle": "Noch keine Events.",
+      "emptyDescription": "Filter erweitern oder später vorbeischauen.",
       "emptyDataset": {
         "title": "Noch keine Events",
         "body": "Wir haben hier noch keine Events hinzugefügt. Hilf mit, den Guide auszubauen, und reiche eines ein."
@@ -1283,15 +1283,15 @@
       "subtitle": "Finde Flüge, Hotels und Aktivitäten für LGBTQ+-freundliche Reiseziele",
       "activitiesComingSoon": "Aktivitäten kommen bald.",
       "browseDestinations": "Reiseziele entdecken",
-      "exploreCta": "LGBTQ+-freundliche Reiseziele erkunden",
-      "exploreDescription": "Entdecke Städte und Länder mit detaillierten Sicherheitsinfos und Reiseführern"
+      "exploreCta": "Reiseziele",
+      "exploreDescription": "Städte und Länder mit Sicherheitsinfos und Reiseführern."
     },
     "marketplace": {
       "title": "Marktplatz",
       "subtitle": "Entdecke und unterstütze lokale Unternehmen mit Produkten und Dienstleistungen",
       "listBusiness": "Dein Unternehmen eintragen",
-      "emptyTitle": "Noch nichts in den Regalen",
-      "emptyDescription": "Queere Unternehmen kommen täglich dazu.",
+      "emptyTitle": "Noch keine Einträge.",
+      "emptyDescription": "Jede Woche kommen neue dazu.",
       "signInRequired": "Anmeldung erforderlich",
       "signInList": "Erstelle ein kostenloses Konto, um dein Unternehmen einzutragen.",
       "signInFavorites": "Bitte melde dich an, um Favoriten zu speichern.",
@@ -1331,8 +1331,8 @@
       "filters": "Filter",
       "activeFilters": "Aktive Filter",
       "clearAll": "Alle löschen",
-      "emptyTitle": "Im Newsroom ist es ruhig",
-      "emptyDescription": "Gerade keine Geschichten — schau bald wieder vorbei.",
+      "emptyTitle": "Noch keine Artikel.",
+      "emptyDescription": "Später vorbeischauen.",
       "previous": "Zurück",
       "next": "Weiter"
     },
@@ -1369,8 +1369,8 @@
       "discover": "Entdecken",
       "myGroups": "Meine Gruppen",
       "popular": "Beliebt",
-      "emptyTitle": "Noch keine Gruppen hier",
-      "emptyDescription": "Sei der Funke — erstelle die erste Gruppe und bringe Menschen zusammen.",
+      "emptyTitle": "Noch keine Gruppen.",
+      "emptyDescription": "Erstelle die erste.",
       "createGroup": "Gruppe erstellen",
       "mostPopular": "Beliebteste Gruppen",
       "noPopular": "Noch keine beliebten Gruppen verfügbar."

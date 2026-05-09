@@ -251,7 +251,7 @@ export default function Favorites() {
               )}
               {item.rating && (
                 <div className="flex items-center gap-1">
-                  <Star style={{ height: 12, width: 12, fill: '#facc15', color: '#facc15' }} />
+                  <Star style={{ height: 12, width: 12, fill: 'currentColor' }} />
                   {item.rating}
                 </div>
               )}
@@ -318,7 +318,7 @@ export default function Favorites() {
                     )}
                     {item.rating && (
                       <div className="flex items-center gap-1">
-                        <Star style={{ height: 12, width: 12, fill: '#facc15', color: '#facc15' }} />
+                        <Star style={{ height: 12, width: 12, fill: 'currentColor' }} />
                         {item.rating}
                       </div>
                     )}

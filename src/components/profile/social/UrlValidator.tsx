@@ -59,14 +59,14 @@ export function UrlValidator({ url, onValidate }: UrlValidatorProps) {
       </Button>
 
       {validationState === 'valid' && (
-        <span className="flex items-center gap-1 text-green-600">
+        <span className="flex items-center gap-1 text-foreground">
           <CheckCircle className="w-4 h-4" />
           <span className="text-sm">Valid</span>
         </span>
       )}
 
       {validationState === 'invalid' && (
-        <span className="flex items-center gap-1 text-red-600">
+        <span className="flex items-center gap-1 text-destructive">
           <XCircle className="w-4 h-4" />
           <span className="text-sm">Invalid</span>
         </span>

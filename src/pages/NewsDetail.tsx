@@ -197,19 +197,6 @@ export default function NewsDetail() {
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    const dbCat = dbCategories.find(c => c.slug === category || c.name.toLowerCase() === category.toLowerCase());
-    if (dbCat) return dbCat.color;
-    const fallback: Record<string, string> = {
-      politics: '#3b82f6', 'human-rights': '#ef4444', entertainment: '#8b5cf6',
-      culture: '#8b5cf6', health: '#10b981', sports: '#f97316', business: '#f59e0b',
-      technology: '#6366f1', lifestyle: '#ec4899', education: '#06b6d4',
-      legislation: '#3b82f6', transgender: '#8b5cf6', rights: '#ef4444',
-      advocacy: '#f97316', news: 'hsl(var(--muted-foreground))', community: '#ec4899',
-    };
-    return fallback[category?.toLowerCase()] || 'hsl(var(--muted-foreground))';
-  };
-
   const getCategoryLabel = (category: string) => {
     const dbCat = dbCategories.find(c => c.slug === category || c.name.toLowerCase() === category.toLowerCase());
     if (dbCat) return dbCat.name;
@@ -328,7 +315,7 @@ export default function NewsDetail() {
               {decodeHtmlEntities(article.title)}
             </h1>
             {article.is_featured && (
-              <Badge style={{ backgroundColor: '#333333', color: '#ffffff' }}>Featured</Badge>
+              <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>Featured</Badge>
             )}
           </div>
 
@@ -384,11 +371,8 @@ export default function NewsDetail() {
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         {article.category && article.category !== 'general' && (
           <Badge
-            style={{
-              backgroundColor: getCategoryColor(article.category),
-              color: '#fff',
-              textTransform: 'capitalize',
-            }}
+            variant="outline"
+            style={{ textTransform: 'capitalize' }}
           >
             {getCategoryLabel(article.category)}
           </Badge>

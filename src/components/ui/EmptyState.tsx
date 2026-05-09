@@ -57,13 +57,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <CardContent>
         <div
           className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-5"
-          style={{ backgroundColor: `hsl(var(--brand) / ${bgOpacity})` }}
+          style={{ backgroundColor: `hsl(var(--foreground) / ${bgOpacity})` }}
         >
           <Icon
             style={{
               width: 32,
               height: 32,
-              color: 'hsl(var(--brand))',
+              color: 'hsl(var(--foreground))',
               opacity: iconOpacity,
             }}
           />

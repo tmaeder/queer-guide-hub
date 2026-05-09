@@ -129,7 +129,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
             <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>{deal.airline}</Badge>
           )}
           {deal.stops === 0 ? (
-            <Badge variant="outline" className="border-green-500 text-green-600" style={{ fontSize: '0.7rem', height: 20 }}>Direct</Badge>
+            <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>Direct</Badge>
           ) : (
             <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>{`${deal.stops} stop${deal.stops > 1 ? 's' : ''}`}</Badge>
           )}

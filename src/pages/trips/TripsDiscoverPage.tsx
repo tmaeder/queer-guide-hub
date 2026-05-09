@@ -23,7 +23,7 @@ export default function TripsDiscoverPage() {
   return (
     <div className="container mx-auto max-w-screen-lg px-4 py-6 md:py-10">
       <div className="flex items-center gap-3 mb-2">
-        <Compass size={26} style={{ color: 'hsl(var(--brand))' }} />
+        <Compass size={26} style={{ color: 'hsl(var(--foreground))' }} />
         <h1 className="text-3xl font-extrabold">
           {t('trips.discover.title', 'Discover trips')}
         </h1>

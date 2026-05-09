@@ -65,7 +65,7 @@ const HTML_BODY_CSS = `
 .qg-cms-body ul, .qg-cms-body ol { padding-left: 1.5rem; margin-bottom: 1rem; }
 .qg-cms-body li { margin-bottom: 0.375rem; line-height: 1.7; }
 .qg-cms-body blockquote { border-left: 3px solid hsl(var(--border)); padding-left: 1rem; margin-left: 0; font-style: italic; color: hsl(var(--muted-foreground)); margin: 1rem 0; }
-.qg-cms-body a { color: hsl(var(--brand)); }
+.qg-cms-body a { color: inherit; text-decoration: underline; }
 .qg-cms-body a:hover { opacity: 0.85; }
 .qg-cms-body img { max-width: 100%; height: auto; margin: 1rem 0; }
 .qg-cms-body pre { background-color: #111; color: #f5f5f5; padding: 1rem; overflow: auto; margin: 1rem 0; font-size: 0.875rem; }
@@ -132,7 +132,7 @@ function LegalHubCard({ page }: { page: CMSPage }) {
       to={`/${page.slug}`}
       className="group flex items-start gap-4 bg-card p-6 text-foreground no-underline transition-opacity hover:opacity-85"
     >
-      <div className="mt-0.5 text-muted-foreground transition-colors group-hover:text-[hsl(var(--brand))]">
+      <div className="mt-0.5 text-muted-foreground transition-colors group-hover:text-foreground">
         <Icon size={22} />
       </div>
       <div className="min-w-0 flex-1">
@@ -219,7 +219,7 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           Questions? Reach out at{' '}
           <a
             href="mailto:legal@queer.guide"
-            className="text-[hsl(var(--brand))] hover:opacity-85"
+            className="text-foreground underline hover:opacity-85"
           >
             legal@queer.guide
           </a>

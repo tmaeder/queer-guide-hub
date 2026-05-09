@@ -120,7 +120,7 @@ const UserDirectory = () => {
             </span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
-            <Sparkles className="h-3.5 w-3.5" style={{ color: '#2563eb' }} />
+            <Sparkles className="h-3.5 w-3.5" />
             <span className="text-sm font-medium">Active Community</span>
           </div>
         </div>
