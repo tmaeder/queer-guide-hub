@@ -487,7 +487,7 @@ async function advanceToNextNodes(
       const hasFailed = nodes.some(n => nodeStates[n.id]?.status === 'failed')
       await supabase
         .from('pipeline_runs')
-        .update({ status: hasFailed ? 'failed' : 'completed' })
+        .update({ status: hasFailed ? 'failed' : 'completed', completed_at: new Date().toISOString() })
         .eq('id', run.id as string)
     }
     return
