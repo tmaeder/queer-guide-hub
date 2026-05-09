@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { listWhereNotNull } from "@/hooks/usePageFetchers"
+import { useProfessions } from "@/hooks/useProfessions"
 
 interface ProfessionAutocompleteProps {
   value?: string
@@ -28,41 +28,9 @@ export function ProfessionAutocomplete({
   required,
   id,
 }: ProfessionAutocompleteProps) {
-  const [professions, setProfessions] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
+    const { professions, loading } = useProfessions()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
-
-  useEffect(() => {
-    const fetchProfessions = async () => {
-      setLoading(true)
-      try {
-        const data = await listWhereNotNull<{ profession: string | null }>(
-          "personalities",
-          "profession",
-          "profession",
-          "profession",
-        ).then((rows) => rows.filter((r) => r.profession && r.profession !== ""))
-
-        const unique = new Set<string>()
-        data.forEach((item) => {
-          if (item.profession) {
-            item.profession.split(",").forEach((p) => {
-              const trimmed = p.trim()
-              if (trimmed) unique.add(trimmed)
-            })
-          }
-        })
-        setProfessions(Array.from(unique).sort())
-      } catch (err) {
-        console.error("Error fetching professions:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchProfessions()
-  }, [])
-
   const showCreate = search && !professions.some((p) => p.toLowerCase() === search.toLowerCase())
 
   return (

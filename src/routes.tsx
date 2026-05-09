@@ -61,6 +61,7 @@ const AdminEventAmenities = lazy(() => import('./pages/AdminEventAmenities'));
 const AdminEventServices = lazy(() => import('./pages/AdminEventServices'));
 const AdminAccessibilityAttributes = lazy(() => import('./pages/AdminAccessibilityAttributes'));
 const AdminTargetGroups = lazy(() => import('./pages/AdminTargetGroups'));
+const AdminProfessions = lazy(() => import('./pages/AdminProfessions'));
 const AdminEvents = lazy(() => import('./pages/AdminEvents'));
 const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
@@ -290,6 +291,7 @@ export const AppRoutes = () => {
                 <Route path="settings/event-services" element={<AdminEventServices />} />
                 <Route path="settings/accessibility" element={<AdminAccessibilityAttributes />} />
                 <Route path="settings/target-groups" element={<AdminTargetGroups />} />
+                <Route path="settings/professions" element={<AdminProfessions />} />
 
                 {/* Legacy routes -- redirect to new paths */}
                 <Route path="venues" element={<AdminVenues />} />
