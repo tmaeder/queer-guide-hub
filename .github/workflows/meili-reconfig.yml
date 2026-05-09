@@ -1,8 +1,5 @@
 name: Reconfigure Meilisearch
 
-# Runs configure-indexes.sh on the VPS via SSH.
-# Scripts piped via cat to ~/  (avoids /tmp which may be on a full disk).
-
 on:
   workflow_dispatch:
     inputs:
@@ -47,31 +44,26 @@ jobs:
 
       - name: Copy scripts to VPS
         run: |
-          ssh "$SSH_USER@$SSH_HOST" 'cat > ~/configure-indexes.sh' < meilisearch/configure-indexes.sh
-          ssh "$SSH_USER@$SSH_HOST" 'cat > ~/seed-city-aliases.sh' < meilisearch/seed-city-aliases.sh
+          ssh "$SSH_USER@$SSH_HOST" 'cat > /tmp/configure-indexes.sh' < meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" 'cat > /tmp/seed-city-aliases.sh' < meilisearch/seed-city-aliases.sh
 
       - name: Verify Meilisearch is reachable
         run: |
-          ssh "$SSH_USER@$SSH_HOST" \
-            curl -sf --max-time 5 http://localhost:7700/health
+          ssh "$SSH_USER@$SSH_HOST" 'curl -sf --max-time 5 http://localhost:7700/health'
           echo "Meilisearch is healthy"
 
       - name: Run configure-indexes.sh
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="http://localhost:7700" \
-            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash ~/configure-indexes.sh
+            "MEILI_URL=http://localhost:7700 MEILI_MASTER_KEY='${MEILI_MASTER_KEY}' bash /tmp/configure-indexes.sh"
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="http://localhost:7700" \
-            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash ~/seed-city-aliases.sh
+            "MEILI_URL=http://localhost:7700 MEILI_MASTER_KEY='${MEILI_MASTER_KEY}' bash /tmp/seed-city-aliases.sh"
 
       - name: Cleanup
         if: always()
         run: |
-          ssh "$SSH_USER@$SSH_HOST" 'rm -f ~/configure-indexes.sh ~/seed-city-aliases.sh' || true
+          ssh "$SSH_USER@$SSH_HOST" 'rm -f /tmp/configure-indexes.sh /tmp/seed-city-aliases.sh' || true
