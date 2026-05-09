@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { SearchInputTyped } from '@/components/ui/search-input-typed';
 import {
   Command,
-  CommandEmpty,
   CommandList,
   CommandSeparator,
   CommandGroup,
@@ -491,6 +490,15 @@ export const UniversalSearchBar = () => {
               </>
             )}
 
+            {/* axe `aria-required-children` flags an empty role="listbox"
+                (no group/option descendants). Only mount CommandList when
+                there is at least one option-bearing section to show.
+                Empty/error states render as siblings below. */}
+            {(
+              (!query && recentSearches.length > 0) ||
+              suggestions.length > 0 ||
+              searchResults.length > 0
+            ) && (
             <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
               {/* Recent Searches */}
               {!query && recentSearches.length > 0 && (
@@ -638,38 +646,42 @@ export const UniversalSearchBar = () => {
                 </CommandGroup>
               ))}
 
-              {/* Empty / error state. */}
-              {suggestions.length === 0 &&
-                searchResults.length === 0 &&
-                query.length >= 2 &&
-                !loading &&
-                !suggestionsLoading && (
-                  <CommandEmpty style={{ padding: '24px 0', textAlign: 'center' }}>
-                    <div className="flex flex-col items-center gap-2">
-                      {searchError ? (
-                        // Bug #22 follow-up: align with the /search results page —
-                        // honest copy + role=alert, no fake "Couldn't reach" title.
-                        <div role="alert" className="flex flex-col items-center gap-2">
-                          <Search
-                            style={{ height: 32, width: 32, opacity: 0.5, color: 'hsl(var(--destructive))' }}
-                          />
-                          <p style={{ color: 'hsl(var(--destructive))' }}>Search is temporarily unavailable</p>
-                          <span className="text-xs text-muted-foreground">{searchError}</span>
-                        </div>
-                      ) : (
-                        <>
-                          <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
-                          <p>No results found for "{query}"</p>
-                          <span className="text-xs text-muted-foreground">
-                            Try different keywords or adjust your filters
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </CommandEmpty>
-                )}
-
             </CommandList>
+            )}
+
+            {/* Empty / error state — siblings of CommandList so they don't
+                violate axe `aria-required-children`, which forbids any
+                non-option descendant of role="listbox". */}
+            {searchError && !loading && !suggestionsLoading ? (
+              <div
+                role="alert"
+                style={{ padding: '24px 0', textAlign: 'center' }}
+                className="flex flex-col items-center gap-2"
+              >
+                <Search
+                  style={{ height: 32, width: 32, opacity: 0.5, color: 'hsl(var(--destructive))' }}
+                />
+                <p style={{ color: 'hsl(var(--destructive))' }}>Search is temporarily unavailable</p>
+                <span className="text-xs text-muted-foreground">{searchError}</span>
+              </div>
+            ) : (
+              suggestions.length === 0 &&
+              searchResults.length === 0 &&
+              query.length >= 2 &&
+              !loading &&
+              !suggestionsLoading && (
+                <div
+                  style={{ padding: '24px 0', textAlign: 'center' }}
+                  className="flex flex-col items-center gap-2"
+                >
+                  <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
+                  <p>No results found for "{query}"</p>
+                  <span className="text-xs text-muted-foreground">
+                    Try different keywords or adjust your filters
+                  </span>
+                </div>
+              )
+            )}
 
             {/* Bug #18: screen-reader status announcement of result counts and
                 error states. Visually hidden; assistive tech reads it as the
