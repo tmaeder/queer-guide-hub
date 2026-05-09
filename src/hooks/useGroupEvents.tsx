@@ -20,6 +20,7 @@ export interface GroupEvent {
   is_free: boolean;
   price_min?: number;
   price_max?: number;
+  currency?: string;
   max_attendees?: number;
   ticket_url?: string;
   website?: string;

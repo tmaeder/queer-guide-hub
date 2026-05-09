@@ -194,6 +194,7 @@ export default function AdminEvents() {
 
 
   const organizers = useMemo(() => venues.filter((v: any) => v.is_organizer), [venues]);
+  const organizers = useMemo(() => venues.filter((v) => v.is_organizer), [venues]);
 
   const handleOrganizerSelect = (organizerId: string) => {
     if (organizerId === 'custom' || !organizerId) {
@@ -207,6 +208,7 @@ export default function AdminEvents() {
         organizer_id: organizerId,
         organizer_name: org.name,
         organizer_contact: (org as any).email || (org as any).phone || '',
+        organizer_contact: org.email || org.phone || '',
       }));
     }
   };
