@@ -102,8 +102,8 @@ export function GroupEventCard({
                 <DollarSign className="w-4 h-4 text-muted-foreground" />
                 <p className="text-sm">
                   {event.price_min && event.price_max && event.price_min !== event.price_max
-                    ? `${formatCurrency(event.price_min)} - ${formatCurrency(event.price_max)}`
-                    : formatCurrency(event.price_min || event.price_max || 0)}
+                    ? `${formatCurrency(event.price_min, event.currency)} - ${formatCurrency(event.price_max, event.currency)}`
+                    : formatCurrency(event.price_min || event.price_max || 0, event.currency)}
                 </p>
               </div>
             )}

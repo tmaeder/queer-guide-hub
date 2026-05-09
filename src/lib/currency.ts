@@ -30,12 +30,13 @@ function getFormatter(currency: string, fractionDigits?: number): Intl.NumberFor
 }
 
 /** Format a whole-unit amount (e.g. 25.50 EUR) */
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return getFormatter(currency.toUpperCase(), 0).format(amount);
+export function formatCurrency(amount: number, currency?: string | null): string {
+  return getFormatter((currency || 'USD').toUpperCase(), 0).format(amount);
 }
 
 /** Format a Stripe cents amount (e.g. 2550 → $25.50, or 500 JPY → ¥500) */
-export function formatCents(cents: number, currency = 'USD'): string {
+export function formatCents(cents: number, currency?: string | null): string {
+  currency = currency || 'USD';
   const upper = currency.toUpperCase();
   const amount = ZERO_DECIMAL_CURRENCIES.has(upper) ? cents : cents / 100;
   return getFormatter(upper, 0).format(amount);
