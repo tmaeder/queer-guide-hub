@@ -174,8 +174,8 @@ export function StoryDetailDrawer({
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0 overflow-y-auto">
-        <div className="p-5 flex flex-col gap-4 h-full overflow-auto">
+      <SheetContent side="right" className="w-full md:max-w-[600px] sm:max-w-[600px] p-0">
+        <div className="p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
               Story · {story.origin === 'ai_suggested' ? 'AI-suggested' : 'Manual'}
@@ -506,7 +506,7 @@ export function StoryDetailDrawer({
             </CollapsibleContent>
           </Collapsible>
 
-          <div className="mt-auto flex gap-2 items-center flex-wrap">
+          <div className="flex gap-2 items-center flex-wrap">
             <Badge style={{ backgroundColor: prio.color, color: 'white' }}>{prio.short}</Badge>
             {assignee && <Badge variant="secondary">{assignee.display_name ?? 'assigned'}</Badge>}
           </div>
