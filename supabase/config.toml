@@ -94,9 +94,6 @@ gcp_jwt_path = "supabase/gcp.json"
 [functions.create-booking]
 verify_jwt = false
 
-[functions.fetch-news]
-verify_jwt = false
-
 [functions.get-pexels-images]
 verify_jwt = false
 
@@ -139,9 +136,6 @@ verify_jwt = true
 [functions.send-templated-email]
 verify_jwt = true
 
-[functions.import-foursquare-venues]
-verify_jwt = false
-
 [functions.import-tripadvisor-venues]
 verify_jwt = false
 
@@ -156,9 +150,6 @@ verify_jwt = false
 
 [functions.enrich-venue]
 verify_jwt = false
-
-[functions.bulk-scrape-events]
-verify_jwt = true
 
 [functions.manage-placeholder-images]
 verify_jwt = false
@@ -185,9 +176,6 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.cloudflare-api]
-verify_jwt = true
-
-[functions.scrape-gaycities-events]
 verify_jwt = true
 
 [functions.scrape-spartacus]
