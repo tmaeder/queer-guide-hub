@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { listWhereNotNull } from "@/hooks/usePageFetchers"
+import { supabase } from "@/integrations/supabase/client"
 
 interface ProfessionAutocompleteProps {
   value?: string
@@ -37,23 +37,13 @@ export function ProfessionAutocomplete({
     const fetchProfessions = async () => {
       setLoading(true)
       try {
-        const data = await listWhereNotNull<{ profession: string | null }>(
-          "personalities",
-          "profession",
-          "profession",
-          "profession",
-        ).then((rows) => rows.filter((r) => r.profession && r.profession !== ""))
-
-        const unique = new Set<string>()
-        data.forEach((item) => {
-          if (item.profession) {
-            item.profession.split(",").forEach((p) => {
-              const trimmed = p.trim()
-              if (trimmed) unique.add(trimmed)
-            })
-          }
-        })
-        setProfessions(Array.from(unique).sort())
+        const { data, error } = await supabase
+          .from("professions" as never)
+          .select("name" as never)
+          .eq("is_active" as never, true as never)
+          .order("sort_order" as never, { ascending: true })
+        if (error) throw error
+        setProfessions((data as { name: string }[]).map((r) => r.name))
       } catch (err) {
         console.error("Error fetching professions:", err)
       } finally {
