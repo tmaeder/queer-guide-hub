@@ -24,6 +24,7 @@ import {
   Crown,
   User,
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useGroups, Group } from '@/hooks/useGroups';
 import { useGroupPosts } from '@/hooks/useGroupPosts';
 import { useGroupEvents } from '@/hooks/useGroupEvents';
@@ -32,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GroupPostCard } from '@/components/groups/GroupPostCard';
 import { CreatePostDialog } from '@/components/groups/CreatePostDialog';
 import { GroupMembersList } from '@/components/groups/GroupMembersList';
+import { AddMemberDialog } from '@/components/groups/AddMemberDialog';
 import { CreateGroupEventDialog } from '@/components/groups/CreateGroupEventDialog';
 import { GroupEventCard } from '@/components/groups/GroupEventCard';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +44,7 @@ export default function GroupDetail() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { groups, userGroups, isLoading, joinGroup, isJoining, leaveGroup, isLeaving } =
     useGroups();
@@ -77,7 +80,6 @@ export default function GroupDetail() {
   useEffect(() => {
     if (!groupId) return;
 
-    // Find group in both arrays
     const foundGroup = [...groups, ...userGroups].find((g) => g.id === groupId);
     setGroup(foundGroup || null);
   }, [groupId, groups, userGroups]);
@@ -86,7 +88,6 @@ export default function GroupDetail() {
     if (!group) return;
 
     joinGroup(group.id);
-    // Update local group state optimistically
     setGroup((prev) =>
       prev ? { ...prev, is_member: true, member_count: prev.member_count + 1 } : null,
     );
@@ -96,7 +97,6 @@ export default function GroupDetail() {
     if (!group) return;
 
     leaveGroup(group.id);
-    // Update local group state optimistically
     setGroup((prev) =>
       prev ? { ...prev, is_member: false, member_count: prev.member_count - 1 } : null,
     );
@@ -249,7 +249,7 @@ export default function GroupDetail() {
                 )}
 
                 {canManage && (
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => setActiveTab('members')}>
                     <Settings style={{ height: 16, width: 16, marginRight: 8 }} />
                     Manage Group
                   </Button>
@@ -372,7 +372,16 @@ export default function GroupDetail() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Members ({group.member_count})</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Members ({group.member_count})</CardTitle>
+                {canManage && groupId && (
+                  <AddMemberDialog
+                    groupId={groupId}
+                    existingMemberIds={groupMembers.map(m => m.user_id)}
+                    onMemberAdded={() => queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })}
+                  />
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {groupMembers.length === 0 ? (
@@ -381,13 +390,14 @@ export default function GroupDetail() {
                 <GroupMembersList
                   members={groupMembers}
                   canManage={canManage}
+                  groupId={groupId}
                   onStartConversation={(_userId) => {
-                    // TODO: Implement conversation starting
                     toast({
                       title: 'Not yet available',
                       description: 'Direct messaging is not yet available.',
                     });
                   }}
+                  onMembersChanged={() => queryClient.invalidateQueries({ queryKey: ['group-members', groupId] })}
                 />
               )}
             </CardContent>
