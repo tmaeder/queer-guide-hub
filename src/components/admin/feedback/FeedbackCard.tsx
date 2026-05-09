@@ -135,16 +135,16 @@ export function FeedbackCard({
             style={{
               width: 7,
               height: 7,
-              background: 'hsl(var(--accent-warm))',
+              background: 'hsl(var(--foreground))',
               animation: 'feedback-pulse 1.8s infinite',
             }}
           />
         )}
         {isNew && (
           <style>{`@keyframes feedback-pulse {
-            0% { box-shadow: 0 0 0 0 hsl(var(--accent-warm) / 0.6); }
-            70% { box-shadow: 0 0 0 6px hsl(var(--accent-warm) / 0); }
-            100% { box-shadow: 0 0 0 0 hsl(var(--accent-warm) / 0); }
+            0% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0.6); }
+            70% { box-shadow: 0 0 0 6px hsl(var(--foreground) / 0); }
+            100% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0); }
           }`}</style>
         )}
 
@@ -243,6 +243,142 @@ export function FeedbackCard({
                 : `Submitted ${timeAgo(item.submitted_at)}`}
             </TooltipContent>
           </Tooltip>
+
+          {handoffChip ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: handoffChip.bg,
+                    flexShrink: 0,
+                  }}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {handoff
+                  ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}`
+                  : ''}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            isForwarded && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
+                </TooltipContent>
+              </Tooltip>
+            )
+          )}
+
+          {hasScreenshot && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Camera style={{ width: 10, height: 10, flexShrink: 0 }} />
+              </TooltipTrigger>
+              <TooltipContent>Screenshot attached</TooltipContent>
+            </Tooltip>
+          )}
+
+          {errorCount > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex items-center flex-shrink-0"
+                  style={{ gap: 1, color: '#ef4444' }}
+                >
+                  <AlertTriangle style={{ width: 10, height: 10 }} />
+                  {errorCount}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {`${errorCount} console error${errorCount === 1 ? '' : 's'}`}
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {story && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStoryClick?.(story.story_id);
+                  }}
+                  className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
+                  style={{
+                    gap: 2,
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                    paddingTop: 1,
+                    paddingBottom: 1,
+                    fontSize: '0.55rem',
+                    background:
+                      story.status === 'resolved'
+                        ? 'hsl(var(--muted))'
+                        : 'hsl(var(--foreground) / 0.15)',
+                    color:
+                      story.status === 'resolved'
+                        ? 'hsl(var(--muted-foreground))'
+                        : 'hsl(var(--foreground))',
+                    borderRadius: 4,
+                    maxWidth: 90,
+                    textOverflow: 'ellipsis',
+                    cursor: onStoryClick ? 'pointer' : 'default',
+                  }}
+                >
+                  <Layers style={{ width: 9, height: 9 }} />
+                  {story.title}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{`Part of story: ${story.title}`}</TooltipContent>
+            </Tooltip>
+          )}
+
+          {(item.labels?.length ?? 0) > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="bg-muted text-muted-foreground flex-shrink-0 overflow-hidden whitespace-nowrap"
+                  style={{
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                    paddingTop: 1,
+                    paddingBottom: 1,
+                    fontSize: '0.55rem',
+                    borderRadius: 4,
+                    maxWidth: 60,
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {item.labels!.length === 1 ? item.labels![0] : `${item.labels!.length}`}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{(item.labels ?? []).join(', ')}</TooltipContent>
+            </Tooltip>
+          )}
+
+          {voteCount > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex items-center flex-shrink-0"
+                  style={{ gap: 1 }}
+                >
+                  <ChevronUp style={{ width: 10, height: 10 }} />
+                  {voteCount}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {`${voteCount} vote${voteCount === 1 ? '' : 's'}`}
+              </TooltipContent>
+            </Tooltip>
+          )}
 
           <div className="flex-1" />
 

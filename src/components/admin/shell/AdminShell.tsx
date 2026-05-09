@@ -122,7 +122,7 @@ export function AdminShell() {
     <AdminShellContext.Provider value={{ openEditor, closeEditor }}>
       <a
         href="#admin-main-content"
-        className="absolute -left-[9999px] top-2 z-[2000] px-4 py-2 bg-background text-foreground no-underline font-semibold focus:left-2 focus:outline-2 focus:outline-[hsl(var(--brand))]"
+        className="absolute -left-[9999px] top-2 z-[2000] px-4 py-2 bg-background text-foreground no-underline font-semibold focus:left-2 focus:outline-2 focus:outline-[hsl(var(--foreground))]"
       >
         Skip to admin content
       </a>
@@ -185,7 +185,7 @@ export function AdminShell() {
                           <button
                             type="button"
                             onClick={() => crumb.route && navigate(crumb.route)}
-                            className="font-medium text-[0.82rem] text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--brand))] bg-transparent border-0 p-0"
+                            className="font-medium text-[0.82rem] text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))] bg-transparent border-0 p-0"
                           >
                             {crumb.label}
                           </button>

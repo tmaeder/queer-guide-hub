@@ -329,7 +329,7 @@ export function Header() {
                     className={`slide-up-in w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
                     style={{ minHeight: 48, animationDelay: `${itemIdx * 0.04}s` }}
                   >
-                    <item.icon style={{ width: 18, height: 18, flexShrink: 0, color: active ? 'hsl(var(--brand))' : undefined }} />
+                    <item.icon style={{ width: 18, height: 18, flexShrink: 0, color: active ? 'hsl(var(--foreground))' : undefined }} />
                     <span className={`text-sm ${active ? 'font-semibold' : 'font-normal'}`}>
                       {t(item.labelKey)}
                     </span>

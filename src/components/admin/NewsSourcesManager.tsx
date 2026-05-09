@@ -435,7 +435,7 @@ export function NewsSourcesManager() {
                           </Badge>
 
                           {(source as NewsSource & { auto_publish?: boolean }).auto_publish && (
-                            <Badge variant="default" style={{ background: 'hsl(var(--brand))' }}>
+                            <Badge variant="default" style={{ background: 'hsl(var(--foreground))' }}>
                               Auto-publish
                             </Badge>
                           )}

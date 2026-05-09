@@ -7,12 +7,13 @@ import { Clock, CheckCircle2, AlertTriangle, Zap, TrendingUp, Layers } from 'luc
 import type { AutomationStats as Stats } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
 
-const BRAND_MAIN = '#b60d3d';
 
 interface Props {
   stats: Stats;
 }
 
+// Admin data-viz palette — documented chromatic exception (CLAUDE.md).
+// Public UI stays strict B&W; these accents exist only inside /admin*.
 const CARDS: Array<{
   key: keyof Stats;
   label: string;
@@ -23,7 +24,7 @@ const CARDS: Array<{
   { key: 'pending_changes', label: 'Pending Review', icon: AlertTriangle, color: '#f59e0b' },
   { key: 'auto_approved_24h', label: 'Auto-Approved (24h)', icon: CheckCircle2, color: '#10b981' },
   { key: 'total_proposed_24h', label: 'Total Proposed (24h)', icon: TrendingUp, color: '#6366f1' },
-  { key: 'modules_enabled', label: 'Modules Active', icon: Zap, color: BRAND_MAIN },
+  { key: 'modules_enabled', label: 'Modules Active', icon: Zap, color: '#ec4899' },
   {
     key: 'approval_rate',
     label: 'Auto-Approval Rate',

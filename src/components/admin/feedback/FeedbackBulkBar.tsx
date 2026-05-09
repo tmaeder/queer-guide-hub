@@ -210,7 +210,7 @@ export function FeedbackBulkBar({
           size="sm"
           onClick={onForward}
           disabled={loading}
-          style={{ background: 'hsl(var(--accent-warm))' }}
+          style={{ background: 'hsl(var(--foreground))' }}
           className="text-white hover:opacity-90"
         >
           <Github size={14} />
