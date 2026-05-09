@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { listFrom } from '@/hooks/usePageFetchers';
 import {
   Mail,
@@ -67,7 +67,6 @@ function relativeTime(dateStr: string): string {
 }
 
 export function EmailIngestionsManager() {
-  const { toast } = useToast();
   const [ingestions, setIngestions] = useState<EmailIngestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -86,11 +85,7 @@ export function EmailIngestionsManager() {
       );
       setIngestions(data);
     } catch (_error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch email ingestions',
-        variant: 'destructive',
-      });
+      toast.error('Error: Failed to fetch email ingestions');
     } finally {
       setLoading(false);
     }

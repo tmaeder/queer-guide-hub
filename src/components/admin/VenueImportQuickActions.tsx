@@ -9,8 +9,7 @@ import {
   XCircle, Key, Database
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
-import { brandColors } from '@/theme/brandColors';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { listFromWhere, listFrom } from '@/hooks/usePageFetchers';
 
@@ -65,7 +64,6 @@ const SLUG_TO_DIALOG_PROVIDER: Record<string, 'foursquare' | 'google-places' | '
 };
 
 export const VenueImportQuickActions = () => {
-  const { toast } = useToast();
   const [venueSources, setVenueSources] = useState<VenueSource[]>([]);
   const [venueStats, setVenueStats] = useState<VenueStats>({});
   const [totalVenues, setTotalVenues] = useState(0);
@@ -220,11 +218,7 @@ export const VenueImportQuickActions = () => {
           description: `${source.name} scraper has been triggered. Check the Pipeline tab for progress.`,
         });
       } catch (error) {
-        toast({
-          title: 'Import Failed',
-          description: error instanceof Error ? error.message : 'An error occurred',
-          variant: 'destructive'
-        });
+        toast.error(`Import Failed: ${error}`);
       } finally {
         setLoadingStates(prev => ({ ...prev, [source.slug]: false }));
       }
@@ -240,17 +234,10 @@ export const VenueImportQuickActions = () => {
       const { error } = await supabase.functions.invoke(functionName, { body: { config } });
       if (error) throw error;
 
-      toast({
-        title: 'Import Started',
-        description: `Venue import has been initiated`,
-      });
+      toast.success(`Import Started: Venue import has been initiated`);
       setImportDialog({ open: false, provider: null });
     } catch (error) {
-      toast({
-        title: 'Import Failed',
-        description: error instanceof Error ? error.message : 'An error occurred during import',
-        variant: 'destructive'
-      });
+      toast.error(`Import Failed: ${error}`);
     } finally {
       setLoadingStates(prev => ({ ...prev, [importDialog.provider!]: false }));
     }
@@ -323,8 +310,8 @@ export const VenueImportQuickActions = () => {
               <div className="text-xs" style={{ color: '#ea580c' }}>Imported</div>
             </div>
             <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#faf5ff' }}>
-              <div className="text-xl font-semibold" style={{ color: brandColors.main }}>{activeSources}</div>
-              <div className="text-xs" style={{ color: brandColors.main }}>Active Sources</div>
+              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{activeSources}</div>
+              <div className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>Active Sources</div>
             </div>
             <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#fef2f2' }}>
               <div className="text-xl font-semibold" style={{ color: '#dc2626' }}>{venueSources.length}</div>

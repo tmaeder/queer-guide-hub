@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Map as MapIcon, RefreshCw, Hotel, Bed, Loader2, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -45,7 +45,6 @@ function RatioBar({ actual, expected }: { actual: number; expected: number | nul
 
 export default function CoverageTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['source-coverage'],
@@ -65,10 +64,10 @@ export default function CoverageTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Coverage recomputed' });
+      toast.success('Coverage recomputed');
       qc.invalidateQueries({ queryKey: ['source-coverage'] });
     },
-    onError: (e: Error) => toast({ title: 'Refresh failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Refresh failed: ${e.message}`),
   });
 
   const bySource = useMemo(() => {

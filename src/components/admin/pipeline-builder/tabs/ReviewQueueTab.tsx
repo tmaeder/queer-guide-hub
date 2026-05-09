@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, XCircle, GitMerge, FilePlus2, ClipboardCheck, Loader2 } from 'lucide-react';
 import { fetchReviewQueueItems, updateRow, insertInto } from '@/hooks/usePageFetchers';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -30,7 +30,6 @@ type Filter = 'all' | 'venues' | 'hotels' | 'events' | 'personalities' | 'market
 
 export default function ReviewQueueTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [filter, setFilter] = useState<Filter>('all');
   const [selected, setSelected] = useState<ReviewItem | null>(null);
 
@@ -95,7 +94,7 @@ export default function ReviewQueueTab() {
       qc.invalidateQueries({ queryKey: ['review-queue'] });
       setSelected(null);
     },
-    onError: (e: Error) => toast({ title: 'Review action failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Review action failed: ${e.message}`),
   });
 
   const counts = useMemo(() => {

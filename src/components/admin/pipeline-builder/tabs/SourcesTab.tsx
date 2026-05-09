@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Power, AlertTriangle, CheckCircle, Clock, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,6 @@ function statusFor(s: ScrapeSource): { key: StatusKey; icon: React.ComponentType
 
 export default function SourcesTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<HealthFilter>('all');
 
@@ -77,7 +76,7 @@ export default function SourcesTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['scrape-sources'] }),
-    onError: (e: Error) => toast({ title: 'Toggle failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Toggle failed: ${e.message}`),
   });
 
   const bulkToggle = useMutation({
@@ -89,7 +88,7 @@ export default function SourcesTab() {
       qc.invalidateQueries({ queryKey: ['scrape-sources'] });
       toast({ title: `${enabled ? 'Enabled' : 'Disabled'} ${ids.length} sources` });
     },
-    onError: (e: Error) => toast({ title: 'Bulk toggle failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Bulk toggle failed: ${e.message}`),
   });
 
   const { filtered, counts } = useMemo(() => {

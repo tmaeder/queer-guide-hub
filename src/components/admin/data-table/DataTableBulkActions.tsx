@@ -66,7 +66,7 @@ export function DataTableBulkActions({
     <>
       <div
         className="flex items-center gap-2 px-4 py-2 border-b border-border"
-        style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
+        style={{ backgroundColor: 'hsl(var(--muted))' }}
       >
         <p className="text-sm font-semibold">{selectedCount} selected</p>
 

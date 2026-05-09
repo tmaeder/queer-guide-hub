@@ -44,7 +44,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { brandColors } from '@/theme/brandColors';
 
 const SEVERITY_COLORS: Record<string, string> = {
   info: '#3b82f6',
@@ -78,7 +77,7 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
 };
 
 const SENSITIVITY_COLORS: Record<string, string> = {
-  sensitivity_legal: brandColors.main,
+  sensitivity_legal: 'hsl(var(--foreground))',
   sensitivity_medical: '#0891b2',
   sensitivity_nsfw: '#e11d48',
   lgbti_relevance: '#d97706',
@@ -242,14 +241,14 @@ export function AutoModerationQueue() {
 
       {/* Auto-Approve Panel */}
       <Card
-        style={{ borderColor: brandColors.main, backgroundColor: brandColors.main + '0A' }}
+        style={{ borderColor: 'hsl(var(--foreground))', backgroundColor: 'hsl(var(--muted))' }}
         className="border"
       >
         <CardContent className="py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-[18px] h-[18px]" style={{ color: brandColors.main }} />
+                <ShieldCheck className="w-[18px] h-[18px]" style={{ color: 'hsl(var(--foreground))' }} />
                 <div className="text-sm font-semibold">Auto-Approve High Confidence</div>
               </div>
               <p className="text-xs text-muted-foreground">
