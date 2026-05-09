@@ -114,7 +114,7 @@ export function useEvents(autoFetch: boolean = true) {
             `
             *,
             event_attendees(status),
-            venues(
+            venues!venue_id(
               id,
               name,
               address,
