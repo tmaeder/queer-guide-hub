@@ -76,6 +76,18 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
   const { state, setField, setFields, save, reset, setActiveGroup, metadata, updateMetadata } =
     useCMSEditor({ contentType, itemId });
 
+  const titleValue = (config ? (state.data[config.titleField] as string) : '') ?? '';
+  useEffect(() => {
+    const prev = document.title;
+    const label = config?.label.singular ?? contentType;
+    document.title = titleValue
+      ? `${titleValue} | Queer Guide`
+      : `New ${label} | Queer Guide`;
+    return () => {
+      document.title = prev;
+    };
+  }, [titleValue, config, contentType]);
+
   // Field groups for tab navigation
   const fieldGroups = useMemo(() => getFieldGroups(contentType), [contentType]);
 
