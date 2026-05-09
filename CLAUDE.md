@@ -131,6 +131,7 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 ### Documented exceptions
 - **`--destructive`** token for error/warning semantics (near-black with contextual meaning).
 - **Admin chromatic palette** (`--cat-*` tokens, content-type accents, data-viz) — the only place where multiple hues appear. Files in `src/components/admin/`, `src/components/cms/`, `src/pages/Admin*`, `src/pages/admin/` are exempt from the color-literal ESLint rule. Stay monochrome anywhere a normal user can see.
+- **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
 
 ### Design System Files
 - Tokens: `src/index.css` (CSS variables)

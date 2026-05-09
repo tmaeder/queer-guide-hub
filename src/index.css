@@ -298,9 +298,17 @@ a, button, [role="button"], input, select, textarea {
   min-height: 44px;
 }
 
+/* Inline links inside body text are underlined. In a strict B&W system,
+   links share the foreground color with surrounding text, so the underline
+   is the only signal distinguishing them (axe `link-in-text-block`,
+   WCAG 1.4.1 Use of Color). Standalone links — nav, buttons, cards — stay
+   un-underlined. Documented exception to the editorial flat rule. */
 p a, li a, td a, span a, label a {
   min-height: unset;
   display: inline;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 /* ── Typography defaults — bold, tight, editorial ──────────────────── */
