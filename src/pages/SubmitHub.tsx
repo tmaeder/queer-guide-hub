@@ -65,10 +65,10 @@ const SubmitHub = () => {
               <div
                 className="flex items-center justify-center flex-shrink-0 bg-muted"
                 style={{ width: 44, height: 44 }}
-
               >
                 <Camera style={{ width: 22, height: 22 }} />
               </div>
+              <div>
                 <p className="text-base font-semibold mb-0.5">Scan a Flyer</p>
                 <p className="text-sm text-muted-foreground">
                   Take a photo of an event flyer or venue card and we'll extract the details
