@@ -29,6 +29,7 @@ export const eventFields: FieldConfig[] = [
     required: true,
     group: 'basic',
     filterable: true,
+    listColumn: true,
     options: [
       { value: 'party', label: 'Party' },
       { value: 'festival', label: 'Festival' },
