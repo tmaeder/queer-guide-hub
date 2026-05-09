@@ -1,7 +1,7 @@
 name: Reconfigure Meilisearch
 
 # Runs configure-indexes.sh on the VPS via SSH.
-# Meilisearch port 7700 is mapped to the host, so we curl localhost directly.
+# Scripts are piped via stdin to avoid disk writes (VPS disk may be full).
 
 on:
   workflow_dispatch:
@@ -45,13 +45,6 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Copy scripts to VPS
-        run: |
-          scp -o StrictHostKeyChecking=accept-new \
-            meilisearch/configure-indexes.sh \
-            meilisearch/seed-city-aliases.sh \
-            "$SSH_USER@$SSH_HOST:/tmp/"
-
       - name: Verify Meilisearch is reachable
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
@@ -63,7 +56,7 @@ jobs:
           ssh "$SSH_USER@$SSH_HOST" \
             MEILI_URL="http://localhost:7700" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash /tmp/configure-indexes.sh
+            bash < meilisearch/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
@@ -71,4 +64,4 @@ jobs:
           ssh "$SSH_USER@$SSH_HOST" \
             MEILI_URL="http://localhost:7700" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
-            bash /tmp/seed-city-aliases.sh
+            bash < meilisearch/seed-city-aliases.sh
