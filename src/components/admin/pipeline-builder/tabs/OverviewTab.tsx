@@ -118,7 +118,7 @@ export default function OverviewTab() {
       }
     },
     onSuccess: (_, row) => {
-      toast({ title: `Started: ${row.display_name || row.name}` });
+      toast.success(`Started: ${row.display_name || row.name}`);
       setTimeout(() => qc.invalidateQueries({ queryKey: ['unified-pipeline-overview'] }), 1500);
     },
     onError: (e: Error) => toast.error(`Run failed: ${e.message}`),

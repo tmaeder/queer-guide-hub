@@ -86,7 +86,7 @@ export default function SourcesTab() {
     },
     onSuccess: (_, { ids, enabled }) => {
       qc.invalidateQueries({ queryKey: ['scrape-sources'] });
-      toast({ title: `${enabled ? 'Enabled' : 'Disabled'} ${ids.length} sources` });
+      toast.success(`${enabled ? 'Enabled' : 'Disabled'} ${ids.length} sources`);
     },
     onError: (e: Error) => toast.error(`Bulk toggle failed: ${e.message}`),
   });

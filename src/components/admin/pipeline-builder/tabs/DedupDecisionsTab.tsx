@@ -41,7 +41,7 @@ export default function DedupDecisionsTab() {
       return data as number;
     },
     onSuccess: (n) => {
-      toast({ title: `Auto-resolved ${n} decisions` });
+      toast.success(`Auto-resolved ${n} decisions`);
       qc.invalidateQueries({ queryKey: ['dedup-decisions'] });
     },
     onError: (e: Error) => toast.error(`Auto-resolve failed: ${e.message}`),

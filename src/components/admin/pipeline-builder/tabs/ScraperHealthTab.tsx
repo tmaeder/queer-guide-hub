@@ -89,7 +89,7 @@ export default function ScraperHealthTab() {
       return data as number;
     },
     onSuccess: (n, entityType) => {
-      toast({ title: `Pruned ${n} orphan ${entityType} mappings` });
+      toast.success(`Pruned ${n} orphan ${entityType} mappings`);
       qc.invalidateQueries({ queryKey: ['scraper-orphans'] });
     },
     onError: (e: Error) => toast.error(`Prune failed: ${e.message}`),
