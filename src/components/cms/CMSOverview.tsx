@@ -96,14 +96,14 @@ function getActionColor(action: string): string {
   if (action.includes('create') || action.includes('insert')) return '#10b981';
   if (action.includes('update') || action.includes('edit')) return '#3b82f6';
   if (action.includes('delete') || action.includes('remove')) return '#ef4444';
-  if (action.includes('publish')) return 'hsl(var(--brand))';
+  if (action.includes('publish')) return 'hsl(var(--foreground))';
   return '#6b7280';
 }
 
 const STAT_CARDS = [
   { key: 'total', label: 'Total Items', icon: TrendingUp, color: '#3b82f6' },
   { key: 'review', label: 'In Review', icon: Clock, color: '#f59e0b' },
-  { key: 'types', label: 'Content Types', icon: Layers, color: 'hsl(var(--brand))' },
+  { key: 'types', label: 'Content Types', icon: Layers, color: 'hsl(var(--foreground))' },
   { key: 'queue', label: 'Review Queue', color: '#10b981', icon: AlertCircle },
 ] as const;
 
@@ -499,7 +499,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         </div>
         {[
           { label: 'New Page', icon: FileText, color: '#64748b', onClick: () => onEdit('cms_pages', null) },
-          { label: 'New Venue', icon: MapPin, color: 'hsl(var(--brand))', onClick: () => onEdit('venues', null) },
+          { label: 'New Venue', icon: MapPin, color: 'hsl(var(--foreground))', onClick: () => onEdit('venues', null) },
           { label: 'New Event', icon: Calendar, color: '#ec4899', onClick: () => onEdit('events', null) },
           { label: 'New Article', icon: Newspaper, color: '#3b82f6', onClick: () => onEdit('news_articles', null) },
         ].map((action) => (

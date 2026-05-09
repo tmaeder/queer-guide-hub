@@ -229,7 +229,7 @@ export function CMSSidebar({
             onClick={() => onNavigate('overview')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={LayoutDashboard} color="hsl(var(--brand))" size={15} />
+              <IconBadge icon={LayoutDashboard} color="hsl(var(--foreground))" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'overview' ? 'font-semibold' : 'font-normal')}

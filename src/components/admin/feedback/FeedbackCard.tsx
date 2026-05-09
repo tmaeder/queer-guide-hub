@@ -135,16 +135,16 @@ export function FeedbackCard({
             style={{
               width: 7,
               height: 7,
-              background: 'hsl(var(--accent-warm))',
+              background: 'hsl(var(--foreground))',
               animation: 'feedback-pulse 1.8s infinite',
             }}
           />
         )}
         {isNew && (
           <style>{`@keyframes feedback-pulse {
-            0% { box-shadow: 0 0 0 0 hsl(var(--accent-warm) / 0.6); }
-            70% { box-shadow: 0 0 0 6px hsl(var(--accent-warm) / 0); }
-            100% { box-shadow: 0 0 0 0 hsl(var(--accent-warm) / 0); }
+            0% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0.6); }
+            70% { box-shadow: 0 0 0 6px hsl(var(--foreground) / 0); }
+            100% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0); }
           }`}</style>
         )}
 
@@ -322,11 +322,11 @@ export function FeedbackCard({
                     background:
                       story.status === 'resolved'
                         ? 'hsl(var(--muted))'
-                        : 'hsl(var(--accent-warm) / 0.15)',
+                        : 'hsl(var(--foreground) / 0.15)',
                     color:
                       story.status === 'resolved'
                         ? 'hsl(var(--muted-foreground))'
-                        : 'hsl(var(--accent-warm))',
+                        : 'hsl(var(--foreground))',
                     borderRadius: 4,
                     maxWidth: 90,
                     textOverflow: 'ellipsis',

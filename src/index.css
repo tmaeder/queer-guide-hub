@@ -54,10 +54,10 @@
 }
 
 /* ── CSS Variables — Strict Monochrome (Black & White only) ──────────
-   Only neutrals + a single semantic destructive red. --brand and the
-   --cat-* family are aliased to --foreground so any legacy reference
-   resolves to the neutral primary; new code MUST use --foreground or
-   --primary directly. */
+   Only neutrals + a single semantic destructive red. The --cat-* family
+   are aliased to --foreground as documented placeholders for any future
+   admin chromatic palette (see CLAUDE.md). New code MUST use
+   --foreground or --primary directly. */
 
 :root {
   --background: 0 0% 100%;
@@ -80,12 +80,6 @@
 
   --accent: 0 0% 96%;
   --accent-foreground: 0 0% 4%;
-
-  /* Brand alias → black. Kept so legacy CSS still resolves; never use for new work. */
-  --brand: 0 0% 4%;
-  --brand-foreground: 0 0% 100%;
-  --accent-warm: 0 0% 4%;
-  --accent-warm-foreground: 0 0% 100%;
 
   /* Sole permitted hue: error semantics. */
   --destructive: 0 70% 38%;
@@ -156,11 +150,6 @@
 
   --accent: 0 0% 12%;
   --accent-foreground: 0 0% 96%;
-
-  --brand: 0 0% 96%;
-  --brand-foreground: 0 0% 4%;
-  --accent-warm: 0 0% 96%;
-  --accent-warm-foreground: 0 0% 4%;
 
   --destructive: 0 84% 62%;
   --destructive-foreground: 0 0% 100%;

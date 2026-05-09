@@ -384,7 +384,7 @@ export function AdminEditDialog({
     const isEnriched = enrichedFields.has(field.name);
     const labelText = isEnriched ? `${field.label} ✨` : field.label;
     const fieldId = `field-${field.name}`;
-    const enrichedClass = isEnriched ? 'border-[hsl(var(--brand))] ring-1 ring-[hsl(var(--brand))]' : '';
+    const enrichedClass = isEnriched ? 'border-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--foreground))]' : '';
 
     switch (field.type) {
       case 'boolean':

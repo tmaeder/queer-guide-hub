@@ -187,7 +187,7 @@ function FilterChip({
         background: 'transparent',
         padding: '2px 6px',
         cursor: 'pointer',
-        color: active ? 'hsl(var(--accent-warm))' : 'var(--muted-foreground)',
+        color: active ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
         fontWeight: active ? 700 : 500,
         fontSize: '0.72rem',
         letterSpacing: 0.2,
@@ -199,7 +199,7 @@ function FilterChip({
         borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
       }}
       onMouseEnter={(e) => {
-        if (!active) e.currentTarget.style.color = 'hsl(var(--accent-warm))';
+        if (!active) e.currentTarget.style.color = 'hsl(var(--foreground))';
       }}
       onMouseLeave={(e) => {
         if (!active) e.currentTarget.style.color = 'var(--muted-foreground)';

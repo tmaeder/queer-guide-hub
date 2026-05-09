@@ -217,7 +217,7 @@ export function AutoModerationQueue() {
             {' · '}
             <RouterLink
               to="/admin/automation"
-              className="inline-flex items-center gap-1 hover:underline text-[hsl(var(--brand))]"
+              className="inline-flex items-center gap-1 hover:underline text-[hsl(var(--foreground))]"
             >
               <Settings size={12} />
               Configure modules

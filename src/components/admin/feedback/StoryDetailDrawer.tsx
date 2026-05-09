@@ -201,11 +201,11 @@ export function StoryDetailDrawer({
           {onSaveNarrative && (
             <div
               className="p-3 bg-muted flex flex-col gap-2"
-              style={{ borderLeft: '3px solid hsl(var(--accent-warm))' }}
+              style={{ borderLeft: '3px solid hsl(var(--foreground))' }}
             >
               <div
                 className="flex items-center gap-2 text-[0.65rem] font-bold uppercase"
-                style={{ color: 'hsl(var(--accent-warm))', letterSpacing: 0.5 }}
+                style={{ color: 'hsl(var(--foreground))', letterSpacing: 0.5 }}
               >
                 <Sparkles size={12} />
                 Story {story.narrative_edited ? '· edited' : ''}
