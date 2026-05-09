@@ -7,6 +7,8 @@ import { Clock, CheckCircle2, AlertTriangle, Zap, TrendingUp, Layers } from 'luc
 import type { AutomationStats as Stats } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
 
+const BRAND_MAIN = '#b60d3d';
+
 interface Props {
   stats: Stats;
 }

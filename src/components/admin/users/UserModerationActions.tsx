@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { updateRowsBy } from '@/hooks/usePageFetchers';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,7 +41,6 @@ export function UserModerationActions({
   displayName,
   onStatusChanged,
 }: UserModerationActionsProps) {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState('');
   const [pendingAction, setPendingAction] = useState<ModerationStatus | null>(null);
@@ -49,11 +48,7 @@ export function UserModerationActions({
   const handleAction = async () => {
     if (!pendingAction) return;
     if (pendingAction !== 'approved' && !reason.trim()) {
-      toast({
-        title: 'Reason required',
-        description: 'Please provide a reason.',
-        variant: 'destructive',
-      });
+      toast.error('Reason required: Please provide a reason.');
       return;
     }
 
@@ -82,11 +77,7 @@ export function UserModerationActions({
       toast({ title: 'Status updated', description: `User has been ${pendingAction}.` });
       onStatusChanged();
     } catch (err: unknown) {
-      toast({
-        title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to update status',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${err}`);
     } finally {
       setLoading(false);
       setPendingAction(null);

@@ -20,7 +20,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, ImageOff } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -59,7 +59,6 @@ const columnHelper = createColumnHelper<TagRow>();
 
 export default function AdminTags() {
   const { categoriesTree, createTag, updateTag, deleteTag, allTags: tags } = useCentralizedTags();
-  const { toast } = useToast();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<TagRow | null>(null);
@@ -88,7 +87,7 @@ export default function AdminTags() {
       };
       if (editingTag) {
         await updateTag(editingTag.id, cleanData);
-        toast({ title: 'Success', description: 'Tag updated successfully' });
+        toast.success('Success: Tag updated successfully');
       } else {
         await createTag({
           ...cleanData,
@@ -97,12 +96,12 @@ export default function AdminTags() {
             .replace(/\s+/g, '-')
             .replace(/[^a-z0-9-]/g, ''),
         });
-        toast({ title: 'Success', description: 'Tag created successfully' });
+        toast.success('Success: Tag created successfully');
       }
       resetForm();
       setIsCreateDialogOpen(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to save tag', variant: 'destructive' });
+      toast.error('Error: Failed to save tag');
     }
   };
 
@@ -121,9 +120,9 @@ export default function AdminTags() {
     if (confirm(`Delete tag "${tag.name}"?`)) {
       try {
         await deleteTag(tag.id);
-        toast({ title: 'Success', description: 'Tag deleted' });
+        toast.success('Success: Tag deleted');
       } catch {
-        toast({ title: 'Error', description: 'Failed to delete tag', variant: 'destructive' });
+        toast.error('Error: Failed to delete tag');
       }
     }
   };
@@ -147,11 +146,7 @@ export default function AdminTags() {
       setIsBulkEditOpen(false);
       setBulkEditTags({});
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update descriptions',
-        variant: 'destructive',
-      });
+      toast.error('Error: Failed to update descriptions');
     }
   };
 
@@ -320,7 +315,7 @@ export default function AdminTags() {
               await updateTag(tag.id, { image_url: null });
               toast({ title: 'Image cleared', description: `Removed image from "${tag.name}"` });
             } catch {
-              toast({ title: 'Error', description: 'Failed to clear image', variant: 'destructive' });
+              toast.error('Error: Failed to clear image');
             }
           },
         },

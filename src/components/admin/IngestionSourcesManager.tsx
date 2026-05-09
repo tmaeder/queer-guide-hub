@@ -9,7 +9,6 @@ import {
   Play, RefreshCw, AlertTriangle, CheckCircle, Clock,
   Database, Globe, Rss, FileText, Zap, Key
 } from 'lucide-react';
-import { brandColors } from '@/theme/brandColors';
 
 const SOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
   api: <Database style={{ height: 16, width: 16 }} />,
@@ -103,7 +102,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Database style={{ height: 20, width: 20, color: brandColors.main }} />
+              <Database style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
               <span className="text-2xl font-bold">
                 {sources.reduce((sum, s) => sum + (s.total_items_fetched || 0), 0).toLocaleString()}
               </span>

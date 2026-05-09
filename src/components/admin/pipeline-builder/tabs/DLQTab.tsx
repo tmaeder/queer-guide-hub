@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, RefreshCw, Trash2, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -33,7 +33,6 @@ const statusClass: Record<string, string> = {
 
 export default function DLQTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [filter, setFilter] = useState<StatusFilter>('pending');
 
   const { data: summary = [] } = useQuery<SummaryRow[]>({
@@ -61,16 +60,16 @@ export default function DLQTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'DLQ consumer triggered', description: 'Processing up to 50 items' });
+      toast.success('DLQ consumer triggered: Processing up to 50 items');
       qc.invalidateQueries({ queryKey: ['dlq-rows'] });
     },
-    onError: (e: Error) => toast({ title: 'DLQ consumer failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`DLQ consumer failed: ${e.message}`),
   });
 
   const retryNow = useMutation({
     mutationFn: (id: number) => retryDlqItem(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
-    onError: (e: Error) => toast({ title: 'Retry failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Retry failed: ${e.message}`),
   });
 
   const resolveItem = useMutation({
@@ -79,7 +78,7 @@ export default function DLQTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
-    onError: (e: Error) => toast({ title: 'Resolve failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Resolve failed: ${e.message}`),
   });
 
   const totals = useMemo(() => summary.reduce(

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, ChevronRight } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getBreadcrumbsForRoute } from '@/config/adminNavigation';
 
 // ── Editor Context ────────────────────────────────────────────────────────────
@@ -56,7 +57,7 @@ const CMSEditorLayout = lazy(() =>
 /** Skeleton loading placeholder that mimics the sidebar + content layout */
 function ShellSkeleton() {
   return (
-    <div className="flex w-full" style={{ minHeight: 'calc(100vh - 100px)' }}>
+    <div className="flex w-full" style={{ minHeight: 'var(--admin-content-min-h)' }}>
       {/* Skeleton sidebar */}
       <div className="hidden md:block w-[260px] flex-shrink-0 border-r border-border bg-background p-4">
         <Skeleton className="rounded w-40 h-6 mb-2" />
@@ -127,11 +128,13 @@ export function AdminShell() {
       </a>
       <div
         className="flex w-full bg-muted/30"
-        style={{ minHeight: 'calc(100vh - 100px)' }}
+        style={{ minHeight: 'var(--admin-content-min-h)' }}
       >
         {/* Mobile hamburger with "Admin Console" label */}
         {isMobile && (
-          <div
+          <button
+            type="button"
+            aria-label="Open admin navigation"
             onClick={() => setMobileOpen(true)}
             className="fixed flex items-center gap-1.5 bg-background pl-2 pr-3 py-1.5 cursor-pointer"
             style={{ top: 80, left: 8, zIndex: 1200 }}
@@ -142,7 +145,7 @@ export function AdminShell() {
             <span className="font-semibold text-xs text-muted-foreground whitespace-nowrap">
               Admin Console
             </span>
-          </div>
+          </button>
         )}
 
         {/* Sidebar -- drawer on mobile, persistent on desktop */}
@@ -169,7 +172,7 @@ export function AdminShell() {
                       <li key={i} className="flex items-center">
                         {i > 0 && (
                           <span className="mx-1.5">
-                            <ChevronRight size={14} style={{ color: '#94a3b8' }} />
+                            <ChevronRight size={14} className="text-muted-foreground" />
                           </span>
                         )}
                         {isLast ? (
@@ -208,9 +211,11 @@ export function AdminShell() {
                 />
               </Suspense>
             ) : (
-              <div key={location.pathname} className="content-enter">
-                <Outlet />
-              </div>
+              <ErrorBoundary>
+                <div key={location.pathname} className="content-enter">
+                  <Outlet />
+                </div>
+              </ErrorBoundary>
             )}
           </main>
         </div>

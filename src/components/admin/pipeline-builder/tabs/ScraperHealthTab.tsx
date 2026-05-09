@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { listFrom } from '@/hooks/usePageFetchers';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -59,7 +59,6 @@ function SectionHeader({ icon: Icon, title, badge }: { icon: React.ComponentType
 
 export default function ScraperHealthTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['scraper-coverage'],
@@ -93,7 +92,7 @@ export default function ScraperHealthTab() {
       toast({ title: `Pruned ${n} orphan ${entityType} mappings` });
       qc.invalidateQueries({ queryKey: ['scraper-orphans'] });
     },
-    onError: (e: Error) => toast({ title: 'Prune failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Prune failed: ${e.message}`),
   });
 
   const totalOrphans = orphans.reduce((s, o) => s + o.orphan_count, 0);

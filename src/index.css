@@ -127,6 +127,13 @@
   --cat-travel:      var(--foreground);
   --cat-news:        var(--foreground);
   --cat-community:   var(--foreground);
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-toast: 1100;
+  --z-modal: 1200;
+  --z-skip-link: 2000;
+  --sidebar-width: 260px;
+  --admin-content-min-h: calc(100vh - 100px);
 }
 
 .dark {
