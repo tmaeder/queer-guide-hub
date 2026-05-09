@@ -39,10 +39,9 @@ import {
   type ReviewQueueItem,
   type QualityDistribution,
 } from '@/hooks/useEnrichmentDashboard';
-import { brandColors } from '@/theme/brandColors';
 
 // Lightweight alpha helper
-function alphaHex(color: string, a: number): string {
+function _alpha(color: string, a: number): string {
   if (color.startsWith('#') && color.length === 7) {
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
@@ -55,10 +54,10 @@ function alphaHex(color: string, a: number): string {
 // ── Helper ──────────────────────────────────────────────────────────────
 
 const ENTITY_META: Record<string, { label: string; icon: typeof Building; color: string }> = {
-  venues: { label: 'Venues', icon: Building, color: brandColors.main },
-  events: { label: 'Events', icon: Calendar, color: '#ec4899' },
-  personalities: { label: 'Personalities', icon: Users, color: '#f59e0b' },
-  news_articles: { label: 'News', icon: Newspaper, color: '#3b82f6' },
+  venues: { label: 'Venues', icon: Building, color: 'hsl(var(--foreground))' },
+  events: { label: 'Events', icon: Calendar, color: 'hsl(var(--foreground))' },
+  personalities: { label: 'Personalities', icon: Users, color: 'hsl(var(--foreground))' },
+  news_articles: { label: 'News', icon: Newspaper, color: 'hsl(var(--foreground))' },
 };
 
 const STEP_LABELS: Record<string, string> = {
@@ -70,11 +69,11 @@ const STEP_LABELS: Record<string, string> = {
 };
 
 const REVIEW_TYPE_META: Record<string, { label: string; color: string; icon: typeof GitMerge }> = {
-  duplicate: { label: 'Duplicate', color: '#f59e0b', icon: GitMerge },
-  low_quality: { label: 'Low Quality', color: '#ef4444', icon: AlertCircle },
-  anomaly: { label: 'Anomaly', color: brandColors.main, icon: AlertTriangle },
-  stale: { label: 'Stale', color: '#6b7280', icon: Clock },
-  broken_source: { label: 'Broken Source', color: '#ea580c', icon: XCircle },
+  duplicate: { label: 'Duplicate', color: 'hsl(var(--foreground))', icon: GitMerge },
+  low_quality: { label: 'Low Quality', color: 'hsl(var(--foreground))', icon: AlertCircle },
+  anomaly: { label: 'Anomaly', color: 'hsl(var(--foreground))', icon: AlertTriangle },
+  stale: { label: 'Stale', color: 'hsl(var(--muted-foreground))', icon: Clock },
+  broken_source: { label: 'Broken Source', color: 'hsl(var(--foreground))', icon: XCircle },
 };
 
 function formatMs(ms: number): string {
@@ -97,15 +96,15 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
       <div className="flex items-center gap-2 mb-4">
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center"
-          style={{ background: alphaHex('#10b981', 0.1) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <Activity size={15} style={{ color: '#10b981' }} />
+          <Activity size={15} style={{ color: 'hsl(var(--foreground))' }} />
         </div>
         <h3 className="text-sm font-semibold">Pipeline Health (24h)</h3>
         {health.queueDepth > 0 && (
           <Badge
             className="ml-auto h-5 text-[0.7rem] font-semibold"
-            style={{ background: alphaHex('#3b82f6', 0.12), color: '#3b82f6' }}
+            style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
           >
             {health.queueDepth} queued
           </Badge>
@@ -135,7 +134,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
                 className="inline-flex items-center rounded border px-2 h-[22px] text-[0.7rem]"
                 style={{
                   borderColor: health.failuresByStep[step]
-                    ? alphaHex('#ef4444', 0.4)
+                    ? 'hsl(var(--muted))'
                     : 'hsl(var(--border))',
                   color: health.failuresByStep[step] ? '#ef4444' : 'hsl(var(--muted-foreground))',
                 }}
@@ -153,7 +152,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
             <span
               key={step}
               className="inline-flex items-center gap-1 rounded px-2 h-[22px] text-[0.7rem]"
-              style={{ background: alphaHex('#ef4444', 0.08), color: '#ef4444' }}
+              style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
             >
               <AlertCircle size={12} />
               {`${STEP_LABELS[step] ?? step}: ${count} failures`}
@@ -169,7 +168,7 @@ function MetricBox({ label, value, color }: { label: string; value: string; colo
   return (
     <div
       className="p-3 rounded-md text-center"
-      style={{ background: alphaHex(color, 0.06) }}
+      style={{ background: 'hsl(var(--muted))' }}
     >
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className="text-base font-bold" style={{ color }}>
@@ -187,9 +186,9 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
       <div className="flex items-center gap-2 mb-4">
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center"
-          style={{ background: alphaHex('#3b82f6', 0.1) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <BarChart3 size={15} style={{ color: '#3b82f6' }} />
+          <BarChart3 size={15} style={{ color: 'hsl(var(--foreground))' }} />
         </div>
         <h3 className="text-sm font-semibold">Quality Scores</h3>
       </div>
@@ -217,7 +216,7 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
 
               <div
                 className="flex h-2 rounded-full overflow-hidden"
-                style={{ background: alphaHex('#64748b', 0.1) }}
+                style={{ background: 'hsl(var(--muted))' }}
               >
                 {excellentPct > 0 && (
                   <Tooltip>
@@ -246,14 +245,14 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
               </div>
 
               <div className="flex gap-4 mt-1">
-                <span className="text-xs font-medium" style={{ color: '#10b981' }}>
+                <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                   {q.excellent.toLocaleString()} excellent
                 </span>
-                <span className="text-xs font-medium" style={{ color: '#f59e0b' }}>
+                <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                   {q.good.toLocaleString()} good
                 </span>
                 {q.needsAttention > 0 && (
-                  <span className="text-xs font-medium" style={{ color: '#ef4444' }}>
+                  <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                     {q.needsAttention.toLocaleString()} attention
                   </span>
                 )}
@@ -300,15 +299,15 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
       <div className="flex items-center gap-2 mb-4">
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center"
-          style={{ background: alphaHex('#ef4444', 0.1) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <AlertTriangle size={15} style={{ color: '#ef4444' }} />
+          <AlertTriangle size={15} style={{ color: 'hsl(var(--foreground))' }} />
         </div>
         <h3 className="text-sm font-semibold">Needs Attention</h3>
         {needsAttention.total > 0 && (
           <Badge
             className="ml-auto h-5 text-[0.7rem] font-bold"
-            style={{ background: alphaHex('#ef4444', 0.12), color: '#ef4444' }}
+            style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
           >
             {needsAttention.total}
           </Badge>
@@ -318,10 +317,10 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
       {needsAttention.total === 0 ? (
         <div
           className="flex items-center gap-2 p-4 rounded-md"
-          style={{ background: alphaHex('#10b981', 0.06) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <CheckCircle2 size={16} style={{ color: '#10b981' }} />
-          <span className="text-sm font-medium" style={{ color: '#10b981' }}>
+          <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
+          <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
             All content is above quality threshold
           </span>
         </div>
@@ -337,7 +336,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
                 className="p-3 rounded-md text-center"
                 style={{
                   background:
-                    count > 0 ? alphaHex('#ef4444', 0.06) : alphaHex('#10b981', 0.04),
+                    count > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
                 }}
               >
                 <Icon
@@ -386,15 +385,15 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
       <div className="flex items-center gap-2 mb-4">
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center"
-          style={{ background: alphaHex('#f59e0b', 0.1) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <Inbox size={15} style={{ color: '#f59e0b' }} />
+          <Inbox size={15} style={{ color: 'hsl(var(--foreground))' }} />
         </div>
         <h3 className="text-sm font-semibold">Review Queue</h3>
         <Badge
           className="ml-auto h-5 text-[0.7rem] font-semibold"
           style={{
-            background: items.length > 0 ? alphaHex('#f59e0b', 0.12) : alphaHex('#10b981', 0.12),
+            background: items.length > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
             color: items.length > 0 ? '#f59e0b' : '#10b981',
           }}
         >
@@ -405,10 +404,10 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
       {items.length === 0 ? (
         <div
           className="flex items-center gap-2 p-4 rounded-md"
-          style={{ background: alphaHex('#10b981', 0.06) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <CheckCircle2 size={16} style={{ color: '#10b981' }} />
-          <span className="text-sm font-medium" style={{ color: '#10b981' }}>
+          <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
+          <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
             No items pending review
           </span>
         </div>
@@ -432,7 +431,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
                       <span
                         className="inline-flex items-center rounded px-1.5 h-[18px] text-[0.6rem] font-semibold"
                         style={{
-                          background: alphaHex(typeMeta.color, 0.1),
+                          background: 'hsl(var(--muted))',
                           color: typeMeta.color,
                         }}
                       >
@@ -458,7 +457,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
                         size="sm"
                         className="h-7 w-7 p-0"
                         onClick={() => setConfirmItem({ item, action: 'resolved' })}
-                        style={{ color: '#10b981' }}
+                        style={{ color: 'hsl(var(--foreground))' }}
                       >
                         <Check size={14} />
                       </Button>
@@ -472,7 +471,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
                         size="sm"
                         className="h-7 w-7 p-0"
                         onClick={() => setConfirmItem({ item, action: 'dismissed' })}
-                        style={{ color: '#6b7280' }}
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
                       >
                         <X size={14} />
                       </Button>
@@ -537,15 +536,15 @@ function FailedEnrichmentsCard() {
       <div className="flex items-center gap-2 mb-4">
         <div
           className="w-7 h-7 rounded-md flex items-center justify-center"
-          style={{ background: alphaHex('#ef4444', 0.1) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <XCircle size={15} style={{ color: '#ef4444' }} />
+          <XCircle size={15} style={{ color: 'hsl(var(--foreground))' }} />
         </div>
         <h3 className="text-sm font-semibold">Failed Enrichments (7d)</h3>
         <Badge
           className="ml-auto h-5 text-[0.7rem] font-semibold"
           style={{
-            background: items.length > 0 ? alphaHex('#ef4444', 0.12) : alphaHex('#10b981', 0.12),
+            background: items.length > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
             color: items.length > 0 ? '#ef4444' : '#10b981',
           }}
         >
@@ -556,10 +555,10 @@ function FailedEnrichmentsCard() {
       {items.length === 0 ? (
         <div
           className="flex items-center gap-2 p-4 rounded-md"
-          style={{ background: alphaHex('#10b981', 0.06) }}
+          style={{ background: 'hsl(var(--muted))' }}
         >
-          <CheckCircle2 size={16} style={{ color: '#10b981' }} />
-          <span className="text-sm font-medium" style={{ color: '#10b981' }}>
+          <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
+          <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
             No failed enrichments
           </span>
         </div>
@@ -587,7 +586,7 @@ function FailedEnrichmentsCard() {
                         <span
                           key={step}
                           className="inline-flex items-center rounded px-1.5 h-[18px] text-[0.6rem] font-semibold"
-                          style={{ background: alphaHex('#ef4444', 0.1), color: '#ef4444' }}
+                          style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
                         >
                           {STEP_LABELS[step] ?? step}
                         </span>
@@ -609,7 +608,7 @@ function FailedEnrichmentsCard() {
                         retry.mutate({ entityType: item.entity_type, entityId: item.entity_id })
                       }
                       disabled={retry.isPending}
-                      style={{ color: '#3b82f6' }}
+                      style={{ color: 'hsl(var(--foreground))' }}
                     >
                       <RefreshCw size={14} />
                     </Button>
@@ -665,7 +664,7 @@ export function EnrichmentDashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Sparkles size={24} style={{ color: '#0891b2' }} />
+          <Sparkles size={24} className='text-foreground' />
           <h1 className="text-xl font-bold">Enrichment Pipeline</h1>
         </div>
         <Tooltip>

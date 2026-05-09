@@ -50,19 +50,19 @@ test.describe('Admin feedback — authenticated', () => {
     test.skip(!ok, 'requires E2E_ADMIN_COOKIE env var');
   });
 
-  test('Kanban tab renders 5 status columns', async ({ page }) => {
-    await page.goto('/admin/feedback');
-    await expect(page.getByRole('button', { name: /Community/i })).toBeVisible({
+  test('Triage tab renders 5 status columns', async ({ page }) => {
+    await page.goto('/admin/feedback?tab=triage');
+    await expect(page.getByRole('button', { name: /Triage/i })).toBeVisible({
       timeout: 15_000,
     });
-    for (const col of ['New', 'Triaged', 'In Progress', 'Blocked', 'Done']) {
+    for (const col of ['New', 'Under Review', 'Planned', 'In Progress', 'Done']) {
       await expect(page.getByText(new RegExp(`^${col}$`, 'i')).first()).toBeVisible();
     }
   });
 
   test('tab navigation reaches each tab without error', async ({ page }) => {
     await page.goto('/admin/feedback');
-    const tabs = ['Community', 'API Errors', 'Spam', 'Analytics'];
+    const tabs = ['Stories', 'Triage', 'Analytics'];
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
 
