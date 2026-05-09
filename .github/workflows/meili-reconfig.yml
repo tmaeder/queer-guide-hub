@@ -1,6 +1,8 @@
 name: Reconfigure Meilisearch
 
-# Diagnostic round 2: understand which Caddy instance serves Meilisearch
+# Runs configure-indexes.sh on the VPS via SSH.
+# Requires the SSH user to have docker group access so it can
+# reach Meilisearch directly, bypassing Infomaniak's Apache front-end.
 
 on:
   workflow_dispatch:
@@ -44,73 +46,73 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Diagnose Caddy routing
+      - name: Copy scripts to VPS
         run: |
-          ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            echo "=== All IPs on :443 and :80 ==="
-            ss -tln | grep -E ':443|:80 '
+          scp -o StrictHostKeyChecking=accept-new \
+            meilisearch/configure-indexes.sh \
+            meilisearch/seed-city-aliases.sh \
+            "$SSH_USER@$SSH_HOST:/tmp/"
 
-            echo ""
-            echo "=== Trying all IPs with -k --resolve on HTTPS ==="
-            for ip in 127.0.0.1 127.0.0.80 10.56.63.29 84.16.72.163; do
-              for host in s.queer.guide search.queer.guide; do
-                resp=$(curl -sk --max-time 5 \
-                  --resolve "$host:443:$ip" \
-                  "https://$host/health" 2>/dev/null)
-                code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 5 \
-                  --resolve "$host:443:$ip" \
-                  "https://$host/health" 2>/dev/null)
-                echo "  https --resolve $host:443:$ip -> $code body='$resp'"
-              done
+      - name: Discover Meilisearch URL
+        id: meili
+        run: |
+          RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
+            # Find Meilisearch container and its internal IP
+            MEILI_CONTAINER=$(docker ps --format '{{.Names}}' 2>/dev/null | grep -i meili | head -1)
+            if [ -z "$MEILI_CONTAINER" ]; then
+              echo "ERR: no meilisearch container found" >&2
+              docker ps 2>&1 >&2 || echo "docker not available" >&2
+              echo "NONE"
+              exit 0
+            fi
+            echo "Container: $MEILI_CONTAINER" >&2
+
+            # Get the container's IP on its Docker network
+            MEILI_IP=$(docker inspect "$MEILI_CONTAINER" \
+              --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null)
+
+            if [ -n "$MEILI_IP" ]; then
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
+                "http://$MEILI_IP:7700/health" 2>/dev/null)
+              echo "  http://$MEILI_IP:7700/health -> $code" >&2
+              if [ "$code" = "200" ]; then
+                echo "http://$MEILI_IP:7700"
+                exit 0
+              fi
+            fi
+
+            # Fallback: try localhost ports
+            for port in 7700 7701; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 \
+                "http://localhost:$port/health" 2>/dev/null)
+              echo "  http://localhost:$port/health -> $code" >&2
+              if [ "$code" = "200" ]; then
+                echo "http://localhost:$port"
+                exit 0
+              fi
             done
 
-            echo ""
-            echo "=== Trying HTTP (port 80) with Host header ==="
-            for ip in 127.0.0.1 127.0.0.80 10.56.63.29 84.16.72.163; do
-              for host in s.queer.guide search.queer.guide; do
-                resp=$(curl -s --max-time 5 \
-                  -H "Host: $host" \
-                  "http://$ip/health" 2>/dev/null)
-                code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
-                  -H "Host: $host" \
-                  "http://$ip/health" 2>/dev/null)
-                echo "  http://$ip Host:$host -> $code body='$resp'"
-              done
-            done
-
-            echo ""
-            echo "=== Try common Meilisearch paths ==="
-            for ip in 127.0.0.1 127.0.0.80 10.56.63.29; do
-              for host in s.queer.guide search.queer.guide; do
-                # Try / and /version
-                for path in / /health /version /indexes; do
-                  code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 3 \
-                    --resolve "$host:443:$ip" \
-                    "https://$host$path" 2>/dev/null)
-                  [ "$code" != "404" ] && echo "  https --resolve $host:443:$ip $path -> $code"
-                done
-              done
-            done
-
-            echo ""
-            echo "=== Check what serves on 127.0.0.1:443 ==="
-            curl -svk --max-time 3 https://127.0.0.1/ 2>&1 | grep -E 'server:|Server:|HTTP/' || true
-
-            echo ""
-            echo "=== Check Varnish/nginx on 127.0.0.80 ==="
-            curl -sv --max-time 3 http://127.0.0.80/ 2>&1 | grep -E 'server:|Server:|HTTP/|via:|Via:' || true
-
-            echo ""
-            echo "=== Try the search subdomain via Meilisearch API key ==="
-            for ip in 127.0.0.1 127.0.0.80 10.56.63.29; do
-              for host in s.queer.guide search.queer.guide; do
-                code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 3 \
-                  --resolve "$host:443:$ip" \
-                  -H "Authorization: Bearer $MEILI_MASTER_KEY" \
-                  "https://$host/health" 2>/dev/null)
-                [ "$code" != "404" ] && echo "  AUTH https --resolve $host:443:$ip /health -> $code"
-              done
-            done
-
-            echo "=== DONE ==="
+            echo "NONE"
           REMOTE
+          )
+          echo "Discovery: $RESULT"
+          if [ "$RESULT" = "NONE" ]; then
+            echo "::error::Could not reach Meilisearch on VPS"
+            exit 1
+          fi
+          echo "meili_url=$RESULT" >> "$GITHUB_OUTPUT"
+
+      - name: Run configure-indexes.sh
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/configure-indexes.sh
+
+      - name: Run seed-city-aliases.sh
+        if: ${{ inputs.seed_aliases }}
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL="${{ steps.meili.outputs.meili_url }}" \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/seed-city-aliases.sh
