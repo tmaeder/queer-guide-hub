@@ -1,7 +1,8 @@
 name: Reconfigure Meilisearch
 
-# Runs configure-indexes.sh on the VPS via SSH because Cloudflare WAF
-# blocks direct curl from GitHub Actions datacenter IPs.
+# Runs configure-indexes.sh on the VPS via SSH. Cloudflare WAF blocks
+# GH Actions IPs, so we curl Caddy on the VPS public IP with the right
+# Host header, bypassing Cloudflare entirely.
 
 on:
   workflow_dispatch:
@@ -52,64 +53,51 @@ jobs:
             meilisearch/seed-city-aliases.sh \
             "$SSH_USER@$SSH_HOST:/tmp/"
 
-      - name: Discover Meilisearch URL
+      - name: Discover Meilisearch via Caddy
         id: meili
         run: |
           RESULT=$(ssh "$SSH_USER@$SSH_HOST" bash <<'REMOTE'
-            check() {
-              local label="$1" url="$2" extra="${3:-}"
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 $extra "$url" 2>/dev/null || echo "000")
-              echo "  $label → $code" >&2
-              [ "$code" = "200" ]
-            }
-
-            # Direct Meilisearch port
-            for port in 7700 7701; do
-              check "localhost:$port" "http://localhost:$port/health" && echo "http://localhost:$port" && exit 0
-            done
-
-            # Caddy HTTPS with Host header (self-signed cert)
-            for host in s.queer.guide search.queer.guide; do
-              check "https+Host:$host" "https://localhost/health" "-k -H Host:$host" && echo "https://localhost" && exit 0
-              check "http+Host:$host" "http://localhost/health" "-H Host:$host" && echo "http://localhost" && exit 0
-            done
-
-            # Docker bridge IP
-            bridge=$(ip route | awk '/docker0/ {print $NF}' 2>/dev/null || true)
-            if [ -n "$bridge" ]; then
-              check "docker-bridge:7700" "http://$bridge:7700/health" && echo "http://$bridge:7700" && exit 0
+            caddy_ip=$(ss -tln | awk '/:443 / && !/127\./ && !/\[/' | head -1 | sed 's/.*LISTEN *[0-9]* *//;s/:.*//')
+            if [ -z "$caddy_ip" ]; then
+              echo "no-caddy-ip" >&2
+              echo "NONE"
+              exit 0
             fi
-
-            # Check what's listening
-            echo "--- Port scan ---" >&2
-            ss -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || netstat -tlnp 2>/dev/null | grep -E '7700|80|443' >&2 || true
-            echo "--- Docker ---" >&2
-            docker ps --format '{{.Names}} {{.Ports}}' 2>&1 >&2 || true
+            for host in s.queer.guide search.queer.guide; do
+              code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 5 \
+                -H "Host: $host" "https://$caddy_ip/health" 2>/dev/null)
+              echo "  https://$caddy_ip Host:$host -> $code" >&2
+              if [ "$code" = "200" ]; then
+                echo "$host $caddy_ip"
+                exit 0
+              fi
+            done
             echo "NONE"
           REMOTE
           )
-          echo "Discovered: $RESULT"
+          echo "Discovery: $RESULT"
           if [ "$RESULT" = "NONE" ]; then
-            echo "::error::Could not find Meilisearch on VPS"
+            echo "::error::Could not reach Meilisearch on VPS via Caddy"
             exit 1
           fi
-          echo "url=$RESULT" >> "$GITHUB_OUTPUT"
+          MEILI_HOST=$(echo "$RESULT" | awk '{print $1}')
+          CADDY_IP=$(echo "$RESULT" | awk '{print $2}')
+          echo "meili_host=$MEILI_HOST" >> "$GITHUB_OUTPUT"
+          echo "caddy_ip=$CADDY_IP" >> "$GITHUB_OUTPUT"
 
       - name: Run configure-indexes.sh
-        env:
-          MEILI_URL: ${{ steps.meili.outputs.url }}
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="$MEILI_URL" \
+            MEILI_URL="https://${{ steps.meili.outputs.caddy_ip }}" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            MEILI_CURL_OPTS="-k -H Host:${{ steps.meili.outputs.meili_host }}" \
             bash /tmp/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
-        env:
-          MEILI_URL: ${{ steps.meili.outputs.url }}
         run: |
           ssh "$SSH_USER@$SSH_HOST" \
-            MEILI_URL="$MEILI_URL" \
+            MEILI_URL="https://${{ steps.meili.outputs.caddy_ip }}" \
             MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            MEILI_CURL_OPTS="-k -H Host:${{ steps.meili.outputs.meili_host }}" \
             bash /tmp/seed-city-aliases.sh

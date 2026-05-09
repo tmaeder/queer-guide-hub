@@ -42,32 +42,18 @@ import {
 } from 'lucide-react';
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
-import { brandColors } from '@/theme/brandColors';
 
-// Lightweight alpha helper for hex colors
-function alphaHex(color: string, a: number): string {
-  // Accept #rrggbb only; otherwise wrap as rgba via CSS color-mix fallback
-  if (color.startsWith('#') && (color.length === 7)) {
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-  return `color-mix(in srgb, ${color} ${a * 100}%, transparent)`;
-}
 
 // ── Quadrant Card ──────────────────────────────────────────────────
 
 function QuadrantCard({
   title,
   icon: Icon,
-  color,
   children,
   action,
 }: {
   title: string;
   icon: React.ElementType;
-  color: string;
   children: React.ReactNode;
   action?: { label: string; route: string };
 }) {
@@ -77,10 +63,9 @@ function QuadrantCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div
-            className="w-7 h-7 rounded-md flex items-center justify-center"
-            style={{ background: alphaHex(color, 0.1) }}
+            className="w-7 h-7 rounded-md flex items-center justify-center bg-muted text-muted-foreground"
           >
-            <Icon size={15} style={{ color }} />
+            <Icon size={15} />
           </div>
           <h3 className="text-sm font-semibold">{title}</h3>
         </div>
@@ -105,7 +90,6 @@ function QuadrantCard({
 
 function SystemStatus({ data }: { data: CockpitData }) {
   const { system } = data;
-  const statusColors = { healthy: '#10b981', degraded: '#f59e0b', error: '#ef4444' };
   const statusLabels = {
     healthy: 'All Systems Operational',
     degraded: 'Degraded Performance',
@@ -119,12 +103,11 @@ function SystemStatus({ data }: { data: CockpitData }) {
         : AlertCircle;
 
   return (
-    <QuadrantCard title="System Status" icon={Activity} color="#10b981">
+    <QuadrantCard title="System Status" icon={Activity}>
       <div className="flex items-center gap-3 mb-2">
-        <StatusIcon size={20} style={{ color: statusColors[system.status] }} />
+        <StatusIcon size={20} className="text-muted-foreground" />
         <span
           className="text-sm font-semibold"
-          style={{ color: statusColors[system.status] }}
         >
           {statusLabels[system.status]}
         </span>
@@ -148,15 +131,11 @@ function SystemStatus({ data }: { data: CockpitData }) {
 function MetricBox({ label, value, good }: { label: string; value: string; good: boolean }) {
   return (
     <div
-      className="p-3 rounded-md text-center"
-      style={{
-        background: good ? alphaHex('#10b981', 0.06) : alphaHex('#f59e0b', 0.06),
-      }}
+      className="p-3 rounded-md text-center bg-muted"
     >
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div
-        className="text-base font-bold"
-        style={{ color: good ? '#10b981' : '#f59e0b' }}
+        className={`text-base font-bold ${good ? '' : 'text-destructive'}`}
       >
         {value}
       </div>
@@ -170,36 +149,33 @@ function ReviewQueueWidget({ data }: { data: CockpitData }) {
   const navigate = useNavigate();
   const { review } = data;
   const queues = [
-    { label: 'Staging', count: review.staging, color: '#ea580c', icon: Inbox, tab: 'staging' },
+    { label: 'Staging', count: review.staging, icon: Inbox, tab: 'staging' },
     {
       label: 'Moderation',
       count: review.moderation,
-      color: '#f59e0b',
       icon: Flag,
       tab: 'moderation',
     },
     {
       label: 'Automation',
       count: review.automation,
-      color: brandColors.main,
       icon: Bot,
       tab: 'automation',
     },
     {
       label: 'Content',
       count: review.cmsReview,
-      color: '#3b82f6',
       icon: FileCheck,
       tab: 'content',
     },
-    { label: 'Tags', count: review.tagSuggestions, color: '#a855f7', icon: Tag, tab: 'tags' },
+    { label: 'Tags', count: review.tagSuggestions, icon: Tag, tab: 'tags' },
   ];
 
   return (
     <QuadrantCard
       title="Review Queue"
       icon={ClipboardCheck}
-      color="#f59e0b"
+     
       action={{ label: 'All Reviews', route: '/admin/review' }}
     >
       <div className="flex flex-col gap-1.5">
@@ -210,17 +186,12 @@ function ReviewQueueWidget({ data }: { data: CockpitData }) {
             className="flex items-center justify-between px-3 py-1.5 rounded cursor-pointer transition-colors hover:bg-muted"
           >
             <div className="flex items-center gap-2">
-              <q.icon size={14} style={{ color: q.color }} />
+              <q.icon size={14} className="text-muted-foreground" />
               <span className="text-sm font-medium">{q.label}</span>
             </div>
             <Badge
               variant="secondary"
               className="h-5 text-[0.7rem] font-bold"
-              style={
-                q.count > 0
-                  ? { background: alphaHex(q.color, 0.12), color: q.color }
-                  : undefined
-              }
             >
               {q.count > 0 ? q.count.toLocaleString() : '0'}
             </Badge>
@@ -228,7 +199,7 @@ function ReviewQueueWidget({ data }: { data: CockpitData }) {
         ))}
       </div>
       {review.total > 0 && (
-        <div className="text-xs font-semibold mt-1" style={{ color: '#f59e0b' }}>
+        <div className="text-xs font-semibold mt-1 text-muted-foreground">
           {review.total.toLocaleString()} total items need attention
         </div>
       )}
@@ -245,7 +216,7 @@ function ImportStatus({ data }: { data: CockpitData }) {
     <QuadrantCard
       title="Import Status"
       icon={Download}
-      color="#10b981"
+     
       action={{ label: 'Imports', route: '/admin/imports' }}
     >
       <div className="grid grid-cols-2 gap-3">
@@ -274,20 +245,17 @@ function ImportStatus({ data }: { data: CockpitData }) {
 
 function QualityWidget({ data }: { data: CockpitData }) {
   const { quality } = data;
-  const scoreColor =
-    quality.overallScore >= 90 ? '#10b981' : quality.overallScore >= 70 ? '#f59e0b' : '#ef4444';
 
   return (
     <QuadrantCard
       title="Quality Index"
       icon={ShieldCheck}
-      color="#3b82f6"
+     
       action={{ label: 'Details', route: '/admin/imports/enrichment' }}
     >
       <div className="text-center py-2">
         <div
           className="text-5xl font-extrabold leading-none"
-          style={{ color: scoreColor }}
         >
           {quality.overallScore}%
         </div>
@@ -296,21 +264,21 @@ function QualityWidget({ data }: { data: CockpitData }) {
         </div>
       </div>
       <div
-        className="rounded-full overflow-hidden"
-        style={{ height: 6, background: alphaHex(scoreColor, 0.12) }}
+        className="rounded-full overflow-hidden bg-muted"
+        style={{ height: 6 }}
       >
         <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${quality.overallScore}%`, background: scoreColor }}
+          className="h-full rounded-full transition-all bg-foreground"
+          style={{ width: `${quality.overallScore}%` }}
         />
       </div>
       <div className="flex justify-center gap-6 mt-2">
         <div className="flex items-center gap-1">
-          <AlertTriangle size={12} style={{ color: '#f59e0b' }} />
+          <AlertTriangle size={12} className="text-muted-foreground" />
           <span className="text-xs font-medium">{quality.warnings} warnings</span>
         </div>
         <div className="flex items-center gap-1">
-          <AlertCircle size={12} style={{ color: '#ef4444' }} />
+          <AlertCircle size={12} className="text-muted-foreground" />
           <span className="text-xs font-medium">{quality.critical} critical</span>
         </div>
       </div>
@@ -321,78 +289,18 @@ function QualityWidget({ data }: { data: CockpitData }) {
 // ── Content Stats Grid ──────────────────────────────────────────────
 
 const contentStatItems = [
-  {
-    key: 'venues',
-    label: 'Venues',
-    icon: Building,
-    color: brandColors.main,
-    route: '/admin/content/venues',
-  },
-  {
-    key: 'events',
-    label: 'Events',
-    icon: Calendar,
-    color: '#ec4899',
-    route: '/admin/content/events',
-  },
-  {
-    key: 'personalities',
-    label: 'Personalities',
-    icon: Users,
-    color: '#f59e0b',
-    route: '/admin/content/personalities',
-  },
-  {
-    key: 'news',
-    label: 'News',
-    icon: Newspaper,
-    color: '#3b82f6',
-    route: '/admin/content/news_articles',
-  },
-  {
-    key: 'cities',
-    label: 'Cities',
-    icon: MapPin,
-    color: '#10b981',
-    route: '/admin/content/cities',
-  },
-  {
-    key: 'countries',
-    label: 'Countries',
-    icon: Globe,
-    color: '#6366f1',
-    route: '/admin/content/countries',
-  },
-  { key: 'hotels', label: 'Hotels', icon: Hotel, color: '#0ea5e9', route: '/admin/content/hotels' },
-  {
-    key: 'villages',
-    label: 'Villages',
-    icon: Home,
-    color: '#d946ef',
-    route: '/admin/content/queer_villages',
-  },
-  {
-    key: 'marketplace',
-    label: 'Marketplace',
-    icon: ShoppingBag,
-    color: '#f97316',
-    route: '/admin/content/marketplace_listings',
-  },
-  {
-    key: 'groups',
-    label: 'Groups',
-    icon: UsersRound,
-    color: '#a855f7',
-    route: '/admin/content/community_groups',
-  },
-  { key: 'tags', label: 'Tags', icon: Tag, color: '#14b8a6', route: '/admin/content/unified_tags' },
-  {
-    key: 'pages',
-    label: 'Pages',
-    icon: FileText,
-    color: 'hsl(var(--muted-foreground))',
-    route: '/admin/content/cms_pages',
-  },
+  { key: 'venues', label: 'Venues', icon: Building, route: '/admin/content/venues' },
+  { key: 'events', label: 'Events', icon: Calendar, route: '/admin/content/events' },
+  { key: 'personalities', label: 'Personalities', icon: Users, route: '/admin/content/personalities' },
+  { key: 'news', label: 'News', icon: Newspaper, route: '/admin/content/news_articles' },
+  { key: 'cities', label: 'Cities', icon: MapPin, route: '/admin/content/cities' },
+  { key: 'countries', label: 'Countries', icon: Globe, route: '/admin/content/countries' },
+  { key: 'hotels', label: 'Hotels', icon: Hotel, route: '/admin/content/hotels' },
+  { key: 'villages', label: 'Villages', icon: Home, route: '/admin/content/queer_villages' },
+  { key: 'marketplace', label: 'Marketplace', icon: ShoppingBag, route: '/admin/content/marketplace_listings' },
+  { key: 'groups', label: 'Groups', icon: UsersRound, route: '/admin/content/community_groups' },
+  { key: 'tags', label: 'Tags', icon: Tag, route: '/admin/content/unified_tags' },
+  { key: 'pages', label: 'Pages', icon: FileText, route: '/admin/content/cms_pages' },
 ] as const;
 
 function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
@@ -413,22 +321,14 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
         stagger={0.04}
         className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3"
       >
-        {contentStatItems.map(({ key, label, icon: Icon, color, route }) => (
-          <div
+        {contentStatItems.map(({ key, label, icon: Icon, route }) => (
+          <button
             key={key}
+            type="button"
             onClick={() => navigate(route)}
-            className="flex flex-col items-center gap-1 p-3 rounded-md cursor-pointer transition-all hover:-translate-y-px"
-            style={
-              {
-                ['--hover-bg' as string]: alphaHex(color, 0.06),
-              } as React.CSSProperties
-            }
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLDivElement).style.background = alphaHex(color, 0.06))
-            }
-            onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.background = '')}
+            className="flex flex-col items-center gap-1 p-3 rounded-md cursor-pointer transition-all hover:-translate-y-px hover:bg-muted"
           >
-            <Icon size={18} style={{ color }} />
+            <Icon size={18} className="text-muted-foreground" />
             <div className="text-lg font-bold leading-none">
               {(stats[key as keyof typeof stats] ?? 0).toLocaleString()}
             </div>
@@ -438,7 +338,7 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
             >
               {label}
             </div>
-          </div>
+          </button>
         ))}
       </StaggerGrid>
     </div>
@@ -450,10 +350,10 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
 function QuickActionsBar() {
   const navigate = useNavigate();
   const actions = [
-    { label: 'New Content', icon: Plus, route: '/admin/content', color: brandColors.main },
-    { label: 'Import Data', icon: Download, route: '/admin/imports', color: '#10b981' },
-    { label: 'Review Queue', icon: ClipboardCheck, route: '/admin/review', color: '#f59e0b' },
-    { label: 'Automation', icon: Zap, route: '/admin/automation', color: '#f59e0b' },
+    { label: 'New Content', icon: Plus, route: '/admin/content' },
+    { label: 'Import Data', icon: Download, route: '/admin/imports' },
+    { label: 'Review Queue', icon: ClipboardCheck, route: '/admin/review' },
+    { label: 'Automation', icon: Zap, route: '/admin/automation' },
   ];
 
   return (
@@ -465,10 +365,6 @@ function QuickActionsBar() {
           size="sm"
           onClick={() => navigate(a.route)}
           className="hidden sm:inline-flex normal-case font-medium"
-          style={{
-            borderColor: alphaHex(a.color, 0.3),
-            color: a.color,
-          }}
         >
           <a.icon size={15} className="mr-1.5" />
           {a.label}
@@ -503,7 +399,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <LayoutDashboard size={24} style={{ color: brandColors.main }} />
+          <LayoutDashboard size={24} className="text-muted-foreground" />
           <h1 className="text-xl font-bold">Cockpit</h1>
         </div>
         <div className="flex items-center gap-2">
