@@ -15,7 +15,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useImportHub } from '@/hooks/useImportHub';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { listFrom } from '@/hooks/usePageFetchers';
 import {
@@ -112,7 +112,6 @@ function findImportItem(key: string): ImportItem | null {
 
 export const ImportJobCreator = () => {
   const { createImportJob, parseCSVPreview, loading } = useImportHub();
-  const { toast } = useToast();
 
   const [importType, setImportType] = useState('');
   const [duplicateStrategy, setDuplicateStrategy] = useState<'skip' | 'overwrite' | 'create_new'>(
@@ -177,15 +176,11 @@ export const ImportJobCreator = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.csv')) {
-      toast({
-        title: 'Invalid file',
-        description: 'Please select a CSV file',
-        variant: 'destructive',
-      });
+      toast.error('Invalid file: Please select a CSV file');
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
-      toast({ title: 'Too large', description: 'Max 50 MB', variant: 'destructive' });
+      toast.error('Too large: Max 50 MB');
       return;
     }
     setFileName(file.name);
@@ -208,7 +203,7 @@ export const ImportJobCreator = () => {
         setUniqueKeyFields(suggested.slice(0, 2));
       }
     } catch {
-      toast({ title: 'Read error', description: 'Failed to read CSV', variant: 'destructive' });
+      toast.error('Read error: Failed to read CSV');
     }
   };
 
@@ -226,7 +221,7 @@ export const ImportJobCreator = () => {
 
   const handleSubmit = async () => {
     if (!selected) {
-      toast({ title: 'Select an import type', variant: 'destructive' });
+      toast.error('Select an import type');
       return;
     }
 
@@ -258,21 +253,17 @@ export const ImportJobCreator = () => {
         }
         const { error } = await supabase.functions.invoke(importType, { body });
         if (error) throw error;
-        toast({ title: 'Scraper started', description: desc });
+        toast.success(`Scraper started: ${desc}`);
         resetForm();
         return;
       } catch (err) {
-        toast({
-          title: 'Scraper failed',
-          description: err instanceof Error ? err.message : 'Unknown error',
-          variant: 'destructive',
-        });
+        toast.error(`Scraper failed: ${err}`);
         return;
       }
     }
 
     if (!csvData) {
-      toast({ title: 'Upload a CSV file', variant: 'destructive' });
+      toast.error('Upload a CSV file');
       return;
     }
 

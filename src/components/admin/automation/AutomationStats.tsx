@@ -7,7 +7,6 @@ import { Clock, CheckCircle2, AlertTriangle, Zap, TrendingUp, Layers } from 'luc
 import type { AutomationStats as Stats } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
 
-// queer.guide brand magenta — was brandColors.main from src/theme/muiTheme.ts
 const BRAND_MAIN = '#b60d3d';
 
 interface Props {

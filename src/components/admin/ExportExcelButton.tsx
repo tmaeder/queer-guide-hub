@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface ExportExcelButtonProps {
   onExport: () => Promise<void>;
@@ -10,21 +10,16 @@ interface ExportExcelButtonProps {
 
 export function ExportExcelButton({ onExport, label = 'Export Excel' }: ExportExcelButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
 
   const handleExport = async () => {
     setIsExporting(true);
-    toast({ title: 'Preparing export...', description: 'Fetching data for Excel export' });
+    toast.success('Preparing export...: Fetching data for Excel export');
 
     try {
       await onExport();
-      toast({ title: 'Export complete', description: 'Your Excel file has been downloaded' });
+      toast.success('Export complete: Your Excel file has been downloaded');
     } catch (error) {
-      toast({
-        title: 'Export failed',
-        description: error instanceof Error ? error.message : 'Failed to generate Excel file',
-        variant: 'destructive',
-      });
+      toast.error(`Export failed: ${error}`);
     } finally {
       setIsExporting(false);
     }

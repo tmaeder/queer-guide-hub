@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Tag, CheckCircle, AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 export function TagCategorizer() {
@@ -13,7 +13,6 @@ export function TagCategorizer() {
     categorized: number;
     message: string;
   } | null>(null);
-  const { toast } = useToast();
 
   const handleCategorizeAll = async () => {
     setIsRunning(true);
@@ -45,11 +44,7 @@ export function TagCategorizer() {
       }
     } catch (error) {
       console.error('Categorization error:', error);
-      toast({
-        title: "Categorization Failed",
-        description: error.message || 'An error occurred during categorization',
-        variant: "destructive",
-      });
+      toast.error(`Categorization Failed: ${error.message}`);
     } finally {
       setIsRunning(false);
     }

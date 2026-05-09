@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from 'sonner';
 import { Loader2, Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -27,15 +27,10 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
   const [terms, setTerms] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<BulkCreateResult[]>([]);
-  const { toast } = useToast();
 
   const handleSubmit = async () => {
     if (!terms.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter some terms to create tags",
-        variant: "destructive",
-      });
+      toast.error('Error: Please enter some terms to create tags');
       return;
     }
 
@@ -49,11 +44,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
         .filter(term => term.length > 0);
 
       if (termsList.length === 0) {
-        toast({
-          title: "Error",
-          description: "No valid terms found",
-          variant: "destructive",
-        });
+        toast.error('Error: No valid terms found');
         return;
       }
 
@@ -78,11 +69,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
 
     } catch (error) {
       console.error('Error in bulk create:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create tags",
-        variant: "destructive",
-      });
+      toast.error(`Error: ${error.message}`);
     } finally {
       setIsLoading(false);
     }

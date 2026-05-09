@@ -10,7 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface Grant {
   id: string;
@@ -37,7 +37,6 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
   const [email, setEmail] = useState('');
   const [perm, setPerm] = useState<'view' | 'edit' | 'run'>('view');
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   const { data: grants = [], isLoading } = useQuery({
     queryKey: ['pipeline-permissions', pipelineId],
@@ -76,11 +75,11 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Access granted' });
+      toast.success('Access granted');
       qc.invalidateQueries({ queryKey: ['pipeline-permissions', pipelineId] });
       setEmail('');
     },
-    onError: (e: Error) => toast({ title: 'Grant failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Grant failed: ${e.message}`),
   });
 
   const revoke = useMutation({
@@ -91,7 +90,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pipeline-permissions', pipelineId] });
     },
-    onError: (e: Error) => toast({ title: 'Revoke failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Revoke failed: ${e.message}`),
   });
 
   return (

@@ -32,7 +32,7 @@ import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Plus, MapPin } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logAdminGeoEdit } from '@/lib/admin-audit';
 
 interface CityRow {
@@ -72,7 +72,6 @@ const emptyForm = {
 };
 
 export default function AdminCities() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -116,21 +115,17 @@ export default function AdminCities() {
       const { error } = await deleteRow('cities', city.id);
       if (error) throw error;
       void logAdminGeoEdit('cities', 'delete', city.id, city as unknown as Record<string, unknown>, null);
-      toast({ title: 'Success', description: 'City deleted' });
+      toast.success('Success: City deleted');
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete city', variant: 'destructive' });
+      toast.error('Error: Failed to delete city');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.country_id) {
-      toast({
-        title: 'Error',
-        description: 'Name and country are required',
-        variant: 'destructive',
-      });
+      toast.error('Error: Name and country are required');
       return;
     }
 
@@ -151,19 +146,19 @@ export default function AdminCities() {
         const { error } = await updateRow('cities', editingCity.id, cityData);
         if (error) throw error;
         void logAdminGeoEdit('cities', 'update', editingCity.id, editingCity as unknown as Record<string, unknown>, cityData);
-        toast({ title: 'Success', description: 'City updated' });
+        toast.success('Success: City updated');
       } else {
         const { data: inserted, error } = await insertInto('cities', cityData);
         if (error) throw error;
         const insertedId = (inserted as { id?: string } | null)?.id;
         if (insertedId) void logAdminGeoEdit('cities', 'create', insertedId, null, cityData);
-        toast({ title: 'Success', description: 'City created' });
+        toast.success('Success: City created');
       }
       resetForm();
       setDialogOpen(false);
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to save city', variant: 'destructive' });
+      toast.error('Error: Failed to save city');
     }
   };
 
