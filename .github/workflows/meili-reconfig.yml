@@ -1,7 +1,7 @@
 name: Reconfigure Meilisearch
 
-# Applies ranking, stop-words, alias settings to the production Meilisearch
-# instance via SSH tunnel (Cloudflare WAF blocks GH Actions datacenter IPs).
+# Runs configure-indexes.sh on the VPS via SSH because Cloudflare WAF
+# blocks direct curl from GitHub Actions datacenter IPs.
 
 on:
   workflow_dispatch:
@@ -41,29 +41,28 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Open SSH tunnel
+      - name: Copy scripts to VPS
         run: |
-          ssh -f -N -L 7700:localhost:7700 "$SSH_USER@$SSH_HOST"
-          sleep 1
-          status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:7700/health)
-          echo "Meili /health via tunnel → $status"
-          [ "$status" = "200" ]
+          scp -o StrictHostKeyChecking=accept-new \
+            meilisearch/configure-indexes.sh \
+            meilisearch/seed-city-aliases.sh \
+            "$SSH_USER@$SSH_HOST:/tmp/"
 
       - name: Run configure-indexes.sh
-        env:
-          MEILI_URL: http://localhost:7700
         run: |
-          chmod +x meilisearch/configure-indexes.sh
-          bash meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL=http://localhost:7700 \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/configure-indexes.sh
 
       - name: Run seed-city-aliases.sh
         if: ${{ inputs.seed_aliases }}
-        env:
-          MEILI_URL: http://localhost:7700
         run: |
-          chmod +x meilisearch/seed-city-aliases.sh
-          bash meilisearch/seed-city-aliases.sh
+          ssh "$SSH_USER@$SSH_HOST" \
+            MEILI_URL=http://localhost:7700 \
+            MEILI_MASTER_KEY="$MEILI_MASTER_KEY" \
+            bash /tmp/seed-city-aliases.sh
