@@ -160,20 +160,22 @@ export function FeedbackFilters({
           )}
 
           <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border">
-            <label className="flex items-center gap-1.5 cursor-pointer">
+            <div className="flex items-center gap-1.5">
               <Switch
+                id="filter-screenshot"
                 checked={state.hasScreenshot}
                 onCheckedChange={(v) => update({ hasScreenshot: v })}
               />
-              <span className="text-xs">Screenshot</span>
-            </label>
-            <label className="flex items-center gap-1.5 cursor-pointer">
+              <Label htmlFor="filter-screenshot" className="text-xs cursor-pointer">Screenshot</Label>
+            </div>
+            <div className="flex items-center gap-1.5">
               <Switch
+                id="filter-errors"
                 checked={state.hasErrors}
                 onCheckedChange={(v) => update({ hasErrors: v })}
               />
-              <span className="text-xs">Errors</span>
-            </label>
+              <Label htmlFor="filter-errors" className="text-xs cursor-pointer">Errors</Label>
+            </div>
           </div>
 
           {filterCount > 0 && (

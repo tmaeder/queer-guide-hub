@@ -25,8 +25,6 @@ import type {
 import {
   DEFAULT_ERROR_FILTERS,
   type ApiErrorFilterState,
-  type ErrorSource,
-  type ErrorSeverity,
 } from '@/components/admin/feedback/ApiErrorFilters';
 import type { ApiErrorSubmission } from '@/components/admin/feedback/claudePrompts';
 import type { FeedbackUrlState } from '@/hooks/useFeedbackUrlState';
