@@ -48,7 +48,7 @@ export function FeedbackPresets({ state, update, clearFilters, currentUserId }: 
   ];
 
   return (
-    <div className="flex gap-1.5 flex-wrap mb-3">
+    <div className="flex gap-1.5 flex-wrap">
       {PRESETS.map(({ id, label, icon: Icon }) => {
         const on = active === id;
         return (

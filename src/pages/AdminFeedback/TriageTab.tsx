@@ -17,7 +17,7 @@ import type { useFeedbackUrlState } from '@/hooks/useFeedbackUrlState';
 
 type UrlState = ReturnType<typeof useFeedbackUrlState>;
 
-interface SpamTabProps {
+interface TriageTabProps {
   state: UrlState['state'];
   update: UrlState['update'];
   clearFilters: UrlState['clearFilters'];
@@ -57,7 +57,7 @@ interface SpamTabProps {
   mutationsLoading: boolean;
 }
 
-export function SpamTab({
+export function TriageTab({
   state,
   update,
   clearFilters,
@@ -93,24 +93,27 @@ export function SpamTab({
   onAddSelectionToStory,
   onAutoTitle,
   mutationsLoading,
-}: SpamTabProps) {
+}: TriageTabProps) {
   return (
     <>
-      <FeedbackPresets
-        state={state}
-        update={update}
-        clearFilters={clearFilters}
-        currentUserId={currentUserId}
-      />
-      <FeedbackFilters
-        state={state}
-        update={update}
-        clearFilters={clearFilters}
-        activeFilterCount={activeFilterCount}
-        admins={admins}
-        labels={availableLabels}
-        searchInputRef={searchInputRef}
-      />
+      <div className="flex items-center gap-2 flex-wrap mb-4">
+        <FeedbackPresets
+          state={state}
+          update={update}
+          clearFilters={clearFilters}
+          currentUserId={currentUserId}
+        />
+        <div className="flex-1" />
+        <FeedbackFilters
+          state={state}
+          update={update}
+          clearFilters={clearFilters}
+          activeFilterCount={activeFilterCount}
+          admins={admins}
+          labels={availableLabels}
+          searchInputRef={searchInputRef}
+        />
+      </div>
 
       {totalVisibleCount === 0 ? (
         <p className="text-sm text-muted-foreground py-12 text-center">
