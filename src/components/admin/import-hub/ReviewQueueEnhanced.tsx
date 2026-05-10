@@ -62,7 +62,7 @@ const DEDUP_STATUS_COLORS: Record<string, string> = {
 export function ReviewQueueEnhanced() {
   const [page, setPage] = useState(1);
   const [perPage] = useState(50);
-  const [filters, setFilters] = useState<StagingFilters>({});
+  const [filters, setFilters] = useState<StagingFilters>({ review_status: 'pending_review' });
   const [sort, setSort] = useState<StagingSort>({ field: 'created_at', dir: 'desc' });
   const [searchInput, setSearchInput] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

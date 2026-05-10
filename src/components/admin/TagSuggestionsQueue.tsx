@@ -189,7 +189,7 @@ export function TagSuggestionsQueue() {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Entity: {item.entity_id.slice(0, 8)}... |{' '}
+                    Entity: {item.entity_id?.slice(0, 8) ?? '—'}... |{' '}
                     {new Date(item.created_at).toLocaleDateString()}
                     {item.ai_model && ` | Model: ${item.ai_model}`}
                   </p>
