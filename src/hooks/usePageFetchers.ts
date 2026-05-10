@@ -370,6 +370,9 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
     .select('*')
     .eq('slug', slug)
     .is('duplicate_of_id', null)
+    .not('content', 'is', null)
+    .neq('content', '')
+    .or('quality_score.is.null,quality_score.gte.50')
     .or('quality_status.is.null,quality_status.eq.passed')
     .maybeSingle();
   if (!data && !error) {
@@ -378,6 +381,9 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
       .select('*')
       .eq('id', slug)
       .is('duplicate_of_id', null)
+      .not('content', 'is', null)
+      .neq('content', '')
+      .or('quality_score.is.null,quality_score.gte.50')
       .or('quality_status.is.null,quality_status.eq.passed')
       .maybeSingle();
     data = fb.data;
@@ -422,6 +428,9 @@ export async function fetchRelatedNewsArticles<T = unknown>(
     .neq('id', excludeId)
     .is('duplicate_of_id', null)
     .not('published_at', 'is', null)
+    .not('content', 'is', null)
+    .neq('content', '')
+    .or('quality_score.is.null,quality_score.gte.50')
     .or('quality_status.is.null,quality_status.eq.passed')
     .order('published_at', { ascending: false })
     .limit(4);

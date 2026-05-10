@@ -6,8 +6,9 @@ import type { Tables } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { FavoriteButton } from '@/components/ui/favorite-button';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 import { safeText } from '@/utils/safeDisplay';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -77,6 +78,7 @@ export const NewsCard = ({
 }: NewsCardProps) => {
   const navigate = useLocalizedNavigate();
   const [imgFailed, setImgFailed] = useState(false);
+  const fallbackSrc = useMemo(() => getRandomFallbackImage(), []);
 
   if (loading || !article) {
     return (
@@ -130,7 +132,8 @@ export const NewsCard = ({
       : null;
   const firstUsableTag = tags.find((t) => !isHiddenCategory(t));
   const fallbackCategoryFromTag = !displayCategory && firstUsableTag ? firstUsableTag : null;
-  const hasImage = article.image_url && !imgFailed;
+  const effectiveImage = (article.image_url && !imgFailed) ? article.image_url : fallbackSrc;
+  const hasImage = true;
 
   const linkedCities = (article.city_ids || [])
     .map((id: string) => ({ id, name: cityNames[id] }))
@@ -198,7 +201,7 @@ export const NewsCard = ({
               fetchPriority={priority ? 'high' : 'auto'}
               decoding="async"
               referrerPolicy="no-referrer"
-              src={article.image_url!}
+              src={effectiveImage}
               alt={safeTitle}
               width={800}
               height={240}
@@ -250,24 +253,17 @@ export const NewsCard = ({
         aria-label={safeTitle}
         className="flex gap-3 p-3 rounded-md border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {hasImage ? (
-          <img
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            src={article.image_url!}
-            alt=""
-            width={160}
-            height={120}
-            style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0, borderRadius: 6 }}
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            style={{ width: 160, height: 120, flexShrink: 0, borderRadius: 6, background: 'hsl(var(--muted))' }}
-          />
-        )}
+        <img
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          src={effectiveImage}
+          alt=""
+          width={160}
+          height={120}
+          style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0, borderRadius: 6 }}
+          onError={() => setImgFailed(true)}
+        />
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             {displayCategory && (
@@ -322,7 +318,7 @@ export const NewsCard = ({
               decoding="async"
               referrerPolicy="no-referrer"
               role="presentation"
-              src={article.image_url!}
+              src={effectiveImage}
               alt={safeTitle}
               width={400}
               height={192}
@@ -342,16 +338,7 @@ export const NewsCard = ({
           </div>
         )}
 
-        {!hasImage && (article as Record<string, unknown>).is_premium === true && (
-          <Badge style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <Lock style={{ height: 10, width: 10 }} aria-hidden="true" /> Premium
-          </Badge>
-        )}
-        {!hasImage && article.is_featured && (
-          <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', alignSelf: 'flex-start' }}>
-            Featured
-          </Badge>
-        )}
+
 
         <div className="flex items-start justify-between gap-3">
           <h3

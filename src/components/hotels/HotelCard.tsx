@@ -5,6 +5,7 @@ import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { safeText } from '@/utils/safeDisplay';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 interface HotelCardProps {
   hotel?: Hotel;
@@ -81,19 +82,13 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
       <div className="overflow-hidden rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col bg-card border shadow-sm">
         {/* Image */}
         <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={hotelName}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
-            </div>
-          )}
+          <img
+            src={imageUrl || getRandomFallbackImage()}
+            alt={hotelName}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            loading="lazy"
+            decoding="async"
+          />
           {/*
             Featured badge is now driven by the curated `featured_priority`
             column added in 20260504114754_hotels_featured_priority.sql.
