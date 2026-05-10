@@ -97,7 +97,8 @@ class TabErrorBoundary extends Component<{ children: ReactNode; tab: string }, {
 
 export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
-  const activeTab = (params.get('tab') as Tab) || 'overview';
+  const rawTab = params.get('tab') as Tab;
+  const activeTab = rawTab && rawTab in TAB_COMPONENTS ? rawTab : 'overview';
 
   const switchTab = useCallback((tab: Tab) => {
     setParams(tab === 'overview' ? {} : { tab });
