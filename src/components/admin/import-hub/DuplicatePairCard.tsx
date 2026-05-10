@@ -32,7 +32,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
   const { data: entityB, isLoading: loadingB } = useEntityById(pair.entity_type, pair.entity_b_id);
   const dismissMutation = useDismissDuplicate();
 
-  const nameField = pair.entity_type === 'events' ? 'title' : 'name';
+  const nameField = (pair.entity_type === 'events' || pair.entity_type === 'event') ? 'title' : 'name';
 
   return (
     <Card>
