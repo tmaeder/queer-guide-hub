@@ -6,6 +6,8 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 // Reads pending event staging rows, writes enriched_data, sets enrichment_status.
 // Idempotent (skips already-enriched rows).
 
+const WALL_CLOCK_LIMIT_MS = 45_000
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
@@ -33,8 +35,10 @@ Deno.serve(async (req) => {
     }
 
     let enriched = 0, failed = 0, skipped = 0
+    const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
 
     for (const item of items) {
+      if (Date.now() > deadline) break
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const loc = (n.location ?? {}) as Record<string, unknown>
       const title = String(n.title ?? n.name ?? '').trim()

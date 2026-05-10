@@ -25,6 +25,7 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 
 const MIN_CONFIDENCE_DEFAULT = 0.6
 const BATCH_SIZE_DEFAULT = 20
+const WALL_CLOCK_LIMIT_MS = 45_000
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -61,8 +62,10 @@ Deno.serve(async (req) => {
     let ok = 0
     let failed = 0
     const flagged: string[] = []
+    const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
 
     for (const row of rows) {
+      if (Date.now() > deadline) break
       try {
         const userPrompt = buildSafetyRelevanceUserPrompt({
           raw_text: row.raw_text,
