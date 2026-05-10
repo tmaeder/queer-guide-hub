@@ -92,7 +92,7 @@ export function useImageAssets({ enabled, page, search, entityTypeFilter }: UseI
           asset_status: row.status as string,
           is_flagged: row.is_flagged as boolean,
           source: 'image_assets',
-          optimization_status: 'not_optimized' as const,
+          optimization_status: (row.optimization_status as string) || 'not_optimized',
         };
       });
 

@@ -31,10 +31,14 @@ export const getOptimizationStatusBadge = (status: MediaItem['optimization_statu
       return <Badge variant="default" style={{ fontSize: '0.75rem', backgroundColor: '#dcfce7', color: '#166534' }}>Optimized</Badge>;
     case 'processing':
       return <Badge variant="default" style={{ fontSize: '0.75rem', backgroundColor: '#dbeafe', color: '#1e40af' }}>Processing</Badge>;
+    case 'cdn_optimized':
+      return <Badge variant="default" style={{ fontSize: '0.75rem', backgroundColor: '#dcfce7', color: '#166534' }}>CDN</Badge>;
     case 'pending':
       return <Badge variant="default" style={{ fontSize: '0.75rem', backgroundColor: '#fef9c3', color: '#854d0e' }}>Pending</Badge>;
     case 'failed':
       return <Badge variant="destructive" style={{ fontSize: '0.75rem' }}>Failed</Badge>;
+    case 'skipped':
+      return <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Skipped</Badge>;
     case 'not_optimized':
     default:
       return <Badge variant="outline" style={{ fontSize: '0.75rem' }}>Not Optimized</Badge>;

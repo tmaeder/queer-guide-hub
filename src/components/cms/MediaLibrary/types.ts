@@ -21,7 +21,7 @@ export interface MediaItem {
   optimized?: boolean;
   starred?: boolean;
   tags?: string[];
-  optimization_status?: 'pending' | 'processing' | 'optimized' | 'failed' | 'not_optimized';
+  optimization_status?: 'pending' | 'processing' | 'optimized' | 'cdn_optimized' | 'failed' | 'skipped' | 'not_optimized';
   formats_available?: string[];
   optimization_metadata?: {
     original_size?: number;

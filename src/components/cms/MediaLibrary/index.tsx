@@ -62,7 +62,7 @@ export function MediaLibrary() {
   const [assetPage, setAssetPage] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const { items: assetItems, totalCount: assetTotal, loading: assetsLoading, pageSize } = useImageAssets({
+  const { items: assetItems, totalCount: assetTotal, loading: assetsLoading, pageSize, refetch: refetchAssets } = useImageAssets({
     enabled: isAdmin,
     page: assetPage,
     search: debouncedSearch,
@@ -300,121 +300,91 @@ export function MediaLibrary() {
     setSelectedItems(new Set());
   };
 
-  const handleBulkOptimization = async () => {
-    if (selectedItems.size === 0) return;
-
+  const runOptimizationBatch = async () => {
     const jobId = crypto.randomUUID();
     const job: OptimizationJob = {
       id: jobId,
-      media_ids: Array.from(selectedItems),
-      status: 'pending',
+      media_ids: [],
+      status: 'processing',
       progress: 0,
-      settings: optimizationSettings
+      settings: optimizationSettings,
+      results: { processed: 0, successful: 0, failed: 0, totalSavings: 0 },
     };
 
     setOptimizationJobs(prev => [...prev, job]);
     setShowOptimization(false);
 
+    toast({ title: "Optimization Started", description: "Processing all pending images..." });
+
+    let totalProcessed = 0;
+    let totalMirrored = 0;
+    let totalCdn = 0;
+    let totalFailed = 0;
+    let remaining = Infinity;
+
+    while (remaining > 0) {
+      try {
+        const { data, error } = await supabase.functions.invoke('optimize-images-batch', {
+          body: { batch_size: 30 },
+        });
+        if (error) { console.error('Optimization batch error:', error); break; }
+        if (data.done) { remaining = 0; break; }
+
+        totalProcessed += data.processed || 0;
+        totalMirrored += data.mirrored || 0;
+        totalCdn += data.cdn_marked || 0;
+        totalFailed += data.failed || 0;
+        remaining = data.remaining || 0;
+
+        const total = totalProcessed + remaining;
+        const progress = total > 0 ? Math.round((totalProcessed / total) * 100) : 100;
+
+        setOptimizationJobs(prev =>
+          prev.map(j => j.id === jobId ? {
+            ...j,
+            progress,
+            results: { processed: totalProcessed, successful: totalMirrored + totalCdn, failed: totalFailed, totalSavings: 0 },
+          } : j)
+        );
+      } catch (err) {
+        console.error('Optimization error:', err);
+        break;
+      }
+    }
+
+    setOptimizationJobs(prev =>
+      prev.map(j => j.id === jobId ? { ...j, status: 'completed', progress: 100 } : j)
+    );
+
     toast({
-      title: "Optimization Started",
-      description: `Processing ${selectedItems.size} files with ${optimizationSettings.formats.join(', ')} format(s)...`,
+      title: "Optimization Complete",
+      description: `Processed ${totalProcessed} images (${totalMirrored} mirrored, ${totalCdn} CDN, ${totalFailed} failed)`,
     });
 
-    setTimeout(() => {
-      setOptimizationJobs(prev =>
-        prev.map(j => j.id === jobId ? {
-          ...j,
-          status: 'processing',
-          progress: 15,
-          results: { processed: 0, successful: 0, failed: 0, totalSavings: 0 }
-        } : j)
-      );
-    }, 500);
+    refetchAssets();
+  };
 
-    setTimeout(() => {
-      setOptimizationJobs(prev =>
-        prev.map(j => j.id === jobId ? {
-          ...j,
-          progress: 45,
-          results: { processed: Math.floor(selectedItems.size * 0.3), successful: Math.floor(selectedItems.size * 0.3), failed: 0, totalSavings: 1024 * 150 }
-        } : j)
-      );
-    }, 2000);
-
-    setTimeout(() => {
-      setOptimizationJobs(prev =>
-        prev.map(j => j.id === jobId ? {
-          ...j,
-          progress: 80,
-          results: { processed: Math.floor(selectedItems.size * 0.7), successful: Math.floor(selectedItems.size * 0.7), failed: 0, totalSavings: 1024 * 350 }
-        } : j)
-      );
-    }, 4000);
-
-    setTimeout(() => {
-      const finalResults = {
-        processed: selectedItems.size,
-        successful: selectedItems.size - 1,
-        failed: 1,
-        totalSavings: 1024 * 500 * selectedItems.size
-      };
-
-      setOptimizationJobs(prev =>
-        prev.map(j => j.id === jobId ? {
-          ...j,
-          status: 'completed',
-          progress: 100,
-          results: finalResults
-        } : j)
-      );
-
-      toast({
-        title: "Optimization Complete",
-        description: `Successfully optimized ${finalResults.successful} of ${selectedItems.size} files. Saved ${formatFileSize(finalResults.totalSavings)}`,
-      });
-
-      clearSelection();
-
-      setMedia(prev =>
-        prev.map(item =>
-          selectedItems.has(item.id) ? {
-            ...item,
-            optimization_status: 'optimized' as const,
-            formats_available: [...(item.formats_available || []), ...optimizationSettings.formats]
-          } : item
-        )
-      );
-    }, 6000);
+  const handleBulkOptimization = async () => {
+    runOptimizationBatch();
   };
 
   const handleSingleOptimization = async (item: MediaItem) => {
     setOptimizingItem(item);
+    toast({ title: "Optimization Started", description: `Optimizing ${item.original_filename}...` });
 
-    toast({
-      title: "Optimization Started",
-      description: `Optimizing ${item.original_filename}...`,
-    });
-
-    setTimeout(() => {
-      setMedia(prev =>
-        prev.map(m => m.id === item.id ? {
-          ...m,
-          optimization_status: 'optimized' as const,
-          formats_available: [...(m.formats_available || []), ...optimizationSettings.formats],
-          optimization_metadata: {
-            ...m.optimization_metadata,
-            compression_ratio: 30 + Math.floor(Math.random() * 20),
-            compressed_size: Math.floor(m.file_size * (0.5 + Math.random() * 0.3))
-          }
-        } : m)
-      );
-
-      setOptimizingItem(null);
-      toast({
-        title: "Optimization Complete",
-        description: `Successfully optimized ${item.original_filename}`,
+    try {
+      const { error } = await supabase.functions.invoke('optimize-images-batch', {
+        body: { batch_size: 1 },
       });
-    }, 3000);
+      if (error) throw error;
+      toast({ title: "Optimization Complete", description: `Optimized ${item.original_filename}` });
+    } catch (err) {
+      console.error('Single optimization error:', err);
+      toast({ title: "Optimization Failed", variant: "destructive" });
+    } finally {
+      setOptimizingItem(null);
+      refetchAssets();
+    }
   };
 
   const handleStarItem = async (item: MediaItem) => {
