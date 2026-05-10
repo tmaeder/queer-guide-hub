@@ -73,6 +73,9 @@ export const useNews = () => {
         `,
         )
         .not('published_at', 'is', null)
+        .not('content', 'is', null)
+        .neq('content', '')
+        .or('quality_score.is.null,quality_score.gte.50')
         // Hide articles flagged or rejected by the news quality pipeline.
         // Legacy rows (quality_status NULL) and approved ones (passed) stay visible.
         .or('quality_status.is.null,quality_status.eq.passed')
@@ -254,6 +257,9 @@ export const useNews = () => {
         .eq('is_featured', true)
         .eq('is_premium', false)
         .not('published_at', 'is', null)
+        .not('content', 'is', null)
+        .neq('content', '')
+        .or('quality_score.is.null,quality_score.gte.50')
         .or('quality_status.is.null,quality_status.eq.passed')
         .is('duplicate_of_id', null)
         .order('published_at', { ascending: false })
