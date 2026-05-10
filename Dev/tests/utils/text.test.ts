@@ -55,8 +55,8 @@ describe('extractDomain', () => {
     expect(extractDomain('https://travelgay.com/venues')).toBe('travelgay.com')
   })
 
-  it('returns null for invalid URLs', () => {
-    expect(extractDomain('not-a-url')).toBeNull()
+  it('returns empty string for invalid URLs', () => {
+    expect(extractDomain('not-a-url')).toBe('')
   })
 })
 

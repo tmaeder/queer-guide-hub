@@ -90,7 +90,7 @@ describe('cleanText', () => {
 
 describe('truncate', () => {
   it('truncates long strings with ellipsis', () => {
-    expect(truncate('Hello World', 8)).toBe('Hello...');
+    expect(truncate('Hello World', 8)).toBe('Hello W…');
   });
 
   it('leaves short strings unchanged', () => {

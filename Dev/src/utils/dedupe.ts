@@ -1,132 +1,116 @@
-/**
- * Deduplication utilities.
- *
- * Strong match: normalised(name) + city + website domain
- * Fuzzy match: Jaro-Winkler similarity on normalised name + city bonus
- */
-import { normalizeText, extractDomain } from './text.js'
+import { extractDomain, normalizeCity, levenshteinSimilarity } from './text.js';
 
-export interface DedupeKey {
-  name: string
-  city?: string | null
-  website?: string | null
-  address?: string | null
+export interface DedupeCandidate {
+  id: string;
+  name: string;
+  city?: string | null;
+  country?: string | null;
+  address?: string | null;
+  website?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  entityType: string;
 }
 
-export type MatchMethod = 'exact' | 'strong' | 'fuzzy' | 'none'
+export type DedupeMethod =
+  | 'name_city_website'
+  | 'name_address'
+  | 'fuzzy'
+  | 'geo_name'
+  | 'domain_city';
 
-export interface DedupeResult {
-  method: MatchMethod
-  confidence: number
+export interface DedupeMatch {
+  entityA: string;
+  entityB: string;
+  method: DedupeMethod;
+  confidence: number;
 }
 
-// ---------------------------------------------------------------------------
-// Strong (exact) key
-// ---------------------------------------------------------------------------
+const NAME_SIM_STRONG = 0.8;
+const NAME_SIM_FUZZY = 0.9;
+const NAME_SIM_GEO = 0.7;
+const GEO_MATCH_METERS = 150;
 
-/** Compute a canonical lookup key for a strong (exact) match. */
-export function computeStrongKey(entity: DedupeKey): string {
-  const domain = entity.website ? (extractDomain(entity.website) ?? '') : ''
-  return [
-    normalizeText(entity.name),
-    entity.city ? normalizeText(entity.city) : '',
-    domain,
-  ].join('||')
+function haversineMeters(
+  lat1: number | null | undefined,
+  lng1: number | null | undefined,
+  lat2: number | null | undefined,
+  lng2: number | null | undefined,
+): number {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return Infinity;
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-// ---------------------------------------------------------------------------
-// Jaro-Winkler similarity
-// ---------------------------------------------------------------------------
+function compare(a: DedupeCandidate, b: DedupeCandidate): DedupeMatch | null {
+  if (a.entityType !== b.entityType) return null;
 
-function jaroSimilarity(s1: string, s2: string): number {
-  if (s1 === s2) return 1
-  if (!s1.length || !s2.length) return 0
+  const sameCity =
+    !!a.city && !!b.city && normalizeCity(a.city) === normalizeCity(b.city);
+  const domainA = a.website ? extractDomain(a.website) : '';
+  const domainB = b.website ? extractDomain(b.website) : '';
+  const sameDomain = !!domainA && domainA === domainB;
+  const nameSim = levenshteinSimilarity(a.name, b.name);
 
-  const matchWindow = Math.floor(Math.max(s1.length, s2.length) / 2) - 1
-  const s1Matched = new Uint8Array(s1.length)
-  const s2Matched = new Uint8Array(s2.length)
-
-  let matches = 0
-  for (let i = 0; i < s1.length; i++) {
-    const lo = Math.max(0, i - matchWindow)
-    const hi = Math.min(i + matchWindow + 1, s2.length)
-    for (let j = lo; j < hi; j++) {
-      if (s2Matched[j] || s1[i] !== s2[j]) continue
-      s1Matched[i] = 1
-      s2Matched[j] = 1
-      matches++
-      break
+  let best: DedupeMatch | null = null;
+  const consider = (method: DedupeMethod, confidence: number) => {
+    if (!best || confidence > best.confidence) {
+      best = { entityA: a.id, entityB: b.id, method, confidence: Math.min(1, confidence) };
     }
+  };
+
+  if (sameDomain && sameCity && nameSim > NAME_SIM_STRONG) {
+    consider('name_city_website', nameSim * 1.1);
   }
 
-  if (!matches) return 0
-
-  let transpositions = 0
-  let k = 0
-  for (let i = 0; i < s1.length; i++) {
-    if (!s1Matched[i]) continue
-    while (!s2Matched[k]) k++
-    if (s1[i] !== s2[k]) transpositions++
-    k++
+  if (sameDomain && sameCity) {
+    consider('domain_city', 0.9);
   }
 
-  return (
-    (matches / s1.length +
-      matches / s2.length +
-      (matches - transpositions / 2) / matches) /
-    3
-  )
-}
-
-export function jaroWinkler(s1: string, s2: string, p = 0.1): number {
-  const jaro = jaroSimilarity(s1, s2)
-  let prefix = 0
-  for (let i = 0; i < Math.min(4, s1.length, s2.length); i++) {
-    if (s1[i] === s2[i]) prefix++
-    else break
-  }
-  return jaro + prefix * p * (1 - jaro)
-}
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
-const FUZZY_THRESHOLD = 0.85
-
-/** Compare two entities. Returns method and confidence (0–1). */
-export function compareEntities(a: DedupeKey, b: DedupeKey): DedupeResult {
-  // Strong key match (name + city + domain)
-  if (computeStrongKey(a) === computeStrongKey(b)) {
-    return { method: 'strong', confidence: 1.0 }
-  }
-
-  // Address match (if both have addresses)
   if (a.address && b.address) {
-    const addrA = normalizeText(a.address)
-    const addrB = normalizeText(b.address)
-    if (addrA === addrB && addrA.length > 5) {
-      const nameA = normalizeText(a.name)
-      const nameB = normalizeText(b.name)
-      if (jaroWinkler(nameA, nameB) > 0.8) {
-        return { method: 'strong', confidence: 0.97 }
-      }
+    const addrSim = levenshteinSimilarity(a.address, b.address);
+    if (nameSim > NAME_SIM_STRONG && addrSim > NAME_SIM_STRONG) {
+      consider('name_address', (nameSim + addrSim) / 2);
     }
   }
 
-  // Fuzzy name match with city bonus
-  const nameA = normalizeText(a.name)
-  const nameB = normalizeText(b.name)
-  let score = jaroWinkler(nameA, nameB)
-
-  if (a.city && b.city) {
-    const cityMatch = normalizeText(a.city) === normalizeText(b.city)
-    score = cityMatch ? Math.min(1, score + 0.1) : Math.max(0, score - 0.15)
+  const dist = haversineMeters(a.lat, a.lng, b.lat, b.lng);
+  if (dist <= GEO_MATCH_METERS && nameSim >= NAME_SIM_GEO) {
+    const proximity = 1 - dist / (GEO_MATCH_METERS * 2);
+    consider('geo_name', Math.max(0.85, nameSim * 0.9 + proximity * 0.1));
   }
 
-  if (score >= FUZZY_THRESHOLD) {
-    return { method: 'fuzzy', confidence: score }
+  if (sameCity && nameSim > NAME_SIM_FUZZY) {
+    consider('fuzzy', nameSim * 0.7);
   }
 
-  return { method: 'none', confidence: score }
+  return best;
+}
+
+export function findDuplicates(entities: DedupeCandidate[]): DedupeMatch[] {
+  const matches: DedupeMatch[] = [];
+  for (let i = 0; i < entities.length; i++) {
+    for (let j = i + 1; j < entities.length; j++) {
+      const match = compare(entities[i]!, entities[j]!);
+      if (match) matches.push(match);
+    }
+  }
+  return matches;
+}
+
+export function findBestMatch(
+  candidate: DedupeCandidate,
+  existing: DedupeCandidate[],
+): DedupeMatch | null {
+  let best: DedupeMatch | null = null;
+  for (const entity of existing) {
+    if (entity.id === candidate.id) continue;
+    const match = compare(candidate, entity);
+    if (match && (!best || match.confidence > best.confidence)) best = match;
+  }
+  return best;
 }

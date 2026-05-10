@@ -1,81 +1,129 @@
 import { describe, it, expect } from 'vitest'
 import {
-  computeStrongKey,
-  compareEntities,
-  jaroWinkler,
-  type DedupeKey,
+  findDuplicates,
+  findBestMatch,
+  type DedupeCandidate,
 } from '../../src/utils/dedupe.js'
 
-describe('computeStrongKey', () => {
-  it('produces equal keys for same name+city+domain', () => {
-    const a: DedupeKey = { name: 'The Eagle', city: 'London', website: 'https://eagle.com' }
-    const b: DedupeKey = { name: 'The Eagle', city: 'London', website: 'https://www.eagle.com' }
-    expect(computeStrongKey(a)).toBe(computeStrongKey(b))
+describe('findDuplicates', () => {
+  it('finds name+city+website duplicates', () => {
+    const entities: DedupeCandidate[] = [
+      { id: '1', name: 'The Eagle', city: 'London', website: 'https://www.eaglelondon.com', entityType: 'venue' },
+      { id: '2', name: 'The Eagle', city: 'London', website: 'https://eaglelondon.com', entityType: 'venue' },
+    ]
+    const matches = findDuplicates(entities)
+    expect(matches.length).toBe(1)
+    expect(matches[0]!.method).toBe('name_city_website')
+    expect(matches[0]!.confidence).toBeGreaterThan(0.8)
   })
 
-  it('produces different keys for different cities', () => {
-    const a: DedupeKey = { name: 'The Eagle', city: 'London' }
-    const b: DedupeKey = { name: 'The Eagle', city: 'Manchester' }
-    expect(computeStrongKey(a)).not.toBe(computeStrongKey(b))
+  it('finds name+address duplicates', () => {
+    const entities: DedupeCandidate[] = [
+      { id: '1', name: 'The Eagle', city: 'London', address: '349 Kennington Lane SE11', entityType: 'venue' },
+      { id: '2', name: 'The Eagle', city: 'London', address: '349 Kennington Lane', entityType: 'venue' },
+    ]
+    const matches = findDuplicates(entities)
+    expect(matches.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('does not match different entity types', () => {
+    const entities: DedupeCandidate[] = [
+      { id: '1', name: 'The Eagle', city: 'London', entityType: 'venue' },
+      { id: '2', name: 'The Eagle', city: 'London', entityType: 'event' },
+    ]
+    const matches = findDuplicates(entities)
+    expect(matches.length).toBe(0)
+  })
+
+  it('finds fuzzy name matches in same city', () => {
+    const entities: DedupeCandidate[] = [
+      { id: '1', name: 'Comptons of Soho', city: 'London', entityType: 'venue' },
+      { id: '2', name: "Compton's of Soho", city: 'London', entityType: 'venue' },
+    ]
+    const matches = findDuplicates(entities)
+    expect(matches.length).toBe(1)
+  })
+
+  it('does not match clearly different venues', () => {
+    const entities: DedupeCandidate[] = [
+      { id: '1', name: 'The Eagle', city: 'London', entityType: 'venue' },
+      { id: '2', name: 'Pink Flamingo', city: 'London', entityType: 'venue' },
+    ]
+    const matches = findDuplicates(entities)
+    expect(matches.length).toBe(0)
   })
 
   it('is case-insensitive', () => {
-    const a: DedupeKey = { name: 'the eagle', city: 'london' }
-    const b: DedupeKey = { name: 'THE EAGLE', city: 'LONDON' }
-    expect(computeStrongKey(a)).toBe(computeStrongKey(b))
+    const entities: DedupeCandidate[] = [
+      { id: '1', name: 'the eagle', city: 'london', website: 'https://eagle.com', entityType: 'venue' },
+      { id: '2', name: 'THE EAGLE', city: 'LONDON', website: 'https://eagle.com', entityType: 'venue' },
+    ]
+    const matches = findDuplicates(entities)
+    expect(matches.length).toBe(1)
   })
 })
 
-describe('jaroWinkler', () => {
-  it('returns 1 for identical strings', () => {
-    expect(jaroWinkler('foo', 'foo')).toBe(1)
+describe('findBestMatch', () => {
+  it('returns the best match from a list', () => {
+    const candidate: DedupeCandidate = {
+      id: 'new', name: 'The Eagle', city: 'London',
+      website: 'https://eaglelondon.com', entityType: 'venue',
+    }
+    const existing: DedupeCandidate[] = [
+      { id: '1', name: 'Pink Flamingo', city: 'London', entityType: 'venue' },
+      { id: '2', name: 'The Eagle', city: 'London', website: 'https://www.eaglelondon.com', entityType: 'venue' },
+    ]
+    const match = findBestMatch(candidate, existing)
+    expect(match).not.toBeNull()
+    expect(match!.confidence).toBeGreaterThan(0.5)
   })
 
-  it('returns 0 for empty strings', () => {
-    expect(jaroWinkler('', 'foo')).toBe(0)
-  })
-
-  it('returns high score for similar strings', () => {
-    const score = jaroWinkler('Village Pub', 'Village Bar')
-    expect(score).toBeGreaterThan(0.8)
-  })
-
-  it('returns low score for dissimilar strings', () => {
-    const score = jaroWinkler('Eagle Bar London', 'Cafe Roma Paris')
-    expect(score).toBeLessThan(0.7)
-  })
-})
-
-describe('compareEntities', () => {
-  it('returns strong match for same name+city+domain', () => {
-    const a: DedupeKey = { name: 'The Eagle Bar', city: 'London', website: 'https://eagle.com' }
-    const b: DedupeKey = { name: 'The Eagle Bar', city: 'London', website: 'https://www.eagle.com' }
-    const result = compareEntities(a, b)
-    expect(result.method).toBe('strong')
-    expect(result.confidence).toBeGreaterThanOrEqual(0.95)
-  })
-
-  it('returns fuzzy match for similar names', () => {
-    const a: DedupeKey = { name: 'The Eagle', city: 'London' }
-    const b: DedupeKey = { name: 'The Eagles', city: 'London' }
-    const result = compareEntities(a, b)
-    expect(result.method).toBe('fuzzy')
-    expect(result.confidence).toBeGreaterThan(0.85)
-  })
-
-  it('returns none for clearly different entities', () => {
-    const a: DedupeKey = { name: 'The Eagle Bar', city: 'London' }
-    const b: DedupeKey = { name: 'Cafe Buena Vista', city: 'Barcelona' }
-    const result = compareEntities(a, b)
-    expect(result.method).toBe('none')
+  it('returns null when no match found', () => {
+    const candidate: DedupeCandidate = {
+      id: 'new', name: 'Totally Unique Venue', city: 'London', entityType: 'venue',
+    }
+    const existing: DedupeCandidate[] = [
+      { id: '1', name: 'Pink Flamingo', city: 'Berlin', entityType: 'venue' },
+    ]
+    const match = findBestMatch(candidate, existing)
+    expect(match).toBeNull()
   })
 
   it('boosts score when cities match', () => {
-    const base: DedupeKey = { name: 'Pink Elephant', city: null }
-    const sameCity: DedupeKey = { name: 'Pink Elephant Bar', city: 'Berlin' }
-    const cityMatch: DedupeKey = { name: 'Pink Elephant Bar', city: 'Berlin' }
-    const resultSame = compareEntities({ ...sameCity }, { ...cityMatch })
-    const resultNoCity = compareEntities({ ...base }, { ...sameCity })
-    expect(resultSame.confidence).toBeGreaterThanOrEqual(resultNoCity.confidence)
+    const a: DedupeCandidate = { id: '1', name: 'Pink Elephant Bar', city: 'Berlin', entityType: 'venue' }
+    const b: DedupeCandidate = { id: '2', name: 'Pink Elephant Bar', city: 'Berlin', entityType: 'venue' }
+    const c: DedupeCandidate = { id: '3', name: 'Pink Elephant Bar', city: 'Munich', entityType: 'venue' }
+    const matchSame = findBestMatch(a, [b])
+    const matchDiff = findBestMatch(a, [c])
+    expect(matchSame).not.toBeNull()
+    expect(matchDiff).toBeNull()
+  })
+
+  it('matches via geo_name when coords are within 150m', () => {
+    const a: DedupeCandidate = {
+      id: '1', name: "Tom's Bar", city: 'Berlin',
+      lat: 52.49725, lng: 13.34182, entityType: 'venue',
+    }
+    const b: DedupeCandidate = {
+      id: '2', name: 'Toms Bar', city: 'Berlin',
+      lat: 52.49760, lng: 13.34182, entityType: 'venue',
+    }
+    const match = findBestMatch(a, [b])
+    expect(match).not.toBeNull()
+    expect(match!.confidence).toBeGreaterThan(0.7)
+  })
+
+  it('matches via domain_city even when names differ moderately', () => {
+    const a: DedupeCandidate = {
+      id: '1', name: 'Cafe Roma', city: 'Berlin',
+      website: 'https://caferoma.de', entityType: 'venue',
+    }
+    const b: DedupeCandidate = {
+      id: '2', name: 'Cafe Roma Berlin Mitte', city: 'Berlin',
+      website: 'https://www.caferoma.de/location', entityType: 'venue',
+    }
+    const match = findBestMatch(a, [b])
+    expect(match).not.toBeNull()
+    expect(match!.confidence).toBeGreaterThanOrEqual(0.9)
   })
 })

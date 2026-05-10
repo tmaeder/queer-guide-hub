@@ -377,7 +377,7 @@ export async function pruneOrphanMappings(entityType: EntityType): Promise<numbe
  */
 export async function resolvePendingDedupeDecisions(
   olderThanDays = 30,
-  confidenceFloor = 0.7,
+  confidenceFloor = 0.75,
 ): Promise<number> {
   const res = await query<{ count: string }>(
     `WITH updated AS (
