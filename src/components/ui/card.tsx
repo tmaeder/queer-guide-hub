@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import type { LucideIcon } from 'lucide-react';
 import { springs } from '@/lib/motion';
 import { cn } from '@/lib/utils';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
@@ -69,28 +70,14 @@ const CardImage: React.FC<CardImageProps> = ({
 }) => {
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
+  const fallbackSrc = React.useMemo(() => getRandomFallbackImage(), []);
 
-  if (!src || error) {
-    return (
-      <div
-        className="bg-muted flex items-center justify-center relative overflow-hidden"
-        style={{ height }}
-      >
-        {FallbackIcon && (
-          <FallbackIcon
-            className="h-7 w-7 text-muted-foreground"
-            aria-hidden="true"
-          />
-        )}
-        {children}
-      </div>
-    );
-  }
+  const effectiveSrc = (!src || error) ? fallbackSrc : src;
 
   return (
     <div className="relative overflow-hidden" style={{ height }}>
       <img
-        src={src}
+        src={effectiveSrc}
         alt={alt}
         loading="lazy"
         onLoad={() => setLoaded(true)}
