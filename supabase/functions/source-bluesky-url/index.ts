@@ -1,4 +1,5 @@
 import {
+import { withErrorReporting } from '../_shared/report-api-error.ts'
   getServiceClient,
   jsonResponse,
   errorResponse,
@@ -69,7 +70,7 @@ function extractMedia(post: Record<string, unknown>): { text: string; media: str
   return { text, media }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-bluesky-url', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('POST only', 405, req)
 
@@ -149,4 +150,4 @@ Deno.serve(async (req) => {
     console.error('source-bluesky-url:', err)
     return errorResponse((err as Error).message, 500, req)
   }
-})
+}))

@@ -10,6 +10,7 @@ import {
 import { validateMarketplaceNormalized } from '../_shared/marketplace-pipeline-utils.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import {
+import { withErrorReporting } from '../_shared/report-api-error.ts'
   classifyEntity,
   expectedKindForTargetTable,
   isEntityTypeMismatch,
@@ -22,7 +23,7 @@ import {
 // Rejects hard errors, flags multi-warning items for review.
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -380,4 +381,4 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-validate', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

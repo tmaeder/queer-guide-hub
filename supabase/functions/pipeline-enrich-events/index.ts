@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (Events) — AI description + type + tags + LGBTQ relevance.
 // Reads pending event staging rows, writes enriched_data, sets enrichment_status.
@@ -8,7 +9,7 @@ import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker
 
 const WALL_CLOCK_LIMIT_MS = 45_000
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-enrich-events', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -120,4 +121,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-enrich-events:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

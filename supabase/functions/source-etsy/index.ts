@@ -3,6 +3,7 @@ import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import { extractMerchantDomain, normalizeCurrency } from '../_shared/marketplace-pipeline-utils.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 interface EtsyListing {
   listing_id: number; title: string; description: string; tags: string[];
@@ -53,7 +54,7 @@ function makeAdapter(shopId: string): SourceAdapter {
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-etsy', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -76,4 +77,4 @@ Deno.serve(async (req) => {
     }
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

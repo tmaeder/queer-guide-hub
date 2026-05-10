@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Source: OpenStreetMap (Overpass API) — LGBTQ+ venues
 // Queries OSM for nodes/ways tagged lgbtq=yes or similar identifiers
@@ -99,7 +100,7 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
   } as NormalizedItem
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -189,4 +190,4 @@ Deno.serve(async (req) => {
     console.error('source-osm-venue:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

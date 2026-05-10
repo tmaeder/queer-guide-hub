@@ -1,10 +1,11 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { sanitizeArticle } from '../_shared/news-quality/sanitize.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Sanitize (News) — deterministic junk-phrase removal + truncation detection.
 // Runs on ingestion_staging rows BEFORE pipeline-enrich-news. Idempotent.
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-sanitize-news', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -92,4 +93,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-sanitize-news:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

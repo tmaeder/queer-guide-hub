@@ -1,12 +1,13 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { scoreMarketplaceQuality } from '../_shared/marketplace-pipeline-utils.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Quality Score Node
 // Computes a 0-100 quality score based on data completeness
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
     console.error('pipeline-quality-score error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))
 
 function computeScore(data: Record<string, unknown>, _entityType: string): number {
   let score = 0

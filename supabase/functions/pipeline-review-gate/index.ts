@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Review Gate Node
@@ -11,7 +12,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 // On insert failure the staging row is left pending so the next run retries.
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
@@ -152,4 +153,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-review-gate error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

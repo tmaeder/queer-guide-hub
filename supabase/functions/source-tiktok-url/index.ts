@@ -1,4 +1,5 @@
 import {
+import { withErrorReporting } from '../_shared/report-api-error.ts'
   getServiceClient,
   jsonResponse,
   errorResponse,
@@ -60,7 +61,7 @@ async function tryResolveVideoUrl(tiktokUrl: string): Promise<string | null> {
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-tiktok-url', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('POST only', 405, req)
 
@@ -143,4 +144,4 @@ Deno.serve(async (req) => {
     console.error('source-tiktok-url:', err)
     return errorResponse((err as Error).message, 500, req)
   }
-})
+}))

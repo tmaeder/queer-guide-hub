@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: MisterB&B (LGBTQ+ accommodations)
@@ -102,7 +103,7 @@ function humanize(slug: string): string {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-misterbnb', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -127,4 +128,4 @@ Deno.serve(async (req) => {
   } catch (e) {
     return errorResponse((e as Error).message, 500, req)
   }
-})
+}))

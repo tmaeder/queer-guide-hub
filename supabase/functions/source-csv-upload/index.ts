@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import {
+import { withErrorReporting } from '../_shared/report-api-error.ts'
   entityTypeToTable,
   routeRows,
   type EntityType,
@@ -131,7 +132,7 @@ function routeRawItems(
   )
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-csv-upload', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -226,4 +227,4 @@ Deno.serve(async (req) => {
     }
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

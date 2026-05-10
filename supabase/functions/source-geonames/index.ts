@@ -13,6 +13,7 @@
 //   dry_run: boolean
 // ============================================================
 import { getCorsHeaders, getServiceClient, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 const SOURCE_NAME = 'geonames'
 const SOURCE_TYPE = 'geonames'
@@ -45,7 +46,7 @@ function parseRow(line: string): GeoRow | null {
   return row as GeoRow
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-geonames', async (req) => {
   const cors = getCorsHeaders(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
 
@@ -139,4 +140,4 @@ Deno.serve(async (req) => {
     console.error('source-geonames:', e)
     return errorResponse((e as Error).message, 500, req)
   }
-})
+}))
