@@ -4,6 +4,11 @@ import { extractJsonLd } from "./jsonld";
 import { extractMicrodata } from "./microdata";
 import { extractOpenGraph } from "./opengraph";
 
+/** Placeholder type for extractor diagnostics metadata. */
+export interface ExtractDiagnostics {
+    extractorHits: Record<string, number>;
+}
+
 /**
  * Run all extractors and merge by (entity_type, normalized name) — the
  * highest-confidence variant wins, with lower-confidence fields filling
