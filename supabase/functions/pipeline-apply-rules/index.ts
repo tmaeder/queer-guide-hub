@@ -5,12 +5,12 @@ import {
   corsResponse,
 } from '../_shared/supabase-client.ts'
 import {
-import { withErrorReporting } from '../_shared/report-api-error.ts'
   evaluateRule,
   applyRuleActions,
   type Rule,
   type RuleSubmission as Submission,
 } from '../_shared/ingestion-rules.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // pipeline-apply-rules

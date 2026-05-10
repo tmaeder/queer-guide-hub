@@ -2,11 +2,11 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
 import {
-import { withErrorReporting } from '../_shared/report-api-error.ts'
   entityTypeToTable,
   routeRows,
   type EntityType,
 } from '../_shared/entity-type-classifier.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: CSV File Upload — generic adapter for all entity types.

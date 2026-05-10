@@ -1,10 +1,10 @@
 import {
-import { withErrorReporting } from '../_shared/report-api-error.ts'
   getServiceClient,
   jsonResponse,
   errorResponse,
   corsResponse,
 } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: Bluesky URL → community_submissions

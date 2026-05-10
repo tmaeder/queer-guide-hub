@@ -10,12 +10,12 @@ import {
 import { validateMarketplaceNormalized } from '../_shared/marketplace-pipeline-utils.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import {
-import { withErrorReporting } from '../_shared/report-api-error.ts'
   classifyEntity,
   expectedKindForTargetTable,
   isEntityTypeMismatch,
   type ClassifyInput,
 } from '../_shared/entity-classifier.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Validate
