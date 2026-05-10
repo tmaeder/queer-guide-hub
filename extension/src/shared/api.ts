@@ -1,42 +1,16 @@
-import type { DetectedItem, SubmitResponse } from "./types";
-
-const API = import.meta.env.VITE_SUBMIT_API as string;
-
-export async function submitItem(
-  item: DetectedItem,
-  accessToken: string,
-  notes?: string,
-): Promise<SubmitResponse> {
-  const res = await fetch(`${API}/submit`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      entity_type: item.entity_type,
-      raw_data: item.raw_data,
-      source_url: item.source_url,
-      client: `extension/${chrome.runtime.getManifest().version}`,
-      notes,
-      field_confidence: item.field_confidence,
-      extraction_method: item.extraction_method,
-    }),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`submit failed ${res.status}: ${text}`);
-  }
-  return (await res.json()) as SubmitResponse;
-}
-
-export async function fetchStatus(
-  id: string | number,
-  accessToken: string,
-): Promise<Record<string, unknown>> {
-  const res = await fetch(`${API}/submissions/${encodeURIComponent(String(id))}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!res.ok) throw new Error(`status ${res.status}`);
-  return (await res.json()) as Record<string, unknown>;
-}
+/**
+ * Legacy barrel – re-exports every public symbol from the api/ directory
+ * so that existing imports like `from "../../shared/api"` keep working.
+ */
+export { submitItem, fetchStatus, bulkSubmit, fetchMySubmissions } from "./api/submit";
+export type { BulkResult, SubmissionRow } from "./api/submit";
+export { findSimilarItems, findExisting } from "./api/discovery";
+export type { SimilarHit, ExistingMatch } from "./api/discovery";
+export { renderUrl, scanSitemap } from "./api/render";
+export type { SitemapEntry } from "./api/render";
+export { listWatched, addWatched, removeWatched } from "./api/watch";
+export type { WatchedRow } from "./api/watch";
+export { enrichItem } from "./api/enrich";
+export type { EnrichResponse } from "./api/enrich";
+export { uploadCapture } from "./api/upload";
+export { API, SUPABASE_URL, ANON_KEY, authHeaders, pgrstHeaders, jwtSub, ensureOk } from "./api/client";
