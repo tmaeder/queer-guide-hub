@@ -131,11 +131,15 @@ export default function DedupDecisionsTab() {
                       <td className={`px-3 py-2 font-mono tabular-nums font-semibold ${confColor}`}>
                         {r.confidence.toFixed(3)}
                       </td>
-                      <td className="px-3 py-2">
-                        <code className="text-2xs bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>
+                      <td className="px-3 py-2" title={r.entity_a_id ?? undefined}>
+                        {r.entity_a_name
+                          ? <span className="text-xs truncate max-w-[180px] inline-block align-bottom">{r.entity_a_name}</span>
+                          : <code className="text-2xs bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>}
                       </td>
-                      <td className="px-3 py-2 text-xs2 font-mono text-muted-foreground">
-                        {r.incoming_source_name}/{r.incoming_source_id}
+                      <td className="px-3 py-2" title={r.entity_b_id ?? undefined}>
+                        {r.entity_b_name
+                          ? <span className="text-xs truncate max-w-[180px] inline-block align-bottom">{r.entity_b_name}</span>
+                          : <span className="text-xs2 font-mono text-muted-foreground">{r.incoming_source_name}/{r.incoming_source_id}</span>}
                       </td>
                       <td className="px-3 py-2 text-xs2 text-muted-foreground"
                           title={new Date(r.created_at).toISOString()}>
