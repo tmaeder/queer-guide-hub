@@ -104,6 +104,17 @@ export const newsArticleFields: FieldConfig[] = [
     max: 1,
   },
   { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  {
+    name: 'source_id',
+    label: 'News Source',
+    type: 'select',
+    group: 'details',
+    filterable: true,
+    dynamicOptions: { table: 'news_sources', valueColumn: 'id', labelColumn: 'name' },
+  },
+  { name: 'image_attribution', label: 'Image Attribution', type: 'text', group: 'details' },
+  { name: 'country_ids', label: 'Countries', type: 'tags', group: 'details', helpText: 'Country geo-tags' },
+  { name: 'city_ids', label: 'Cities', type: 'tags', group: 'details', helpText: 'City geo-tags' },
   { name: 'image_url', label: 'Image', type: 'image', group: 'media' },
   {
     name: 'is_featured',
@@ -121,6 +132,9 @@ export const newsArticleFields: FieldConfig[] = [
     filterable: true,
     listColumn: true,
   },
+  // External
+  { name: 'views_count', label: 'Views', type: 'number', group: 'external', readOnly: true },
+  { name: 'relevance_score', label: 'Relevance Score', type: 'number', group: 'external', readOnly: true, min: 0, max: 1 },
 ];
 
 export const newsArticleContentType: ContentTypeConfig = {
@@ -137,7 +151,7 @@ export const newsArticleContentType: ContentTypeConfig = {
   defaults: { category: 'general', is_featured: false },
   validate: validateNewsArticle,
   defaultSort: { field: 'published_at', dir: 'desc' },
-  fieldGroupOrder: ['basic', 'details', 'media', 'settings'],
+  fieldGroupOrder: ['basic', 'details', 'media', 'settings', 'external'],
   translatableFields: ['title', 'excerpt', 'content'],
   commentable: true,
   aiAssist: {

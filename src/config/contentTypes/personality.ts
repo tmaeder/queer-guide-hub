@@ -12,6 +12,7 @@ export const personalityFields: FieldConfig[] = [
     sortable: true,
     maxLength: 255,
   },
+  { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'pronouns', label: 'Pronouns', type: 'text', group: 'basic' },
   { name: 'profession', label: 'Profession', type: 'text', group: 'basic', searchable: true },
   { name: 'description', label: 'Short Description', type: 'textarea', group: 'basic', colSpan: 2 },
@@ -66,6 +67,8 @@ export const personalityFields: FieldConfig[] = [
   { name: 'fields', label: 'Fields/Disciplines', type: 'json', group: 'details' },
   { name: 'achievements', label: 'Achievements', type: 'json', group: 'details' },
   { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  { name: 'profile_url', label: 'Profile URL', type: 'url', group: 'details' },
+  { name: 'wikidata_qid', label: 'Wikidata QID', type: 'text', group: 'details', placeholder: 'Q12345' },
   // LGBTQ
   {
     name: 'lgbti_connection',
@@ -79,6 +82,7 @@ export const personalityFields: FieldConfig[] = [
   { name: 'image_url', label: 'Profile Image', type: 'image', group: 'media' },
   // Settings
   { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  { name: 'is_adult', label: 'Adult Content', type: 'boolean', group: 'settings' },
   {
     name: 'verification_status',
     label: 'Verification',
@@ -101,7 +105,13 @@ export const personalityFields: FieldConfig[] = [
       { value: 'restricted', label: 'Restricted' },
     ],
   },
-  // External (hidden FKs — auto-populated by address resolver)
+  // External
+  { name: 'sanctions_status', label: 'Sanctions Status', type: 'text', group: 'external', readOnly: true },
+  { name: 'regulatory_notes', label: 'Regulatory Notes', type: 'textarea', group: 'external', readOnly: true },
+  { name: 'lgbti_relevance_score', label: 'LGBTQ+ Relevance', type: 'number', group: 'external', readOnly: true, min: 0, max: 1 },
+  { name: 'quality_score', label: 'Quality Score', type: 'number', group: 'external', readOnly: true },
+  { name: 'needs_attention', label: 'Needs Attention', type: 'boolean', group: 'external', readOnly: true, filterable: true, listColumn: true },
+  // Hidden FKs
   { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
 ];
@@ -117,8 +127,8 @@ export const personalityContentType: ContentTypeConfig = {
   label: { singular: 'Personality', plural: 'Personalities' },
   color: '#f59e0b',
   fields: personalityFields,
-  defaults: { is_living: true, visibility: 'public', verification_status: 'pending' },
-  fieldGroupOrder: ['basic', 'details', 'lgbtq', 'media', 'settings'],
+  defaults: { is_living: true, visibility: 'public', verification_status: 'pending', is_adult: false },
+  fieldGroupOrder: ['basic', 'details', 'lgbtq', 'media', 'settings', 'external'],
   translatableFields: ['name', 'profession', 'description', 'bio'],
   commentable: true,
   aiAssist: {

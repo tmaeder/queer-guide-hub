@@ -19,6 +19,32 @@ export const queerVillageFields: FieldConfig[] = [
   { name: 'history', label: 'History', type: 'richtext', group: 'details', colSpan: 2 },
   { name: 'website', label: 'Website', type: 'url', group: 'details' },
   { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
+  { name: 'boundaries', label: 'Boundaries', type: 'json', group: 'details', helpText: 'GeoJSON boundary data' },
+  // Location
+  {
+    name: 'city',
+    label: 'City',
+    type: 'city_autocomplete',
+    group: 'location',
+    filterable: true,
+    relatedFields: {
+      city_id: 'city_id',
+      country_id: 'country_id',
+      country: 'country',
+    },
+  },
+  {
+    name: 'country',
+    label: 'Country',
+    type: 'country_autocomplete',
+    group: 'location',
+    filterable: true,
+    relatedFields: {
+      country_id: 'country_id',
+      city: 'city',
+      city_id: 'city_id',
+    },
+  },
   { name: 'latitude', label: 'Latitude', type: 'number', group: 'location', min: -90, max: 90 },
   { name: 'longitude', label: 'Longitude', type: 'number', group: 'location', min: -180, max: 180 },
   {

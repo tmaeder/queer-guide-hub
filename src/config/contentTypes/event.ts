@@ -13,6 +13,7 @@ export const eventFields: FieldConfig[] = [
     sortable: true,
     maxLength: 255,
   },
+  { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
   { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
   {
     name: 'edition',
@@ -148,12 +149,31 @@ export const eventFields: FieldConfig[] = [
   { name: 'recurrence_pattern', label: 'Recurrence Pattern', type: 'text', group: 'details' },
   { name: 'accessibility_attributes', label: 'Accessibility', type: 'tags', group: 'details' },
   { name: 'target_groups', label: 'Target Groups', type: 'tags', group: 'details' },
+  { name: 'tags', label: 'Tags', type: 'tags', group: 'details' },
+  { name: 'accessibility_notes', label: 'Accessibility Notes', type: 'textarea', group: 'details', colSpan: 2 },
   // Media
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
+  { name: 'logo_url', label: 'Event Logo', type: 'image', group: 'media' },
   // Settings
   { name: 'is_featured', label: 'Featured', type: 'boolean', group: 'settings' },
   { name: 'is_public', label: 'Public', type: 'boolean', group: 'settings' },
-  // External (hidden FKs)
+  {
+    name: 'verification_status',
+    label: 'Verification Status',
+    type: 'select',
+    group: 'settings',
+    options: [
+      { value: 'pending', label: 'Pending' },
+      { value: 'verified', label: 'Verified' },
+      { value: 'rejected', label: 'Rejected' },
+    ],
+  },
+  // External
+  { name: 'data_source', label: 'Data Source', type: 'text', group: 'external', readOnly: true },
+  { name: 'lgbti_relevance_score', label: 'LGBTQ+ Relevance', type: 'number', group: 'external', readOnly: true, min: 0, max: 1 },
+  { name: 'quality_score', label: 'Quality Score', type: 'number', group: 'external', readOnly: true },
+  { name: 'needs_attention', label: 'Needs Attention', type: 'boolean', group: 'external', readOnly: true, filterable: true, listColumn: true },
+  // Hidden FKs
   { name: 'venue_id', label: 'Venue Reference', type: 'text', group: 'external', hidden: true },
   { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
@@ -177,10 +197,10 @@ export const eventContentType: ContentTypeConfig = {
   label: { singular: 'Event', plural: 'Events' },
   color: '#ec4899',
   fields: eventFields,
-  defaults: { is_featured: false, is_free: false, is_public: true, status: 'active' },
+  defaults: { is_featured: false, is_free: false, is_public: true, status: 'active', verification_status: 'pending' },
   validate: validateEvent,
-  fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings'],
-  translatableFields: ['title', 'description'],
+  fieldGroupOrder: ['basic', 'location', 'details', 'media', 'settings', 'external'],
+  translatableFields: ['title', 'description', 'accessibility_notes'],
   commentable: true,
   aiAssist: {
     ops: ['summarize', 'seo_draft', 'auto_tag'],

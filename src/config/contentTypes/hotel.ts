@@ -101,6 +101,10 @@ export const hotelFields: FieldConfig[] = [
     max: 4,
   },
   { name: 'amenities', label: 'Amenities', type: 'tags', group: 'details' },
+  { name: 'accessibility_attributes', label: 'Accessibility', type: 'tags', group: 'details' },
+  { name: 'target_groups', label: 'Target Groups', type: 'tags', group: 'details' },
+  { name: 'accessibility_notes', label: 'Accessibility Notes', type: 'textarea', group: 'details', colSpan: 2 },
+  { name: 'event_amenities', label: 'Event Amenities', type: 'tags', group: 'details' },
   { name: 'lgbtq_friendly', label: 'LGBTQ+ Friendly', type: 'boolean', group: 'lgbtq' },
   {
     name: 'queer_safety_notes',
@@ -110,9 +114,12 @@ export const hotelFields: FieldConfig[] = [
     colSpan: 2,
   },
   { name: 'featured', label: 'Featured', type: 'boolean', group: 'settings' },
+  { name: 'featured_priority', label: 'Featured Priority', type: 'number', group: 'settings', min: 0, helpText: 'Higher = more prominent' },
   { name: 'verified', label: 'Verified', type: 'boolean', group: 'settings' },
   { name: 'images', label: 'Images', type: 'images', group: 'media' },
   { name: 'tags', label: 'Tags', type: 'tags', group: 'settings' },
+  { name: 'data_source', label: 'Data Source', type: 'text', group: 'external', readOnly: true },
+  { name: 'external_id', label: 'External ID', type: 'text', group: 'external', readOnly: true },
   { name: 'city_id', label: 'City Reference', type: 'text', group: 'external', hidden: true },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
   {
@@ -136,5 +143,6 @@ export const hotelContentType: ContentTypeConfig = {
   color: '#0ea5e9',
   fields: hotelFields,
   defaults: { featured: false, verified: false, lgbtq_friendly: false },
-  fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'settings'],
+  fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'settings', 'external'],
+  translatableFields: ['name', 'description', 'accessibility_notes'],
 };
