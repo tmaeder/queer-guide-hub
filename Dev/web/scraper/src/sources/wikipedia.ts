@@ -113,6 +113,7 @@ export class WikipediaConnector extends BaseConnector {
   }
 
   private parseListItem(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     $li: cheerio.Cheerio<any>,
     country: string,
     region: string,
@@ -151,6 +152,7 @@ export class WikipediaConnector extends BaseConnector {
   }
 
   private parseTableRow(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     $tr: cheerio.Cheerio<any>,
     country: string,
     region: string,

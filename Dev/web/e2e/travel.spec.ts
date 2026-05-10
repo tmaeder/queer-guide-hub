@@ -18,15 +18,22 @@ test.describe('Travel page (/travel)', () => {
     // Search form elements should exist
     await expect(page.getByPlaceholder(/from/i)).toBeVisible();
     await expect(page.getByPlaceholder(/to/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: /search/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Search', exact: true })).toBeVisible();
   });
 
   test('shows popular deals section', async ({ page }) => {
     await page.goto('/travel');
 
     // Allow time for geolocation + API call
-    // Either shows "Popular Deals" or "Enable location" message
-    const dealsOrFallback = page.locator('text=Popular Deals, text=Enable location, text=Search Flights Manually').first();
+    // Either shows "Popular Deals" or "Enable location" message.
+    // The single-string `text=A, text=B, text=C` form is NOT a valid Playwright
+    // selector — comma is treated as part of the literal text, not as OR. Use
+    // `.or()` to compose alternatives.
+    const dealsOrFallback = page
+      .locator('text=Popular Deals')
+      .or(page.locator('text=Enable location'))
+      .or(page.locator('text=Search Flights Manually'))
+      .first();
     await expect(dealsOrFallback).toBeVisible({ timeout: 20000 });
   });
 
@@ -72,10 +79,13 @@ test.describe('Travel page (/travel)', () => {
     await page.locator('text=LHR').first().click();
 
     // Click search
-    await page.getByRole('button', { name: /search/i }).click();
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
 
     // Should show results or "No deals found" (both valid)
-    const resultOrEmpty = page.locator('text=Book Flight, text=No deals found').first();
+    const resultOrEmpty = page
+      .locator('text=Book Flight')
+      .or(page.locator('text=No deals found'))
+      .first();
     await expect(resultOrEmpty).toBeVisible({ timeout: 15000 });
   });
 
@@ -167,7 +177,12 @@ test.describe('Tours/Activities section', () => {
 
     // Should show either the widget content OR the fallback "Tours & Activities" placeholder
     // It should NOT show a blank/broken embed or crash the page
-    const content = page.locator('text=Tours & Activities, text=Browse Tours, text=GetYourGuide, text=Activities').first();
+    const content = page
+      .locator('text=Tours & Activities')
+      .or(page.locator('text=Browse Tours'))
+      .or(page.locator('text=GetYourGuide'))
+      .or(page.locator('text=Activities'))
+      .first();
     await expect(content).toBeVisible({ timeout: 12000 });
 
     // Verify no error boundary crash
@@ -207,7 +222,11 @@ test.describe('Error handling', () => {
     // Should show flight deals section without crashing
     await expect(page.locator('text=Something went wrong')).not.toBeVisible();
     // Should show either deals or the fallback message
-    const content = page.locator('text=Flight Deals, text=Enable location, text=Search Flights').first();
+    const content = page
+      .locator('text=Flight Deals')
+      .or(page.locator('text=Enable location'))
+      .or(page.locator('text=Search Flights'))
+      .first();
     await expect(content).toBeVisible({ timeout: 10000 });
   });
 });

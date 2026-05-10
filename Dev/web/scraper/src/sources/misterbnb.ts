@@ -3,7 +3,7 @@ import { BaseConnector } from './base.js';
 import { sourceConfigs } from '../config.js';
 import type { EntityType, SourceRawEntity } from '../types/schemas.js';
 import type { SourceConfig, DiscoveredUrl } from '../types/connector.js';
-import { cleanText, slugify } from '../utils/text.js';
+import { slugify } from '../utils/text.js';
 import { launchBrowser, navigateAndWait, type BrowserSession } from '../utils/browser.js';
 import { sleep } from '../utils/fetch.js';
 

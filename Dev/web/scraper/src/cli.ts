@@ -6,7 +6,7 @@ import { startScheduler } from './jobs/scheduler.js';
 import { getConnector, getEnabledConnectors } from './sources/index.js';
 import { runMigrations } from './db/migrate.js';
 import { closePool } from './db/pool.js';
-import { logger, childLogger } from './utils/logger.js';
+import { childLogger } from './utils/logger.js';
 import { SourceName, EntityType } from './types/schemas.js';
 
 const log = childLogger('cli');

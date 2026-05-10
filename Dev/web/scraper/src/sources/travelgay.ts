@@ -3,7 +3,7 @@ import { BaseConnector } from './base.js';
 import { sourceConfigs } from '../config.js';
 import type { EntityType, SourceRawEntity } from '../types/schemas.js';
 import type { SourceConfig, DiscoveredUrl } from '../types/connector.js';
-import { cleanText, slugify, stripHtml } from '../utils/text.js';
+import { cleanText, slugify } from '../utils/text.js';
 
 /**
  * TravelGay connector: major gay travel directory.

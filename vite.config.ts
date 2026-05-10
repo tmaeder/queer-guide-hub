@@ -141,7 +141,7 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     minify: mode === 'production' ? 'esbuild' : false,
     // Cloudflare Pages optimization
-    target: 'esnext',
+    target: 'es2022',
     sourcemap: mode === 'production' ? 'hidden' : true,
     ...(mode === 'production' && {
       reportCompressedSize: false,

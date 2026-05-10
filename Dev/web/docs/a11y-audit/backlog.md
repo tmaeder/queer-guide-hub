@@ -9,7 +9,7 @@ Sizes: XS = <30min, S = 30–90min, M = 2–4h, L = half-day+
 | ID | Title | Scope | Risk | Size | Acceptance |
 |---|---|---|---|---|---|
 | P0-1 | Add `aria-label` to all icon-only `IconButton`s on home + places (C1) | RegionalEventsCalendar, LatestNewsSlider, AnimatedCounter, discovery components used by `pages/Index.tsx` and `pages/Places.tsx` | Low | S | axe `button-name` = 0 on `/` and `/places` |
-| P0-2 | Fall back to placeholder for Select `aria-label` in shared wrapper (C2) | [src/components/ui/select.tsx:135](Dev/web/src/components/ui/select.tsx) | Low (additive) | XS | axe `aria-input-field-name` = 0 on `/venues`, `/hotels`, `/resources`, `/contact` |
+| P0-2 | Fall back to placeholder for Select `aria-label` in shared wrapper (C2) | [src/components/ui/select.tsx:135](src/components/ui/select.tsx) | Low (additive) | XS | axe `aria-input-field-name` = 0 on `/venues`, `/hotels`, `/resources`, `/contact` |
 | P0-3 | Sync `<html lang>` and `dir` to active i18next locale (C3) | i18n init + `LocaleRouter` in `App.tsx` | Low | S | `document.documentElement.lang` matches active locale; `dir="rtl"` when locale = `ar` |
 | P0-4 | Introduce `<Loading aria-label>` primitive; replace bare `<CircularProgress />` (C4) | new util in `components/loading/`, replace ~15 call sites | Low | M | axe `aria-progressbar-name` = 0 on `/`; no bare `<CircularProgress />` left |
 | P0-5 | Fix color-contrast at the token level (C5) | `src/index.css`, `src/theme/muiTheme.ts` (audit `--muted-foreground`, `text.secondary`, link tints) | Med (visual change) | M | Lighthouse `color-contrast` audit passes on home + 6 sampled routes; visual diff signed off |

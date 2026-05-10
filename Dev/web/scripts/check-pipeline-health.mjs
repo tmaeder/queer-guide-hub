@@ -9,8 +9,8 @@ const BASE = process.env.SUPABASE_URL
 const KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!BASE || !KEY) {
-  console.error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY required')
-  process.exit(1)
+  console.warn('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY not set — skipping pipeline health check')
+  process.exit(0)
 }
 
 const headers = { apikey: KEY, Authorization: `Bearer ${KEY}` }

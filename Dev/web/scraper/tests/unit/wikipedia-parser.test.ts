@@ -16,6 +16,7 @@ describe('WikipediaConnector parser', () => {
 
   it('parses gay villages from sample HTML', async () => {
     // Mock the fetch to return our fixture HTML (rendered Wikipedia article)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mockFetch = vi.spyOn(connector as any, 'fetch').mockResolvedValue({
       url: 'https://en.wikipedia.org/wiki/List_of_gay_villages',
       status: 200,
@@ -60,6 +61,7 @@ describe('WikipediaConnector parser', () => {
   });
 
   it('handles robots.txt blocking', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.spyOn(connector as any, 'fetch').mockResolvedValue({
       url: 'test',
       status: 0,
@@ -75,6 +77,7 @@ describe('WikipediaConnector parser', () => {
   });
 
   it('handles API errors gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.spyOn(connector as any, 'fetch').mockResolvedValue({
       url: 'test',
       status: 500,

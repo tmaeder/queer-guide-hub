@@ -1,11 +1,8 @@
 name: Queer Guide Scraper
 
 on:
-  schedule:
-    # Full refresh – 03:15 UTC daily
-    - cron: '15 3 * * *'
-    # Events only – every 4 hours (was hourly; reduced for GHA cost)
-    - cron: '0 */4 * * *'
+  # schedule disabled — scraper runs on VPS (185.143.100.44) via systemd timers
+  # scraper-full.timer: daily 03:15 UTC | scraper-events.timer: every 4h
   workflow_dispatch:
     inputs:
       source:
@@ -128,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: >
-      github.event_name == 'schedule' && github.event.schedule == '0 */4 * * *'
+      github.event_name == 'schedule' && github.event.schedule == '0 * * * *'
     concurrency:
       group: scraper-events
       cancel-in-progress: true

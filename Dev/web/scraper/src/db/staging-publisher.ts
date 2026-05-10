@@ -134,7 +134,7 @@ export async function publishToStaging(
     // Whole-batch failure — surface the error; count every row as failed to
     // make the situation visible. Caller may retry in a smaller batch.
     result.failed += keptEntities.length;
-    // eslint-disable-next-line no-console
+     
     console.error('publishToStaging batch error:', (err as Error).message);
     throw err;
   } finally {

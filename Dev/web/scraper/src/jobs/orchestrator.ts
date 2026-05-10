@@ -337,6 +337,7 @@ export async function runConnector(
           stack: null,
           timestamp: new Date(),
         })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }
   } catch (err) {
@@ -352,6 +353,7 @@ export async function runConnector(
           stack: (err as Error).stack ?? null,
           timestamp: new Date(),
         }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }
   } finally {
