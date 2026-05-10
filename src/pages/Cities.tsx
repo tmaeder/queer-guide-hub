@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useOptimizedCities } from '@/hooks/useOptimizedPlaces';
+import { useOptimizedCities } from '@/hooks/usePlaces';
 import { useMeta } from '@/hooks/useMeta';
 import { DirectoryCard } from '@/components/directory/DirectoryCard';
 import { Input } from '@/components/ui/input';

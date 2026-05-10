@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "worker/**"
-      - "worker-ingest/**"
+      - "workers/search-proxy/**"
+      - "workers/ingest/**"
       - ".github/workflows/deploy.yml"
   workflow_dispatch: {}
 
@@ -17,14 +17,14 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - run: npm ci
-        working-directory: worker
+        working-directory: workers/search-proxy
       - run: npx tsc --noEmit
-        working-directory: worker
+        working-directory: workers/search-proxy
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          workingDirectory: worker
+          workingDirectory: workers/search-proxy
           command: deploy
 
   deploy-ingest:
@@ -34,14 +34,14 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - run: npm ci
-        working-directory: worker-ingest
+        working-directory: workers/ingest
       - run: npx tsc --noEmit
-        working-directory: worker-ingest
+        working-directory: workers/ingest
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          workingDirectory: worker-ingest
+          workingDirectory: workers/ingest
           command: deploy
 
   smoke:

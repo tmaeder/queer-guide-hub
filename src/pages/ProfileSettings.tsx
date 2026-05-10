@@ -20,7 +20,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
-import { useOptimizedProfileData } from '@/hooks/useOptimizedProfileData';
+import { useOptimizedProfileData } from '@/hooks/useProfileData';
 import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
 import OptimizedErrorBoundary, {
   DataErrorFallback,

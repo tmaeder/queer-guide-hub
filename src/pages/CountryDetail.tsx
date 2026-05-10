@@ -8,7 +8,7 @@ import { useTrackEvent } from '@/hooks/useTrackEvent';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { useWorldBankData } from '@/hooks/useWorldBankData';
 import { useSDGData } from '@/hooks/useSDGData';
-import { useOptimizedCountry, useOptimizedCities } from '@/hooks/useOptimizedPlaces';
+import { useOptimizedCountry, useOptimizedCities } from '@/hooks/usePlaces';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useNews } from '@/hooks/useNews';

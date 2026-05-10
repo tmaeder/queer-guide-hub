@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Eye, Trash2, Upload, MapPin, Clock, Users, Tag, Globe, Calendar, User, Building, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,12 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { updateRow } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { ProfessionAutocomplete } from '@/components/ui/profession-autocomplete';
-import { CountryAutocomplete } from '@/components/ui/country-autocomplete';
-import { ImageUpload } from '@/components/ui/image-upload';
 import { AutoTagPanel } from '@/components/cms/AutoTagPanel';
 import { GeoLinkPanel } from '@/components/cms/GeoLinkPanel';
 import { TranslationPanel } from '@/components/cms/TranslationPanel';
+import { getFieldGroups } from './editor/fieldGroups';
+import { EditorField } from './editor/EditorField';
 
 interface UniversalContentEditorProps {
   content: Record<string, unknown>;
@@ -37,7 +32,6 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
   useEffect(() => {
     if (content) {
-      // Create a copy for editing
       const editableData = { ...content };
       setFormData(editableData);
       setOriginalData(editableData);
@@ -45,28 +39,20 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
   }, [content]);
 
   const handleFieldChange = (field: string, value: unknown) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "You must be logged in to save changes",
-        variant: "destructive",
-      });
+      toast({ title: "Authentication required", description: "You must be logged in to save changes", variant: "destructive" });
       return;
     }
 
     setLoading(true);
     try {
       const tableName = content.content_type;
-      const changes = {};
-      
-      // Only include changed fields
+      const changes: Record<string, unknown> = {};
+
       Object.keys(formData).forEach(key => {
         if (formData[key] !== originalData[key] && key !== 'content_type' && key !== 'id') {
           changes[key] = formData[key];
@@ -74,816 +60,26 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       });
 
       if (Object.keys(changes).length === 0) {
-        toast({
-          title: "No changes",
-          description: "No changes were made to save",
-        });
+        toast({ title: "No changes", description: "No changes were made to save" });
         setLoading(false);
         return;
       }
 
-      // Add updated_at timestamp
       changes['updated_at'] = new Date().toISOString();
-
-      const { error } = await updateRow(tableName, content.id, changes);
-
+      const { error } = await updateRow(tableName as string, content.id, changes);
       if (error) throw error;
 
-      toast({
-        title: "Content updated",
-        description: "Your changes have been saved successfully",
-      });
-
+      toast({ title: "Content updated", description: "Your changes have been saved successfully" });
       onClose();
     } catch (error) {
       console.error('Error saving content:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to save changes',
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error instanceof Error ? error.message : 'Failed to save changes', variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  // Content type specific field configurations
-  const getFieldGroups = () => {
-    const contentType = content.content_type;
-    
-    switch (contentType) {
-      case 'events':
-        return {
-          basic: [
-            { key: 'name', label: 'Event Name', type: 'text', required: true, icon: <Calendar style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'event_type', label: 'Event Type', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'cancelled'], icon: <Star style={{ height: 16, width: 16 }} /> }
-          ],
-          datetime: [
-            { key: 'start_date', label: 'Start Date', type: 'datetime', icon: <Clock style={{ height: 16, width: 16 }} /> },
-            { key: 'end_date', label: 'End Date', type: 'datetime', icon: <Clock style={{ height: 16, width: 16 }} /> },
-            { key: 'is_recurring', label: 'Recurring Event', type: 'boolean', icon: <Clock style={{ height: 16, width: 16 }} /> }
-          ],
-          location: [
-            { key: 'venue_id', label: 'Venue', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'address', label: 'Address', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> }
-          ],
-          details: [
-            { key: 'price', label: 'Price', type: 'number', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'capacity', label: 'Capacity', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'age_restriction', label: 'Age Restriction', type: 'text', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'image_url', label: 'Image URL', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-        
-      case 'venues':
-        return {
-          basic: [
-            { key: 'name', label: 'Venue Name', type: 'text', required: true, icon: <Building style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'venue_type', label: 'Venue Type', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'temporarily_closed'], icon: <Star style={{ height: 16, width: 16 }} /> }
-          ],
-          location: [
-            { key: 'address', label: 'Address', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'city', label: 'City', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'country', label: 'Country', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> }
-          ],
-          contact: [
-            { key: 'phone', label: 'Phone', type: 'tel', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'email', label: 'Email', type: 'email', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'social_media', label: 'Social Media', type: 'json', icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ],
-          details: [
-            { key: 'capacity', label: 'Capacity', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'accessibility_features', label: 'Accessibility Features', type: 'array', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'amenities', label: 'Amenities', type: 'array', icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'image_url', label: 'Image URL', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'personalities':
-        return {
-          basic: [
-            { key: 'name', label: 'Name', type: 'text', required: true, icon: <User style={{ height: 16, width: 16 }} /> },
-            { key: 'bio', label: 'Biography', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'profession', label: 'Profession', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive'], icon: <Star style={{ height: 16, width: 16 }} /> }
-          ],
-          personal: [
-            { key: 'birth_date', label: 'Birth Date', type: 'date', icon: <Calendar style={{ height: 16, width: 16 }} /> },
-            { key: 'death_date', label: 'Death Date', type: 'date', icon: <Calendar style={{ height: 16, width: 16 }} /> },
-            { key: 'nationality', label: 'Nationality', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'gender', label: 'Gender', type: 'text', icon: <User style={{ height: 16, width: 16 }} /> }
-          ],
-          media: [
-            { key: 'image_url', label: 'Profile Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'social_links', label: 'Social Links', type: 'json', icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ],
-          metadata: [
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'categories', label: 'Categories', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'view_count', label: 'View Count', type: 'number', readonly: true, icon: <Eye style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'community_groups':
-        return {
-          basic: [
-            { key: 'name', label: 'Group Name', type: 'text', required: true, icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'rules', label: 'Group Rules', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ],
-          settings: [
-            { key: 'is_private', label: 'Private Group', type: 'boolean', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'member_count', label: 'Member Count', type: 'number', readonly: true, icon: <Users style={{ height: 16, width: 16 }} /> }
-          ],
-          media: [
-            { key: 'image_url', label: 'Group Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'community_posts':
-        return {
-          basic: [
-            { key: 'content', label: 'Post Content', type: 'textarea', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'post_type', label: 'Post Type', type: 'select', options: ['text', 'image', 'link', 'poll'], icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ],
-          settings: [
-            { key: 'visibility', label: 'Visibility', type: 'select', options: ['public', 'private', 'friends'], icon: <Eye style={{ height: 16, width: 16 }} /> },
-            { key: 'pinned', label: 'Pinned Post', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> }
-          ],
-          engagement: [
-            { key: 'likes_count', label: 'Likes', type: 'number', readonly: true, icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'comments_count', label: 'Comments', type: 'number', readonly: true, icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'shares_count', label: 'Shares', type: 'number', readonly: true, icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ],
-          media: [
-            { key: 'images', label: 'Images', type: 'array', icon: <Upload style={{ height: 16, width: 16 }} /> },
-            { key: 'link_url', label: 'Link URL', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'cms_content':
-        return {
-          basic: [
-            { key: 'title', label: 'Title', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'content_type', label: 'Content Type', type: 'select', options: ['page', 'article', 'blog_post'], icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'workflow_state', label: 'Workflow State', type: 'select', options: ['draft', 'review', 'published', 'archived'], icon: <Star style={{ height: 16, width: 16 }} /> }
-          ],
-          settings: [
-            { key: 'visibility_level', label: 'Visibility', type: 'select', options: ['public', 'private', 'restricted'], icon: <Eye style={{ height: 16, width: 16 }} /> },
-            { key: 'featured_weight', label: 'Featured Weight', type: 'number', icon: <Star style={{ height: 16, width: 16 }} /> }
-          ],
-          meta: [
-            { key: 'meta_title', label: 'Meta Title', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'meta_description', label: 'Meta Description', type: 'textarea', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'news_articles':
-        return {
-          basic: [
-            { key: 'title', label: 'Article Title', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'excerpt', label: 'Excerpt', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'content', label: 'Article Content', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ],
-          meta: [
-            { key: 'author', label: 'Author', type: 'text', icon: <User style={{ height: 16, width: 16 }} /> },
-            { key: 'category', label: 'Category', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['draft', 'published', 'archived'], icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'published_at', label: 'Published Date', type: 'datetime', icon: <Calendar style={{ height: 16, width: 16 }} /> }
-          ],
-          media: [
-            { key: 'image_url', label: 'Featured Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> },
-            { key: 'source_url', label: 'Source URL', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ],
-          settings: [
-            { key: 'is_featured', label: 'Featured Article', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'views_count', label: 'Views', type: 'number', readonly: true, icon: <Eye style={{ height: 16, width: 16 }} /> },
-            { key: 'tags', label: 'Tags', type: 'array', icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'tags':
-        return {
-          basic: [
-            { key: 'name', label: 'Tag Name', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'category', label: 'Category', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'slug', label: 'URL Slug', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ],
-          appearance: [
-            { key: 'color', label: 'Tag Color', type: 'text', icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'image_url', label: 'Tag Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
-          ],
-          metadata: [
-            { key: 'usage_count', label: 'Usage Count', type: 'number', readonly: true, icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'wikipedia_url', label: 'Wikipedia URL', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'cities':
-        return {
-          basic: [
-            { key: 'name', label: 'City Name', type: 'text', required: true, icon: <Building style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'region_name', label: 'Region', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> }
-          ],
-          location: [
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock style={{ height: 16, width: 16 }} /> }
-          ],
-          details: [
-            { key: 'population', label: 'Population', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'is_capital', label: 'Is Capital', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'is_major_city', label: 'Is Major City', type: 'boolean', icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'image_url', label: 'City Image', type: 'url', icon: <Upload style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'countries':
-        return {
-          basic: [
-            { key: 'name', label: 'Country Name', type: 'text', required: true, icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'code', label: 'Country Code', type: 'text', icon: <Globe style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'capital', label: 'Capital City', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> }
-          ],
-          details: [
-            { key: 'population', label: 'Population', type: 'number', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'area_km2', label: 'Area (km²)', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'languages', label: 'Languages', type: 'array', icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ],
-          location: [
-            { key: 'latitude', label: 'Latitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'longitude', label: 'Longitude', type: 'number', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'timezone', label: 'Timezone', type: 'text', icon: <Clock style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      case 'marketplace_listings':
-        return {
-          basic: [
-            { key: 'title', label: 'Listing Title', type: 'text', required: true, icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'business_name', label: 'Business Name', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> },
-            { key: 'description', label: 'Description', type: 'textarea', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'category', label: 'Category', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> }
-          ],
-          pricing: [
-            { key: 'price', label: 'Price', type: 'number', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'currency', label: 'Currency', type: 'text', icon: <Tag style={{ height: 16, width: 16 }} /> },
-            { key: 'business_type', label: 'Business Type', type: 'text', icon: <Building style={{ height: 16, width: 16 }} /> }
-          ],
-          contact: [
-            { key: 'contact_email', label: 'Contact Email', type: 'email', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'contact_phone', label: 'Contact Phone', type: 'tel', icon: <Users style={{ height: 16, width: 16 }} /> },
-            { key: 'website', label: 'Website', type: 'url', icon: <Globe style={{ height: 16, width: 16 }} /> }
-          ],
-          details: [
-            { key: 'location', label: 'Location', type: 'text', icon: <MapPin style={{ height: 16, width: 16 }} /> },
-            { key: 'status', label: 'Status', type: 'select', options: ['active', 'inactive', 'pending'], icon: <Star style={{ height: 16, width: 16 }} /> },
-            { key: 'images', label: 'Images', type: 'array', icon: <Upload style={{ height: 16, width: 16 }} /> }
-          ]
-        };
-
-      default: {
-        // Create comprehensive field groups for unknown content types
-        const allFields = Object.keys(formData).filter(key => !['id', 'created_at', 'updated_at', 'content_type'].includes(key));
-
-        // Group fields by common patterns
-        const basicFields = allFields.filter(key =>
-          ['name', 'title', 'description', 'bio', 'content', 'slug', 'type', 'category', 'status'].some(pattern => key.includes(pattern))
-        );
-
-        const locationFields = allFields.filter(key =>
-          ['latitude', 'longitude', 'address', 'city', 'country', 'location', 'timezone', 'region'].some(pattern => key.includes(pattern))
-        );
-
-        const mediaFields = allFields.filter(key =>
-          ['image_url', 'images', 'video', 'audio', 'media', 'avatar', 'photo', 'picture'].some(pattern => key.includes(pattern))
-        );
-
-        const contactFields = allFields.filter(key =>
-          ['email', 'phone', 'website', 'social', 'contact'].some(pattern => key.includes(pattern))
-        );
-
-        const metaFields = allFields.filter(key =>
-          ['tags', 'categories', 'meta_', 'seo_', 'keywords', 'featured', 'priority', 'weight', 'order'].some(pattern => key.includes(pattern))
-        );
-
-        const statsFields = allFields.filter(key =>
-          ['count', 'views', 'likes', 'shares', 'rating', 'score', 'popularity', 'usage'].some(pattern => key.includes(pattern))
-        );
-
-        const dateFields = allFields.filter(key =>
-          ['_at', '_date', 'published', 'expires', 'start', 'end', 'birth', 'death'].some(pattern => key.includes(pattern))
-        );
-
-        const otherFields = allFields.filter(key =>
-          ![...basicFields, ...locationFields, ...mediaFields, ...contactFields, ...metaFields, ...statsFields, ...dateFields].includes(key)
-        );
-
-        const fieldGroups: Record<string, Array<{ key: string; label: string; type: string; required?: boolean; readonly?: boolean; options?: string[]; icon?: React.ReactNode }>> = {};
-        
-        if (basicFields.length > 0) {
-          fieldGroups.basic = basicFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Tag style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        if (locationFields.length > 0) {
-          fieldGroups.location = locationFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <MapPin style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        if (contactFields.length > 0) {
-          fieldGroups.contact = contactFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Users style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        if (mediaFields.length > 0) {
-          fieldGroups.media = mediaFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Upload style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        if (dateFields.length > 0) {
-          fieldGroups.dates = dateFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Calendar style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        if (metaFields.length > 0) {
-          fieldGroups.metadata = metaFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Tag style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        if (statsFields.length > 0) {
-          fieldGroups.statistics = statsFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Star style={{ height: 16, width: 16 }} />,
-            readonly: true // Stats are usually read-only
-          }));
-        }
-        
-        if (otherFields.length > 0) {
-          fieldGroups.other = otherFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Tag style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        // If no fields were categorized, put everything in basic
-        if (Object.keys(fieldGroups).length === 0) {
-          fieldGroups.basic = allFields.map(key => ({ 
-            key, 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            type: 'auto', 
-            icon: <Tag style={{ height: 16, width: 16 }} /> 
-          }));
-        }
-        
-        return fieldGroups;
-      }
-    }
-  };
-
-  const renderField = (field: { key: string; label: string; type: string; required?: boolean; readonly?: boolean; options?: string[]; icon?: React.ReactNode }) => {
-    const { key, label, type, required, readonly, options, icon } = field;
-    const fieldValue = formData[key];
-
-    if (readonly) {
-      return (
-        <div key={key} className="flex flex-col gap-2">
-          <Label>
-            {icon}
-            {label}
-            <Badge variant="secondary">Read-only</Badge>
-          </Label>
-          <div className="px-3 py-2 bg-accent rounded-md text-sm">
-            {fieldValue?.toLocaleString() || 'N/A'}
-          </div>
-        </div>
-      );
-    }
-
-    // Handle different field types based on configuration
-    switch (type) {
-      case 'text':
-        // Special handling for profession field
-        if (key === 'profession') {
-          return (
-            <div key={key} className="flex flex-col gap-2">
-              <Label htmlFor={key}>
-                {icon}
-                {label}
-                {required && <span className="text-destructive">*</span>}
-              </Label>
-              <ProfessionAutocomplete
-                id={key}
-                value={fieldValue || ''}
-                onValueChange={(value) => handleFieldChange(key, value)}
-                placeholder="Select or type a profession..."
-                required={required}
-              />
-            </div>
-          );
-        }
-        
-        // Special handling for nationality field
-        if (key === 'nationality') {
-          return (
-            <div key={key} className="flex flex-col gap-2">
-              <Label htmlFor={key}>
-                {icon}
-                {label}
-                {required && <span className="text-destructive">*</span>}
-              </Label>
-              <CountryAutocomplete
-                id={key}
-                value={fieldValue || ''}
-                onValueChange={(value) => handleFieldChange(key, value)}
-                placeholder="Select a country..."
-                required={required}
-              />
-            </div>
-          );
-        }
-        
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={key}
-              value={fieldValue || ''}
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              required={required}
-            />
-          </div>
-        );
-
-      case 'textarea':
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Textarea
-              id={key}
-              value={fieldValue || ''}
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="min-h-24"
-              required={required}
-            />
-          </div>
-        );
-
-      case 'number':
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={key}
-              type="number"
-              value={fieldValue !== null && fieldValue !== undefined ? fieldValue : ''}
-              onChange={(e) => handleFieldChange(key, e.target.value ? Number(e.target.value) : null)}
-              required={required}
-            />
-          </div>
-        );
-
-      case 'email':
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={key}
-              type="email"
-              value={fieldValue || ''}
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              required={required}
-            />
-          </div>
-        );
-
-      case 'tel':
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={key}
-              type="tel"
-              value={fieldValue || ''}
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              required={required}
-            />
-          </div>
-        );
-
-      case 'url':
-        // Special handling for image URLs
-        if (key === 'image_url' || key.includes('image')) {
-          return (
-            <div key={key} className="flex flex-col gap-2">
-              <ImageUpload
-                id={key}
-                value={fieldValue || ''}
-                onValueChange={(value) => handleFieldChange(key, value)}
-                label={label}
-                required={required}
-                maxSize={5}
-              />
-            </div>
-          );
-        }
-        
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={key}
-              type="url"
-              value={fieldValue || ''}
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              required={required}
-            />
-          </div>
-        );
-
-      case 'date':
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={key}
-              type="date"
-              value={fieldValue ? (fieldValue instanceof Date ? fieldValue.toISOString().split('T')[0] : new Date(fieldValue).toISOString().split('T')[0]) : ''}
-              onChange={(e) => handleFieldChange(key, e.target.value ? new Date(e.target.value).toISOString() : null)}
-              required={required}
-            />
-          </div>
-        );
-
-      case 'datetime':
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={key}
-              type="datetime-local"
-              value={fieldValue ? (fieldValue instanceof Date ? fieldValue.toISOString().slice(0, 16) : new Date(fieldValue).toISOString().slice(0, 16)) : ''}
-              onChange={(e) => handleFieldChange(key, e.target.value ? new Date(e.target.value).toISOString() : null)}
-              required={required}
-            />
-          </div>
-        );
-
-      case 'boolean':
-        return (
-          <div key={key} className="flex items-center gap-2">
-            <Switch
-              id={key}
-              checked={fieldValue || false}
-              onCheckedChange={(checked) => handleFieldChange(key, checked)}
-            />
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-            </Label>
-          </div>
-        );
-
-      case 'select':
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Select value={fieldValue || ''} onValueChange={(value) => handleFieldChange(key, value)}>
-              <SelectTrigger>
-                <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
-              </SelectTrigger>
-              <SelectContent>
-                {options?.filter((option: string) => option && option.trim() !== '').map((option: string) => (
-                  <SelectItem key={option} value={option}>
-                    {option.replace(/_/g, ' ')}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        );
-
-      case 'array': {
-        // Handle different array data formats
-        let displayValue = '';
-        if (fieldValue) {
-          if (Array.isArray(fieldValue)) {
-            displayValue = fieldValue.join(', ');
-          } else if (typeof fieldValue === 'string') {
-            try {
-              // Try to parse as JSON array first
-              const parsed = JSON.parse(fieldValue);
-              if (Array.isArray(parsed)) {
-                displayValue = parsed.join(', ');
-              } else {
-                displayValue = fieldValue;
-              }
-            } catch {
-              // If not JSON, treat as comma-separated string
-              displayValue = fieldValue;
-            }
-          } else if (typeof fieldValue === 'object') {
-            // Handle objects that might contain array-like data
-            displayValue = Object.values(fieldValue).join(', ');
-          }
-        }
-
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Textarea
-              id={key}
-              value={displayValue}
-              onChange={(e) => {
-                const items = e.target.value.split(',').map(item => item.trim()).filter(Boolean);
-                handleFieldChange(key, items);
-              }}
-              placeholder="Enter comma-separated values"
-
-            />
-            {displayValue && (
-              <div className="text-xs text-muted-foreground">
-                Current: {displayValue.split(',').length} item(s)
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      case 'json': {
-        // Handle different JSON data formats
-        let jsonDisplayValue = '';
-        if (fieldValue) {
-          if (typeof fieldValue === 'object') {
-            jsonDisplayValue = JSON.stringify(fieldValue, null, 2);
-          } else if (typeof fieldValue === 'string') {
-            try {
-              // Try to parse and format as JSON
-              const parsed = JSON.parse(fieldValue);
-              jsonDisplayValue = JSON.stringify(parsed, null, 2);
-            } catch {
-              // Keep as string if not valid JSON
-              jsonDisplayValue = fieldValue;
-            }
-          } else {
-            jsonDisplayValue = String(fieldValue);
-          }
-        }
-
-        return (
-          <div key={key} className="flex flex-col gap-2">
-            <Label htmlFor={key}>
-              {icon}
-              {label}
-              {required && <span className="text-destructive">*</span>}
-            </Label>
-            <Textarea
-              id={key}
-              value={jsonDisplayValue}
-              onChange={(e) => {
-                try {
-                  const parsed = JSON.parse(e.target.value);
-                  handleFieldChange(key, parsed);
-                } catch {
-                  // Keep as string if invalid JSON
-                  handleFieldChange(key, e.target.value);
-                }
-              }}
-
-              placeholder="Enter JSON data"
-            />
-            {jsonDisplayValue && (
-              <div className="text-xs text-muted-foreground">
-                {jsonDisplayValue.length > 100 ? `${jsonDisplayValue.length} characters` : 'Valid JSON'}
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      default:
-        // Auto-detect type
-        if (typeof fieldValue === 'boolean') {
-          return renderField({ ...field, type: 'boolean' });
-        }
-        if (typeof fieldValue === 'number') {
-          return renderField({ ...field, type: 'number' });
-        }
-        if (Array.isArray(fieldValue)) {
-          return renderField({ ...field, type: 'array' });
-        }
-        if (typeof fieldValue === 'object' && fieldValue !== null) {
-          return renderField({ ...field, type: 'json' });
-        }
-        if (key.includes('_at') || key.includes('date')) {
-          return renderField({ ...field, type: key.includes('_at') ? 'datetime' : 'date' });
-        }
-        if (key.includes('email')) {
-          return renderField({ ...field, type: 'email' });
-        }
-        if (key.includes('url') || key.includes('website')) {
-          return renderField({ ...field, type: 'url' });
-        }
-        if (key.includes('phone')) {
-          return renderField({ ...field, type: 'tel' });
-        }
-        if (typeof fieldValue === 'string' && fieldValue.length > 100) {
-          return renderField({ ...field, type: 'textarea' });
-        }
-        return renderField({ ...field, type: 'text' });
-    }
-  };
-
-  const fieldGroups = getFieldGroups();
+  const fieldGroups = getFieldGroups(content.content_type, formData);
   const tabs = Object.keys(fieldGroups);
 
   if (!content) {
@@ -900,6 +96,12 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
     );
   }
 
+  const tabIcons: Record<string, typeof Tag> = {
+    basic: Tag, datetime: Clock, location: MapPin, contact: Users,
+    details: Star, personal: User, media: Upload, metadata: Tag,
+    settings: Star, engagement: Users,
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -912,7 +114,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
           <div className="flex items-center gap-3">
             {content.image_url && (
               <Avatar style={{ height: 48, width: 48 }}>
-                <AvatarImage src={content.image_url} alt={content.title} />
+                <AvatarImage src={content.image_url as string} alt={content.title as string} />
                 <AvatarFallback>
                   {content.content_type === 'events' && <Calendar style={{ height: 24, width: 24 }} />}
                   {content.content_type === 'venues' && <Building style={{ height: 24, width: 24 }} />}
@@ -923,17 +125,17 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               </Avatar>
             )}
             <div>
-              <h1 className="text-2xl font-bold">{content.title || content.name || 'Edit Content'}</h1>
+              <h1 className="text-2xl font-bold">{(content.title || content.name || 'Edit Content') as string}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="outline">
-                  {content.content_type.replace('_', ' ')}
+                  {(content.content_type as string).replace('_', ' ')}
                 </Badge>
-                <span className="text-sm text-muted-foreground">ID: {content.id}</span>
+                <span className="text-sm text-muted-foreground">ID: {content.id as string}</span>
               </div>
             </div>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <Button variant="outline" disabled>
             <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
@@ -961,27 +163,28 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
-                  {tabs.map(tab => (
-                    <TabsTrigger key={tab} value={tab}>
-                      {tab === 'basic' && <Tag style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'datetime' && <Clock style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'location' && <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'contact' && <Users style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'details' && <Star style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'personal' && <User style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'media' && <Upload style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'metadata' && <Tag style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'settings' && <Star style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab === 'engagement' && <Users style={{ height: 16, width: 16, marginRight: 8 }} />}
-                      {tab.replace('_', ' ')}
-                    </TabsTrigger>
-                  ))}
+                  {tabs.map(tab => {
+                    const TabIcon = tabIcons[tab] || Tag;
+                    return (
+                      <TabsTrigger key={tab} value={tab}>
+                        <TabIcon style={{ height: 16, width: 16, marginRight: 8 }} />
+                        {tab.replace('_', ' ')}
+                      </TabsTrigger>
+                    );
+                  })}
                 </TabsList>
 
                 {tabs.map(tab => (
                   <TabsContent key={tab} value={tab}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {fieldGroups[tab]?.map(field => renderField(field))}
+                      {fieldGroups[tab]?.map(field => (
+                        <EditorField
+                          key={field.key}
+                          field={field}
+                          value={formData[field.key]}
+                          onChange={handleFieldChange}
+                        />
+                      ))}
                     </div>
                   </TabsContent>
                 ))}
@@ -991,7 +194,6 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         </div>
 
         <div className="flex flex-col gap-6">
-          {/* Content Info */}
           <Card>
             <CardHeader>
               <CardTitle>Content Information</CardTitle>
@@ -1000,36 +202,32 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               <div>
                 <Label>Content Type</Label>
                 <p className="text-sm text-muted-foreground capitalize">
-                  {content.content_type.replace('_', ' ')}
+                  {(content.content_type as string).replace('_', ' ')}
                 </p>
               </div>
-              
               <div>
                 <Label>Created</Label>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(content.created_at).toLocaleString()}
+                  {new Date(content.created_at as string).toLocaleString()}
                 </p>
               </div>
-              
               <div>
                 <Label>Last Updated</Label>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(content.updated_at).toLocaleString()}
+                  {new Date(content.updated_at as string).toLocaleString()}
                 </p>
               </div>
-
               {content.status && (
                 <div>
                   <Label>Status</Label>
                   <Badge className="ml-2" variant={content.status === 'active' ? 'default' : 'secondary'}>
-                    {content.status}
+                    {content.status as string}
                   </Badge>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
           <Card>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
@@ -1050,27 +248,24 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardContent>
           </Card>
 
-          {/* AI Tag Suggestions */}
           {content?.id && content?.content_type && (
             <AutoTagPanel
-              contentType={content.content_type}
-              contentId={content.id}
+              contentType={content.content_type as string}
+              contentId={content.id as string}
             />
           )}
 
-          {/* Geo Location Linking */}
           {content?.id && content?.content_type && (
             <GeoLinkPanel
-              contentType={content.content_type}
-              contentId={content.id}
-              cityName={content.city || content.birth_place}
-              countryName={content.country || content.nationality}
+              contentType={content.content_type as string}
+              contentId={content.id as string}
+              cityName={(content.city || content.birth_place) as string}
+              countryName={(content.country || content.nationality) as string}
               hasCityId={!!content.city_id}
               hasCountryId={!!content.country_id}
             />
           )}
 
-          {/* Translations */}
           {content?.id && content?.content_type && (
             <TranslationPanel
               tableName={String(content.content_type)}
@@ -1079,13 +274,10 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             />
           )}
 
-          {/* Raw Data Preview */}
           <Card>
             <CardHeader>
               <CardTitle>Raw Data</CardTitle>
-              <CardDescription>
-                Original data structure for debugging
-              </CardDescription>
+              <CardDescription>Original data structure for debugging</CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea>

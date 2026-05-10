@@ -3,7 +3,7 @@ import { MapPin, Users, Globe, Building2, Crown } from 'lucide-react';
 import type {
   CountryWithRegions as Country,
   CityWithCountry as City,
-} from '@/hooks/useOptimizedPlaces';
+} from '@/hooks/usePlaces';
 import { useState, useEffect, memo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
-import { useOptimizedCities, useOptimizedCountries } from '@/hooks/useOptimizedPlaces';
+import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 

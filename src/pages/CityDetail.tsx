@@ -8,7 +8,7 @@ import { useCityImages } from '@/hooks/useCityImages';
 import { useNews } from '@/hooks/useNews';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
-import { useOptimizedCountry, useOptimizedCity } from '@/hooks/useOptimizedPlaces';
+import { useOptimizedCountry, useOptimizedCity } from '@/hooks/usePlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useNearestAirport } from '@/hooks/useNearestAirport';
 import { useAuth } from '@/hooks/useAuth';

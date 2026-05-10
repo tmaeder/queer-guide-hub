@@ -6,7 +6,7 @@ import {
   fetchCitiesByCountry,
   searchLocations,
   findNearbyCities,
-} from '@/hooks/useOptimizedPlaces';
+} from '@/hooks/usePlaces';
 import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useContinents } from '@/hooks/useContinents';
 import { PlacesCard } from '@/components/places/PlacesCard';
