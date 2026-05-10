@@ -65,7 +65,7 @@ const CardImage: React.FC<CardImageProps> = ({
   src,
   alt,
   height = 200,
-  fallbackIcon: FallbackIcon,
+  fallbackIcon: _FallbackIcon,
   children,
 }) => {
   const [error, setError] = React.useState(false);
