@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { extractDomHeuristics } from "../src/shared/extractors/dom-heuristics";
 
 function html(body: string): Document {
-  return new DOMParser().parseFromString(`<html><body>${body}</body></html>`, "text/html");
+  const doc = document.implementation.createHTMLDocument("test");
+  doc.body.innerHTML = body;
+  return doc;
 }
 
 describe("dom heuristics", () => {
@@ -66,7 +68,7 @@ describe("dom heuristics", () => {
     // Note: surround the date with whitespace so the textContent concat
     // across block elements doesn't run "Concert" into "2026" (which
     // breaks the `\b` boundary in ISO_DATE_PATTERN).
-    const doc = html("<h1>Pride Concert</h1><p>On 2026-07-25 — €25</p>");
+    const doc = html("<h1>Pride Concert</h1><p>On 2026-07-25 – €25</p>");
     const item = extractDomHeuristics(doc, "https://x")[0]!;
     expect(item.entity_type).toBe("event");
   });
@@ -90,7 +92,7 @@ describe("dom heuristics", () => {
   });
 
   it("returns nothing when only an h1 + description are present (no real signals)", () => {
-    const doc = html(`<h1>Hello</h1><meta name="description" content="A page">`);
+    const doc = html(' <h1>Hello</h1><meta name="description" content="A page">');
     expect(extractDomHeuristics(doc, "https://x")).toHaveLength(0);
   });
 });
