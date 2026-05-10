@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
         if (title.length < 6) errors.push('E_TITLE_TOO_SHORT')
         else if (title.length < 15 && !/\s/.test(title)) errors.push('E_TITLE_NOT_INFORMATIVE')
         else if (/^(unnamed|untitled|test|no title|undefined|null)\b/i.test(title)) errors.push('E_TITLE_PLACEHOLDER')
-        else if (/^[\p{Emoji}\p{So}\s·༻༺𐫱✨️🌈😏]+$/u.test(title)) errors.push('E_TITLE_EMOJI_ONLY')
+        else if (/^[\p{Emoji}\p{Emoji_Component}\p{So}\s·༻༺𐫱]+$/u.test(title)) errors.push('E_TITLE_EMOJI_ONLY')
         if (title.length > 500) warnings.push('W_TITLE_TRUNCATED')
         if (!sourceId) errors.push('E_MISSING_SOURCE')
         if (!url) errors.push('E_MISSING_URL')

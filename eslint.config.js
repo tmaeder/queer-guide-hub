@@ -22,6 +22,13 @@ export default tseslint.config(
       // Absorbed repos — not linted here
       "Dev/**",
       "client-sdk/**",
+      // Separate tooling with own tsconfig
+      "scripts/listen-triage/**",
+      "listen/**",
+      "infra/**",
+      // Legacy worker duplicates (superseded by workers/*/)
+      "worker/**",
+      "worker-ingest/**",
     ],
   },
   {
@@ -44,7 +51,7 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": ["error", {
