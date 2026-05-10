@@ -394,6 +394,7 @@ async function fetchVenues(sb: any, limit: number, offset: number) {
     .from('venues')
     .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes')
     .neq('data_source', 'refuge_restrooms')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapVenue)
@@ -403,11 +404,12 @@ async function fetchVenues(sb: any, limit: number, offset: number) {
 async function fetchVenue(sb: any, id: string) {
   const { data, error } = await sb
     .from('venues')
-    .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes, data_source')
+    .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes, data_source, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
   if (data.data_source === 'refuge_restrooms') return null
+  if (data.duplicate_of_id) return null
   return mapVenue(data)
 }
 
@@ -444,6 +446,7 @@ async function fetchEvents(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('events')
     .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, is_featured, target_groups, accessibility_attributes, slug, logo_url')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapEvent)
@@ -453,10 +456,11 @@ async function fetchEvents(sb: any, limit: number, offset: number) {
 async function fetchEvent(sb: any, id: string) {
   const { data, error } = await sb
     .from('events')
-    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, is_featured, target_groups, accessibility_attributes, slug, logo_url')
+    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, is_featured, target_groups, accessibility_attributes, slug, logo_url, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapEvent(data)
 }
 
@@ -485,6 +489,7 @@ async function fetchCities(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('cities')
     .select('id, name, description, latitude, longitude, image_url, slug, population, lgbt_friendly_rating, countries(name, code)')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapCity)
@@ -494,10 +499,11 @@ async function fetchCities(sb: any, limit: number, offset: number) {
 async function fetchCity(sb: any, id: string) {
   const { data, error } = await sb
     .from('cities')
-    .select('id, name, description, latitude, longitude, image_url, slug, population, lgbt_friendly_rating, countries(name, code)')
+    .select('id, name, description, latitude, longitude, image_url, slug, population, lgbt_friendly_rating, countries(name, code), duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapCity(data)
 }
 
@@ -524,6 +530,7 @@ async function fetchCountries(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('countries')
     .select('id, name, description, code, latitude, longitude, image_url, slug, continents(name)')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapCountry)
@@ -533,10 +540,11 @@ async function fetchCountries(sb: any, limit: number, offset: number) {
 async function fetchCountry(sb: any, id: string) {
   const { data, error } = await sb
     .from('countries')
-    .select('id, name, description, code, latitude, longitude, image_url, slug, continents(name)')
+    .select('id, name, description, code, latitude, longitude, image_url, slug, continents(name), duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapCountry(data)
 }
 
@@ -562,6 +570,7 @@ async function fetchNews(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('news_articles')
     .select('id, title, content, category, is_featured, published_at, slug, image_url')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapNews)
@@ -571,10 +580,11 @@ async function fetchNews(sb: any, limit: number, offset: number) {
 async function fetchNewsArticle(sb: any, id: string) {
   const { data, error } = await sb
     .from('news_articles')
-    .select('id, title, content, category, is_featured, published_at, slug, image_url')
+    .select('id, title, content, category, is_featured, published_at, slug, image_url, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapNews(data)
 }
 
@@ -641,6 +651,7 @@ async function fetchPersonalities(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('personalities')
     .select('id, name, description, profession, lgbti_connection, nationality, birth_date, is_featured, slug, image_url')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapPersonality)
@@ -650,10 +661,11 @@ async function fetchPersonalities(sb: any, limit: number, offset: number) {
 async function fetchPersonality(sb: any, id: string) {
   const { data, error } = await sb
     .from('personalities')
-    .select('id, name, description, profession, lgbti_connection, nationality, birth_date, is_featured, slug, image_url')
+    .select('id, name, description, profession, lgbti_connection, nationality, birth_date, is_featured, slug, image_url, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapPersonality(data)
 }
 
@@ -754,13 +766,17 @@ async function reconcileType(supabase: any, type: string): Promise<{
   // 1) Collect all live IDs from Supabase. For very large tables (>50k), this
   // paginates in 10k chunks — keep the source of truth authoritative rather
   // than skipping the check.
+  // Tables that support dedup via duplicate_of_id — only index canonical records
+  const DEDUP_TABLES = new Set(['events', 'venues', 'cities', 'countries', 'news_articles', 'personalities'])
+
   const liveIds = new Set<string>()
-  const PAGE = 10_000
+  const PAGE = 1_000
   for (let from = 0; from < 500_000; from += PAGE) {
-    const { data, error } = await supabase
-      .from(table)
-      .select('id')
-      .range(from, from + PAGE - 1)
+    let query = supabase.from(table).select('id')
+    if (DEDUP_TABLES.has(table)) {
+      query = query.is('duplicate_of_id', null)
+    }
+    const { data, error } = await query.range(from, from + PAGE - 1)
     if (error) throw new Error(`source query ${table}: ${error.message}`)
     if (!data || data.length === 0) break
     for (const row of data) liveIds.add(String(row.id))

@@ -77,6 +77,7 @@ export const useGroupEvents = (groupId: string) => {
         `)
         .eq('group_id', groupId)
         .eq('status', 'active')
+        .is('duplicate_of_id', null)
         .order('start_date', { ascending: true });
 
       if (error) throw error;

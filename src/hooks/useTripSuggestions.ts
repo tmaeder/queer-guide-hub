@@ -54,6 +54,7 @@ export async function fetchTripSuggestionVenues(
       'id, name, category, address, foursquare_rating, is_featured, latitude, longitude, city_id, country_id',
     )
     .in('city_id', cityIds)
+    .is('duplicate_of_id', null)
     .order('foursquare_rating', { ascending: false, nullsFirst: false })
     .limit(30);
   if (error) throw error;
@@ -66,6 +67,7 @@ export async function fetchTripMapVenues<T = unknown>(cityIds: string[]): Promis
     .from('venues')
     .select('id, name, category, latitude, longitude')
     .in('city_id', cityIds)
+    .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .order('foursquare_rating', { ascending: false, nullsFirst: false })
@@ -84,6 +86,7 @@ export async function fetchTripMapEvents<T = unknown>(
     .from('events')
     .select('id, title, event_type, start_date, latitude, longitude')
     .in('city_id', cityIds)
+    .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null);
   if (startDate) query = query.gte('start_date', startDate);
@@ -104,7 +107,8 @@ export async function fetchTripSuggestionEvents(
     .select(
       'id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id',
     )
-    .in('city_id', cityIds);
+    .in('city_id', cityIds)
+    .is('duplicate_of_id', null);
   if (startDate) query = query.gte('start_date', startDate);
   if (endDate) query = query.lte('start_date', endDate);
   const { data, error } = await query.order('start_date', { ascending: true }).limit(20);

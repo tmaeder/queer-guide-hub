@@ -37,16 +37,20 @@ meili PUT "/indexes/venues/settings" '{
   "sortableAttributes": ["title", "_geo"],
   "displayedAttributes": ["*"],
   "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
-  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 4, "twoTypos": 8}}
+  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
 }'
 
 echo "=== Configuring events ==="
+# start_date:asc as final ranking rule so upcoming events rank before distant
+# future ones when text relevance is equal.
 meili PUT "/indexes/events/settings" '{
   "searchableAttributes": ["title", "description", "venue_name", "city", "country", "event_type"],
   "filterableAttributes": ["city", "city_id", "country", "event_type", "featured", "is_free", "start_date", "cluster_ids", "target_groups", "type", "_geo"],
   "sortableAttributes": ["start_date", "title", "_geo"],
   "displayedAttributes": ["*"],
-  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"]
+  "rankingRules": ["words", "typo", "exactness", "proximity", "attribute", "sort", "start_date:asc"],
+  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
+  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
 }'
 
 echo "=== Configuring cities ==="
@@ -78,11 +82,16 @@ meili PUT "/indexes/countries/settings" '{
 }'
 
 echo "=== Configuring news ==="
+# Recency matters for news — published_at:desc as final ranking rule so newer
+# articles win ties. Stop words same rationale as venues/events.
 meili PUT "/indexes/news/settings" '{
   "searchableAttributes": ["title", "description", "category"],
   "filterableAttributes": ["category", "is_featured", "published_at", "type"],
   "sortableAttributes": ["published_at", "title"],
-  "displayedAttributes": ["*"]
+  "displayedAttributes": ["*"],
+  "rankingRules": ["words", "typo", "exactness", "proximity", "attribute", "sort", "published_at:desc"],
+  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
+  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
 }'
 
 echo "=== Configuring marketplace ==="
@@ -90,7 +99,9 @@ meili PUT "/indexes/marketplace/settings" '{
   "searchableAttributes": ["title", "description", "category"],
   "filterableAttributes": ["category", "featured", "price", "type"],
   "sortableAttributes": ["price", "title"],
-  "displayedAttributes": ["*"]
+  "displayedAttributes": ["*"],
+  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
+  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
 }'
 
 echo "=== Configuring personalities ==="
@@ -98,7 +109,9 @@ meili PUT "/indexes/personalities/settings" '{
   "searchableAttributes": ["title", "description", "profession", "lgbti_connection", "nationality"],
   "filterableAttributes": ["profession", "nationality", "is_featured", "type"],
   "sortableAttributes": ["title"],
-  "displayedAttributes": ["*"]
+  "displayedAttributes": ["*"],
+  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
+  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
 }'
 
 echo "=== Configuring tags ==="
