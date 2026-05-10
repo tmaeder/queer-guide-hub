@@ -4,7 +4,7 @@ The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guid
 
 ## Tech stack
 
-- **Frontend:** Vite 6 + React 19 + TypeScript 5.8 + Tailwind + MUI 7 + shadcn/ui
+- **Frontend:** Vite 6 + React 19 + TypeScript 5.8 + Tailwind + shadcn/ui
 - **Routing/data:** TanStack Router + Query + Table
 - **Backend:** [Supabase](https://supabase.com) — PostgreSQL 17.4, Auth, Storage, Realtime, Edge Functions (Deno)
 - **Hosting:** Cloudflare Pages (`queer-guide.pages.dev`) + Cloudflare Workers
@@ -39,17 +39,15 @@ npm run dev                       # port 8080
 ```
 src/                       # React app (~90 pages, feature-grouped components)
 supabase/
-├── functions/             # 118 Edge Functions (Deno)
-└── migrations/            # 435+ PostgreSQL migrations
-workers/                   # Cloudflare Workers (email-ingest, scraper-api, search-proxy, …)
+├── functions/             # 175 Edge Functions (Deno)
+└── migrations/            # 276 PostgreSQL migrations
+workers/                   # Cloudflare Workers (ingest, search-proxy, snapshot-archiver, submit)
 scraper/                   # Scraping pipeline (Cheerio + Playwright)
 meilisearch/               # Self-hosted Meili config (Docker Compose, Caddy, index scripts)
-client-sdk/                # Search client SDK (browser + node)
-infra/                     # Self-hosted infra (Plane, Caddy)
 e2e/                       # Playwright E2E tests
-extension/                 # Browser extension
+extension/                 # Browser extension (MV3, React 19)
 scripts/                   # Operational scripts
-docs/                      # Project documentation
+docs/                      # Project documentation + runbooks
 ```
 
 ## Features
