@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import type { MediaItem, EntityTypeFilter } from '@/components/cms/MediaLibrary/types';
 
-const PAGE_SIZE = 60; // server-side pagination
+const PAGE_SIZE = 60;
 
 interface UseImageAssetsParams {
   enabled: boolean;
