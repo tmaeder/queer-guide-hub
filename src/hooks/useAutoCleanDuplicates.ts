@@ -122,9 +122,16 @@ export function useDuplicateCounts() {
   return useQuery({
     queryKey: ['duplicate-counts'],
     queryFn: async (): Promise<DuplicateCounts> => {
-      const types = ['venues', 'events', 'personalities', 'news_articles', 'cities'] as const;
+      const dbTypes = ['venue', 'event', 'personality', 'news_article', 'city'] as const;
+      const pluralKeys: Record<string, keyof DuplicateCounts> = {
+        venue: 'venues',
+        event: 'events',
+        personality: 'personalities',
+        news_article: 'news_articles',
+        city: 'cities',
+      };
       const results = await Promise.all(
-        types.map((t) =>
+        dbTypes.map((t) =>
           supabase
             .from('scraper_dedupe_decisions' as never)
             .select('id', { count: 'exact', head: true })
@@ -141,9 +148,10 @@ export function useDuplicateCounts() {
         cities: 0,
         total: 0,
       };
-      for (let i = 0; i < types.length; i++) {
+      for (let i = 0; i < dbTypes.length; i++) {
         const c = results[i].count ?? 0;
-        counts[types[i]] = c;
+        const key = pluralKeys[dbTypes[i]];
+        (counts as Record<string, number>)[key] = c;
         counts.total += c;
       }
       return counts;
