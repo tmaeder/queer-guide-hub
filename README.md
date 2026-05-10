@@ -2,95 +2,73 @@
 
 The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guide](https://queer.guide).
 
-## Tech stack
+## Tech Stack
 
-- **Frontend:** Vite 6 + React 19 + TypeScript 5.8 + Tailwind + shadcn/ui
-- **Routing/data:** TanStack Router + Query + Table
-- **Backend:** [Supabase](https://supabase.com) — PostgreSQL 17.4, Auth, Storage, Realtime, Edge Functions (Deno)
-- **Hosting:** Cloudflare Pages (`queer-guide.pages.dev`) + Cloudflare Workers
-- **Search:** Self-hosted Meilisearch (hybrid keyword + semantic) + pgvector + Cloudflare Workers AI (bge embeddings, reranker) via AI Gateway
-- **Maps:** MapLibre GL with Protomaps basemaps + Mapbox geocoding
-- **Editor:** Tiptap
-- **AI:** Anthropic Claude (Haiku for relevance gating) + OpenAI GPT-4o-mini (tagging, RAG)
-- **Workflows:** pgmq + `workflow-dispatcher` edge function (24 workflow definitions)
-- **Payments:** Stripe
-- **Analytics:** Umami (self-hosted)
-- **i18n:** i18next — 11 languages (ar, de, en, es, fr, it, ja, ko, pt, ru, zh)
+| Layer | Stack |
+|-------|-------|
+| **Frontend** | React 19, Vite 6, TypeScript 5.8, Tailwind CSS, shadcn/ui |
+| **Routing & Data** | TanStack Router + Query + Table |
+| **Backend** | Supabase (PostgreSQL 17.4, Auth, Storage, Edge Functions) |
+| **Hosting** | Cloudflare Pages + Cloudflare Workers |
+| **Search** | Self-hosted Meilisearch (hybrid keyword + semantic), pgvector, CF Workers AI (bge embeddings, reranker) via AI Gateway |
+| **Maps** | MapLibre GL, Protomaps basemaps, Mapbox geocoding |
+| **AI** | Anthropic Claude (Haiku — relevance gating), OpenAI GPT-4o-mini (tagging, enrichment) |
+| **Workflows** | pgmq + workflow-dispatcher (24 workflow definitions) |
+| **Payments** | Stripe |
+| **i18n** | i18next — 11 languages (ar, de, en, es, fr, it, ja, ko, pt, ru, zh) |
+| **Editor** | Tiptap |
+| **Analytics** | Umami (self-hosted) |
 
-## Local development
-
-Requirements: Node.js 18+ and npm.
-
-```sh
-npm install --legacy-peer-deps   # date-fns v4 vs react-day-picker v8 peer conflict
-npm run dev                       # port 8080
-```
-
-| Script | Purpose |
-|---|---|
-| `npm run dev` | Vite dev server |
-| `npm run build` | Production build → `dist/` |
-| `npm run lint` | ESLint |
-| `npm run test` | Vitest |
-| `npm run preview` | Preview production build |
-
-## Project structure
+## Project Structure
 
 ```
 src/                       # React app (~90 pages, feature-grouped components)
 supabase/
-├── functions/             # 175 Edge Functions (Deno)
+├── functions/             # 175 Deno Edge Functions
 └── migrations/            # 276 PostgreSQL migrations
-workers/                   # Cloudflare Workers (ingest, search-proxy, snapshot-archiver, submit)
-scraper/                   # Scraping pipeline (Cheerio + Playwright)
+workers/
+├── ingest/                # CF Worker: search-intelligence ingest pipeline
+├── search-proxy/          # CF Worker: Meilisearch proxy with synonym injection
+├── snapshot-archiver/     # CF Worker: admin/editorial snapshot archival
+└── submit/                # CF Worker: extension submissions → ingestion_staging
+scraper/                   # Node.js scraping pipeline (Cheerio + Playwright)
 meilisearch/               # Self-hosted Meili config (Docker Compose, Caddy, index scripts)
+extension/                 # Chrome extension (MV3, React 19) — user venue/event submissions
 e2e/                       # Playwright E2E tests
-extension/                 # Browser extension (MV3, React 19)
 scripts/                   # Operational scripts
-docs/                      # Project documentation + runbooks
+docs/                      # Architecture docs, ADRs, runbooks
+.github/workflows/         # 25 GitHub Actions (CI, scraper crons, Meili ops, e2e nightly)
 ```
 
-## Features
+## Local Development
 
-### Content
+Requirements: Node.js 18+, npm.
 
-| Feature | Pages | Description |
-|---|---|---|
-| **Venues** | `/venues`, `/venues/:id` | LGBTQ+-friendly bars, clubs, restaurants, community spaces |
-| **Events** | `/events`, `/events/:id` | Community events with date ranges and venue links |
-| **Festivals** | `/festivals`, `/festivals/:id` | Festivals and pride celebrations |
-| **Personalities** | `/personalities`, `/personalities/:id` | Notable LGBTQ+ figures with bios and linked content |
-| **News** | `/news`, `/news/:id` | Aggregated LGBTQ+ news from RSS sources |
-| **Marketplace** | `/marketplace` | Affiliate-aware product listings (Awin, Shopify, Etsy) |
-| **Community Groups** | `/groups`, `/groups/:id` | User-created groups with membership and messaging |
-| **Hotels** | `/hotels`, `/hotels/:id` | LGBTQ+-friendly hotel search with booking |
-| **Queer Villages** | `/queer-villages` | Notable LGBTQ+ neighbourhoods worldwide |
-| **Videos** | `/videos` | Community video content |
+```sh
+npm install --legacy-peer-deps
+npm run dev                       # port 8080
+```
 
-### Discovery
+| Script | Purpose |
+|--------|---------|
+| `npm run dev` | Vite dev server (port 8080) |
+| `npm run build` | Production build → `dist/` |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest |
+| `npm run typecheck` | tsc --noEmit |
 
-| Feature | Pages | Description |
-|---|---|---|
-| **Interactive Map** | `/map` | MapLibre GL with venue/event markers and area rendering |
-| **City Pages** | `/cities/:slug` | City guides — venues, events, weather, safety |
-| **Country Pages** | `/countries/:slug` | Country guides with ILGA legal data + safety ratings |
-| **Resources / Tag Wiki** | `/resources`, `/resources/:tag` | Browseable tag taxonomy with linked content |
-| **Travel** | `/travel` | Flight + hotel search, travel deals |
-| **Search** | `/search` | Hybrid personalized search across all entity types |
+A root `Makefile` provides cross-package convenience targets (`make install`, `make build`, `make test`, `make lint`).
 
-### Community
-
-User profiles, friends, direct messaging, feed, favourites, user-submitted venues/events.
-
-### Admin
-
-Admin pages require the `canManageContent` role: dashboard, CMS (Tiptap), import hub, security audit, analytics, workflow builder, content CRUD, tag management, pipeline observability.
+Sub-packages have their own `package.json`:
+- `scraper/` — `cd scraper && npm install && npm test`
+- `extension/` — `cd extension && npm install && npm run build`
+- `workers/*` — each uses `wrangler dev` / `wrangler deploy`
 
 ## Architecture
 
 ### Search
 
-Hybrid (keyword + semantic) personalized search with reranking. See [SEARCH_SYSTEM.md](SEARCH_SYSTEM.md).
+Hybrid (keyword + semantic) personalized search with reranking. Full design in [SEARCH_SYSTEM.md](SEARCH_SYSTEM.md).
 
 ```
 Frontend ──► search-proxy (CF Worker)
@@ -98,59 +76,72 @@ Frontend ──► search-proxy (CF Worker)
                 ├── Meilisearch (multi-search, facets, geo, synonyms)
                 └── Supabase RPC (pgvector ANN + bias signal + popular)
 
-Supabase ──DB webhook──► search-ingest (CF Worker) ──► embeddings + Meili upsert
+Supabase ──DB trigger──► meilisearch-sync (edge fn) ──► Meili upsert
 ```
 
-Indexes: `venues`, `events`, `cities`, `countries`, `news`, `marketplace`, `personalities`, `tags`, `queer_villages`.
+Indexes: venues, events, cities, countries, news, marketplace, personalities, tags, queer_villages.
 
-### Pipelines
+### Ingestion Pipelines
 
-Workflow orchestration via `pgmq` + `workflow-dispatcher` edge function. Tables: `workflow_definitions`, `workflow_runs`. Queues: `scheduled_jobs`, `import_jobs`, `content_processing`, `dead_letter`. Exponential backoff, concurrency limits, idempotency keys.
+Workflow orchestration via pgmq + `workflow-dispatcher` edge function. All pipeline/source functions wrapped with `withErrorReporting` (Sentry + internal feedback).
 
-`source-*` functions fetch raw data → `pipeline-*` functions normalize, validate, deduplicate, quality-score, gate, and commit. Visible at `/admin/pipelines` (Builder, Sources, Staging, Dedup audit).
+```
+source-* (data fetchers)
+  → pipeline-normalize
+  → pipeline-validate
+  → pipeline-deduplicate
+  → pipeline-quality-score
+  → pipeline-review-gate
+  → pipeline-commit
+```
 
-**News pipeline** (cron `0 * * * *`): `source-rss-news` → `pipeline-normalize` → `pipeline-enrich-news` (LLM tags + summary + geo, circuit-broken) → `pipeline-validate` → `pipeline-deduplicate` → `pipeline-review-gate` → `pipeline-commit`. Idempotent commit via `news_commit_staging_batch` RPC, UNIQUE on `news_articles.fingerprint` (SHA-256 of normalized title + published day + source). Source health auto-managed: exp backoff (5min × 2ⁿ, cap 24h), auto-pause at 8 consecutive failures.
+Queues: `scheduled_jobs`, `import_jobs`, `content_processing`, `dead_letter`. Exponential backoff retry, concurrency limits, idempotency keys.
 
-**Marketplace pipeline** (cron `0 4 * * *`, multi-source fan-in): `source-awin` + `source-shopify` + `source-etsy` → `fan-in` → `pipeline-normalize` → `pipeline-validate` → `marketplace-relevance` (Claude Haiku LGBTQ+ gate, < 0.5 confidence rejected) → `pipeline-deduplicate` → `pipeline-quality-score` → `pipeline-review-gate` → `pipeline-commit` → parallel `marketplace-image-mirror` + `embedding-generator`. Atomic commit with advisory lock + price-history delta. `price_usd` auto-computed from daily-refreshed `fx_rates` (23 currencies). Weekly `marketplace-link-checker` sweeps for link rot.
+**News** (hourly): RSS sources → LLM enrichment (tags, summary, geo) → fingerprint dedup → commit. Source health auto-managed with exponential backoff and auto-pause at 8 consecutive failures.
 
-### Tag & resources system
+**Marketplace** (daily, multi-source fan-in): Awin + Shopify + Etsy → Claude Haiku LGBTQ+ relevance gate → dedup → price-history tracking → image mirroring → embeddings. Weekly link-rot sweeper.
 
-Cross-content categorisation across the platform.
+**User submissions** (Chrome extension): extracts structured data from any webpage via JSON-LD/microdata/OpenGraph/DOM heuristics → CF Worker stages into `ingestion_staging` → flows through standard pipeline.
 
-| Table / view | Purpose |
-|---|---|
-| `unified_tags` | All tags (name, slug, description, image, usage_count) |
-| `tag_categories` | Hierarchical category tree |
-| `tag_category_assignments` | Many-to-many tag-to-category with `is_primary` |
-| `unified_tag_assignments` | Tag-to-entity mapping (venues, events, personalities, …) |
-| `tag_suggestions` | AI-generated suggestions with confidence scores |
+Observable at `/admin/pipelines` (Builder, Monitor, Sources, Staging, Dedup audit).
 
-**AI pipeline:** `categorize-tags`, `auto-tag-content`, `bulk-create-ai-tags` — all load categories from DB at runtime.
-
-**Frontend:** `src/pages/Ressources.tsx`, `src/components/resources/`, `src/components/tags/`, `src/hooks/useCentralizedTags.tsx`.
-
-### Auth & security
+### Auth & Security
 
 - Supabase Auth (email/password, OAuth, passkeys)
-- RLS on all tables; admin via `admin_roles.canManageContent`
-- Cloudflare Turnstile on forms
+- Row-Level Security on all tables; admin via `admin_roles.canManageContent`
+- Cloudflare Turnstile on public forms
 - Audit logging for admin actions
-- CSP / HSTS / X-Frame-Options via `wrangler.toml`
-
-## Testing
-
-- **Unit/component:** Vitest + @testing-library/react
-- **E2E:** Playwright (`playwright.config.ts`)
-- **Types:** `npx tsc --noEmit`
+- CSP / HSTS / X-Frame-Options
 
 ## Deployment
 
-- **Frontend:** push to `main` → Cloudflare Pages auto-deploys
-- **Edge functions:** `supabase functions deploy <name>`
-- **Workers:** `wrangler deploy` per worker directory
-- **DB migrations:** Supabase CLI / dashboard
-- **Scraper:** GitHub Actions cron — daily full refresh + hourly events
+| Component | How |
+|-----------|-----|
+| Frontend | Push to `main` → Cloudflare Pages auto-deploys |
+| Edge functions | `supabase functions deploy <name> --project-ref xqeacpakadqfxjxjcewc` |
+| Workers | `wrangler deploy` from each worker directory |
+| DB migrations | Supabase CLI (`supabase db push`) |
+| Scraper | GitHub Actions cron — daily full refresh + hourly events |
 
-## Compliance (scraper)
+See `docs/runbooks/` for operational procedures (deploy, rollback, secret rotation, reindex, failed pipelines).
+
+## Testing
+
+| Type | Tool | Run |
+|------|------|-----|
+| Unit/component | Vitest + testing-library | `npm test` |
+| E2E | Playwright | `npm run test:e2e` |
+| Types | tsc | `npm run typecheck` |
+| Scraper | Vitest | `cd scraper && npm test` |
+
+E2E nightly run at 03:00 UTC via GitHub Actions. i18n smoke tests on PRs touching i18n code.
+
+## Design
+
+Monochrome design system. Black/white + grayscale only. No rounded corners (`--radius: 0`), no shadows, no gradients in public UI. Inter typeface. Icons from lucide-react. Full light + dark mode.
+
+Components: 52 shadcn/ui primitives in `src/components/ui/`. Design tokens in `src/index.css`. ESLint enforces color/shape constraints.
+
+## Compliance (Scraper)
 
 `robots.txt` checked per domain (1h cache), `Crawl-delay` honored, ≥3s polite delays + jitter. No anti-bot bypassing, no CAPTCHA solving, no login-walled sources. Per-source kill switches via `DISABLE_SOURCE_<NAME>=true`.
