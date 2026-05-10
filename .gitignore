@@ -1,51 +1,104 @@
-# Logs
-logs
+node_modules/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-.env
-.env.*
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+.wrangler/
+.dev.vars
+dist/
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+tmp/
+/tmp/*
+!tmp/.gitkeep
 
-# Vite build artifacts
-*.timestamp-*
+# Spreadsheets + binary data dumps (imported into DB, not source code)
+*.xlsx
+*.xls
+*.csv
+*.numbers
 
-# Claude Code
+# Reference dumps + source data artifacts
+*.xml
+*.ics
+*.docx
+*.rtf
+*.pptx
+# Root-only txt/json dumps (keep nested ones for real code, e.g. worker/ config)
+/*.txt
+/*.json
+
+# Local workspaces + tool outputs
 .claude/
-
-# Supabase CLI temp files
-supabase/.temp/
 .gstack/
-.sentryclirc
-dist-static
+.gstack-audit/
 
-# Terraform
-infra/terraform/.terraform/
-infra/terraform/terraform.tfstate*
-infra/terraform/terraform.tfvars
-infra/terraform/.terraform.lock.hcl
+# Other repos (tracked separately except GitHub Actions workflows)
+# Dev/ contains queer-guide-search project files and Dev/web is queer-guide-hub clone
+# We explicitly ignore most things but whitelist .github/workflows/ for CI/CD
 
-# Playwright
-playwright-report/
-test-results/
-.playwright-mcp/
-playwright/.auth/
-.claude/settings.local.json
+# Dev root artifacts
+Dev/.gitignore
+Dev/scraper/
+Dev/main.py
+Dev/requirements.txt
+Dev/run_scraper.sh
+Dev/.gstack/
+Dev/.claude/
+Dev/.env.example
+Dev/.DS_Store
+Dev/node_modules/
+Dev/dist/
+Dev/lint*.csv
+Dev/firebase-debug.log
+Dev/migrate_images.py
+Dev/optimize_images.py
+
+# Dev/web (queer-guide-hub clone) - ignore most, but keep workflows
+Dev/web/.gitignore
+Dev/web/.claude/
+Dev/web/.env
+Dev/web/.gstack/
+Dev/web/.git/
+Dev/web/.husky/
+Dev/web/.npmrc
+Dev/web/.nvmrc
+Dev/web/.prettierignore
+Dev/web/.prettierrc
+Dev/web/.DS_Store
+Dev/web/.editorconfig
+Dev/web/.wrangler/
+Dev/web/node_modules/
+Dev/web/dist/
+Dev/web/dist-ssr/
+Dev/web/*.local
+Dev/web/src/
+Dev/web/supabase/
+Dev/web/infra/
+Dev/web/workers/
+Dev/web/public/
+Dev/web/package.json
+Dev/web/package-lock.json
+Dev/web/playwright.config.ts
+Dev/web/tailwind.config.ts
+Dev/web/components.json
+Dev/web/tsconfig.json
+Dev/web/tsconfig.app.json
+Dev/web/tsconfig.node.json
+Dev/web/vite.config.ts
+Dev/web/*.md
+Dev/web/CLAUDE.md
+Dev/web/README.md
+Dev/web/eslint.config.js
+
+# GitHub Actions workflows ARE tracked (needed by CI/CD)
+!Dev/web/.github/
+!Dev/web/.github/workflows/
+!Dev/web/.github/workflows/
+
+# Supabase CLI local cache
+supabase/.temp/
+
+# Playwright test results
+Dev/web/test-results/
+
+# Asset staging dirs
+Icons/
+stich/
+Queer Guide/

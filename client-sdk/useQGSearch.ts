@@ -7,16 +7,10 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { QGSearchClient, type QGSearchClientOptions, type SearchResult, type SearchFilters, type SearchHit, type TrackEvent } from "./qg-search";
+import { QGSearchClient, type QGSearchClientOptions, type SearchResult, type SearchFilters, type TrackEvent } from "./qg-search";
 
 export function useQGSearch(opts: QGSearchClientOptions) {
-	// Identity-stable client across opts object recreations: only rebuild when
-	// endpoint / userId / lang actually change.
-	const client = useMemo(
-		() => new QGSearchClient(opts),
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- opts is intentionally tracked field-by-field; full identity changes every render
-		[opts.endpoint, opts.userId, opts.lang],
-	);
+	const client = useMemo(() => new QGSearchClient(opts), [opts.endpoint, opts.userId, opts.lang]);
 	const [results, setResults] = useState<SearchResult | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
@@ -67,13 +61,9 @@ export function useQGSearch(opts: QGSearchClientOptions) {
  * Debounced search + autocomplete combo.
  */
 export function useQGAutocomplete(opts: QGSearchClientOptions, debounceMs = 150) {
-	const client = useMemo(
-		() => new QGSearchClient(opts),
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- opts is intentionally tracked field-by-field; full identity changes every render
-		[opts.endpoint, opts.userId, opts.lang],
-	);
-	const [suggestions, setSuggestions] = useState<SearchHit[]>([]);
-	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const client = useMemo(() => new QGSearchClient(opts), [opts.endpoint, opts.userId, opts.lang]);
+	const [suggestions, setSuggestions] = useState<any[]>([]);
+	const timer = useRef<any>(null);
 
 	const query = useCallback(
 		(q: string, types?: string[]) => {
@@ -83,11 +73,11 @@ export function useQGAutocomplete(opts: QGSearchClientOptions, debounceMs = 150)
 				return;
 			}
 			timer.current = setTimeout(async () => {
-				const res = (await fetch(`${opts.endpoint}/autocomplete`, {
+				const res = await fetch(`${opts.endpoint}/autocomplete`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ query: q, types, limit: 6 }),
-				}).then((r) => r.json())) as { suggestions?: SearchHit[] };
+				}).then((r) => r.json());
 				setSuggestions(res?.suggestions ?? []);
 			}, debounceMs);
 		},

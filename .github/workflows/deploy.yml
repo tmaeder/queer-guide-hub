@@ -1,91 +1,55 @@
-name: Deploy to Cloudflare Pages
+name: Deploy workers
 
 on:
   push:
-    branches:
-      - main
-
-concurrency:
-  group: deploy-pages
-  cancel-in-progress: false
+    branches: [main]
+    paths:
+      - "worker/**"
+      - "worker-ingest/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch: {}
 
 jobs:
-  deploy:
+  deploy-search:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    permissions:
-      contents: read
-      deployments: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: worker
+      - run: npx tsc --noEmit
+        working-directory: worker
+      - uses: cloudflare/wrangler-action@v3
         with:
-          node-version: "22"
-          cache: npm
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-          # Point MapLibre at our R2-backed mirror instead of protomaps.github.io.
-          # The protomaps-tiles worker serves /basemaps-assets/* from R2 (see #809).
-          VITE_BASEMAP_ASSETS_URL: "https://protomaps-tiles.maeder-tobiassimon.workers.dev/basemaps-assets"
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+  deploy-ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: worker-ingest
+      - run: npx tsc --noEmit
+        working-directory: worker-ingest
+      - uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy ./dist --project-name=queer-guide --branch=main --commit-dirty=true
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: worker-ingest
+          command: deploy
 
-      - name: Purge Cloudflare edge cache
-        # Soft-fail: uses CLOUDFLARE_PURGE_TOKEN if present (needs Zone:Cache Purge scope).
-        # Falls back to CLOUDFLARE_API_TOKEN but that token lacks cache purge by default —
-        # a failure here only leaves stale HTML at the edge, does NOT break the deploy.
-        continue-on-error: true
-        env:
-          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CF_PURGE_TOKEN: ${{ secrets.CLOUDFLARE_PURGE_TOKEN }}
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          TOKEN="${CF_PURGE_TOKEN:-$CF_API_TOKEN}"
-          if [ -z "$CF_ZONE_ID" ] || [ -z "$TOKEN" ]; then
-            echo "::warning::Skipping cache purge — CLOUDFLARE_ZONE_ID or token missing"
-            exit 0
-          fi
-          RESPONSE=$(curl -sS -X POST \
-            "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
-            -H "Authorization: Bearer ${TOKEN}" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_everything":true}')
-          echo "$RESPONSE"
-          if echo "$RESPONSE" | grep -q '"success":true'; then
-            echo "Cache purged successfully"
-          else
-            echo "::warning::Cache purge failed — add CLOUDFLARE_PURGE_TOKEN secret with Zone:Cache Purge scope (edge cache will still expire after TTL)"
-          fi
-
-      - name: Verify deployment
-        run: |
-          sleep 10
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 queer-guide-deploy-check" https://queer.guide)
-          if [ "$STATUS" -ge 500 ]; then
-            echo "::error::Health check failed: HTTP $STATUS"
-            exit 1
-          fi
-          echo "Health check passed: HTTP $STATUS"
+  smoke:
+    needs: [deploy-search]
+    if: always() && needs.deploy-search.result == 'success'
+    runs-on: ubuntu-latest
+    env:
+      SEARCH_URL: ${{ vars.SEARCH_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/smoke.sh

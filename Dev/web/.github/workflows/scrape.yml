@@ -1,0 +1,193 @@
+name: Queer Guide Scraper
+
+on:
+  schedule:
+    # Full refresh – 03:15 UTC daily
+    - cron: '15 3 * * *'
+    # Events only – every 4 hours (was hourly; reduced for GHA cost)
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source to scrape (or "all")'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - wikipedia
+          - iglta
+          - outsavvy
+          - travelgay
+          - patroc
+          - misterbandb
+      type:
+        description: 'Entity types (comma-separated: venue,event,stay,place)'
+        required: false
+        default: 'venue,event,stay,place'
+      max_pages:
+        description: 'Max pages per source'
+        required: false
+        default: '500'
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Full refresh (daily at 03:15 UTC or manual dispatch)
+  # -----------------------------------------------------------------------
+  full-refresh:
+    name: Full refresh – all sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && github.event.schedule == '15 3 * * *')
+    concurrency:
+      group: scraper-full
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: scraper
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
+          LOG_LEVEL: info
+        run: npm run migrate
+
+      - name: Scrape – full refresh
+        # Use env: for all workflow_dispatch inputs to prevent injection
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Staging publish — required so scraped entities flow into the
+          # Supabase ingestion_staging table and downstream pipeline.
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PUBLISH_TO_STAGING: '1'
+          SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          POLITE_MODE: 'true'
+          MAX_CONCURRENCY: '2'
+          SNAPSHOT_RETENTION: '3'
+          LOG_LEVEL: info
+          DISABLE_SOURCE_WIKIPEDIA: ${{ vars.DISABLE_SOURCE_WIKIPEDIA }}
+          DISABLE_SOURCE_IGLTA: ${{ vars.DISABLE_SOURCE_IGLTA }}
+          DISABLE_SOURCE_OUTSAVVY: ${{ vars.DISABLE_SOURCE_OUTSAVVY }}
+          DISABLE_SOURCE_TRAVELGAY: ${{ vars.DISABLE_SOURCE_TRAVELGAY }}
+          DISABLE_SOURCE_PATROC: ${{ vars.DISABLE_SOURCE_PATROC }}
+          # MisterBnB requires login – always disabled in CI
+          DISABLE_SOURCE_MISTERBANDB: 'true'
+          # Sanitised dispatch inputs (via env: to prevent shell injection)
+          INPUT_SOURCE: ${{ github.event.inputs.source }}
+          INPUT_TYPE: ${{ github.event.inputs.type }}
+          INPUT_MAX_PAGES: ${{ github.event.inputs.max_pages }}
+        run: |
+          SOURCE="${INPUT_SOURCE:-all}"
+          TYPE="${INPUT_TYPE:-venue,event,stay,place}"
+          MAX="${INPUT_MAX_PAGES:-500}"
+          npm run scrape -- scrape --source "${SOURCE}" --type "${TYPE}" --max-pages "${MAX}"
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrape-logs-${{ github.run_id }}
+          path: 'scraper/*.log'
+          retention-days: 7
+
+  # -----------------------------------------------------------------------
+  # Events-only run (hourly)
+  # -----------------------------------------------------------------------
+  events-hourly:
+    name: Events refresh (hourly)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: >
+      github.event_name == 'schedule' && github.event.schedule == '0 */4 * * *'
+    concurrency:
+      group: scraper-events
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: scraper
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: scraper/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('scraper/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      # Keep the hourly job self-sufficient — apply any pending migrations
+      # before scraping so new columns/tables added to the repo get picked up
+      # on the next hourly run, not only on the daily full-refresh.
+      # Idempotent: migrate.ts skips files that are already in scraper_migrations.
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
+          LOG_LEVEL: info
+        run: npm run migrate
+
+      - name: Scrape events (rolling 90-day window)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PUBLISH_TO_STAGING: '1'
+          SCRAPER_USER_AGENT: ${{ secrets.SCRAPER_USER_AGENT }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          POLITE_MODE: 'true'
+          MAX_CONCURRENCY: '2'
+          SNAPSHOT_RETENTION: '3'
+          LOG_LEVEL: info
+          DISABLE_SOURCE_MISTERBANDB: 'true'
+        run: npm run scrape -- scrape --source all --type event --max-pages 100
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: events-logs-${{ github.run_id }}
+          path: 'scraper/*.log'
+          retention-days: 7

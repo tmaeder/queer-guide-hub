@@ -4,7 +4,7 @@
 # Differences from upstream:
 #   - MinIO service removed; object storage delegated to Cloudflare R2 (S3-compatible).
 #   - No bundled reverse proxy on the public side. Traffic terminates at the
-#     existing Caddy container from meilisearch/docker-compose.yml; Caddy
+#     existing Caddy container from Dev/web/meilisearch/docker-compose.yml; Caddy
 #     reaches plane-proxy:80 on the shared external network `web`.
 #   - All image tags driven by ${PLANE_VERSION} in .env.
 #
