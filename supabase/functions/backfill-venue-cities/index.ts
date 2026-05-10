@@ -50,11 +50,12 @@ function nominatimHeaders(): Record<string, string> {
   return h
 }
 
-// Shared: match a city name (+ optional country code) against our cities table
+// Shared: match a city name against our cities table, auto-create if missing
 async function matchCity(
   supabase: ReturnType<typeof getServiceClient>,
   cityName: string,
   countryCode: string | null,
+  coords?: { lat: number; lon: number } | null,
 ): Promise<{ id: string; country_id: string } | null> {
   // Try name + country first
   if (countryCode) {
@@ -78,7 +79,44 @@ async function matchCity(
     .order('population', { ascending: false, nullsFirst: false })
     .limit(1)
     .single()
-  return data || null
+  if (data) return data
+
+  // City not found — auto-create if we have a country
+  if (!countryCode) return null
+  const countryId = await resolveCountryId(supabase, countryCode)
+  if (!countryId) return null
+
+  const insert: Record<string, unknown> = {
+    name: cityName,
+    country_id: countryId,
+    data_source: 'nominatim-geocode',
+  }
+  if (coords?.lat && coords?.lon) {
+    insert.latitude = coords.lat
+    insert.longitude = coords.lon
+  }
+
+  const { data: created, error: createErr } = await supabase
+    .from('cities')
+    .upsert(insert, { onConflict: 'country_id,name_normalized', ignoreDuplicates: true })
+    .select('id, country_id')
+    .single()
+
+  if (createErr || !created) {
+    // Conflict = city was just created by another call, re-fetch
+    const { data: retry } = await supabase
+      .from('cities')
+      .select('id, country_id')
+      .ilike('name', cityName)
+      .eq('country_id', countryId)
+      .is('duplicate_of_id', null)
+      .limit(1)
+      .single()
+    return retry || null
+  }
+
+  console.log(`Auto-created city: ${cityName} (${countryCode})`)
+  return created
 }
 
 async function resolveCountryId(
@@ -152,7 +190,7 @@ async function processReverse(
 
       if (cityName) {
         if (!venue.city) update.city = cityName
-        const cityMatch = await matchCity(supabase, cityName, countryCode)
+        const cityMatch = await matchCity(supabase, cityName, countryCode, { lat: Number(venue.latitude), lon: Number(venue.longitude) })
         if (cityMatch) {
           update.city_id = cityMatch.id
           if (!venue.country_id) update.country_id = cityMatch.country_id
@@ -283,7 +321,8 @@ async function processForward(
       // Set city
       if (cityName) {
         if (!venue.city) update.city = cityName
-        const cityMatch = await matchCity(supabase, cityName, countryCode)
+        const fwdCoords = (lat && lon) ? { lat, lon } : null
+        const cityMatch = await matchCity(supabase, cityName, countryCode, fwdCoords)
         if (cityMatch) {
           update.city_id = cityMatch.id
           if (!venue.country_id) update.country_id = cityMatch.country_id
@@ -364,7 +403,10 @@ async function processSingleVenue(
 
     if (cityName) {
       if (!venue.city) update.city = cityName
-      const cityMatch = await matchCity(supabase, cityName, countryCode)
+      const venueCoords = hasCoords
+        ? { lat: Number(venue.latitude), lon: Number(venue.longitude) }
+        : (nominatimData.lat && nominatimData.lon ? { lat: parseFloat(nominatimData.lat), lon: parseFloat(nominatimData.lon) } : null)
+      const cityMatch = await matchCity(supabase, cityName, countryCode, venueCoords)
       if (cityMatch) {
         update.city_id = cityMatch.id
         if (!venue.country_id) update.country_id = cityMatch.country_id
@@ -442,7 +484,8 @@ async function processSingleEvent(
     const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
 
     if (cityName) {
-      const cityMatch = await matchCity(supabase, cityName, countryCode)
+      const eventCoords = { lat: Number(event.latitude), lon: Number(event.longitude) }
+      const cityMatch = await matchCity(supabase, cityName, countryCode, eventCoords)
       if (cityMatch) {
         update.city_id = cityMatch.id
         if (!event.country_id) update.country_id = cityMatch.country_id
