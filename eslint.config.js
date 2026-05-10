@@ -19,6 +19,9 @@ export default tseslint.config(
       "functions/_middleware.ts",
       "functions/sitemap-places.xml.ts",
       "scripts/seo-check.mjs",
+      // Absorbed repos — not linted here
+      "Dev/**",
+      "client-sdk/**",
     ],
   },
   {
