@@ -4,10 +4,7 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import {
-  approveIngestionStaging,
-  rejectIngestionStaging,
-} from '@/hooks/usePipelineBuilderTabs';
+import { resolveGeoMergeCandidate } from '@/hooks/usePipelineBuilderTabs';
 import { GitMerge, MapPin, Check, X, Loader2 } from 'lucide-react';
 
 // Geo review — surfaces city / country staging rows flagged as merge_candidate
@@ -41,18 +38,18 @@ export default function GeoReviewTab() {
   });
 
   const approve = useMutation({
-    mutationFn: (stagingId: string) => approveIngestionStaging(stagingId),
+    mutationFn: (stagingId: string) => resolveGeoMergeCandidate(stagingId, 'merge'),
     onSuccess: () => {
-      toast.success('Approved: Will merge on next commit cycle');
+      toast.success('Merged');
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
     },
-    onError: (e: Error) => toast.error(`Approve failed: ${e.message}`),
+    onError: (e: Error) => toast.error(`Merge failed: ${e.message}`),
   });
 
   const reject = useMutation({
-    mutationFn: (stagingId: string) => rejectIngestionStaging(stagingId),
+    mutationFn: (stagingId: string) => resolveGeoMergeCandidate(stagingId, 'not_duplicate'),
     onSuccess: () => {
-      toast.success('Rejected');
+      toast.success('Marked as not duplicate');
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
     },
     onError: (e: Error) => toast.error(`Reject failed: ${e.message}`),

@@ -123,6 +123,8 @@ export interface DedupDecisionRow {
   entity_type: string;
   entity_a_id: string | null;
   entity_b_id: string | null;
+  entity_a_name: string | null;
+  entity_b_name: string | null;
   match_method: string;
   confidence: number;
   decision: string;
@@ -130,6 +132,21 @@ export interface DedupDecisionRow {
   incoming_source_id: string | null;
   created_at: string;
 }
+
+const ENTITY_TABLE_MAP: Record<string, { table: string; nameCol: string }> = {
+  venue: { table: 'venues', nameCol: 'name' },
+  venues: { table: 'venues', nameCol: 'name' },
+  event: { table: 'events', nameCol: 'title' },
+  events: { table: 'events', nameCol: 'title' },
+  place: { table: 'cities', nameCol: 'name' },
+  city: { table: 'cities', nameCol: 'name' },
+  cities: { table: 'cities', nameCol: 'name' },
+  country: { table: 'countries', nameCol: 'name' },
+  countries: { table: 'countries', nameCol: 'name' },
+  stay: { table: 'venues', nameCol: 'name' },
+  personality: { table: 'personalities', nameCol: 'name' },
+  personalities: { table: 'personalities', nameCol: 'name' },
+};
 
 export async function fetchPendingDedupDecisions(
   entityFilter: string,
@@ -143,7 +160,40 @@ export async function fetchPendingDedupDecisions(
   if (entityFilter !== 'all') q = q.eq('entity_type', entityFilter);
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as DedupDecisionRow[];
+  const rows = (data ?? []) as DedupDecisionRow[];
+
+  const idsByTable = new Map<string, Set<string>>();
+  for (const r of rows) {
+    const mapping = ENTITY_TABLE_MAP[r.entity_type];
+    if (!mapping) continue;
+    let ids = idsByTable.get(mapping.table);
+    if (!ids) { ids = new Set(); idsByTable.set(mapping.table, ids); }
+    if (r.entity_a_id) ids.add(r.entity_a_id);
+    if (r.entity_b_id) ids.add(r.entity_b_id);
+  }
+
+  const nameMap = new Map<string, string>();
+  await Promise.all(
+    [...idsByTable.entries()].map(async ([table, ids]) => {
+      const mapping = Object.values(ENTITY_TABLE_MAP).find((m) => m.table === table);
+      if (!mapping || ids.size === 0) return;
+      const col = mapping.nameCol;
+      const { data: entities } = await supabase
+        .from(table)
+        .select(`id, ${col}`)
+        .in('id', [...ids]);
+      for (const e of entities ?? []) {
+        nameMap.set(e.id, (e as Record<string, unknown>)[col] as string);
+      }
+    }),
+  );
+
+  for (const r of rows) {
+    if (r.entity_a_id) r.entity_a_name = nameMap.get(r.entity_a_id) ?? null;
+    if (r.entity_b_id) r.entity_b_name = nameMap.get(r.entity_b_id) ?? null;
+  }
+
+  return rows;
 }
 
 export async function setDedupDecision(
@@ -157,27 +207,16 @@ export async function setDedupDecision(
   if (error) throw error;
 }
 
-// GeoReviewTab
-export async function approveIngestionStaging(stagingId: string): Promise<void> {
-  const { error } = await supabase
-    .from('ingestion_staging')
-    .update({
-      review_status: 'approved',
-      disposition: 'pending',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', stagingId);
-  if (error) throw error;
-}
-
-export async function rejectIngestionStaging(stagingId: string): Promise<void> {
-  const { error } = await supabase
-    .from('ingestion_staging')
-    .update({
-      review_status: 'rejected',
-      disposition: 'rejected',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', stagingId);
+// GeoReviewTab — uses resolve_geo_merge_candidate RPC for proper audit trail,
+// review_queue updates, and commit logic
+export async function resolveGeoMergeCandidate(
+  stagingId: string,
+  decision: 'merge' | 'not_duplicate',
+): Promise<void> {
+  const { error } = await supabase.rpc('resolve_geo_merge_candidate', {
+    p_staging_id: stagingId,
+    p_decision: decision,
+    p_actor: 'admin-ui',
+  });
   if (error) throw error;
 }
