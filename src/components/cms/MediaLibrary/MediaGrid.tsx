@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Trash2,
-  Download,
   Eye,
   MoreVertical,
   Image as ImageIcon,
@@ -14,6 +13,7 @@ import {
   Star,
   ExternalLink,
   Loader2,
+  Flag,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -107,6 +107,7 @@ export function MediaGrid(props: MediaGridProps) {
                   alt={item.original_filename}
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.classList.add('bg-muted', 'flex', 'items-center', 'justify-center'); }}
                 />
               ) : (
                 <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -115,6 +116,11 @@ export function MediaGrid(props: MediaGridProps) {
               )}
 
               <div className="absolute top-2 right-2 flex gap-1">
+                {item.is_flagged && (
+                  <Badge variant="secondary" style={{ height: 24, width: 24, padding: 0, borderRadius: '50%', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Flag style={{ height: 12, width: 12, color: '#dc2626' }} />
+                  </Badge>
+                )}
                 {item.starred && (
                   <Badge variant="secondary" style={{ height: 24, width: 24, padding: 0, borderRadius: '50%', backgroundColor: '#fef9c3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Star style={{ height: 12, width: 12, color: '#ca8a04', fill: 'currentColor' }} />
@@ -148,30 +154,38 @@ export function MediaGrid(props: MediaGridProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => onStar(item)}>
-                      <Star style={{ height: 16, width: 16, marginRight: 8 }} />
-                      {item.starred ? 'Unstar' : 'Star'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onSingleOptimize(item)}>
-                      <Zap style={{ height: 16, width: 16, marginRight: 8 }} />
-                      {optimizingItem?.id === item.id ? 'Optimizing...' : 'Optimize'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onOptimizeWithSettings(item)}>
-                      <Settings style={{ height: 16, width: 16, marginRight: 8 }} />
-                      Optimize with Settings
-                    </DropdownMenuItem>
+                    {!item.external_url && (
+                      <>
+                        <DropdownMenuItem onClick={() => onStar(item)}>
+                          <Star style={{ height: 16, width: 16, marginRight: 8 }} />
+                          {item.starred ? 'Unstar' : 'Star'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onSingleOptimize(item)}>
+                          <Zap style={{ height: 16, width: 16, marginRight: 8 }} />
+                          {optimizingItem?.id === item.id ? 'Optimizing...' : 'Optimize'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onOptimizeWithSettings(item)}>
+                          <Settings style={{ height: 16, width: 16, marginRight: 8 }} />
+                          Optimize with Settings
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuItem onClick={() => onDownload(item)}>
-                      <Download style={{ height: 16, width: 16, marginRight: 8 }} />
-                      Download
+                      <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
+                      {item.external_url ? 'Open in New Tab' : 'Download'}
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onDelete(item)}
-                      style={{ color: '#dc2626' }}
-                    >
-                      <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
-                      Delete
-                    </DropdownMenuItem>
+                    {!item.external_url && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => onDelete(item)}
+                          style={{ color: '#dc2626' }}
+                        >
+                          <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                          Delete
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -182,11 +196,21 @@ export function MediaGrid(props: MediaGridProps) {
 
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{formatFileSize(item.file_size)}</span>
+                  <span className="text-xs text-muted-foreground">{item.file_size ? formatFileSize(item.file_size) : '—'}</span>
                   <Badge variant={item.usage_count ? 'default' : 'secondary'} style={{ fontSize: '0.75rem' }}>
                     {item.usage_count || 0}
                   </Badge>
                 </div>
+
+                {item.entity_types && item.entity_types.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {item.entity_types.map(et => (
+                      <Badge key={et} variant="outline" style={{ fontSize: '10px', padding: '0 4px' }}>
+                        {et.replace('_', ' ')}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   {getOptimizationStatusBadge(item.optimization_status)}
@@ -265,6 +289,7 @@ export function MediaGrid(props: MediaGridProps) {
                       src={getImageUrl(item)}
                       alt={item.original_filename}
                       className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -338,30 +363,38 @@ export function MediaGrid(props: MediaGridProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => onStar(item)}>
-                        <Star style={{ height: 16, width: 16, marginRight: 8 }} />
-                        {item.starred ? 'Unstar' : 'Star'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSingleOptimize(item)}>
-                        <Zap style={{ height: 16, width: 16, marginRight: 8 }} />
-                        {optimizingItem?.id === item.id ? 'Optimizing...' : 'Quick Optimize'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onOptimizeWithSettings(item)}>
-                        <Settings style={{ height: 16, width: 16, marginRight: 8 }} />
-                        Optimize with Settings
-                      </DropdownMenuItem>
+                      {!item.external_url && (
+                        <>
+                          <DropdownMenuItem onClick={() => onStar(item)}>
+                            <Star style={{ height: 16, width: 16, marginRight: 8 }} />
+                            {item.starred ? 'Unstar' : 'Star'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onSingleOptimize(item)}>
+                            <Zap style={{ height: 16, width: 16, marginRight: 8 }} />
+                            {optimizingItem?.id === item.id ? 'Optimizing...' : 'Quick Optimize'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onOptimizeWithSettings(item)}>
+                            <Settings style={{ height: 16, width: 16, marginRight: 8 }} />
+                            Optimize with Settings
+                          </DropdownMenuItem>
+                        </>
+                      )}
                       <DropdownMenuItem onClick={() => onDownload(item)}>
-                        <Download style={{ height: 16, width: 16, marginRight: 8 }} />
-                        Download
+                        <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
+                        {item.external_url ? 'Open in New Tab' : 'Download'}
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => onDelete(item)}
-                        style={{ color: '#dc2626' }}
-                      >
-                        <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
-                        Delete
-                      </DropdownMenuItem>
+                      {!item.external_url && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => onDelete(item)}
+                            style={{ color: '#dc2626' }}
+                          >
+                            <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                            Delete
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -408,21 +441,25 @@ export function MediaGrid(props: MediaGridProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => onSingleOptimize(item)}>
-                    <Zap style={{ height: 16, width: 16, marginRight: 8 }} />
-                    Optimize
-                  </DropdownMenuItem>
+                  {!item.external_url && (
+                    <DropdownMenuItem onClick={() => onSingleOptimize(item)}>
+                      <Zap style={{ height: 16, width: 16, marginRight: 8 }} />
+                      Optimize
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => onDownload(item)}>
-                    <Download style={{ height: 16, width: 16, marginRight: 8 }} />
-                    Download
+                    <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
+                    {item.external_url ? 'Open in New Tab' : 'Download'}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onDelete(item)}
-                    style={{ color: '#dc2626' }}
-                  >
-                    <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
-                    Delete
-                  </DropdownMenuItem>
+                  {!item.external_url && (
+                    <DropdownMenuItem
+                      onClick={() => onDelete(item)}
+                      style={{ color: '#dc2626' }}
+                    >
+                      <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                      Delete
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

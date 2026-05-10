@@ -42,9 +42,10 @@ export const getOptimizationStatusBadge = (status: MediaItem['optimization_statu
 };
 
 export const getImageUrl = (item: MediaItem) => {
+  if (item.external_url) return item.external_url;
   const bucket = (item as unknown as Record<string, unknown>).bucket as string || 'cms-media';
   const { data } = supabase.storage
     .from(bucket)
-    .getPublicUrl(item.storage_path);
+    .getPublicUrl(item.storage_path ?? '');
   return data.publicUrl;
 };

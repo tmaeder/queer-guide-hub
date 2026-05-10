@@ -41,22 +41,33 @@ import { countRows, deleteRow } from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useMediaList } from '@/hooks/useMediaList';
-import type { MediaItem, ViewMode, SortBy, FilterBy, OptimizationJob, OptimizationSettings } from './types';
+import type { MediaItem, ViewMode, SortBy, FilterBy, EntityTypeFilter, OptimizationJob, OptimizationSettings } from './types';
 import { formatFileSize } from './utils';
 import { MediaUploader } from './MediaUploader';
 import { MediaGrid } from './MediaGrid';
 import { MediaPreviewDrawer } from './MediaPreviewDrawer';
+import { useImageAssets } from '@/hooks/useImageAssets';
 
 export function MediaLibrary() {
   const { isAdmin } = useAdminRoles();
-  const { media, setMedia, loading, setLoading, fetchMedia } = useMediaList(isAdmin);
+  const { media, setMedia, loading: cmsLoading, setLoading, fetchMedia } = useMediaList(isAdmin);
   const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<SortBy>('created_at');
   const [filterBy, setFilterBy] = useState<FilterBy>('all');
+  const [entityTypeFilter, setEntityTypeFilter] = useState<EntityTypeFilter>('all');
+  const [assetPage, setAssetPage] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const { items: assetItems, totalCount: assetTotal, loading: assetsLoading, pageSize } = useImageAssets({
+    enabled: isAdmin,
+    page: assetPage,
+    search: debouncedSearch,
+    entityTypeFilter,
+  });
   const [itemToDelete, setItemToDelete] = useState<MediaItem | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [showOptimization, setShowOptimization] = useState(false);
@@ -77,9 +88,19 @@ export function MediaLibrary() {
   const { toast } = useToast();
 
   useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setAssetPage(0);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  const loading = cmsLoading || assetsLoading;
+
+  useEffect(() => {
     filterAndSortMedia();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- filterAndSortMedia defined below, re-run on filter changes
-  }, [media, searchQuery, sortBy, filterBy]);
+  }, [media, assetItems, searchQuery, sortBy, filterBy]);
 
   const populateOptimizationStatus = async () => {
     try {
@@ -132,10 +153,10 @@ export function MediaLibrary() {
   };
 
   const filterAndSortMedia = () => {
-    let filtered = [...media];
+    let cmsFiltered = [...media];
 
     if (searchQuery) {
-      filtered = filtered.filter(item =>
+      cmsFiltered = cmsFiltered.filter(item =>
         item.original_filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.filename.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -143,27 +164,27 @@ export function MediaLibrary() {
 
     switch (filterBy) {
       case 'images':
-        filtered = filtered.filter(item => item.mime_type.startsWith('image/'));
+        cmsFiltered = cmsFiltered.filter(item => item.mime_type.startsWith('image/'));
         break;
       case 'videos':
-        filtered = filtered.filter(item => item.mime_type.startsWith('video/'));
+        cmsFiltered = cmsFiltered.filter(item => item.mime_type.startsWith('video/'));
         break;
       case 'documents':
-        filtered = filtered.filter(item =>
+        cmsFiltered = cmsFiltered.filter(item =>
           item.mime_type.includes('pdf') ||
           item.mime_type.includes('text') ||
           item.mime_type.includes('document')
         );
         break;
       case 'unused':
-        filtered = filtered.filter(item => (item.usage_count || 0) === 0);
+        cmsFiltered = cmsFiltered.filter(item => (item.usage_count || 0) === 0);
         break;
       case 'unoptimized':
-        filtered = filtered.filter(item => item.optimization_status !== 'optimized');
+        cmsFiltered = cmsFiltered.filter(item => item.optimization_status !== 'optimized');
         break;
     }
 
-    filtered.sort((a, b) => {
+    cmsFiltered.sort((a, b) => {
       switch (sortBy) {
         case 'filename':
           return a.original_filename.localeCompare(b.original_filename);
@@ -179,7 +200,7 @@ export function MediaLibrary() {
       }
     });
 
-    setFilteredMedia(filtered);
+    setFilteredMedia([...cmsFiltered, ...assetItems]);
   };
 
   const handleDelete = async (item: MediaItem) => {
@@ -226,9 +247,13 @@ export function MediaLibrary() {
 
   const handleDownload = async (item: MediaItem) => {
     try {
+      if (item.external_url) {
+        window.open(item.external_url, '_blank', 'noopener');
+        return;
+      }
       const { data } = supabase.storage
         .from('cms-media')
-        .getPublicUrl(item.storage_path);
+        .getPublicUrl(item.storage_path ?? '');
 
       const link = document.createElement('a');
       link.href = data.publicUrl;
@@ -542,6 +567,23 @@ export function MediaLibrary() {
             </div>
 
             <div className="flex gap-2 items-center flex-wrap">
+              <Select value={entityTypeFilter} onValueChange={(value: EntityTypeFilter) => { setEntityTypeFilter(value); setAssetPage(0); }}>
+                <SelectTrigger style={{ width: 160 }}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Entities</SelectItem>
+                  <SelectItem value="venue">Venues</SelectItem>
+                  <SelectItem value="event">Events</SelectItem>
+                  <SelectItem value="news_article">News</SelectItem>
+                  <SelectItem value="personality">Personalities</SelectItem>
+                  <SelectItem value="marketplace_listing">Marketplace</SelectItem>
+                  <SelectItem value="city">Cities</SelectItem>
+                  <SelectItem value="country">Countries</SelectItem>
+                  <SelectItem value="queer_village">Villages</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Select value={filterBy} onValueChange={(value: FilterBy) => setFilterBy(value)}>
                 <SelectTrigger style={{ width: 144 }}>
                   <SelectValue />
@@ -632,6 +674,33 @@ export function MediaLibrary() {
         }}
       />
 
+      {/* Pagination */}
+      {assetTotal > pageSize && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {assetPage * pageSize + 1}–{Math.min((assetPage + 1) * pageSize, assetTotal)} of {assetTotal} images
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={assetPage === 0}
+              onClick={() => setAssetPage(p => p - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={(assetPage + 1) * pageSize >= assetTotal}
+              onClick={() => setAssetPage(p => p + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Statistics */}
       <Card>
         <CardHeader>
@@ -640,24 +709,20 @@ export function MediaLibrary() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-xl font-bold">{media.length}</p>
+              <p className="text-xl font-bold">{assetTotal + media.length}</p>
               <p className="text-sm text-muted-foreground">Total Files</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold">
-                {formatFileSize(media.reduce((acc, item) => acc + item.file_size, 0))}
-              </p>
-              <p className="text-sm text-muted-foreground">Total Size</p>
+              <p className="text-xl font-bold">{assetTotal}</p>
+              <p className="text-sm text-muted-foreground">Image Assets</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold">{media.length}</p>
+              <p className="text-sm text-muted-foreground">CMS / Storage</p>
             </div>
             <div className="text-center">
               <p className="text-xl font-bold">
-                {media.filter(item => item.optimization_status === 'optimized').length}
-              </p>
-              <p className="text-sm text-muted-foreground">Optimized</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold">
-                {media.filter(item => (item.usage_count || 0) === 0).length}
+                {filteredMedia.filter(item => (item.usage_count || 0) === 0).length}
               </p>
               <p className="text-sm text-muted-foreground">Unused</p>
             </div>
