@@ -1,12 +1,13 @@
 import { getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 
-// Batch reverse-geocode venues that have coordinates but no city_id.
-// Uses Nominatim (public or self-hosted) to resolve lat/lng → city name,
-// then matches against the cities table to set city_id + country_id.
+// Batch geocode venues missing city data.
+// Two modes controlled by `mode` param:
+//   "reverse" (default) — venues with coords but no city_id → reverse geocode
+//   "forward"           — venues with address but no coords → forward geocode
 //
-// Call with: { "batch_size": 25 }
-// Idempotent & resumable — always picks the next batch of unprocessed venues.
-// At 1.1s/req public Nominatim, batch of 25 = ~28s (under 60s timeout).
+// Uses Nominatim (public or self-hosted). Public rate limit: 1 req/sec.
+// Call with: { "mode": "forward", "batch_size": 25 }
+// Idempotent & resumable — always picks the next unprocessed batch.
 
 const NOMINATIM_BASE = (Deno.env.get('NOMINATIM_URL') || 'https://nominatim.openstreetmap.org').replace(/\/$/, '')
 const NOMINATIM_AUTH = Deno.env.get('NOMINATIM_BASIC_AUTH') || ''
@@ -23,7 +24,296 @@ interface NominatimAddress {
   country_code?: string
 }
 
+interface NominatimResult {
+  lat?: string
+  lon?: string
+  address?: NominatimAddress
+}
+
+interface VenueResult {
+  id: string
+  status: string
+  city_name?: string
+  city_id?: string
+}
+
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)) }
+
+function nominatimHeaders(): Record<string, string> {
+  const h: Record<string, string> = {
+    'User-Agent': 'QueerGuide/1.0 (https://queer.guide)',
+    'Accept': 'application/json',
+  }
+  if (NOMINATIM_AUTH) {
+    h['Authorization'] = `Basic ${btoa(NOMINATIM_AUTH)}`
+  }
+  return h
+}
+
+// Shared: match a city name (+ optional country code) against our cities table
+async function matchCity(
+  supabase: ReturnType<typeof getServiceClient>,
+  cityName: string,
+  countryCode: string | null,
+): Promise<{ id: string; country_id: string } | null> {
+  // Try name + country first
+  if (countryCode) {
+    const { data } = await supabase
+      .from('cities')
+      .select('id, country_id')
+      .ilike('name', cityName)
+      .eq('country_code', countryCode)
+      .is('duplicate_of_id', null)
+      .order('population', { ascending: false, nullsFirst: false })
+      .limit(1)
+      .single()
+    if (data) return data
+  }
+  // Fallback: name only, largest by population
+  const { data } = await supabase
+    .from('cities')
+    .select('id, country_id')
+    .ilike('name', cityName)
+    .is('duplicate_of_id', null)
+    .order('population', { ascending: false, nullsFirst: false })
+    .limit(1)
+    .single()
+  return data || null
+}
+
+async function resolveCountryId(
+  supabase: ReturnType<typeof getServiceClient>,
+  countryCode: string,
+): Promise<string | null> {
+  const { data } = await supabase
+    .from('countries')
+    .select('id')
+    .eq('code', countryCode)
+    .is('duplicate_of_id', null)
+    .limit(1)
+    .single()
+  return data?.id || null
+}
+
+function extractCity(addr: NominatimAddress): string | null {
+  return addr.city || addr.town || addr.village || addr.municipality || null
+}
+
+// ── Reverse geocode: coords → city ──────────────────────────────────────────
+
+async function processReverse(
+  supabase: ReturnType<typeof getServiceClient>,
+  batchSize: number,
+): Promise<{ results: VenueResult[]; remaining: number }> {
+  const { data: venues, error } = await supabase
+    .from('venues')
+    .select('id, latitude, longitude, city, country, country_id')
+    .is('city_id', null)
+    .is('duplicate_of_id', null)
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .order('id')
+    .limit(batchSize)
+
+  if (error) throw error
+  if (!venues?.length) return { results: [], remaining: 0 }
+
+  const { count } = await supabase
+    .from('venues')
+    .select('id', { count: 'exact', head: true })
+    .is('city_id', null)
+    .is('duplicate_of_id', null)
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+
+  const results: VenueResult[] = []
+
+  for (const venue of venues) {
+    try {
+      const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${venue.latitude}&lon=${venue.longitude}&zoom=10&addressdetails=1`
+      const res = await fetch(url, { headers: nominatimHeaders() })
+      if (!res.ok) {
+        results.push({ id: venue.id, status: `nominatim_error_${res.status}` })
+        await sleep(SLEEP_MS)
+        continue
+      }
+
+      const data = await res.json() as NominatimResult
+      if (!data.address) {
+        results.push({ id: venue.id, status: 'no_address' })
+        await sleep(SLEEP_MS)
+        continue
+      }
+
+      const cityName = extractCity(data.address)
+      const countryCode = data.address.country_code?.toUpperCase() || null
+
+      const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
+
+      if (cityName) {
+        if (!venue.city) update.city = cityName
+        const cityMatch = await matchCity(supabase, cityName, countryCode)
+        if (cityMatch) {
+          update.city_id = cityMatch.id
+          if (!venue.country_id) update.country_id = cityMatch.country_id
+        }
+      }
+
+      if (!venue.country_id && countryCode) {
+        const cid = await resolveCountryId(supabase, countryCode)
+        if (cid) update.country_id = cid
+      }
+      if (!venue.country && data.address.country) update.country = data.address.country
+
+      await supabase.from('venues').update(update).eq('id', venue.id)
+      results.push({ id: venue.id, status: update.city_id ? 'matched' : cityName ? 'city_text_only' : 'no_city_in_response', city_name: cityName || undefined })
+    } catch (err) {
+      results.push({ id: venue.id, status: `error: ${(err as Error).message}` })
+    }
+    await sleep(SLEEP_MS)
+  }
+
+  return { results, remaining: (count || 0) - results.length }
+}
+
+// ── Forward geocode: address → coords + city ────────────────────────────────
+
+function isUsableAddress(address: string, name: string): boolean {
+  // Skip addresses that are just the venue name repeated, or too short
+  const a = address.trim().toLowerCase()
+  const n = name.trim().toLowerCase()
+  if (a === n) return false
+  if (a.length < 5) return false
+  // Must contain at least a comma or number (looks like a real address)
+  if (!a.includes(',') && !/\d/.test(a) && a.split(/\s+/).length < 3) return false
+  return true
+}
+
+async function processForward(
+  supabase: ReturnType<typeof getServiceClient>,
+  batchSize: number,
+): Promise<{ results: VenueResult[]; remaining: number }> {
+  // Venues with address but no coords and no city_id, not yet attempted
+  const { data: venues, error } = await supabase
+    .from('venues')
+    .select('id, name, address, city, country, country_id')
+    .is('city_id', null)
+    .is('duplicate_of_id', null)
+    .or('latitude.is.null,longitude.is.null')
+    .not('address', 'is', null)
+    .neq('address', '')
+    .or('geocode_attempted.is.null,geocode_attempted.eq.false')
+    .order('id')
+    .limit(batchSize * 2) // fetch extra since we skip bad addresses
+
+  if (error) throw error
+  if (!venues?.length) return { results: [], remaining: 0 }
+
+  // Filter to usable addresses
+  const usable = venues.filter(v => isUsableAddress(v.address!, v.name))
+  const batch = usable.slice(0, batchSize)
+
+  // Mark skipped venues so we don't re-fetch them (null out address for junk ones)
+  const skipped = venues.filter(v => !isUsableAddress(v.address!, v.name))
+  if (skipped.length > 0) {
+    // Set a geocode_skipped flag via city field marker so we don't loop
+    for (const v of skipped) {
+      await supabase.from('venues').update({
+        geocode_attempted: true,
+        updated_at: new Date().toISOString(),
+      }).eq('id', v.id)
+    }
+  }
+
+  const { count } = await supabase
+    .from('venues')
+    .select('id', { count: 'exact', head: true })
+    .is('city_id', null)
+    .is('duplicate_of_id', null)
+    .or('latitude.is.null,longitude.is.null')
+    .not('address', 'is', null)
+    .neq('address', '')
+    .or('geocode_attempted.is.null,geocode_attempted.eq.false')
+
+  if (!batch.length) return { results: [], remaining: count || 0 }
+
+  const results: VenueResult[] = []
+
+  for (const venue of batch) {
+    try {
+      const q = encodeURIComponent(venue.address!)
+      const url = `${NOMINATIM_BASE}/search?format=json&q=${q}&limit=1&addressdetails=1`
+      const res = await fetch(url, { headers: nominatimHeaders() })
+      if (!res.ok) {
+        results.push({ id: venue.id, status: `nominatim_error_${res.status}` })
+        await sleep(SLEEP_MS)
+        continue
+      }
+
+      const data = (await res.json()) as NominatimResult[]
+      if (!data?.length) {
+        // Mark as attempted so we skip next time
+        await supabase.from('venues').update({
+          geocode_attempted: true,
+          updated_at: new Date().toISOString(),
+        }).eq('id', venue.id)
+        results.push({ id: venue.id, status: 'no_results' })
+        await sleep(SLEEP_MS)
+        continue
+      }
+
+      const hit = data[0]
+      const lat = hit.lat ? parseFloat(hit.lat) : null
+      const lon = hit.lon ? parseFloat(hit.lon) : null
+      const addr = hit.address
+      const cityName = addr ? extractCity(addr) : null
+      const countryCode = addr?.country_code?.toUpperCase() || null
+
+      const update: Record<string, unknown> = {
+        geocode_attempted: true,
+        updated_at: new Date().toISOString(),
+      }
+
+      // Set coordinates
+      if (lat && lon && lat !== 0 && lon !== 0) {
+        update.latitude = lat
+        update.longitude = lon
+      }
+
+      // Set city
+      if (cityName) {
+        if (!venue.city) update.city = cityName
+        const cityMatch = await matchCity(supabase, cityName, countryCode)
+        if (cityMatch) {
+          update.city_id = cityMatch.id
+          if (!venue.country_id) update.country_id = cityMatch.country_id
+        }
+      }
+
+      // Set country
+      if (!venue.country_id && countryCode) {
+        const cid = await resolveCountryId(supabase, countryCode)
+        if (cid) update.country_id = cid
+      }
+      if (!venue.country && addr?.country) update.country = addr.country
+
+      await supabase.from('venues').update(update).eq('id', venue.id)
+      results.push({
+        id: venue.id,
+        status: update.city_id ? 'matched' : cityName ? 'geocoded_no_city_match' : lat ? 'coords_only' : 'no_useful_data',
+        city_name: cityName || undefined,
+        city_id: update.city_id as string | undefined,
+      })
+    } catch (err) {
+      results.push({ id: venue.id, status: `error: ${(err as Error).message}` })
+    }
+    await sleep(SLEEP_MS)
+  }
+
+  return { results, remaining: (count || 0) - results.length }
+}
+
+// ── Handler ─────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -40,175 +330,44 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}))
+    const mode = body.mode || 'reverse'
     const batchSize = Math.min(body.batch_size || 25, 50)
 
-    // Fetch venues needing city_id backfill
-    const { data: venues, error: fetchErr } = await supabase
-      .from('venues')
-      .select('id, latitude, longitude, city, country, country_id')
-      .is('city_id', null)
-      .is('duplicate_of_id', null)
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null)
-      .order('id')
-      .limit(batchSize)
+    let result: { results: VenueResult[]; remaining: number }
 
-    if (fetchErr) throw fetchErr
-    if (!venues || venues.length === 0) {
-      return jsonResponse({ success: true, message: 'No venues to process', processed: 0, remaining: 0 }, 200, req)
+    switch (mode) {
+      case 'reverse':
+        result = await processReverse(supabase, batchSize)
+        break
+      case 'forward':
+        result = await processForward(supabase, batchSize)
+        break
+      default:
+        return errorResponse(`Unknown mode: ${mode}. Use "reverse" or "forward".`, 400, req)
     }
 
-    // Count remaining for progress reporting
-    const { count: remaining } = await supabase
-      .from('venues')
-      .select('id', { count: 'exact', head: true })
-      .is('city_id', null)
-      .is('duplicate_of_id', null)
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null)
-
-    const results: { id: string; status: string; city_name?: string; city_id?: string }[] = []
-
-    for (const venue of venues) {
-      try {
-        // Reverse geocode
-        const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${venue.latitude}&lon=${venue.longitude}&zoom=10&addressdetails=1`
-        const headers: Record<string, string> = {
-          'User-Agent': 'QueerGuide/1.0 (https://queer.guide)',
-          'Accept': 'application/json',
-        }
-        if (NOMINATIM_AUTH) {
-          headers['Authorization'] = `Basic ${btoa(NOMINATIM_AUTH)}`
-        }
-
-        const res = await fetch(url, { headers })
-        if (!res.ok) {
-          results.push({ id: venue.id, status: `nominatim_error_${res.status}` })
-          await sleep(SLEEP_MS)
-          continue
-        }
-
-        const data = await res.json() as { address?: NominatimAddress }
-        const addr = data.address
-        if (!addr) {
-          results.push({ id: venue.id, status: 'no_address' })
-          await sleep(SLEEP_MS)
-          continue
-        }
-
-        // Extract city name from Nominatim response (tries multiple fields)
-        const cityName = addr.city || addr.town || addr.village || addr.municipality || null
-        const countryCode = addr.country_code?.toUpperCase() || null
-
-        if (!cityName) {
-          // No city found — at least update the city text field with county/state
-          const fallback = addr.county || addr.state || null
-          if (fallback && !venue.city) {
-            await supabase
-              .from('venues')
-              .update({ city: fallback, updated_at: new Date().toISOString() })
-              .eq('id', venue.id)
-          }
-          results.push({ id: venue.id, status: 'no_city_in_response' })
-          await sleep(SLEEP_MS)
-          continue
-        }
-
-        // Try to match city in our cities table
-        // First: exact name + country match
-        let cityMatch = null as { id: string; country_id: string } | null
-
-        if (countryCode) {
-          const { data: match } = await supabase
-            .from('cities')
-            .select('id, country_id')
-            .ilike('name', cityName)
-            .eq('country_code', countryCode)
-            .is('duplicate_of_id', null)
-            .order('population', { ascending: false, nullsFirst: false })
-            .limit(1)
-            .single()
-          if (match) cityMatch = match
-        }
-
-        // Fallback: name-only match (pick largest by population)
-        if (!cityMatch) {
-          const { data: match } = await supabase
-            .from('cities')
-            .select('id, country_id')
-            .ilike('name', cityName)
-            .is('duplicate_of_id', null)
-            .order('population', { ascending: false, nullsFirst: false })
-            .limit(1)
-            .single()
-          if (match) cityMatch = match
-        }
-
-        // Also resolve country_id if missing
-        let resolvedCountryId = venue.country_id
-        if (!resolvedCountryId && countryCode) {
-          const { data: country } = await supabase
-            .from('countries')
-            .select('id')
-            .eq('code', countryCode)
-            .is('duplicate_of_id', null)
-            .limit(1)
-            .single()
-          if (country) resolvedCountryId = country.id
-        }
-
-        // Build update payload
-        const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
-
-        if (cityMatch) {
-          update.city_id = cityMatch.id
-          if (!resolvedCountryId) resolvedCountryId = cityMatch.country_id
-        }
-
-        // Always set city text if empty
-        if (!venue.city && cityName) {
-          update.city = cityName
-        }
-
-        if (resolvedCountryId && !venue.country_id) {
-          update.country_id = resolvedCountryId
-        }
-
-        // Also set country text if we have it from Nominatim and venue is missing it
-        if (!venue.country && addr.country) {
-          update.country = addr.country
-        }
-
-        await supabase.from('venues').update(update).eq('id', venue.id)
-
-        results.push({
-          id: venue.id,
-          status: cityMatch ? 'matched' : 'city_text_only',
-          city_name: cityName,
-          city_id: cityMatch?.id,
-        })
-      } catch (err) {
-        results.push({ id: venue.id, status: `error: ${err.message}` })
-      }
-
-      await sleep(SLEEP_MS)
+    if (!result.results.length) {
+      return jsonResponse({ success: true, mode, message: 'No venues to process', processed: 0, remaining: 0 }, 200, req)
     }
 
-    const matched = results.filter(r => r.status === 'matched').length
-    const textOnly = results.filter(r => r.status === 'city_text_only').length
-    const errors = results.filter(r => r.status.startsWith('error') || r.status.startsWith('nominatim_error')).length
+    const matched = result.results.filter(r => r.status === 'matched').length
+    const geocoded = result.results.filter(r => ['geocoded_no_city_match', 'coords_only', 'city_text_only'].includes(r.status)).length
+    const skipped = result.results.filter(r => ['no_results', 'no_address', 'no_city_in_response'].includes(r.status)).length
+    const errors = result.results.filter(r => r.status.startsWith('error') || r.status.startsWith('nominatim_error')).length
 
     return jsonResponse({
       success: true,
-      processed: results.length,
+      mode,
+      processed: result.results.length,
       matched,
-      text_only: textOnly,
+      geocoded,
+      skipped,
       errors,
-      remaining: (remaining || 0) - results.length,
-      results,
+      remaining: result.remaining,
+      results: result.results,
     }, 200, req)
   } catch (error) {
     console.error('Backfill error:', error)
-    return errorResponse(error.message, 500, req)
+    return errorResponse((error as Error).message, 500, req)
   }
 })
