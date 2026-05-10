@@ -20,7 +20,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
-import { useOptimizedProfileData } from '@/hooks/useProfileData';
+import { useProfileData } from '@/hooks/useProfileData';
 import { OptimizedLoader } from '@/components/loading/OptimizedLoader';
 import OptimizedErrorBoundary, {
   DataErrorFallback,
@@ -74,7 +74,7 @@ interface LoaderProps {
 
 function ProfileSettingsLoader({ updateProfile, toast, navigate, hasPasskey, user }: LoaderProps) {
   const { profile, isLoading, isError, errors, profileLoading, profileError } =
-    useOptimizedProfileData();
+    useProfileData();
 
   if (isLoading || profileLoading) {
     return <OptimizedLoader type="profile" />;
