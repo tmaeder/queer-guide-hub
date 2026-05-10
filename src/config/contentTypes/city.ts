@@ -1,6 +1,9 @@
 import { MapPin } from 'lucide-react';
 import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
 
+const fmtNum = (n: unknown): string =>
+  typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
+
 export const cityFields: FieldConfig[] = [
   {
     name: 'name',
@@ -59,6 +62,71 @@ export const cityFields: FieldConfig[] = [
   { name: 'image_url', label: 'City Image', type: 'image', group: 'media' },
   { name: 'curated_image_url', label: 'Curated Image', type: 'image', group: 'media' },
   { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+  {
+    name: 'country_name',
+    label: 'Country',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const c = row.countries as { name?: string } | null | undefined;
+      return c?.name ?? null;
+    },
+  },
+  {
+    name: 'lgbt_legal_status',
+    label: 'LGBT Legal',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const c = row.countries as { lgbt_legal_status?: string } | null | undefined;
+      return c?.lgbt_legal_status ?? null;
+    },
+  },
+  {
+    name: 'equality_score',
+    label: 'Equality Score',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const c = row.countries as { equality_score?: number } | null | undefined;
+      return c?.equality_score != null ? String(c.equality_score) : null;
+    },
+  },
+  {
+    name: 'venue_count',
+    label: 'Venues',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const venues = row.venues as Array<{ count?: number }> | null | undefined;
+      return fmtNum(venues?.[0]?.count ?? 0);
+    },
+  },
+  {
+    name: 'event_count',
+    label: 'Events',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const events = row.events as Array<{ count?: number }> | null | undefined;
+      return fmtNum(events?.[0]?.count ?? 0);
+    },
+  },
 ];
 
 export const cityContentType: ContentTypeConfig = {
@@ -72,6 +140,7 @@ export const cityContentType: ContentTypeConfig = {
   label: { singular: 'City', plural: 'Cities' },
   color: '#10b981',
   fields: cityFields,
+  listSelect: '*,countries(name,equality_score,lgbt_legal_status),venues(count),events(count)',
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
   translatableFields: ['name', 'description'],
   commentable: true,

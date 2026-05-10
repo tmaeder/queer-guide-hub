@@ -45,7 +45,6 @@ const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminCountries = lazy(() => import('./pages/AdminCountries'));
 const AdminTags = lazy(() => import('./pages/AdminTags'));
-const AdminCities = lazy(() => import('./pages/AdminCities'));
 const AdminGroups = lazy(() => import('./pages/AdminGroups'));
 const Cities = lazyRetry(() => import('./pages/Cities'));
 const CityDetail = lazyRetry(() => import('./pages/CityDetail'));
@@ -232,7 +231,6 @@ export const AppRoutes = () => {
 
                 {/* Content section -- unified list + per-type views */}
                 <Route path="content" element={<ContentListPanel />} />
-                <Route path="content/cities" element={<AdminCities />} />
                 <Route path="content/:type" element={<ContentListPanel />} />
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />
@@ -297,7 +295,7 @@ export const AppRoutes = () => {
                 <Route path="venues" element={<AdminVenues />} />
                 <Route path="events" element={<AdminEvents />} />
                 <Route path="tags" element={<AdminTags />} />
-                <Route path="cities" element={<AdminCities />} />
+                <Route path="cities" element={<Navigate to="/admin/content/cities" replace />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
                 <Route path="marketplace" element={<AdminMarketplace />} />
