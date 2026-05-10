@@ -62,6 +62,8 @@ interface ArticleRow {
 
 const STATUSES = ['review', 'rejected'] as const;
 
+const fmtPct = (v: number) => `${(v > 1 ? v : v * 100).toFixed(0)}%`;
+
 function HealthStat({
   label,
   value,
@@ -326,12 +328,12 @@ export default function NewsQualityReviewTab() {
           <HealthStat label="Legacy" value={health.legacy_unprocessed} color="#6b7280" />
           <HealthStat
             label="Avg relevance"
-            value={health.avg_relevance != null ? `${(health.avg_relevance * 100).toFixed(0)}%` : '—'}
+            value={health.avg_relevance != null ? fmtPct(health.avg_relevance) : '—'}
             color="#3b82f6"
           />
           <HealthStat
             label="Avg quality"
-            value={health.avg_quality_after != null ? `${(health.avg_quality_after * 100).toFixed(0)}%` : '—'}
+            value={health.avg_quality_after != null ? fmtPct(health.avg_quality_after) : '—'}
             color="#3b82f6"
           />
         </div>

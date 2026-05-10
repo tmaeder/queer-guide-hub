@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sparkles } from "lucide-react";
+import { getRandomFallbackImage } from "@/utils/fallbackImages";
 
 const SEARCH_URL =
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -137,11 +138,7 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 											onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
 										>
 											<Card className="h-40 overflow-hidden transition">
-												{it.image_url ? (
-													<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
-												) : (
-													<div className="h-24 w-full bg-muted" />
-												)}
+												<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-24 w-full object-cover" />
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">
 														{decodeEntities(it.title!)}

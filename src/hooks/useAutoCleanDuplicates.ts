@@ -117,20 +117,21 @@ async function callEdgeFunction(token: string, params: Record<string, unknown>):
 
 // ==================== Hooks ====================
 
-/** Counts pending duplicate pairs per entity type */
+/** Counts pending duplicate pairs per entity type using server-side counts */
 export function useDuplicateCounts() {
   return useQuery({
     queryKey: ['duplicate-counts'],
     queryFn: async (): Promise<DuplicateCounts> => {
-      const { data, error } = await supabase
-        .from('scraper_dedupe_decisions' as 'venues')
-        .select('entity_type')
-        .eq('decision', 'pending');
-
-      if (error) {
-        console.error('Failed to fetch duplicate counts:', error);
-        return { venues: 0, events: 0, personalities: 0, news_articles: 0, cities: 0, total: 0 };
-      }
+      const types = ['venues', 'events', 'personalities', 'news_articles', 'cities'] as const;
+      const results = await Promise.all(
+        types.map((t) =>
+          supabase
+            .from('scraper_dedupe_decisions' as never)
+            .select('id', { count: 'exact', head: true })
+            .eq('decision', 'pending')
+            .eq('entity_type', t),
+        ),
+      );
 
       const counts: DuplicateCounts = {
         venues: 0,
@@ -140,10 +141,10 @@ export function useDuplicateCounts() {
         cities: 0,
         total: 0,
       };
-      for (const row of (data || []) as unknown as Array<{ entity_type: string }>) {
-        const t = row.entity_type as keyof Omit<DuplicateCounts, 'total'>;
-        if (t in counts && t !== 'total') counts[t]++;
-        counts.total++;
+      for (let i = 0; i < types.length; i++) {
+        const c = results[i].count ?? 0;
+        counts[types[i]] = c;
+        counts.total += c;
       }
       return counts;
     },

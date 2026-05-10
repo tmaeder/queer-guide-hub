@@ -1,4 +1,5 @@
 import { Parallax } from '@/components/motion';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 interface DetailHeroProps {
   imageUrl?: string | null;
@@ -8,12 +9,11 @@ interface DetailHeroProps {
 }
 
 export function DetailHero({ imageUrl, alt, heightClassName = 'h-48 md:h-60' }: DetailHeroProps) {
-  if (!imageUrl) return null;
   return (
     <div className={`w-full ${heightClassName} rounded-2xl overflow-hidden mb-4 relative`}>
       <Parallax speed={0.25}>
         <img
-          src={imageUrl}
+          src={imageUrl || getRandomFallbackImage()}
           alt={alt}
           className="w-full h-full object-cover scale-110"
         />

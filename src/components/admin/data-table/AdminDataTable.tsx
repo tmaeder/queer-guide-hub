@@ -49,10 +49,12 @@ export function AdminDataTable<TData extends { id: string }>({
     toolbarActions,
     defaultSort,
     defaultPageSize = 25,
+    defaultFilters,
     enableSelection = false,
     enableSearch = true,
     searchColumns = [],
     baseFilters,
+    onRowClick,
     onBulkEditSuccess,
     _onBulkDeleteSuccess,
   } = config;
@@ -90,6 +92,7 @@ export function AdminDataTable<TData extends { id: string }>({
     defaultSort,
     defaultPageSize,
     defaultColumnVisibility,
+    defaultFilters,
   });
 
   const {
@@ -259,10 +262,14 @@ export function AdminDataTable<TData extends { id: string }>({
                 <TableRow
                   key={row.id}
                   className={`content-enter ${isSelected ? 'bg-muted' : ''}`}
-                  style={{ transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)' }}
+                  style={{
+                    transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+                    cursor: onRowClick ? 'pointer' : undefined,
+                  }}
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 >
                   {enableSelection && (
-                    <TableCell style={{ width: 44, padding: '0 8px' }}>
+                    <TableCell style={{ width: 44, padding: '0 8px' }} onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         aria-label="Select row"
                         checked={isSelected}
@@ -276,14 +283,14 @@ export function AdminDataTable<TData extends { id: string }>({
                     </TableCell>
                   ))}
                   {rowActions && rowActions.length > 0 && (
-                    <TableCell style={{ width: 48, padding: '0 8px' }}>
+                    <TableCell style={{ width: 48, padding: '0 8px' }} onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" aria-label="Row actions" style={{ height: 28, width: 28 }}>
                             <MoreVertical style={{ height: 14, width: 14 }} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" side="bottom" avoidCollisions>
                           {rowActions
                             .filter((action) => !action.visible || action.visible(row.original))
                             .map((action) => (

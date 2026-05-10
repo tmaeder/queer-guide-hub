@@ -41,12 +41,17 @@ const SELECT =
 
 function getTitle(row: KanbanRow): string {
   const config = submissionRegistry[row.content_type];
-  return String(row.data?.[config?.titleField || 'name'] || 'Untitled');
+  const field = config?.titleField || 'name';
+  return String(
+    row.data?.[field] || row.data?.title || row.data?.name || row.data?.subject || row.content_type || 'Untitled',
+  );
 }
 
 interface Props {
   onCardClick: (row: KanbanRow) => void;
 }
+
+const KANBAN_LIMIT = 500;
 
 export function SubmissionsKanban({ onCardClick }: Props) {
   const { data: rows = [], isLoading } = useQuery<KanbanRow[]>({
@@ -56,7 +61,7 @@ export function SubmissionsKanban({ onCardClick }: Props) {
         'community_submissions',
         SELECT,
         { col: 'submitted_at', ascending: false },
-        200,
+        KANBAN_LIMIT,
       ),
   });
 
@@ -75,7 +80,13 @@ export function SubmissionsKanban({ onCardClick }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="flex flex-col gap-4">
+      {rows.length >= KANBAN_LIMIT && (
+        <p className="text-xs text-muted-foreground text-center">
+          Showing {rows.length} most recent items. Switch to table view for full pagination.
+        </p>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {LANES.map((lane) => {
         const laneRows = byLane[lane.key] ?? [];
         return (
@@ -102,6 +113,7 @@ export function SubmissionsKanban({ onCardClick }: Props) {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

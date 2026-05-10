@@ -28,8 +28,8 @@ function ConfidenceBadge({ confidence }: { confidence: number }) {
 
 export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const { data: entityA, isLoading: loadingA } = useEntityById(pair.entity_type, expanded ? pair.entity_a_id : null);
-  const { data: entityB, isLoading: loadingB } = useEntityById(pair.entity_type, expanded ? pair.entity_b_id : null);
+  const { data: entityA, isLoading: loadingA } = useEntityById(pair.entity_type, pair.entity_a_id);
+  const { data: entityB, isLoading: loadingB } = useEntityById(pair.entity_type, pair.entity_b_id);
   const dismissMutation = useDismissDuplicate();
 
   const nameField = pair.entity_type === 'events' ? 'title' : 'name';
@@ -79,11 +79,15 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
         {/* Quick Preview — always visible */}
         <div className="flex gap-4 items-center text-muted-foreground text-sm">
           <p className="font-medium">
-            A: <span className="text-foreground">{pair.entity_a_id.slice(0, 8)}...</span>
+            A: <span className="text-foreground">
+              {entityA ? String(entityA[nameField] || pair.entity_a_id?.slice(0, 8) + '...') : (pair.entity_a_id?.slice(0, 8) ?? 'N/A') + '...'}
+            </span>
           </p>
           <p>vs</p>
           <p className="font-medium">
-            B: <span className="text-foreground">{pair.entity_b_id.slice(0, 8)}...</span>
+            B: <span className="text-foreground">
+              {entityB ? String(entityB[nameField] || pair.entity_b_id?.slice(0, 8) + '...') : (pair.entity_b_id?.slice(0, 8) ?? 'N/A') + '...'}
+            </span>
           </p>
         </div>
 
@@ -94,29 +98,45 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               <p className="text-sm text-muted-foreground py-4 text-center">
                 Loading records...
               </p>
-            ) : entityA && entityB ? (
+            ) : !entityA && !entityB ? (
+              <p className="text-sm text-muted-foreground text-center">
+                Could not load either record. They may have been deleted or merged.
+              </p>
+            ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardContent>
-                    <p className="mb-2 text-sm font-semibold" style={{ color: '#3b82f6' }}>
-                      Record A: {entityA[nameField] || 'Unknown'}
-                    </p>
-                    <StructuredFieldDisplay entityType={pair.entity_type} data={entityA} />
+                    {entityA ? (
+                      <>
+                        <p className="mb-2 text-sm font-semibold" style={{ color: '#3b82f6' }}>
+                          Record A: {String(entityA[nameField] || 'Unknown')}
+                        </p>
+                        <StructuredFieldDisplay entityType={pair.entity_type} data={entityA} />
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Record A not found — may have been deleted or merged.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent>
-                    <p className="mb-2 text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                      Record B: {entityB[nameField] || 'Unknown'}
-                    </p>
-                    <StructuredFieldDisplay entityType={pair.entity_type} data={entityB} />
+                    {entityB ? (
+                      <>
+                        <p className="mb-2 text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                          Record B: {String(entityB[nameField] || 'Unknown')}
+                        </p>
+                        <StructuredFieldDisplay entityType={pair.entity_type} data={entityB} />
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        Record B not found — may have been deleted or merged.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center">
-                Could not load one or both records.
-              </p>
             )}
           </div>
         )}

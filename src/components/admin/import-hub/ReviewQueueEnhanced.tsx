@@ -79,7 +79,7 @@ export function ReviewQueueEnhanced() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const { data: pageResult, isLoading, refetch } = useStagingItems(filters, page, perPage, sort);
+  const { data: pageResult, isLoading, isError, error, refetch } = useStagingItems(filters, page, perPage, sort);
   const stagingAction = useStagingAction();
 
   const items = pageResult?.items || [];
@@ -310,10 +310,12 @@ export function ReviewQueueEnhanced() {
       </Card>
 
       {/* Keyboard shortcut hint */}
-      <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-        <Keyboard className="h-3 w-3" />
-        J/K nav &middot; A approve &middot; R reject &middot; Space select
-      </span>
+      {items.length > 0 && (
+        <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+          <Keyboard className="h-3 w-3" />
+          J/K nav &middot; A approve &middot; R reject &middot; Space select
+        </span>
+      )}
 
       {/* Loading */}
       {isLoading && (
@@ -322,8 +324,26 @@ export function ReviewQueueEnhanced() {
         </div>
       )}
 
+      {/* Error State */}
+      {isError && (
+        <Card>
+          <CardContent>
+            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-2">
+              <AlertTriangle className="h-12 w-12 text-destructive" />
+            </div>
+            <h6 className="font-semibold text-lg mb-1">Failed to load staging items</h6>
+            <p className="text-muted-foreground mb-3">
+              {error instanceof Error ? error.message : 'The staging query failed. Check the database connection.'}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refetch()} style={{ display: 'flex', gap: 6, margin: '0 auto' }}>
+              <RefreshCw style={{ width: 14, height: 14 }} /> Retry
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Empty State */}
-      {!isLoading && items.length === 0 && (
+      {!isLoading && !isError && items.length === 0 && (
         <Card>
           <CardContent>
             <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-2">
@@ -331,7 +351,7 @@ export function ReviewQueueEnhanced() {
             </div>
             <h6 className="font-semibold text-lg mb-1">No Items Found</h6>
             <p className="text-muted-foreground">
-              {filters.search
+              {searchInput || filters.search
                 ? 'No items match your search.'
                 : 'No items pending review with current filters.'}
             </p>

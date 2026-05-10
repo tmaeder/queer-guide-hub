@@ -85,7 +85,7 @@ export function useStagingItems(
 
       if (error) {
         console.error('Failed to fetch staging page:', error);
-        return { items: [], total: 0, page: 1, per_page: perPage, total_pages: 0 };
+        throw error;
       }
 
       const result = data as unknown as StagingPageResult;

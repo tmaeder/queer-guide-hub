@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { TrendingUp } from "lucide-react";
+import { getRandomFallbackImage } from "@/utils/fallbackImages";
 
 interface Props {
 	city?: string;
@@ -132,11 +133,7 @@ export function TrendingStrip({
 											}
 										>
 											<Card className="h-40 overflow-hidden transition">
-												{it.image_url ? (
-													<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
-												) : (
-													<div className="h-24 w-full bg-muted" />
-												)}
+												<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-24 w-full object-cover" />
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">{it.title}</div>
 													<div className="text-xs text-muted-foreground truncate">

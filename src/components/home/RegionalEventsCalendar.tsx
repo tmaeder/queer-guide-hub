@@ -5,6 +5,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { addDays, format, isSameDay, startOfDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 type Event = {
   id: string;
@@ -131,15 +132,13 @@ const RegionalEventsCalendar: React.FC = () => {
           to={heroHref}
           className="block text-foreground no-underline transition-opacity hover:opacity-85"
         >
-          {hero.image_url && (
-            <div className="mb-4 aspect-[4/3] w-full overflow-hidden bg-muted">
+          <div className="mb-4 aspect-[4/3] w-full overflow-hidden bg-muted">
               <img
-                src={hero.image_url}
+                src={hero.image_url || getRandomFallbackImage()}
                 alt=""
                 className="block h-full w-full object-cover"
               />
             </div>
-          )}
           <div
             className="mb-2 text-sm font-extrabold uppercase text-[hsl(var(--foreground))] md:text-base"
             style={{

@@ -94,16 +94,22 @@ const statusConfig: Record<
   merged: { label: 'Merged', color: '#6366f1', variant: 'secondary' },
 };
 
-const contentTypeOptions = Object.values(submissionRegistry).map((cfg) => ({
-  label: cfg.label,
-  value: cfg.id,
-}));
+const contentTypeOptions = [
+  ...Object.values(submissionRegistry).map((cfg) => ({
+    label: cfg.label,
+    value: cfg.id,
+  })),
+  { label: 'API Error', value: 'API_ERROR' },
+];
 
 const columnHelper = createColumnHelper<SubmissionRow>();
 
 const getTitle = (s: SubmissionRow) => {
   const config = submissionRegistry[s.content_type];
-  return String(s.data?.[config?.titleField || 'name'] || 'Untitled');
+  const field = config?.titleField || 'name';
+  return String(
+    s.data?.[field] || s.data?.title || s.data?.name || s.data?.subject || s.content_type || 'Untitled',
+  );
 };
 
 /**
@@ -259,7 +265,7 @@ function SubmissionsCore() {
       setReviewerNotes('');
       doRefresh();
     } catch (_err: unknown) {
-      toast.error(`Approval failed: ${errorMessage}`);
+      toast.error(`Approval failed: ${errorMessage(_err)}`);
     } finally {
       setActionLoading(false);
     }
@@ -291,7 +297,7 @@ function SubmissionsCore() {
       setReviewerNotes('');
       doRefresh();
     } catch (_err: unknown) {
-      toast.error(`Rejection failed: ${errorMessage}`);
+      toast.error(`Rejection failed: ${errorMessage(_err)}`);
     } finally {
       setActionLoading(false);
     }
@@ -414,7 +420,9 @@ function SubmissionsCore() {
       columns,
       defaultSort: { column: 'submitted_at', direction: 'desc' as const },
       defaultPageSize: 25,
+      defaultFilters: { status: 'pending' },
       enableSelection: true,
+      onRowClick: openReview,
       enableSearch: false,
       entityFilters: [
         {
@@ -675,13 +683,14 @@ function SubmissionsCore() {
                     </Button>
                     <Button
                       onClick={() => handleApprove(selectedSubmission)}
-                      disabled={actionLoading}
+                      disabled={actionLoading || !submissionRegistry[selectedSubmission.content_type]}
+                      title={!submissionRegistry[selectedSubmission.content_type] ? 'Cannot approve — submission contains errors' : undefined}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 6,
-                        backgroundColor: '#22c55e',
-                        color: '#fff',
+                        backgroundColor: !submissionRegistry[selectedSubmission.content_type] ? undefined : '#22c55e',
+                        color: !submissionRegistry[selectedSubmission.content_type] ? undefined : '#fff',
                       }}
                     >
                       <ThumbsUp style={{ width: 14, height: 14 }} />{' '}

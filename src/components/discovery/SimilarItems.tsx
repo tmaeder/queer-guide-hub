@@ -10,6 +10,7 @@ import { useTrackClick, type Entity } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { getRandomFallbackImage } from "@/utils/fallbackImages";
 
 interface Props {
 	entity: Entity;
@@ -111,16 +112,12 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 											}
 										>
 											<Card className="h-40 overflow-hidden transition">
-												{it.metadata?.image_url ? (
-													<img
-														src={it.metadata.image_url}
+												<img
+														src={it.metadata?.image_url || getRandomFallbackImage()}
 														alt=""
 														loading="lazy"
 														className="h-24 w-full object-cover"
 													/>
-												) : (
-													<div className="h-24 w-full bg-muted" />
-												)}
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">
 														{it.metadata?.slug?.replace(/-/g, " ") || it.content_id.slice(0, 8)}

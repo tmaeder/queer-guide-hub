@@ -35,6 +35,7 @@ import { useReviewCounts, type ReviewCounts } from '@/hooks/useReviewCounts';
 import { useReviewBulkActions, type BulkActionType } from '@/hooks/useReviewBulkActions';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { fetchNewsQualityReviewCount, fetchEntityLinkReviewCount } from '@/hooks/usePageFetchers';
 
 // Lazy-load tab contents to keep initial bundle small
@@ -433,58 +434,76 @@ export default function AdminReview() {
       {/* Tab content — navigation via stat cards above */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsContent value="staging">
-          <Suspense fallback={<Loading />}>
-            <ReviewQueueEnhanced />
-          </Suspense>
+          <ErrorBoundary section="review-staging">
+            <Suspense fallback={<Loading />}>
+              <ReviewQueueEnhanced />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="moderation">
-          <Suspense fallback={<Loading />}>
-            <ModerationQueue />
-          </Suspense>
+          <ErrorBoundary section="review-moderation">
+            <Suspense fallback={<Loading />}>
+              <ModerationQueue />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="submissions">
-          <Suspense fallback={<Loading />}>
-            <AdminSubmissionsContent />
-          </Suspense>
+          <ErrorBoundary section="review-submissions">
+            <Suspense fallback={<Loading />}>
+              <AdminSubmissionsContent />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="content">
-          <Suspense fallback={<Loading />}>
-            <ReviewQueue />
-          </Suspense>
+          <ErrorBoundary section="review-content">
+            <Suspense fallback={<Loading />}>
+              <ReviewQueue />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="tags">
-          <Suspense fallback={<Loading />}>
-            <TagSuggestionsQueue />
-          </Suspense>
+          <ErrorBoundary section="review-tags">
+            <Suspense fallback={<Loading />}>
+              <TagSuggestionsQueue />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="duplicates">
-          <Suspense fallback={<Loading />}>
-            <AutoCleanDuplicatesTab />
-          </Suspense>
+          <ErrorBoundary section="review-duplicates">
+            <Suspense fallback={<Loading />}>
+              <AutoCleanDuplicatesTab />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="automation">
-          <Suspense fallback={<Loading />}>
-            <AutoModerationQueue />
-            <AutomationReviewTab />
-          </Suspense>
+          <ErrorBoundary section="review-automation">
+            <Suspense fallback={<Loading />}>
+              <AutoModerationQueue />
+              <AutomationReviewTab />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="news-quality">
-          <Suspense fallback={<Loading />}>
-            <NewsQualityReviewTab />
-          </Suspense>
+          <ErrorBoundary section="review-news-quality">
+            <Suspense fallback={<Loading />}>
+              <NewsQualityReviewTab />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="entity-links">
-          <Suspense fallback={<Loading />}>
-            <EntityLinkReviewTab />
-          </Suspense>
+          <ErrorBoundary section="review-entity-links">
+            <Suspense fallback={<Loading />}>
+              <EntityLinkReviewTab />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>

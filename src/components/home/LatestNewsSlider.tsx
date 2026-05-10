@@ -4,6 +4,7 @@ import { useNews } from '@/hooks/useNews';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 type Article = {
   id: string;
@@ -96,15 +97,13 @@ const LatestNewsSlider = React.memo(() => {
           to={`/news/${feature.slug}`}
           className="block text-foreground no-underline transition-opacity hover:opacity-85"
         >
-          {feature.image_url && (
-            <div className="mb-4 aspect-[3/2] w-full overflow-hidden bg-muted">
+          <div className="mb-4 aspect-[3/2] w-full overflow-hidden bg-muted">
               <img
-                src={feature.image_url}
+                src={feature.image_url || getRandomFallbackImage()}
                 alt=""
                 className="block h-full w-full object-cover"
               />
             </div>
-          )}
           <div
             className="mb-3 flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground"
             style={{ letterSpacing: '0.06em' }}

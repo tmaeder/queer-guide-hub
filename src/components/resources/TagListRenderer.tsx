@@ -1,9 +1,10 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tag, ChevronRight } from 'lucide-react';
-import { getCategoryIcon, getCategoryShortName } from './categoryMeta';
+import { getCategoryShortName } from './categoryMeta';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import type { CentralizedTag } from '@/hooks/useCentralizedTags';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 type DisplayMode = 'chips' | 'grid' | 'list';
 
@@ -24,10 +25,6 @@ function getTagCategoryLabel(tag: CentralizedTag): string {
   return primary ? getCategoryShortName(primary.name) : '';
 }
 
-function getTagCategoryName(tag: CentralizedTag): string {
-  return getPrimary(tag)?.name || '';
-}
-
 export function TagListRenderer({
   tags,
   displayMode,
@@ -40,7 +37,6 @@ export function TagListRenderer({
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {tags.map((tag) => {
-          const CatIcon = getCategoryIcon(getTagCategoryName(tag));
           const uses = tagUsageCounts[tag.name] || 0;
           return (
             <button
@@ -51,21 +47,15 @@ export function TagListRenderer({
               style={{ font: 'inherit', color: 'inherit' }}
             >
               <div className="relative w-full bg-muted" style={{ aspectRatio: '4 / 3' }}>
-                {tag.image_url ? (
-                  <img
-                    src={tag.image_url}
-                    alt={tag.name}
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <CatIcon style={{ width: 28, height: 28, opacity: 0.3 }} />
-                  </div>
-                )}
+                <img
+                  src={tag.image_url || getRandomFallbackImage()}
+                  alt={tag.name}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
                 {uses > 0 && (
                   <div
                     className="absolute top-1.5 right-1.5 rounded text-white font-semibold"
@@ -113,19 +103,17 @@ export function TagListRenderer({
               className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
               style={{ minHeight: 44, font: 'inherit', color: 'inherit' }}
             >
-              {tag.image_url && (
-                <div className="rounded-md overflow-hidden shrink-0 bg-muted" style={{ width: 40, height: 40 }}>
-                  <img
-                    src={tag.image_url}
-                    alt={tag.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
+              <div className="rounded-md overflow-hidden shrink-0 bg-muted" style={{ width: 40, height: 40 }}>
+                <img
+                  src={tag.image_url || getRandomFallbackImage()}
+                  alt={tag.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <span className="font-semibold block" style={{ fontSize: '0.85rem', lineHeight: 1.25 }}>
                   {tag.name}
