@@ -412,6 +412,12 @@ function SubmissionsCore() {
     [reputation],
   );
 
+  const openReview = useCallback((row: SubmissionRow) => {
+    setSelectedSubmission(row);
+    setReviewerNotes(row.reviewer_notes || '');
+    setDialogOpen(true);
+  }, []);
+
   const tableConfig: AdminTableConfig<SubmissionRow> = useMemo(
     () => ({
       tableName: 'community_submissions',
@@ -494,14 +500,8 @@ function SubmissionsCore() {
       ],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleApprove/handleReject are stable, adding would defeat memoization
-    [columns],
+    [columns, openReview],
   );
-
-  const openReview = useCallback((row: SubmissionRow) => {
-    setSelectedSubmission(row);
-    setReviewerNotes(row.reviewer_notes || '');
-    setDialogOpen(true);
-  }, []);
 
   return (
     <>
