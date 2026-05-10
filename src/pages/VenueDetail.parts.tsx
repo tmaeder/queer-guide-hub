@@ -31,6 +31,7 @@ import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchVenueWithReviews } from '@/hooks/usePageFetchers';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 export type VenueReview = Database['public']['Tables']['venue_reviews']['Row'] & {
@@ -118,10 +119,9 @@ export function VenueHero({
   return (
     <>
       {/* Hero Image */}
-      {heroImage && (
-        <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6 relative">
+      <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6 relative">
           <img
-            src={heroImage}
+            src={heroImage || getRandomFallbackImage()}
             alt={venue.name}
             className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -129,7 +129,6 @@ export function VenueHero({
             }}
           />
         </div>
-      )}
 
       {/* Safety Alert Banner */}
       {venue.countries?.lgbti_criminalization && (

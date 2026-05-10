@@ -18,6 +18,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { EntityMap } from '@/components/map/EntityMap';
 import { getHotelPhotosToShow } from './hotelPhotosUtil';
 import type { Database } from '@/integrations/supabase/types';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 type Hotel = Database['public']['Tables']['hotels']['Row'];
 export type HotelWithRelations = Hotel & {
@@ -51,16 +52,14 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   const showWebsite = Boolean(hotel.website) && hotel.website !== hotel.booking_url;
   return (
     <>
-      {heroImage && (
-        <div className="rounded-md overflow-hidden mb-6 h-[300px]">
+      <div className="rounded-md overflow-hidden mb-6 h-[300px]">
           <img
             loading="lazy"
-            src={heroImage}
+            src={heroImage || getRandomFallbackImage()}
             alt={hotel.name}
             className="w-full h-full object-cover"
           />
         </div>
-      )}
       <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">

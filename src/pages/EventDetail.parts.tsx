@@ -35,6 +35,7 @@ import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatEventTime } from '@/lib/event-time';
 import { formatCurrency } from '@/lib/currency';
 import { isMeaningfulTag } from '@/utils/eventText';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 export type EventWithRelations = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -187,10 +188,9 @@ export function EventHero({
   const { t } = useTranslation();
   return (
     <>
-      {heroImage && (
-        <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6">
+      <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6">
           <img
-            src={heroImage}
+            src={heroImage || getRandomFallbackImage()}
             alt={event.title}
             className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -198,7 +198,6 @@ export function EventHero({
             }}
           />
         </div>
-      )}
 
       {event.countries?.lgbti_criminalization && (
         <SafetyAlertBanner
