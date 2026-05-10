@@ -39,33 +39,21 @@ export function useImageAssets({ enabled, page, search, entityTypeFilter }: UseI
     if (!enabled) return;
     setLoading(true);
     try {
-      let assetIds: string[] | null = null;
-
-      if (entityTypeFilter !== 'all') {
-        const { data: links } = await untypedFrom('image_asset_links')
-          .select('asset_id')
-          .eq('entity_type', entityTypeFilter)
-          .limit(5000);
-        assetIds = [...new Set((links || []).map((l: { asset_id: string }) => l.asset_id))];
-        if (assetIds.length === 0) {
-          setItems([]);
-          setTotalCount(0);
-          setLoading(false);
-          return;
-        }
-      }
+      const selectExpr = entityTypeFilter !== 'all'
+        ? `*, image_asset_links!inner(entity_type, entity_id)`
+        : `*, image_asset_links(entity_type, entity_id)`;
 
       let query = untypedFrom('image_assets')
-        .select('*, image_asset_links(entity_type, entity_id)', { count: 'exact' })
+        .select(selectExpr, { count: 'exact' })
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      if (search) {
-        query = query.ilike('url', `%${search}%`);
+      if (entityTypeFilter !== 'all') {
+        query = query.eq('image_asset_links.entity_type', entityTypeFilter);
       }
 
-      if (assetIds) {
-        query = query.in('id', assetIds);
+      if (search) {
+        query = query.ilike('url', `%${search}%`);
       }
 
       const from = page * PAGE_SIZE;
