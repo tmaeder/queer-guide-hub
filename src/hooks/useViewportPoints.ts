@@ -81,6 +81,7 @@ async function fetchVenuesInBbox(
     .from('venues')
     .select('id, slug, name, category, latitude, longitude, city, country, is_featured')
     .neq('data_source', 'refuge_restrooms')
+    .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .gte('latitude', bbox.south)
@@ -130,6 +131,7 @@ async function fetchEventsInBbox(
       'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',
     )
     .eq('status', 'active')
+    .is('duplicate_of_id', null)
     .gte('start_date', new Date().toISOString())
     .order('is_featured', { ascending: false })
     .order('start_date', { ascending: true });

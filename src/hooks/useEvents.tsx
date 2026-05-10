@@ -20,7 +20,8 @@ export function useEvents(autoFetch: boolean = true) {
     (async () => {
       const { count } = await supabase
         .from('events')
-        .select('id', { head: true, count: 'exact' });
+        .select('id', { head: true, count: 'exact' })
+        .is('duplicate_of_id', null);
       if (!cancelled) setDatasetTotal(count ?? 0);
     })();
     return () => {
@@ -129,6 +130,7 @@ export function useEvents(autoFetch: boolean = true) {
             { count: 'exact' },
           )
           .eq('status', 'active')
+          .is('duplicate_of_id', null)
           .order('is_featured', { ascending: false })
           .order('start_date', { ascending: filters?.includePast ? false : true });
 

@@ -63,6 +63,7 @@ export function usePersonalitiesByProfession() {
         .from('personalities')
         .select('*')
         .not('profession', 'is', null)
+        .is('duplicate_of_id', null)
         .order('name');
       if (error) throw error;
       return data ?? [];
@@ -368,6 +369,7 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
     .from('news_articles')
     .select('*')
     .eq('slug', slug)
+    .is('duplicate_of_id', null)
     .or('quality_status.is.null,quality_status.eq.passed')
     .maybeSingle();
   if (!data && !error) {
@@ -375,6 +377,7 @@ export async function fetchNewsArticleBySlugOrId<T = unknown>(slug: string): Pro
       .from('news_articles')
       .select('*')
       .eq('id', slug)
+      .is('duplicate_of_id', null)
       .or('quality_status.is.null,quality_status.eq.passed')
       .maybeSingle();
     data = fb.data;
@@ -417,6 +420,7 @@ export async function fetchRelatedNewsArticles<T = unknown>(
     .select('id, slug, title, excerpt, image_url, published_at, category, category_canonical')
     .or(`category_canonical.eq.${category},category.eq.${category}`)
     .neq('id', excludeId)
+    .is('duplicate_of_id', null)
     .not('published_at', 'is', null)
     .or('quality_status.is.null,quality_status.eq.passed')
     .order('published_at', { ascending: false })
