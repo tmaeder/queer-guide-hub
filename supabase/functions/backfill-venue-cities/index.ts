@@ -163,7 +163,7 @@ async function processReverse(
         const cid = await resolveCountryId(supabase, countryCode)
         if (cid) update.country_id = cid
       }
-      if (!venue.country && data.address.country) update.country = data.address.country
+      if (!venue.country && countryCode) update.country = countryCode
 
       await supabase.from('venues').update(update).eq('id', venue.id)
       results.push({ id: venue.id, status: update.city_id ? 'matched' : cityName ? 'city_text_only' : 'no_city_in_response', city_name: cityName || undefined })
@@ -295,7 +295,7 @@ async function processForward(
         const cid = await resolveCountryId(supabase, countryCode)
         if (cid) update.country_id = cid
       }
-      if (!venue.country && addr?.country) update.country = addr.country
+      if (!venue.country && countryCode) update.country = countryCode
 
       await supabase.from('venues').update(update).eq('id', venue.id)
       results.push({
@@ -311,6 +311,163 @@ async function processForward(
   }
 
   return { results, remaining: (count || 0) - results.length }
+}
+
+// ── Single venue (trigger mode) ────────────────────────────────────────────
+
+async function processSingleVenue(
+  supabase: ReturnType<typeof getServiceClient>,
+  venueId: string,
+): Promise<{ venue_id: string; status: string; city_name?: string; city_id?: string }> {
+  const { data: venue, error } = await supabase
+    .from('venues')
+    .select('id, name, address, latitude, longitude, city, country, country_id, city_id')
+    .eq('id', venueId)
+    .single()
+
+  if (error || !venue) return { venue_id: venueId, status: 'not_found' }
+  if (venue.city_id) return { venue_id: venueId, status: 'already_has_city_id' }
+
+  const hasCoords = venue.latitude && venue.longitude && venue.latitude !== 0 && venue.longitude !== 0
+  const hasAddress = venue.address && isUsableAddress(venue.address, venue.name)
+
+  if (!hasCoords && !hasAddress) return { venue_id: venueId, status: 'no_geocodable_data' }
+
+  try {
+    let nominatimData: NominatimResult | null = null
+
+    if (hasCoords) {
+      const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${venue.latitude}&lon=${venue.longitude}&zoom=10&addressdetails=1`
+      const res = await fetch(url, { headers: nominatimHeaders() })
+      if (res.ok) nominatimData = await res.json() as NominatimResult
+    } else if (hasAddress) {
+      const url = `${NOMINATIM_BASE}/search?format=json&q=${encodeURIComponent(venue.address!)}&limit=1&addressdetails=1`
+      const res = await fetch(url, { headers: nominatimHeaders() })
+      if (res.ok) {
+        const arr = await res.json() as NominatimResult[]
+        if (arr?.length) nominatimData = arr[0]
+      }
+    }
+
+    if (!nominatimData?.address) return { venue_id: venueId, status: 'no_nominatim_result' }
+
+    const cityName = extractCity(nominatimData.address)
+    const countryCode = nominatimData.address.country_code?.toUpperCase() || null
+    const update: Record<string, unknown> = { geocode_attempted: true, updated_at: new Date().toISOString() }
+
+    // Set coords from forward geocode
+    if (!hasCoords && nominatimData.lat && nominatimData.lon) {
+      const lat = parseFloat(nominatimData.lat)
+      const lon = parseFloat(nominatimData.lon)
+      if (lat !== 0 && lon !== 0) { update.latitude = lat; update.longitude = lon }
+    }
+
+    if (cityName) {
+      if (!venue.city) update.city = cityName
+      const cityMatch = await matchCity(supabase, cityName, countryCode)
+      if (cityMatch) {
+        update.city_id = cityMatch.id
+        if (!venue.country_id) update.country_id = cityMatch.country_id
+      }
+    }
+
+    if (!venue.country_id && countryCode) {
+      const cid = await resolveCountryId(supabase, countryCode)
+      if (cid) update.country_id = cid
+    }
+    if (!venue.country && countryCode) update.country = countryCode
+
+    const { error: updateErr } = await supabase.from('venues').update(update).eq('id', venue.id)
+    if (updateErr) {
+      console.error('Venue update failed:', updateErr)
+      return { venue_id: venueId, status: `update_error: ${updateErr.message}` }
+    }
+
+    return {
+      venue_id: venueId,
+      status: update.city_id ? 'matched' : cityName ? 'geocoded_no_city_match' : 'no_city_in_response',
+      city_name: cityName || undefined,
+      city_id: update.city_id as string | undefined,
+    }
+  } catch (err) {
+    return { venue_id: venueId, status: `error: ${(err as Error).message}` }
+  }
+}
+
+// ── Single event (trigger mode) ────────────────────────────────────────────
+
+async function processSingleEvent(
+  supabase: ReturnType<typeof getServiceClient>,
+  eventId: string,
+): Promise<{ event_id: string; status: string; city_name?: string; city_id?: string }> {
+  const { data: event, error } = await supabase
+    .from('events')
+    .select('id, title, venue_id, latitude, longitude, city_id, country_id')
+    .eq('id', eventId)
+    .single()
+
+  if (error || !event) return { event_id: eventId, status: 'not_found' }
+  if (event.city_id) return { event_id: eventId, status: 'already_has_city_id' }
+
+  // Try inheriting from venue first
+  if (event.venue_id) {
+    const { data: venue } = await supabase
+      .from('venues')
+      .select('city_id, country_id')
+      .eq('id', event.venue_id)
+      .single()
+    if (venue?.city_id) {
+      const upd: Record<string, unknown> = { city_id: venue.city_id, updated_at: new Date().toISOString() }
+      if (!event.country_id && venue.country_id) upd.country_id = venue.country_id
+      const { error: updateErr } = await supabase.from('events').update(upd).eq('id', event.id)
+      if (updateErr) return { event_id: eventId, status: `update_error: ${updateErr.message}` }
+      return { event_id: eventId, status: 'inherited_from_venue', city_id: venue.city_id }
+    }
+  }
+
+  // Fall back to Nominatim reverse geocode
+  const hasCoords = event.latitude && event.longitude && event.latitude !== 0 && event.longitude !== 0
+  if (!hasCoords) return { event_id: eventId, status: 'no_geocodable_data' }
+
+  try {
+    const url = `${NOMINATIM_BASE}/reverse?format=json&lat=${event.latitude}&lon=${event.longitude}&zoom=10&addressdetails=1`
+    const res = await fetch(url, { headers: nominatimHeaders() })
+    if (!res.ok) return { event_id: eventId, status: `nominatim_error_${res.status}` }
+
+    const data = await res.json() as NominatimResult
+    if (!data.address) return { event_id: eventId, status: 'no_nominatim_result' }
+
+    const cityName = extractCity(data.address)
+    const countryCode = data.address.country_code?.toUpperCase() || null
+    const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
+
+    if (cityName) {
+      const cityMatch = await matchCity(supabase, cityName, countryCode)
+      if (cityMatch) {
+        update.city_id = cityMatch.id
+        if (!event.country_id) update.country_id = cityMatch.country_id
+      }
+    }
+
+    if (!event.country_id && !update.country_id && countryCode) {
+      const cid = await resolveCountryId(supabase, countryCode)
+      if (cid) update.country_id = cid
+    }
+
+    if (Object.keys(update).length > 1) {
+      const { error: updateErr } = await supabase.from('events').update(update).eq('id', event.id)
+      if (updateErr) return { event_id: eventId, status: `update_error: ${updateErr.message}` }
+    }
+
+    return {
+      event_id: eventId,
+      status: update.city_id ? 'matched' : cityName ? 'geocoded_no_city_match' : 'no_city_in_response',
+      city_name: cityName || undefined,
+      city_id: update.city_id as string | undefined,
+    }
+  } catch (err) {
+    return { event_id: eventId, status: `error: ${(err as Error).message}` }
+  }
 }
 
 // ── Handler ─────────────────────────────────────────────────────────────────
@@ -332,6 +489,18 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     const mode = body.mode || 'reverse'
     const batchSize = Math.min(body.batch_size || 25, 50)
+    const venueId = body.venue_id as string | undefined
+    const eventId = body.event_id as string | undefined
+
+    // Single-record mode (called from DB triggers)
+    if (venueId) {
+      const singleResult = await processSingleVenue(supabase, venueId)
+      return jsonResponse({ success: true, mode: 'single', ...singleResult }, 200, req)
+    }
+    if (eventId) {
+      const singleResult = await processSingleEvent(supabase, eventId)
+      return jsonResponse({ success: true, mode: 'single', ...singleResult }, 200, req)
+    }
 
     let result: { results: VenueResult[]; remaining: number }
 
