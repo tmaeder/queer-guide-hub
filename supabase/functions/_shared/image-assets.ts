@@ -1,7 +1,7 @@
 /**
  * image_assets helper — Wave B.1 of the Search Intelligence rollup.
  *
- * Mirror jobs (fetch-venue-images, fetch-personality-images, etc.) call
+ * The unified fetch-images function calls
  * upsertImageAsset() after a successful entity update so the image_assets
  * registry (#169) gets populated alongside the existing per-entity columns.
  *
@@ -24,7 +24,7 @@ export interface UpsertImageAssetInput {
   alt_text?: string | null
   alt_provenance?: 'human' | 'ai-generated' | 'imported' | 'none' | null
   /** Optional dimensions, byte size, and format. Set by Storage-uploading
-   * producers (fetch-city-images, fetch-country-images) where these are
+   * producers (fetch-images with entity_type city/country) where these are
    * decoded at fetch time. URL-mirroring producers leave them undefined. */
   width?: number | null
   height?: number | null

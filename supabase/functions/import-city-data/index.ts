@@ -92,10 +92,11 @@ async function processImagesFetch(cities: unknown[], batchSize = 10) {
     
     for (const city of batch) {
       try {
-        const result = await callEdgeFunction('fetch-city-images', {
-          cityId: city.id,
-          cityName: city.name,
-          countryName: city.countries?.name || ''
+        const result = await callEdgeFunction('fetch-images', {
+          entity_type: 'city',
+          id: city.id,
+          name: city.name,
+          country: city.countries?.name || ''
         });
         
         if (result.success) {

@@ -32,7 +32,7 @@ const FUNCTION_REGISTRY: FunctionMeta[] = [
   { name: 'categorize-tags', category: 'api', description: 'AI tag categorization', envVars: ['OPENAI_API_KEY'] },
   { name: 'cloudflare-api', category: 'api', description: 'Cloudflare API proxy', envVars: ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN'] },
   { name: 'enrich-venue', category: 'api', description: 'Venue data enrichment', envVars: [] },
-  { name: 'fetch-city-images', category: 'api', description: 'Fetch city hero images', envVars: ['PEXELS_API_KEY'] },
+  { name: 'fetch-images', category: 'api', description: 'Unified image fetcher (city/country/village/venue/event/personality)', envVars: ['PEXELS_API_KEY', 'UNSPLASH_ACCESS_KEY'] },
   { name: 'fetch-personality-data', category: 'api', description: 'Fetch personality data from Wikidata', envVars: [] },
   { name: 'fetch-wikipedia-data', category: 'api', description: 'Fetch Wikipedia extracts', envVars: [] },
   { name: 'get-api-key', category: 'api', description: 'Retrieve API key for client', envVars: [] },

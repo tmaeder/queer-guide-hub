@@ -1,28 +1,11 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useVenues } from '@/hooks/useVenues';
 import { toast } from 'sonner';
 import { useAddressResolver } from '@/hooks/useAddressResolver';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  LocationAutocomplete,
-  type AddressComponents,
-} from '@/components/ui/location-autocomplete';
-import { VenueImageUpload } from '@/components/venues/VenueImageUpload';
+import type { AddressComponents } from '@/components/ui/location-autocomplete';
 import { VenueEnrichmentPreview } from '@/components/admin/venues/VenueEnrichmentPreview';
 import { VenuesCsvImport } from '@/components/venues/VenuesCsvImport';
 import { VenueImportDialog } from '@/components/admin/venues/VenueImportDialog';
@@ -37,87 +20,18 @@ import {
   type ExportColumnDef,
 } from '@/utils/excelExport';
 import { AdminEntityTable } from '@/components/admin/data-table';
-import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
-import { createColumnHelper } from '@tanstack/react-table';
-import {
-  Edit,
-  Trash2,
-  Plus,
-  Star,
-  MapPin,
-  Search,
-  Check,
-  ExternalLink,
-} from 'lucide-react';
+import type { AdminTableConfig } from '@/components/admin/data-table/types';
+import { Edit, Trash2, Plus, Search, ExternalLink } from 'lucide-react';
 
-interface VenueRow {
-  id: string;
-  name: string;
-  description: string | null;
-  category: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  postal_code: string | null;
-  phone: string | null;
-  email: string | null;
-  website: string | null;
-  instagram: string | null;
-  is_featured: boolean;
-  verified: boolean;
-  price_range: number | null;
-  foursquare_rating: number | null;
-  latitude: number | null;
-  longitude: number | null;
-  amenities: string[] | null;
-  tags: string[] | null;
-  images: string[] | null;
-  city_id: string | null;
-  country_id: string | null;
-  created_at: string;
-  created_by: string | null;
-  is_organizer: boolean;
-  organizer_handles: Record<string, string> | null;
-}
-
-const columnHelper = createColumnHelper<VenueRow>();
-
-const venueCategories = [
-  'restaurant',
-  'bar',
-  'cafe',
-  'hotel',
-  'club',
-  'theater',
-  'museum',
-  'gallery',
-  'park',
-  'gym',
-  'spa',
-  'shop',
-  'other',
-];
-
-const commonAmenities = [
-  'WiFi',
-  'Parking',
-  'Wheelchair Accessible',
-  'Pet Friendly',
-  'Outdoor Seating',
-  'Live Music',
-  'Air Conditioning',
-  'Heating',
-  'Private Dining',
-  'Takeout',
-  'Delivery',
-  'Reservations',
-];
+import { useVenueColumns } from './admin-venues/VenueColumns';
+import { VenueEditDialog } from './admin-venues/VenueEditDialog';
+import { type VenueRow, type VenueFormData, venueCategories, emptyFormData } from './admin-venues/types';
 
 export default function AdminVenues() {
   const { user } = useAuth();
   const { createVenue, updateVenue, deleteVenue, refetch } = useVenues(false);
   const { resolveAddress } = useAddressResolver();
+  const columns = useVenueColumns();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState<VenueRow | null>(null);
@@ -130,62 +44,10 @@ export default function AdminVenues() {
     provider: 'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor' | null;
   }>({ open: false, provider: null });
   const [isImporting, setIsImporting] = useState<Record<string, boolean>>({});
+  const [formData, setFormData] = useState<VenueFormData>(emptyFormData);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    address: '',
-    city: '',
-    state: '',
-    country: 'US',
-    postal_code: '',
-    phone: '',
-    email: '',
-    website: '',
-    instagram: '',
-    price_range: '1',
-    is_featured: false,
-    verified: false,
-    latitude: '',
-    longitude: '',
-    amenities: [] as string[],
-    tags: [] as string[],
-    images: [] as string[],
-    city_id: undefined as string | undefined,
-    country_id: undefined as string | undefined,
-    is_organizer: false,
-    organizer_handles: {} as Record<string, string>,
-  });
-
-  // --- Form handlers ---
   const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      category: '',
-      address: '',
-      city: '',
-      state: '',
-      country: 'US',
-      postal_code: '',
-      phone: '',
-      email: '',
-      website: '',
-      instagram: '',
-      price_range: '1',
-      is_featured: false,
-      verified: false,
-      latitude: '',
-      longitude: '',
-      amenities: [],
-      tags: [],
-      images: [],
-      city_id: undefined,
-      country_id: undefined,
-      is_organizer: false,
-      organizer_handles: {},
-    });
+    setFormData(emptyFormData);
     setEditingVenue(null);
   };
 
@@ -260,7 +122,7 @@ export default function AdminVenues() {
         : await createVenue(venueData);
       if (result.error) throw new Error(result.error);
 
-      toast.success(`Success: ${editingVenue}`);
+      toast.success(`Success: ${editingVenue ? 'Venue updated' : 'Venue created'}`);
       resetForm();
       setIsCreateDialogOpen(false);
     } catch (error) {
@@ -279,22 +141,14 @@ export default function AdminVenues() {
     }
   };
 
-  // --- Import handlers ---
   const handleImport = async (provider: string, fnName: string, config?: Record<string, unknown>) => {
     setIsImporting((prev) => ({ ...prev, [provider]: true }));
     try {
-      toast({ title: 'Import Started', description: `${provider} import triggered...` });
-      const { data, error } = await supabase.functions.invoke(fnName, {
-        body: config ?? { trigger: 'manual' },
-      });
+      const { data, error } = await supabase.functions.invoke(fnName, { body: config ?? { trigger: 'manual' } });
       if (error) throw error;
       toast.success(`Import Completed: ${data.message}`);
     } catch {
-      toast({
-        title: 'Import Failed',
-        description: `Failed to import from ${provider}`,
-        variant: 'destructive',
-      });
+      toast.error(`Import Failed: Failed to import from ${provider}`);
     } finally {
       setIsImporting((prev) => ({ ...prev, [provider]: false }));
     }
@@ -307,13 +161,10 @@ export default function AdminVenues() {
       tomtom: 'import-tomtom-venues',
       'google-places': 'import-google-places-venues',
     };
-    if (importDialog.provider) {
-      handleImport(importDialog.provider, fnMap[importDialog.provider], config);
-    }
+    if (importDialog.provider) handleImport(importDialog.provider, fnMap[importDialog.provider], config);
     setImportDialog({ open: false, provider: null });
   };
 
-  // --- Address resolution ---
   const handleAddressComponents = async (
     components: AddressComponents | undefined,
     coordinates?: { lat: number; lng: number },
@@ -327,12 +178,7 @@ export default function AdminVenues() {
       postal_code: components.postcode || prev.postal_code,
     }));
     if (components.country) {
-      const resolved = await resolveAddress(
-        components.city,
-        components.country,
-        coordinates?.lat,
-        coordinates?.lng,
-      );
+      const resolved = await resolveAddress(components.city, components.country, coordinates?.lat, coordinates?.lng);
       if (resolved) {
         setFormData((prev) => ({
           ...prev,
@@ -341,27 +187,16 @@ export default function AdminVenues() {
           ...(resolved.city_name ? { city: resolved.city_name } : {}),
           ...(resolved.country_name ? { country: resolved.country_name } : {}),
         }));
-        if (resolved.created) {
-          toast({
-            title: 'New City Created',
-            description: `"${resolved.city_name}" added to database.`,
-          });
-        }
+        if (resolved.created) toast.success(`New City Created: "${resolved.city_name}" added to database.`);
       }
     }
   };
 
-  // --- Enrichment ---
   const handleEnrichVenue = async () => {
-    if (!formData.name.trim()) {
-      toast.error('Error: Enter a venue name first');
-      return;
-    }
+    if (!formData.name.trim()) { toast.error('Error: Enter a venue name first'); return; }
     setIsEnrichingVenue(true);
     try {
-      const { data, error } = await supabase.functions.invoke('enrich-venue', {
-        body: { venueName: formData.name, currentData: formData },
-      });
+      const { data, error } = await supabase.functions.invoke('enrich-venue', { body: { venueName: formData.name, currentData: formData } });
       if (error) throw error;
       if (data?.individualResults?.length > 0) {
         setEnrichmentResults(data.individualResults);
@@ -370,20 +205,14 @@ export default function AdminVenues() {
       } else {
         toast.error('No Results: No enrichment data found');
       }
-    } catch {
-      toast.error('Error: Failed to enrich venue');
-    } finally {
-      setIsEnrichingVenue(false);
-    }
+    } catch { toast.error('Error: Failed to enrich venue'); }
+    finally { setIsEnrichingVenue(false); }
   };
 
   const handleSelectEnrichmentResult = (selectedData: Record<string, unknown>) => {
     const updated = { ...formData };
     Object.entries(selectedData).forEach(([key, value]) => {
-      if (
-        value &&
-        (!updated[key as keyof typeof updated] || updated[key as keyof typeof updated] === '')
-      ) {
+      if (value && (!updated[key as keyof typeof updated] || updated[key as keyof typeof updated] === '')) {
         (updated as Record<string, unknown>)[key] = value;
       }
     });
@@ -392,7 +221,6 @@ export default function AdminVenues() {
     toast.success('Success: Venue data enriched');
   };
 
-  // --- Export ---
   const handleExportExcel = async () => {
     const cols: ExportColumnDef<Record<string, unknown>>[] = [
       { header: 'Name', accessor: (r) => r.name },
@@ -419,142 +247,10 @@ export default function AdminVenues() {
     await exportToExcel(allData, cols, generateFilename('venues'));
   };
 
-  // --- Columns ---
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor('name', {
-        header: 'Name',
-        cell: (info) => (
-          <div>
-            <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            {info.row.original.address && (
-              <p className="text-xs text-muted-foreground">
-                {info.row.original.address}
-              </p>
-            )}
-          </div>
-        ),
-        meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('category', {
-        header: 'Category',
-        cell: (info) => {
-          const val = info.getValue();
-          return val ? (
-            <Badge variant="secondary">{val.charAt(0).toUpperCase() + val.slice(1)}</Badge>
-          ) : (
-            '-'
-          );
-        },
-        meta: {
-          serverSortable: true,
-          serverFilterable: true,
-          groupable: true,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('city', {
-        header: 'City',
-        cell: (info) => {
-          const val = info.getValue();
-          return val ? (
-            <div className="flex items-center gap-1">
-              <MapPin style={{ height: 12, width: 12 }} />
-              {val}
-            </div>
-          ) : (
-            '-'
-          );
-        },
-        meta: {
-          serverSortable: true,
-          serverFilterable: true,
-          groupable: true,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('country', {
-        header: 'Country',
-        cell: (info) => info.getValue() || '-',
-        meta: {
-          serverSortable: true,
-          defaultVisible: false,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('is_featured', {
-        header: 'Featured',
-        cell: (info) =>
-          info.getValue() ? (
-            <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
-              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
-              Featured
-            </Badge>
-          ) : null,
-        meta: {
-          serverSortable: true,
-          serverFilterable: true,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('verified', {
-        header: 'Verified',
-        cell: (info) =>
-          info.getValue() ? (
-            <Badge style={{ backgroundColor: '#dcfce7', color: '#166534' }}>
-              <Check style={{ height: 12, width: 12, marginRight: 4 }} />
-              Verified
-            </Badge>
-          ) : null,
-        meta: {
-          serverSortable: true,
-          serverFilterable: true,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('foursquare_rating', {
-        header: 'Rating',
-        cell: (info) => {
-          const val = info.getValue();
-          return val ? `${val.toFixed(1)}/10` : '-';
-        },
-        meta: {
-          serverSortable: true,
-          defaultVisible: false,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('price_range', {
-        header: 'Price',
-        cell: (info) => {
-          const val = info.getValue();
-          return val ? '$'.repeat(val) : '-';
-        },
-        meta: {
-          serverSortable: true,
-          defaultVisible: false,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-      columnHelper.accessor('created_at', {
-        header: 'Created',
-        cell: (info) => new Date(info.getValue()).toLocaleDateString(),
-        meta: {
-          serverSortable: true,
-          defaultVisible: false,
-          hideable: true,
-        } satisfies AdminColumnMeta,
-      }),
-    ],
-    [],
-  );
-
-  // --- Table config ---
   const tableConfig: AdminTableConfig<VenueRow> = useMemo(
     () => ({
       tableName: 'venues',
-      select:
-        'id,name,description,category,address,city,state,country,postal_code,phone,email,website,instagram,is_featured,verified,price_range,foursquare_rating,latitude,longitude,amenities,tags,images,city_id,country_id,created_at,created_by,is_organizer,organizer_handles',
+      select: 'id,name,description,category,address,city,state,country,postal_code,phone,email,website,instagram,is_featured,verified,price_range,foursquare_rating,latitude,longitude,amenities,tags,images,city_id,country_id,created_at,created_by,is_organizer,organizer_handles',
       columns,
       defaultSort: { column: 'name', direction: 'asc' as const },
       defaultPageSize: 50,
@@ -562,112 +258,41 @@ export default function AdminVenues() {
       enableSearch: true,
       searchColumns: ['name', 'address', 'city', 'description'],
       entityFilters: [
-        {
-          key: 'category',
-          label: 'Category',
-          type: 'select',
-          column: 'category',
-          options: venueCategories.map((c) => ({
-            value: c,
-            label: c.charAt(0).toUpperCase() + c.slice(1),
-          })),
-        },
-        {
-          key: 'city',
-          label: 'City',
-          type: 'select',
-          column: 'city',
-          dynamicOptions: { tableName: 'venues', column: 'city' },
-        },
-        {
-          key: 'is_featured',
-          label: 'Featured',
-          type: 'boolean',
-          column: 'is_featured',
-        },
-        {
-          key: 'verified',
-          label: 'Verified',
-          type: 'boolean',
-          column: 'verified',
-        },
-        {
-          key: 'is_organizer',
-          label: 'Organizer',
-          type: 'boolean',
-          column: 'is_organizer',
-        },
+        { key: 'category', label: 'Category', type: 'select', column: 'category', options: venueCategories.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) },
+        { key: 'city', label: 'City', type: 'select', column: 'city', dynamicOptions: { tableName: 'venues', column: 'city' } },
+        { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
+        { key: 'verified', label: 'Verified', type: 'boolean', column: 'verified' },
+        { key: 'is_organizer', label: 'Organizer', type: 'boolean', column: 'is_organizer' },
       ],
       bulkEditFields: [
-        {
-          key: 'category',
-          label: 'Category',
-          type: 'select',
-          column: 'category',
-          options: venueCategories.map((c) => ({
-            value: c,
-            label: c.charAt(0).toUpperCase() + c.slice(1),
-          })),
-        },
+        { key: 'category', label: 'Category', type: 'select', column: 'category', options: venueCategories.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) })) },
         { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
         { key: 'verified', label: 'Verified', type: 'boolean', column: 'verified' },
         { key: 'is_organizer', label: 'Organizer', type: 'boolean', column: 'is_organizer' },
       ],
       rowActions: [
-        {
-          key: 'edit',
-          label: 'Edit',
-          icon: Edit,
-          onClick: handleEditVenue,
-        },
-        {
-          key: 'website',
-          label: 'Visit Website',
-          icon: ExternalLink,
-          onClick: (v) => window.open(v.website!, '_blank'),
-          visible: (v) => !!v.website,
-        },
-        {
-          key: 'delete',
-          label: 'Delete',
-          icon: Trash2,
-          variant: 'destructive',
-          onClick: handleDeleteVenue,
-        },
+        { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEditVenue },
+        { key: 'website', label: 'Visit Website', icon: ExternalLink, onClick: (v) => window.open(v.website!, '_blank'), visible: (v) => !!v.website },
+        { key: 'delete', label: 'Delete', icon: Trash2, variant: 'destructive', onClick: handleDeleteVenue },
       ],
       toolbarActions: (
         <div className="flex gap-1 flex-wrap">
           {(['foursquare', 'tripadvisor', 'tomtom', 'google-places'] as const).map((provider) => (
-            <Button
-              key={provider}
-              variant="secondary"
-              size="sm"
-              disabled={!!isImporting[provider]}
-              style={{ fontSize: '0.75rem' }}
-              onClick={() => setImportDialog({ open: true, provider })}
-            >
+            <Button key={provider} variant="secondary" size="sm" disabled={!!isImporting[provider]} style={{ fontSize: '0.75rem' }} onClick={() => setImportDialog({ open: true, provider })}>
               <Search style={{ height: 12, width: 12, marginRight: 4 }} />
-              {isImporting[provider]
-                ? 'Importing...'
-                : provider.charAt(0).toUpperCase() + provider.slice(1).replace('-', ' ')}
+              {isImporting[provider] ? 'Importing...' : provider.charAt(0).toUpperCase() + provider.slice(1).replace('-', ' ')}
             </Button>
           ))}
           <VenuesCsvImport onImportComplete={refetch} />
           <ExportExcelButton onExport={handleExportExcel} />
-          <Button
-            size="sm"
-            onClick={() => {
-              resetForm();
-              setIsCreateDialogOpen(true);
-            }}
-          >
+          <Button size="sm" onClick={() => { resetForm(); setIsCreateDialogOpen(true); }}>
             <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
             Add Venue
           </Button>
         </div>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDeleteVenue/refetch are stable, adding would defeat memoization
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [columns, isImporting],
   );
 
@@ -679,412 +304,35 @@ export default function AdminVenues() {
       config={tableConfig}
       afterTable={
         <>
-          {/* Create/Edit Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingVenue ? 'Edit Venue' : 'Add New Venue'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            {/* Basic Info */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Basic Information
-                </h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleEnrichVenue}
-                  disabled={isEnrichingVenue || !formData.name.trim()}
-                  style={{ fontSize: '0.875rem' }}
-                >
-                  {isEnrichingVenue ? 'Enriching...' : 'Enrich Venue'}
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Venue Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(v) => setFormData((prev) => ({ ...prev, category: v }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {venueCategories.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c.charAt(0).toUpperCase() + c.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, description: e.target.value }))
-                  }
-                  rows={3}
-                />
-              </div>
-            </div>
+          <VenueEditDialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+            formData={formData}
+            setFormData={setFormData}
+            isEditing={!!editingVenue}
+            isEnriching={isEnrichingVenue}
+            onSubmit={handleSubmit}
+            onEnrich={handleEnrichVenue}
+            onAddressComponents={handleAddressComponents}
+          />
 
-            {/* Location */}
-            <div className="flex flex-col gap-4">
-              <h3 className="font-semibold">Location
-              </h3>
-              <LocationAutocomplete
-                value={formData.address}
-                onChange={(address, coordinates, components) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    address,
-                    latitude: coordinates ? coordinates.lat.toString() : '',
-                    longitude: coordinates ? coordinates.lng.toString() : '',
-                  }));
-                  if (components) handleAddressComponents(components, coordinates);
-                }}
-                required
-                placeholder="Enter full address"
-              />
-              {formData.latitude && formData.longitude && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Latitude</Label>
-                    <Input
-                      value={formData.latitude}
-                      readOnly
-                      style={{ backgroundColor: 'var(--muted)' }}
-                    />
-                  </div>
-                  <div>
-                    <Label>Longitude</Label>
-                    <Input
-                      value={formData.longitude}
-                      readOnly
-                      style={{ backgroundColor: 'var(--muted)' }}
-                    />
-                  </div>
-                </div>
-              )}
-              <details>
-                <summary className="text-sm text-muted-foreground cursor-pointer">
-                  Manual location override
-                </summary>
-                <div className="grid grid-cols-4 gap-4 pt-2">
-                  <div>
-                    <Label>City</Label>
-                    <Input
-                      value={formData.city}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label>State</Label>
-                    <Input
-                      value={formData.state}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, state: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label>Country</Label>
-                    <Input
-                      value={formData.country}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, country: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label>Postal Code</Label>
-                    <Input
-                      value={formData.postal_code}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, postal_code: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-              </details>
-            </div>
-
-            {/* Contact */}
-            <div className="flex flex-col gap-4">
-              <h3 className="font-semibold">Contact
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Phone</Label>
-                  <Input
-                    value={formData.phone}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label>Website</Label>
-                  <Input
-                    value={formData.website}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label>Instagram</Label>
-                  <Input
-                    value={formData.instagram}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, instagram: e.target.value }))
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Settings */}
-            <div className="flex flex-col gap-4">
-              <h3 className="font-semibold">Settings
-              </h3>
-              <div className="grid grid-cols-4 gap-4">
-                <div>
-                  <Label>Price Range</Label>
-                  <Select
-                    value={formData.price_range}
-                    onValueChange={(v) => setFormData((prev) => ({ ...prev, price_range: v }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">$ - Budget</SelectItem>
-                      <SelectItem value="2">$$ - Moderate</SelectItem>
-                      <SelectItem value="3">$$$ - Expensive</SelectItem>
-                      <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="is_featured"
-                    checked={formData.is_featured}
-                    onCheckedChange={(c) =>
-                      setFormData((prev) => ({ ...prev, is_featured: c as boolean }))
-                    }
-                  />
-                  <Label htmlFor="is_featured">Featured</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="verified"
-                    checked={formData.verified}
-                    onCheckedChange={(c) =>
-                      setFormData((prev) => ({ ...prev, verified: c as boolean }))
-                    }
-                  />
-                  <Label htmlFor="verified">Verified</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="is_organizer"
-                    checked={formData.is_organizer}
-                    onCheckedChange={(c) =>
-                      setFormData((prev) => ({ ...prev, is_organizer: c as boolean }))
-                    }
-                  />
-                  <Label htmlFor="is_organizer">Organizer</Label>
-                </div>
-              </div>
-            </div>
-
-            {formData.is_organizer && (
-              <div className="flex flex-col gap-4">
-                <h3 className="font-semibold">Organizer Handles</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  {["instagram", "telegram", "bluesky", "x", "website"].map((handle) => (
-                    <div key={handle}>
-                      <Label>{handle.charAt(0).toUpperCase() + handle.slice(1)}</Label>
-                      <Input
-                        placeholder={handle === "website" ? "https://..." : "@handle"}
-                        value={formData.organizer_handles[handle] || ""}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            organizer_handles: { ...prev.organizer_handles, [handle]: e.target.value },
-                          }))
-                        }
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tags */}
-            <div className="flex flex-col gap-4">
-              <h3 className="font-semibold">Tags &amp; Amenities
-              </h3>
-              <div>
-                <Label>Tags</Label>
-                <div className="flex flex-wrap gap-1 mb-2 mt-1">
-                  {formData.tags.map((tag, i) => (
-                    <Badge
-                      key={i}
-                      variant="secondary"
-                      style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            tags: prev.tags.filter((_, idx) => idx !== i),
-                          }))
-                        }
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: 0,
-                          lineHeight: 1,
-                        }}
-                      >
-                        &times;
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <Input
-                  placeholder="Add tags (Enter)"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      const v = e.currentTarget.value.trim();
-                      if (v && !formData.tags.includes(v)) {
-                        setFormData((prev) => ({ ...prev, tags: [...prev.tags, v] }));
-                        e.currentTarget.value = '';
-                      }
-                    }
-                  }}
-                />
-              </div>
-              <div>
-                <Label>Amenities</Label>
-                <div className="flex flex-wrap gap-1 mb-2 mt-1">
-                  {formData.amenities.map((a, i) => (
-                    <Badge
-                      key={i}
-                      variant="secondary"
-                      style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                    >
-                      {a}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            amenities: prev.amenities.filter((_, idx) => idx !== i),
-                          }))
-                        }
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: 0,
-                          lineHeight: 1,
-                        }}
-                      >
-                        &times;
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <Input
-                  placeholder="Add amenities (Enter)"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      const v = e.currentTarget.value.trim();
-                      if (v && !formData.amenities.includes(v)) {
-                        setFormData((prev) => ({ ...prev, amenities: [...prev.amenities, v] }));
-                        e.currentTarget.value = '';
-                      }
-                    }
-                  }}
-                />
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {commonAmenities.map((a) => (
-                    <Button
-                      key={a}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      style={{ fontSize: '0.75rem', padding: '2px 8px' }}
-                      disabled={formData.amenities.includes(a)}
-                      onClick={() => {
-                        if (!formData.amenities.includes(a))
-                          setFormData((prev) => ({ ...prev, amenities: [...prev.amenities, a] }));
-                      }}
-                    >
-                      {a}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <VenueImageUpload
-              images={formData.images}
-              onChange={(images) => setFormData((prev) => ({ ...prev, images }))}
-              maxImages={8}
+          {importDialog.provider && (
+            <VenueImportDialog
+              open={importDialog.open}
+              onOpenChange={(open) => setImportDialog({ open, provider: importDialog.provider })}
+              provider={importDialog.provider}
+              onImport={handleImportDialogSubmit}
+              isImporting={!!isImporting[importDialog.provider]}
             />
+          )}
 
-            <Button type="submit" style={{ width: '100%' }}>
-              {editingVenue ? 'Update Venue' : 'Add Venue'}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Import Dialog */}
-      {importDialog.provider && (
-        <VenueImportDialog
-          open={importDialog.open}
-          onOpenChange={(open) => setImportDialog({ open, provider: importDialog.provider })}
-          provider={importDialog.provider}
-          onImport={handleImportDialogSubmit}
-          isImporting={!!isImporting[importDialog.provider]}
-        />
-      )}
-
-      {/* Enrichment Preview */}
-      <VenueEnrichmentPreview
-        isOpen={showEnrichmentPreview}
-        onClose={() => setShowEnrichmentPreview(false)}
-        results={enrichmentResults}
-        onSelectResult={handleSelectEnrichmentResult}
-        venueName={enrichmentVenueName}
-      />
+          <VenueEnrichmentPreview
+            isOpen={showEnrichmentPreview}
+            onClose={() => setShowEnrichmentPreview(false)}
+            results={enrichmentResults}
+            onSelectResult={handleSelectEnrichmentResult}
+            venueName={enrichmentVenueName}
+          />
         </>
       }
     />

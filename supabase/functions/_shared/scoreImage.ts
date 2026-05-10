@@ -1,5 +1,5 @@
 /**
- * Shared image scorer used by fetch-city-images and fetch-country-images.
+ * Shared image scorer used by fetch-images (city + country entity types).
  *
  * Hard-reject tokens are matched unconditionally against the alt text — if
  * the photo is of a bird or a branded billboard, no positive signal should

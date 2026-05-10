@@ -26,7 +26,7 @@ interface CountryHeroImagesProps {
  * Resolution order:
  *   1. curated_image_url
  *   2. persisted image_url (not flagged)
- *   3. fetch-country-images (scored + persisted)
+ *   3. fetch-images entity_type=country (scored + persisted)
  *   4. null -> render nothing
  */
 export default function CountryHeroImages({ country, className = '' }: CountryHeroImagesProps) {
@@ -39,10 +39,11 @@ export default function CountryHeroImages({ country, className = '' }: CountryHe
     let cancelled = false;
     (async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('fetch-country-images', {
+        const { data, error } = await supabase.functions.invoke('fetch-images', {
           body: {
-            countryId: country.id,
-            countryName: country.name,
+            entity_type: 'country',
+            id: country.id,
+            name: country.name,
             capital: country.capital ?? undefined,
           },
         });
