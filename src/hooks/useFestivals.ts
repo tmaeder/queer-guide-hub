@@ -72,6 +72,7 @@ export function useFestivals(autoFetch = true) {
       .from('events')
       .select('*, venues:venue_id(id, name)')
       .eq('festival_id', id)
+      .is('duplicate_of_id', null)
       .order('start_date', { ascending: true });
 
     return { ...festival, events: events || [] };

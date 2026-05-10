@@ -172,7 +172,8 @@ export function usePersonalities(autoFetch: boolean = true) {
       let query = supabase
         .from('personalities')
         .select('*', { count: 'exact' })
-        .eq('visibility', 'public');
+        .eq('visibility', 'public')
+        .is('duplicate_of_id', null);
 
       query = applyFilters(query, filters);
       query = applySort(query, filters?.sortBy);

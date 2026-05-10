@@ -29,7 +29,7 @@ const STALE_TIME = 15 * 60 * 1000; // 15 minutes
 
 export function useOptimizedCountries(filters?: PlacesFilters) {
   const fetchCountries = async (): Promise<Country[]> => {
-    let query = supabase.from('countries').select('*').order('name', { ascending: true });
+    let query = supabase.from('countries').select('*').is('duplicate_of_id', null).order('name', { ascending: true });
 
     if (filters?.search) {
       query = query.or(`name.ilike.%${filters.search}%,capital.ilike.%${filters.search}%`);
@@ -80,7 +80,7 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
 
 export function useOptimizedCities(filters?: PlacesFilters & { countryId?: string }) {
   const fetchCities = async (): Promise<City[]> => {
-    let query = supabase.from('cities').select('*').order('population', { ascending: false });
+    let query = supabase.from('cities').select('*').is('duplicate_of_id', null).order('population', { ascending: false });
 
     if (filters?.countryId) {
       query = query.eq('country_id', filters.countryId);
@@ -229,6 +229,7 @@ export async function fetchCitiesByCountry(countryId: string): Promise<CityWithC
     .from('cities')
     .select('*, countries (*)')
     .eq('country_id', countryId)
+    .is('duplicate_of_id', null)
     .order('population', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -236,8 +237,8 @@ export async function fetchCitiesByCountry(countryId: string): Promise<CityWithC
 
 export async function searchLocations(query: string) {
   const [countriesResult, citiesResult] = await Promise.all([
-    supabase.from('countries').select('*, regions (*)').ilike('name', `%${query}%`),
-    supabase.from('cities').select('*, countries (*)').ilike('name', `%${query}%`).limit(20),
+    supabase.from('countries').select('*, regions (*)').is('duplicate_of_id', null).ilike('name', `%${query}%`),
+    supabase.from('cities').select('*, countries (*)').is('duplicate_of_id', null).ilike('name', `%${query}%`).limit(20),
   ]);
   return {
     countries: countriesResult.data || [],
@@ -252,6 +253,7 @@ export async function findNearbyCities(userLocation: {
   const { data, error } = await supabase
     .from('cities')
     .select('*, countries (*)')
+    .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null);
   if (error) throw error;
