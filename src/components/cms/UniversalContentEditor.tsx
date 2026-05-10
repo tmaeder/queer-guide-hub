@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Eye, Trash2, Upload, MapPin, Clock, Users, Tag, Globe, Calendar, User, Building, Star } from 'lucide-react';
+import { ArrowLeft, Save, Eye, Trash2, Upload, MapPin, Clock, Users, Tag, Calendar, User, Building, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

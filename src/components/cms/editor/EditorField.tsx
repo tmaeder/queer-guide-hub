@@ -27,7 +27,7 @@ export function EditorField({ field, value, onChange }: EditorFieldProps) {
           <Badge variant="secondary">Read-only</Badge>
         </Label>
         <div className="px-3 py-2 bg-accent rounded-md text-sm">
-          {(value as any)?.toLocaleString() || 'N/A'}
+          {value != null ? String(value) : 'N/A'}
         </div>
       </div>
     );
