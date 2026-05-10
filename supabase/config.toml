@@ -378,3 +378,65 @@ verify_jwt = false
 
 [functions.feedback-embed]
 verify_jwt = false
+
+# Cron-invoked functions (called via net.http_post with service-role bearer)
+[functions.enrich-logos]
+verify_jwt = false
+
+[functions.feedback-story-titler]
+verify_jwt = false
+
+[functions.fetch-city-images]
+verify_jwt = false
+
+[functions.fetch-country-images]
+verify_jwt = false
+
+[functions.fetch-event-images]
+verify_jwt = false
+
+[functions.fetch-personality-images]
+verify_jwt = false
+
+[functions.fetch-venue-images]
+verify_jwt = false
+
+[functions.fetch-village-images]
+verify_jwt = false
+
+[functions.github-notifications-poller]
+verify_jwt = false
+
+[functions.push-dispatcher]
+verify_jwt = false
+
+[functions.refresh-watched-urls]
+verify_jwt = false
+
+[functions.trip-nudges]
+verify_jwt = false
+
+[functions.venue-url-checker]
+verify_jwt = false
+
+# Workflow/pipeline functions (invoked by dispatcher with service-role bearer)
+[functions.marketplace-image-mirror]
+verify_jwt = false
+
+[functions.marketplace-relevance]
+verify_jwt = false
+
+[functions.marketplace-ingestion]
+verify_jwt = false
+
+[functions.social-media-ingestion]
+verify_jwt = false
+
+[functions.scrape-events-daily]
+verify_jwt = false
+
+[functions.news-pipeline]
+verify_jwt = false
+
+[functions.personality-pipeline]
+verify_jwt = false
