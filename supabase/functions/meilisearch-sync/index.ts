@@ -4,7 +4,7 @@ const MEILI_URL = Deno.env.get('MEILISEARCH_URL')!
 const MEILI_ADMIN_KEY = Deno.env.get('MEILISEARCH_ADMIN_KEY')!
 
 interface SyncRequest {
-  action: 'full-sync' | 'sync-type' | 'upsert' | 'delete' | 'reconcile'
+  action: 'full-sync' | 'sync-type' | 'upsert' | 'delete' | 'reconcile' | 'configure'
   type?: string
   id?: string
   types?: string[]
@@ -70,6 +70,93 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true, type, id }, 200, req)
       }
 
+      case 'configure': {
+        // Apply index settings (searchable/filterable/sortable attrs, ranking
+        // rules, stop words, typo tolerance) to all Meilisearch indexes.
+        const STOP_WORDS = ['gay', 'queer', 'trans', 'lgbt', 'lgbtq', 'lgbtq+', 'lgbti']
+        const TIGHT_TYPO = { enabled: true, minWordSizeForTypos: { oneTypo: 8, twoTypos: 12 } }
+        const INDEX_SETTINGS: Record<string, Record<string, unknown>> = {
+          venues: {
+            searchableAttributes: ['title', 'description', 'address', 'city', 'country', 'tags', 'category'],
+            filterableAttributes: ['city', 'city_id', 'country', 'category', 'featured', 'tags', 'cluster_ids', 'target_groups', 'type', '_geo'],
+            sortableAttributes: ['title', '_geo'],
+            displayedAttributes: ['*'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          events: {
+            searchableAttributes: ['title', 'description', 'venue_name', 'city', 'country', 'event_type'],
+            filterableAttributes: ['city', 'city_id', 'country', 'event_type', 'featured', 'is_free', 'start_date', 'cluster_ids', 'target_groups', 'type', '_geo'],
+            sortableAttributes: ['start_date', 'title', '_geo'],
+            displayedAttributes: ['*'],
+            rankingRules: ['words', 'typo', 'exactness', 'proximity', 'attribute', 'sort', 'start_date:asc'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          cities: {
+            searchableAttributes: ['title', 'aliases', 'country'],
+            filterableAttributes: ['country', 'country_code', 'type', '_geo'],
+            sortableAttributes: ['title', 'population', '_geo'],
+            displayedAttributes: ['*'],
+            rankingRules: ['words', 'typo', 'exactness', 'attribute', 'proximity', 'sort', 'population:desc'],
+            typoTolerance: TIGHT_TYPO,
+          },
+          countries: {
+            searchableAttributes: ['title', 'description', 'code', 'continent'],
+            filterableAttributes: ['continent', 'type', '_geo'],
+            sortableAttributes: ['title', '_geo'],
+            displayedAttributes: ['*'],
+          },
+          news: {
+            searchableAttributes: ['title', 'description', 'category'],
+            filterableAttributes: ['category', 'is_featured', 'published_at', 'type'],
+            sortableAttributes: ['published_at', 'title'],
+            displayedAttributes: ['*'],
+            rankingRules: ['words', 'typo', 'exactness', 'proximity', 'attribute', 'sort', 'published_at:desc'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          marketplace: {
+            searchableAttributes: ['title', 'description', 'category'],
+            filterableAttributes: ['category', 'featured', 'price', 'type'],
+            sortableAttributes: ['price', 'title'],
+            displayedAttributes: ['*'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          personalities: {
+            searchableAttributes: ['title', 'description', 'profession', 'lgbti_connection', 'nationality'],
+            filterableAttributes: ['profession', 'nationality', 'is_featured', 'type'],
+            sortableAttributes: ['title'],
+            displayedAttributes: ['*'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          tags: {
+            searchableAttributes: ['title', 'description', 'category'],
+            filterableAttributes: ['category', 'type'],
+            sortableAttributes: ['title'],
+            displayedAttributes: ['*'],
+          },
+          queer_villages: {
+            searchableAttributes: ['title', 'description', 'city', 'country'],
+            filterableAttributes: ['city', 'country', 'featured', 'type', '_geo'],
+            sortableAttributes: ['title', '_geo'],
+            displayedAttributes: ['*'],
+          },
+        }
+        const configResults: Record<string, { ok: boolean; error?: string }> = {}
+        for (const [idx, settings] of Object.entries(INDEX_SETTINGS)) {
+          try {
+            await meiliPatch(`/indexes/${idx}/settings`, settings)
+            configResults[idx] = { ok: true }
+          } catch (e) {
+            configResults[idx] = { ok: false, error: e.message }
+          }
+        }
+        return jsonResponse({ success: true, results: configResults }, 200, req)
+      }
+
       case 'reconcile': {
         // Tombstone sweep: find docs in the Meilisearch index whose source
         // rows no longer exist in Supabase and delete them. Without this,
@@ -118,6 +205,22 @@ async function meiliPut(path: string, body: unknown) {
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`Meilisearch PUT ${path}: ${res.status} ${text}`)
+  }
+  return res.json()
+}
+
+async function meiliPatch(path: string, body: unknown) {
+  const res = await fetch(`${MEILI_URL}${path}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${MEILI_ADMIN_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Meilisearch PATCH ${path}: ${res.status} ${text}`)
   }
   return res.json()
 }
