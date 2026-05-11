@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
@@ -7,65 +7,26 @@ import {
   type CategoryTreeNode,
   type CentralizedTag,
 } from '@/hooks/useCentralizedTags';
-import { RelatedTagsCard } from '@/components/tags/RelatedTagsCard';
-import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
 import { ResourcesFilterBar } from '@/components/resources/ResourcesFilterBar';
-import { TagListRenderer } from '@/components/resources/TagListRenderer';
-import {
-  getCategoryIcon,
-  getCategoryShortName,
-  parentOrder,
-} from '@/components/resources/categoryMeta';
+import { parentOrder } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
 import { useMeta } from '@/hooks/useMeta';
 import { useSafeMode } from '@/providers/SafeModeProvider';
-import { useAgeAffirmation } from '@/hooks/useAgeAffirmation';
-import { TagDetailWithGate } from '@/components/age-gate/TagDetailWithGate';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Tag, ChevronRight, Network, Briefcase, Zap, AlertTriangle, Phone } from 'lucide-react';
+import { Network } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/EmptyState';
+import { ResourceTagDetail } from '@/pages/resources/ResourceTagDetail';
+import { ResourceOverview } from '@/pages/resources/ResourceOverview';
+import { ResourceCategory, ResourceSubcategory } from '@/pages/resources/ResourceCategory';
+import { ResourceProfessions } from '@/pages/resources/ResourceProfessions';
+import { ResourceSearch } from '@/pages/resources/ResourceSearch';
+import { isRealTagImage, type ViewMode, type DisplayMode, type SortOption } from '@/pages/resources/resourceHelpers';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
-
-type ViewMode =
-  | 'overview'
-  | 'category'
-  | 'subcategory'
-  | 'search'
-  | 'tag-detail'
-  | 'professions'
-  | 'graph'
-  | 'not-found';
-type DisplayMode = 'chips' | 'grid' | 'list';
-type SortOption = 'alphabetical' | 'usage' | 'recent';
-
-/**
- * P2-4 — "Has image" filter must exclude gradient placeholders. Without
- * width/height/MIME info on the client, use a URL heuristic: require an
- * http(s) or storage path, reject data: URIs and obvious placeholder
- * markers in the path. False negatives (real images named "*placeholder*")
- * are acceptable; false positives (gradient placeholders showing up
- * under "Has image") are not.
- */
-function isRealTagImage(url: string | null | undefined): boolean {
-  if (!url) return false;
-  const trimmed = url.trim();
-  if (trimmed.length === 0) return false;
-  if (trimmed.startsWith('data:')) return false;
-  const lower = trimmed.toLowerCase();
-  if (lower.includes('placeholder') || lower.includes('gradient')) return false;
-  return /^https?:\/\//i.test(trimmed) || trimmed.startsWith('/');
-}
-
-// ─────────────── Shared hover-card class ───────────────
-const hoverCardCls =
-  'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer bg-background text-left text-inherit w-full transition-all duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary border-0';
 
 export default function Ressources() {
   const { tagName, categorySlug } = useParams<{ tagName: string; categorySlug: string }>();
@@ -74,7 +35,6 @@ export default function Ressources() {
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
   const { data: tagUsageCounts = {} } = useTagUsageCounts();
   const safeMode = useSafeMode();
-  const ageAffirmation = useAgeAffirmation();
 
   // P1-1 — filter / sort / view state lives in URL query params so links
   // are shareable, back/forward works, and view-mode survives reloads.
@@ -442,148 +402,17 @@ export default function Ressources() {
 
   // ───────── Tag Detail ─────────
   if (viewMode === 'tag-detail' && selectedTag) {
-    const primary =
-      selectedTag.categories?.find((c) => c.is_primary) ?? selectedTag.categories?.[0];
-    const parentName = primary?.parent_name ?? undefined;
-    const childName = primary?.level === 1 ? primary.name : undefined;
-    const tagCategoryNames = [
-      ...(selectedTag.categories?.map((c) => c.name) ?? []),
-      ...(selectedTag.categories?.map((c) => c.parent_name ?? null) ?? []),
-    ];
-    const isAdult = tagCategoryNames.some((n) => safeMode.isAdultCategory(n));
     return (
-      <TagDetailWithGate
-        isAdult={isAdult}
-        affirmed={ageAffirmation.affirmed}
-        onDecline={() => {
-          navigate('/resources');
-          setViewMode('overview');
-        }}
-      >
-      <div className="container mx-auto py-8 md:py-16 px-4">
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-1 mb-4 flex-wrap">
-          <button
-            onClick={() => {
-              navigate('/resources');
-              setViewMode('overview');
-            }}
-            className="inline-flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
-          >
-            <ArrowLeft style={{ width: 14, height: 14 }} />
-            <span className="text-sm">Resources</span>
-          </button>
-          {parentName && (
-            <>
-              <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-              <button
-                onClick={() => {
-                  setSelectedCategory(parentName);
-                  setSelectedSubcategory('');
-                  setViewMode('category');
-                  navigate('/resources');
-                }}
-                className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
-              >
-                <span className="text-sm">{getCategoryShortName(parentName)}</span>
-              </button>
-            </>
-          )}
-          {childName && (
-            <>
-              <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-              <button
-                onClick={() => {
-                  setSelectedCategory(parentName || childName);
-                  setSelectedSubcategory(childName);
-                  setViewMode('subcategory');
-                  navigate('/resources');
-                }}
-                className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
-              >
-                <span className="text-sm">{getCategoryShortName(childName)}</span>
-              </button>
-            </>
-          )}
-          <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-          <span className="text-sm font-medium">{selectedTag.name}</span>
-        </div>
-
-        {/* Hero — only show image box when tag has an image */}
-        {selectedTag.image_url ? (
-          <div
-            className="w-full rounded-2xl overflow-hidden mb-6 relative bg-muted"
-            style={{ aspectRatio: '16 / 9' }}
-          >
-            <img
-              src={selectedTag.image_url}
-              alt={selectedTag.name}
-              className="w-full h-full object-cover"
-              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-            <div
-              className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6"
-              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)' }}
-            >
-              {primary && (
-                <p className="font-semibold mb-1 uppercase" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.65)', letterSpacing: '0.04em' }}>
-                  {parentName ? `${getCategoryShortName(parentName)} › ` : ''}
-                  {getCategoryShortName(primary.name)}
-                </p>
-              )}
-              <h1 className="text-2xl font-extrabold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)', lineHeight: 1.1 }}>
-                {selectedTag.name}
-              </h1>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6">
-            {primary && (
-              <p className="text-sm text-muted-foreground mb-1">
-                {parentName ? `${getCategoryShortName(parentName)} › ` : ''}
-                {getCategoryShortName(primary.name)}
-              </p>
-            )}
-            <h1 className="text-2xl font-bold">{selectedTag.name}</h1>
-          </div>
-        )}
-
-        {selectedTag.description ? (
-          <p className="text-muted-foreground mb-6" style={{ lineHeight: 1.7, maxWidth: 680, fontSize: '0.9rem' }}>
-            {selectedTag.description}
-          </p>
-        ) : (
-          <p className="text-muted-foreground mb-6 italic" style={{ fontSize: '0.85rem', opacity: 0.6 }}>
-            No definition yet for this term.
-          </p>
-        )}
-
-        {/* Content grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 min-w-0">
-          <TagLinkedContent tagId={selectedTag.id} tagName={selectedTag.name} />
-          <div className="flex flex-col gap-6 lg:sticky self-start" style={{ top: 80 }}>
-            <RelatedTagsCard
-              tagId={selectedTag.id}
-              sourceCategory={primary?.name}
-              onTagClick={(t) => handleTagClick({ name: t.name, id: t.id } as CentralizedTag)}
-            />
-          </div>
-        </div>
-      </div>
-      </TagDetailWithGate>
+      <ResourceTagDetail
+        selectedTag={selectedTag}
+        onNavigate={navigate}
+        onSetViewMode={setViewMode}
+        onSetSelectedCategory={setSelectedCategory}
+        onSetSelectedSubcategory={setSelectedSubcategory}
+        onTagClick={handleTagClick}
+      />
     );
   }
-
-  const renderTagList = (tags: CentralizedTag[]) => (
-    <TagListRenderer
-      tags={tags}
-      displayMode={displayMode}
-      tagUsageCounts={tagUsageCounts}
-      onTagClick={handleTagClick}
-    />
-  );
 
   const showFilteredResults =
     viewMode === 'search' ||
@@ -655,365 +484,70 @@ export default function Ressources() {
 
       {/* ───────── Overview ───────── */}
       {viewMode === 'overview' && !showFilteredResults && (
-        <div className="flex flex-col gap-8">
-          {popularTags.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Zap style={{ width: 18, height: 18 }} />
-                <h2 className="text-base font-semibold">Popular tags</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="ml-auto text-xs"
-                  onClick={() => safeMode.toggle()}
-                  data-testid="safe-mode-toggle"
-                  aria-pressed={!safeMode.enabled}
-                >
-                  {safeMode.enabled ? 'Show 18+ content' : 'Hide 18+ content'}
-                </Button>
-              </div>
-              <TagListRenderer
-                tags={popularTags}
-                displayMode="chips"
-                tagUsageCounts={tagUsageCounts}
-                onTagClick={handleTagClick}
-              />
-            </div>
-          )}
-
-          <div>
-            <h2 className="text-base font-semibold mb-4">Browse by category</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {orderedParents.map((cat) => {
-                const Icon = getCategoryIcon(cat.name);
-                const activeChildren = cat.children?.filter((c) => c.tag_count > 0) ?? [];
-                return (
-                  <LocalizedLink
-                    key={cat.id}
-                    to={`/resources/c/${encodeURIComponent(cat.slug)}`}
-                    className={`${hoverCardCls} flex-col items-stretch gap-1.5 no-underline text-inherit`}
-                    style={{ minHeight: 96 }}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Icon style={{ width: 18, height: 18, opacity: 0.75 }} />
-                        <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
-                          {getCategoryShortName(cat.name)}
-                        </span>
-                      </div>
-                      <Badge
-                        variant="secondary"
-                        title={`${cat.total_tag_count} tags total (across all subcategories)`}
-                        aria-label={`${cat.total_tag_count} tags total across all subcategories`}
-                      >
-                        {cat.total_tag_count}
-                      </Badge>
-                    </div>
-                    {activeChildren.length > 0 && (
-                      <span
-                        className="text-xs text-muted-foreground overflow-hidden"
-                        style={{
-                          fontSize: '0.7rem',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          lineHeight: 1.4,
-                        }}
-                        title="Each subcategory's count is the number of tags directly assigned to it"
-                      >
-                        {activeChildren
-                          .map((c) => `${getCategoryShortName(c.name)} (${c.tag_count})`)
-                          .join(' · ')}
-                      </span>
-                    )}
-                  </LocalizedLink>
-                );
-              })}
-              <button
-                onClick={() => setViewMode('professions')}
-                className={`${hoverCardCls} flex-col items-stretch gap-1.5`}
-                style={{ minHeight: 96 }}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Briefcase style={{ width: 18, height: 18, opacity: 0.75 }} />
-                    <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
-                      Professions
-                    </span>
-                  </div>
-                  <Badge variant="secondary">{professions.length}</Badge>
-                </div>
-                <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem', lineHeight: 1.4 }}>
-                  Browse LGBTQ+ personalities by profession
-                </span>
-              </button>
-              {/* Crisis help card */}
-              <LocalizedLink
-                to="/help"
-                className={`${hoverCardCls} flex-col items-stretch gap-1.5 no-underline text-inherit border-l-[3px] border-destructive`}
-                style={{ minHeight: 96 }}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Phone style={{ width: 18, height: 18, opacity: 0.75 }} />
-                    <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
-                      Crisis Hotlines
-                    </span>
-                  </div>
-                  <ChevronRight style={{ width: 16, height: 16, opacity: 0.4 }} />
-                </div>
-                <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem', lineHeight: 1.4 }}>
-                  Free, anonymous LGBTQIA+ crisis support worldwide
-                </span>
-              </LocalizedLink>
-            </div>
-          </div>
-        </div>
+        <ResourceOverview
+          popularTags={popularTags}
+          orderedParents={orderedParents}
+          tagUsageCounts={tagUsageCounts}
+          professionCount={professions.length}
+          onTagClick={handleTagClick}
+          onShowProfessions={() => setViewMode('professions')}
+        />
       )}
 
       {/* ───────── Category ───────── */}
       {viewMode === 'category' && selectedCategory && (
-        <div>
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
-            <Button variant="secondary" size="sm" onClick={handleBack}>
-              <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
-              Back
-            </Button>
-            {(() => {
-              const Icon = getCategoryIcon(selectedCategory);
-              return <Icon style={{ width: 18, height: 18 }} />;
-            })()}
-            <h6 className="text-base font-semibold">{getCategoryShortName(selectedCategory)}</h6>
-            <Badge variant="secondary">
-              {categoriesTree.find((c) => c.name === selectedCategory)?.total_tag_count ?? 0}
-            </Badge>
-          </div>
-
-          {/* Crisis help banner in Support & News */}
-          {selectedCategory === 'Support & News' && (
-            <Alert className="mb-6">
-              <AlertTriangle size={20} />
-              <AlertDescription className="flex items-center justify-between gap-4 flex-wrap">
-                <span>Need immediate help? Browse our curated crisis hotlines directory.</span>
-                <Button asChild variant="outline" size="sm">
-                  <LocalizedLink to="/help">
-                    <Phone size={14} className="mr-1" />
-                    Crisis Hotlines
-                  </LocalizedLink>
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {(() => {
-            const node = categoriesTree.find((c) => c.name === selectedCategory);
-            const allChildren = node?.children ?? [];
-            if (!node || allChildren.length === 0) {
-              const flat = allTags
-                .filter((t) =>
-                  t.categories?.some(
-                    (c) => c.name === selectedCategory || c.parent_name === selectedCategory,
-                  ),
-                )
-                .sort((a, b) => a.name.localeCompare(b.name));
-              return flat.length > 0 ? (
-                renderTagList(flat)
-              ) : (
-                <EmptyState
-                  icon={Tag}
-                  title="No tags in this category yet"
-                  description="Check back soon — this bucket is being filled."
-                  mood="encouraging"
-                />
-              );
-            }
-            return (
-              <div className="flex flex-col gap-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {allChildren.map((child) => {
-                    const Icon = getCategoryIcon(child.name);
-                    const isEmpty = child.tag_count === 0;
-                    return (
-                      <button
-                        key={child.id}
-                        onClick={() => {
-                          if (isEmpty) return;
-                          setSelectedSubcategory(child.name);
-                          setViewMode('subcategory');
-                        }}
-                        className={hoverCardCls}
-                        style={isEmpty ? { opacity: 0.45, cursor: 'default' } : undefined}
-                        aria-disabled={isEmpty || undefined}
-                      >
-                        <Icon style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.65 }} />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold" style={{ fontSize: '0.85rem' }}>
-                            {getCategoryShortName(child.name)}
-                          </p>
-                          <span className="text-xs text-muted-foreground">
-                            {isEmpty ? 'Coming soon' : `${child.tag_count} tags`}
-                          </span>
-                        </div>
-                        {!isEmpty && (
-                          <ChevronRight
-                            style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }}
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {allChildren.filter((c) => c.tag_count > 0).map((child) => {
-                  const childTags = allTags
-                    .filter((t) => t.categories?.some((c) => c.id === child.id))
-                    .sort(
-                      (a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0),
-                    )
-                    .slice(0, 10);
-                  if (childTags.length === 0) return null;
-                  return (
-                    <div key={child.id}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold">{getCategoryShortName(child.name)}</p>
-                          <Badge variant="secondary">{child.tag_count}</Badge>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setSelectedSubcategory(child.name);
-                            setViewMode('subcategory');
-                          }}
-                          className="bg-transparent border-0 cursor-pointer p-0 text-primary text-xs hover:underline"
-                        >
-                          View all →
-                        </button>
-                      </div>
-                      {renderTagList(childTags)}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-        </div>
+        <ResourceCategory
+          selectedCategory={selectedCategory}
+          categoriesTree={categoriesTree}
+          allTags={allTags}
+          tagUsageCounts={tagUsageCounts}
+          displayMode={displayMode}
+          onTagClick={handleTagClick}
+          onBack={handleBack}
+          onSelectSubcategory={(name) => {
+            setSelectedSubcategory(name);
+            setViewMode('subcategory');
+          }}
+        />
       )}
 
       {/* ───────── Subcategory ───────── */}
       {viewMode === 'subcategory' && selectedSubcategory && (
-        <div>
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
-            <Button variant="secondary" size="sm" onClick={handleBack}>
-              <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
-              Back
-            </Button>
-            {(() => {
-              const parent = categoriesTree.find((c) =>
-                c.children.some((ch) => ch.name === selectedSubcategory),
-              );
-              const Icon = getCategoryIcon(selectedSubcategory);
-              const subTags = allTags
-                .filter((t) => t.categories?.some((c) => c.name === selectedSubcategory))
-                .sort((a, b) => a.name.localeCompare(b.name));
-              return (
-                <>
-                  {parent && (
-                    <button
-                      onClick={() => {
-                        setSelectedCategory(parent.name);
-                        setSelectedSubcategory('');
-                        setViewMode('category');
-                      }}
-                      className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
-                    >
-                      <span className="text-sm">{getCategoryShortName(parent.name)}</span>
-                    </button>
-                  )}
-                  <ChevronRight style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))' }} />
-                  <Icon style={{ width: 18, height: 18 }} />
-                  <h6 className="text-base font-semibold">{getCategoryShortName(selectedSubcategory)}</h6>
-                  <Badge variant="secondary">{subTags.length}</Badge>
-                </>
-              );
-            })()}
-          </div>
-          {(() => {
-            const subTags = allTags
-              .filter((t) => t.categories?.some((c) => c.name === selectedSubcategory))
-              .sort((a, b) => a.name.localeCompare(b.name));
-            return subTags.length > 0 ? (
-              renderTagList(subTags)
-            ) : (
-              <EmptyState
-                icon={Tag}
-                title="No tags here yet"
-                description="This subcategory is being populated."
-                mood="encouraging"
-              />
-            );
-          })()}
-        </div>
+        <ResourceSubcategory
+          selectedSubcategory={selectedSubcategory}
+          categoriesTree={categoriesTree}
+          allTags={allTags}
+          tagUsageCounts={tagUsageCounts}
+          displayMode={displayMode}
+          onTagClick={handleTagClick}
+          onBack={handleBack}
+          onNavigateToParent={(parentName) => {
+            setSelectedCategory(parentName);
+            setSelectedSubcategory('');
+            setViewMode('category');
+          }}
+        />
       )}
 
       {/* ───────── Professions ───────── */}
       {viewMode === 'professions' && (
-        <div>
-          <div className="flex items-center gap-3 mb-6">
-            <Button variant="secondary" size="sm" onClick={handleBack}>
-              <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
-              Back
-            </Button>
-            <Briefcase style={{ width: 18, height: 18 }} />
-            <h6 className="text-base font-semibold">Professions</h6>
-            <Badge variant="secondary">{professions.length}</Badge>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {professions.map((profession) => (
-              <button
-                key={profession}
-                onClick={() =>
-                  navigate(`/personalities?profession=${encodeURIComponent(profession)}`)
-                }
-                className="inline-flex items-center px-3.5 py-1.5 rounded-full cursor-pointer bg-background text-inherit border-0 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary transition-all duration-150"
-                style={{ minHeight: 36 }}
-              >
-                <span className="font-medium" style={{ fontSize: '0.8rem' }}>{profession}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <ResourceProfessions
+          professions={professions}
+          onBack={handleBack}
+          onNavigate={navigate}
+        />
       )}
 
       {/* ───────── Search / Filtered ───────── */}
       {showFilteredResults && (
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <h6 className="text-base font-semibold">
-              {viewMode === 'search'
-                ? 'Search results'
-                : filterCategory !== 'all'
-                  ? `${getCategoryShortName(filterCategory)} tags`
-                  : 'Filtered tags'}
-            </h6>
-            <Badge
-              variant="secondary"
-              title={`${filteredAndSortedTags.length} matching tags`}
-              aria-label={`${filteredAndSortedTags.length} matching tags`}
-            >
-              {filteredAndSortedTags.length}
-            </Badge>
-          </div>
-          {filteredAndSortedTags.length > 0 ? (
-            renderTagList(filteredAndSortedTags)
-          ) : (
-            <EmptyState
-              icon={Tag}
-              title="No results"
-              description="Try a broader query or clearing your filters."
-              mood="encouraging"
-            />
-          )}
-        </div>
+        <ResourceSearch
+          viewMode={viewMode}
+          filterCategory={filterCategory}
+          filteredAndSortedTags={filteredAndSortedTags}
+          tagUsageCounts={tagUsageCounts}
+          displayMode={displayMode}
+          onTagClick={handleTagClick}
+        />
       )}
     </div>
   );

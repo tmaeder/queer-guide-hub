@@ -1,4 +1,8 @@
 import { Music, Globe } from 'lucide-react';
+import {
+  Music,
+  Globe
+} from 'lucide-react';
 import { Facebook, Instagram, Linkedin, Github, Youtube, Twitter } from '@/components/icons/brand';
 
 export interface PlatformConfig {
