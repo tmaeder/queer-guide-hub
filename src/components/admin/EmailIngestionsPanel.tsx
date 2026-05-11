@@ -40,7 +40,7 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
   no_content: 'outline',
 };
 
-export const EmailIngestionsPanel: React.FC = () => {
+export const EmailIngestionsPanel = () => {
   const [ingestions, setIngestions] = useState<EmailIngestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);

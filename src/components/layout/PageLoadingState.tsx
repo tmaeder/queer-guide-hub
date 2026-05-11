@@ -11,10 +11,10 @@ interface PageLoadingStateProps {
   variant?: 'card' | 'list';
 }
 
-export const PageLoadingState: React.FC<PageLoadingStateProps> = ({
+export const PageLoadingState = ({
   count = 6,
   variant = 'card',
-}) => {
+}: PageLoadingStateProps) => {
   const wrapperClass = 'content-crossfade-enter';
   if (variant === 'list') {
     return (

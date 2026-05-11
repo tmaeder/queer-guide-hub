@@ -1,5 +1,4 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 
 const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
@@ -58,7 +57,7 @@ function generateFallbackEmbedding(contentText: string): number[] {
   return embedding;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) });
   }

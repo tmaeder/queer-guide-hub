@@ -61,13 +61,13 @@ interface CardImageProps {
   children?: React.ReactNode;
 }
 
-const CardImage: React.FC<CardImageProps> = ({
+const CardImage = ({
   src,
   alt,
   height = 200,
   fallbackIcon: _FallbackIcon,
   children,
-}) => {
+}: CardImageProps) => {
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
   const fallbackSrc = React.useMemo(() => getRandomFallbackImage(), []);

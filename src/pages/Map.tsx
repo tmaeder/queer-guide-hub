@@ -28,7 +28,7 @@ function parseNum(raw: string | null, min: number, max: number): number | undefi
  *  - On moveend / chip toggle, write back via router.replace (no history pile).
  * Saved prefs in localStorage.
  */
-const MapPage: React.FC = () => {
+const MapPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Load saved preferences from localStorage

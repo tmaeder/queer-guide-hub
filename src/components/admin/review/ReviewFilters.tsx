@@ -38,12 +38,12 @@ const DEFAULT_CONTENT_TYPES = [
   { value: 'marketplace_listings', label: 'Marketplace' },
 ];
 
-export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
+export const ReviewFilters = ({
   filters,
   onFiltersChange,
   statusOptions,
   contentTypeOptions = DEFAULT_CONTENT_TYPES,
-}) => {
+}: ReviewFiltersProps) => {
   const update = <K extends keyof ReviewFilterState>(key: K, value: ReviewFilterState[K]) => {
     onFiltersChange({ ...filters, [key]: value });
   };

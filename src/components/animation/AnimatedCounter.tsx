@@ -17,14 +17,14 @@ interface AnimatedCounterProps {
   prefix?: string;
 }
 
-export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
+export const AnimatedCounter = ({
   value,
   duration: dur = 1.5,
   locale = 'en',
   className,
   suffix = '',
   prefix = '',
-}) => {
+}: AnimatedCounterProps) => {
   const ref = React.useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.1 });
   const reduced = useReducedMotion();

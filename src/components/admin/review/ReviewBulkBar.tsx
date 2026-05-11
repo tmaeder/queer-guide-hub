@@ -17,7 +17,7 @@ interface ReviewBulkBarProps {
   loading?: boolean;
 }
 
-export const ReviewBulkBar: React.FC<ReviewBulkBarProps> = ({
+export const ReviewBulkBar = ({
   selectedCount,
   totalCount,
   onSelectAll,
@@ -25,7 +25,7 @@ export const ReviewBulkBar: React.FC<ReviewBulkBarProps> = ({
   onBulkApprove,
   onBulkReject,
   loading,
-}) => {
+}: ReviewBulkBarProps) => {
   if (selectedCount === 0) return null;
 
   return (

@@ -1,3 +1,4 @@
+import { Music, Globe } from 'lucide-react';
 import {
   Music,
   Globe

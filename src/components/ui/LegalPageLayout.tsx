@@ -15,13 +15,13 @@ interface LegalPageLayoutProps {
   children: React.ReactNode;
 }
 
-export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
+export const LegalPageLayout = ({
   title,
   subtitle,
   lastUpdated,
   sections,
   children,
-}) => {
+}: LegalPageLayoutProps) => {
   const [tocOpen, setTocOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
 

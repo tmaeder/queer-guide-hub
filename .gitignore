@@ -36,6 +36,7 @@ supabase/.temp/
 
 # Asset staging dirs
 Icons/
+!src/components/icons/
 stich/
 Queer Guide/
 

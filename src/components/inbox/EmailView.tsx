@@ -13,7 +13,7 @@ interface EmailViewProps {
   onArchive?: (id: string) => void;
 }
 
-export const EmailView: React.FC<EmailViewProps> = ({ email, onReply, onDelete, onArchive }) => {
+export const EmailView = ({ email, onReply, onDelete, onArchive }: EmailViewProps) => {
   const sanitizedHtml = email.body_html
     ? DOMPurify.sanitize(email.body_html, {
         ALLOWED_TAGS: [

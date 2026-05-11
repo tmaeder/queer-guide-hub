@@ -13,7 +13,6 @@
  * Cursor stored in a single-row `github_poller_state` table.
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import {
   applyCommentAction,
@@ -53,7 +52,7 @@ async function gh<T>(path: string, token: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== 'POST' && req.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
 
   const token = Deno.env.get('GITHUB_PAT');

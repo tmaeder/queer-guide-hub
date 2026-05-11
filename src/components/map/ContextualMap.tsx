@@ -85,7 +85,7 @@ const CONTEXT_DEFAULTS: Record<MapContext, {
   },
 };
 
-export const ContextualMap: React.FC<ContextualMapProps> = ({
+export const ContextualMap = ({
   context,
   center,
   zoom,
@@ -95,7 +95,7 @@ export const ContextualMap: React.FC<ContextualMapProps> = ({
   showLayers,
   showFilters,
   className,
-}) => {
+}: ContextualMapProps) => {
   const defaults = CONTEXT_DEFAULTS[context];
 
   const mapHeight = height ?? defaults.height;

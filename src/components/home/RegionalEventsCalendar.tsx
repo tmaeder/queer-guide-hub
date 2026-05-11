@@ -24,7 +24,7 @@ const Hairline = () => <div className="h-px bg-current opacity-10" />;
 const DISPLAY = "'Inter', sans-serif";
 const BODY = "'Inter', sans-serif";
 
-const RegionalEventsCalendar: React.FC = () => {
+const RegionalEventsCalendar = () => {
   const { events, loading, fetchEvents } = useEvents(false);
   const { location: userLocation, loading: locationLoading } = useVisitorLocation();
   const { t } = useTranslation();

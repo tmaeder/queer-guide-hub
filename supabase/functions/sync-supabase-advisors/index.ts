@@ -23,7 +23,6 @@
  *   SUPABASE_SERVICE_ROLE_KEY (auto)
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 interface AdvisorLint {
@@ -76,7 +75,7 @@ async function fetchAdvisors(
   return body.lints ?? [];
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== 'POST' && req.method !== 'GET') {
     return json({ error: 'Method not allowed' }, 405);
   }

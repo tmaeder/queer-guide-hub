@@ -63,7 +63,7 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
   marketplace_listings: 'Listing',
 };
 
-export const ReviewItemCard: React.FC<ReviewItemCardProps> = ({
+export const ReviewItemCard = ({
   item,
   selected,
   onSelect,
@@ -71,7 +71,7 @@ export const ReviewItemCard: React.FC<ReviewItemCardProps> = ({
   onReject,
   onView,
   compact = false,
-}) => {
+}: ReviewItemCardProps) => {
   return (
     <Card
       className={`mb-2 transition-all ${selected ? 'border-primary bg-accent' : 'border-border bg-background'}`}

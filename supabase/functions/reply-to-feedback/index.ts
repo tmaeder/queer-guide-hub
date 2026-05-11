@@ -5,7 +5,6 @@
  * we don't churn the schema for every message.
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { sendEmail, isEmailConfigured } from '../_shared/email.ts';
 
@@ -91,7 +90,7 @@ function buildEmailHtml(title: string, body: string, submissionId: string): stri
 </body></html>`;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders(req) });
   }

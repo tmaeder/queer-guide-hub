@@ -11,7 +11,6 @@
  * Idempotent via `webhook_deliveries.delivery_id` = Svix-Id header.
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 function getServiceClient(): SupabaseClient {
@@ -68,7 +67,7 @@ interface ResendEvent {
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   const rawSecret = Deno.env.get('RESEND_WEBHOOK_SECRET');

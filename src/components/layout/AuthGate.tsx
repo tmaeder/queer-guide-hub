@@ -17,11 +17,11 @@ interface AuthGateProps {
   children: React.ReactNode;
 }
 
-export const AuthGate: React.FC<AuthGateProps> = ({
+export const AuthGate = ({
   title,
   description = 'Please sign in to access this feature.',
   children,
-}) => {
+}: AuthGateProps) => {
   const { user } = useAuth();
 
   if (!user) {

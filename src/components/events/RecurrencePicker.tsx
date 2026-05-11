@@ -41,7 +41,7 @@ const FREQ_OPTIONS = [
   { value: 'monthly', label: 'Monthly' },
 ] as const;
 
-export const RecurrencePicker: React.FC<RecurrencePickerProps> = ({ value, onChange }) => {
+export const RecurrencePicker = ({ value, onChange }: RecurrencePickerProps) => {
   const [enabled, setEnabled] = useState(!!value);
 
   const handleToggle = useCallback(

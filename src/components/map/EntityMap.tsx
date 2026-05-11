@@ -59,7 +59,7 @@ const PRIMARY_LAYER = 'entity-primary-circle';
 const PRIMARY_LABEL = 'entity-primary-label';
 const NEARBY_LAYER = 'entity-nearby-circle';
 
-export const EntityMap: React.FC<EntityMapProps> = ({
+export const EntityMap = ({
   center,
   zoom = 14,
   height = 300,

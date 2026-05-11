@@ -36,7 +36,7 @@ interface EmptyStateProps {
   children?: React.ReactNode;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export const EmptyState = ({
   icon: Icon,
   title,
   description,
@@ -48,7 +48,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onResetFilters,
   resetFiltersLabel = 'Reset filters',
   children,
-}) => {
+}: EmptyStateProps) => {
   const iconOpacity = mood === 'playful' ? 0.7 : mood === 'encouraging' ? 0.55 : 0.4;
   const bgOpacity = mood === 'playful' ? 0.09 : mood === 'encouraging' ? 0.07 : 0.04;
 
@@ -131,10 +131,10 @@ interface LoadingTimeoutProps {
   onRetry: () => void;
 }
 
-export const LoadingTimeout: React.FC<LoadingTimeoutProps> = ({
+export const LoadingTimeout = ({
   message = 'This is taking longer than expected. Please check your connection or try again.',
   onRetry,
-}) => {
+}: LoadingTimeoutProps) => {
   return (
     <Card>
       <CardContent>
@@ -166,7 +166,7 @@ interface ErrorStateProps {
   secondaryAction?: ErrorStateAction;
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({
+export const ErrorState = ({
   message,
   title,
   description,
@@ -174,7 +174,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   retryLabel = 'Retry',
   primaryAction,
   secondaryAction,
-}) => {
+}: ErrorStateProps) => {
   const headline =
     title ?? message ?? 'Something went wrong while loading data. Please try again.';
   return (

@@ -113,7 +113,7 @@ export interface ExploreMapProps {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export const ExploreMap: React.FC<ExploreMapProps> = ({
+export const ExploreMap = ({
   height = 480,
   defaultLayers,
   defaultFilters,

@@ -22,7 +22,7 @@ interface FadeInProps {
  * Scroll-triggered single-element reveal.
  * Uses motion's whileInView for one-shot entrance animations.
  */
-export const FadeIn: React.FC<FadeInProps> = ({
+export const FadeIn = ({
   children,
   direction = 'up',
   delay = 0,
@@ -31,7 +31,7 @@ export const FadeIn: React.FC<FadeInProps> = ({
   as = 'div',
   once = true,
   amount = defaultViewport.amount,
-}) => {
+}: FadeInProps) => {
   const base = variantByDirection[direction];
   const variants: Variants = React.useMemo(() => {
     const revealTransition = {

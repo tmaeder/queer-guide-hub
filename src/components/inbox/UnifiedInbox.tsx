@@ -40,7 +40,7 @@ const TYPE_FILTERS: { key: InboxItemType | 'all'; label: string; icon: React.Ele
   { key: 'notification', label: 'Alerts', icon: Bell },
 ];
 
-export const UnifiedInbox: React.FC = () => {
+export const UnifiedInbox = () => {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedEmailId = searchParams.get('email');

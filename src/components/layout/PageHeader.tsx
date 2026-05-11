@@ -16,13 +16,13 @@ interface PageHeaderProps {
   children?: React.ReactNode;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({
+export const PageHeader = ({
   title,
   subtitle,
   actions,
   center = false,
   children,
-}) => {
+}: PageHeaderProps) => {
   return (
     <div className="border border-border bg-card p-5 sm:p-6 mb-6">
       <div

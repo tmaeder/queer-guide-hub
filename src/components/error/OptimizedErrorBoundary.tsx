@@ -47,7 +47,7 @@ class OptimizedErrorBoundary extends React.Component<
   }
 }
 
-const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
+const DefaultErrorFallback = ({
   error,
   resetErrorBoundary,
   errors = [],
@@ -114,7 +114,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
   );
 };
 
-export const DataErrorFallback: React.FC<ErrorFallbackProps> = ({
+export const DataErrorFallback = ({
   resetErrorBoundary,
   errors = [],
 }) => {

@@ -36,14 +36,14 @@ interface UserDirectoryGridProps {
   clearAllFilters: () => void;
 }
 
-export const UserDirectoryGrid: React.FC<UserDirectoryGridProps> = ({
+export const UserDirectoryGrid = ({
   profiles,
   filters,
   setFilters,
   activeFiltersCount,
   isAuthed,
   clearAllFilters,
-}) => {
+}: UserDirectoryGridProps) => {
   return (
     <>
       <div className="flex flex-col gap-6">

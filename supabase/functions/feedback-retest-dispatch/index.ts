@@ -2,7 +2,6 @@
 // Picks up a queued feedback_retest_runs row, hands it to the active runner,
 // and records the result. Mirror of claude-routine-dispatch.
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import {
   corsResponse,
   errorResponse,
@@ -17,7 +16,7 @@ interface BodyShape {
   runner?: string;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
   if (req.method !== 'POST') return errorResponse('method_not_allowed', 405, req);
 

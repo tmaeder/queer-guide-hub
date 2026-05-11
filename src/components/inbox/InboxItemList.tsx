@@ -16,7 +16,7 @@ const TYPE_ICON: Record<string, React.ElementType> = {
   notification: Bell,
 };
 
-export const InboxItemList: React.FC<InboxItemListProps> = ({ items, onSelect, onToggleStar }) => {
+export const InboxItemList = ({ items, onSelect, onToggleStar }: InboxItemListProps) => {
   return (
     <div className="space-y-1">
       {items.map((item) => {

@@ -11,7 +11,6 @@
  * inbound — skip the push and clear the marker.
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
@@ -47,7 +46,7 @@ interface PushRequest {
   labels?: string[];
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   const json = (data: unknown, status = 200): Response =>
     new Response(JSON.stringify(data), {

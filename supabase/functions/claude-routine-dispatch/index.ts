@@ -20,7 +20,6 @@
 // reserve the run themselves.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import {
   corsResponse,
   errorResponse,
@@ -52,7 +51,7 @@ function userClientFor(req: Request) {
   });
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
   if (req.method !== 'POST') return errorResponse('method_not_allowed', 405, req);
 
