@@ -11,7 +11,7 @@ export const getFileType = (filename: string): string => {
 };
 
 export const formatFileSize = (bytes: number | null | undefined) => {
-  if (!bytes || bytes === 0) return '0 B';
+  if (!bytes || bytes === 0) return '—';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -97,7 +97,13 @@ export const getImageUrl = (item: UnifiedMediaItem) => {
 
 export const getThumbnailUrl = (item: UnifiedMediaItem) => {
   if (item.thumbnail_url) return item.thumbnail_url;
-  return getImageUrl(item);
+  const url = getImageUrl(item);
+  // Fix data URIs with non-standard "utf8" encoding — decode to proper format
+  if (url.startsWith('data:image/svg+xml;utf8,')) {
+    const svg = decodeURIComponent(url.slice('data:image/svg+xml;utf8,'.length));
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }
+  return url;
 };
 
 export const entityTypeLabel = (et: string) =>
