@@ -38,7 +38,7 @@ const formatValue = (value: number | null | undefined, unit: string): string => 
   return value.toFixed(2);
 };
 
-export const SDGDataPanel = ({ data, countryName }: SDGDataPanelProps) => {
+export const SDGDataPanel = ({ data, countryName: _countryName }: SDGDataPanelProps) => {
   if (!data.hasData) {
     return null;
   }

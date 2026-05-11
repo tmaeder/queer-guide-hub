@@ -45,7 +45,7 @@ const FLAG_CONFIG = {
 export const ContentWarningBanner = ({
   warnings,
   compact = false,
-}) => {
+}: ContentWarningBannerProps) => {
   const [dismissed, setDismissed] = useState(false);
 
   if (!warnings || dismissed) return null;
@@ -107,10 +107,10 @@ export const ContentWarningBanner = ({
  * Compact flag badges for admin tables and review cards. Score is text,
  * not hue; severity reads from icon + label, not color.
  */
-export const SensitivityBadges<{
+export const SensitivityBadges = ({ sensitivityFlags, relevanceScore }: {
   sensitivityFlags?: Array<{ category: string; severity: string }> | null;
   relevanceScore?: number | null;
-}> = ({ sensitivityFlags, relevanceScore }) => {
+}) => {
   return (
     <div className="flex flex-wrap items-center gap-1">
       {relevanceScore != null && (
