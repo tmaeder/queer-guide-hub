@@ -1,16 +1,11 @@
 import { useMemo, useState } from 'react';
 import {
-  Twitter,
-  Instagram,
-  Linkedin,
-  Github,
-  Facebook,
-  Youtube,
   Globe,
   Music,
   Plus,
   X,
 } from 'lucide-react';
+import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
 import { FieldWrapper } from './FieldWrapper';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

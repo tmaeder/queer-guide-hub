@@ -22,12 +22,12 @@ import {
   Hash,
   Zap,
   Copy,
-  Github,
   MessageSquarePlus,
   Check,
   ShieldAlert,
   GripVertical,
 } from 'lucide-react';
+import { Github } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
 import { kanbanColumns, type KanbanStatus } from './constants';
 import { SERVICE_COLORS, type ApiErrorSubmission } from './claudePrompts';

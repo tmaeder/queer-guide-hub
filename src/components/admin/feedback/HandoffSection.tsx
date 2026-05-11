@@ -16,7 +16,6 @@ import {
   Copy,
   Bot,
   MessageSquare,
-  Github as GithubIcon,
   MoreVertical,
   ArrowRight,
   Check,
@@ -24,6 +23,7 @@ import {
   Loader,
   Circle,
 } from 'lucide-react';
+import { Github as GithubIcon } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
 import type {
   FeedbackHandoff,
