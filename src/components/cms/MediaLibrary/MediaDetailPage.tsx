@@ -449,12 +449,7 @@ export function MediaDetailPage() {
             {detail.metadata && Object.keys(detail.metadata).length > 0 && (
               <>
                 <Separator />
-                <details>
-                  <summary className="text-muted-foreground cursor-pointer">Raw Metadata</summary>
-                  <pre className="mt-2 p-3 bg-muted text-xs overflow-auto max-h-48">
-                    {JSON.stringify(detail.metadata, null, 2)}
-                  </pre>
-                </details>
+                <ExifDataSection metadata={detail.metadata} />
               </>
             )}
           </div>
@@ -476,6 +471,92 @@ export function MediaDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+interface ExifField {
+  label: string;
+  value: string;
+}
+
+function ExifDataSection({ metadata }: { metadata: Record<string, unknown> }) {
+  const exif = (metadata.exif || {}) as Record<string, unknown>;
+  const hasExif = Object.keys(exif).length > 0;
+
+  if (!hasExif) {
+    return (
+      <details>
+        <summary className="text-muted-foreground cursor-pointer">Raw Metadata</summary>
+        <pre className="mt-2 p-3 bg-muted text-xs overflow-auto max-h-48">
+          {JSON.stringify(metadata, null, 2)}
+        </pre>
+      </details>
+    );
+  }
+
+  const fields: ExifField[] = [];
+
+  // Camera
+  if (exif.make || exif.model) {
+    const camera = [exif.make, exif.model].filter(Boolean).join(' ');
+    fields.push({ label: 'Camera', value: camera });
+  }
+  if (exif.lensModel) fields.push({ label: 'Lens', value: String(exif.lensModel) });
+
+  // Exposure
+  if (exif.focalLength) {
+    let fl = `${exif.focalLength}mm`;
+    if (exif.focalLength35mm) fl += ` (${exif.focalLength35mm}mm equiv.)`;
+    fields.push({ label: 'Focal Length', value: fl });
+  }
+  if (exif.fNumber) fields.push({ label: 'Aperture', value: `f/${exif.fNumber}` });
+  if (exif.exposureTime) fields.push({ label: 'Shutter Speed', value: String(exif.exposureTime) });
+  if (exif.iso) fields.push({ label: 'ISO', value: String(exif.iso) });
+
+  // Date
+  if (exif.dateTimeOriginal || exif.dateTime) {
+    const dt = String(exif.dateTimeOriginal || exif.dateTime);
+    const formatted = dt.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+    fields.push({ label: 'Date Taken', value: formatted });
+  }
+
+  // Technical
+  if (exif.colorSpace) fields.push({ label: 'Color Space', value: String(exif.colorSpace) });
+  if (exif.flash) fields.push({ label: 'Flash', value: String(exif.flash) });
+  if (exif.meteringMode) fields.push({ label: 'Metering', value: String(exif.meteringMode) });
+  if (exif.whiteBalance) fields.push({ label: 'White Balance', value: String(exif.whiteBalance) });
+  if (exif.software) fields.push({ label: 'Software', value: String(exif.software) });
+
+  // Rights
+  if (exif.artist) fields.push({ label: 'Artist', value: String(exif.artist) });
+  if (exif.copyright) fields.push({ label: 'Copyright', value: String(exif.copyright) });
+
+  // GPS
+  if (exif.gpsLatitude != null && exif.gpsLongitude != null) {
+    fields.push({
+      label: 'GPS',
+      value: `${exif.gpsLatitude}, ${exif.gpsLongitude}${exif.gpsAltitude != null ? ` (${exif.gpsAltitude}m)` : ''}`,
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-sm font-medium text-muted-foreground">EXIF Data</p>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+        {fields.map(({ label, value }) => (
+          <div key={label} className="flex flex-col">
+            <span className="text-muted-foreground text-xs">{label}</span>
+            <span className="truncate" title={value}>{value}</span>
+          </div>
+        ))}
+      </div>
+      <details className="mt-1">
+        <summary className="text-xs text-muted-foreground cursor-pointer">Raw EXIF JSON</summary>
+        <pre className="mt-1 p-2 bg-muted text-xs overflow-auto max-h-36">
+          {JSON.stringify(exif, null, 2)}
+        </pre>
+      </details>
     </div>
   );
 }

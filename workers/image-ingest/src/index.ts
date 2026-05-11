@@ -8,6 +8,8 @@
  * All endpoints require X-Admin-Secret header.
  */
 
+import { extractExif, extractJpegDimensions, extractPngDimensions } from './exif';
+
 interface Env {
   IMAGES: R2Bucket;
   SUPABASE_URL: string;
@@ -212,6 +214,27 @@ async function ingestImage(env: Env, row: ImageAssetRow): Promise<boolean> {
     const ext = extFromContentType(ct);
     const key = `${id}.${ext}`;
 
+    // Extract EXIF metadata and dimensions
+    let metadata: Record<string, unknown> = {};
+    let width: number | null = null;
+    let height: number | null = null;
+
+    if (ct.includes('jpeg') || ct.includes('jpg')) {
+      const exif = extractExif(body);
+      if (exif && Object.keys(exif).length > 0) {
+        metadata = { exif };
+        width = exif.imageWidth ?? null;
+        height = exif.imageHeight ?? null;
+      }
+      if (!width || !height) {
+        const dims = extractJpegDimensions(body);
+        if (dims) { width = dims.width; height = dims.height; }
+      }
+    } else if (ct.includes('png')) {
+      const dims = extractPngDimensions(body);
+      if (dims) { width = dims.width; height = dims.height; }
+    }
+
     // Upload to R2
     await env.IMAGES.put(key, body, {
       httpMetadata: { contentType: ct },
@@ -230,6 +253,9 @@ async function ingestImage(env: Env, row: ImageAssetRow): Promise<boolean> {
       optimized_at: new Date().toISOString(),
       bytes: body.byteLength,
       ...(format ? { format } : {}),
+      ...(width ? { width } : {}),
+      ...(height ? { height } : {}),
+      ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
     });
 
     return true;
