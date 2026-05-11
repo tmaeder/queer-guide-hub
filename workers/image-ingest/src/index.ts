@@ -115,7 +115,7 @@ async function processBatch(env: Env, batchSize: number): Promise<{
   processed: number; ok: number; failed: number; remaining: number;
 }> {
   // Fetch pending images from Supabase
-  const pendingUrl = `${env.SUPABASE_URL}/rest/v1/image_assets?select=id,url,format&status=eq.active&optimization_status=eq.pending&order=created_at.asc&limit=${batchSize}`;
+  const pendingUrl = `${env.SUPABASE_URL}/rest/v1/image_assets?select=id,url,format&status=eq.active&optimization_status=eq.pending&limit=${batchSize}&offset=${Math.floor(Math.random() * 100)}`;
   const pendingRes = await fetch(pendingUrl, {
     headers: {
       'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
