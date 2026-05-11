@@ -19,7 +19,7 @@ import { useUnifiedMedia, PAGE_SIZE } from '@/hooks/useUnifiedMedia';
 import { useMediaMutations } from '@/hooks/useMediaMutations';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { UnifiedMediaItem, ViewMode, SortBy, SortDir, StatusFilter, EntityTypeFilter } from './types';
+import type { UnifiedMediaItem, ViewMode, SortBy, SortDir, StatusFilter, EntityTypeFilter, FormatFilter, SourceTypeFilter } from './types';
 import { MediaToolbar } from './MediaToolbar';
 import { MediaGrid } from './MediaGrid';
 import { MediaUploadZone } from './MediaUploadZone';
@@ -36,8 +36,10 @@ export function MediaLibrary() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [entityTypeFilter, setEntityTypeFilter] = useState<EntityTypeFilter>('all');
+  const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
+  const [sourceTypeFilter, setSourceTypeFilter] = useState<SourceTypeFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('created_at');
-  const [sortDir] = useState<SortDir>('desc');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -57,6 +59,8 @@ export function MediaLibrary() {
     search: debouncedSearch,
     statusFilter,
     entityTypeFilter,
+    formatFilter,
+    sourceTypeFilter,
     sortBy,
     sortDir,
     enabled: isAdmin,
@@ -152,10 +156,14 @@ export function MediaLibrary() {
             onStatusFilterChange={(v) => { setStatusFilter(v); setPage(0); }}
             entityTypeFilter={entityTypeFilter}
             onEntityTypeFilterChange={(v) => { setEntityTypeFilter(v); setPage(0); }}
+            formatFilter={formatFilter}
+            onFormatFilterChange={(v) => { setFormatFilter(v); setPage(0); }}
+            sourceTypeFilter={sourceTypeFilter}
+            onSourceTypeFilterChange={(v) => { setSourceTypeFilter(v); setPage(0); }}
             sortBy={sortBy}
             onSortByChange={(v) => { setSortBy(v); setPage(0); }}
             sortDir={sortDir}
-            onSortDirChange={() => {}}
+            onSortDirToggle={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             bulkMode={bulkMode}

@@ -6,6 +6,8 @@ import type {
   SortDir,
   StatusFilter,
   EntityTypeFilter,
+  FormatFilter,
+  SourceTypeFilter,
 } from '@/components/cms/MediaLibrary/types';
 
 const PAGE_SIZE = 60;
@@ -15,6 +17,8 @@ export interface UnifiedMediaParams {
   search: string;
   statusFilter: StatusFilter;
   entityTypeFilter: EntityTypeFilter;
+  formatFilter: FormatFilter;
+  sourceTypeFilter: SourceTypeFilter;
   sortBy: SortBy;
   sortDir: SortDir;
   enabled?: boolean;
@@ -66,7 +70,7 @@ function parseSizeStr(s: string): number | undefined {
 }
 
 async function fetchUnifiedMedia(params: UnifiedMediaParams) {
-  const { page, search, statusFilter, entityTypeFilter, sortBy, sortDir } = params;
+  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, sortBy, sortDir } = params;
   const from = page * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
@@ -107,8 +111,14 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
     case 'pending':
       query = query.eq('optimization_status', 'pending');
       break;
+    case 'processing':
+      query = query.eq('optimization_status', 'processing');
+      break;
     case 'failed':
       query = query.eq('optimization_status', 'failed');
+      break;
+    case 'skipped':
+      query = query.eq('optimization_status', 'skipped');
       break;
     case 'flagged':
       query = query.eq('is_flagged', true);
@@ -119,10 +129,21 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
     case 'unused':
       query = query.eq('usage_count', 0);
       break;
+    case 'no_alt':
+      query = query.is('alt_text', null);
+      break;
   }
 
   if (entityTypeFilter !== 'all') {
     query = query.contains('entity_types', [entityTypeFilter]);
+  }
+
+  if (formatFilter !== 'all') {
+    query = query.eq('format', formatFilter);
+  }
+
+  if (sourceTypeFilter !== 'all') {
+    query = query.eq('source_type', sourceTypeFilter);
   }
 
   const { data, count, error } = await query;
@@ -135,10 +156,10 @@ async function fetchUnifiedMedia(params: UnifiedMediaParams) {
 }
 
 export function useUnifiedMedia(params: UnifiedMediaParams) {
-  const { page, search, statusFilter, entityTypeFilter, sortBy, sortDir, enabled = true } = params;
+  const { page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, sortBy, sortDir, enabled = true } = params;
 
   return useQuery({
-    queryKey: ['unified-media', page, search, statusFilter, entityTypeFilter, sortBy, sortDir],
+    queryKey: ['unified-media', page, search, statusFilter, entityTypeFilter, formatFilter, sourceTypeFilter, sortBy, sortDir],
     queryFn: () => fetchUnifiedMedia(params),
     enabled,
     placeholderData: keepPreviousData,

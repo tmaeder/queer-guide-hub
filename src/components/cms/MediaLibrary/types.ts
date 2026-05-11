@@ -42,17 +42,31 @@ export type OptimizationStatus =
   | 'not_optimized';
 
 export type ViewMode = 'grid' | 'list';
-export type SortBy = 'created_at' | 'display_name' | 'file_size' | 'usage_count';
+export type SortBy = 'created_at' | 'updated_at' | 'display_name' | 'file_size' | 'usage_count';
 export type SortDir = 'asc' | 'desc';
 
 export type StatusFilter =
   | 'all'
   | 'optimized'
   | 'pending'
+  | 'processing'
   | 'failed'
+  | 'skipped'
   | 'flagged'
   | 'starred'
-  | 'unused';
+  | 'unused'
+  | 'no_alt';
+
+export type FormatFilter =
+  | 'all'
+  | 'jpeg'
+  | 'png'
+  | 'webp'
+  | 'avif'
+  | 'gif'
+  | 'svg';
+
+export type SourceTypeFilter = 'all' | 'image_asset' | 'cms_media';
 
 export type EntityTypeFilter =
   | 'all'
