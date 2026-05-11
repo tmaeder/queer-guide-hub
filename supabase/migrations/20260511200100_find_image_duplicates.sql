@@ -1,5 +1,30 @@
 -- Duplicate finder RPCs for the media library
 
+-- Helper: hamming distance between two hex-encoded phash strings
+create or replace function public.phash_hamming(a text, b text)
+returns int
+language plpgsql immutable strict
+as $$
+declare
+  ba bytea;
+  bb bytea;
+  dist int := 0;
+  i int;
+  xor_byte int;
+begin
+  ba := decode(lpad(a, 16, '0'), 'hex');
+  bb := decode(lpad(b, 16, '0'), 'hex');
+  for i in 0..least(octet_length(ba), octet_length(bb)) - 1 loop
+    xor_byte := get_byte(ba, i) # get_byte(bb, i);
+    while xor_byte > 0 loop
+      dist := dist + (xor_byte & 1);
+      xor_byte := xor_byte >> 1;
+    end loop;
+  end loop;
+  return dist;
+end;
+$$;
+
 -- Exact duplicates: same content_hash
 create or replace function public.find_exact_duplicates()
 returns table (
@@ -34,8 +59,6 @@ as $$
 $$;
 
 -- Visual duplicates: phash hamming distance within threshold
--- Uses bit_count on XOR of hex-encoded perceptual hashes.
--- Returns pairs grouped by the earlier asset.
 create or replace function public.find_visual_duplicates(
   p_hamming_threshold int default 8,
   p_limit int default 200
@@ -59,10 +82,7 @@ as $$
     b.url as url_b,
     a.thumbnail_url as thumb_a,
     b.thumbnail_url as thumb_b,
-    bit_count(
-      decode(lpad(a.phash, 16, '0'), 'hex')::bit(64)
-      # decode(lpad(b.phash, 16, '0'), 'hex')::bit(64)
-    )::int as hamming_distance
+    phash_hamming(a.phash, b.phash) as hamming_distance
   from image_assets a
   join image_assets b
     on a.id < b.id
@@ -70,14 +90,8 @@ as $$
     and b.phash is not null
     and a.status = 'active'
     and b.status = 'active'
-  where bit_count(
-    decode(lpad(a.phash, 16, '0'), 'hex')::bit(64)
-    # decode(lpad(b.phash, 16, '0'), 'hex')::bit(64)
-  )::int <= p_hamming_threshold
-  order by bit_count(
-    decode(lpad(a.phash, 16, '0'), 'hex')::bit(64)
-    # decode(lpad(b.phash, 16, '0'), 'hex')::bit(64)
-  )::int
+  where phash_hamming(a.phash, b.phash) <= p_hamming_threshold
+  order by phash_hamming(a.phash, b.phash)
   limit p_limit;
 $$;
 
@@ -91,7 +105,6 @@ language plpgsql security definer
 set search_path = public
 as $$
 begin
-  -- Re-point all asset links from remove → keep
   update image_asset_links
   set asset_id = p_keep_id
   where asset_id = any(p_remove_ids)
@@ -103,11 +116,9 @@ begin
         and existing.role = image_asset_links.role
     );
 
-  -- Delete remaining duplicate links (already exist on target)
   delete from image_asset_links
   where asset_id = any(p_remove_ids);
 
-  -- Mark removed assets as superseded
   update image_assets
   set status = 'superseded',
       superseded_by_id = p_keep_id,
@@ -116,6 +127,7 @@ begin
 end;
 $$;
 
+grant execute on function public.phash_hamming(text, text) to authenticated;
 grant execute on function public.find_exact_duplicates() to authenticated;
 grant execute on function public.find_visual_duplicates(int, int) to authenticated;
 grant execute on function public.merge_duplicate_images(uuid, uuid[]) to authenticated;
