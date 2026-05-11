@@ -2,7 +2,6 @@ import {
   MapPin,
   Globe,
   Users,
-  Calendar,
   Building,
   Star,
   Heart,

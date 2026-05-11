@@ -1,4 +1,3 @@
-import { Shield } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { InlineLoading } from '@/components/ui/loading';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';

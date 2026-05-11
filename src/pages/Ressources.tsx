@@ -19,7 +19,6 @@ import { Network } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ErrorState } from '@/components/ui/EmptyState';
-import { getCategoryShortName } from '@/components/resources/categoryMeta';
 import { ResourceTagDetail } from '@/pages/resources/ResourceTagDetail';
 import { ResourceOverview } from '@/pages/resources/ResourceOverview';
 import { ResourceCategory, ResourceSubcategory } from '@/pages/resources/ResourceCategory';
