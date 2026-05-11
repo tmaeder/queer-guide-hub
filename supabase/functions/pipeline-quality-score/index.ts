@@ -25,7 +25,7 @@ Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
       .select('id, normalized_data, enriched_data, entity_type, target_table')
       .eq('enrichment_status', 'pending')
       .in('dedup_status', ['unique', 'pending'])
-      .eq('ai_validation_status', 'approved')
+      .in('ai_validation_status', ['approved', 'pending'])
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
