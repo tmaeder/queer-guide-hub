@@ -1,0 +1,20 @@
+name = "queer-guide-image-cdn"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "queer-guide-images"
+
+[vars]
+ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:3000,http://localhost:8080"
+THUMB_WIDTH = "400"
+THUMB_QUALITY = "80"
+
+[[routes]]
+pattern = "img.queer.guide"
+custom_domain = true
+
+[observability]
+enabled = true

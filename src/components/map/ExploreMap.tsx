@@ -355,10 +355,19 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     map.on('load', () => {
       setMapReady(true);
       mapRef.current = map;
-      const canvas = map.getCanvas();
-      if (!canvas.clientWidth || !canvas.clientHeight) return;
-      const bbox = getMapBbox(map);
-      onViewportChange(bbox, map.getZoom());
+
+      const tryInitialFetch = () => {
+        const canvas = map.getCanvas();
+        if (!canvas.clientWidth || !canvas.clientHeight) return false;
+        const bbox = getMapBbox(map);
+        onViewportChange(bbox, map.getZoom());
+        return true;
+      };
+
+      if (!tryInitialFetch()) {
+        // Canvas may not be laid out yet — retry after paint
+        requestAnimationFrame(() => tryInitialFetch());
+      }
     });
 
     map.on('moveend', () => {

@@ -71,6 +71,20 @@ function cacheKey(type: string, bk: string, fh: string): string {
   return `${type}|${bk}|${fh}`;
 }
 
+// ── Retry helper ─────────────────────────────────────────────────────────────
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 1, delayMs = 1000): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, delayMs));
+      return withRetry(fn, retries - 1, delayMs);
+    }
+    throw err;
+  }
+}
+
 // ── Supabase fetchers ─────────────────────────────────────────────────────────
 
 async function fetchVenuesInBbox(
@@ -128,7 +142,7 @@ async function fetchEventsInBbox(
   let query = supabase
     .from('events')
     .select(
-      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',
+      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues!events_venue_id_fkey(name, latitude, longitude)',
     )
     .eq('status', 'active')
     .is('duplicate_of_id', null)
@@ -304,16 +318,16 @@ export function useViewportPoints({
           let features: PointFeature[] = [];
           switch (type) {
             case 'venues':
-              features = await fetchVenuesInBbox(quantized, filtersRef.current);
+              features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
               break;
             case 'events':
-              features = await fetchEventsInBbox(quantized, filtersRef.current);
+              features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
               break;
             case 'restrooms':
-              features = await fetchRestroomsInBbox(quantized);
+              features = await withRetry(() => fetchRestroomsInBbox(quantized));
               break;
             case 'hotels':
-              features = await fetchHotelsInBbox(quantized);
+              features = await withRetry(() => fetchHotelsInBbox(quantized));
               break;
           }
           featureCache.set(ck, features);

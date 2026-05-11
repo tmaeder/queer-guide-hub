@@ -92,6 +92,8 @@ export function useImageAssets({ enabled, page, search, entityTypeFilter }: UseI
           asset_status: row.status as string,
           is_flagged: row.is_flagged as boolean,
           source: 'image_assets',
+          optimized_url: row.optimized_url as string | undefined,
+          thumbnail_url: row.thumbnail_url as string | undefined,
           optimization_status: (row.optimization_status as string) || 'not_optimized',
         };
       });

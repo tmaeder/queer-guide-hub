@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { MediaItem, ViewMode } from './types';
-import { formatFileSize, getFileIcon, getOptimizationStatusBadge, getImageUrl } from './utils';
+import { formatFileSize, getFileIcon, getOptimizationStatusBadge, getImageUrl, getThumbnailUrl } from './utils';
 
 interface MediaGridProps {
   loading: boolean;
@@ -103,7 +103,7 @@ export function MediaGrid(props: MediaGridProps) {
             <div className="relative aspect-square">
               {item.mime_type.startsWith('image/') ? (
                 <img
-                  src={getImageUrl(item)}
+                  src={getThumbnailUrl(item)}
                   alt={item.original_filename}
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -286,7 +286,7 @@ export function MediaGrid(props: MediaGridProps) {
                 <div className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
                   {item.mime_type.startsWith('image/') ? (
                     <img
-                      src={getImageUrl(item)}
+                      src={getThumbnailUrl(item)}
                       alt={item.original_filename}
                       className="w-full h-full object-cover"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}

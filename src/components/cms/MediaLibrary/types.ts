@@ -18,6 +18,8 @@ export interface MediaItem {
   asset_status?: string;
   is_flagged?: boolean;
   source?: string;
+  optimized_url?: string;
+  thumbnail_url?: string;
   optimized?: boolean;
   starred?: boolean;
   tags?: string[];
