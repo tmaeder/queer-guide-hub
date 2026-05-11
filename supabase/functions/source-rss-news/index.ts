@@ -87,7 +87,7 @@ const rssNewsAdapter: SourceAdapter = {
     return {
       entityType: 'news_article',
       sourceId: raw.sourceId,
-      sourceName: 'rss-news',
+      sourceName: (d.source_name as string) || 'rss-news',
       name: cleanText(d.title as string || ''),
       description: cleanText(d.content as string || d.description as string || ''),
       urls: d.url ? [String(d.url)] : [],
