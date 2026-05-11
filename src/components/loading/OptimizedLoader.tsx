@@ -9,7 +9,7 @@ interface OptimizedLoaderProps {
   showTitle?: boolean;
 }
 
-export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
+export const OptimizedLoader = ({
   type = 'card',
   count = 1,
   showTitle = true

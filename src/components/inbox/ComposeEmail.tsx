@@ -12,7 +12,7 @@ interface ComposeEmailProps {
   onCancel?: () => void;
 }
 
-export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onCancel }) => {
+export const ComposeEmail = ({ replyTo, onSent, onCancel }) => {
   const { sendEmail, sending } = useMailbox();
   const { fullEmail } = useMailboxAddress();
 

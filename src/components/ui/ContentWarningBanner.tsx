@@ -42,7 +42,7 @@ const FLAG_CONFIG = {
   },
 } as const;
 
-export const ContentWarningBanner: React.FC<ContentWarningBannerProps> = ({
+export const ContentWarningBanner = ({
   warnings,
   compact = false,
 }) => {
@@ -107,7 +107,7 @@ export const ContentWarningBanner: React.FC<ContentWarningBannerProps> = ({
  * Compact flag badges for admin tables and review cards. Score is text,
  * not hue; severity reads from icon + label, not color.
  */
-export const SensitivityBadges: React.FC<{
+export const SensitivityBadges<{
   sensitivityFlags?: Array<{ category: string; severity: string }> | null;
   relevanceScore?: number | null;
 }> = ({ sensitivityFlags, relevanceScore }) => {

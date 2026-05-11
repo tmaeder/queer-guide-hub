@@ -12,7 +12,7 @@ interface MagneticButtonProps {
  * Cursor-following hover wrapper. Drops in around hero CTAs.
  * Disabled under reduced motion.
  */
-export const MagneticButton: React.FC<MagneticButtonProps> = ({
+export const MagneticButton = ({
   children,
   strength = 0.25,
   className,

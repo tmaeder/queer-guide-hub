@@ -61,7 +61,7 @@ interface CardImageProps {
   children?: React.ReactNode;
 }
 
-const CardImage: React.FC<CardImageProps> = ({
+const CardImage = ({
   src,
   alt,
   height = 200,

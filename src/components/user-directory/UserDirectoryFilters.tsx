@@ -66,7 +66,7 @@ interface UserDirectoryFiltersProps {
 
 const labelCls = 'text-sm font-medium flex items-center gap-2';
 
-export const UserDirectoryFilters: React.FC<UserDirectoryFiltersProps> = ({
+export const UserDirectoryFilters = ({
   filters,
   setFilters,
   showFilters,

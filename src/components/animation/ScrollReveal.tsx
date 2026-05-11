@@ -26,7 +26,7 @@ const STATIC_TAGS: Record<string, keyof typeof motion> = {
  * Reveals children with a scroll-triggered entrance animation.
  * Drop-in replacement for the old CSS-based ScrollReveal.
  */
-export const ScrollReveal: React.FC<ScrollRevealProps> = ({
+export const ScrollReveal = ({
   children,
   direction = 'up',
   delay = 0,

@@ -38,7 +38,7 @@ const formatValue = (value: number | null | undefined, unit: string): string => 
   return value.toFixed(2);
 };
 
-export const SDGDataPanel: React.FC<SDGDataPanelProps> = ({ data }) => {
+export const SDGDataPanel = ({ data }) => {
   if (!data.hasData) {
     return null;
   }

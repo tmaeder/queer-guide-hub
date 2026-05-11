@@ -34,7 +34,7 @@ interface EventsCalendarViewProps {
   onEventSelect?: (event: Event) => void;
   onAttendanceUpdate?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void;
 }
-export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
+export const EventsCalendarView = ({
   events,
   onEventSelect,
   onAttendanceUpdate,

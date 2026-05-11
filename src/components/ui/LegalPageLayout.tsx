@@ -15,7 +15,7 @@ interface LegalPageLayoutProps {
   children: React.ReactNode;
 }
 
-export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
+export const LegalPageLayout = ({
   title,
   subtitle,
   lastUpdated,

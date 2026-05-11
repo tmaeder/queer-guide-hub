@@ -63,7 +63,7 @@ function formatRelativeTime(date: string | null): string {
   return `${days}d ago`;
 }
 
-export const ScrapeSourcesDashboard: React.FC = () => {
+export const ScrapeSourcesDashboard = () => {
   const { fetchSources, fetchRuns, toggleSource, triggerScrape, triggerAllDue, loading } =
     useScrapeSourcesManager();
   const [sources, setSources] = useState<ScrapeSource[]>([]);

@@ -40,7 +40,7 @@ const largeVariants: Record<RevealDirection, Variants> = {
  * Scroll-triggered reveal with a longer travel distance — for drawers,
  * hero sections, and larger panels.
  */
-export const SlideIn: React.FC<SlideInProps> = ({
+export const SlideIn = ({
   children,
   direction = 'up',
   delay = 0,

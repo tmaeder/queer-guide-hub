@@ -17,7 +17,7 @@ interface StaggerGridProps {
  * Children are wrapped in motion.div so the parent's variant cascade reaches them.
  * Layout + styling of children is preserved via display: contents.
  */
-export const StaggerGrid: React.FC<StaggerGridProps> = ({
+export const StaggerGrid = ({
   children,
   stagger = staggerTokens.normal,
   className,

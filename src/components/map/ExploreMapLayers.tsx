@@ -36,7 +36,7 @@ interface ExploreMapLayersProps {
   compact?: boolean;
 }
 
-export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
+export const ExploreMapLayers = ({
   enabledLayers,
   onToggle,
   layerCounts,

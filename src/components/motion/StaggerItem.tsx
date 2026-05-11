@@ -12,7 +12,7 @@ interface StaggerItemProps {
 /**
  * Child of <StaggerContainer> — inherits the parent's visibility cascade.
  */
-export const StaggerItem: React.FC<StaggerItemProps> = ({
+export const StaggerItem = ({
   children,
   className,
   variants = staggerItem,

@@ -16,7 +16,7 @@ interface PageHeaderProps {
   children?: React.ReactNode;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({
+export const PageHeader = ({
   title,
   subtitle,
   actions,

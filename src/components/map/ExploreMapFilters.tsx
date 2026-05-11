@@ -55,7 +55,7 @@ const TYPE_LABEL: Record<string, string> = {
   user: 'User',
 };
 
-export const ExploreMapFiltersPanel: React.FC<ExploreMapFiltersProps> = ({
+export const ExploreMapFiltersPanel = ({
   filters,
   onFiltersChange,
 }) => {

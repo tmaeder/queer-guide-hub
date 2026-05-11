@@ -17,7 +17,7 @@ interface ReviewBulkBarProps {
   loading?: boolean;
 }
 
-export const ReviewBulkBar: React.FC<ReviewBulkBarProps> = ({
+export const ReviewBulkBar = ({
   selectedCount,
   totalCount,
   onSelectAll,

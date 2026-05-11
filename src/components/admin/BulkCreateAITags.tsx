@@ -22,7 +22,7 @@ interface BulkCreateAITagsProps {
   onComplete?: () => void;
 }
 
-const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
+const BulkCreateAITags = ({ onComplete }) => {
   const [open, setOpen] = useState(false);
   const [terms, setTerms] = useState('');
   const [isLoading, setIsLoading] = useState(false);

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 
-export const MailboxSettings: React.FC = () => {
+export const MailboxSettings = () => {
   const { currentAddress, fullEmail, checkAvailability, claimAddress } = useMailboxAddress();
 
   const [handle, setHandle] = useState('');

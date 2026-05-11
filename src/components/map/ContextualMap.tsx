@@ -85,7 +85,7 @@ const CONTEXT_DEFAULTS: Record<MapContext, {
   },
 };
 
-export const ContextualMap: React.FC<ContextualMapProps> = ({
+export const ContextualMap = ({
   context,
   center,
   zoom,

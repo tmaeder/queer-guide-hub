@@ -17,7 +17,7 @@ interface AnimatedCounterProps {
   prefix?: string;
 }
 
-export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
+export const AnimatedCounter = ({
   value,
   duration: dur = 1.5,
   locale = 'en',

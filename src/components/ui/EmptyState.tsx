@@ -36,7 +36,7 @@ interface EmptyStateProps {
   children?: React.ReactNode;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export const EmptyState = ({
   icon: Icon,
   title,
   description,
@@ -131,7 +131,7 @@ interface LoadingTimeoutProps {
   onRetry: () => void;
 }
 
-export const LoadingTimeout: React.FC<LoadingTimeoutProps> = ({
+export const LoadingTimeout = ({
   message = 'This is taking longer than expected. Please check your connection or try again.',
   onRetry,
 }) => {
@@ -166,7 +166,7 @@ interface ErrorStateProps {
   secondaryAction?: ErrorStateAction;
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({
+export const ErrorState = ({
   message,
   title,
   description,

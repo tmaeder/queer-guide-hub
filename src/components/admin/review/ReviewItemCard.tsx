@@ -63,7 +63,7 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
   marketplace_listings: 'Listing',
 };
 
-export const ReviewItemCard: React.FC<ReviewItemCardProps> = ({
+export const ReviewItemCard = ({
   item,
   selected,
   onSelect,
