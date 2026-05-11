@@ -19,12 +19,12 @@ import {
   Image,
   Table as TableIcon,
   Minus,
-  Youtube,
   Code,
   Highlighter,
   Paintbrush,
   Code2,
 } from 'lucide-react';
+import { Youtube } from '@/components/icons/brand';
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */

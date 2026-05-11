@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Clock, Github, AlertTriangle, Layers } from 'lucide-react';
+import { Clock, AlertTriangle, Layers } from 'lucide-react';
+import { Github } from '@/components/icons/brand';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
 import { priorityFor } from './constants';

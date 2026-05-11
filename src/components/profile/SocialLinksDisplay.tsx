@@ -1,14 +1,9 @@
 import {
-  Twitter,
-  Instagram,
-  Linkedin,
-  Github,
-  Facebook,
-  Youtube,
   Globe,
   Music,
   ExternalLink
 } from 'lucide-react';
+import { Twitter, Instagram, Linkedin, Github, Facebook, Youtube } from '@/components/icons/brand';
 import { Button } from '@/components/ui/button';
 
 interface _SocialLink {
