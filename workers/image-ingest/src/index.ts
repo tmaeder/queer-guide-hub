@@ -154,6 +154,8 @@ async function processBatch(env: Env, batchSize: number): Promise<{
     const success = await ingestImage(env, row);
     if (success) ok++;
     else failed++;
+    // Small delay to avoid rate-limiting from external hosts
+    await new Promise(r => setTimeout(r, 200));
   }
 
   return { processed: rows.length, ok, failed, remaining: remaining - rows.length };
@@ -172,13 +174,30 @@ async function ingestImage(env: Env, row: ImageAssetRow): Promise<boolean> {
   await updateAsset(env, id, { optimization_status: 'processing' });
 
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'QueerGuide-ImageIngest/1.0' },
-      signal: AbortSignal.timeout(15000),
-    });
+    let res: Response | null = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        res = await fetch(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; QueerGuide/1.0)' },
+          signal: AbortSignal.timeout(20000),
+          redirect: 'follow',
+        });
+        if (res.ok) break;
+        if (res.status === 429 || res.status >= 500) {
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+        break;
+      } catch {
+        if (attempt === 0) await new Promise(r => setTimeout(r, 1000));
+      }
+    }
 
-    if (!res.ok) {
-      await updateAsset(env, id, { optimization_status: 'failed' });
+    if (!res || !res.ok) {
+      // 404/410 = image gone, don't retry. Other errors = transient, retry later.
+      const status = res?.status;
+      const dead = status === 404 || status === 410 || status === 403;
+      await updateAsset(env, id, { optimization_status: dead ? 'failed' : 'pending' });
       return false;
     }
 
