@@ -1,4 +1,5 @@
-import { Github, Ban, Copy, RotateCcw } from 'lucide-react';
+import { Ban, Copy, RotateCcw } from 'lucide-react';
+import { Github } from '@/components/icons/brand';
 import { Button } from '@/components/ui/button';
 
 interface Props {
