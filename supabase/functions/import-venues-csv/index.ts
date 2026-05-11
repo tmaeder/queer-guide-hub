@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
@@ -156,7 +155,7 @@ function parseCSV(csvText: string): VenueData[] {
   return venues;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   console.log('Import venues CSV function called');
 

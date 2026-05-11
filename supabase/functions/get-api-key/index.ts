@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { getCorsHeaders } from '../_shared/supabase-client.ts';
 
@@ -55,7 +54,7 @@ async function secureDecrypt(encryptedText: string): Promise<string> {
   return new TextDecoder().decode(decrypted);
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
 
   // Handle CORS preflight requests

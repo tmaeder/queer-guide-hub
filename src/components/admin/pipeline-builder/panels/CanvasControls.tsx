@@ -42,28 +42,23 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
   const handleExportPNG = useCallback(async () => {
     setExporting(true);
     try {
-      const { default: html2canvas } = await import('html2canvas');
-      const viewport = document.querySelector('.react-flow__viewport') as HTMLElement | null;
+      const { toPng } = await import('html-to-image');
       const container = document.querySelector('.react-flow') as HTMLElement | null;
-      if (!container || !viewport) throw new Error('Canvas not found');
+      if (!container) throw new Error('Canvas not found');
 
-      // Capture the whole react-flow container (includes background)
-      const canvas = await html2canvas(container, {
+      const dataUrl = await toPng(container, {
         backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false,
-        useCORS: true,
+        pixelRatio: 2,
       });
 
-      canvas.toBlob((blob) => {
-        if (!blob) throw new Error('Failed to create PNG');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${pipelineName || 'pipeline'}-${Date.now()}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${pipelineName || 'pipeline'}-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
 
       toast.success('Canvas exported as PNG');
     } catch (_e) {

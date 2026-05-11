@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const ALLOWED_ORIGINS = new Set<string>([
   'https://queer.guide',
@@ -77,7 +76,7 @@ function nominatimToMapbox(result: Record<string, unknown>): unknown {
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const origin = getOrigin(req);
 
   // CORS preflight

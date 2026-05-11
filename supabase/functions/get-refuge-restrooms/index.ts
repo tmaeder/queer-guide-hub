@@ -1,9 +1,8 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { getCorsHeaders } from '../_shared/supabase-client.ts'
 
 const REFUGE_API = 'https://www.refugerestrooms.org/api/v1/restrooms'
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
 
   // Handle CORS preflight requests
