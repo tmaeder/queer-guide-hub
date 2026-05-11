@@ -71,7 +71,7 @@ export const ReviewItemCard = ({
   onReject,
   onView,
   compact = false,
-}) => {
+}: ReviewItemCardProps) => {
   return (
     <Card
       className={`mb-2 transition-all ${selected ? 'border-primary bg-accent' : 'border-border bg-background'}`}

@@ -43,7 +43,7 @@ export const UserDirectoryGrid = ({
   activeFiltersCount,
   isAuthed,
   clearAllFilters,
-}) => {
+}: UserDirectoryGridProps) => {
   return (
     <>
       <div className="flex flex-col gap-6">

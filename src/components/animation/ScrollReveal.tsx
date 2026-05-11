@@ -33,7 +33,7 @@ export const ScrollReveal = ({
   duration,
   className,
   component = 'div',
-}) => {
+}: ScrollRevealProps) => {
   const base = variantByDirection[direction];
 
   const variants: Variants = React.useMemo(() => {

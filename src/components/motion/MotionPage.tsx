@@ -12,7 +12,7 @@ interface MotionPageProps {
  * Keyed by the first pathname segment so admin sub-route changes don't
  * re-animate the shell.
  */
-export const MotionPage = ({ children }) => {
+export const MotionPage = ({ children }: MotionPageProps) => {
   const location = useLocation();
   const segmentKey = location.pathname.split('/')[1] || 'root';
 

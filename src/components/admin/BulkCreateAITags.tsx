@@ -22,7 +22,7 @@ interface BulkCreateAITagsProps {
   onComplete?: () => void;
 }
 
-const BulkCreateAITags = ({ onComplete }) => {
+const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
   const [open, setOpen] = useState(false);
   const [terms, setTerms] = useState('');
   const [isLoading, setIsLoading] = useState(false);

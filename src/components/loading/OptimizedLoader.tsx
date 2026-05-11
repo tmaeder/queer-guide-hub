@@ -13,7 +13,7 @@ export const OptimizedLoader = ({
   type = 'card',
   count = 1,
   showTitle = true
-}) => {
+}: OptimizedLoaderProps) => {
   if (type === 'profile') {
     return (
       <div className="w-full p-6 flex flex-col gap-6">

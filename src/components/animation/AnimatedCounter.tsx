@@ -24,7 +24,7 @@ export const AnimatedCounter = ({
   className,
   suffix = '',
   prefix = '',
-}) => {
+}: AnimatedCounterProps) => {
   const ref = React.useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.1 });
   const reduced = useReducedMotion();

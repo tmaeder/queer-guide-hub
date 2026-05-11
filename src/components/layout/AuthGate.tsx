@@ -21,7 +21,7 @@ export const AuthGate = ({
   title,
   description = 'Please sign in to access this feature.',
   children,
-}) => {
+}: AuthGateProps) => {
   const { user } = useAuth();
 
   if (!user) {

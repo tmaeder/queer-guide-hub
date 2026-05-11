@@ -95,7 +95,7 @@ export const ContextualMap = ({
   showLayers,
   showFilters,
   className,
-}) => {
+}: ContextualMapProps) => {
   const defaults = CONTEXT_DEFAULTS[context];
 
   const mapHeight = height ?? defaults.height;

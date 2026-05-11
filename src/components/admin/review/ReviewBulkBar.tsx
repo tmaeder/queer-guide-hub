@@ -25,7 +25,7 @@ export const ReviewBulkBar = ({
   onBulkApprove,
   onBulkReject,
   loading,
-}) => {
+}: ReviewBulkBarProps) => {
   if (selectedCount === 0) return null;
 
   return (

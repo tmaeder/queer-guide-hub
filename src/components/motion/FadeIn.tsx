@@ -31,7 +31,7 @@ export const FadeIn = ({
   as = 'div',
   once = true,
   amount = defaultViewport.amount,
-}) => {
+}: FadeInProps) => {
   const base = variantByDirection[direction];
   const variants: Variants = React.useMemo(() => {
     const revealTransition = {

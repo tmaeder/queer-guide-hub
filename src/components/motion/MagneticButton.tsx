@@ -16,7 +16,7 @@ export const MagneticButton = ({
   children,
   strength = 0.25,
   className,
-}) => {
+}: MagneticButtonProps) => {
   const reduced = useReducedMotion();
   const x = useMotionValue(0);
   const y = useMotionValue(0);

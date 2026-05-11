@@ -22,7 +22,7 @@ export const PageHeader = ({
   actions,
   center = false,
   children,
-}) => {
+}: PageHeaderProps) => {
   return (
     <div className="border border-border bg-card p-5 sm:p-6 mb-6">
       <div

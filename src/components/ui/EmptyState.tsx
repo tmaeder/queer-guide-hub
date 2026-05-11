@@ -48,7 +48,7 @@ export const EmptyState = ({
   onResetFilters,
   resetFiltersLabel = 'Reset filters',
   children,
-}) => {
+}: EmptyStateProps) => {
   const iconOpacity = mood === 'playful' ? 0.7 : mood === 'encouraging' ? 0.55 : 0.4;
   const bgOpacity = mood === 'playful' ? 0.09 : mood === 'encouraging' ? 0.07 : 0.04;
 
@@ -134,7 +134,7 @@ interface LoadingTimeoutProps {
 export const LoadingTimeout = ({
   message = 'This is taking longer than expected. Please check your connection or try again.',
   onRetry,
-}) => {
+}: LoadingTimeoutProps) => {
   return (
     <Card>
       <CardContent>
@@ -174,7 +174,7 @@ export const ErrorState = ({
   retryLabel = 'Retry',
   primaryAction,
   secondaryAction,
-}) => {
+}: ErrorStateProps) => {
   const headline =
     title ?? message ?? 'Something went wrong while loading data. Please try again.';
   return (

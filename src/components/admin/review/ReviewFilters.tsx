@@ -43,7 +43,7 @@ export const ReviewFilters = ({
   onFiltersChange,
   statusOptions,
   contentTypeOptions = DEFAULT_CONTENT_TYPES,
-}) => {
+}: ReviewFiltersProps) => {
   const update = <K extends keyof ReviewFilterState>(key: K, value: ReviewFilterState[K]) => {
     onFiltersChange({ ...filters, [key]: value });
   };

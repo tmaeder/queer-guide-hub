@@ -58,7 +58,7 @@ const TYPE_LABEL: Record<string, string> = {
 export const ExploreMapFiltersPanel = ({
   filters,
   onFiltersChange,
-}) => {
+}: ExploreMapFiltersProps) => {
   const navigate = useLocalizedNavigate();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);

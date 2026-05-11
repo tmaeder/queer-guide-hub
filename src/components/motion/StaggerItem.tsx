@@ -17,7 +17,7 @@ export const StaggerItem = ({
   className,
   variants = staggerItem,
   as = 'div',
-}) => {
+}: StaggerItemProps) => {
   const MotionTag = motion[as] as typeof motion.div;
   return (
     <MotionTag className={className} variants={variants}>

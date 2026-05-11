@@ -21,7 +21,7 @@ export const LegalPageLayout = ({
   lastUpdated,
   sections,
   children,
-}) => {
+}: LegalPageLayoutProps) => {
   const [tocOpen, setTocOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
 

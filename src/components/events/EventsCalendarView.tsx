@@ -38,7 +38,7 @@ export const EventsCalendarView = ({
   events,
   onEventSelect,
   onAttendanceUpdate,
-}) => {
+}: EventsCalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 

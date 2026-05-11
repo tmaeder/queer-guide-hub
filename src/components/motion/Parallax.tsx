@@ -16,7 +16,7 @@ export const Parallax = ({
   speed = 0.3,
   axis = 'y',
   className,
-}) => {
+}: ParallaxProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,

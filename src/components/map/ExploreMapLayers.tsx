@@ -41,7 +41,7 @@ export const ExploreMapLayers = ({
   onToggle,
   layerCounts,
   compact = false,
-}) => {
+}: ExploreMapLayersProps) => {
   const [expanded, setExpanded] = useState(!compact);
 
   return (

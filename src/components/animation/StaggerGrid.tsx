@@ -22,7 +22,7 @@ export const StaggerGrid = ({
   stagger = staggerTokens.normal,
   className,
   style,
-}) => {
+}: StaggerGridProps) => {
   const variants: Variants = React.useMemo(
     () => staggerContainerVariants(stagger),
     [stagger],

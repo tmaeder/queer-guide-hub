@@ -80,7 +80,7 @@ export const UserDirectoryFilters = ({
   clearAllFilters,
   handleInterestToggle,
   isAuthed,
-}) => {
+}: UserDirectoryFiltersProps) => {
   return (
     <div className="border border-border rounded-md bg-background">
       <CardContent style={{ padding: 20 }}>
