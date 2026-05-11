@@ -93,6 +93,9 @@ const ContentListPanel = lazy(() =>
 const MediaLibrary = lazy(() =>
   import('./components/cms/MediaLibrary').then((m) => ({ default: m.MediaLibrary })),
 );
+const MediaDetailPage = lazy(() =>
+  import('./components/cms/MediaLibrary/MediaDetailPage').then((m) => ({ default: m.MediaDetailPage })),
+);
 const AuditLog = lazy(() =>
   import('./components/cms/AuditLog').then((m) => ({ default: m.AuditLog })),
 );
@@ -234,6 +237,7 @@ export const AppRoutes = () => {
                 <Route path="content/:type" element={<ContentListPanel />} />
                 <Route path="pages" element={<ContentListPanel contentTypeId="cms_pages" />} />
                 <Route path="media" element={<MediaLibrary />} />
+                <Route path="media/:id" element={<MediaDetailPage />} />
 
                 {/* Imports & Data section — all redirect to unified /admin/pipelines */}
                 <Route path="imports" element={<Navigate to="/admin/pipelines" replace />} />

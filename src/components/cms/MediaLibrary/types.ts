@@ -1,69 +1,99 @@
-export interface MediaItem {
+export interface UnifiedMediaItem {
   id: string;
-  filename: string;
-  original_filename: string;
-  mime_type: string;
+  source_type: 'image_asset' | 'cms_media';
+  display_name: string;
+  url: string | null;
+  thumbnail_url: string | null;
+  width: number | null;
+  height: number | null;
   file_size: number;
-  width?: number;
-  height?: number;
-  storage_path?: string;
-  external_url?: string;
-  uploaded_by: string;
+  mime_type: string;
+  format: string | null;
+  source: string | null;
+  license: string | null;
+  attribution: string | null;
+  alt_text: string | null;
+  alt_text_i18n: Record<string, string> | null;
+  caption_i18n: Record<string, string> | null;
+  phash: string | null;
+  content_hash: string | null;
+  is_flagged: boolean;
+  flagged_reason: string | null;
+  asset_status: string;
+  optimization_status: OptimizationStatus;
+  metadata: Record<string, unknown>;
   created_at: string;
-  alt_text?: string;
-  caption?: string;
-  usage_count?: number;
-  content_items?: string[];
-  entity_types?: string[];
-  asset_status?: string;
-  is_flagged?: boolean;
-  source?: string;
-  optimized_url?: string;
-  thumbnail_url?: string;
-  optimized?: boolean;
-  starred?: boolean;
-  tags?: string[];
-  optimization_status?: 'pending' | 'processing' | 'optimized' | 'cdn_optimized' | 'failed' | 'skipped' | 'not_optimized';
-  formats_available?: string[];
-  optimization_metadata?: {
-    original_size?: number;
-    compressed_size?: number;
-    compression_ratio?: number;
-    formats?: Array<{
-      format: string;
-      size: number;
-      width?: number;
-      height?: number;
-    }>;
-  };
+  updated_at: string;
+  uploaded_by: string | null;
+  storage_path: string | null;
+  bucket_name: string | null;
+  starred: boolean;
+  usage_count: number;
+  entity_types: string[] | null;
 }
 
-export type ViewMode = 'grid' | 'list' | 'compact';
-export type SortBy = 'created_at' | 'filename' | 'file_size' | 'usage_count' | 'optimized';
-export type FilterBy = 'all' | 'images' | 'videos' | 'documents' | 'unused' | 'starred' | 'unoptimized';
-export type EntityTypeFilter = 'all' | 'venue' | 'event' | 'news_article' | 'personality' | 'marketplace_listing' | 'city' | 'country' | 'queer_village';
+export type OptimizationStatus =
+  | 'pending'
+  | 'processing'
+  | 'optimized'
+  | 'cdn_optimized'
+  | 'failed'
+  | 'skipped'
+  | 'not_optimized';
 
-export interface OptimizationSettings {
-  quality: number;
-  formats: string[];
-  resize: boolean;
-  maxWidth?: number;
-  maxHeight?: number;
-  preserveMetadata: boolean;
-  enableProgressiveJpeg: boolean;
-  enableLosslessWebP: boolean;
+export type ViewMode = 'grid' | 'list';
+export type SortBy = 'created_at' | 'display_name' | 'file_size' | 'usage_count';
+export type SortDir = 'asc' | 'desc';
+
+export type StatusFilter =
+  | 'all'
+  | 'optimized'
+  | 'pending'
+  | 'failed'
+  | 'flagged'
+  | 'starred'
+  | 'unused';
+
+export type EntityTypeFilter =
+  | 'all'
+  | 'venue'
+  | 'event'
+  | 'news_article'
+  | 'personality'
+  | 'marketplace_listing'
+  | 'city'
+  | 'country'
+  | 'queer_village';
+
+export interface EntityLink {
+  entity_type: string;
+  entity_id: string;
+  role: string;
+  sort_order: number | null;
+  entity_name?: string;
 }
 
-export interface OptimizationJob {
-  id: string;
-  media_ids: string[];
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  settings: OptimizationSettings;
-  results?: {
-    processed: number;
-    successful: number;
-    failed: number;
-    totalSavings: number;
-  };
+export interface MediaDetailData extends UnifiedMediaItem {
+  entity_links: EntityLink[];
+}
+
+export interface DuplicateGroup {
+  group_hash: string;
+  items: Array<{
+    asset_id: string;
+    url: string;
+    thumbnail_url: string | null;
+    file_size: number;
+    created_at: string;
+  }>;
+}
+
+export interface VisualDuplicatePair {
+  asset_a: string;
+  asset_b: string;
+  url_a: string;
+  url_b: string;
+  thumb_a: string | null;
+  thumb_b: string | null;
+  hamming_distance: number;
 }
