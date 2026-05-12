@@ -6,11 +6,6 @@ import {
   Sheet,
   SheetContent,
 } from '@/components/ui/sheet';
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   useUnifiedTriageQueue,
@@ -190,7 +185,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       {/* Filters */}
       <TriageFilterBar filters={filters} counts={counts} onFiltersChange={updateFilters} />
 
-      {/* Split pane */}
+      {/* Split pane — use simple flex layout instead of resizable panels */}
       {isMobile ? (
         <>
           <div className="flex-1 overflow-hidden">{listPanel}</div>
@@ -206,15 +201,14 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           </Sheet>
         </>
       ) : (
-        <ResizablePanelGroup direction="horizontal" className="flex-1">
-          <ResizablePanel defaultSize={40} minSize={25}>
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-[40%] min-w-[300px] border-r overflow-hidden">
             {listPanel}
-          </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel defaultSize={60} minSize={30}>
+          </div>
+          <div className="flex-1 overflow-hidden">
             {detailPanel}
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </div>
+        </div>
       )}
     </div>
   );
