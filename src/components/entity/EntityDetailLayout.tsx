@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
+import { AnimatePresence, motion, useScroll, useSpring } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -73,6 +74,9 @@ export function EntityDetailLayout({
     );
   };
 
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30 });
+
   if (error) {
     return (
       <div className="container mx-auto py-8" data-testid="entity-detail-error">
@@ -98,6 +102,11 @@ export function EntityDetailLayout({
   }
 
   return (
+    <>
+    <motion.div
+      style={{ scaleX, transformOrigin: '0%' }}
+      className="fixed top-0 left-0 right-0 h-[2px] bg-foreground z-[1200]"
+    />
     <div className="container mx-auto py-8" data-testid="entity-detail-layout">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav
@@ -147,17 +156,30 @@ export function EntityDetailLayout({
                   </TabsTrigger>
                 ))}
               </TabsList>
-              {tabs.map((tab) => (
-                <TabsContent key={tab.id} value={tab.id}>
-                  {tab.content}
-                </TabsContent>
-              ))}
+              <AnimatePresence mode="wait" initial={false}>
+                {tabs.map((tab) =>
+                  tab.id === activeTab ? (
+                    <TabsContent key={tab.id} value={tab.id} forceMount>
+                      <motion.div
+                        key={tab.id}
+                        initial={{ opacity: 0, filter: 'blur(4px)' }}
+                        animate={{ opacity: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, filter: 'blur(4px)' }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {tab.content}
+                      </motion.div>
+                    </TabsContent>
+                  ) : null,
+                )}
+              </AnimatePresence>
             </Tabs>
           )}
         </div>
         {sidebar && <div>{sidebar}</div>}
       </div>
     </div>
+    </>
   );
 }
 

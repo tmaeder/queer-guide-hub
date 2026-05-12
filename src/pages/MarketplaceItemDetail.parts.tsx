@@ -1,3 +1,4 @@
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import {
   Star,
   MapPin,
@@ -181,6 +182,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
     listing.images && listing.images.length > 1 ? listing.images.slice(1) : [];
 
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
       {remainingImages.length > 0 && (
         <Card>
@@ -308,6 +310,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
         </CardContent>
       </Card>
     </div>
+    </ScrollReveal>
   );
 }
 
@@ -318,6 +321,7 @@ interface SidebarProps {
 
 export function MarketplaceSidebar({ listing, t }: SidebarProps) {
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
@@ -426,5 +430,6 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }

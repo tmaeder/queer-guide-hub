@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -281,8 +282,15 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll }: Sea
       </div>
 
       {/* Advanced Filters */}
+      <AnimatePresence initial={false}>
       {showAdvanced && (
-        <div className="flex flex-col gap-4 pt-2">
+        <motion.div
+          className="flex flex-col gap-4 pt-2 overflow-hidden"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+        >
           {/* Date Range */}
           <div className="flex flex-col gap-2">
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -370,8 +378,9 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll }: Sea
               <Label htmlFor="verified" style={{ fontSize: '0.875rem' }}>Verified only</Label>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 };

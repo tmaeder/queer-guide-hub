@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Personality } from '@/hooks/usePersonalities';
 
 interface PersonalityCardProps {
@@ -68,6 +69,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
       className="personality-card group relative flex flex-col h-full cursor-pointer no-underline text-inherit bg-background overflow-hidden touch-manipulation transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
+      <CardHoverEffect>
       {/* Image */}
       <div
         className="relative w-full overflow-hidden"
@@ -137,6 +139,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
           </p>
         )}
       </div>
+      </CardHoverEffect>
     </LocalizedLink>
   );
 }

@@ -29,6 +29,8 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { EntityMap } from '@/components/map/EntityMap';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { ParallaxHero } from '@/components/effects/ParallaxHero';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
@@ -188,7 +190,7 @@ export function EventHero({
   const { t } = useTranslation();
   return (
     <>
-      <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6">
+      <ParallaxHero className="w-full h-40 md:h-48 rounded-2xl mb-6">
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={event.title}
@@ -197,7 +199,7 @@ export function EventHero({
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-        </div>
+      </ParallaxHero>
 
       {event.countries?.lgbti_criminalization && (
         <SafetyAlertBanner
@@ -424,6 +426,7 @@ export function EventOverview({
   const attendeesInterested = event.event_attendees?.filter((a) => a.status === 'interested') || [];
 
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
       {event.description && (
         <Card>
@@ -531,6 +534,7 @@ export function EventOverview({
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }
 
@@ -550,6 +554,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
   const hasMap = hasNamedVenue && typeof lat === 'number' && typeof lng === 'number';
 
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
       {hasMap && (
         <Card ref={venueRef}>
@@ -755,5 +760,6 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }

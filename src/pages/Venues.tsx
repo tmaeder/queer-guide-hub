@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenues } from '@/hooks/useVenues';
@@ -263,8 +264,16 @@ const Venues = () => {
         </div>
 
         {/* Content */}
+        <AnimatePresence mode="wait" initial={false}>
         {viewMode === 'grid' ? (
-          <div className="flex flex-col gap-6">
+          <motion.div
+            key="grid"
+            className="flex flex-col gap-6"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
             {error && !loading && <ErrorState message={error} onRetry={() => fetchVenues()} />}
 
             {loading && (
@@ -355,9 +364,16 @@ const Venues = () => {
                 <div ref={sentinelRef} className="h-px" />
               </div>
             )}
-          </div>
+          </motion.div>
         ) : (
-          <div className="relative h-[700px] w-full overflow-hidden rounded-lg">
+          <motion.div
+            key="map"
+            className="relative h-[700px] w-full overflow-hidden rounded-lg"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
             <ExploreMap
               key={`map-${urlSearch}|${urlCategory}`}
               height={700}
@@ -382,8 +398,9 @@ const Venues = () => {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </div>
   );

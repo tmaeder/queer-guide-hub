@@ -1,3 +1,4 @@
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import {
   Star,
   MapPin,
@@ -136,6 +137,7 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
 export function HotelOverview({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
   const hasMap = typeof hotel.latitude === 'number' && typeof hotel.longitude === 'number';
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
       {hotel.description && (
         <Card>
@@ -188,12 +190,14 @@ export function HotelOverview({ hotel, t }: { hotel: HotelWithRelations; t: (k: 
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }
 
 export function HotelSidebar({ hotel, t }: { hotel: HotelWithRelations; t: (k: string, d?: string) => string }) {
   const hasContact = Boolean(hotel.address || hotel.phone || hotel.email);
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-4">
       {hasContact && (
         <Card>
@@ -233,6 +237,7 @@ export function HotelSidebar({ hotel, t }: { hotel: HotelWithRelations; t: (k: s
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }
 

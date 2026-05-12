@@ -1,3 +1,4 @@
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import {
   ExternalLink,
@@ -256,6 +257,7 @@ export function PersonalityOverview({
   similarPersonalities: SimilarPersonality[];
 }) {
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6 mt-4">
       {personality.description && (
         <Card>
@@ -363,6 +365,7 @@ export function PersonalityOverview({
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }
 
@@ -376,6 +379,7 @@ export function PersonalitySidebar({
   onTagClick: (tag: string) => void;
 }) {
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
@@ -488,5 +492,6 @@ export function PersonalitySidebar({
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }

@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Eye, Clock, MapPin, Tag, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -301,6 +302,7 @@ export const NewsCard = ({
 
   // Default card variant
   return (
+    <CardHoverEffect>
     <Card
       style={{
         boxShadow: 'var(--shadow-card)',
@@ -515,5 +517,6 @@ export const NewsCard = ({
         </div>
       </CardContent>
     </Card>
+    </CardHoverEffect>
   );
 };

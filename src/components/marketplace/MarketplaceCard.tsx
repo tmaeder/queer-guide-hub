@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { formatCurrency } from '@/lib/currency';
 import { MotionCard as Card, CardImage } from '@/components/ui/card';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Phone, Mail, ExternalLink, Eye, Store } from 'lucide-react';
@@ -72,6 +73,7 @@ export function MarketplaceCard({
   const listingImage = listing.images?.[0] ?? null;
 
   return (
+    <CardHoverEffect>
     <Card>
       <div className="relative">
         <CardImage
@@ -199,5 +201,6 @@ export function MarketplaceCard({
         </div>
       </div>
     </Card>
+    </CardHoverEffect>
   );
 }

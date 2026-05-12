@@ -26,6 +26,7 @@ import { EntityMap } from '@/components/map/EntityMap';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { ParallaxHero } from '@/components/effects/ParallaxHero';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
@@ -119,7 +120,7 @@ export function VenueHero({
   return (
     <>
       {/* Hero Image */}
-      <div className="w-full h-40 md:h-48 rounded-2xl overflow-hidden mb-6 relative">
+      <ParallaxHero className="w-full h-40 md:h-48 rounded-2xl mb-6">
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={venue.name}
@@ -128,7 +129,7 @@ export function VenueHero({
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-        </div>
+      </ParallaxHero>
 
       {/* Safety Alert Banner */}
       {venue.countries?.lgbti_criminalization && (
@@ -571,14 +572,16 @@ export function VenueEventsTab({ venue, venueEvents, t }: VenueEventsTabProps) {
     );
   }
   return (
-    <div className="mt-2">
-      <VenueEvents
-        venueId={venue.id}
-        venueName={venue.name}
-        events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
-        compact={false}
-      />
-    </div>
+    <ScrollReveal direction="up">
+      <div className="mt-2">
+        <VenueEvents
+          venueId={venue.id}
+          venueName={venue.name}
+          events={venueEvents as Parameters<typeof VenueEvents>[0]['events']}
+          compact={false}
+        />
+      </div>
+    </ScrollReveal>
   );
 }
 
@@ -597,6 +600,7 @@ export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
     );
   }
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-4 mt-2">
       {reviews.map((review) => (
         <Card key={review.id}>
@@ -645,5 +649,6 @@ export function VenueReviewsTab({ reviews }: VenueReviewsProps) {
         </Card>
       ))}
     </div>
+    </ScrollReveal>
   );
 }

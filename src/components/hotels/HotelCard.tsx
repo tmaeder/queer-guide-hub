@@ -1,6 +1,7 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Star, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -79,6 +80,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
   return (
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
     <LocalizedLink to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
+      <CardHoverEffect>
       <div className="overflow-hidden rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col bg-card border shadow-sm">
         {/* Image */}
         <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
@@ -185,6 +187,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
           </div>
         </div>
       </div>
+      </CardHoverEffect>
     </LocalizedLink>
     </Skeleton>
   );

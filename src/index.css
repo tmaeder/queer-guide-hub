@@ -373,9 +373,28 @@ a, button, [role="button"], input, select, textarea {
 p a, li a, td a, span a, label a {
   min-height: unset;
   display: inline;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.2em;
+  text-decoration: none;
+  position: relative;
+}
+p a::after, li a::after, td a::after, span a::after, label a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(1);
+  transform-origin: center;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+p a:hover::after, li a:hover::after, td a:hover::after, span a:hover::after, label a:hover::after {
+  transform: scaleX(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  p a::after, li a::after, td a::after, span a::after, label a::after {
+    transition: none;
+  }
 }
 
 /* ── Typography defaults — bold, tight, editorial ──────────────────── */

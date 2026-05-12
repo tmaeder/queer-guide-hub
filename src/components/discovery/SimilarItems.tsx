@@ -10,6 +10,8 @@ import { useTrackClick, type Entity } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollReveal } from "@/components/animation/ScrollReveal";
+import { SkeletonCrossfade } from "@/components/effects";
 import { getRandomFallbackImage } from "@/utils/fallbackImages";
 
 interface Props {
@@ -85,16 +87,22 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 	if (items?.length === 0) return null;
 
 	return (
+		<ScrollReveal direction="up">
 		<section className={className} aria-label={title}>
 			<h2 className="text-lg font-semibold mb-3">{title}</h2>
 			<ScrollArea className="w-full whitespace-nowrap">
-				<div className="flex gap-3 pb-3">
-					{!items
-						? Array.from({ length: limit }).map((_, i) => (
+				<SkeletonCrossfade
+					loading={!items}
+					skeleton={
+						<div className="flex gap-3 pb-3">
+							{Array.from({ length: limit }).map((_, i) => (
 								<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
-							))
-						: items
-								.map((it) => {
+							))}
+						</div>
+					}
+				>
+				<div className="flex gap-3 pb-3">
+					{items?.map((it) => {
 									const slug = it.metadata?.slug || it.content_id;
 									const to = hitPath(it.content_type, slug);
 									if (!to) return null;
@@ -133,8 +141,10 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 								})
 								.filter(Boolean)}
 				</div>
+				</SkeletonCrossfade>
 				<ScrollBar orientation="horizontal" />
 			</ScrollArea>
 		</section>
+		</ScrollReveal>
 	);
 }

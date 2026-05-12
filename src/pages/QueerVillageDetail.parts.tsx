@@ -8,6 +8,7 @@ import {
   Heart,
   Image as ImageIcon,
 } from 'lucide-react';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -200,6 +201,7 @@ export const villageTabIcons = {
 
 export function VillageOverviewTab({ village }: { village: VillageWithRelations }) {
   return (
+    <ScrollReveal direction="up">
     <div className="mt-6 flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[3fr_2fr]">
         <Card>
@@ -279,6 +281,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
         </Card>
       )}
     </div>
+    </ScrollReveal>
   );
 }
 
@@ -292,6 +295,7 @@ export function VillageVenuesTab({
   loading: boolean;
 }) {
   return (
+    <ScrollReveal direction="up">
     <div className="mt-6">
       <h3 className="mb-4 text-lg font-semibold">
         Venues in {village.cities?.name || 'the area'}
@@ -323,6 +327,7 @@ export function VillageVenuesTab({
         </div>
       )}
     </div>
+    </ScrollReveal>
   );
 }
 
@@ -336,6 +341,7 @@ export function VillageEventsTab({
   loading: boolean;
 }) {
   return (
+    <ScrollReveal direction="up">
     <div className="mt-6">
       <h3 className="mb-4 text-lg font-semibold">
         Events in {village.cities?.name || 'the area'}
@@ -367,6 +373,7 @@ export function VillageEventsTab({
         </div>
       )}
     </div>
+    </ScrollReveal>
   );
 }
 

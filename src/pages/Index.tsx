@@ -26,6 +26,7 @@ import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
 import { MovingBorder } from '@/components/effects/MovingBorder';
+import { GrainOverlay } from '@/components/effects/GrainOverlay';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -66,6 +67,7 @@ const Index = React.memo(() => {
     <div className="min-h-screen">
       {/* ── Hero + Map ───────────────────────────────────────────────── */}
       <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background">
+        <GrainOverlay />
         {/* Text panel */}
         <SpotlightEffect className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0 relative z-[1]">
           <TextGenerateEffect

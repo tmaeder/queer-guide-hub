@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { motion } from 'motion/react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
@@ -60,7 +61,6 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
-import { motion } from 'motion/react';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
@@ -323,17 +323,23 @@ export function Header() {
               {section.items.map((item, itemIdx) => {
                 const active = isActiveRoute(item.to);
                 return (
-                  <button
+                  <motion.div
                     key={item.to}
-                    onClick={() => handleDrawerNav(item.to)}
-                    className={`slide-up-in w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
-                    style={{ minHeight: 48, animationDelay: `${itemIdx * 0.04}s` }}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: itemIdx * 0.04 }}
                   >
-                    <item.icon style={{ width: 18, height: 18, flexShrink: 0, color: active ? 'hsl(var(--foreground))' : undefined }} />
-                    <span className={`text-sm ${active ? 'font-semibold' : 'font-normal'}`}>
-                      {t(item.labelKey)}
-                    </span>
-                  </button>
+                    <button
+                      onClick={() => handleDrawerNav(item.to)}
+                      className={`w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
+                      style={{ minHeight: 48 }}
+                    >
+                      <item.icon style={{ width: 18, height: 18, flexShrink: 0, color: active ? 'hsl(var(--foreground))' : undefined }} />
+                      <span className={`text-sm ${active ? 'font-semibold' : 'font-normal'}`}>
+                        {t(item.labelKey)}
+                      </span>
+                    </button>
+                  </motion.div>
                 );
               })}
             </div>
@@ -569,6 +575,7 @@ export function Header() {
                             paddingRight: 4,
                           }}
                         >
+                          <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
                           {unreadCount}
                         </span>
                       )}
@@ -671,26 +678,32 @@ export function Header() {
                   }}
                 >
                   {navigationSections.map((section) =>
-                    section.items.map((item) => {
+                    section.items.map((item, idx) => {
                       const active = isActiveRoute(item.to);
                       return (
-                        <Button
+                        <motion.div
                           key={item.to}
-                          variant={active ? 'default' : 'ghost'}
-                          size="sm"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-start',
-                            width: '100%',
-                            gap: 8,
-                            padding: '8px 12px',
-                          }}
-                          onClick={() => handleMenuItemClick(item.to)}
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.15, delay: idx * 0.03 }}
                         >
-                          <item.icon style={{ width: 16, height: 16 }} />
-                          <span className="text-sm">{t(item.labelKey)}</span>
-                        </Button>
+                          <Button
+                            variant={active ? 'default' : 'ghost'}
+                            size="sm"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-start',
+                              width: '100%',
+                              gap: 8,
+                              padding: '8px 12px',
+                            }}
+                            onClick={() => handleMenuItemClick(item.to)}
+                          >
+                            <item.icon style={{ width: 16, height: 16 }} />
+                            <span className="text-sm">{t(item.labelKey)}</span>
+                          </Button>
+                        </motion.div>
                       );
                     })
                   )}
