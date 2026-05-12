@@ -2,6 +2,7 @@ import { Calendar } from 'lucide-react';
 import { EventCard } from '@/components/events/EventCard';
 import { InlineLoading } from '@/components/ui/loading';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import type { CityRelation, EventRelation } from './types';
 
 export interface CityEventsTabProps {
@@ -12,6 +13,7 @@ export interface CityEventsTabProps {
 
 export function CityEventsTab({ city, events, eventsLoading }: CityEventsTabProps) {
   return (
+    <ScrollReveal direction="up">
     <div className="mt-6">
       {eventsLoading ? (
         <InlineLoading text="Loading events..." size="md" />
@@ -30,5 +32,6 @@ export function CityEventsTab({ city, events, eventsLoading }: CityEventsTabProp
         />
       )}
     </div>
+    </ScrollReveal>
   );
 }

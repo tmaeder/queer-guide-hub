@@ -2,6 +2,7 @@ import { FileText } from 'lucide-react';
 import { NewsCard } from '@/components/news/NewsCard';
 import { InlineLoading } from '@/components/ui/loading';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import type { CityRelation, ArticleRelation } from './types';
 
 export interface CityNewsTabProps {
@@ -12,6 +13,7 @@ export interface CityNewsTabProps {
 
 export function CityNewsTab({ city, articles, newsLoading }: CityNewsTabProps) {
   return (
+    <ScrollReveal direction="up">
     <div className="mt-6">
       {newsLoading ? (
         <InlineLoading text="Loading news..." size="md" />
@@ -30,5 +32,6 @@ export function CityNewsTab({ city, articles, newsLoading }: CityNewsTabProps) {
         />
       )}
     </div>
+    </ScrollReveal>
   );
 }

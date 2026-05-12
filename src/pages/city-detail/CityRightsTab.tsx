@@ -2,6 +2,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { InlineLoading } from '@/components/ui/loading';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import LGBTJurisdictionInfo from '@/components/country/LGBTJurisdictionInfo';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import type { CityRelation, CountryRelation } from './types';
 
 export interface CityRightsTabProps {
@@ -12,6 +13,7 @@ export interface CityRightsTabProps {
 
 export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsTabProps) {
   return (
+    <ScrollReveal direction="up">
     <div className="flex flex-col gap-6 mt-6">
       <div className="flex items-start justify-between">
         <div>
@@ -54,5 +56,6 @@ export function CityRightsTab({ city, fullCountry, countryLoading }: CityRightsT
         </p>
       )}
     </div>
+    </ScrollReveal>
   );
 }

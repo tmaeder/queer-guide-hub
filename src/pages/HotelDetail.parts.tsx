@@ -1,4 +1,6 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { ParallaxHero } from '@/components/effects/ParallaxHero';
+import { MagneticButton } from '@/components/motion';
 import {
   Star,
   MapPin,
@@ -53,14 +55,14 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   const showWebsite = Boolean(hotel.website) && hotel.website !== hotel.booking_url;
   return (
     <>
-      <div className="rounded-md overflow-hidden mb-6 h-[300px]">
+      <ParallaxHero className="w-full h-[300px] mb-6">
           <img
             loading="lazy"
             src={heroImage || getRandomFallbackImage()}
             alt={hotel.name}
             className="w-full h-full object-cover"
           />
-        </div>
+      </ParallaxHero>
       <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -73,10 +75,12 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={onAddToTrip}>
-            <Luggage className="w-3.5 h-3.5 mr-1.5" />
-            Add to Trip
-          </Button>
+          <MagneticButton>
+            <Button variant="outline" size="sm" onClick={onAddToTrip}>
+              <Luggage className="w-3.5 h-3.5 mr-1.5" />
+              Add to Trip
+            </Button>
+          </MagneticButton>
           {isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}
@@ -92,12 +96,14 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
             onSaved={() => window.location.reload()}
           />
           {hotel.booking_url && (
-            <Button size="sm" asChild>
-              <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-1.5" />
-                Book Now
-              </a>
-            </Button>
+            <MagneticButton>
+              <Button size="sm" asChild>
+                <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-1.5" />
+                  Book Now
+                </a>
+              </Button>
+            </MagneticButton>
           )}
           {showWebsite && (
             <Button variant="outline" size="sm" asChild>

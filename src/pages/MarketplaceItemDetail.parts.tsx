@@ -1,4 +1,6 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { ParallaxHero } from '@/components/effects/ParallaxHero';
+import { MagneticButton } from '@/components/motion';
 import {
   Star,
   MapPin,
@@ -85,7 +87,7 @@ export function MarketplaceHero({
   return (
     <>
       {heroImage && (
-        <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6 bg-muted flex items-center justify-center">
+        <ParallaxHero className="w-full h-64 md:h-80 mb-6 bg-muted flex items-center justify-center">
           <img
             src={heroImage}
             alt={listing.title}
@@ -94,7 +96,7 @@ export function MarketplaceHero({
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-        </div>
+        </ParallaxHero>
       )}
 
       <div className="mb-6">
@@ -148,22 +150,26 @@ export function MarketplaceHero({
               currentData={listing as Record<string, unknown>}
               onSaved={() => window.location.reload()}
             />
-            <Button variant="outline" size="sm" onClick={onToggleFavorite}>
-              <Heart
-                style={{
-                  width: 16,
-                  height: 16,
-                  marginRight: 8,
-                  fill: isFavorited ? 'currentColor' : 'none',
-                  color: 'inherit',
-                }}
-              />
-              {isFavorited ? 'Favorited' : 'Favorite'}
-            </Button>
-            <Button variant="outline" size="sm" onClick={onShare}>
-              <Share2 style={{ width: 16, height: 16, marginRight: 8 }} />
-              Share
-            </Button>
+            <MagneticButton>
+              <Button variant="outline" size="sm" onClick={onToggleFavorite}>
+                <Heart
+                  style={{
+                    width: 16,
+                    height: 16,
+                    marginRight: 8,
+                    fill: isFavorited ? 'currentColor' : 'none',
+                    color: 'inherit',
+                  }}
+                />
+                {isFavorited ? 'Favorited' : 'Favorite'}
+              </Button>
+            </MagneticButton>
+            <MagneticButton>
+              <Button variant="outline" size="sm" onClick={onShare}>
+                <Share2 style={{ width: 16, height: 16, marginRight: 8 }} />
+                Share
+              </Button>
+            </MagneticButton>
           </div>
         </div>
       </div>

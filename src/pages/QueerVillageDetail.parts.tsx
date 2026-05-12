@@ -9,6 +9,8 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { ParallaxHero } from '@/components/effects/ParallaxHero';
+import { MagneticButton } from '@/components/motion';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -79,7 +81,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
   return (
     <div>
       {village.image_url && (
-        <div className="relative mb-6 h-[200px] overflow-hidden rounded-lg md:h-[280px]">
+        <ParallaxHero className="relative mb-6 h-[200px] overflow-hidden md:h-[280px]">
           <img
             src={village.image_url}
             alt={village.name}
@@ -101,7 +103,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
               Featured
             </Badge>
           )}
-        </div>
+        </ParallaxHero>
       )}
 
       <div className="mb-2 flex flex-wrap items-start justify-between gap-4">
@@ -155,24 +157,28 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
             currentData={village as Record<string, unknown>}
             onSaved={() => window.location.reload()}
           />
-          <Button variant="outline" size="sm" onClick={onFavoriteToggle}>
-            <Heart
-              style={{
-                height: 16,
-                width: 16,
-                marginRight: 6,
-                ...(isFavorited ? { fill: 'currentColor' } : {}),
-              }}
-            />
-            {isFavorited ? 'Favorited' : 'Favorite'}
-          </Button>
-          {village.website && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={village.website} target="_blank" rel="noopener noreferrer">
-                <ExternalLink style={{ height: 16, width: 16, marginRight: 6 }} />
-                Website
-              </a>
+          <MagneticButton>
+            <Button variant="outline" size="sm" onClick={onFavoriteToggle}>
+              <Heart
+                style={{
+                  height: 16,
+                  width: 16,
+                  marginRight: 6,
+                  ...(isFavorited ? { fill: 'currentColor' } : {}),
+                }}
+              />
+              {isFavorited ? 'Favorited' : 'Favorite'}
             </Button>
+          </MagneticButton>
+          {village.website && (
+            <MagneticButton>
+              <Button variant="outline" size="sm" asChild>
+                <a href={village.website} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink style={{ height: 16, width: 16, marginRight: 6 }} />
+                  Website
+                </a>
+              </Button>
+            </MagneticButton>
           )}
         </div>
       </div>

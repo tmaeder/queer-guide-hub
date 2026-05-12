@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { InlineLoading } from '@/components/ui/loading';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import type { CityRelation, VenueRelation } from './types';
 
 export interface CityVenuesTabProps {
@@ -22,6 +23,7 @@ export function CityVenuesTab({
   onCreateTrip,
 }: CityVenuesTabProps) {
   return (
+    <ScrollReveal direction="up">
     <div className="mt-6">
       {showCreateTrip && (
         <Card style={{ marginBottom: 16 }}>
@@ -55,5 +57,6 @@ export function CityVenuesTab({
         />
       )}
     </div>
+    </ScrollReveal>
   );
 }

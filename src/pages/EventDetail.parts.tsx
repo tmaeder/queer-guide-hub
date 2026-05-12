@@ -31,6 +31,7 @@ import { EntityMap } from '@/components/map/EntityMap';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
+import { MagneticButton } from '@/components/motion';
 import type { Database } from '@/integrations/supabase/types';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchEventBySlugOrId } from '@/hooks/usePageFetchers';
@@ -296,10 +297,12 @@ export function EventHero({
         <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
           <FavoriteButton itemId={event.id} type="event" size="md" />
           {!isPast && (
-            <Button variant="outline" size="sm" onClick={onAddToTrip}>
-              <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
-              Add to Trip
-            </Button>
+            <MagneticButton>
+              <Button variant="outline" size="sm" onClick={onAddToTrip}>
+                <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+                Add to Trip
+              </Button>
+            </MagneticButton>
           )}
           {!isPast && isInTrip && (
             <Badge variant="secondary">
@@ -315,12 +318,14 @@ export function EventHero({
             onSaved={() => window.location.reload()}
           />
           {event.ticket_url && (
-            <Button size="sm" asChild>
-              <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
-                Get Tickets
-              </a>
-            </Button>
+            <MagneticButton>
+              <Button size="sm" asChild>
+                <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                  Get Tickets
+                </a>
+              </Button>
+            </MagneticButton>
           )}
           <Button variant="outline" size="sm" onClick={onExportToCalendar}>
             <Download style={{ width: 16, height: 16, marginRight: 6 }} />

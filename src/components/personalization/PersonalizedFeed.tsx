@@ -4,6 +4,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SkeletonCrossfade } from '@/components/effects';
 import { useAuth } from '@/hooks/useAuth';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import {
@@ -77,18 +78,7 @@ export function PersonalizedFeed() {
   const displayCities = (cities && cities.length > 0) ? cities : (trendingCities || []);
   const isPersonalized = cities && cities.length > 0;
 
-  if (isLoading) {
-    return (
-      <div className="mb-8">
-        <Skeleton variant="text" width={200} height={28} className="mb-4" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={100} />)}
-        </div>
-      </div>
-    );
-  }
-
-  if (displayCities.length === 0) return null;
+  if (displayCities.length === 0 && !isLoading) return null;
 
   const reasonLabels: Record<string, string> = {
     favorited: 'You favorited this',
@@ -120,6 +110,14 @@ export function PersonalizedFeed() {
         )}
       </div>
 
+      <SkeletonCrossfade
+        loading={isLoading}
+        skeleton={
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={100} />)}
+          </div>
+        }
+      >
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {displayCities.map((city) => (
           <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
@@ -152,6 +150,7 @@ export function PersonalizedFeed() {
           </LocalizedLink>
         ))}
       </div>
+      </SkeletonCrossfade>
     </div>
   );
 }

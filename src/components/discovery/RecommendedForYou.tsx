@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTrackClick } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonCrossfade } from "@/components/effects";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sparkles } from "lucide-react";
 import { getRandomFallbackImage } from "@/utils/fallbackImages";
@@ -118,43 +119,50 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 				<Sparkles className="h-5 w-5 text-foreground" />
 				Recommended for you
 			</h2>
-			<ScrollArea className="w-full whitespace-nowrap">
-				<div className="flex gap-3 pb-3">
-					{!items
-						? Array.from({ length: limit }).map((_, i) => (
-								<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
-							))
-						: items
-								.map((it) => {
-									const slug = it.slug || it.id;
-									const to = hitPath(it.type, slug);
-									if (!to) return null;
-									if (!it.title) return null;
-									return (
-										<LocalizedLink
-											key={`${it.type}:${it.id}`}
-											to={to}
-											className="shrink-0 w-56"
-											onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
-										>
-											<Card className="h-40 overflow-hidden transition">
-												<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-24 w-full object-cover" />
-												<CardContent className="p-2">
-													<div className="text-sm font-medium truncate">
-														{decodeEntities(it.title!)}
-													</div>
-													<div className="text-xs text-muted-foreground truncate">
-														{[it.city, it.country].filter(Boolean).join(", ")}
-													</div>
-												</CardContent>
-											</Card>
-										</LocalizedLink>
-									);
-								})
-								.filter(Boolean)}
-				</div>
-				<ScrollBar orientation="horizontal" />
-			</ScrollArea>
+			<SkeletonCrossfade
+				loading={!items}
+				skeleton={
+					<div className="flex gap-3 pb-3">
+						{Array.from({ length: limit }).map((_, i) => (
+							<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
+						))}
+					</div>
+				}
+			>
+				<ScrollArea className="w-full whitespace-nowrap">
+					<div className="flex gap-3 pb-3">
+						{items
+							?.map((it) => {
+								const slug = it.slug || it.id;
+								const to = hitPath(it.type, slug);
+								if (!to) return null;
+								if (!it.title) return null;
+								return (
+									<LocalizedLink
+										key={`${it.type}:${it.id}`}
+										to={to}
+										className="shrink-0 w-56"
+										onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
+									>
+										<Card className="h-40 overflow-hidden transition">
+											<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-24 w-full object-cover" />
+											<CardContent className="p-2">
+												<div className="text-sm font-medium truncate">
+													{decodeEntities(it.title!)}
+												</div>
+												<div className="text-xs text-muted-foreground truncate">
+													{[it.city, it.country].filter(Boolean).join(", ")}
+												</div>
+											</CardContent>
+										</Card>
+									</LocalizedLink>
+								);
+							})
+							.filter(Boolean)}
+					</div>
+					<ScrollBar orientation="horizontal" />
+				</ScrollArea>
+			</SkeletonCrossfade>
 		</section>
 	);
 }
