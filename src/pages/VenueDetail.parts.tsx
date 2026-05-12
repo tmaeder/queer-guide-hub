@@ -28,6 +28,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
+import { MagneticButton } from '@/components/motion';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
@@ -218,10 +219,12 @@ export function VenueHero({
 
         <div className="flex items-center gap-2 flex-shrink-0">
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
-          <Button variant="outline" size="sm" onClick={onAddToTrip}>
-            <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
-            Add to Trip
-          </Button>
+          <MagneticButton>
+            <Button variant="outline" size="sm" onClick={onAddToTrip}>
+              <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+              Add to Trip
+            </Button>
+          </MagneticButton>
           {isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}

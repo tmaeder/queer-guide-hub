@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { FloatingInput } from '@/components/effects';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -139,19 +140,15 @@ export default function Auth() {
                 ) : (
                   <form onSubmit={mode === 'forgot' ? handleForgot : handleLogin}>
                     <div className="flex flex-col gap-4">
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="email">{t('auth.fields.email', 'Email')}</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          autoComplete="email"
-                          placeholder={t('auth.placeholders.email', 'you@example.com')}
-                          value={loginData.email}
-                          onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                          disabled={isLoading}
-                          required
-                        />
-                      </div>
+                      <FloatingInput
+                        label={t('auth.fields.email', 'Email')}
+                        type="email"
+                        autoComplete="email"
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        disabled={isLoading}
+                        required
+                      />
 
                       {mode === 'signin' && (
                         <div className="flex flex-col gap-2">

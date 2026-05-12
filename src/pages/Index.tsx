@@ -24,6 +24,7 @@ import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
 import { MovingBorder } from '@/components/effects/MovingBorder';
+import { MagneticButton } from '@/components/motion';
 import { GrainOverlay } from '@/components/effects/GrainOverlay';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
@@ -81,14 +82,18 @@ const Index = React.memo(() => {
           </p>
 
           <div className="reveal-up reveal-delay-2 flex gap-3 flex-wrap">
-            <MovingBorder onClick={() => navigate('/venues')}>
-              <MapPin size={16} aria-hidden="true" />
-              {t('home.browseVenues', 'Browse Venues')}
-            </MovingBorder>
-            <MovingBorder onClick={() => navigate('/events')} duration={4}>
-              <Calendar size={16} aria-hidden="true" />
-              {t('home.viewEvents', 'View Events')}
-            </MovingBorder>
+            <MagneticButton>
+              <MovingBorder onClick={() => navigate('/venues')}>
+                <MapPin size={16} aria-hidden="true" />
+                {t('home.browseVenues', 'Browse Venues')}
+              </MovingBorder>
+            </MagneticButton>
+            <MagneticButton>
+              <MovingBorder onClick={() => navigate('/events')} duration={4}>
+                <Calendar size={16} aria-hidden="true" />
+                {t('home.viewEvents', 'View Events')}
+              </MovingBorder>
+            </MagneticButton>
           </div>
         </SpotlightEffect>
 

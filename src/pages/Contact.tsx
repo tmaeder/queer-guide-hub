@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { FloatingInput } from "@/components/effects";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -94,27 +94,19 @@ export default function Contact() {
               ) : (
                 <form onSubmit={handleSubmit}>
                   <div className="flex flex-col gap-5">
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        placeholder="Your name"
-                        value={form.name}
-                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={form.email}
-                        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                        required
-                      />
-                    </div>
+                    <FloatingInput
+                      label="Name"
+                      value={form.name}
+                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                      required
+                    />
+                    <FloatingInput
+                      label="Email"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      required
+                    />
                     <div className="flex flex-col gap-2">
                       <Label>Category</Label>
                       <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
