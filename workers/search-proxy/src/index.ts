@@ -258,6 +258,21 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 		);
 	}
 
+	// Pre-compute indexes from the request filters for the Meili-only fallback path.
+	const fallbackTypes: string[] = [
+		...(filters.type ? [filters.type] : []),
+		...(filters.types ?? []),
+	];
+	const fallbackIndexes: string[] = fallbackTypes.length
+		? [...new Set<string>(fallbackTypes.map((t) => INDEX_MAP[t] || t).filter((t) => ALL_INDEXES.includes(t)))]
+		: ALL_INDEXES;
+
+	// 7s wall-clock deadline for the full enrichment pipeline (rewrite, embed,
+	// semantic search, ranking). Leaves 3s headroom for the frontend's 10s
+	// timeout so the response arrives before the browser aborts the fetch.
+	const SEARCH_DEADLINE_MS = 7000;
+	const enrichedResponse = await Promise.race<Response | null>([
+		(async (): Promise<Response> => {
 	// Query rewrite: translates non-EN, extracts intent hints (city, type), adds synonyms.
 	// Enabled when lang != en OR query is short (< 3 words). Skipped for power queries.
 	const shouldRewrite = lang !== "en" || q.split(/\s+/).length < 3;
@@ -431,6 +446,51 @@ async function handleSearch(request: Request, env: Env, ctx: ExecutionContext, c
 						effectiveQ,
 					}
 				: undefined,
+		},
+		200,
+		cors,
+	);
+		})().catch((err) => {
+			console.error("enrichment pipeline error", err);
+			return null;
+		}),
+		new Promise<null>((r) => setTimeout(() => r(null), SEARCH_DEADLINE_MS)),
+	]);
+
+	if (enrichedResponse) return enrichedResponse;
+
+	// Deadline exceeded or enrichment failed — Meili-only keyword search so the
+	// user gets results instead of nothing.
+	try {
+		const s = sentry(env, request, ctx);
+		if (s) {
+			s.setTag("search.fallback", "deadline");
+			s.setExtra("query", q);
+			s.setExtra("elapsed_ms", Date.now() - started);
+			s.captureMessage("search.deadline_fallback", "warning");
+		}
+	} catch { /* sentry best-effort */ }
+
+	const fb = await meiliMultiSearch(env, {
+		indexes: fallbackIndexes,
+		query: q,
+		filter: buildFilters(filters),
+		facets: INDEX_FACETS,
+		hitsPerPage,
+		page,
+		useHybrid: false,
+	});
+	return json(
+		{
+			hits: fb.hits,
+			suggestions: fb.hits.slice(0, 5),
+			nbHits: fb.hits.length,
+			page,
+			hitsPerPage,
+			totalHits: fb.estimatedTotalHits,
+			processingTimeMS: Date.now() - started,
+			facetDistribution: fb.facetDistribution,
+			fallback: "deadline",
 		},
 		200,
 		cors,
