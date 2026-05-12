@@ -13,6 +13,7 @@ import {
   type TriageFilters,
 } from '@/hooks/useUnifiedTriageQueue';
 import { useReviewCounts } from '@/hooks/useReviewCounts';
+import { ReviewBulkBar } from '@/components/admin/review/ReviewBulkBar';
 import { TriageFilterBar } from './TriageFilterBar';
 import { TriageList } from './TriageList';
 import { TriageDetailPanel } from './TriageDetailPanel';
@@ -103,6 +104,35 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
       );
     },
     [activeItem, triageAction, advanceToNext],
+  );
+
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  const handleBulkAction = useCallback(
+    async (action: 'approve' | 'reject') => {
+      const selected = items.filter((i) => selectedIds.has(i.id));
+      if (selected.length === 0) return;
+      setBulkLoading(true);
+      let ok = 0;
+      let fail = 0;
+      for (const item of selected) {
+        try {
+          await triageAction.mutateAsync({
+            itemId: item.id,
+            queueType: item.queue_type,
+            action,
+          });
+          ok++;
+        } catch {
+          fail++;
+        }
+      }
+      setBulkLoading(false);
+      setSelectedIds(new Set());
+      setActiveId(null);
+      toast.success(`${action}d ${ok} item${ok !== 1 ? 's' : ''}${fail ? `, ${fail} failed` : ''}`);
+    },
+    [items, selectedIds, triageAction],
   );
 
   useTriageKeyboard({
@@ -210,6 +240,16 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
           </div>
         </div>
       )}
+
+      <ReviewBulkBar
+        selectedCount={selectedIds.size}
+        totalCount={items.length}
+        onSelectAll={() => setSelectedIds(new Set(items.map((i) => i.id)))}
+        onClearSelection={() => setSelectedIds(new Set())}
+        onBulkApprove={() => handleBulkAction('approve')}
+        onBulkReject={() => handleBulkAction('reject')}
+        loading={bulkLoading}
+      />
     </div>
   );
 }
