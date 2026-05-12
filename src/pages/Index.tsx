@@ -4,8 +4,6 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { RecommendedForYou } from '@/components/discovery/RecommendedForYou';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   MapPin,
