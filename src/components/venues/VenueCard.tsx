@@ -8,6 +8,7 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { Luggage } from 'lucide-react';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 type Event = Database['public']['Tables']['events']['Row'];
@@ -64,6 +65,7 @@ export function VenueCard({
           to={`/venues/${venue.slug}`}
           style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
         >
+          <CardHoverEffect>
           <Card hoverable style={{ overflow: 'hidden' }}>
             <div className="relative">
               <CardImage
@@ -144,6 +146,7 @@ export function VenueCard({
               </div>
             </div>
           </Card>
+          </CardHoverEffect>
         </LocalizedLink>
       )}
     </Skeleton>

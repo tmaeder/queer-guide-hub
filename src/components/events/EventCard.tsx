@@ -39,6 +39,7 @@ import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { isMeaningfulTag, sanitizeExcerpt } from '@/utils/eventText';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -174,6 +175,7 @@ export const EventCard = memo(function EventCard({
           to={`/events/${event.slug}`}
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
+          <CardHoverEffect>
           <Card hoverable>
             {/* Image */}
             {hasImage && (
@@ -489,6 +491,7 @@ export const EventCard = memo(function EventCard({
               )}
             </CardContent>
           </Card>
+          </CardHoverEffect>
         </LocalizedLink>
       )}
     </Skeleton>

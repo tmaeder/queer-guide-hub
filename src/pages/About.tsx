@@ -21,6 +21,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
+import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
+import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
+import { BackgroundDots } from '@/components/effects/BackgroundDots';
 
 const features = [
   {
@@ -87,20 +90,19 @@ export default function About() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <div className="py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background">
-        <h1
-          className="reveal-up font-extrabold leading-[1.05] mb-6 md:mb-8 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
+      <SpotlightEffect className="py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background">
+        <TextGenerateEffect
+          words="Built by queers, for everyone."
+          className="font-extrabold leading-[1.05] mb-6 md:mb-8 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
           style={{ letterSpacing: '0.02em' }}
-        >
-          Built by queers,
-          <br />
-          for <span style={{ color: 'hsl(var(--foreground))' }}>everyone.</span>
-        </h1>
+          as="h1"
+          staggerDelay={0.07}
+        />
         <p className="reveal-up reveal-delay-1 text-[1.0625rem] sm:text-[1.1875rem] md:text-[1.375rem] text-muted-foreground leading-[1.7] max-w-[720px]">
           The Queer Guide connects LGBTQ+ people and allies with safe venues,
           vibrant events, and communities that get you — wherever you are in the world.
         </p>
-      </div>
+      </SpotlightEffect>
 
       {/* Stats Strip */}
       <div className="py-10 md:py-14 px-4 sm:px-6 md:px-8 bg-foreground text-background">
@@ -182,7 +184,7 @@ export default function About() {
       </ScrollReveal>
 
       {/* What We Offer */}
-      <section
+      <BackgroundDots
         className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
         style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
       >
@@ -222,7 +224,7 @@ export default function About() {
             );
           })}
         </StaggerGrid>
-      </section>
+      </BackgroundDots>
 
       {/* Our Values */}
       <ScrollReveal direction="up">

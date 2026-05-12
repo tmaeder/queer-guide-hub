@@ -21,6 +21,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
+import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
+import { BackgroundDots } from '@/components/effects/BackgroundDots';
+import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
+import { MovingBorder } from '@/components/effects/MovingBorder';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -62,33 +67,30 @@ const Index = React.memo(() => {
       {/* ── Hero + Map ───────────────────────────────────────────────── */}
       <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background">
         {/* Text panel */}
-        <div className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0 relative z-[1]">
-          <h1
-            className="reveal-up text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] lg:text-[4rem] font-extrabold leading-[1.05] mb-4 text-foreground"
+        <SpotlightEffect className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0 relative z-[1]">
+          <TextGenerateEffect
+            words={`${t('home.heroLine1', 'Discover.')} ${t('home.heroLine2', 'Connect.')} ${t('home.heroLine3', 'Belong.')}`}
+            className="text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] lg:text-[4rem] font-extrabold leading-[1.05] mb-4 text-foreground"
             style={{ letterSpacing: '-0.04em' }}
-          >
-            {t('home.heroLine1', 'Discover.')}
-            <br />
-            {t('home.heroLine2', 'Connect.')}
-            <br />
-            {t('home.heroLine3', 'Belong.')}
-          </h1>
+            as="h1"
+            staggerDelay={0.08}
+          />
 
           <p className="reveal-up reveal-delay-1 text-[0.9375rem] md:text-[1.0625rem] text-muted-foreground mb-6 leading-[1.6]">
             {t('home.subtitle', 'Safe venues, vibrant events, and communities that get you — wherever you are.')}
           </p>
 
           <div className="reveal-up reveal-delay-2 flex gap-3 flex-wrap">
-            <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/venues')}>
-              <MapPin size={16} aria-hidden="true" style={{ marginRight: 8 }} />
+            <MovingBorder onClick={() => navigate('/venues')}>
+              <MapPin size={16} aria-hidden="true" />
               {t('home.browseVenues', 'Browse Venues')}
-            </Button>
-            <Button variant="outline" size={isMobile ? 'sm' : 'default'} onClick={() => navigate('/events')}>
-              <Calendar size={16} aria-hidden="true" style={{ marginRight: 8 }} />
+            </MovingBorder>
+            <MovingBorder onClick={() => navigate('/events')} duration={4}>
+              <Calendar size={16} aria-hidden="true" />
               {t('home.viewEvents', 'View Events')}
-            </Button>
+            </MovingBorder>
           </div>
-        </div>
+        </SpotlightEffect>
 
         {/* Map panel */}
         <div className="md:flex-1 min-h-[55vh] md:min-h-0 relative">
@@ -171,55 +173,37 @@ const Index = React.memo(() => {
       </section>
 
       {/* ── Features Grid ────────────────────────────────────────────── */}
-      <section className="content-enter py-12 md:py-16 px-4 sm:px-6 md:px-8">
+      <BackgroundDots className="py-12 md:py-16 px-4 sm:px-6 md:px-8">
         <h2 className="reveal-up font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">
           {t('home.explore', 'Explore')}
         </h2>
 
-        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {featureDefs.map((feature) => {
+        <BentoGrid>
+          {featureDefs.map((feature, i) => {
             const Icon = feature.icon;
+            const isLarge = i < 2;
             return (
-              <LocalizedLink
-                to={feature.link}
+              <BentoGridItem
                 key={feature.titleKey}
-                style={{ textDecoration: 'none', display: 'block' }}
+                colSpan={isLarge ? 2 : 1}
               >
-                <Card
-                  style={{
-                    height: '100%',
-                    cursor: 'pointer',
-                  }}
+                <LocalizedLink
+                  to={feature.link}
+                  style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}
                 >
-                  <CardContent
-                    style={{
-                      padding: isMobile ? 20 : 28,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 12,
-                    }}
-                  >
-                    <div
-                      className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2"
-                    >
-                      <Icon
-                        size={20}
-                        aria-hidden="true"
-                        style={{ flexShrink: 0 }}
-                      />
-                      {t(feature.titleKey)}
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-[1.5]">
-                      {t(feature.descKey)}
-                    </p>
-                  </CardContent>
-                </Card>
-              </LocalizedLink>
+                  <div className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2">
+                    <Icon size={20} aria-hidden="true" style={{ flexShrink: 0 }} />
+                    {t(feature.titleKey)}
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-[1.5]">
+                    {t(feature.descKey)}
+                  </p>
+                </LocalizedLink>
+              </BentoGridItem>
             );
           })}
-        </StaggerGrid>
-      </section>
+        </BentoGrid>
+      </BackgroundDots>
 
       {/* ── Upcoming Events Near You (hero + index + 14-day strip) ───── */}
       <ErrorBoundary section="regional-calendar" fallback={null}>
