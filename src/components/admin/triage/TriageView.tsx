@@ -211,7 +211,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
             {listPanel}
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={60} minSize={30} collapsible>
+          <ResizablePanel defaultSize={60} minSize={30}>
             {detailPanel}
           </ResizablePanel>
         </ResizablePanelGroup>
