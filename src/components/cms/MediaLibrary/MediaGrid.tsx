@@ -8,7 +8,9 @@ import {
   Flag,
   Loader2,
   Image as ImageIcon,
+  ImageOff,
 } from 'lucide-react';
+import { useState } from 'react';
 import type { UnifiedMediaItem, ViewMode } from './types';
 import { formatFileSize, getFileIcon, getOptimizationIcon, getThumbnailUrl } from './utils';
 
@@ -20,6 +22,51 @@ interface MediaGridProps {
   selectedItems: Set<string>;
   onToggleSelect: (id: string) => void;
   onStar: (item: UnifiedMediaItem) => void;
+}
+
+function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'full' | 'sm' }) {
+  const [errored, setErrored] = useState(false);
+  const url = getThumbnailUrl(item);
+
+  // SVG data URIs — render inline
+  if (url.startsWith('data:image/svg+xml')) {
+    try {
+      let svgContent = '';
+      if (url.includes(';base64,')) {
+        svgContent = atob(url.split(';base64,')[1]);
+      } else {
+        const prefix = url.indexOf(',');
+        svgContent = decodeURIComponent(url.slice(prefix + 1));
+      }
+      return (
+        <div
+          className="w-full h-full flex items-center justify-center bg-muted"
+          dangerouslySetInnerHTML={{ __html: svgContent }}
+          style={{ overflow: 'hidden' }}
+        />
+      );
+    } catch {
+      // Fall through to placeholder
+    }
+  }
+
+  if (errored || !url) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted">
+        <ImageOff style={{ height: size === 'sm' ? 16 : 24, width: size === 'sm' ? 16 : 24 }} className="text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={url}
+      alt={item.display_name}
+      className="w-full h-full object-cover"
+      loading="lazy"
+      onError={() => setErrored(true)}
+    />
+  );
 }
 
 export function MediaGrid(props: MediaGridProps) {
@@ -63,15 +110,7 @@ export function MediaGrid(props: MediaGridProps) {
 
             <div className="relative aspect-square bg-muted">
               {item.mime_type.startsWith('image/') ? (
-                <img
-                  src={getThumbnailUrl(item)}
-                  alt={item.display_name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
+                <ThumbImage item={item} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   {getFileIcon(item.mime_type, 24)}
@@ -135,13 +174,7 @@ export function MediaGrid(props: MediaGridProps) {
 
           <div className="w-12 h-12 bg-muted flex-shrink-0 overflow-hidden">
             {item.mime_type.startsWith('image/') ? (
-              <img
-                src={getThumbnailUrl(item)}
-                alt={item.display_name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
+              <ThumbImage item={item} size="sm" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 {getFileIcon(item.mime_type)}

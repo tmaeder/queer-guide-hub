@@ -3,6 +3,7 @@
  *
  * POST /run           → process one batch of pending images
  * POST /run-all       → process ALL pending images in a loop (long-running)
+ * POST /backfill-exif → extract EXIF from already-optimized R2 images missing metadata
  * GET  /stats         → current optimization status counts
  *
  * All endpoints require X-Admin-Secret header.
@@ -64,6 +65,9 @@ export default {
     if (req.method === 'POST' && path === 'run-all') {
       return handleRunAll(env);
     }
+    if (req.method === 'POST' && path === 'backfill-exif') {
+      return handleBackfillExif(env);
+    }
 
     return json({ error: 'Not found' }, 404);
   },
@@ -111,6 +115,120 @@ async function handleRunAll(env: Env): Promise<Response> {
     total_ok: totalOk,
     total_failed: totalFailed,
   });
+}
+
+async function handleBackfillExif(env: Env): Promise<Response> {
+  const batchSize = parseInt(env.BATCH_SIZE || '20');
+  let totalProcessed = 0;
+  let totalUpdated = 0;
+  let totalSkipped = 0;
+  let hasMore = true;
+
+  while (hasMore && totalProcessed < 500) {
+    // Fetch optimized images missing metadata/dimensions
+    const url = `${env.SUPABASE_URL}/rest/v1/image_assets?select=id,format&optimization_status=eq.optimized&or=(metadata.is.null,metadata.eq.{})&limit=${batchSize}`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    });
+
+    if (!res.ok) {
+      return json({ error: 'Failed to fetch images', detail: await res.text() }, 500);
+    }
+
+    const rows = await res.json() as Array<{ id: string; format: string | null }>;
+    if (rows.length === 0) { hasMore = false; break; }
+
+    for (const row of rows) {
+      totalProcessed++;
+      const ext = row.format === 'jpeg' ? 'jpg' : (row.format || 'jpg');
+      const key = `${row.id}.${ext}`;
+
+      try {
+        const obj = await env.IMAGES.get(key);
+        if (!obj) {
+          // Try alternate extensions
+          const alts = ['jpg', 'jpeg', 'png', 'webp'];
+          let found = false;
+          for (const a of alts) {
+            if (a === ext) continue;
+            const altObj = await env.IMAGES.get(`${row.id}.${a}`);
+            if (altObj) {
+              const buf = await altObj.arrayBuffer();
+              const result = extractMetaFromBuffer(buf, altObj.httpMetadata?.contentType || `image/${a}`);
+              if (result) {
+                await updateAsset(env, row.id, result);
+                totalUpdated++;
+              } else {
+                totalSkipped++;
+              }
+              found = true;
+              break;
+            }
+          }
+          if (!found) totalSkipped++;
+          continue;
+        }
+
+        const buf = await obj.arrayBuffer();
+        const ct = obj.httpMetadata?.contentType || `image/${ext}`;
+        const result = extractMetaFromBuffer(buf, ct);
+        if (result) {
+          await updateAsset(env, row.id, result);
+          totalUpdated++;
+        } else {
+          // Mark as having empty metadata so we don't re-process
+          await updateAsset(env, row.id, { metadata: { scanned: true } });
+          totalSkipped++;
+        }
+      } catch (err) {
+        console.error(`Backfill failed for ${row.id}:`, (err as Error).message);
+        totalSkipped++;
+      }
+    }
+
+    if (rows.length < batchSize) hasMore = false;
+  }
+
+  return json({
+    done: !hasMore,
+    processed: totalProcessed,
+    updated: totalUpdated,
+    skipped: totalSkipped,
+  });
+}
+
+function extractMetaFromBuffer(buf: ArrayBuffer, ct: string): Record<string, unknown> | null {
+  let metadata: Record<string, unknown> = {};
+  let width: number | null = null;
+  let height: number | null = null;
+
+  if (ct.includes('jpeg') || ct.includes('jpg')) {
+    const exif = extractExif(buf);
+    if (exif && Object.keys(exif).length > 0) {
+      metadata = { exif };
+      width = exif.imageWidth ?? null;
+      height = exif.imageHeight ?? null;
+    }
+    if (!width || !height) {
+      const dims = extractJpegDimensions(buf);
+      if (dims) { width = dims.width; height = dims.height; }
+    }
+  } else if (ct.includes('png')) {
+    const dims = extractPngDimensions(buf);
+    if (dims) { width = dims.width; height = dims.height; }
+  }
+
+  const hasData = Object.keys(metadata).length > 0 || width || height;
+  if (!hasData) return null;
+
+  return {
+    ...(Object.keys(metadata).length > 0 ? { metadata } : { metadata: { scanned: true } }),
+    ...(width ? { width } : {}),
+    ...(height ? { height } : {}),
+  };
 }
 
 async function processBatch(env: Env, batchSize: number): Promise<{
