@@ -76,6 +76,12 @@ export default {
     const batchSize = parseInt(env.BATCH_SIZE || '20');
     const result = await processBatch(env, batchSize);
     console.log(`Cron ingest: processed=${result.processed} ok=${result.ok} failed=${result.failed} remaining=${result.remaining}`);
+
+    // After ingesting pending, backfill EXIF on optimized images missing metadata
+    if (result.remaining === 0 || result.processed === 0) {
+      const backfill = await backfillExifBatch(env, batchSize);
+      console.log(`Cron EXIF backfill: processed=${backfill.processed} updated=${backfill.updated} skipped=${backfill.skipped}`);
+    }
   },
 };
 
@@ -125,71 +131,11 @@ async function handleBackfillExif(env: Env): Promise<Response> {
   let hasMore = true;
 
   while (hasMore && totalProcessed < 500) {
-    // Fetch optimized images missing metadata/dimensions
-    const url = `${env.SUPABASE_URL}/rest/v1/image_assets?select=id,format&optimization_status=eq.optimized&or=(metadata.is.null,metadata.eq.{})&limit=${batchSize}`;
-    const res = await fetch(url, {
-      headers: {
-        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-      },
-    });
-
-    if (!res.ok) {
-      return json({ error: 'Failed to fetch images', detail: await res.text() }, 500);
-    }
-
-    const rows = await res.json() as Array<{ id: string; format: string | null }>;
-    if (rows.length === 0) { hasMore = false; break; }
-
-    for (const row of rows) {
-      totalProcessed++;
-      const ext = row.format === 'jpeg' ? 'jpg' : (row.format || 'jpg');
-      const key = `${row.id}.${ext}`;
-
-      try {
-        const obj = await env.IMAGES.get(key);
-        if (!obj) {
-          // Try alternate extensions
-          const alts = ['jpg', 'jpeg', 'png', 'webp'];
-          let found = false;
-          for (const a of alts) {
-            if (a === ext) continue;
-            const altObj = await env.IMAGES.get(`${row.id}.${a}`);
-            if (altObj) {
-              const buf = await altObj.arrayBuffer();
-              const result = extractMetaFromBuffer(buf, altObj.httpMetadata?.contentType || `image/${a}`);
-              if (result) {
-                await updateAsset(env, row.id, result);
-                totalUpdated++;
-              } else {
-                totalSkipped++;
-              }
-              found = true;
-              break;
-            }
-          }
-          if (!found) totalSkipped++;
-          continue;
-        }
-
-        const buf = await obj.arrayBuffer();
-        const ct = obj.httpMetadata?.contentType || `image/${ext}`;
-        const result = extractMetaFromBuffer(buf, ct);
-        if (result) {
-          await updateAsset(env, row.id, result);
-          totalUpdated++;
-        } else {
-          // Mark as having empty metadata so we don't re-process
-          await updateAsset(env, row.id, { metadata: { scanned: true } });
-          totalSkipped++;
-        }
-      } catch (err) {
-        console.error(`Backfill failed for ${row.id}:`, (err as Error).message);
-        totalSkipped++;
-      }
-    }
-
-    if (rows.length < batchSize) hasMore = false;
+    const result = await backfillExifBatch(env, batchSize);
+    totalProcessed += result.processed;
+    totalUpdated += result.updated;
+    totalSkipped += result.skipped;
+    if (result.processed === 0) hasMore = false;
   }
 
   return json({
@@ -198,6 +144,79 @@ async function handleBackfillExif(env: Env): Promise<Response> {
     updated: totalUpdated,
     skipped: totalSkipped,
   });
+}
+
+async function backfillExifBatch(env: Env, batchSize: number): Promise<{
+  processed: number; updated: number; skipped: number;
+}> {
+  const url = `${env.SUPABASE_URL}/rest/v1/image_assets?select=id,format&optimization_status=eq.optimized&or=(metadata.is.null,metadata.eq.{})&limit=${batchSize}`;
+  const res = await fetch(url, {
+    headers: {
+      'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+      'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+    },
+  });
+
+  if (!res.ok) return { processed: 0, updated: 0, skipped: 0 };
+
+  const rows = await res.json() as Array<{ id: string; format: string | null }>;
+  if (rows.length === 0) return { processed: 0, updated: 0, skipped: 0 };
+
+  let updated = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    const ext = row.format === 'jpeg' ? 'jpg' : (row.format || 'jpg');
+    const key = `${row.id}.${ext}`;
+
+    try {
+      const obj = await env.IMAGES.get(key);
+      if (!obj) {
+        // Try alternate extensions
+        const alts = ['jpg', 'jpeg', 'png', 'webp'];
+        let found = false;
+        for (const a of alts) {
+          if (a === ext) continue;
+          const altObj = await env.IMAGES.get(`${row.id}.${a}`);
+          if (altObj) {
+            const buf = await altObj.arrayBuffer();
+            const result = extractMetaFromBuffer(buf, altObj.httpMetadata?.contentType || `image/${a}`);
+            if (result) {
+              await updateAsset(env, row.id, result);
+              updated++;
+            } else {
+              await updateAsset(env, row.id, { metadata: { scanned: true } });
+              skipped++;
+            }
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          await updateAsset(env, row.id, { metadata: { scanned: true } });
+          skipped++;
+        }
+        continue;
+      }
+
+      const buf = await obj.arrayBuffer();
+      const ct = obj.httpMetadata?.contentType || `image/${ext}`;
+      const result = extractMetaFromBuffer(buf, ct);
+      if (result) {
+        await updateAsset(env, row.id, result);
+        updated++;
+      } else {
+        await updateAsset(env, row.id, { metadata: { scanned: true } });
+        skipped++;
+      }
+    } catch (err) {
+      console.error(`Backfill failed for ${row.id}:`, (err as Error).message);
+      await updateAsset(env, row.id, { metadata: { scanned: true } });
+      skipped++;
+    }
+  }
+
+  return { processed: rows.length, updated, skipped };
 }
 
 function extractMetaFromBuffer(buf: ArrayBuffer, ct: string): Record<string, unknown> | null {
