@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { TrendingByType } from '@/components/discovery/TrendingByType';
 import { useEvents } from '@/hooks/useEvents';
@@ -824,28 +825,32 @@ const Events = () => {
 
         {/* Event Content */}
         {!loading && events.length > 0 && (
-          <>
+          <AnimatePresence mode="wait" initial={false}>
             {viewMode === 'grid' ? (
-              <StaggerGrid
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              >
-                {events.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onViewDetails={handleViewDetails}
-                    onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
-                  />
-                ))}
-              </StaggerGrid>
+              <motion.div key="grid" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                <StaggerGrid
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                  {events.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onViewDetails={handleViewDetails}
+                      onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
+                    />
+                  ))}
+                </StaggerGrid>
+              </motion.div>
             ) : (
-              <EventsCalendarView
-                events={events}
-                onEventSelect={handleViewDetails}
-                onAttendanceUpdate={handleAttendanceUpdate}
-              />
+              <motion.div key="calendar" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                <EventsCalendarView
+                  events={events}
+                  onEventSelect={handleViewDetails}
+                  onAttendanceUpdate={handleAttendanceUpdate}
+                />
+              </motion.div>
             )}
-          </>
+          </AnimatePresence>
         )}
 
         {/* Load More */}

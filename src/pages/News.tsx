@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from "react-router";
 import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 import { useNews } from "@/hooks/useNews";
@@ -659,8 +660,10 @@ export default function News() {
                   </p>
                 </div>
 
+                <AnimatePresence mode="wait" initial={false}>
                 {/* Headlines View */}
                 {viewMode === 'headlines' && (
+                  <motion.div key="headlines" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
                   <div className="border border-border rounded-lg overflow-hidden">
                     {paginatedArticles.map((article) => (
                       <NewsCard
@@ -680,10 +683,12 @@ export default function News() {
                       />
                     ))}
                   </div>
+                  </motion.div>
                 )}
 
                 {/* Magazine View */}
                 {viewMode === 'magazine' && (
+                  <motion.div key="magazine" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
                   <div className="flex flex-col gap-6">
                     {/* First article as hero */}
                     {paginatedArticles[0] && (
@@ -745,10 +750,12 @@ export default function News() {
                       </StaggerGrid>
                     )}
                   </div>
+                  </motion.div>
                 )}
 
                 {/* Grid / List View */}
                 {(viewMode === 'grid' || viewMode === 'list') && (
+                  <motion.div key={viewMode} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
                   <StaggerGrid className={viewMode === 'grid'
                     ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
                     : 'flex flex-col gap-3'
@@ -771,7 +778,9 @@ export default function News() {
                       />
                     ))}
                   </StaggerGrid>
+                  </motion.div>
                 )}
+                </AnimatePresence>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
