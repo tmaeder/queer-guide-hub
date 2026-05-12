@@ -18,10 +18,6 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { rpc: vi.fn().mockResolvedValue({ error: null }) },
-}));
-
 import { PasskeyButton } from '../PasskeyButton';
 
 describe('PasskeyButton', () => {
