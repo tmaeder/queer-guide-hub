@@ -227,7 +227,10 @@ export async function fetchVenueWithReviews<TVenue, TReview>(
     .select(`*, profiles:user_id (display_name, avatar_url)`)
     .eq('venue_id', venue.id)
     .order('created_at', { ascending: false });
-  if (reviewsError) throw reviewsError;
+  if (reviewsError) {
+    console.warn('[fetchVenueWithReviews] reviews fetch failed:', reviewsError.message);
+    return { venue: venue as TVenue, reviews: [] as TReview[] };
+  }
   return { venue: venue as TVenue, reviews: (reviewsData ?? []) as TReview[] };
 }
 
