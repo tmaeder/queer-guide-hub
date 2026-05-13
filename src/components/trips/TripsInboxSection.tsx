@@ -109,9 +109,11 @@ export function TripsInboxSection() {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <InboxIcon style={{ width: 20, height: 20, color: 'var(--primary)' }} />
-        <h2 className="text-base font-bold">
+      <div className="flex items-center gap-3 mb-4">
+        <span aria-hidden="true" className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+          <InboxIcon style={{ width: 18, height: 18 }} />
+        </span>
+        <h2 className="text-lg md:text-xl font-bold tracking-tight">
           {t('pages.inbox.title', 'Travel inbox')}
           {orphanReservations.length > 0 && (
             <span

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 
 const RELEASE_ZIP_URL = "/extension/queer-guide-extension.zip";
@@ -87,30 +88,38 @@ export default function ExtensionInstall() {
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
-        <h1 className="text-2xl font-semibold mb-3">{t("extension.signInGate.title", "Sign in to install the extension")}</h1>
-        <p className="text-muted-foreground mb-6">
-          {t("extension.signInGate.subtitle", "The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.")}
-        </p>
-        <Button onClick={() => navigate("/auth")}>{t("extension.signInGate.cta", "Sign in")}</Button>
+      <div className="container mx-auto px-4 py-8 md:py-12 max-w-2xl">
+        <PageHeader
+          center
+          eyebrow={t("extension.signInGate.eyebrow", "Browser extension")}
+          title={t("extension.signInGate.title", "Sign in to install the extension")}
+          subtitle={t("extension.signInGate.subtitle", "The queer.guide capture extension lets signed-in members suggest venues, events, hotels and more from any webpage.")}
+        >
+          <Button onClick={() => navigate("/auth")} size="lg">{t("extension.signInGate.cta", "Sign in")}</Button>
+        </PageHeader>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-3xl">
-      <div className="flex items-center gap-3 mb-6">
-        <Puzzle className="h-8 w-8" />
-        <div>
-          <h1 className="text-3xl font-bold">{t("extension.heading.title", "queer.guide capture")}</h1>
-          <p className="text-muted-foreground">
-            {t("extension.heading.subtitle", "Browser extension that turns any webpage into a structured suggestion for our moderators.")}
-          </p>
-        </div>
-        <div className="ml-auto">
-          {ext && <Badge variant="default" className="gap-1"><CheckCircle2 className="h-4 w-4" /> {t("extension.badge.installed", "Installed")}</Badge>}
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-8 md:py-12 max-w-3xl">
+      <PageHeader
+        eyebrow={t("extension.eyebrow", "Browser extension")}
+        title={t("extension.heading.title", "queer.guide capture")}
+        subtitle={t("extension.heading.subtitle", "Browser extension that turns any webpage into a structured suggestion for our moderators.")}
+        actions={
+          <>
+            <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+              <Puzzle className="h-5 w-5" />
+            </div>
+            {ext && (
+              <Badge variant="default" className="gap-1 px-3 py-1">
+                <CheckCircle2 className="h-3.5 w-3.5" /> {t("extension.badge.installed", "Installed")}
+              </Badge>
+            )}
+          </>
+        }
+      />
 
       {ext ? (
         <ConnectCard

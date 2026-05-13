@@ -331,20 +331,13 @@ export function VenueFilters({
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-2xl border border-border bg-card/60 backdrop-blur-sm">
       {/* Search Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 16,
-              height: 16,
-              color: 'var(--muted-foreground)',
-            }}
+            aria-hidden="true"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
           />
           <Input
             placeholder="Search venues & organizations..."

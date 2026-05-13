@@ -135,7 +135,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
     return (
       <div className="fixed inset-0 z-50">
         <div
-          className="fixed inset-0 bg-black/50 transition-opacity"
+          className="fixed inset-0 bg-foreground/60 backdrop-blur-sm transition-opacity"
           onClick={() => onOpenChange(false)}
           aria-hidden="true"
         />
@@ -146,7 +146,11 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           tabIndex={-1}
           data-state={open ? 'open' : 'closed'}
           className={cn(
-            'fixed bg-background p-6 border-2 border-foreground transition-transform duration-200 overflow-auto',
+            'fixed bg-background p-6 border border-border shadow-xl transition-transform duration-200 overflow-auto',
+            side === 'right' && 'rounded-l-2xl',
+            side === 'left' && 'rounded-r-2xl',
+            side === 'top' && 'rounded-b-2xl',
+            side === 'bottom' && 'rounded-t-2xl',
             sideClasses[side],
             className,
           )}
@@ -157,7 +161,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
             type="button"
             aria-label="Close"
             onClick={() => onOpenChange(false)}
-            className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted"
+            className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>

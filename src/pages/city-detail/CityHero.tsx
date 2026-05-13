@@ -41,7 +41,7 @@ export function CityHero({
 }: CityHeroProps) {
   return (
     <>
-      <DetailHero imageUrl={imageUrl} alt={city.name} heightClassName="h-48 md:h-60" />
+      <DetailHero imageUrl={imageUrl} alt={city.name} heightClassName="h-64 md:h-96" />
 
       <SafetyAlertBanner
         criminalization={
@@ -50,33 +50,32 @@ export function CityHero({
         countryName={city.countries?.name || ''}
       />
 
-      <div className="flex items-start justify-between gap-4 mb-2">
-        <div>
-          <div className="flex items-center gap-4 mb-1">
-            <h3 className="text-3xl lg:text-5xl font-bold text-foreground">
-              {city.countries?.flag_emoji && <>{city.countries.flag_emoji} </>}
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="min-w-0">
+          {city.countries?.name && (
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              {city.countries.flag_emoji && <span aria-hidden="true">{city.countries.flag_emoji}</span>}
+              {city.region_name && <span>{city.region_name}</span>}
+              {city.region_name && <span aria-hidden="true" className="opacity-50">·</span>}
+              {city.countries ? (
+                <LocalizedLink
+                  to={`/country/${city.countries.slug || city.countries.id}`}
+                  className="hover:text-foreground"
+                  style={{ color: 'inherit', textDecoration: 'none' }}
+                >
+                  {city.countries.name}
+                </LocalizedLink>
+              ) : null}
+            </div>
+          )}
+          <div className="flex items-center gap-4 flex-wrap">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-balance text-foreground">
               {city.name}
-            </h3>
+            </h1>
             {city.countries?.equality_score != null && (
               <EqualityScoreBadge score={city.countries.equality_score} size="md" />
             )}
           </div>
-          <p className="text-lg text-muted-foreground mb-2">
-            {city.region_name && `${city.region_name}, `}
-            {city.countries ? (
-              <LocalizedLink
-                to={`/country/${city.countries.slug || city.countries.id}`}
-                style={{
-                  color: 'inherit',
-                  textDecoration: 'underline',
-                  textDecorationColor: 'currentColor',
-                  textUnderlineOffset: '2px',
-                }}
-              >
-                {city.countries.name}
-              </LocalizedLink>
-            ) : null}
-          </p>
         </div>
 
         <div className="flex gap-2 flex-shrink-0 mt-2 flex-wrap">

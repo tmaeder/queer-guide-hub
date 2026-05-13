@@ -143,8 +143,8 @@ export function CreateTripDialog({ open, onClose }: Props) {
         ) : (
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{t('trips.dialog.create.title')}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-2xl font-bold tracking-tight text-balance">{t('trips.dialog.create.title')}</DialogTitle>
+              <DialogDescription className="text-sm md:text-base mt-1">
                 {t('trips.dialog.create.description')}
               </DialogDescription>
             </DialogHeader>

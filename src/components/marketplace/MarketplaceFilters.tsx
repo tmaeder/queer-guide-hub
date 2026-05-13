@@ -109,16 +109,16 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-background">
+    <div className="flex flex-col gap-4 p-4 rounded-2xl border border-border bg-card/60 backdrop-blur-sm">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+          <Search aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search products and services..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            style={{ paddingLeft: 36 }}
+            className="pl-10"
             aria-label="Search products and services"
           />
         </div>
