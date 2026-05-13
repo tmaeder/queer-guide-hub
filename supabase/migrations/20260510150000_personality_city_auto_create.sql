@@ -53,6 +53,16 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- Try alias match
+  SELECT ca.city_id INTO _new_city_id FROM city_aliases ca
+  WHERE lower(ca.alias) = lower(_birth_clean) OR lower(ca.alias) = lower(NEW.birth_place)
+  LIMIT 1;
+
+  IF _new_city_id IS NOT NULL THEN
+    NEW.city_id := _new_city_id;
+    RETURN NEW;
+  END IF;
+
   -- No match — auto-create city if we have a country and birth_place looks like a city name
   -- Skip entries that are country/state names (no comma, matches a country name)
   IF _country_id IS NOT NULL
