@@ -15,28 +15,34 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center bg-background">
+    <div className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
       <NotFoundMeta title={t('pages.notFound.title', 'Page not found')} />
-      <div className="text-center max-w-md mx-auto px-4">
-        <h2 className="text-5xl font-bold mb-4">404</h2>
-        <h6 className="text-base font-semibold mb-2">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-mesh opacity-80" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-spotlight" />
+      <div className="relative text-center max-w-lg mx-auto px-6 py-16">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+          <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground" />
+          404
+        </div>
+        <h1 className="text-balance text-5xl md:text-7xl font-extrabold leading-[1] tracking-tight mb-4 text-gradient-fg">
           {t('pages.notFound.title', 'Page not found')}
-        </h6>
-        <p className="text-muted-foreground mb-8">
+        </h1>
+        <p className="text-base md:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed mb-10">
           {t('pages.notFound.description', "The page you're looking for doesn't exist or has been moved.")}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             variant="outline"
+            size="lg"
             onClick={() => window.history.back()}
-            style={{ display: 'inline-flex', gap: 8 }}
+            className="gap-2"
           >
-            <ArrowLeft style={{ width: 16, height: 16 }} aria-hidden="true" />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             {t('pages.notFound.goBack', 'Go Back')}
           </Button>
-          <Button asChild style={{ display: 'inline-flex', gap: 8 }}>
+          <Button asChild size="lg" className="gap-2">
             <LocalizedLink to="/">
-              <Home style={{ width: 16, height: 16 }} aria-hidden="true" />
+              <Home className="h-4 w-4" aria-hidden="true" />
               {t('pages.notFound.returnHome', 'Return Home')}
             </LocalizedLink>
           </Button>

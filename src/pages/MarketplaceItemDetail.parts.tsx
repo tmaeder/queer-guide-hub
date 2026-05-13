@@ -87,7 +87,7 @@ export function MarketplaceHero({
   return (
     <>
       {heroImage && (
-        <ParallaxHero className="w-full h-64 md:h-80 mb-6 bg-muted flex items-center justify-center">
+        <ParallaxHero className="w-full h-72 md:h-96 mb-6 rounded-3xl border border-border shadow-md overflow-hidden bg-muted flex items-center justify-center">
           <img
             src={heroImage}
             alt={listing.title}
@@ -101,9 +101,15 @@ export function MarketplaceHero({
 
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
+          <div className="min-w-0">
+            {listing.category && (
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground" />
+                {listing.category}
+              </div>
+            )}
             <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <h4 className="text-2xl font-bold">{listing.title}</h4>
+              <h1 className="text-4xl md:text-5xl font-bold leading-[1.05] tracking-tight text-balance">{listing.title}</h1>
               {listing.featured && <Badge>Featured</Badge>}
             </div>
 

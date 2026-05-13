@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { submissionTypes } from '@/config/submissionRegistry';
 import { ArrowRight, Heart, ArrowLeft, Camera } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const SubmitHub = () => {
   const navigate = useLocalizedNavigate();
@@ -28,17 +29,16 @@ const SubmitHub = () => {
         Back
       </Button>
 
-      <div className="text-center mb-8">
-        <div className="flex justify-center mb-3">
-          <Heart style={{ width: 32, height: 32 }} />
+      <PageHeader
+        center
+        eyebrow="Contribute"
+        title={t('pages.submit.title', 'Contribute to Queer Guide')}
+        subtitle={t('pages.submit.subtitle', "Help build the world's most comprehensive LGBTQ+ directory. All submissions are reviewed before publishing.")}
+      >
+        <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-background shadow-sm">
+          <Heart style={{ width: 28, height: 28 }} />
         </div>
-        <h4 className="text-2xl font-bold mb-2">
-          {t('pages.submit.title', 'Contribute to Queer Guide')}
-        </h4>
-        <p className="text-base text-muted-foreground max-w-lg mx-auto">
-          {t('pages.submit.subtitle', "Help build the world's most comprehensive LGBTQ+ directory. All submissions are reviewed before publishing.")}
-        </p>
-      </div>
+      </PageHeader>
 
       {!user && (
         <Card>

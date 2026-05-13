@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 import { DonationForm } from '@/components/donate/DonationForm';
 import { DonorWall } from '@/components/donate/DonorWall';
 import { DonationSuccess } from '@/components/donate/DonationSuccess';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function Donate() {
   const { t } = useTranslation();
@@ -11,21 +12,20 @@ export default function Donate() {
   const status = searchParams.get('status');
 
   return (
-    <div className="container mx-auto py-8 sm:py-12">
-      <div className="text-center mb-10">
-        <div className="w-14 h-14 rounded-full bg-muted/40 flex items-center justify-center mx-auto mb-4">
+    <div className="container mx-auto py-8 sm:py-12 px-4">
+      <PageHeader
+        center
+        eyebrow={t('donate.eyebrow', 'Community-powered')}
+        title={t('donate.title', 'Support queer.guide')}
+        subtitle={t(
+          'donate.subtitle',
+          'queer.guide is a free platform connecting the LGBTQ+ community with safe spaces, events, and resources worldwide. Your donation helps us keep it running and accessible to everyone.'
+        )}
+      >
+        <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-background shadow-sm">
           <Heart className="w-7 h-7" />
         </div>
-        <h4 className="text-3xl font-bold mb-2">
-          {t('donate.title', 'Support queer.guide')}
-        </h4>
-        <p className="text-base text-muted-foreground mx-auto leading-relaxed">
-          {t(
-            'donate.subtitle',
-            'queer.guide is a free platform connecting the LGBTQ+ community with safe spaces, events, and resources worldwide. Your donation helps us keep it running and accessible to everyone.'
-          )}
-        </p>
-      </div>
+      </PageHeader>
 
       {status === 'success' ? (
         <div className="mx-auto">

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoading } from '@/components/ui/loading';
 import { Building2 } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function Cities() {
   const { t } = useTranslation();
@@ -44,23 +45,20 @@ export default function Cities() {
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-          {t('cities.title', 'Cities')}
-        </h1>
-        <p className="text-muted-foreground">
-          {t('cities.subtitle', 'Explore LGBTQ+ friendly cities around the world.')}
-        </p>
-      </div>
-
-      <div className="mb-8 max-w-[480px]">
-        <Input
-          aria-label={t('cities.searchAriaLabel', 'Search cities')}
-          placeholder={t('cities.searchPlaceholder', 'Search cities…')}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <PageHeader
+        eyebrow={t('cities.eyebrow', 'Around the world')}
+        title={t('cities.title', 'Cities')}
+        subtitle={t('cities.subtitle', 'Explore LGBTQ+ friendly cities around the world.')}
+      >
+        <div className="max-w-md">
+          <Input
+            aria-label={t('cities.searchAriaLabel', 'Search cities')}
+            placeholder={t('cities.searchPlaceholder', 'Search cities…')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </PageHeader>
 
       {loading ? (
         <PageLoading />

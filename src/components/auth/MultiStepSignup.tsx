@@ -179,6 +179,13 @@ export default function MultiStepSignup({ onBack }: Props) {
             <div className="flex flex-col gap-3">
               <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+    <Card className="max-w-xl mx-auto rounded-3xl shadow-xl">
+      <CardHeader>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground" />
                 {t('auth.signup.stepIndicator', {
                   defaultValue: 'Step {{current}} of {{total}}',
                   current: currentStep,
@@ -193,6 +200,13 @@ export default function MultiStepSignup({ onBack }: Props) {
               </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={onBack} className="rounded-full shrink-0">
+              </div>
+              <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-balance">{t('auth.signup.title', 'Create your account')}</CardTitle>
+              <CardDescription className="mt-1 text-sm">
+                {t(`auth.signup.steps.${stepKeys[currentStep - 1]}`)}
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={onBack} className="flex-shrink-0">
               {t('auth.signup.haveAccount', 'Sign in')}
             </Button>
           </div>

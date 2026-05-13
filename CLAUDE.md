@@ -57,7 +57,7 @@ queer-guide-hub/
 ## Repo stats
 
 - **Edge functions:** 177
-- **Migrations:** 288
+- **Migrations:** 289
 
 ## Infrastructure
 
@@ -118,13 +118,13 @@ The repo lives in an iCloud-synced folder. `.git` objects get evicted. If git co
 
 LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusive by default, content is the hero.
 
-- **Color:** strictly monochrome. Black `--foreground: 0 0% 4%`, white `--background: 0 0% 100%`, plus grayscale steps (`--muted`, `--accent`, `--border`). No brand magenta in public UI. ESLint (`no-restricted-syntax`) errors on hex/rgb/hsl literals outside allowlisted files.
+- **Color:** strictly monochrome. Black `--foreground: 0 0% 4%`, white `--background: 0 0% 100%`, plus grayscale steps (`--muted`, `--accent`, `--border`). No chromatic hues in public UI. ESLint (`no-restricted-syntax`) errors on hex/rgb/hsl literals outside allowlisted files — non-negotiable.
 - **Typography:** Inter only. Plus Jakarta Sans removed. Self-hosted woff2 in `public/fonts/inter/`.
-- **Shape:** `--radius: 0` globally (all Tailwind `rounded-*` values override to `'0'` in `tailwind.config.ts`). ESLint warns on `rounded-(sm|md|lg|xl|2xl|3xl)` in new code. `rounded-full` allowed for avatars/dots only.
-- **Shadows:** disabled. ESLint warns on `shadow-(md|lg|xl|2xl)`. Use `border` or `bg-muted` for depth.
-- **Gradients:** not allowed in public UI. ESLint warns on `bg-gradient-to-*`. Exception: black readability scrims over images (`from-black/15 to-black/65`).
+- **Shape:** softened editorial scale. `--radius: 10px` base; full scale `--radius-xs:4 sm:6 md:10 lg:14 xl:20 2xl:28 3xl:36 4xl:44`. `rounded-full` for avatars/dots/pills.
+- **Shadows:** restrained B&W scale `--shadow-hairline / sm / md / lg / xl`. No colored glow / neon.
+- **Gradients:** B&W only. Use token utilities `bg-mesh`, `bg-scrim`, `bg-spotlight`, `bg-fade-down`, `bg-button-fg`, `.text-gradient-fg`. Raw `bg-gradient-to-*` allowed but must keep palette monochrome (e.g. `from-foreground to-foreground/60`, `from-black/15 to-black/65`). Color-literal ESLint rule still applies.
 - **Icons:** lucide-react only, inherit color from parent.
-- **Motion:** functional only (skeleton pulse, dialog/sheet transitions, accordion). No decorative animation (Aurora removed, ScrollReveal on hero removed).
+- **Motion:** purposeful, polished, spring-based. Aceternity-style effects live in `src/components/effects/` (`ParallaxHero`, `SpotlightEffect`, `TextGenerateEffect`, `MovingBorder`, `BentoGrid`, `InfiniteMovingCards`, `SkeletonCrossfade`, `BackgroundDots`, `GrainOverlay`) and `src/components/motion/` (`MagneticButton`, `StaggerContainer`, `Parallax`, `FadeIn`). Always respects `prefers-reduced-motion` via `useMotionTokens()`.
 - **Copy:** direct factual voice. No "discover/explore/unlock/curated/journey/amazing/tailored/personalized for you". Empty states: "No X yet." not metaphors.
 - Full light + dark mode (system preference + header toggle).
 - Components: shadcn/ui primitives in `src/components/ui/`.
@@ -135,8 +135,8 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
 
 ### Design System Files
-- Tokens: `src/index.css` (CSS variables)
-- Animation: `src/lib/animation.ts` (durations, easings, distances)
+- Tokens: `src/index.css` (CSS variables — radius, shadow, gradient scales)
+- Animation: `src/lib/animation.ts` (durations, easings, distances) + `src/lib/motion.ts` (variants, springs, `useMotionTokens`)
 - Layout: `src/lib/sx.ts` (container, center, pageWrapper, stack, row)
-- Components: 52 shadcn/ui components in `src/components/ui/`
-- Enforcement: `eslint.config.js` (color literals, rounded, shadow, gradient rules)
+- Components: 55 shadcn/ui primitives in `src/components/ui/`; 12 Aceternity effects in `src/components/effects/`; 8 motion primitives in `src/components/motion/`
+- Enforcement: `eslint.config.js` — color-literal block in force; radius / shadow / gradient restrictions removed (palette stays monochrome by convention + lint rule)

@@ -79,12 +79,12 @@ export function InstallBanner() {
     <div
       role="complementary"
       aria-label="Install app"
-      className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1300] w-[calc(100%-32px)] sm:w-auto max-w-[420px] bg-background p-4 flex items-start gap-3 animate-in slide-in-from-bottom-4 fade-in duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.24)]"
+      className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1300] w-[calc(100%-32px)] sm:w-auto max-w-[420px] rounded-2xl border border-border bg-background/95 backdrop-blur-md shadow-xl p-4 flex items-start gap-3 animate-in slide-in-from-bottom-4 fade-in duration-300"
     >
       <img
         src="/icons/icon-96.png"
         alt=""
-        className="w-10 h-10 rounded-md shrink-0 mt-0.5"
+        className="w-11 h-11 rounded-xl border border-border shadow-sm shrink-0 mt-0.5"
       />
       <div className="flex-1 min-w-0">
         {showIOSHint ? (

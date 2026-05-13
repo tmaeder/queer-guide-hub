@@ -14,23 +14,12 @@ export function CookieConsentBanner() {
 
   return (
     <>
-      <div
-        className="fixed z-[60] bg-background p-4 bottom-0 right-0 left-0 md:bottom-4 md:right-4 md:left-auto md:max-w-[480px]"
-        style={{
-          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
-        }}
-      >
-        <Card style={{ padding: 24, maxWidth: 896, margin: '0 auto' }}>
+      <div className="fixed z-[60] p-3 md:p-4 bottom-0 right-0 left-0 md:bottom-4 md:right-4 md:left-auto md:max-w-[480px]">
+        <Card className="p-6 rounded-2xl shadow-lg backdrop-blur-md bg-background/95">
           <div className="flex items-start gap-4">
-            <Cookie
-              style={{
-                height: 24,
-                width: 24,
-                color: 'var(--muted-foreground)',
-                marginTop: 4,
-                flexShrink: 0,
-              }}
-            />
+            <div className="flex-shrink-0 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted">
+              <Cookie className="h-5 w-5 text-muted-foreground" />
+            </div>
             <div className="flex-1 flex flex-col gap-4">
               <div>
                 <p className="text-base font-semibold mb-2">Cookie Settings</p>

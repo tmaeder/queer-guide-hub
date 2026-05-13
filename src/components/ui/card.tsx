@@ -14,8 +14,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'bg-background transition-all duration-[250ms] ease-out',
-        hoverable && 'cursor-pointer hover:opacity-85',
+        'relative rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-[transform,box-shadow] duration-300 ease-out',
+        hoverable && 'cursor-pointer hover:shadow-md hover:-translate-y-0.5',
         className,
       )}
       {...props}
@@ -34,13 +34,13 @@ const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
     const hover = reduced
       ? {}
       : {
-          whileHover: { opacity: 0.85 },
+          whileHover: { y: -2, boxShadow: 'var(--shadow-md)' },
           transition: springs.soft,
         };
     return (
       <motion.div
         ref={ref}
-        className={cn('bg-background', className)}
+        className={cn('rounded-xl border border-border bg-card text-card-foreground shadow-sm', className)}
         {...hover}
         {...(props as Record<string, unknown>)}
       >
@@ -75,14 +75,14 @@ const CardImage = ({
   const effectiveSrc = (!src || error) ? fallbackSrc : src;
 
   return (
-    <div className="relative overflow-hidden" style={{ height }}>
+    <div className="relative overflow-hidden rounded-t-xl" style={{ height }}>
       <img
         src={effectiveSrc}
         alt={alt}
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
-        className={`img-lazy-fade${loaded ? ' loaded' : ''} w-full h-full object-cover transition-transform duration-300 ease-out`}
+        className={`img-lazy-fade${loaded ? ' loaded' : ''} w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]`}
       />
       {children}
     </div>
