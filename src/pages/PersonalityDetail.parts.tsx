@@ -124,22 +124,28 @@ export function PersonalityHero({
   onProfessionClick,
 }: PersonalityHeroProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-      <div className="flex items-start gap-4">
-        <Avatar style={{ height: 96, width: 96 }}>
+    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+      <div className="flex items-start gap-5">
+        <Avatar className="rounded-2xl border border-border shadow-sm" style={{ height: 112, width: 112 }}>
           <AvatarImage
             src={personality.image_url || ''}
             alt={personality.name}
             style={{ objectFit: 'cover' }}
           />
-          <AvatarFallback style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+          <AvatarFallback style={{ fontSize: '1.5rem', fontWeight: 600 }}>
             {getInitials(personality.name)}
           </AvatarFallback>
         </Avatar>
 
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">{personality.name}</h1>
+        <div className="min-w-0">
+          {personality.profession && (
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground" />
+              {personality.profession}
+            </div>
+          )}
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            <h1 className="text-4xl md:text-5xl font-bold leading-[1.05] tracking-tight text-balance">{personality.name}</h1>
             {personality.is_featured && (
               <Badge
                 variant="secondary"

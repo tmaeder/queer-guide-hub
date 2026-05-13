@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { submissionRegistry } from '@/config/submissionRegistry';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
 import { useSubmission } from '@/hooks/useSubmission';
 import { useAuth } from '@/hooks/useAuth';
@@ -209,11 +210,16 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       </Button>
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <Icon style={{ width: 28, height: 28, color: config.color }} />
-        <h4 className="text-3xl font-bold">Submit {config.label}</h4>
-      </div>
-      <p className="text-muted-foreground mb-6">{config.description}</p>
+      <PageHeader
+        eyebrow="Contribute"
+        title={`Submit ${config.label}`}
+        subtitle={config.description}
+        actions={
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+            <Icon style={{ width: 20, height: 20, color: config.color }} />
+          </div>
+        }
+      />
 
       {/* Auth gate */}
       {!user && (

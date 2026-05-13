@@ -24,6 +24,7 @@ import { useCMSPage } from '@/hooks/useCMSPage';
 import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
 import type { CMSPage } from '@/types/cms';
 import type { LucideIcon } from 'lucide-react';
 
@@ -104,9 +105,9 @@ function ChildPageCard({ page }: { page: CMSPage }) {
   return (
     <LocalizedLink
       to={`/${page.slug}`}
-      className="flex items-start gap-4 bg-card p-5 text-foreground no-underline transition-opacity hover:opacity-85"
+      className="group/cms flex items-start gap-4 rounded-2xl border border-border bg-card p-5 text-foreground no-underline shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center bg-primary text-primary-foreground">
+      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
         <FileText size={20} />
       </div>
       <div className="min-w-0 flex-1">
@@ -117,7 +118,7 @@ function ChildPageCard({ page }: { page: CMSPage }) {
       </div>
       <ChevronRight
         size={18}
-        style={{ flexShrink: 0, marginTop: 2, color: 'hsl(var(--muted-foreground))' }}
+        className="mt-1 flex-shrink-0 text-muted-foreground transition-transform duration-300 group-hover/cms:translate-x-1"
       />
     </LocalizedLink>
   );
@@ -130,9 +131,9 @@ function LegalHubCard({ page }: { page: CMSPage }) {
   return (
     <LocalizedLink
       to={`/${page.slug}`}
-      className="group flex items-start gap-4 bg-card p-6 text-foreground no-underline transition-opacity hover:opacity-85"
+      className="group/legal flex items-start gap-4 rounded-2xl border border-border bg-card p-6 text-foreground no-underline shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="mt-0.5 text-muted-foreground transition-colors group-hover:text-foreground">
+      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground transition-colors group-hover/legal:text-foreground">
         <Icon size={22} />
       </div>
       <div className="min-w-0 flex-1">
@@ -143,7 +144,7 @@ function LegalHubCard({ page }: { page: CMSPage }) {
       </div>
       <ChevronRight
         size={16}
-        style={{ flexShrink: 0, marginTop: 4, color: 'hsl(var(--muted-foreground))' }}
+        className="mt-1 flex-shrink-0 text-muted-foreground transition-transform duration-300 group-hover/legal:translate-x-1"
       />
     </LocalizedLink>
   );
@@ -204,12 +205,13 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   if (isLegalHub) {
     return (
       <div className="mx-auto w-full max-w-[900px] px-4 py-8 sm:px-6 md:py-12">
-        <h1 className="mb-1 text-3xl font-bold md:text-4xl">The Legal Stuff</h1>
-        <p className="mb-8 max-w-[600px] text-base text-muted-foreground">
-          Transparency matters. Here's everything about how we operate, protect your data, and keep this space safe.
-        </p>
+        <PageHeader
+          eyebrow="Transparency"
+          title="The Legal Stuff"
+          subtitle="Everything about how we operate, protect your data, and keep this space safe."
+        />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {childPages.map((child) => (
             <LegalHubCard key={child.slug} page={child} />
           ))}
@@ -271,15 +273,29 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
       )}
 
       {page.cover_image_url && (
-        <img
-          src={page.cover_image_url}
-          alt={page.cover_image_alt || page.title}
-          className="mb-6 max-h-[400px] w-full object-cover"
+        <div className="relative mb-8 overflow-hidden rounded-3xl border border-border shadow-md">
+          <img
+            src={page.cover_image_url}
+            alt={page.cover_image_alt || page.title}
+            className="max-h-[400px] w-full object-cover"
+          />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-scrim opacity-50" />
+        </div>
+      )}
+
+      {!parentPage && (
+        <PageHeader
+          eyebrow={page.subtitle ? 'Page' : undefined}
+          title={page.title}
+          subtitle={page.subtitle || undefined}
         />
       )}
 
       {sanitizedHtml && (
-        <div className="qg-cms-body" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+        <div
+          className={`qg-cms-body ${!parentPage ? 'qg-cms-body--legal' : ''}`}
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+        />
       )}
 
       {childPages.length > 0 && (

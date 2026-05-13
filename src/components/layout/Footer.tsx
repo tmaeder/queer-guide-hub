@@ -21,8 +21,9 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-background mt-auto">
-      <div className="w-full px-4 sm:px-6 md:px-8 py-2 flex flex-col md:flex-row items-center justify-center md:justify-between gap-1 md:gap-2">
+    <footer className="relative mt-auto border-t border-border/60 bg-background">
+      <div aria-hidden="true" className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      <div className="w-full px-4 sm:px-6 md:px-8 py-4 flex flex-col md:flex-row items-center justify-center md:justify-between gap-2 md:gap-3">
         <div className="flex flex-col items-center gap-0.5 order-2 md:order-1 md:flex-1">
           <nav
             aria-label="Footer navigation"
@@ -37,16 +38,11 @@ export function Footer() {
                 )}
                 <Link
                   to={link.href}
-                  style={{
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    minHeight: 24,
-                    padding: '4px 6px',
-                  }}
+                  className="group/foot inline-flex items-center px-1.5 py-1 min-h-6 no-underline"
                 >
-                  <span className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                  <span className="relative text-xs text-muted-foreground transition-colors duration-200 group-hover/foot:text-foreground">
                     {t(link.labelKey)}
+                    <span aria-hidden="true" className="absolute left-0 right-0 -bottom-0.5 h-px origin-center bg-current scale-x-0 group-hover/foot:scale-x-100 transition-transform duration-300 ease-out" />
                   </span>
                 </Link>
               </div>

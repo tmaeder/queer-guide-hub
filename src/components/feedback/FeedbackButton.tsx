@@ -160,7 +160,7 @@ export function FeedbackButton() {
             aria-label="Share feedback"
             onClick={handleOpenClick}
             disabled={capturing}
-            className="fixed bottom-6 right-6 z-[1200] flex h-12 w-12 items-center justify-center bg-foreground text-background transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="fixed bottom-6 right-6 z-[1200] flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-[transform,box-shadow,opacity] duration-200 ease-out disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2"
             style={{
               visibility: capturing ? 'hidden' : 'visible',
             }}
@@ -175,7 +175,7 @@ export function FeedbackButton() {
         <DialogContent style={{ maxWidth: 480 }}>
           {status === 'submitted' ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-foreground">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-foreground shadow-md">
                 <Check style={{ width: 24, height: 24, color: 'hsl(var(--background))' }} />
               </div>
               <h6 className="text-base font-semibold mb-2">Thank you!</h6>

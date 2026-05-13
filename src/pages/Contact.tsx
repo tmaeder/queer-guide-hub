@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Mail, Clock, MessageCircle, Shield, Bug, HelpCircle, ChevronDown, ChevronRight, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -65,13 +66,13 @@ export default function Contact() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-2">Contact Us</h1>
-          <p className="text-muted-foreground">
-            Questions, feedback, or need support? Reach out to our community team.
-          </p>
-        </div>
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <PageHeader
+          center
+          eyebrow="We're listening"
+          title="Contact Us"
+          subtitle="Questions, feedback, or need support? Reach out to our community team."
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Contact Form */}
