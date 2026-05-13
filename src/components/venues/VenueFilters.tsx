@@ -338,12 +338,12 @@ export function VenueFilters({
           <Search
             style={{
               position: 'absolute',
-              left: 12,
+              left: 14,
               top: '50%',
               transform: 'translateY(-50%)',
               width: 16,
               height: 16,
-              color: 'var(--muted-foreground)',
+              color: 'hsl(var(--muted-foreground))',
             }}
           />
           <Input
@@ -351,7 +351,7 @@ export function VenueFilters({
             value={search}
             onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-10"
+            className="pl-11 h-11 rounded-xl"
           />
         </div>
         <div className="flex gap-2">
@@ -360,7 +360,7 @@ export function VenueFilters({
             onClick={handleNearMeToggle}
             disabled={isDetectingLocation}
             size="icon"
-
+            className="h-11 w-11 rounded-xl"
             aria-label="Find near me"
           >
             {isDetectingLocation ? (
@@ -371,8 +371,8 @@ export function VenueFilters({
           </Button>
           <Button
             onClick={handleSearch}
-
             size="icon"
+            className="h-11 w-11 rounded-xl"
             aria-label="Search"
           >
             <Search style={{ width: 16, height: 16 }} />
@@ -380,19 +380,20 @@ export function VenueFilters({
           <Button
             variant={showAdvanced ? 'default' : 'outline'}
             onClick={() => setShowAdvanced(!showAdvanced)}
-
+            className="h-11 rounded-xl gap-2"
             aria-label="Toggle filters"
           >
             <Filter style={{ width: 16, height: 16 }} />
             {activeFilterCount > 0 && (
               <span
-                className="rounded-full flex items-center justify-center font-bold"
+                className="rounded-full inline-flex items-center justify-center font-semibold"
                 style={{
                   backgroundColor: showAdvanced ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
                   color: showAdvanced ? 'hsl(var(--primary))' : 'hsl(var(--primary-foreground))',
-                  width: 20,
+                  minWidth: 20,
                   height: 20,
                   fontSize: '0.7rem',
+                  padding: '0 6px',
                 }}
               >
                 {activeFilterCount}
@@ -403,14 +404,14 @@ export function VenueFilters({
       </div>
 
       {/* Category Chips */}
-      <div className="flex gap-2 flex-wrap max-w-full">
+      <div className="flex gap-1.5 flex-wrap max-w-full">
         {categories.map((cat) => (
           <Button
             key={cat}
             variant={category === cat ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleCategoryClick(cat)}
-
+            className="rounded-full h-8 px-3.5 text-xs font-medium transition-all"
           >
             {categoryLabels[cat] ?? cat}
           </Button>
@@ -419,7 +420,7 @@ export function VenueFilters({
 
       {/* Active Filter Chips */}
       {hasActiveFilters && !showAdvanced && (
-        <div className="flex flex-wrap gap-[6px] items-center">
+        <div className="flex flex-wrap gap-1.5 items-center pt-1 px-1">
           {search && (
             <Badge variant="secondary">
               &ldquo;{search}&rdquo;
@@ -478,17 +479,25 @@ export function VenueFilters({
       {showAdvanced && (
         <nav
           aria-label="Venue filters"
-          className="flex flex-col gap-5 pt-4 border-t border-border"
+          className="flex flex-col gap-6 pt-5 mt-1 border-t border-border"
         >
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+              Refine
+            </span>
+          </div>
+
           {/* City input */}
-          <div className="max-w-[400px]">
-            <Label htmlFor="city">City</Label>
+          <div className="max-w-[400px] flex flex-col gap-1.5">
+            <Label htmlFor="city" className="text-[11px] uppercase tracking-wider text-muted-foreground">City</Label>
             <Input
               id="city"
               placeholder="Enter city..."
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="h-11 rounded-xl"
             />
           </div>
 
@@ -497,7 +506,6 @@ export function VenueFilters({
             {/* Tags */}
             <FilterDropdown
               label="Tags"
-              dotColor="primary.main"
               open={tagsOpen}
               onOpenChange={setTagsOpen}
               selected={selectedTags}
@@ -512,7 +520,6 @@ export function VenueFilters({
             {/* Amenities */}
             <FilterDropdown
               label="Amenities"
-              dotColor="#3b82f6"
               open={amenitiesOpen}
               onOpenChange={setAmenitiesOpen}
               selected={selectedAmenities}
@@ -526,7 +533,6 @@ export function VenueFilters({
             {/* Services */}
             <FilterDropdown
               label="Services"
-              dotColor="#22c55e"
               open={servicesOpen}
               onOpenChange={setServicesOpen}
               selected={selectedServices}
@@ -540,7 +546,6 @@ export function VenueFilters({
             {/* Accessibility */}
             <FilterDropdown
               label="Accessibility"
-              dotColor="#555555"
               open={accessibilityOpen}
               onOpenChange={setAccessibilityOpen}
               selected={selectedAccessibilityAttributes}
@@ -555,7 +560,6 @@ export function VenueFilters({
             {/* Target Groups */}
             <FilterDropdown
               label="Target Groups"
-              dotColor="#f97316"
               open={targetGroupsOpen}
               onOpenChange={setTargetGroupsOpen}
               selected={selectedTargetGroups}
@@ -586,7 +590,6 @@ export function VenueFilters({
 // Extracted filter dropdown component to reduce repetition
 function FilterDropdown({
   label,
-  dotColor,
   open,
   onOpenChange,
   selected,
@@ -598,7 +601,6 @@ function FilterDropdown({
   emptyMessage,
 }: {
   label: string;
-  dotColor: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selected: string[];
@@ -613,13 +615,15 @@ function FilterDropdown({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label>
-        <div className="flex items-center gap-2">
-          <div
-            className="rounded-full"
-            style={{ width: 7, height: 7, backgroundColor: dotColor.includes('.') ? `hsl(var(--${dotColor.split('.')[0]}))` : dotColor }}
-          />
+      <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {label}
+          {selected.length > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-[10px] font-semibold normal-case tracking-normal">
+              {selected.length}
+            </span>
+          )}
         </div>
       </Label>
       <Popover open={open} onOpenChange={onOpenChange}>
@@ -628,17 +632,19 @@ function FilterDropdown({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-
+            className="h-11 w-full justify-between rounded-xl font-normal"
           >
-            {selected.length > 0
-              ? `${selected.length} selected`
-              : placeholder}
+            <span className="truncate text-sm">
+              {selected.length > 0
+                ? `${selected.length} selected`
+                : placeholder}
+            </span>
             <ChevronDown
               style={{ marginLeft: 8, width: 14, height: 14, flexShrink: 0, opacity: 0.5 }}
             />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start">
+        <PopoverContent align="start" className="rounded-xl border-border shadow-lg p-0">
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>

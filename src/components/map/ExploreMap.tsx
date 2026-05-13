@@ -717,10 +717,10 @@ export const ExploreMap = ({
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
-      className={`relative rounded-lg overflow-hidden flex flex-col ${className ?? ''}`}
+      className={`relative rounded-2xl overflow-hidden border border-border ${className ?? ''}`}
       style={{ height }}
     >
-      <div ref={containerRef} className="flex-1 w-full min-h-0" />
+      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
 
       {/* Lightweight hover tooltip for boundary polygons */}
       <div
@@ -774,9 +774,9 @@ export const ExploreMap = ({
 
       {/* Fetching indicator + result count */}
       <div
-        className="absolute z-10 flex items-center gap-1 bg-background px-2 py-1 pointer-events-none transition-opacity duration-200"
+        className="absolute z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 backdrop-blur-md shadow-md px-3 py-1.5 pointer-events-none transition-opacity duration-200"
         style={{
-          top: 12,
+          bottom: 12,
           right: 56,
           opacity: isFetching || pointsTotalCount > 0 ? 1 : 0,
         }}
@@ -794,7 +794,7 @@ export const ExploreMap = ({
           variant="ghost"
           aria-label="Open full map"
           onClick={() => navigate(linkToFullMap)}
-          className="absolute bottom-3 left-3 z-10 min-w-0 px-2 py-1 rounded-none normal-case text-xs leading-tight bg-background hover:bg-background hover:opacity-85"
+          className="absolute bottom-3 left-3 z-10 min-w-0 px-3 py-1.5 rounded-full border border-border normal-case text-xs leading-tight bg-background/85 backdrop-blur-md shadow-md hover:bg-background"
         >
           <ExternalLink size={14} />
           <span className="hidden sm:inline ml-1">Full map</span>

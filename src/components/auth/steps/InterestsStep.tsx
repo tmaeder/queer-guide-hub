@@ -50,38 +50,49 @@ export default function InterestsStep({ data, updateData }: Props) {
     title: string;
     options: string[];
     field: 'lookingFor' | 'interests';
-  }) => (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium">{title}</p>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt) => {
-          const active = data[field].includes(opt);
-          return (
-            <Badge
-              key={opt}
-              variant={active ? 'default' : 'outline'}
-              role="button"
-              tabIndex={0}
-              onClick={() => toggle(field, opt)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  toggle(field, opt);
-                }
-              }}
-              style={{ cursor: 'pointer', userSelect: 'none' }}
-            >
-              {t(`auth.${field}.${opt}`, opt)}
-            </Badge>
-          );
-        })}
+  }) => {
+    const count = data[field].length;
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold tracking-tight">{title}</p>
+          {count > 0 && (
+            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-2 rounded-full bg-foreground text-background text-[11px] font-semibold">
+              {count}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {options.map((opt) => {
+            const active = data[field].includes(opt);
+            return (
+              <Badge
+                key={opt}
+                variant={active ? 'default' : 'outline'}
+                role="button"
+                tabIndex={0}
+                onClick={() => toggle(field, opt)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle(field, opt);
+                  }
+                }}
+                className="transition-all hover:shadow-sm"
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+              >
+                {t(`auth.${field}.${opt}`, opt)}
+              </Badge>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <p className="text-sm text-muted-foreground">
+    <div className="flex flex-col gap-7">
+      <p className="text-sm text-muted-foreground leading-relaxed">
         {t('auth.signup.interestsBlurb', 'Optional — helps us personalise your guide. Skip if you prefer.')}
       </p>
       <Section
@@ -89,6 +100,7 @@ export default function InterestsStep({ data, updateData }: Props) {
         options={LOOKING_FOR}
         field="lookingFor"
       />
+      <div className="border-t border-border" />
       <Section
         title={t('auth.signup.interestsTitle', 'Interests')}
         options={INTERESTS}

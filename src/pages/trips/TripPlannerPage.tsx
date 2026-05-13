@@ -258,16 +258,17 @@ export default function TripPlannerPage() {
       <TripNudgesBanner tripId={trip.id} />
 
       {/* Quick action row */}
-      <div className="flex items-center justify-between mb-4 gap-3">
-        <p className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between mb-5 gap-3 mt-2">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {t('trips.planner.placesCount', { count: trip.trip_places.length })}
           {trip.trip_days.length > 0 && (
             <>
-              {' · '}
+              <span className="opacity-40">·</span>
               {t('trips.planner.daysPlanned', { count: trip.trip_days.length })}
             </>
           )}
-        </p>
+        </span>
         <Button
           variant="brand"
           size="sm"
@@ -275,6 +276,7 @@ export default function TripPlannerPage() {
             setAddPlaceDay(undefined);
             setAddPlaceOpen(true);
           }}
+          className="rounded-full"
         >
           <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
           {t('trips.itinerary.addPlace')}
@@ -282,7 +284,7 @@ export default function TripPlannerPage() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="flex w-full overflow-x-auto justify-start mb-6 border-b border-border bg-transparent">
+        <TabsList className="flex w-full overflow-x-auto justify-start mb-6 border-b border-border bg-transparent rounded-none">
           <TabsTrigger value="itinerary" className="gap-1.5">
             <Calendar size={16} /> {t('trips.tabs.itinerary')}
           </TabsTrigger>
