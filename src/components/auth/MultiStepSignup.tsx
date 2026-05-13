@@ -172,6 +172,13 @@ export default function MultiStepSignup({ onBack }: Props) {
   };
 
   return (
+    <Card className="rounded-3xl border-border/70 shadow-sm">
+      <CardHeader>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-3">
+              <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
     <Card className="max-w-xl mx-auto rounded-3xl shadow-xl">
       <CardHeader>
         <div className="flex flex-col gap-5">
@@ -184,6 +191,15 @@ export default function MultiStepSignup({ onBack }: Props) {
                   current: currentStep,
                   total: totalSteps,
                 })}
+              </span>
+              <CardTitle className="text-3xl md:text-4xl font-bold leading-[1.05] tracking-tight">
+                {t(`auth.signup.steps.${stepKeys[currentStep - 1]}`)}
+              </CardTitle>
+              <CardDescription>
+                {t('auth.signup.title', 'Create your account')}
+              </CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={onBack} className="rounded-full shrink-0">
               </div>
               <CardTitle className="text-2xl md:text-3xl font-bold tracking-tight text-balance">{t('auth.signup.title', 'Create your account')}</CardTitle>
               <CardDescription className="mt-1 text-sm">
@@ -194,7 +210,7 @@ export default function MultiStepSignup({ onBack }: Props) {
               {t('auth.signup.haveAccount', 'Sign in')}
             </Button>
           </div>
-          <Progress value={progress} className="w-full h-1.5" />
+          <Progress value={progress} className="w-full h-1" />
         </div>
       </CardHeader>
 
@@ -222,18 +238,18 @@ export default function MultiStepSignup({ onBack }: Props) {
 
           <div className="min-h-[280px]">{renderStep()}</div>
 
-          <div className="flex justify-between pt-4 border-t border-border">
-            <Button variant="outline" onClick={goPrev} disabled={currentStep === 1 || isLoading}>
+          <div className="flex justify-between pt-5 border-t border-border">
+            <Button variant="outline" onClick={goPrev} disabled={currentStep === 1 || isLoading} className="rounded-full">
               <ChevronLeft className="w-4 h-4 mr-1.5" />
               {t('common.back', 'Back')}
             </Button>
             {currentStep < totalSteps ? (
-              <Button onClick={goNext} disabled={isLoading}>
+              <Button onClick={goNext} disabled={isLoading} className="rounded-full px-6">
                 {t('common.next', 'Next')}
                 <ChevronRight className="w-4 h-4 ml-1.5" />
               </Button>
             ) : (
-              <Button onClick={handleSubmit} disabled={isLoading}>
+              <Button onClick={handleSubmit} disabled={isLoading} className="rounded-full px-6">
                 {isLoading && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
