@@ -218,7 +218,8 @@ const Venues = () => {
   // browser starts fetching before React commits the grid. Cleans up to avoid
   // leaking <link> nodes across navigations.
   useEffect(() => {
-    if (loading || venues.length === 0) return;
+    // Skip preload on map view — grid images aren't part of LCP there.
+    if (loading || venues.length === 0 || viewMode !== 'grid') return;
     const links: HTMLLinkElement[] = [];
     for (const v of venues.slice(0, 4)) {
       const src = v.images?.[0] ?? v.logo_url;
@@ -233,7 +234,7 @@ const Venues = () => {
     return () => {
       for (const l of links) l.remove();
     };
-  }, [loading, venues]);
+  }, [loading, venues, viewMode]);
 
   // Infinite scroll
   useEffect(() => {
