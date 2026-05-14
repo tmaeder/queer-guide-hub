@@ -327,21 +327,17 @@ export default function TodayModePage() {
       )}
 
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <LocalizedLink
           to={`/trips/${effectiveTrip.id}`}
-          className="inline-flex items-center gap-1 mb-3 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline"
+          style={{ color: 'var(--muted-foreground)', fontSize: '0.875rem' }}
         >
-          <span aria-hidden="true">←</span> {effectiveTrip.title}
+          ← {effectiveTrip.title}
         </LocalizedLink>
-        <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
-          {t('trips.today.live', 'On itinerary')}
-        </div>
-        <div className="flex items-baseline gap-3 flex-wrap">
-          <h1 className="text-4xl md:text-5xl font-bold leading-[1.05] tracking-tight">
+        <div className="flex items-center gap-2 mt-2">
+          <h3 className="text-3xl md:text-4xl font-bold">
             {t('trips.today.title', 'Today')}
-          </h1>
+          </h3>
           <span className="text-muted-foreground text-lg font-medium">
             {now.toLocaleDateString(undefined, {
               weekday: 'long',

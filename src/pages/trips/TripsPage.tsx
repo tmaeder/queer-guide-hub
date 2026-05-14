@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { Plus, Map, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -6,6 +7,7 @@ import { useTrips } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
 import { TripCard } from '@/components/trips/TripCard';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
+import type { GeoSelection } from '@/components/trips/create/CityCountryAutocomplete';
 import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { TripsInboxSection } from '@/components/trips/TripsInboxSection';
@@ -21,7 +23,6 @@ import {
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function TripsPage() {
   const { t } = useTranslation();
@@ -29,7 +30,34 @@ export default function TripsPage() {
   const navigate = useLocalizedNavigate();
   const { data: trips, isLoading, error, refetch } = useTrips();
   const [createOpen, setCreateOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
+
+  // Seed from /travel deep-link: ?cityId=&cityName=&countryId=&countryName=&countryCode=&timezone=&start=&end=
+  const seedGeo = useMemo<GeoSelection | null>(() => {
+    const cityId = searchParams.get('cityId');
+    const cityName = searchParams.get('cityName');
+    const countryId = searchParams.get('countryId');
+    const countryName = searchParams.get('countryName');
+    if (!cityId || !cityName || !countryId || !countryName) return null;
+    return {
+      cityId,
+      cityName,
+      countryId,
+      countryName,
+      countryCode: searchParams.get('countryCode'),
+      timezone: searchParams.get('timezone'),
+    };
+  }, [searchParams]);
+  const seedStart = searchParams.get('start') ?? undefined;
+  const seedEnd = searchParams.get('end') ?? undefined;
+
+  // Auto-open the create dialog when arriving from /travel with a city seed.
+  useEffect(() => {
+    if (seedGeo && !createOpen) {
+      setCreateOpen(true);
+    }
+  }, [seedGeo, createOpen]);
   const [statusFilter, setStatusFilter] = useState<TripStatusFilter>('all');
   const [sortKey, setSortKey] = useState<TripSortKey>('recent');
 
@@ -49,32 +77,44 @@ export default function TripsPage() {
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4">
-      <PageHeader
-        eyebrow={t('trips.eyebrow', 'Your itineraries')}
-        title={hasAnyTrips ? `${t('trips.title')} · ${trips?.length}` : t('trips.title')}
-        subtitle={t('trips.subtitle')}
-        actions={
-          <>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => navigate('/trips/discover')}
-              aria-label={t('trips.discover.aria', 'Discover public trips')}
-            >
-              <Compass style={{ width: 18, height: 18, marginRight: 6 }} />
-              {t('trips.discover.button', 'Discover')}
-            </Button>
-            <Button
-              variant="brand"
-              size="lg"
-              onClick={() => setCreateOpen(true)}
-            >
-              <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
-              {t('trips.create')}
-            </Button>
-          </>
-        }
-      />
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h3 className="text-3xl md:text-4xl mb-1">
+            {t('trips.title')}
+            {hasAnyTrips && (
+              <span
+                className="ml-3 text-muted-foreground font-medium tabular-nums"
+                style={{ fontSize: '0.65em' }}
+              >
+                · {trips?.length}
+              </span>
+            )}
+          </h3>
+          <p className="text-muted-foreground">{t('trips.subtitle')}</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/trips/discover')}
+            style={{ paddingLeft: 16, paddingRight: 16 }}
+            aria-label={t('trips.discover.aria', 'Discover public trips')}
+          >
+            <Compass style={{ width: 18, height: 18, marginRight: 6 }} />
+            {t('trips.discover.button', 'Discover')}
+          </Button>
+          <Button
+            variant="brand"
+            size="lg"
+            onClick={() => setCreateOpen(true)}
+            style={{ paddingLeft: 20, paddingRight: 20 }}
+          >
+            <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
+            {t('trips.create')}
+          </Button>
+        </div>
+      </div>
 
       {/* Travel inbox */}
       <TripsInboxSection />
@@ -158,7 +198,27 @@ export default function TripsPage() {
         </div>
       )}
 
-      <CreateTripDialog open={createOpen} onClose={() => setCreateOpen(false)} />
+      <CreateTripDialog
+        open={createOpen}
+        onClose={() => {
+          setCreateOpen(false);
+          if (seedGeo) {
+            // Clear deep-link seed so reopening doesn't re-trigger auto-open.
+            setSearchParams(
+              (prev) => {
+                ['cityId', 'cityName', 'countryId', 'countryName', 'countryCode', 'timezone', 'start', 'end'].forEach(
+                  (k) => prev.delete(k),
+                );
+                return prev;
+              },
+              { replace: true },
+            );
+          }
+        }}
+        initialGeo={seedGeo}
+        initialStart={seedStart}
+        initialEnd={seedEnd}
+      />
     </div>
   );
 }

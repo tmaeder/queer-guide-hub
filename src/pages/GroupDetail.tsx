@@ -159,14 +159,13 @@ export default function GroupDetail() {
       <Card>
         <CardContent style={{ padding: '32px' }}>
           <div className="flex flex-col md:flex-row gap-6">
-            <Avatar className="rounded-2xl border border-border shadow-sm" style={{ height: 112, width: 112 }}>
+            <Avatar style={{ height: 96, width: 96 }}>
               <AvatarImage src={group.image_url || undefined} />
               <AvatarFallback
                 style={{
-                  background: 'hsl(var(--foreground))',
-                  color: 'hsl(var(--background))',
-                  fontSize: '1.75rem',
-                  fontWeight: 700,
+                  background: 'var(--gradient-primary)',
+                  color: 'white',
+                  fontSize: '1.5rem',
                 }}
               >
                 {group.name.charAt(0).toUpperCase()}
@@ -175,16 +174,13 @@ export default function GroupDetail() {
 
             <div className="flex-1 text-center md:text-left flex flex-col gap-4">
               <div>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                  <h1 className="text-3xl font-bold">{group.name}</h1>
                   {group.is_private ? (
-                    <Lock style={{ height: 12, width: 12 }} />
+                    <Lock style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
                   ) : (
-                    <Globe style={{ height: 12, width: 12 }} />
+                    <Globe style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
                   )}
-                  {group.is_private ? 'Private group' : 'Public group'}
-                </div>
-                <div className="flex items-center gap-3 justify-center md:justify-start mb-2 flex-wrap">
-                  <h1 className="text-4xl md:text-5xl font-bold leading-[1.05] tracking-tight text-balance">{group.name}</h1>
                 </div>
 
                 <div className="flex items-center gap-4 justify-center md:justify-start text-muted-foreground">
