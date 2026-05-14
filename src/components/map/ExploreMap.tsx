@@ -134,6 +134,7 @@ export const ExploreMap = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
+  const hoverPopupRef = useRef<maplibregl.Popup | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const areaLayerIdsRef = useRef<Set<string>>(new Set());
   const pointLayersAddedRef = useRef(false);
@@ -709,7 +710,43 @@ export const ExploreMap = ({
     map.on('mouseenter', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
     map.on('mouseleave', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ''; });
     map.on('mouseenter', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ''; });
+    map.on('mouseleave', UNCLUSTERED_LAYER, () => {
+      map.getCanvas().style.cursor = '';
+      hoverPopupRef.current?.remove();
+      hoverPopupRef.current = null;
+    });
+
+    // Lightweight hover preview: name + subtitle, no close button, no action
+    // buttons. Click still opens the full popup with share/navigate.
+    map.on('mousemove', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
+      const feat = e.features?.[0];
+      if (!feat || feat.geometry.type !== 'Point') return;
+      const props = feat.properties as Record<string, unknown>;
+      const name = String(props.name ?? '');
+      const subtitle = props.subtitle ? String(props.subtitle) : '';
+      const safeName = name.replace(/[&<>"]/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
+      );
+      const safeSub = subtitle.replace(/[&<>"]/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
+      );
+      const html = `<div style="font:13px system-ui;line-height:1.3;padding:2px 4px;max-width:200px"><div style="font-weight:600">${safeName}</div>${
+        safeSub ? `<div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px">${safeSub}</div>` : ''
+      }</div>`;
+      if (!hoverPopupRef.current) {
+        hoverPopupRef.current = new maplibregl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          offset: 12,
+          maxWidth: '220px',
+          className: 'venue-hover-popup',
+        });
+      }
+      hoverPopupRef.current
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    });
 
     pointLayersAddedRef.current = true;
   }, [pointsGeoJSON, pointEnabledLayers, mapReady, showPopup]);
