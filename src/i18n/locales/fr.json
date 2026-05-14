@@ -1248,7 +1248,45 @@
         "title": "Aucun événement ne correspond à tes filtres",
         "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
       },
-      "prideSubtype": "[FR] Pride type"
+      "prideSubtype": "[FR] Pride type",
+      "mapView": "[FR] Map view",
+      "preset": {
+        "label": "[FR] Quick filters",
+        "thisWeekend": "[FR] This weekend",
+        "nearMe": "[FR] Near me",
+        "pride": "[FR] Pride season",
+        "thisMonth": "[FR] This month",
+        "free": "[FR] Free",
+        "featured": "[FR] Featured"
+      },
+      "rail": {
+        "featured": "[FR] Featured this week",
+        "featuredSubtitle": "[FR] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[FR] No events match your filters",
+        "body": "[FR] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[FR] Drop \"{{city}}\" filter",
+        "clearDate": "[FR] Drop date filter",
+        "viewAll": "[FR] View all upcoming events",
+        "sameCityHeader": "[FR] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[FR] Try other cities in your date range",
+        "fallbackHeader": "[FR] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[FR] Spotlight",
+        "happeningNow": "[FR] Happening now",
+        "tomorrow": "[FR] Starts tomorrow",
+        "inDays_one": "[FR] Starts in {{count}} day",
+        "inDays_other": "[FR] Starts in {{count}} days",
+        "nearbyCount_one": "[FR] {{count}} event in {{city}}",
+        "nearbyCount_other": "[FR] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[FR] Sort events",
+      "sort": {
+        "dateAsc": "[FR] Soonest first",
+        "dateDesc": "[FR] Latest first"
+      }
     },
     "eventDetail": {
       "loadFailed": "Impossible de charger les détails de l'événement.",

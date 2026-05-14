@@ -1244,7 +1244,45 @@
         "title": "필터와 일치하는 이벤트가 없습니다",
         "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
       },
-      "prideSubtype": "[KO] Pride type"
+      "prideSubtype": "[KO] Pride type",
+      "mapView": "[KO] Map view",
+      "preset": {
+        "label": "[KO] Quick filters",
+        "thisWeekend": "[KO] This weekend",
+        "nearMe": "[KO] Near me",
+        "pride": "[KO] Pride season",
+        "thisMonth": "[KO] This month",
+        "free": "[KO] Free",
+        "featured": "[KO] Featured"
+      },
+      "rail": {
+        "featured": "[KO] Featured this week",
+        "featuredSubtitle": "[KO] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[KO] No events match your filters",
+        "body": "[KO] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[KO] Drop \"{{city}}\" filter",
+        "clearDate": "[KO] Drop date filter",
+        "viewAll": "[KO] View all upcoming events",
+        "sameCityHeader": "[KO] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[KO] Try other cities in your date range",
+        "fallbackHeader": "[KO] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[KO] Spotlight",
+        "happeningNow": "[KO] Happening now",
+        "tomorrow": "[KO] Starts tomorrow",
+        "inDays_one": "[KO] Starts in {{count}} day",
+        "inDays_other": "[KO] Starts in {{count}} days",
+        "nearbyCount_one": "[KO] {{count}} event in {{city}}",
+        "nearbyCount_other": "[KO] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[KO] Sort events",
+      "sort": {
+        "dateAsc": "[KO] Soonest first",
+        "dateDesc": "[KO] Latest first"
+      }
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",
