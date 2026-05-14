@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { cloudflareAPI, type CloudflareAnalytics, type CloudflareZoneInfo, type CloudflareSecuritySettings, type CloudflarePerformanceSettings } from '@/integrations/supabase/cloudflare';
+import { cloudflareAPI, CloudflareNotConfiguredError, type CloudflareAnalytics, type CloudflareZoneInfo, type CloudflareSecuritySettings, type CloudflarePerformanceSettings } from '@/integrations/supabase/cloudflare';
 import { InlineLoading } from '@/components/ui/loading';
 import {
   Cloud,
@@ -32,11 +32,13 @@ interface CloudflareStats {
 export function CloudflareDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [notConfigured, setNotConfigured] = useState(false);
   const [stats, setStats] = useState<CloudflareStats>({});
 
   const fetchCloudflareData = async (showRefreshToast = false) => {
     try {
       if (showRefreshToast) setRefreshing(true);
+      setNotConfigured(false);
 
       const testResult = await cloudflareAPI.getZoneInfo();
 
@@ -65,11 +67,18 @@ export function CloudflareDashboard() {
     } catch (error: any) {
       console.error('Error fetching Cloudflare data:', error);
 
+      if (error instanceof CloudflareNotConfiguredError) {
+        setNotConfigured(true);
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
       let errorMessage = 'Failed to fetch Cloudflare data.';
 
-      if (error.message?.includes('API token not configured')) {
+      if (error.message?.includes('not configured')) {
         errorMessage =
-          'Cloudflare API token is not configured. Please set the CLOUDFLARE_API_TOKEN in your Supabase secrets.';
+          'Cloudflare API is not configured. Set CLOUDFLARE_ZONE_ID, CLOUDFLARE_ACCOUNT_ID, and CLOUDFLARE_API_TOKEN in Supabase secrets.';
       } else if (error.message?.includes('Unauthorized')) {
         errorMessage = 'Invalid Cloudflare API token. Please check your token permissions.';
       } else if (error.message?.includes('Forbidden')) {
@@ -93,6 +102,33 @@ export function CloudflareDashboard() {
 
   if (loading) {
     return <InlineLoading />;
+  }
+
+  if (notConfigured) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cloud style={{ height: 20, width: 20 }} />
+            Cloudflare Dashboard
+          </CardTitle>
+          <CardDescription>Cloudflare API credentials are not configured for this environment.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 text-sm">
+          <p>To enable this dashboard, set these Supabase Edge Function secrets:</p>
+          <ul className="list-disc pl-6 flex flex-col gap-1">
+            <li><code>CLOUDFLARE_ZONE_ID</code></li>
+            <li><code>CLOUDFLARE_ACCOUNT_ID</code></li>
+            <li><code>CLOUDFLARE_API_TOKEN</code> (Zone:Read, Analytics:Read, DNS:Read, Workers Scripts:Read)</li>
+          </ul>
+          <pre className="bg-muted p-3 rounded text-xs overflow-x-auto">supabase secrets set CLOUDFLARE_ZONE_ID=... CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=...</pre>
+          <Button variant="outline" onClick={handleRefresh} disabled={refreshing} className="self-start">
+            <RefreshCw style={{ height: 16, width: 16, ...(refreshing ? { animation: 'spin 1s linear infinite' } : {}) }} />
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
   }
 
   const { analytics, zoneInfo, securitySettings, performanceSettings } = stats;
