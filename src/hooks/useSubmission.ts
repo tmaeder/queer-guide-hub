@@ -11,6 +11,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useForm, type FieldValues, type Path } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/useAuth';
+import { useRequireVerifiedEmail } from '@/hooks/useRequireVerifiedEmail';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { SubmissionTypeConfig } from '@/config/submissionRegistry';
@@ -24,6 +25,7 @@ export interface NextStepResult {
 
 export function useSubmission(config: SubmissionTypeConfig) {
   const { user } = useAuth();
+  const requireVerifiedEmail = useRequireVerifiedEmail();
   const { toast } = useToast();
 
   const { fullSchema } = useMemo(() => buildSubmissionSchema(config), [config]);
@@ -162,6 +164,8 @@ export function useSubmission(config: SubmissionTypeConfig) {
       return;
     }
 
+    if (!requireVerifiedEmail()) return;
+
     try {
       const values = form.getValues();
       const { error } = await supabase.from('community_submissions' as 'venues').insert({
@@ -192,7 +196,7 @@ export function useSubmission(config: SubmissionTypeConfig) {
         variant: 'destructive',
       });
     }
-  }, [config, honeypot, user, toast, validateStep, form]);
+  }, [config, honeypot, user, requireVerifiedEmail, toast, validateStep, form]);
 
   const reset = useCallback(() => {
     form.reset(config.defaults as FieldValues);

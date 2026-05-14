@@ -26,6 +26,7 @@ import {
   type TypingIndicator,
 } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
+import { useRequireVerifiedEmail } from '@/hooks/useRequireVerifiedEmail';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useSearchParams } from 'react-router';
@@ -495,6 +496,7 @@ const MessageInput = ({
 
 export const MessagingInterface = () => {
   const { user } = useAuth();
+  const requireVerifiedEmail = useRequireVerifiedEmail();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     conversations,
@@ -555,6 +557,7 @@ export const MessagingInterface = () => {
   };
 
   const handleSendMessage = async (content: string) => {
+    if (!requireVerifiedEmail()) return;
     if (selectedConversation) {
       await sendMessage(selectedConversation, content);
       await stopTypingIndicator(selectedConversation);
