@@ -1,6 +1,6 @@
 import type { DragEvent } from '@xyflow/react';
 import { Search } from 'lucide-react';
-import * as Icons from 'lucide-react';
+import { resolvePipelineIcon } from './icon-registry';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { PipelineNodeType } from './hooks/usePipelineBuilder';
 
@@ -70,7 +70,7 @@ export default function PipelineNodePalette({
                 </div>
                 <div className="flex flex-col gap-0.5">
                   {types.map(nt => {
-                    const Icon = (Icons as Record<string, unknown>)[nt.icon] as React.ComponentType<{ className?: string }> || Icons.Box;
+                    const Icon = resolvePipelineIcon(nt.icon);
                     return (
                       <Tooltip key={nt.slug}>
                         <TooltipTrigger asChild>
