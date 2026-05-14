@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Suspense, lazy } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,6 @@ import {
   Heart,
   Menu,
   User,
-  X,
   MapPin,
   Calendar,
   Store,
@@ -58,7 +57,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
-import { NotificationList } from '@/components/notifications/NotificationList';
+const NotificationList = lazy(() =>
+  import('@/components/notifications/NotificationList').then((m) => ({
+    default: m.NotificationList,
+  })),
+);
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 
@@ -213,15 +216,9 @@ export function Header() {
               Queer Guide
             </span>
           </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setDrawerOpen(false)}
-            aria-label={t('header.closeMenu', 'Close menu')}
-            className="h-11 w-11 p-0"
-          >
-            <X style={{ width: 20, height: 20 }} />
-          </Button>
+          {/* Close button is provided by SheetContent (top-right). Rendering a
+              second one here previously sat under it and tripped axe's
+              `target-size` rule (4×44 visible area). */}
         </div>
 
         {/* Scrollable content */}
@@ -602,7 +599,9 @@ export function Header() {
 
                     {/* Notifications */}
                     <div className="mb-4">
-                      <NotificationList />
+                      <Suspense fallback={null}>
+                        <NotificationList />
+                      </Suspense>
                     </div>
 
                     <div className="my-2" />
