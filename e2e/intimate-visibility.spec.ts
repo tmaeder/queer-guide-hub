@@ -15,17 +15,17 @@ test.describe('intimate profile visibility', () => {
     await expect(page.getByText(/get started|opted into|opt in/i)).toBeVisible();
   });
 
-  test('opted-in pair: A can see B in same city; not in other city', async ({ page }) => {
+  test('opted-in pair: A can see B in same city; not in other city', async ({ page: _page }) => {
     // Implementation: log in as B, opt in, set discovery_city_id=X; log in as A,
     // opt in, set city=X → expect B card visible. Switch A's filter to city Y → expect not.
     test.skip(true, 'requires seed/login fixtures');
   });
 
-  test('blocked: discovery + detail return empty', async ({ page }) => {
+  test('blocked: discovery + detail return empty', async ({ page: _page }) => {
     test.skip(true, 'requires seed/login fixtures');
   });
 
-  test('intimate detail "send friend request" lands in existing relationships flow', async ({ page }) => {
+  test('intimate detail "send friend request" lands in existing relationships flow', async ({ page: _page }) => {
     test.skip(true, 'requires seed/login fixtures');
   });
 });

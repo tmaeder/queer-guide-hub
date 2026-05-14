@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useIntimateProfile, useMyIntimateProfile, useReportIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useBlockUser, useProfileDisplay, useSendFriendRequest } from '@/hooks/useIntimateActions';
