@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { buildPostValidationPayload, preSubmitCheck } from './postValidation';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -225,18 +223,18 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           <DialogTitle>Create a Post</DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {/* User Info */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <div className="flex items-center gap-3">
             <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={profile?.avatar_url || undefined} />
               <AvatarFallback>
                 {profile?.display_name?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontWeight: 500 }}>{profile?.display_name || 'User'}</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex-1">
+              <p>{profile?.display_name || 'User'}</p>
+              <div className="flex items-center gap-2">
                 <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                   {getVisibilityIcon()}
                   <span style={{ marginLeft: 4, textTransform: 'capitalize' }}>{visibility}</span>
@@ -245,12 +243,12 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
                   {getPostTypeIcon()}
                   <span style={{ marginLeft: 4, textTransform: 'capitalize' }}>{postType}</span>
                 </Badge>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
 
           {/* Post Type Selection */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
+          <div className="grid grid-cols-4 gap-2">
             <Button
               variant={postType === 'text' ? 'default' : 'outline'}
               size="sm"
@@ -283,10 +281,10 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               <BarChart3 style={{ height: 16, width: 16, marginRight: 4 }} />
               Poll
             </Button>
-          </Box>
+          </div>
 
           {/* Main Content */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Textarea
               placeholder="What's on your mind? Use @ to mention users and # for tags..."
               value={content}
@@ -296,17 +294,17 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
             />
 
             {/* Mention and Tag Hints */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', color: 'text.secondary' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
                 <AtSign style={{ height: 12, width: 12 }} />
                 <span>Type @ to mention users</span>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              </div>
+              <div className="flex items-center gap-1">
                 <Hash style={{ height: 12, width: 12 }} />
                 <span>Type # to add tags</span>
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
 
           {/* Post Type Specific Content */}
           {postType === 'image' && (
@@ -363,7 +361,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               <CardContent style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <Label>Poll Options</Label>
                 {pollOptions.map((option, index) => (
-                  <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div key={index} className="flex items-center gap-2">
                     <Input
                       placeholder={`Option ${index + 1}`}
                       value={option}
@@ -378,7 +376,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
                         <X style={{ height: 16, width: 16 }} />
                       </Button>
                     )}
-                  </Box>
+                  </div>
                 ))}
                 {pollOptions.length < 6 && (
                   <Button variant="outline" size="sm" onClick={addPollOption}>
@@ -391,7 +389,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
           )}
 
           {/* Visibility Selection */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label>Post Visibility</Label>
             <Select value={visibility} onValueChange={(value: string) => setVisibility(value)}>
               <SelectTrigger>
@@ -399,34 +397,34 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="public">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Globe style={{ height: 16, width: 16 }} />
                     <span>Public - Anyone can see this post</span>
-                  </Box>
+                  </div>
                 </SelectItem>
                 <SelectItem value="friends">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Users style={{ height: 16, width: 16 }} />
                     <span>Friends - Only your connections</span>
-                  </Box>
+                  </div>
                 </SelectItem>
                 <SelectItem value="private">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Lock style={{ height: 16, width: 16 }} />
                     <span>Private - Only you can see this</span>
-                  </Box>
+                  </div>
                 </SelectItem>
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
           {/* Character count */}
-          <Box sx={{ textAlign: 'right', fontSize: '0.75rem', color: 'text.secondary' }}>
+          <div className="text-right text-xs text-muted-foreground">
             {content.length}/5000 characters
-          </Box>
+          </div>
 
           {/* Actions */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>
@@ -436,8 +434,8 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
             >
               {isCreatingPost ? 'Posting...' : 'Post'}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { callSearchIntelligence, IndexesResponse } from '@/hooks/useSearchIntelligence';
@@ -25,16 +22,16 @@ export function OverviewTab() {
     };
   }, []);
 
-  if (loading) return <Typography>Loading…</Typography>;
+  if (loading) return <p>Loading…</p>;
   if (error) {
     return (
-      <Box>
-        <Typography color="error">Could not load: {error}</Typography>
-        <Typography variant="caption" color="text.secondary">
+      <div>
+        <p className="text-destructive">Could not load: {error}</p>
+        <p className="text-xs text-muted-foreground">
           The search-intelligence edge function may not be deployed yet, or your role lacks
           admin access.
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
   if (!data) return null;
@@ -42,22 +39,17 @@ export function OverviewTab() {
   const meiliByName = new Map(data.meili.map((m) => [m.uid, m]));
 
   return (
-    <Stack spacing={3}>
-      <Box>
-        <Typography variant="h6" gutterBottom>
-          Indexes overview
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+    <div className="flex flex-col gap-6">
+      <div>
+        <h6 className="text-base font-semibold mb-2">Indexes overview</h6>
+        <p className="text-sm text-muted-foreground">
           Compares the {data.managed.length} indexes the platform manages against what is currently
           present in Meilisearch and the row counts in Postgres.
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: 2,
-        }}
+        </p>
+      </div>
+      <div
+        className="grid gap-4"
+        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}
       >
         {data.managed.map((name) => {
           const dbCount = data.db_counts[name];
@@ -66,26 +58,24 @@ export function OverviewTab() {
             <Card key={name}>
               <CardHeader>
                 <CardTitle>
-                  <Stack direction="row" alignItems="center" spacing={1}>
+                  <div className="flex flex-row items-center gap-2">
                     <span>{name}</span>
                     {!inMeili && <Badge variant="destructive">missing in Meili</Badge>}
-                  </Stack>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Stack spacing={0.5}>
-                  <Typography variant="caption" color="text.secondary">
-                    Postgres rows
-                  </Typography>
-                  <Typography variant="h6">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-muted-foreground">Postgres rows</span>
+                  <p className="text-base font-semibold">
                     {dbCount == null ? '—' : dbCount.toLocaleString()}
-                  </Typography>
-                </Stack>
+                  </p>
+                </div>
               </CardContent>
             </Card>
           );
         })}
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 }

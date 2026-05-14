@@ -1,5 +1,5 @@
 import * as React from "react"
-import MuiSkeleton from "@mui/material/Skeleton"
+import { cn } from "@/lib/utils"
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "text" | "rectangular" | "circular" | "rounded";
@@ -9,18 +9,19 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 function Skeleton({ className, variant = "rounded", width, height, animation = "pulse", style, ...props }: SkeletonProps) {
+  const variantClass =
+    variant === "circular" ? "rounded-full"
+    : variant === "rectangular" ? "rounded-none"
+    : variant === "text" ? "rounded-sm h-4"
+    : "rounded-md"
+  const animClass = animation === false ? "" : "animate-pulse"
   return (
-    <MuiSkeleton
-      variant={variant}
-      width={width}
-      height={height}
-      animation={animation}
-      className={className}
-      style={style}
-      sx={{ bgcolor: 'action.hover' }}
-      {...(props as Record<string, unknown>)}
+    <div
+      className={cn("bg-muted", variantClass, animClass, className)}
+      style={{ width, height, ...style }}
+      {...props}
     />
-  );
+  )
 }
 
 export { Skeleton }

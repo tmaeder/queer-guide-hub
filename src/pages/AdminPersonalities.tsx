@@ -1,8 +1,4 @@
-import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -13,10 +9,16 @@ import {
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchPersonalityInternalNote,
+  upsertPersonalityInternalNote,
+} from '@/hooks/usePageFetchers';
 import { usePersonalities } from '@/hooks/usePersonalities';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { PersonalitiesCsvImport } from '@/components/personalities/PersonalitiesCsvImport';
 import { AdultModelsCsvImport } from '@/components/personalities/AdultModelsCsvImport';
 import { BulkCreatePersonalities } from '@/components/personalities/BulkCreatePersonalities';
@@ -31,7 +33,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import {
@@ -94,43 +96,85 @@ function VisibilityBadge({ visibility }: { visibility: string }) {
 }
 
 export default function AdminPersonalities() {
-  const { isAdmin } = useAdminRoles();
   const { updatePersonality, refetchPersonalities } = usePersonalities(false);
   const [selectedPersonality, setSelectedPersonality] = useState<PersonalityRow | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [internalNotes, setInternalNotes] = useState('');
+  const [internalNotesLoaded, setInternalNotesLoaded] = useState('');
+  const [notesLoading, setNotesLoading] = useState(false);
+  const [notesSaving, setNotesSaving] = useState(false);
+
+  useEffect(() => {
+    if (!editDialogOpen || !selectedPersonality) {
+      setInternalNotes('');
+      setInternalNotesLoaded('');
+      return;
+    }
+    let cancelled = false;
+    setNotesLoading(true);
+    (async () => {
+      try {
+        const notes = (await fetchPersonalityInternalNote(selectedPersonality.id)) ?? '';
+        if (cancelled) return;
+        setInternalNotes(notes);
+        setInternalNotesLoaded(notes);
+      } catch {
+        if (!cancelled) {
+          toast.error('Error: Failed to load internal notes');
+        }
+      } finally {
+        if (!cancelled) setNotesLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [editDialogOpen, selectedPersonality]);
+
+  const saveInternalNotes = async () => {
+    if (!selectedPersonality) return;
+    setNotesSaving(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { error } = await upsertPersonalityInternalNote({
+      personality_id: selectedPersonality.id,
+      notes: internalNotes,
+      updated_by: user?.id ?? null,
+    });
+    setNotesSaving(false);
+    if (error) {
+      toast.error(`Error: ${error.message}`);
+      return;
+    }
+    setInternalNotesLoaded(internalNotes);
+    toast.success('Gespeichert: Interne Notizen aktualisiert');
+  };
 
   const handleVerificationChange = async (id: string, status: string) => {
     try {
       await updatePersonality(id, { verification_status: status });
-      toast({ title: 'Success', description: `Verification updated to ${status}` });
+      toast.success(`Verification updated to ${status}`);
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update verification',
-        variant: 'destructive',
-      });
+      toast.error('Error: Failed to update verification');
     }
   };
 
   const handleFeaturedToggle = async (id: string, featured: boolean) => {
     try {
       await updatePersonality(id, { is_featured: featured });
-      toast({ title: 'Success', description: featured ? 'Featured' : 'Unfeatured' });
+      toast.success(`Success: ${featured}`);
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update featured status',
-        variant: 'destructive',
-      });
+      toast.error('Error: Failed to update featured status');
     }
   };
 
   const handleVisibilityChange = async (id: string, visibility: string) => {
     try {
       await updatePersonality(id, { visibility });
-      toast({ title: 'Success', description: `Visibility changed to ${visibility}` });
+      toast.success(`Visibility changed to ${visibility}`);
     } catch {
-      toast({ title: 'Error', description: 'Failed to update visibility', variant: 'destructive' });
+      toast.error('Error: Failed to update visibility');
     }
   };
 
@@ -142,6 +186,19 @@ export default function AdminPersonalities() {
       { header: 'Nationality', accessor: (r) => r.nationality },
       { header: 'Birth Place', accessor: (r) => r.birth_place },
       { header: 'Birth Date', accessor: (r) => formatDate(r.birth_date) },
+      {
+        header: 'Age',
+        accessor: (r) => {
+          if (!r.birth_date) return '';
+          const birth = new Date(r.birth_date as string);
+          const end =
+            !r.is_living && r.death_date ? new Date(r.death_date as string) : new Date();
+          let age = end.getFullYear() - birth.getFullYear();
+          const m = end.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && end.getDate() < birth.getDate())) age--;
+          return age >= 0 && Number.isFinite(age) ? age : '';
+        },
+      },
       { header: 'Death Date', accessor: (r) => formatDate(r.death_date) },
       { header: 'Is Living', accessor: (r) => formatBoolean(r.is_living) },
       { header: 'Verification', accessor: (r) => r.verification_status },
@@ -182,14 +239,14 @@ export default function AdminPersonalities() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
             {info.row.original.pronouns && (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-sm text-muted-foreground">
                 {info.row.original.pronouns}
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -203,10 +260,10 @@ export default function AdminPersonalities() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 12, width: 12 }} />
               {val}
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -222,23 +279,38 @@ export default function AdminPersonalities() {
           const died =
             !p.is_living && p.death_date ? ` - ${new Date(p.death_date).getFullYear()}` : '';
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <Calendar style={{ height: 12, width: 12 }} />
               {born}
               {died}
-            </Box>
+            </div>
           );
         },
         meta: {
           serverSortable: true,
-          defaultVisible: false,
           hideable: true,
         } satisfies AdminColumnMeta,
+      }),
+      columnHelper.display({
+        id: 'age',
+        header: 'Age',
+        cell: ({ row }) => {
+          const p = row.original;
+          if (!p.birth_date) return '-';
+          const birth = new Date(p.birth_date);
+          const end = !p.is_living && p.death_date ? new Date(p.death_date) : new Date();
+          let age = end.getFullYear() - birth.getFullYear();
+          const m = end.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && end.getDate() < birth.getDate())) age--;
+          if (age < 0 || !Number.isFinite(age)) return '-';
+          return !p.is_living && p.death_date ? `${age} (†)` : age;
+        },
+        meta: { hideable: true } satisfies AdminColumnMeta,
       }),
       columnHelper.accessor('visibility', {
         header: 'Visibility',
         cell: (info) => (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <div className="flex flex-col gap-1">
             <VisibilityBadge visibility={info.getValue()} />
             {info.row.original.is_featured && (
               <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
@@ -246,7 +318,7 @@ export default function AdminPersonalities() {
                 Featured
               </Badge>
             )}
-          </Box>
+          </div>
         ),
         meta: {
           serverSortable: true,
@@ -266,10 +338,10 @@ export default function AdminPersonalities() {
       columnHelper.accessor('view_count', {
         header: 'Views',
         cell: (info) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <div className="flex items-center gap-1">
             <Eye style={{ height: 12, width: 12 }} />
             {info.getValue()?.toLocaleString() ?? 0}
-          </Box>
+          </div>
         ),
         meta: {
           serverSortable: true,
@@ -407,74 +479,38 @@ export default function AdminPersonalities() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           <PersonalitiesCsvImport onImportComplete={refetchPersonalities} />
           <AdultModelsCsvImport onImportComplete={refetchPersonalities} />
           <ExportExcelButton onExport={handleExportExcel} />
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are stable, adding would defeat memoization
     [columns],
   );
 
-  if (!isAdmin) {
-    return (
-      <Container maxWidth="lg" sx={{ px: 2, py: 4 }}>
-        <Card>
-          <CardContent>
-            <AlertCircle
-              style={{
-                height: 48,
-                width: 48,
-                margin: '0 auto',
-                color: 'var(--destructive)',
-                marginBottom: 16,
-              }}
-            />
-            <Typography variant="h6" sx={{ mb: 1 }}>
-              Access Denied
-            </Typography>
-            <Typography color="text.secondary">
-              You don't have permission to access this page.
-            </Typography>
-          </CardContent>
-        </Card>
-      </Container>
-    );
-  }
-
   return (
-    <Container
-      maxWidth={false}
-      sx={{ px: 3, py: 4, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      {/* Header */}
-      <Box>
-        <Typography variant="h4">Personalities Management</Typography>
-        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-          Manage and moderate LGBTQ+ personalities in the directory
-        </Typography>
-      </Box>
-
-      {/* Bulk Import */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
-        <BulkCreatePersonalities />
-      </Box>
-
-      {/* Data Table */}
-      <AdminDataTable config={tableConfig} />
-
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+    <AdminEntityTable
+      title="Personalities Management"
+      subtitle="Manage and moderate LGBTQ+ personalities in the directory"
+      backHref={null}
+      config={tableConfig}
+      beforeTable={
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <BulkCreatePersonalities />
+        </div>
+      }
+      afterTable={
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent style={{ maxWidth: 672 }}>
           <DialogHeader>
             <DialogTitle>Edit Personality</DialogTitle>
           </DialogHeader>
           {selectedPersonality && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label>Verification Status</Label>
                   <Select
                     value={selectedPersonality.verification_status}
@@ -489,8 +525,8 @@ export default function AdminPersonalities() {
                       <SelectItem value="disputed">Disputed</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label>Visibility</Label>
                   <Select
                     value={selectedPersonality.visibility}
@@ -505,9 +541,9 @@ export default function AdminPersonalities() {
                       <SelectItem value="draft">Draft</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="featured"
@@ -515,11 +551,38 @@ export default function AdminPersonalities() {
                   onChange={(e) => handleFeaturedToggle(selectedPersonality.id, e.target.checked)}
                 />
                 <Label htmlFor="featured">Featured Personality</Label>
-              </Box>
-            </Box>
+              </div>
+              <div>
+                <Label htmlFor="internal-notes">Interne Notizen</Label>
+                <p className="text-xs text-muted-foreground">
+                  Nur intern sichtbar — wird nicht öffentlich angezeigt.
+                </p>
+                <Textarea
+                  id="internal-notes"
+                  value={internalNotes}
+                  onChange={(e) => setInternalNotes(e.target.value)}
+                  placeholder={notesLoading ? 'Laden…' : 'Interne Vermerke zu dieser Person'}
+                  rows={5}
+                  disabled={notesLoading || notesSaving}
+                />
+                <div className="flex justify-end mt-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={saveInternalNotes}
+                    disabled={
+                      notesLoading || notesSaving || internalNotes === internalNotesLoaded
+                    }
+                  >
+                    {notesSaving ? 'Speichern…' : 'Notizen speichern'}
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
-    </Container>
+      }
+    />
   );
 }

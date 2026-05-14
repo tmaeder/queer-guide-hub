@@ -32,31 +32,46 @@ vi.mock('react-force-graph-2d', () => {
   return { default: Stub };
 });
 
+type GraphHookResult = {
+  data?: { nodes: unknown[]; edges: unknown[] };
+  isLoading: boolean;
+  error?: Error | null;
+  refetch: () => void;
+};
+const refetchMock = vi.fn();
+let useTagGraphResult: GraphHookResult = {
+  data: {
+    nodes: [
+      { id: '1', name: 'a', category: null, usage_count: 1, slug: 'a' },
+      { id: '2', name: 'b', category: null, usage_count: 1, slug: 'b' },
+    ],
+    edges: [{ source: '1', target: '2', score: 0.9, type: 'semantic' }],
+  },
+  isLoading: false,
+  error: null,
+  refetch: refetchMock,
+};
+const setUseTagGraphResult = (next: Partial<GraphHookResult>) => {
+  useTagGraphResult = { ...useTagGraphResult, ...next };
+};
+
 vi.mock('@/hooks/useTagRelationships', () => ({
-  useTagGraph: () => ({
-    data: {
-      nodes: [
-        { id: '1', name: 'a', category: null, usage_count: 1, slug: 'a' },
-        { id: '2', name: 'b', category: null, usage_count: 1, slug: 'b' },
-      ],
-      edges: [{ source: '1', target: '2', score: 0.9, type: 'semantic' }],
-    },
-    isLoading: false,
-  }),
+  useTagGraph: () => useTagGraphResult,
 }));
 
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => false }));
 
 // Control ResizeObserver — component must wait for it before mounting ForceGraph2D.
 type ResizeCallback = (entries: Array<{ contentRect: { width: number; height: number } }>) => void;
-let lastObserver: { cb: ResizeCallback } | null = null;
+const allObservers: Array<{ cb: ResizeCallback }> = [];
 class MockResizeObserver {
   cb: ResizeCallback;
   constructor(cb: ResizeCallback) {
     this.cb = cb;
-    lastObserver = { cb };
+    allObservers.push({ cb });
   }
   observe() {}
+  unobserve() {}
   disconnect() {}
 }
 // @ts-expect-error test polyfill
@@ -89,7 +104,9 @@ const wrap = ({ children }: { children: ReactNode }) => {
 
 const emitResize = (width: number, height: number) => {
   act(() => {
-    lastObserver?.cb([{ contentRect: { width, height } }]);
+    for (const obs of allObservers) {
+      obs.cb([{ contentRect: { width, height } }]);
+    }
   });
 };
 
@@ -100,8 +117,20 @@ describe('TagRelationshipGraph — left-alignment regression', () => {
     d3ReheatSimulation.mockClear();
     centerForce.x.mockClear();
     centerForce.y.mockClear();
-    lastObserver = null;
+    refetchMock.mockClear();
+    allObservers.length = 0;
     boundingRect = { width: 0, height: 0 };
+    setUseTagGraphResult({
+      data: {
+        nodes: [
+          { id: '1', name: 'a', category: null, usage_count: 1, slug: 'a' },
+          { id: '2', name: 'b', category: null, usage_count: 1, slug: 'b' },
+        ],
+        edges: [{ source: '1', target: '2', score: 0.9, type: 'semantic' }],
+      },
+      isLoading: false,
+      error: null,
+    });
   });
 
   it('does not render ForceGraph2D with stale default dimensions before the container is measured', () => {
@@ -174,5 +203,53 @@ describe('TagRelationshipGraph — left-alignment regression', () => {
     expect(forceGraphRenders).toHaveLength(0);
     emitResize(900, 500);
     expect(forceGraphRenders.every((r) => r.width === 900 && r.height === 500)).toBe(true);
+  });
+});
+
+describe('TagRelationshipGraph — error state (P0-1)', () => {
+  beforeEach(() => {
+    forceGraphRenders.length = 0;
+    refetchMock.mockClear();
+    allObservers.length = 0;
+    boundingRect = { width: 1200, height: 600 };
+  });
+
+  it('renders the error state when the RPC errors (e.g. 403), not the empty graph', () => {
+    setUseTagGraphResult({
+      data: undefined,
+      isLoading: false,
+      error: Object.assign(new Error('permission denied for function get_tag_graph_data'), {
+        code: '42501',
+      }),
+    });
+
+    const { queryByTestId, getByText, queryByTestId: q2 } = render(
+      <TagRelationshipGraph onTagClick={() => {}} categories={[]} />,
+      { wrapper: wrap },
+    );
+
+    expect(queryByTestId('tag-graph-error')).not.toBeNull();
+    expect(getByText("Couldn't load the tag graph")).toBeTruthy();
+    // Must NOT silently render the canvas as if there were just no data.
+    expect(q2('force-graph-stub')).toBeNull();
+    expect(forceGraphRenders).toHaveLength(0);
+  });
+
+  it('Retry button calls refetch', () => {
+    setUseTagGraphResult({
+      data: undefined,
+      isLoading: false,
+      error: new Error('boom'),
+    });
+
+    const { getByRole } = render(
+      <TagRelationshipGraph onTagClick={() => {}} categories={[]} />,
+      { wrapper: wrap },
+    );
+
+    act(() => {
+      getByRole('button', { name: /retry/i }).click();
+    });
+    expect(refetchMock).toHaveBeenCalledTimes(1);
   });
 });

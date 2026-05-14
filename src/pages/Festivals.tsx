@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Search, Music } from 'lucide-react';
+import { Search, Music, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FestivalCard } from '@/components/festivals/FestivalCard';
 import { useFestivals } from '@/hooks/useFestivals';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 
 const FESTIVAL_TYPES = [
   { value: 'all', label: 'All Types' },
@@ -28,51 +24,59 @@ export default function Festivals() {
   }, [fetchFestivals, typeFilter, search]);
 
   return (
-    <Container sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-        <Music style={{ width: 28, height: 28 }} />
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>Festivals & Pride Events</Typography>
-      </Box>
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
+    <div className="container mx-auto py-8">
+      <div className="flex items-center gap-3 mb-2">
+        <Music className="w-7 h-7" />
+        <h4 className="text-3xl font-bold">Festivals & Pride Events</h4>
+      </div>
+      <p className="text-muted-foreground mb-6">
         Discover LGBTQ+ festivals, Pride parades, conferences, and event series worldwide.
-      </Typography>
+      </p>
 
       {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <Box sx={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: '#9ca3af' }} />
+      <div className="flex gap-4 mb-6 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 16,
+              height: 16,
+              color: 'hsl(var(--muted-foreground))',
+            }}
+          />
           <Input
             placeholder="Search festivals..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="pl-8"
           />
-        </Box>
+        </div>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
           <SelectContent>
-            {FESTIVAL_TYPES.map(t => (
+            {FESTIVAL_TYPES.map((t) => (
               <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </Box>
+      </div>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress  aria-label="Loading"/></Box>
+        <div className="flex justify-center py-16">
+          <Loader2 className="animate-spin" aria-label="Loading" />
+        </div>
       ) : festivals.length === 0 ? (
-        <Box sx={{ py: 8, textAlign: 'center' }}>
-          <Typography color="text.secondary">No festivals found matching your criteria.</Typography>
-        </Box>
+        <div className="py-16 text-center">
+          <p className="text-muted-foreground">No festivals found matching your criteria.</p>
+        </div>
       ) : (
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-          gap: 3,
-        }}>
-          {festivals.map(f => <FestivalCard key={f.id} festival={f} />)}
-        </Box>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {festivals.map((f) => <FestivalCard key={f.id} festival={f} />)}
+        </div>
       )}
-    </Container>
+    </div>
   );
 }

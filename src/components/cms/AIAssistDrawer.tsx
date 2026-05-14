@@ -5,15 +5,22 @@
  */
 
 import { useState, useCallback } from 'react';
-import Drawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Alert from '@mui/material/Alert';
-import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
-import { Sparkles, X, Check, RotateCcw, FileText, Image as ImageIcon, Tag, Search, Globe } from 'lucide-react';
+import {
+  Sparkles,
+  X,
+  Check,
+  RotateCcw,
+  FileText,
+  Image as ImageIcon,
+  Tag,
+  Search,
+  Globe,
+  Loader2,
+} from 'lucide-react';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { fieldToZod } from '@/lib/cms/zodFromFields';
 import type { ContentTypeConfig, AIAssistOp } from '@/types/cms';
@@ -100,7 +107,10 @@ export function AIAssistDrawer({
         });
         if (err) throw err;
         if (!data?.ok) throw new Error(data?.error ?? 'AI call failed');
-        setResults((prev) => ({ ...prev, [op]: { op, output: data.output, cached: data.cached } }));
+        setResults((prev) => ({
+          ...prev,
+          [op]: { op, output: data.output, cached: data.cached },
+        }));
       } catch (e) {
         setError(e instanceof Error ? e.message : 'AI call failed');
       } finally {
@@ -144,124 +154,102 @@ export function AIAssistDrawer({
   );
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose}>
-      <Box sx={{ width: { xs: '100vw', sm: 420 }, p: 2.5, height: '100%', overflow: 'auto' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="right" className="w-full sm:w-[420px] p-5 overflow-auto">
+        <div className="flex items-center mb-4">
           <Sparkles size={18} />
-          <Typography variant="h6" sx={{ fontWeight: 700, ml: 1, flex: 1 }}>
-            AI Assist
-          </Typography>
-          <IconButton size="small" onClick={onClose} aria-label="Close AI assistant">
+          <h6 className="text-lg font-bold ml-2 flex-1">AI Assist</h6>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            aria-label="Close AI assistant"
+            className="h-7 w-7 p-0"
+          >
             <X size={18} />
-          </IconButton>
-        </Box>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+          </Button>
+        </div>
+        <p className="block text-xs text-muted-foreground mb-4">
           Output is validated against the {config.label.singular} schema before applying.
-        </Typography>
+        </p>
 
         {error && (
-          <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-            {error}
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription className="flex items-start gap-2">
+              <span className="flex-1">{error}</span>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                aria-label="Dismiss"
+                className="ml-2"
+              >
+                <X size={14} />
+              </button>
+            </AlertDescription>
           </Alert>
         )}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col gap-3">
           {ops.map((op) => {
             const meta = OP_META[op];
             const Icon = meta.icon;
             const result = results[op];
             const busy = busyOp === op;
             return (
-              <Box
+              <div
                 key={op}
-                sx={{
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  p: 1.5,
-                  bgcolor: 'background.paper',
-                }}
+                className="border border-border rounded-lg p-3 bg-background"
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                <div className="flex items-center mb-1">
                   <Icon size={14} />
-                  <Typography variant="body2" sx={{ fontWeight: 600, ml: 0.75 }}>
-                    {meta.label}
-                  </Typography>
+                  <span className="text-sm font-semibold ml-2">{meta.label}</span>
                   {result?.cached && (
-                    <Chip
-                      label="cached"
-                      size="small"
-                      sx={{ ml: 1, height: 18, fontSize: '0.65rem' }}
-                    />
+                    <Badge variant="secondary" className="ml-2 h-[18px] text-[0.65rem]">
+                      cached
+                    </Badge>
                   )}
-                </Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mb: 1 }}
-                >
-                  {meta.description}
-                </Typography>
+                </div>
+                <p className="block text-xs text-muted-foreground mb-2">{meta.description}</p>
                 {result && (
-                  <Box
-                    component="pre"
-                    sx={{
-                      m: 0,
-                      mb: 1,
-                      p: 1,
-                      bgcolor: 'grey.50',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      fontSize: '0.75rem',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      maxHeight: 160,
-                      overflow: 'auto',
-                    }}
-                  >
+                  <pre className="m-0 mb-2 p-2 bg-gray-50 border border-border rounded text-xs whitespace-pre-wrap break-words max-h-40 overflow-auto">
                     {typeof result.output === 'string'
                       ? result.output
                       : JSON.stringify(result.output, null, 2)}
-                  </Box>
+                  </pre>
                 )}
-                <Box sx={{ display: 'flex', gap: 0.75 }}>
+                <div className="flex gap-1.5">
                   <Button
-                    size="small"
-                    variant={result ? 'outlined' : 'contained'}
+                    size="sm"
+                    variant={result ? 'outline' : 'default'}
                     disabled={busy}
                     onClick={() => run(op)}
-                    startIcon={
-                      busy ? (
-                        <CircularProgress size={12} color="inherit" />
-                      ) : result ? (
-                        <RotateCcw size={12} />
-                      ) : (
-                        <Sparkles size={12} />
-                      )
-                    }
-                    sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+                    className="text-xs font-semibold gap-1"
                   >
+                    {busy ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : result ? (
+                      <RotateCcw size={12} />
+                    ) : (
+                      <Sparkles size={12} />
+                    )}
                     {busy ? 'Running…' : result ? 'Re-run' : 'Run'}
                   </Button>
                   {result && (
                     <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
+                      size="sm"
                       onClick={() => apply(op, result.output)}
-                      startIcon={<Check size={12} />}
-                      sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.75rem' }}
+                      className="text-xs font-semibold gap-1 bg-green-600 hover:bg-green-700 text-white"
                     >
+                      <Check size={12} />
                       Apply
                     </Button>
                   )}
-                </Box>
-              </Box>
+                </div>
+              </div>
             );
           })}
-        </Box>
-      </Box>
-    </Drawer>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

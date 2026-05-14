@@ -40,21 +40,20 @@ export type PersonalitySort = 'featured' | 'az' | 'za' | 'popular' | 'newest';
 export interface PersonalityFilters {
   search?: string;
   fields?: string[];
+  /** Filter to personalities whose `tags` array contains this tag slug. */
+  tag?: string;
   profession?: string;
   verification_status?: string;
   is_living?: boolean;
   featured_only?: boolean;
   exclude_adult?: boolean;
   name_starts_with?: string;
+  /** Inclusive lower bound on birth year (UI: era chips). */
+  birth_year_min?: number;
+  /** Inclusive upper bound on birth year (UI: era chips). */
+  birth_year_max?: number;
   sortBy?: PersonalitySort;
 }
-
-const ADULT_PATTERNS = [
-  '%adult performer%',
-  '%adult model%',
-  '%adult film%',
-  '%porn%',
-];
 
 function transformRow(row: PersonalityRow): Personality {
   return {
@@ -99,6 +98,10 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
     query = query.contains('fields', filters.fields);
   }
 
+  if (filters.tag) {
+    query = query.contains('tags', [filters.tag]);
+  }
+
   if (filters.verification_status) {
     query = query.eq('verification_status', filters.verification_status);
   }
@@ -112,9 +115,15 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
   }
 
   if (filters.exclude_adult !== false) {
-    for (const pattern of ADULT_PATTERNS) {
-      query = query.not('profession', 'ilike', pattern);
-    }
+    query = query.eq('is_adult', false);
+  }
+
+  if (typeof filters.birth_year_min === 'number') {
+    query = query.gte('birth_date', `${filters.birth_year_min}-01-01`);
+  }
+
+  if (typeof filters.birth_year_max === 'number') {
+    query = query.lte('birth_date', `${filters.birth_year_max}-12-31`);
   }
 
   if (filters.name_starts_with) {
@@ -131,24 +140,27 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
 }
 
 function applySort(query: ReturnType<typeof supabase.from>, sortBy: PersonalitySort = 'featured') {
+  // Stable secondary order on `id` keeps pagination deterministic when the
+  // primary sort key has ties (very common for view_count / created_at).
   switch (sortBy) {
     case 'az':
-      return query
-        .order('is_featured', { ascending: false })
-        .order('name', { ascending: true });
+      return query.order('name', { ascending: true }).order('id', { ascending: true });
     case 'za':
-      return query
-        .order('is_featured', { ascending: false })
-        .order('name', { ascending: false });
+      return query.order('name', { ascending: false }).order('id', { ascending: true });
     case 'popular':
-      return query.order('view_count', { ascending: false });
+      return query
+        .order('view_count', { ascending: false })
+        .order('id', { ascending: true });
     case 'newest':
-      return query.order('created_at', { ascending: false });
+      return query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true });
     case 'featured':
     default:
       return query
         .order('is_featured', { ascending: false })
-        .order('view_count', { ascending: false });
+        .order('view_count', { ascending: false })
+        .order('id', { ascending: true });
   }
 }
 
@@ -178,7 +190,8 @@ export function usePersonalities(autoFetch: boolean = true) {
       let query = supabase
         .from('personalities')
         .select('*', { count: 'exact' })
-        .eq('visibility', 'public');
+        .eq('visibility', 'public')
+        .is('duplicate_of_id', null);
 
       query = applyFilters(query, filters);
       query = applySort(query, filters?.sortBy);

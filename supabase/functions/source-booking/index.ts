@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: Booking.com
@@ -181,7 +182,7 @@ const DEFAULT_BOOKING_CITY_IDS = [
    -3712125, // Bangkok
 ]
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-booking', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -205,4 +206,4 @@ Deno.serve(async (req) => {
     if (e instanceof MissingCredentialsError) return jsonResponse(skippedResponse('missing_credentials', e.missing), 200, req)
     return errorResponse((e as Error).message, 500, req)
   }
-})
+}))

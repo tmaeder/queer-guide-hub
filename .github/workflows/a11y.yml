@@ -25,15 +25,58 @@ on:
   workflow_dispatch:
     inputs:
       base_url:
-        description: 'Base URL'
+        description: 'Base URL (leave empty to build the PR locally and test on http://localhost:4173)'
         required: false
-        default: 'https://queer.guide'
+        default: ''
 
 concurrency:
   group: a11y-${{ github.ref }}
   cancel-in-progress: true
 
+# BASE_URL resolution:
+#   * workflow_dispatch with input → use the input (manual override)
+#   * schedule (cron)              → hit prod (https://queer.guide)
+#   * push / pull_request          → build the PR locally and test
+#                                    http://localhost:4173, so PRs are
+#                                    actually gated against their own code
+#                                    instead of stale prod
+env:
+  RESOLVED_BASE_URL: >-
+    ${{
+      inputs.base_url != '' && inputs.base_url
+      || (github.event_name == 'schedule' && 'https://queer.guide')
+      || 'http://localhost:4173'
+    }}
+
 jobs:
+  build:
+    name: Build (artifact for a11y jobs)
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && inputs.base_url == '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm install
+        env:
+          HUSKY: '0'
+      - run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+          VITE_BASEMAP_ASSETS_URL: 'https://protomaps-tiles.maeder-tobiassimon.workers.dev/basemaps-assets'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
   jsx-a11y-lint:
     name: Lint (eslint .)
     runs-on: ubuntu-latest
@@ -45,15 +88,21 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
+      - run: npm install
+        env:
+          HUSKY: '0'
       - run: npm run lint
 
   axe-playwright:
     name: Playwright + axe a11y suite
+    needs: [build]
+    if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      E2E_BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      E2E_BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || (github.event_name == 'schedule' && 'https://queer.guide') || 'http://localhost:4173' }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -61,8 +110,27 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
+      - run: npm install
+        env:
+          HUSKY: '0'
       - run: npx playwright install --with-deps chromium
+      - name: Download dist
+        if: needs.build.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Serve dist on :4173
+        if: needs.build.result == 'success'
+        run: |
+          npx -y serve@14 -s dist -l 4173 > serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4173/ > /dev/null; then
+              echo "serve up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::serve did not become ready"; cat serve.log; exit 1
       - run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
       - if: always()
         uses: actions/upload-artifact@v4
@@ -73,10 +141,12 @@ jobs:
 
   axe-route-sweep:
     name: axe full route sweep
+    needs: [build]
+    if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || (github.event_name == 'schedule' && 'https://queer.guide') || 'http://localhost:4173' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -84,8 +154,27 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
-      - run: npm install --legacy-peer-deps
+      - run: npm install
+        env:
+          HUSKY: '0'
       - run: npx playwright install --with-deps chromium
+      - name: Download dist
+        if: needs.build.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Serve dist on :4173
+        if: needs.build.result == 'success'
+        run: |
+          npx -y serve@14 -s dist -l 4173 > serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4173/ > /dev/null; then
+              echo "serve up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::serve did not become ready"; cat serve.log; exit 1
       - run: node scripts/a11y-axe-scan.mjs
       - name: Fail on serious/critical
         run: |
@@ -100,10 +189,12 @@ jobs:
 
   lighthouse:
     name: Lighthouse a11y >= 95
+    needs: [build]
+    if: always() && (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      BASE_URL: ${{ inputs.base_url || 'https://queer.guide' }}
+      BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || (github.event_name == 'schedule' && 'https://queer.guide') || 'http://localhost:4173' }}
       ROUTE: ${{ matrix.route }}
     strategy:
       fail-fast: false
@@ -113,21 +204,39 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npm i -g lighthouse@12
+      - run: npm i -g lighthouse@12 serve@14
+      - name: Download dist
+        if: needs.build.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Serve dist on :4173
+        if: needs.build.result == 'success'
+        run: |
+          serve -s dist -l 4173 > serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4173/ > /dev/null; then
+              echo "serve up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::serve did not become ready"; cat serve.log; exit 1
       - name: Lighthouse a11y
         run: |
           mkdir -p lh
           slug=$(printf '%s' "$ROUTE" | sed 's|/|_|g; s|^_||')
           [ -z "$slug" ] && slug=home
           # Retry Lighthouse on transient runtime errors (NO_FCP etc.) when
-          # headless Chrome on a GitHub runner doesn't paint in time loading
-          # the live site. The score check below is unchanged.
+          # headless Chrome on a GitHub runner doesn't paint in time. The
+          # score check below is unchanged.
           attempt=1
           until lighthouse "${BASE_URL}${ROUTE}" \
             --only-categories=accessibility \
             --output=json --output-path="lh/${slug}.json" \
-            --chrome-flags="--headless=new --no-sandbox" \
-            --max-wait-for-load=60000 \
+            --chrome-flags="--no-sandbox --disable-gpu --disable-dev-shm-usage --disable-software-rasterizer --headless=new --window-size=1350,940" \
+            --preset=desktop \
+            --max-wait-for-load=90000 \
             --quiet; do
             if [ "$attempt" -ge 3 ]; then
               echo "::error::Lighthouse failed after 3 attempts for $ROUTE"
@@ -138,8 +247,8 @@ jobs:
             sleep 5
           done
           # Recompute score excluding audits we accept by design:
-          #   link-in-text-block — brand mandates "links by color/opacity only"
-          #     (also disabled in axe specs).
+          #   link-in-text-block — handled via the inline-link underline rule
+          #     in src/index.css; also disabled in axe specs.
           #   target-size — only persistent failure is the maplibre attribution
           #     toggle, a third-party widget control.
           score=$(node -e "

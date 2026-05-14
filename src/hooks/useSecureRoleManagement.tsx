@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
 type _AuditLog = Database['public']['Tables']['user_role_audit_log']['Row'];
@@ -44,10 +44,10 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error assigning role:', error);
-      
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
       // Log failed role assignment attempt
       try {
         await supabase.rpc('log_security_event', {
@@ -56,7 +56,7 @@ export function useSecureRoleManagement() {
           p_metadata: {
             target_user_id: userId,
             attempted_role: role,
-            error_message: error.message,
+            error_message: errorMessage,
             timestamp: new Date().toISOString()
           },
           p_severity: 'high'
@@ -64,10 +64,10 @@ export function useSecureRoleManagement() {
       } catch (logError) {
         console.error('Failed to log security event:', logError);
       }
-      
+
       toast({
         title: "Error",
-        description: error.message || "Failed to assign role",
+        description: errorMessage || "Failed to assign role",
         variant: "destructive"
       });
       return { success: false, error };
@@ -95,12 +95,12 @@ export function useSecureRoleManagement() {
       });
 
       return { success: true };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error removing role:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       toast({
         title: "Error",
-        description: error.message || "Failed to remove role",
+        description: errorMessage || "Failed to remove role",
         variant: "destructive"
       });
       return { success: false, error };
@@ -123,8 +123,7 @@ export function useSecureRoleManagement() {
 
       if (error) throw error;
       return { data, error: null };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching audit logs:', error);
       return { data: null, error };
     }

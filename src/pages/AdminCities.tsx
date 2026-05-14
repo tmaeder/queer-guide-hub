@@ -1,6 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +18,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -29,12 +27,12 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Plus, MapPin } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logAdminGeoEdit } from '@/lib/admin-audit';
 
 interface CityRow {
@@ -74,7 +72,6 @@ const emptyForm = {
 };
 
 export default function AdminCities() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -84,20 +81,8 @@ export default function AdminCities() {
   const [continents, setContinents] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
-    supabase
-      .from('countries')
-      .select('id, name')
-      .order('name')
-      .then(({ data }) => {
-        if (data) setCountries(data);
-      });
-    supabase
-      .from('continents')
-      .select('id, name')
-      .order('name')
-      .then(({ data }) => {
-        if (data) setContinents(data);
-      });
+    listFrom<{ id: string; name: string }>('countries', 'id, name', { col: 'name' }).then(setCountries);
+    listFrom<{ id: string; name: string }>('continents', 'id, name', { col: 'name' }).then(setContinents);
   }, []);
 
   const invalidateTable = () =>
@@ -127,24 +112,20 @@ export default function AdminCities() {
   const handleDelete = async (city: CityRow) => {
     if (!confirm(`Delete "${city.name}"?`)) return;
     try {
-      const { error } = await supabase.from('cities').delete().eq('id', city.id);
+      const { error } = await deleteRow('cities', city.id);
       if (error) throw error;
       void logAdminGeoEdit('cities', 'delete', city.id, city as unknown as Record<string, unknown>, null);
-      toast({ title: 'Success', description: 'City deleted' });
+      toast.success('Success: City deleted');
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete city', variant: 'destructive' });
+      toast.error('Error: Failed to delete city');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.country_id) {
-      toast({
-        title: 'Error',
-        description: 'Name and country are required',
-        variant: 'destructive',
-      });
+      toast.error('Error: Name and country are required');
       return;
     }
 
@@ -162,21 +143,22 @@ export default function AdminCities() {
 
     try {
       if (editingCity) {
-        const { error } = await supabase.from('cities').update(cityData).eq('id', editingCity.id);
+        const { error } = await updateRow('cities', editingCity.id, cityData);
         if (error) throw error;
         void logAdminGeoEdit('cities', 'update', editingCity.id, editingCity as unknown as Record<string, unknown>, cityData);
-        toast({ title: 'Success', description: 'City updated' });
+        toast.success('Success: City updated');
       } else {
-        const { data: inserted, error } = await supabase.from('cities').insert([cityData]).select('id').single();
+        const { data: inserted, error } = await insertInto('cities', cityData);
         if (error) throw error;
-        if (inserted?.id) void logAdminGeoEdit('cities', 'create', inserted.id, null, cityData);
-        toast({ title: 'Success', description: 'City created' });
+        const insertedId = (inserted as { id?: string } | null)?.id;
+        if (insertedId) void logAdminGeoEdit('cities', 'create', insertedId, null, cityData);
+        toast.success('Success: City created');
       }
       resetForm();
       setDialogOpen(false);
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to save city', variant: 'destructive' });
+      toast.error('Error: Failed to save city');
     }
   };
 
@@ -210,17 +192,17 @@ export default function AdminCities() {
       columnHelper.accessor('name', {
         header: 'City',
         cell: (info) => (
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <div>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 13, width: 13 }} />
               <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            </Box>
+            </div>
             {info.row.original.country_name && (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-sm text-muted-foreground">
                 {info.row.original.country_name}
-              </Typography>
+              </p>
             )}
-          </Box>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -298,7 +280,7 @@ export default function AdminCities() {
         cell: (info) => {
           const c = info.row.original;
           return (
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+            <div className="flex gap-1 flex-wrap">
               {c.is_capital && (
                 <Badge style={{ backgroundColor: '#fef9c3', color: '#854d0e' }}>Capital</Badge>
               )}
@@ -308,7 +290,7 @@ export default function AdminCities() {
               {!c.is_capital && !c.is_major_city && (
                 <span style={{ color: 'var(--muted-foreground)' }}>-</span>
               )}
-            </Box>
+            </div>
           );
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
@@ -391,7 +373,7 @@ export default function AdminCities() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <div className="flex gap-1">
           <ExportExcelButton onExport={handleExportExcel} />
           <Button
             size="sm"
@@ -403,7 +385,7 @@ export default function AdminCities() {
             <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
             Add City
           </Button>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
@@ -411,39 +393,28 @@ export default function AdminCities() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Cities Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage cities in the directory
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <AdminEntityTable
+      title="Cities Management"
+      subtitle="Manage cities in the directory"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 672 }}>
           <DialogHeader>
             <DialogTitle>{editingCity ? 'Edit City' : 'Add New City'}</DialogTitle>
           </DialogHeader>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Box>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label>City Name</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                   required
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label>Country</Label>
                 <Select
                   value={formData.country_id}
@@ -460,18 +431,18 @@ export default function AdminCities() {
                     ))}
                   </SelectContent>
                 </Select>
-              </Box>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Box>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label>Region/State</Label>
                 <Input
                   value={formData.region_name}
                   onChange={(e) => setFormData((p) => ({ ...p, region_name: e.target.value }))}
                   placeholder="Optional"
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label>Population</Label>
                 <Input
                   type="number"
@@ -479,10 +450,10 @@ export default function AdminCities() {
                   onChange={(e) => setFormData((p) => ({ ...p, population: e.target.value }))}
                   placeholder="Optional"
                 />
-              </Box>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Box>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label>Latitude</Label>
                 <Input
                   type="number"
@@ -490,8 +461,8 @@ export default function AdminCities() {
                   value={formData.latitude}
                   onChange={(e) => setFormData((p) => ({ ...p, latitude: e.target.value }))}
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label>Longitude</Label>
                 <Input
                   type="number"
@@ -499,26 +470,26 @@ export default function AdminCities() {
                   value={formData.longitude}
                   onChange={(e) => setFormData((p) => ({ ...p, longitude: e.target.value }))}
                 />
-              </Box>
-            </Box>
-            <Box>
+              </div>
+            </div>
+            <div>
               <Label>Timezone</Label>
               <Input
                 value={formData.timezone}
                 onChange={(e) => setFormData((p) => ({ ...p, timezone: e.target.value }))}
                 placeholder="e.g., America/New_York"
               />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2">
                 <Checkbox
                   id="is_capital"
                   checked={formData.is_capital}
                   onCheckedChange={(c) => setFormData((p) => ({ ...p, is_capital: c as boolean }))}
                 />
                 <Label htmlFor="is_capital">Capital City</Label>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              </div>
+              <div className="flex items-center gap-2">
                 <Checkbox
                   id="is_major_city"
                   checked={formData.is_major_city}
@@ -527,17 +498,18 @@ export default function AdminCities() {
                   }
                 />
                 <Label htmlFor="is_major_city">Major City</Label>
-              </Box>
-            </Box>
+              </div>
+            </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit">{editingCity ? 'Update City' : 'Add City'}</Button>
             </DialogFooter>
-          </Box>
+          </form>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }

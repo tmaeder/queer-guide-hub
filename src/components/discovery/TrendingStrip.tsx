@@ -9,8 +9,10 @@ import { fetchTrending } from "@/lib/searchClient";
 import { useTrackClick } from "@/hooks/useSearchActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonCrossfade } from "@/components/effects";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { TrendingUp } from "lucide-react";
+import { getRandomFallbackImage } from "@/utils/fallbackImages";
 
 interface Props {
 	city?: string;
@@ -47,6 +49,21 @@ interface TrendItem {
 	country?: string;
 	slug?: string;
 	image_url?: string;
+	start_date?: string;
+	end_date?: string;
+}
+
+// Defensive client-side filter: drop event hits whose end_date (or
+// start_date when no end_date) is in the past. The trending worker is
+// supposed to do this server-side, but until that ships we don't want
+// stale events on the rail. Non-event hits pass through.
+function isLiveOrFuture(it: TrendItem, now: number): boolean {
+	if (it.entity_type !== "event") return true;
+	const end = it.end_date ? Date.parse(it.end_date) : NaN;
+	if (Number.isFinite(end)) return end >= now;
+	const start = it.start_date ? Date.parse(it.start_date) : NaN;
+	if (Number.isFinite(start)) return start >= now - 12 * 60 * 60 * 1000; // grace
+	return true; // unknown date → assume live
 }
 
 export function TrendingStrip({
@@ -67,7 +84,9 @@ export function TrendingStrip({
 		fetchTrending(types, city, limit)
 			.then((res) => {
 				if (cancelled) return;
-				setItems(res as TrendItem[]);
+				const now = Date.now();
+				const live = (res as TrendItem[]).filter((it) => isLiveOrFuture(it, now));
+				setItems(live);
 			})
 			.catch(() => {
 				if (cancelled) return;
@@ -86,54 +105,57 @@ export function TrendingStrip({
 	return (
 		<section className={className} aria-label={headline}>
 			<h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-				<TrendingUp className="h-5 w-5 text-pink-500" />
+				<TrendingUp className="h-5 w-5 text-foreground" />
 				{headline}
 			</h2>
-			<ScrollArea className="w-full whitespace-nowrap">
-				<div className="flex gap-3 pb-3">
-					{!items
-						? Array.from({ length: limit }).map((_, i) => (
-								<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
-							))
-						: items
-								.map((it) => {
-									const slug = it.slug || it.entity_id;
-									const to = hitPath(it.entity_type, slug);
-									if (!to) return null;
-									if (!it.title) return null;
-									return (
-										<LocalizedLink
-											key={`${it.entity_type}:${it.entity_id}`}
-											to={to}
-											className="shrink-0 w-56"
-											onClick={() =>
-												trackClick(
-													{ type: it.entity_type, id: it.entity_id },
-													"trending",
-													{ score: it.score, city },
-												)
-											}
-										>
-											<Card className="h-40 overflow-hidden hover:shadow-md transition">
-												{it.image_url ? (
-													<img src={it.image_url} alt="" loading="lazy" className="h-24 w-full object-cover" />
-												) : (
-													<div className="h-24 w-full bg-gradient-to-br from-orange-200 to-pink-200" />
-												)}
-												<CardContent className="p-2">
-													<div className="text-sm font-medium truncate">{it.title}</div>
-													<div className="text-xs text-muted-foreground truncate">
-														{[it.city, it.country].filter(Boolean).join(", ")}
-													</div>
-												</CardContent>
-											</Card>
-										</LocalizedLink>
-									);
-								})
-								.filter(Boolean)}
-				</div>
-				<ScrollBar orientation="horizontal" />
-			</ScrollArea>
+			<SkeletonCrossfade
+				loading={!items}
+				skeleton={
+					<div className="flex gap-3 pb-3">
+						{Array.from({ length: limit }).map((_, i) => (
+							<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
+						))}
+					</div>
+				}
+			>
+				<ScrollArea className="w-full whitespace-nowrap">
+					<div className="flex gap-3 pb-3">
+						{items
+							?.map((it) => {
+								const slug = it.slug || it.entity_id;
+								const to = hitPath(it.entity_type, slug);
+								if (!to) return null;
+								if (!it.title) return null;
+								return (
+									<LocalizedLink
+										key={`${it.entity_type}:${it.entity_id}`}
+										to={to}
+										className="shrink-0 w-56"
+										onClick={() =>
+											trackClick(
+												{ type: it.entity_type, id: it.entity_id },
+												"trending",
+												{ score: it.score, city },
+											)
+										}
+									>
+										<Card className="h-40 overflow-hidden transition">
+											<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-24 w-full object-cover" />
+											<CardContent className="p-2">
+												<div className="text-sm font-medium truncate">{it.title}</div>
+												<div className="text-xs text-muted-foreground truncate">
+													{[it.city, it.country].filter(Boolean).join(", ")}
+												</div>
+											</CardContent>
+										</Card>
+									</LocalizedLink>
+								);
+							})
+							.filter(Boolean)}
+					</div>
+					<ScrollBar orientation="horizontal" />
+				</ScrollArea>
+			</SkeletonCrossfade>
 		</section>
 	);
 }

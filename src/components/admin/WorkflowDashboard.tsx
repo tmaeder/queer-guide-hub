@@ -1,33 +1,8 @@
 /**
  * WorkflowDashboard — Admin dashboard for the pgmq-based workflow orchestration.
- *
- * Live-updating via Supabase Realtime (no polling).
- * Tabs: Overview · Runs · Definitions · Dead Letter
  */
 
 import React, { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import {
   Play,
   RotateCcw,
@@ -47,6 +22,38 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import {
   useWorkflowMonitor,
   type WorkflowRun,
@@ -54,37 +61,33 @@ import {
   type WorkflowDefinition,
 } from '@/hooks/useWorkflowMonitor';
 import { formatDistanceToNow, format } from 'date-fns';
-import { brandColors } from '@/theme/muiTheme';
 
-// ── Status Helpers ──────────────────────────────────────────────────────────────
+// ── Status Helpers ──
 
 const STATUS_CONFIG: Record<
   WorkflowRunStatus,
   {
     label: string;
-    color: 'success' | 'error' | 'warning' | 'info' | 'default';
+    tone: string;
     icon: React.ElementType;
   }
 > = {
-  completed: { label: 'Completed', color: 'success', icon: CheckCircle2 },
-  running: { label: 'Running', color: 'info', icon: Loader2 },
-  queued: { label: 'Queued', color: 'default', icon: Clock },
-  failed: { label: 'Failed', color: 'error', icon: AlertTriangle },
-  dead_letter: { label: 'Dead Letter', color: 'error', icon: Skull },
-  cancelled: { label: 'Cancelled', color: 'warning', icon: XCircle },
+  completed: { label: 'Completed', tone: 'border-emerald-500 text-emerald-700 bg-emerald-50', icon: CheckCircle2 },
+  running: { label: 'Running', tone: 'border-blue-500 text-blue-700 bg-blue-50', icon: Loader2 },
+  queued: { label: 'Queued', tone: 'border-muted text-muted-foreground', icon: Clock },
+  failed: { label: 'Failed', tone: 'border-red-500 text-red-700 bg-red-50', icon: AlertTriangle },
+  dead_letter: { label: 'Dead Letter', tone: 'border-red-500 text-red-700 bg-red-50', icon: Skull },
+  cancelled: { label: 'Cancelled', tone: 'border-amber-500 text-amber-700 bg-amber-50', icon: XCircle },
 };
 
 function StatusChip({ status }: { status: WorkflowRunStatus }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.queued;
   const Icon = cfg.icon;
   return (
-    <Chip
-      size="small"
-      label={cfg.label}
-      color={cfg.color}
-      icon={<Icon size={14} />}
-      sx={{ fontWeight: 600, fontSize: '0.75rem' }}
-    />
+    <Badge variant="outline" className={cn('gap-1 text-xs font-semibold', cfg.tone)}>
+      <Icon size={14} />
+      {cfg.label}
+    </Badge>
   );
 }
 
@@ -95,7 +98,7 @@ function formatDuration(ms: number | null): string {
   return `${(ms / 60_000).toFixed(1)}m`;
 }
 
-// ── Tab Definitions ─────────────────────────────────────────────────────────────
+// ── Tabs ──
 
 type Tab = 'overview' | 'runs' | 'definitions' | 'dead_letter';
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
@@ -105,7 +108,7 @@ const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
   { key: 'dead_letter', label: 'Dead Letter', icon: Skull },
 ];
 
-// ── Main Component ──────────────────────────────────────────────────────────────
+// ── Main Component ──
 
 export function WorkflowDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -137,134 +140,118 @@ export function WorkflowDashboard() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress  aria-label="Loading"/>
-      </Box>
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" aria-label="Loading" />
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            Workflow Orchestration
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            pgmq-based job scheduling &amp; monitoring — live updates via Realtime
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetchMetrics()}
-            disabled={metricsLoading}
-          >
-            <RefreshCw size={14} className={metricsLoading ? 'animate-spin' : ''} />
-            Metrics
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => dispatchNow()}
-            disabled={isDispatching}
-          >
-            <Play size={14} />
-            Dispatch Now
-          </Button>
-          <Button size="sm" onClick={() => setEnqueueDialogOpen(true)}>
-            <Send size={14} />
-            Enqueue
-          </Button>
-        </Box>
-      </Box>
+    <TooltipProvider>
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold">Workflow Orchestration</h2>
+            <p className="text-sm text-muted-foreground">
+              pgmq-based job scheduling &amp; monitoring — live updates via Realtime
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetchMetrics()}
+              disabled={metricsLoading}
+            >
+              <RefreshCw size={14} className={cn('mr-1', metricsLoading && 'animate-spin')} />
+              Metrics
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => dispatchNow()}
+              disabled={isDispatching}
+            >
+              <Play size={14} className="mr-1" />
+              Dispatch Now
+            </Button>
+            <Button size="sm" onClick={() => setEnqueueDialogOpen(true)}>
+              <Send size={14} className="mr-1" />
+              Enqueue
+            </Button>
+          </div>
+        </div>
 
-      {/* Tabs */}
-      <Box sx={{ display: 'flex', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 0 }}>
-        {TABS.map(({ key, label, icon: Icon }) => (
-          <Box
-            key={key}
-            onClick={() => setActiveTab(key)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              px: 2,
-              py: 1.25,
-              cursor: 'pointer',
-              borderBottom: 2,
-              borderColor: activeTab === key ? 'primary.main' : 'transparent',
-              color: activeTab === key ? 'primary.main' : 'text.secondary',
-              fontWeight: activeTab === key ? 700 : 500,
-              fontSize: '0.875rem',
-              transition: 'all 0.15s',
-              '&:hover': { color: 'primary.main' },
-            }}
-          >
-            <Icon size={16} />
-            {label}
-            {key === 'dead_letter' && deadLetterRuns.length > 0 && (
-              <Chip
-                size="small"
-                label={deadLetterRuns.length}
-                color="error"
-                sx={{ ml: 0.5, height: 20, fontSize: '0.7rem' }}
-              />
-            )}
-          </Box>
-        ))}
-      </Box>
+        {/* Tabs */}
+        <div className="flex gap-2 border-b">
+          {TABS.map(({ key, label, icon: Icon }) => (
+            <button
+              type="button"
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={cn(
+                'flex items-center gap-2 border-b-2 px-4 py-3 text-sm transition-colors',
+                activeTab === key
+                  ? 'border-primary font-bold text-primary'
+                  : 'border-transparent font-medium text-muted-foreground hover:text-primary',
+              )}
+            >
+              <Icon size={16} />
+              {label}
+              {key === 'dead_letter' && deadLetterRuns.length > 0 && (
+                <Badge
+                  variant="outline"
+                  className="ml-1 h-5 border-red-500 text-[0.7rem] text-red-700"
+                >
+                  {deadLetterRuns.length}
+                </Badge>
+              )}
+            </button>
+          ))}
+        </div>
 
-      {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <OverviewTab
-          stats={stats}
-          activeRuns={activeRuns}
-          metrics={metrics}
-          definitions={definitions}
-        />
-      )}
-      {activeTab === 'runs' && (
-        <RunsTab
-          runs={filteredRuns}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          onRetry={retryRun}
-          onCancel={cancelRun}
-        />
-      )}
-      {activeTab === 'definitions' && (
-        <DefinitionsTab
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <OverviewTab
+            stats={stats}
+            activeRuns={activeRuns}
+            metrics={metrics}
+            definitions={definitions}
+          />
+        )}
+        {activeTab === 'runs' && (
+          <RunsTab
+            runs={filteredRuns}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            onRetry={retryRun}
+            onCancel={cancelRun}
+          />
+        )}
+        {activeTab === 'definitions' && (
+          <DefinitionsTab
+            definitions={definitions}
+            onEnqueue={enqueueWorkflow}
+            isEnqueuing={isEnqueuing}
+          />
+        )}
+        {activeTab === 'dead_letter' && <DeadLetterTab runs={deadLetterRuns} onRetry={retryRun} />}
+
+        {/* Enqueue Dialog */}
+        <EnqueueDialog
+          open={enqueueDialogOpen}
+          onClose={() => setEnqueueDialogOpen(false)}
           definitions={definitions}
           onEnqueue={enqueueWorkflow}
           isEnqueuing={isEnqueuing}
         />
-      )}
-      {activeTab === 'dead_letter' && <DeadLetterTab runs={deadLetterRuns} onRetry={retryRun} />}
-
-      {/* Enqueue Dialog */}
-      <EnqueueDialog
-        open={enqueueDialogOpen}
-        onClose={() => setEnqueueDialogOpen(false)}
-        definitions={definitions}
-        onEnqueue={enqueueWorkflow}
-        isEnqueuing={isEnqueuing}
-      />
-    </Box>
+      </div>
+    </TooltipProvider>
   );
 }
 
-// ── Overview Tab ────────────────────────────────────────────────────────────────
+// ── Overview Tab ──
 
 function OverviewTab({
   stats,
@@ -284,148 +271,80 @@ function OverviewTab({
     { label: 'Failed', value: stats.failedRuns, color: '#ef4444' },
     { label: 'Queued', value: stats.queuedRuns, color: '#f59e0b' },
     { label: 'Dead Letter', value: stats.deadLetterRuns, color: '#dc2626' },
-    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: brandColors.main },
+    // Admin data-viz palette — documented chromatic exception (CLAUDE.md).
+    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: '#ec4899' },
     { label: 'Definitions', value: definitions.length, color: '#64748b' },
   ];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Stat cards */}
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: {
-            xs: 'repeat(2, 1fr)',
-            sm: 'repeat(4, 1fr)',
-            lg: 'repeat(8, 1fr)',
-          },
-        }}
-      >
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
         {statCards.map((s) => (
-          <Box
-            key={s.label}
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              bgcolor: 'background.paper',
-              border: 1,
-              borderColor: 'divider',
-            }}
-          >
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-              {s.label}
-            </Typography>
-            <Typography variant="h6" fontWeight={700} sx={{ color: s.color }}>
+          <div key={s.label} className="rounded-lg border bg-card p-4">
+            <span className="mb-1 block text-xs text-muted-foreground">{s.label}</span>
+            <div className="text-lg font-bold" style={{ color: s.color }}>
               {typeof s.value === 'number' ? s.value.toLocaleString() : s.value}
-            </Typography>
-          </Box>
+            </div>
+          </div>
         ))}
-      </Box>
+      </div>
 
       {/* Active runs */}
       {activeRuns.length > 0 && (
-        <Box
-          sx={{
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            border: 1,
-            borderColor: 'divider',
-            p: 2,
-          }}
-        >
-          <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>
-            <Loader2
-              size={14}
-              className="animate-spin"
-              style={{ display: 'inline', marginRight: 6 }}
-            />
+        <div className="rounded-lg border bg-card p-4">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-bold">
+            <Loader2 size={14} className="animate-spin" />
             Active Runs ({activeRuns.length})
-          </Typography>
+          </h3>
           {activeRuns.map((run) => (
-            <Box
-              key={run.id}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                py: 1,
-                borderTop: 1,
-                borderColor: 'divider',
-              }}
-            >
+            <div key={run.id} className="flex items-center gap-4 border-t py-2">
               <StatusChip status={run.status} />
-              <Typography variant="body2" fontWeight={600} sx={{ minWidth: 180 }}>
-                {run.workflow_name}
-              </Typography>
-              <Box sx={{ flex: 1, maxWidth: 200 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={run.progress_pct}
-                  sx={{ height: 6, borderRadius: 3 }}
-                />
-              </Box>
-              <Typography variant="caption" color="text.secondary">
-                {run.progress_pct}%
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <p className="min-w-[180px] text-sm font-semibold">{run.workflow_name}</p>
+              <div className="max-w-[200px] flex-1">
+                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${run.progress_pct}%` }}
+                  />
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground">{run.progress_pct}%</span>
+              <span className="text-xs text-muted-foreground">
                 Attempt {run.attempt}/{run.max_attempts}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
+              </span>
+              <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       {/* Queue metrics */}
       {metrics?.queues && metrics.queues.length > 0 && (
-        <Box
-          sx={{
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            border: 1,
-            borderColor: 'divider',
-            p: 2,
-          }}
-        >
-          <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>
-            Queue Depths
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 2,
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            }}
-          >
+        <div className="rounded-lg border bg-card p-4">
+          <h3 className="mb-3 text-sm font-bold">Queue Depths</h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             {metrics.queues.map((q) => (
-              <Box
-                key={q.queue_name}
-                sx={{ p: 1.5, borderRadius: 1, border: 1, borderColor: 'divider' }}
-              >
-                <Typography variant="caption" color="text.secondary">
-                  {q.queue_name}
-                </Typography>
-                <Typography variant="h6" fontWeight={700}>
-                  {q.queue_length}
-                </Typography>
+              <div key={q.queue_name} className="rounded border p-3">
+                <span className="text-xs text-muted-foreground">{q.queue_name}</span>
+                <div className="text-lg font-bold">{q.queue_length}</div>
                 {q.oldest_msg_age_sec != null && (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs text-muted-foreground">
                     Oldest: {formatDuration(q.oldest_msg_age_sec * 1000)}
-                  </Typography>
+                  </span>
                 )}
-              </Box>
+              </div>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
-// ── Runs Tab ────────────────────────────────────────────────────────────────────
+// ── Runs Tab ──
 
 function RunsTab({
   runs,
@@ -443,120 +362,127 @@ function RunsTab({
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {/* Filter */}
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs">Status</Label>
           <Select
             value={statusFilter}
-            label="Status"
-            onChange={(e) => onStatusFilterChange(e.target.value as WorkflowRunStatus | 'all')}
+            onValueChange={(v) => onStatusFilterChange(v as WorkflowRunStatus | 'all')}
           >
-            <MenuItem value="all">All</MenuItem>
-            <MenuItem value="completed">Completed</MenuItem>
-            <MenuItem value="running">Running</MenuItem>
-            <MenuItem value="queued">Queued</MenuItem>
-            <MenuItem value="failed">Failed</MenuItem>
-            <MenuItem value="dead_letter">Dead Letter</MenuItem>
-            <MenuItem value="cancelled">Cancelled</MenuItem>
+            <SelectTrigger className="h-9 w-[150px] text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="running">Running</SelectItem>
+              <SelectItem value="queued">Queued</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
+              <SelectItem value="dead_letter">Dead Letter</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
           </Select>
-        </FormControl>
-        <Typography variant="body2" color="text.secondary">
+        </div>
+        <span className="self-end pb-2 text-sm text-muted-foreground">
           {runs.length} run{runs.length !== 1 ? 's' : ''}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* Table */}
-      <TableContainer
-        sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}
-      >
-        <Table size="small">
-          <TableHead>
+      <div className="rounded-lg border bg-card">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell />
-              <TableCell sx={{ fontWeight: 700 }}>Workflow</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Queue</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Attempt</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Progress</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Duration</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Created</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
+              <TableHead className="w-8" />
+              <TableHead className="font-bold">Workflow</TableHead>
+              <TableHead className="font-bold">Status</TableHead>
+              <TableHead className="font-bold">Queue</TableHead>
+              <TableHead className="font-bold">Attempt</TableHead>
+              <TableHead className="font-bold">Progress</TableHead>
+              <TableHead className="font-bold">Duration</TableHead>
+              <TableHead className="font-bold">Created</TableHead>
+              <TableHead className="font-bold">Actions</TableHead>
             </TableRow>
-          </TableHead>
+          </TableHeader>
           <TableBody>
             {runs.map((run) => (
               <React.Fragment key={run.id}>
                 <TableRow
-                  hover
-                  sx={{
-                    cursor: 'pointer',
-                    '& > *': { borderBottom: expandedRow === run.id ? 'none' : undefined },
-                  }}
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => setExpandedRow(expandedRow === run.id ? null : run.id)}
                 >
-                  <TableCell sx={{ width: 32, p: 0.5 }}>
+                  <TableCell className="w-8 p-1">
                     {expandedRow === run.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={600}>
-                      {run.workflow_name}
-                    </Typography>
+                    <span className="text-sm font-semibold">{run.workflow_name}</span>
                   </TableCell>
                   <TableCell>
                     <StatusChip status={run.status} />
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      size="small"
-                      label={run.queue_name}
-                      variant="outlined"
-                      sx={{ fontSize: '0.7rem' }}
-                    />
+                    <Badge variant="outline" className="text-[0.7rem]">
+                      {run.queue_name}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     {run.attempt}/{run.max_attempts}
                   </TableCell>
                   <TableCell>
                     {run.items_total > 0 ? (
-                      <Typography variant="caption">
+                      <span className="text-xs">
                         {run.items_processed}/{run.items_total} ({run.progress_pct}%)
-                      </Typography>
+                      </span>
                     ) : (
-                      <Typography variant="caption" color="text.secondary">
-                        —
-                      </Typography>
+                      <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
                   <TableCell>{formatDuration(run.duration_ms)}</TableCell>
                   <TableCell>
-                    <Typography variant="caption" color="text.secondary">
+                    <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
-                    </Typography>
+                    </span>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <div className="flex gap-1">
                       {(run.status === 'failed' || run.status === 'dead_letter') && (
-                        <Tooltip title="Retry">
-                          <IconButton size="small" onClick={() => onRetry(run.id)}>
-                            <RotateCcw size={14} />
-                          </IconButton>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 p-0"
+                              onClick={() => onRetry(run.id)}
+                            >
+                              <RotateCcw size={14} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Retry</TooltipContent>
                         </Tooltip>
                       )}
                       {run.status === 'queued' && (
-                        <Tooltip title="Cancel">
-                          <IconButton size="small" onClick={() => onCancel(run.id)}>
-                            <XCircle size={14} />
-                          </IconButton>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 p-0"
+                              onClick={() => onCancel(run.id)}
+                            >
+                              <XCircle size={14} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Cancel</TooltipContent>
                         </Tooltip>
                       )}
-                    </Box>
+                    </div>
                   </TableCell>
                 </TableRow>
                 {expandedRow === run.id && (
                   <TableRow>
-                    <TableCell colSpan={9} sx={{ bgcolor: 'action.hover', py: 2 }}>
+                    <TableCell colSpan={9} className="bg-muted/40 py-4">
                       <RunDetail run={run} />
                     </TableCell>
                   </TableRow>
@@ -565,130 +491,75 @@ function RunsTab({
             ))}
             {runs.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No runs found
-                  </Typography>
+                <TableCell colSpan={9} className="py-8 text-center">
+                  <span className="text-sm text-muted-foreground">No runs found</span>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </TableContainer>
-    </Box>
+      </div>
+    </div>
   );
 }
 
-// ── Run Detail (expanded row) ───────────────────────────────────────────────────
+// ── Run Detail ──
 
 function RunDetail({ run }: { run: WorkflowRun }) {
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gap: 2,
-        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-        fontSize: '0.8rem',
-      }}
-    >
-      <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-          ID
-        </Typography>
-        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-          {run.id}
-        </Typography>
-      </Box>
-      <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-          Triggered By
-        </Typography>
-        <Typography variant="body2">{run.triggered_by}</Typography>
-      </Box>
+    <div className="grid grid-cols-1 gap-4 text-[0.8rem] md:grid-cols-2">
+      <div>
+        <span className="text-xs font-bold text-muted-foreground">ID</span>
+        <p className="font-mono text-xs">{run.id}</p>
+      </div>
+      <div>
+        <span className="text-xs font-bold text-muted-foreground">Triggered By</span>
+        <p className="text-sm">{run.triggered_by}</p>
+      </div>
       {run.error_message && (
-        <Box sx={{ gridColumn: '1 / -1' }}>
-          <Typography variant="caption" color="error" fontWeight={700}>
-            Error
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              fontFamily: 'monospace',
-              fontSize: '0.75rem',
-              color: 'error.main',
-              whiteSpace: 'pre-wrap',
-            }}
-          >
+        <div className="col-span-full">
+          <span className="text-xs font-bold text-red-600">Error</span>
+          <p className="whitespace-pre-wrap font-mono text-xs text-red-600">
             {run.error_message}
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
       {run.output_result && (
-        <Box sx={{ gridColumn: '1 / -1' }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={700}>
-            Output
-          </Typography>
-          <Box
-            component="pre"
-            sx={{
-              fontSize: '0.7rem',
-              fontFamily: 'monospace',
-              p: 1,
-              borderRadius: 1,
-              bgcolor: 'background.default',
-              overflow: 'auto',
-              maxHeight: 200,
-            }}
-          >
+        <div className="col-span-full">
+          <span className="text-xs font-bold text-muted-foreground">Output</span>
+          <pre className="max-h-[200px] overflow-auto rounded bg-background p-2 font-mono text-[0.7rem]">
             {JSON.stringify(run.output_result, null, 2)}
-          </Box>
-        </Box>
+          </pre>
+        </div>
       )}
       {run.input_payload && Object.keys(run.input_payload).length > 0 && (
-        <Box sx={{ gridColumn: '1 / -1' }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={700}>
-            Input Payload
-          </Typography>
-          <Box
-            component="pre"
-            sx={{
-              fontSize: '0.7rem',
-              fontFamily: 'monospace',
-              p: 1,
-              borderRadius: 1,
-              bgcolor: 'background.default',
-              overflow: 'auto',
-              maxHeight: 150,
-            }}
-          >
+        <div className="col-span-full">
+          <span className="text-xs font-bold text-muted-foreground">Input Payload</span>
+          <pre className="max-h-[150px] overflow-auto rounded bg-background p-2 font-mono text-[0.7rem]">
             {JSON.stringify(run.input_payload, null, 2)}
-          </Box>
-        </Box>
+          </pre>
+        </div>
       )}
-      <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-          Timing
-        </Typography>
-        <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
+      <div>
+        <span className="text-xs font-bold text-muted-foreground">Timing</span>
+        <p className="text-xs">
           Queued: {format(new Date(run.queued_at), 'HH:mm:ss')}
           {run.started_at && ` · Started: ${format(new Date(run.started_at), 'HH:mm:ss')}`}
           {run.completed_at && ` · Done: ${format(new Date(run.completed_at), 'HH:mm:ss')}`}
-        </Typography>
-      </Box>
-      <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700}>
-          Items
-        </Typography>
-        <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
+        </p>
+      </div>
+      <div>
+        <span className="text-xs font-bold text-muted-foreground">Items</span>
+        <p className="text-xs">
           Total: {run.items_total} · Processed: {run.items_processed} · Succeeded:{' '}
           {run.items_succeeded} · Failed: {run.items_failed}
-        </Typography>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </div>
   );
 }
 
-// ── Definitions Tab ─────────────────────────────────────────────────────────────
+// ── Definitions Tab ──
 
 function DefinitionsTab({
   definitions,
@@ -700,84 +571,81 @@ function DefinitionsTab({
   isEnqueuing: boolean;
 }) {
   return (
-    <TableContainer
-      sx={{ bgcolor: 'background.paper', borderRadius: 2, border: 1, borderColor: 'divider' }}
-    >
-      <Table size="small">
-        <TableHead>
+    <div className="rounded-lg border bg-card">
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Edge Function</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Queue</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Schedule</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Priority</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Retries</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Concurrency</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Enabled</TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
+            <TableHead className="font-bold">Name</TableHead>
+            <TableHead className="font-bold">Edge Function</TableHead>
+            <TableHead className="font-bold">Queue</TableHead>
+            <TableHead className="font-bold">Schedule</TableHead>
+            <TableHead className="font-bold">Priority</TableHead>
+            <TableHead className="font-bold">Retries</TableHead>
+            <TableHead className="font-bold">Concurrency</TableHead>
+            <TableHead className="font-bold">Enabled</TableHead>
+            <TableHead className="font-bold">Actions</TableHead>
           </TableRow>
-        </TableHead>
+        </TableHeader>
         <TableBody>
           {definitions.map((def) => (
-            <TableRow key={def.id} hover>
+            <TableRow key={def.id}>
               <TableCell>
-                <Typography variant="body2" fontWeight={600}>
-                  {def.name}
-                </Typography>
+                <span className="text-sm font-semibold">{def.name}</span>
               </TableCell>
               <TableCell>
-                <Chip
-                  size="small"
-                  label={def.edge_function}
-                  variant="outlined"
-                  sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }}
-                />
+                <Badge variant="outline" className="font-mono text-[0.7rem]">
+                  {def.edge_function}
+                </Badge>
               </TableCell>
               <TableCell>
-                <Chip size="small" label={def.queue_name} sx={{ fontSize: '0.7rem' }} />
+                <Badge className="text-[0.7rem]">{def.queue_name}</Badge>
               </TableCell>
               <TableCell>
                 {def.schedule ? (
-                  <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                    {def.schedule}
-                  </Typography>
+                  <span className="font-mono text-xs">{def.schedule}</span>
                 ) : (
-                  <Typography variant="caption" color="text.secondary">
-                    Manual
-                  </Typography>
+                  <span className="text-xs text-muted-foreground">Manual</span>
                 )}
               </TableCell>
               <TableCell>{def.priority}</TableCell>
               <TableCell>{def.max_retries}</TableCell>
               <TableCell>{def.max_concurrency}</TableCell>
               <TableCell>
-                <Chip
-                  size="small"
-                  label={def.is_enabled ? 'Yes' : 'No'}
-                  color={def.is_enabled ? 'success' : 'default'}
-                  sx={{ fontSize: '0.7rem' }}
-                />
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[0.7rem]',
+                    def.is_enabled ? 'border-emerald-500 text-emerald-700' : '',
+                  )}
+                >
+                  {def.is_enabled ? 'Yes' : 'No'}
+                </Badge>
               </TableCell>
               <TableCell>
-                <Tooltip title={`Enqueue ${def.name}`}>
-                  <IconButton
-                    size="small"
-                    disabled={!def.is_enabled || isEnqueuing}
-                    onClick={() => onEnqueue({ workflow: def.name })}
-                  >
-                    <Play size={14} />
-                  </IconButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 p-0"
+                      disabled={!def.is_enabled || isEnqueuing}
+                      onClick={() => onEnqueue({ workflow: def.name })}
+                    >
+                      <Play size={14} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Enqueue {def.name}</TooltipContent>
                 </Tooltip>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </TableContainer>
+    </div>
   );
 }
 
-// ── Dead Letter Tab ─────────────────────────────────────────────────────────────
+// ── Dead Letter Tab ──
 
 function DeadLetterTab({
   runs,
@@ -788,82 +656,54 @@ function DeadLetterTab({
 }) {
   if (runs.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 8 }}>
+      <div className="py-16 text-center">
         <Heart size={48} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
-        <Typography variant="h6" color="text.secondary">
-          No dead letter messages
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <h3 className="text-lg text-muted-foreground">No dead letter messages</h3>
+        <p className="text-sm text-muted-foreground">
           All workflows are completing successfully.
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          p: 2,
-          bgcolor: 'error.main',
-          borderRadius: 2,
-          color: 'error.contrastText',
-        }}
-      >
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2 rounded-lg bg-red-600 p-4 text-white">
         <AlertTriangle size={18} />
-        <Typography variant="body2" fontWeight={600}>
+        <p className="text-sm font-semibold">
           {runs.length} workflow{runs.length !== 1 ? 's' : ''} in dead letter queue — review and
           retry or discard.
-        </Typography>
-      </Box>
+        </p>
+      </div>
       {runs.map((run) => (
-        <Box
+        <div
           key={run.id}
-          sx={{
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            border: 1,
-            borderColor: 'error.light',
-            p: 2,
-          }}
+          className="rounded-lg border border-red-300 bg-card p-4"
         >
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="subtitle2" fontWeight={700}>
-                {run.workflow_name}
-              </Typography>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-bold">{run.workflow_name}</h4>
               <StatusChip status={run.status} />
-            </Box>
+            </div>
             <Button variant="outline" size="sm" onClick={() => onRetry(run.id)}>
-              <RotateCcw size={14} />
+              <RotateCcw size={14} className="mr-1" />
               Retry
             </Button>
-          </Box>
+          </div>
           {run.error_message && (
-            <Typography
-              variant="body2"
-              color="error.main"
-              sx={{ fontFamily: 'monospace', fontSize: '0.75rem', mb: 1 }}
-            >
-              {run.error_message}
-            </Typography>
+            <p className="mb-2 font-mono text-xs text-red-600">{run.error_message}</p>
           )}
-          <Typography variant="caption" color="text.secondary">
+          <span className="text-xs text-muted-foreground">
             Attempt {run.attempt}/{run.max_attempts} ·{' '}
             {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
-          </Typography>
-        </Box>
+          </span>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
 
-// ── Enqueue Dialog ──────────────────────────────────────────────────────────────
+// ── Enqueue Dialog ──
 
 function EnqueueDialog({
   open,
@@ -899,50 +739,58 @@ function EnqueueDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Enqueue Workflow</DialogTitle>
-      <DialogContent
-        sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '16px !important' }}
-      >
-        <FormControl fullWidth>
-          <InputLabel>Workflow</InputLabel>
-          <Select
-            value={selectedWorkflow}
-            label="Workflow"
-            onChange={(e) => setSelectedWorkflow(e.target.value)}
-          >
-            {definitions
-              .filter((d) => d.is_enabled)
-              .map((d) => (
-                <MenuItem key={d.id} value={d.name}>
-                  {d.name} ({d.queue_name})
-                </MenuItem>
-              ))}
-          </Select>
-        </FormControl>
-        <TextField
-          label="Payload (JSON)"
-          multiline
-          rows={4}
-          value={payloadStr}
-          onChange={(e) => {
-            setPayloadStr(e.target.value);
-            setPayloadError('');
-          }}
-          error={!!payloadError}
-          helperText={payloadError}
-          sx={{ '& textarea': { fontFamily: 'monospace', fontSize: '0.8rem' } }}
-        />
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Enqueue Workflow</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 pt-4">
+          <div className="flex flex-col gap-2">
+            <Label>Workflow</Label>
+            <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a workflow..." />
+              </SelectTrigger>
+              <SelectContent>
+                {definitions
+                  .filter((d) => d.is_enabled)
+                  .map((d) => (
+                    <SelectItem key={d.id} value={d.name}>
+                      {d.name} ({d.queue_name})
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="wf-payload">Payload (JSON)</Label>
+            <Textarea
+              id="wf-payload"
+              rows={4}
+              value={payloadStr}
+              onChange={(e) => {
+                setPayloadStr(e.target.value);
+                setPayloadError('');
+              }}
+              className={cn('font-mono text-xs', payloadError && 'border-destructive')}
+            />
+            {payloadError && <p className="text-xs text-destructive">{payloadError}</p>}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleEnqueue} disabled={!selectedWorkflow || isEnqueuing}>
+            {isEnqueuing ? (
+              <Loader2 size={14} className="mr-1 animate-spin" />
+            ) : (
+              <Send size={14} className="mr-1" />
+            )}
+            Enqueue
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={handleEnqueue} disabled={!selectedWorkflow || isEnqueuing}>
-          {isEnqueuing ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-          Enqueue
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

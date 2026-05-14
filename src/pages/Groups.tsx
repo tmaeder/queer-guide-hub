@@ -6,9 +6,6 @@ import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
 import { GroupFilters } from "@/components/groups/GroupFilters";
 import { useGroups } from "@/hooks/useGroups";
 import { Users, Search, TrendingUp } from "lucide-react";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import { AuthGate } from "@/components/layout/AuthGate";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";import { useTranslation } from 'react-i18next';
@@ -68,7 +65,7 @@ export default function Groups() {
 
   return (
     <AuthGate title={t('pages.groups.title', 'Community Groups')} description="Please sign in to view and join community groups.">
-      <Container sx={{ py: { xs: 6, md: 10 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className="container mx-auto py-12 md:py-20 px-4 flex flex-col gap-6">
         <PageHeader
           title={t('pages.groups.title', 'Community Groups')}
           subtitle={t('pages.groups.subtitle', 'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.')}
@@ -98,9 +95,9 @@ export default function Groups() {
             />
 
             {isLoading ? (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (<GroupCard key={i} loading />))}
-              </Box>
+              </div>
             ) : filteredGroups.length === 0 ? (
               hasActiveFilters ? (
                 <EmptyState
@@ -128,11 +125,11 @@ export default function Groups() {
                 />
               )
             ) : (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredGroups.map(group => (
                   <GroupCard key={group.id} group={group} onJoin={joinGroup} onRequestJoin={(id) => requestJoin({ groupId: id })} onLeave={leaveGroup} isJoining={isJoining} isRequesting={isRequesting} isLeaving={isLeaving} />
                 ))}
-              </Box>
+              </div>
             )}
           </TabsContent>
 
@@ -147,11 +144,11 @@ export default function Groups() {
                 primaryAction={{ label: t('pages.groups.createGroup', 'Create a Group'), onClick: () => {} }}
               />
             ) : (
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userGroups.map(group => (
                   <GroupCard key={group.id} group={group} onLeave={leaveGroup} isLeaving={isLeaving} />
                 ))}
-              </Box>
+              </div>
             )}
           </TabsContent>
 
@@ -165,21 +162,21 @@ export default function Groups() {
               </CardHeader>
               <CardContent>
                 {popularGroups.length === 0 ? (
-                  <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>
+                  <p className="text-center text-muted-foreground py-8">
                     {t('pages.groups.noPopularYet', 'No popular groups available yet.')}
-                  </Typography>
+                  </p>
                 ) : (
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {popularGroups.map(group => (
                       <GroupCard key={group.id} group={group} onJoin={joinGroup} onRequestJoin={(id) => requestJoin({ groupId: id })} onLeave={leaveGroup} isJoining={isJoining} isRequesting={isRequesting} isLeaving={isLeaving} />
                     ))}
-                  </Box>
+                  </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-      </Container>
+      </div>
     </AuthGate>
   );
 }

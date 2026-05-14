@@ -1,0 +1,24 @@
+name = "queer-guide-image-ingest"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "queer-guide-images"
+
+[vars]
+SUPABASE_URL = "https://xqeacpakadqfxjxjcewc.supabase.co"
+IMAGE_CDN_HOST = "img.queer.guide"
+BATCH_SIZE = "20"
+
+# Secrets (set via wrangler secret put):
+#   SUPABASE_SERVICE_ROLE_KEY
+#   ADMIN_SECRET
+
+# Cron: process pending images every 15 minutes
+[triggers]
+crons = ["*/15 * * * *"]
+
+[observability]
+enabled = true

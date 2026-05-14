@@ -86,9 +86,41 @@ export function normalizeWhitespace(s: string): string {
     .trim()
 }
 
+// Common HTML entities seen in scraped feeds — decode the few that matter for
+// titles + body. Full entity tables are huge; this covers the high-frequency cases
+// observed in production (numeric refs, named refs for punctuation + ampersand).
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  ndash: '–', mdash: '—', hellip: '…',
+  lsquo: '\u2018', rsquo: '\u2019', ldquo: '\u201C', rdquo: '\u201D',
+  laquo: '«', raquo: '»',
+  copy: '©', reg: '®', trade: '™',
+  eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë',
+  aacute: 'á', agrave: 'à', acirc: 'â', auml: 'ä', aring: 'å',
+  iacute: 'í', igrave: 'ì', icirc: 'î', iuml: 'ï',
+  oacute: 'ó', ograve: 'ò', ocirc: 'ô', ouml: 'ö', oslash: 'ø',
+  uacute: 'ú', ugrave: 'ù', ucirc: 'û', uuml: 'ü',
+  ntilde: 'ñ', ccedil: 'ç', szlig: 'ß',
+}
+
+export function decodeHtmlEntities(s: string): string {
+  if (!s) return ''
+  // Numeric: &#1234; or &#x4D2;
+  let out = s.replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
+    const n = parseInt(hex, 16)
+    return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : ''
+  }).replace(/&#(\d+);/g, (_, dec) => {
+    const n = parseInt(dec, 10)
+    return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : ''
+  })
+  // Named refs.
+  out = out.replace(/&([a-zA-Z]{2,8});/g, (m, name) => NAMED_ENTITIES[name.toLowerCase()] ?? m)
+  return out
+}
+
 export function cleanTitle(raw: string): string {
   if (!raw) return ''
-  let t = raw.trim()
+  let t = decodeHtmlEntities(raw).trim()
   t = t.replace(/^\[?(semi-satire|satire|parody|sponsored|advertorial)\]?\s*[:-]?\s*/i, '')
   t = t.replace(/\s+\|\s+[^|]+$/, '') // strip trailing " | Source Name"
   t = t.replace(/\s+[—–-]\s+[^—–-]+$/, '') // strip trailing " — Source"
@@ -108,7 +140,10 @@ export function sanitizeArticle(input: { title: string; content: string }): Sani
   const cleanedTitle = cleanTitle(input.title || '')
   if (cleanedTitle !== (input.title || '').trim()) removed.push('title:reformatted')
 
-  const stripBody = stripJunkPhrases(input.content || '')
+  const decodedBody = decodeHtmlEntities(input.content || '')
+  if (decodedBody !== (input.content || '')) removed.push('html_entities')
+
+  const stripBody = stripJunkPhrases(decodedBody)
   removed.push(...stripBody.removed)
   let body = stripBody.text
   body = collapseDuplicateHeadings(body, cleanedTitle)

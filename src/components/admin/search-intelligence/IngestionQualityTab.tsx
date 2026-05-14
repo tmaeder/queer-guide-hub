@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import LinearProgress from '@mui/material/LinearProgress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 import {
   assertVisibilityResult,
@@ -41,27 +44,16 @@ const AXIS_LABEL: Record<VisibilityAxis, string> = {
 function ScoreBar({ score }: { score: number }) {
   const pct = Math.round(score * 100);
   const label = scoreLabel(score);
+  const color = label === 'high' ? '#10b981' : label === 'medium' ? '#f59e0b' : '#ef4444';
   return (
-    <Box sx={{ minWidth: 80 }}>
-      <Stack direction="row" alignItems="center" spacing={1}>
-        <LinearProgress
-          variant="determinate"
-          value={pct}
-          sx={{
-            flex: 1,
-            height: 6,
-            backgroundColor: 'rgba(0,0,0,0.06)',
-            '& .MuiLinearProgress-bar': {
-              backgroundColor:
-                label === 'high' ? '#10b981' : label === 'medium' ? '#f59e0b' : '#ef4444',
-            },
-          }}
-        />
-        <Typography variant="caption" sx={{ minWidth: 36, textAlign: 'right' }}>
-          {pct}%
-        </Typography>
-      </Stack>
-    </Box>
+    <div className="min-w-[80px]">
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
+          <div className="h-full rounded" style={{ width: `${pct}%`, backgroundColor: color }} />
+        </div>
+        <span className="text-xs min-w-[36px] text-right">{pct}%</span>
+      </div>
+    </div>
   );
 }
 
@@ -123,8 +115,6 @@ export function IngestionQualityTab() {
       return;
     }
     try {
-      // Stored row uses the same JSONB structure for breakdown but flat
-      // top-level columns. Wrap into the shared shape before validating.
       const stored = res.data as {
         score: number;
         breakdown: Record<string, unknown>;
@@ -149,53 +139,44 @@ export function IngestionQualityTab() {
   };
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Search Visibility Score
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
+          <h6 className="text-lg font-semibold mb-2">Search Visibility Score</h6>
+          <p className="text-sm text-muted-foreground mb-4">
             Inspects an entity's tag completeness, geo, image quality, dates, text, synonym
             coverage, and query history. Returns a 0..1 score with axis breakdown and concrete
             suggestions.
-          </Typography>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={2}
-            alignItems={{ md: 'flex-end' }}
-            sx={{ mt: 2 }}
-          >
-            <TextField
-              select
-              label="Entity type"
-              value={entityType}
-              onChange={(e) => setEntityType(e.target.value)}
-              sx={{ minWidth: 200 }}
-            >
-              {ENTITY_TYPES.map((t) => (
-                <MenuItem key={t.value} value={t.value}>
-                  {t.label}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label="Entity id (uuid)"
-              value={entityId}
-              onChange={(e) => setEntityId(e.target.value)}
-              fullWidth
-            />
+          </p>
+          <div className="flex flex-col md:flex-row gap-4 md:items-end mt-4">
+            <div className="flex flex-col gap-2 min-w-[200px]">
+              <Label>Entity type</Label>
+              <Select value={entityType} onValueChange={setEntityType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ENTITY_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2 flex-1">
+              <Label>Entity id (uuid)</Label>
+              <Input value={entityId} onChange={(e) => setEntityId(e.target.value)} />
+            </div>
             <Button onClick={fetchExisting} disabled={busy || !entityId} variant="outline">
               Fetch stored
             </Button>
             <Button onClick={recompute} disabled={busy || !entityId}>
               {busy ? 'Computing…' : 'Recompute'}
             </Button>
-          </Stack>
+          </div>
           {error && (
-            <Typography color="error" sx={{ mt: 2 }}>
-              {error}
-            </Typography>
+            <p className="text-destructive mt-4">{error}</p>
           )}
         </CardContent>
       </Card>
@@ -204,21 +185,13 @@ export function IngestionQualityTab() {
         <>
           <Card>
             <CardContent>
-              <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                spacing={3}
-                alignItems={{ md: 'center' }}
-              >
-                <Box sx={{ minWidth: 160 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Total score
-                  </Typography>
-                  <Typography variant="h3" sx={{ fontFeatureSettings: '"tnum"' }}>
+              <div className="flex flex-col md:flex-row gap-6 md:items-center">
+                <div className="min-w-[160px]">
+                  <span className="text-xs text-muted-foreground block">Total score</span>
+                  <h3 className="text-3xl" style={{ fontFeatureSettings: '"tnum"' }}>
                     {Math.round(result.score * 100)}
-                    <Typography component="span" variant="h6" color="text.secondary">
-                      /100
-                    </Typography>
-                  </Typography>
+                    <span className="text-lg text-muted-foreground">/100</span>
+                  </h3>
                   <Badge
                     variant={
                       scoreLabel(result.score) === 'high'
@@ -230,82 +203,68 @@ export function IngestionQualityTab() {
                   >
                     {scoreLabel(result.score)}
                   </Badge>
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Computed at
-                  </Typography>
-                  <Typography variant="body2">
+                </div>
+                <div className="flex-1">
+                  <span className="text-xs text-muted-foreground block">Computed at</span>
+                  <p className="text-sm">
                     {new Date(result.computed_at).toLocaleString()}
-                  </Typography>
+                  </p>
                   {drift != null && drift > 0.01 && (
-                    <Typography variant="caption" color="warning.main">
+                    <span className="text-xs" style={{ color: 'hsl(var(--warning))' }}>
                       score drift detected: stored {result.score.toFixed(3)} vs.
                       sum-of-axes {(result.score - drift).toFixed(3)}
-                    </Typography>
+                    </span>
                   )}
-                </Box>
-              </Stack>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Axis breakdown
-              </Typography>
-              <Stack spacing={1.5}>
+              <h6 className="text-lg font-semibold mb-2">Axis breakdown</h6>
+              <div className="flex flex-col gap-3">
                 {VISIBILITY_AXES.map((axis) => {
                   const a = result.breakdown[axis];
                   return (
-                    <Box key={axis}>
-                      <Stack direction="row" alignItems="center" spacing={2}>
-                        <Typography variant="subtitle2" sx={{ minWidth: 100 }}>
+                    <div key={axis}>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm font-medium min-w-[100px]">
                           {AXIS_LABEL[axis]}
-                        </Typography>
+                        </span>
                         <ScoreBar score={a.score} />
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ minWidth: 70 }}
-                        >
+                        <span className="text-xs text-muted-foreground min-w-[70px]">
                           weight {(a.weight * 100).toFixed(0)}%
-                        </Typography>
-                      </Stack>
+                        </span>
+                      </div>
                       {a.notes.length > 0 && (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ ml: 13, display: 'block' }}
-                        >
+                        <span className="text-xs text-muted-foreground block ml-[104px]">
                           {a.notes.join(' · ')}
-                        </Typography>
+                        </span>
                       )}
-                    </Box>
+                    </div>
                   );
                 })}
-              </Stack>
+              </div>
             </CardContent>
           </Card>
 
           {result.suggestions.length > 0 && (
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Suggestions
-                </Typography>
-                <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                <h6 className="text-lg font-semibold mb-2">Suggestions</h6>
+                <ul className="m-0 pl-5 list-disc">
                   {result.suggestions.map((s, i) => (
-                    <Box component="li" key={i}>
-                      <Typography variant="body2">{s}</Typography>
-                    </Box>
+                    <li key={i}>
+                      <p className="text-sm">{s}</p>
+                    </li>
                   ))}
-                </Box>
+                </ul>
               </CardContent>
             </Card>
           )}
         </>
       )}
-    </Stack>
+    </div>
   );
 }

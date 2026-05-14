@@ -34,7 +34,7 @@ queer-guide-search-ingest (Cloudflare Worker)
 | Path | What |
 |---|---|
 | `worker/` | Search proxy (the read path) |
-| `workers/ingest/` | Ingest + backfill (the write path) |
+| `worker-ingest/` | Ingest + backfill (the write path) |
 | `client-sdk/qg-search.ts` | Drop-in client SDK (browser + node) |
 | `scripts/configure-meili.sh` | One-shot Meili settings (embedder, facets, synonyms) |
 | `scripts/setup-webhooks.sql` | Attach DB triggers that POST to ingest worker |
@@ -113,7 +113,7 @@ Paces ~100 docs / batch. Full rebuild of 13k takes ~20 min at Workers AI free ti
 ### 7. Verify
 
 ```bash
-curl -X POST https://search.queer.guide/search \
+curl -X POST https://queer-guide-search-proxy.workers.dev/search \
   -H 'content-type: application/json' \
   -d '{"query":"gay bar berlin","session_id":"t1","debug":true}' | jq
 ```

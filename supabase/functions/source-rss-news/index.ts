@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: RSS/News APIs — unified adapter for all news sources
@@ -86,7 +87,7 @@ const rssNewsAdapter: SourceAdapter = {
     return {
       entityType: 'news_article',
       sourceId: raw.sourceId,
-      sourceName: 'rss-news',
+      sourceName: (d.source_name as string) || 'rss-news',
       name: cleanText(d.title as string || ''),
       description: cleanText(d.content as string || d.description as string || ''),
       urls: d.url ? [String(d.url)] : [],
@@ -269,7 +270,7 @@ function extractTags(title: string, content: string): string[] {
 
 // ─── HTTP Handler ────────────────────────────────────────────
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-rss-news', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
@@ -307,4 +308,4 @@ Deno.serve(async (req) => {
     console.error('source-rss-news error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

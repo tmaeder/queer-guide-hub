@@ -4,7 +4,7 @@
  */
 
 export interface QGSearchClientOptions {
-	endpoint: string; // e.g. https://search.queer.guide
+	endpoint: string; // e.g. https://queer-guide-search-proxy.workers.dev
 	userId?: string | null;
 	lang?: "en" | "de" | "es" | "fr";
 	storageKey?: string; // localStorage key for session id

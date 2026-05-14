@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Sparkles, RefreshCw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -32,24 +30,13 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
   if (!briefing) {
     if (!canGenerate) return null;
     return (
-      <Box
-        sx={{
-          p: 2.5,
-          mb: 3,
-          bgcolor: 'action.hover',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 1.5,
-        }}
-      >
+      <div className="p-5 mb-6 bg-muted flex items-start gap-3">
         <Sparkles style={{ width: 18, height: 18, marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
-            AI safety briefing
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.25 }}>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold mb-1">AI safety briefing</p>
+          <span className="block text-xs text-muted-foreground mb-3">
             Generate a plain-language summary synthesizing country data and recent news for this trip.
-          </Typography>
+          </span>
           <Button
             size="sm"
             onClick={() => handleGenerate(false)}
@@ -58,32 +45,21 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
             {generate.isPending ? 'Generating…' : 'Generate briefing'}
           </Button>
           {generate.isError && (
-            <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 0.75 }}>
+            <span className="block mt-2 text-xs text-destructive">
               Could not generate briefing.
-            </Typography>
+            </span>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box
-      sx={{
-        p: 2.5,
-        mb: 3,
-        bgcolor: 'action.hover',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 1.5,
-      }}
-    >
+    <div className="p-5 mb-6 bg-muted flex items-start gap-3">
       <Sparkles style={{ width: 18, height: 18, marginTop: 2, flexShrink: 0, opacity: 0.7 }} />
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5, gap: 1 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-            AI safety briefing
-          </Typography>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1 gap-2">
+          <p className="text-sm font-bold">AI safety briefing</p>
           {canGenerate && (
             <Button
               size="sm"
@@ -97,15 +73,15 @@ export function AiSafetyNarrativeCard({ tripId, canGenerate }: Props) {
               {generate.isPending ? '…' : 'Refresh'}
             </Button>
           )}
-        </Box>
-        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>
+        </div>
+        <p className="text-sm whitespace-pre-wrap" style={{ lineHeight: 1.55 }}>
           {briefing.narrative}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+        </p>
+        <span className="block mt-2 text-xs text-muted-foreground">
           Synthesized from {briefing.article_count} recent article{briefing.article_count === 1 ? '' : 's'} • generated{' '}
           {formatDistanceToNow(new Date(briefing.generated_at), { addSuffix: true })}
-        </Typography>
-      </Box>
-    </Box>
+        </span>
+      </div>
+    </div>
   );
 }

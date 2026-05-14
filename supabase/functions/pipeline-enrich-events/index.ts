@@ -1,19 +1,22 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (Events) — AI description + type + tags + LGBTQ relevance.
 // Reads pending event staging rows, writes enriched_data, sets enrichment_status.
 // Idempotent (skips already-enriched rows).
 
-Deno.serve(async (req) => {
+const WALL_CLOCK_LIMIT_MS = 90_000
+
+Deno.serve(withErrorReporting('pipeline-enrich-events', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
-    const batchSize     = Math.min(200, body.batch_size ?? 50)
+    const batchSize     = Math.min(200, body.batch_size ?? 20)
     const dryRun        = body.dry_run === true
 
     let q = supabase
@@ -33,8 +36,10 @@ Deno.serve(async (req) => {
     }
 
     let enriched = 0, failed = 0, skipped = 0
+    const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
 
     for (const item of items) {
+      if (Date.now() > deadline) break
       const n = (item.normalized_data ?? {}) as Record<string, unknown>
       const loc = (n.location ?? {}) as Record<string, unknown>
       const title = String(n.title ?? n.name ?? '').trim()
@@ -116,4 +121,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-enrich-events:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

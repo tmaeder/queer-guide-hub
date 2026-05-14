@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: Ticketmaster Discovery API
@@ -89,7 +90,7 @@ function mapTmType(classifications: Array<Record<string, Record<string, string>>
   return map[segment || ''] || 'event'
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-ticketmaster', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -111,4 +112,4 @@ Deno.serve(async (req) => {
     }
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

@@ -3,7 +3,6 @@
 //   POST { retest_id, status: 'passed'|'failed'|'error'|'running', result?: {...} }
 //   Header: X-Feedback-Signature: sha256=<hex>
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { corsResponse, errorResponse, getServiceClient, jsonResponse } from '../_shared/supabase-client.ts';
 import { verifyHmac } from '../_shared/hmac.ts';
 
@@ -14,7 +13,7 @@ interface CallbackBody {
   external_ref?: string;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
   if (req.method !== 'POST') return errorResponse('method_not_allowed', 405, req);
 

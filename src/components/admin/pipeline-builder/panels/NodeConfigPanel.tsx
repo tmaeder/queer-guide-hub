@@ -104,7 +104,7 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
               </Label>
 
               {prop.description && (
-                <p className="text-[10px] text-muted-foreground">{prop.description}</p>
+                <p className="text-2xs text-muted-foreground">{prop.description}</p>
               )}
 
               {/* Boolean → Switch */}

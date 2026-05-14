@@ -29,9 +29,9 @@ export default function CanvasEmptyState({ onOpenCommandPalette, onOpenTemplateL
             <CommandIcon className="h-4 w-4 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium">Quick-add a node</div>
-              <div className="text-[11px] text-muted-foreground">Search and insert any node type</div>
+              <div className="text-xs2 text-muted-foreground">Search and insert any node type</div>
             </div>
-            <kbd className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded">{MOD}K</kbd>
+            <kbd className="text-2xs font-mono bg-muted px-1.5 py-0.5 rounded">{MOD}K</kbd>
           </button>
 
           <button
@@ -41,7 +41,7 @@ export default function CanvasEmptyState({ onOpenCommandPalette, onOpenTemplateL
             <Boxes className="h-4 w-4 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium">Apply a template</div>
-              <div className="text-[11px] text-muted-foreground">Start from a reusable DAG fragment</div>
+              <div className="text-xs2 text-muted-foreground">Start from a reusable DAG fragment</div>
             </div>
           </button>
 
@@ -52,12 +52,12 @@ export default function CanvasEmptyState({ onOpenCommandPalette, onOpenTemplateL
             <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium">Import from JSON</div>
-              <div className="text-[11px] text-muted-foreground">Upload an exported pipeline</div>
+              <div className="text-xs2 text-muted-foreground">Upload an exported pipeline</div>
             </div>
           </button>
         </div>
 
-        <div className="flex items-center gap-2 mt-6 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-2 mt-6 text-xs2 text-muted-foreground">
           <ArrowLeft className="h-3 w-3" />
           <span>Or drag a node from the palette</span>
         </div>

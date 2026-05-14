@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
-import Collapse from '@mui/material/Collapse';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { MapPin, Calendar, Building2, Globe, Accessibility, Hotel, Landmark, Layers } from 'lucide-react';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_COLORS } from '@/hooks/useExploreMapData';
@@ -38,89 +36,67 @@ interface ExploreMapLayersProps {
   compact?: boolean;
 }
 
-export const ExploreMapLayers: React.FC<ExploreMapLayersProps> = ({
+export const ExploreMapLayers = ({
   enabledLayers,
   onToggle,
   layerCounts,
   compact = false,
-}) => {
+}: ExploreMapLayersProps) => {
   const [expanded, setExpanded] = useState(!compact);
 
   return (
-    <Box
-      sx={{
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0.5,
-      }}
-    >
+    <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
       {/* Toggle button */}
-      <IconButton
-        size="small"
+      <Button
+        variant="ghost"
+        size="sm"
         aria-label={expanded ? 'Hide map layers' : 'Show map layers'}
         aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
-        sx={{
-          bgcolor: 'background.paper',
-          width: 36,
-          height: 36,
-          '&:hover': { bgcolor: 'background.paper' },
-        }}
+        className="rounded-2xl border border-border bg-background/85 backdrop-blur-md shadow-md hover:bg-background h-10 w-10 p-0"
       >
         <Layers size={18} />
-      </IconButton>
+      </Button>
 
       {/* Chip grid */}
-      <Collapse in={expanded}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 0.5,
-            maxWidth: 220,
-            bgcolor: 'background.paper',
-            p: 0.75,
-          }}
-        >
-          {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {
-            const enabled = enabledLayers.includes(type);
-            const count = layerCounts[type];
-            const color = LAYER_COLORS[type];
+      <Collapsible open={expanded} onOpenChange={setExpanded}>
+        <CollapsibleContent>
+          <div className="flex flex-wrap gap-1.5 max-w-[240px] rounded-2xl border border-border bg-background/85 backdrop-blur-md shadow-md p-2">
+            {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {
+              const enabled = enabledLayers.includes(type);
+              const count = layerCounts[type];
+              const color = LAYER_COLORS[type];
 
-            if (comingSoon) return null;
+              if (comingSoon) return null;
 
-            return (
-              <Chip
-                key={type}
-                icon={<Icon size={13} />}
-                label={`${label}${enabled && count > 0 ? ` (${count})` : ''}`}
-                size="small"
-                variant={enabled ? 'filled' : 'outlined'}
-                onClick={() => { hapticTrigger('nudge'); onToggle(type); }}
-                sx={{
-                  height: 28,
-                  fontSize: '0.75rem',
-                  fontWeight: enabled ? 600 : 400,
-                  bgcolor: enabled ? `${color}18` : 'transparent',
-                  color: enabled ? color : 'text.secondary',
-                  borderColor: enabled ? color : 'divider',
-                  '& .MuiChip-icon': { color: enabled ? color : 'text.secondary' },
-                  '&:hover': {
-                    bgcolor: `${color}25`,
-                    borderColor: color,
-                  },
-                  transition: 'all 150ms',
-                }}
-              />
-            );
-          })}
-        </Box>
-      </Collapse>
-    </Box>
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  aria-pressed={enabled}
+                  aria-label={`${label}${enabled && count > 0 ? `, ${count} visible` : ''}`}
+                  onClick={() => { hapticTrigger('nudge'); onToggle(type); }}
+                  className="inline-flex items-center gap-1 h-7 px-2 text-xs rounded-full border transition-all focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{
+                    fontWeight: enabled ? 600 : 400,
+                    // Active: opaque brand pill with white text — meets WCAG AA
+                    // (≥4.5:1) against panel bg for all 7 layer colors,
+                    // including amber Hotels which fails the prior tint approach.
+                    backgroundColor: enabled ? color : 'transparent',
+                    color: enabled ? '#ffffff' : 'hsl(var(--muted-foreground))',
+                    borderColor: enabled ? color : 'hsl(var(--border))',
+                    outlineColor: color,
+                  }}
+                >
+                  <Icon size={13} style={{ color: enabled ? '#ffffff' : 'hsl(var(--muted-foreground))' }} />
+                  {`${label}${enabled && count > 0 ? ` (${count})` : ''}`}
+                </button>
+              );
+            })}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 };
 

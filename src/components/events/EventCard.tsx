@@ -5,6 +5,12 @@ import { Card, CardImage, CardContent, CardHeader, CardTitle } from '@/component
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Calendar,
   MapPin,
   Users,
@@ -19,19 +25,12 @@ import {
   Share2,
   Luggage,
 } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { formatEventTime } from '@/lib/event-time';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { resolveEntityImage } from '@/lib/images/resolveEntityImage';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MuiMenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { AddToTripMenuItem } from '@/components/trips/AddToTripMenuItem';
@@ -40,6 +39,7 @@ import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
 import { isMeaningfulTag, sanitizeExcerpt } from '@/utils/eventText';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 
 type Event = Database['public']['Tables']['events']['Row'] & {
   venues?: {
@@ -69,69 +69,30 @@ const EventCardFixture = () => (
     <CardImage src="" alt="Event" fallbackIcon={Calendar} height={200} />
     <CardHeader>
       <CardTitle>Sample Event Title</CardTitle>
-      <Box sx={{ display: 'flex', gap: 1.5 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            px: 1.5,
-            py: 0.75,
-            bgcolor: 'action.hover',
-            borderRadius: 2,
-          }}
-        >
-          <Calendar style={{ height: 16, width: 16 }} />
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            Jun 15, 2026
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            px: 1.5,
-            py: 0.75,
-            bgcolor: 'action.hover',
-            borderRadius: 2,
-          }}
-        >
-          <Clock style={{ height: 16, width: 16 }} />
-          <Typography variant="body2">8:00 PM</Typography>
-        </Box>
-      </Box>
+      <div className="flex gap-1.5">
+        <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+          <Calendar className="h-4 w-4" />
+          <span className="text-sm font-medium">Jun 15, 2026</span>
+        </div>
+        <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+          <Clock className="h-4 w-4" />
+          <span className="text-sm">8:00 PM</span>
+        </div>
+      </div>
     </CardHeader>
     <CardContent>
-      <Typography variant="body2" color="text.secondary">
-        A sample event description spanning a couple of lines.
-      </Typography>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 1,
-          p: 1.5,
-          bgcolor: 'action.hover',
-          borderRadius: 2,
-        }}
-      >
-        <MapPin style={{ height: 16, width: 16, marginTop: 2, flexShrink: 0 }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            Sample Venue
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Berlin, Germany
-          </Typography>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          12 attending
-        </Typography>
-        <Box sx={{ width: 32, height: 32 }} />
-      </Box>
+      <p className="text-sm text-muted-foreground">A sample event description spanning a couple of lines.</p>
+      <div className="flex items-start gap-1 p-1.5 bg-muted rounded-lg">
+        <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-medium">Sample Venue</p>
+          <span className="text-xs text-muted-foreground">Berlin, Germany</span>
+        </div>
+      </div>
+      <div className="flex items-center justify-between py-1">
+        <p className="text-sm font-medium">12 attending</p>
+        <div className="w-8 h-8" />
+      </div>
     </CardContent>
   </Card>
 );
@@ -142,7 +103,7 @@ export const EventCard = memo(function EventCard({
   onUpdateAttendance,
 }: EventCardProps) {
   const { t } = useTranslation();
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
   const { activeTrip } = useActiveTrip();
   const overlapsActiveTrip =
@@ -214,82 +175,40 @@ export const EventCard = memo(function EventCard({
           to={`/events/${event.slug}`}
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
+          <CardHoverEffect>
           <Card hoverable>
-            {/* Image — collapses to compact layout on load error */}
+            {/* Image */}
             {hasImage && (
-              <Box sx={{ position: 'relative', height: 200, overflow: 'hidden' }}>
-                <Box
-                  component="img"
+              <div className="relative h-[200px] overflow-hidden">
+                <img
                   src={resolvedImage ?? ''}
                   alt={event.title}
                   loading="lazy"
                   decoding="async"
                   onError={() => setImageError(true)}
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
-                  }}
+                  className="w-full h-full object-cover transition-transform duration-300"
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
                 />
-                {/* Overlay Badges */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: 16,
-                    left: 16,
-                    right: 16,
-                    zIndex: 20,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
+                  <div className="flex gap-1">
                     {tripStatus?.isInTrip && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          bgcolor: 'primary.main',
-                          color: 'primary.contrastText',
-                          borderRadius: 4,
-                          px: 1,
-                          py: 0.25,
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                        }}
-                      >
-                        <Luggage style={{ width: 12, height: 12 }} />
+                      <div className="flex items-center gap-0.5 bg-primary text-primary-foreground rounded-full px-1 py-0.5 text-[0.7rem] font-semibold">
+                        <Luggage className="w-3 h-3" />
                         In trip
-                      </Box>
+                      </div>
                     )}
                     {overlapsActiveTrip && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          bgcolor: 'background.paper',
-                          color: 'primary.main',
-                          border: 1,
-                          borderColor: 'primary.main',
-                          borderRadius: 4,
-                          px: 1,
-                          py: 0.25,
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                        }}
+                      <div
+                        className="flex items-center gap-0.5 bg-background text-primary border border-primary rounded-full px-1 py-0.5 text-[0.7rem] font-semibold"
                         title={`Happens during ${activeTrip?.title}`}
                       >
-                        <Calendar style={{ width: 12, height: 12 }} />
+                        <Calendar className="w-3 h-3" />
                         During your trip
-                      </Box>
+                      </div>
                     )}
-                    {event.featured && (
+                    {event.is_featured && (
                       <Badge>
-                        <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+                        <Star className="h-3 w-3 mr-1" />
                         Featured
                       </Badge>
                     )}
@@ -303,75 +222,60 @@ export const EventCard = memo(function EventCard({
                         {t('events.past', 'Past')}
                       </Badge>
                     )}
-                  </Box>
+                  </div>
 
                   {event.images && event.images.length > 1 && (
                     <Badge variant="secondary">+{event.images.length - 1} photos</Badge>
                   )}
-                </Box>
+                </div>
 
                 {/* Logo overlay */}
                 {event.logo_url && (
-                  <Box
-                    component="img"
+                  <img
                     src={event.logo_url}
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    sx={{
-                      position: 'absolute',
-                      bottom: 12,
-                      left: 12,
-                      width: 32,
-                      height: 32,
-                      borderRadius: '8px',
-                      bgcolor: 'background.paper',
-                      objectFit: 'contain',
-                      boxShadow: 1,
-                      zIndex: 20,
-                      p: '2px',
-                    }}
+                    className="absolute bottom-3 left-3 w-8 h-8 rounded-lg bg-background object-contain shadow-sm z-20 p-0.5"
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 )}
 
-                {/* Price Badge on image */}
                 {priceDisplay && (
-                  <Box sx={{ position: 'absolute', bottom: 16, right: 16, zIndex: 20 }}>
+                  <div className="absolute bottom-4 right-4 z-20">
                     <Badge variant={event.is_free ? 'default' : 'secondary'}>
                       {event.is_free ? (
-                        <Ticket style={{ height: 12, width: 12, marginRight: 4 }} />
+                        <Ticket className="h-3 w-3 mr-1" />
                       ) : (
-                        <DollarSign style={{ height: 12, width: 12, marginRight: 4 }} />
+                        <DollarSign className="h-3 w-3 mr-1" />
                       )}
                       {priceDisplay}
                     </Badge>
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
             )}
 
             <CardHeader>
-              {/* Inline badges for no-image cards */}
               {!hasImage && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                <div className="flex flex-wrap gap-1 mb-1">
                   {tripStatus?.isInTrip && (
                     <Badge>
-                      <Luggage style={{ height: 12, width: 12, marginRight: 4 }} />
+                      <Luggage className="h-3 w-3 mr-1" />
                       In trip
                     </Badge>
                   )}
                   {overlapsActiveTrip && (
                     <Badge variant="outline">
-                      <Calendar style={{ height: 12, width: 12, marginRight: 4 }} />
+                      <Calendar className="h-3 w-3 mr-1" />
                       During your trip
                     </Badge>
                   )}
-                  {event.featured && (
+                  {event.is_featured && (
                     <Badge>
-                      <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+                      <Star className="h-3 w-3 mr-1" />
                       Featured
                     </Badge>
                   )}
@@ -383,297 +287,192 @@ export const EventCard = memo(function EventCard({
                   {priceDisplay && (
                     <Badge variant={event.is_free ? 'default' : 'secondary'}>{priceDisplay}</Badge>
                   )}
-                </Box>
+                </div>
               )}
 
               <CardTitle>
-                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                <span className="inline-flex items-center gap-1 flex-wrap">
                   {event.title}
                   <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
-                </Box>
+                </span>
               </CardTitle>
 
-              {/* Date and Time Info */}
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 1 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 1.5,
-                    py: 0.75,
-                    bgcolor: 'action.hover',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Calendar style={{ height: 16, width: 16, color: 'var(--primary)' }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
                     {formatEventDate(event.start_date, event.end_date)}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 1.5,
-                    py: 0.75,
-                    bgcolor: 'action.hover',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Clock style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
-                  <Typography variant="body2">
-                    {formatEventTime(event.start_date, event.end_date)}
-                  </Typography>
-                </Box>
-              </Box>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
+                </div>
+              </div>
             </CardHeader>
 
             <CardContent>
-              {/* Description */}
               {sanitizeExcerpt(event.description) && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    overflow: 'hidden',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
-                    lineHeight: 1.6,
-                    wordBreak: 'break-word',
-                  }}
+                <p
+                  className="text-sm text-muted-foreground overflow-hidden break-words"
+                  style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', lineHeight: 1.6 }}
                 >
                   {sanitizeExcerpt(event.description)}
-                </Typography>
+                </p>
               )}
 
-              {/* Location — only if data exists */}
               {hasLocation && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: event.venues?.address ? 'flex-start' : 'center',
-                    gap: 1,
-                    p: 1.5,
-                    bgcolor: 'action.hover',
-                    borderRadius: 2,
-                  }}
+                <div
+                  className={`flex gap-1 p-1.5 bg-muted rounded-lg ${event.venues?.address ? 'items-start' : 'items-center'}`}
                 >
                   <MapPin
-                    style={{
-                      height: 16,
-                      width: 16,
-                      color: 'var(--primary)',
-                      flexShrink: 0,
-                      marginTop: event.venues?.address ? 2 : 0,
-                    }}
+                    className="h-4 w-4 text-primary flex-shrink-0"
+                    style={{ marginTop: event.venues?.address ? 2 : 0 }}
                   />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <div className="flex-1 min-w-0">
                     {hasVenue && (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontWeight: 500,
-                          overflow: 'hidden',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 1,
-                          WebkitBoxOrient: 'vertical',
-                          wordBreak: 'break-word',
-                        }}
+                      <p
+                        className="text-sm font-medium overflow-hidden break-words"
+                        style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}
                       >
                         {event.venues?.name || event.venue_name}
-                      </Typography>
+                      </p>
                     )}
                     {locationLabel && (
-                      <Typography variant="caption" color="text.secondary">
-                        {locationLabel}
-                      </Typography>
+                      <span className="text-xs text-muted-foreground">{locationLabel}</span>
                     )}
                     {event.venues?.address && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: 0.5, display: 'block' }}
-                      >
+                      <span className="text-xs text-muted-foreground mt-0.5 block">
                         {event.venues.address}
-                      </Typography>
+                      </span>
                     )}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
 
-              {/* Event Stats */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  py: 1,
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <div className="flex items-center justify-between py-1">
+                <div className="flex items-center gap-2">
                   {attendeeCount > 0 && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ p: 0.75, bgcolor: 'action.hover', borderRadius: 2 }}>
-                        <Users style={{ height: 14, width: 14, color: 'var(--primary)' }} />
-                      </Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {attendeeCount} attending
-                      </Typography>
-                    </Box>
+                    <div className="flex items-center gap-1">
+                      <div className="p-1 bg-muted rounded-lg">
+                        <Users className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <p className="text-sm font-medium">{attendeeCount} attending</p>
+                    </div>
                   )}
 
                   {event.age_restriction && (
                     <Badge variant="outline">{event.age_restriction}</Badge>
                   )}
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box onClick={(e) => e.preventDefault()}>
+                <div className="flex items-center gap-0.5">
+                  <div onClick={(e) => e.preventDefault()}>
                     <FavoriteButton itemId={event.id} type="event" />
-                  </Box>
-                  <IconButton
-                    size="small"
-                    aria-label={t('events.card.moreActions', 'More actions')}
-                    aria-haspopup="menu"
-                    aria-expanded={Boolean(menuAnchor)}
-                    aria-controls={menuAnchor ? `event-card-menu-${event.id}` : undefined}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setMenuAnchor(e.currentTarget);
-                    }}
-                    sx={{ minWidth: 44, minHeight: 44 }}
-                  >
-                    <MoreVertical
-                      style={{ width: 16, height: 16 }}
-                      aria-hidden="true"
-                      focusable="false"
-                    />
-                  </IconButton>
-                  <Menu
-                    id={`event-card-menu-${event.id}`}
-                    anchorEl={menuAnchor}
-                    open={Boolean(menuAnchor)}
-                    onClose={(_e: Record<string, unknown>, _reason: string) => {
-                      setMenuAnchor(null);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <AddToTripMenuItem
-                      entity={{
-                        type: 'event',
-                        id: event.id,
-                        name: event.title,
-                        latitude: event.latitude,
-                        longitude: event.longitude,
-                        city_id: event.city_id,
-                        country_id: event.country_id,
-                        category: event.event_type,
-                      }}
-                      onClose={() => setMenuAnchor(null)}
-                    />
-                    <MuiMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setMenuAnchor(null);
-                        navigator.clipboard.writeText(
-                          `${window.location.origin}/events/${event.slug}`,
-                        );
-                      }}
-                    >
-                      <ListItemIcon>
-                        <Share2 style={{ width: 18, height: 18 }} />
-                      </ListItemIcon>
-                      <ListItemText>Share</ListItemText>
-                    </MuiMenuItem>
-                  </Menu>
-                </Box>
-              </Box>
+                  </div>
+                  <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-11 w-11 min-w-11 min-h-11 p-0"
+                        aria-label={t('events.card.moreActions', 'More actions')}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <MoreVertical className="w-4 h-4" aria-hidden="true" focusable="false" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                      <AddToTripMenuItem
+                        entity={{
+                          type: 'event',
+                          id: event.id,
+                          name: event.title,
+                          latitude: event.latitude,
+                          longitude: event.longitude,
+                          city_id: event.city_id,
+                          country_id: event.country_id,
+                          category: event.event_type,
+                        }}
+                        onClose={() => setMenuOpen(false)}
+                      />
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setMenuOpen(false);
+                          navigator.clipboard.writeText(
+                            `${window.location.origin}/events/${event.slug}`,
+                          );
+                        }}
+                      >
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
 
-              {/* Action Buttons */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 1,
-                  pt: 2,
-                  borderTop: 1,
-                  borderColor: 'divider',
-                }}
-              >
+              <div className="flex items-center justify-between gap-1 pt-2 border-t border-border">
                 <Button size="sm" variant="outline">
-                  <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+                  <Eye className="h-4 w-4 mr-2" />
                   View Details
                 </Button>
 
-                {/* External Links — only when data exists */}
                 {(event.venues?.website || event.ticket_url) && (
-                <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto' }}>
-                  {event.venues?.website && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      aria-label={t('events.card.visitWebsite', 'Visit venue website')}
-                      title={t('events.card.visitWebsite', 'Visit venue website')}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        window.open(event.venues!.website!, '_blank');
-                      }}
-                      style={{ minWidth: 44, minHeight: 44 }}
-                    >
-                      <ExternalLink
-                        style={{ height: 16, width: 16 }}
-                        aria-hidden="true"
-                        focusable="false"
-                      />
-                    </Button>
-                  )}
-                  {event.ticket_url && (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="default"
-                      aria-label={t('events.card.getTickets', 'Get tickets')}
-                      title={t('events.card.getTickets', 'Get tickets')}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        window.open(event.ticket_url!, '_blank');
-                      }}
-                      style={{ minWidth: 44, minHeight: 44 }}
-                    >
-                      <Ticket
-                        style={{ height: 16, width: 16, marginRight: 6 }}
-                        aria-hidden="true"
-                        focusable="false"
-                      />
-                      {t('events.card.tickets', 'Tickets')}
-                    </Button>
-                  )}
-                </Box>
+                  <div className="flex gap-0.5 ml-auto">
+                    {event.venues?.website && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        aria-label={t('events.card.visitWebsite', 'Visit venue website')}
+                        title={t('events.card.visitWebsite', 'Visit venue website')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          window.open(event.venues!.website!, '_blank');
+                        }}
+                        className="min-w-11 min-h-11"
+                      >
+                        <ExternalLink className="h-4 w-4" aria-hidden="true" focusable="false" />
+                      </Button>
+                    )}
+                    {event.ticket_url && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        aria-label={t('events.card.getTickets', 'Get tickets')}
+                        title={t('events.card.getTickets', 'Get tickets')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          window.open(event.ticket_url!, '_blank');
+                        }}
+                        className="min-w-11 min-h-11"
+                      >
+                        <Ticket className="h-4 w-4 mr-1.5" aria-hidden="true" focusable="false" />
+                        {t('events.card.tickets', 'Tickets')}
+                      </Button>
+                    )}
+                  </div>
                 )}
-              </Box>
+              </div>
 
-              {/* Attendance Buttons */}
               {onUpdateAttendance && (
-                <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+                <div className="flex gap-1 pt-1">
                   <Button
                     size="sm"
-                    variant="default"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
                       onUpdateAttendance(event.id, 'going');
                     }}
                   >
-                    <Heart style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <Heart className="h-4 w-4 mr-2" />
                     I'm Going
                   </Button>
                   <Button
@@ -685,13 +484,14 @@ export const EventCard = memo(function EventCard({
                       onUpdateAttendance(event.id, 'interested');
                     }}
                   >
-                    <Star style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <Star className="h-4 w-4 mr-2" />
                     Interested
                   </Button>
-                </Box>
+                </div>
               )}
             </CardContent>
           </Card>
+          </CardHoverEffect>
         </LocalizedLink>
       )}
     </Skeleton>

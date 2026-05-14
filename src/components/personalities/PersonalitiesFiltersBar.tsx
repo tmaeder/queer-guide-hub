@@ -1,9 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import {
   Select,
@@ -15,6 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
   SheetContent,
@@ -36,11 +33,31 @@ interface Props {
 
 const SORT_OPTIONS: { value: PersonalitySort; label: string }[] = [
   { value: 'featured', label: 'Featured' },
-  { value: 'az', label: 'A\u2013Z' },
-  { value: 'za', label: 'Z\u2013A' },
+  { value: 'az', label: 'A–Z' },
+  { value: 'za', label: 'Z–A' },
   { value: 'popular', label: 'Most popular' },
   { value: 'newest', label: 'Newest' },
 ];
+
+interface FilterChipProps {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  capitalize?: boolean;
+}
+
+function FilterChip({ label, active, onClick, capitalize }: FilterChipProps) {
+  return (
+    <Badge
+      variant={active ? 'default' : 'outline'}
+      onClick={onClick}
+      className={`cursor-pointer flex-shrink-0 ${capitalize ? 'capitalize' : ''}`}
+      style={{ scrollSnapAlign: 'start' }}
+    >
+      {label}
+    </Badge>
+  );
+}
 
 export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
   const [searchInput, setSearchInput] = useState(filters.search ?? '');
@@ -85,49 +102,31 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
     !filters.profession && filters.is_living === undefined && !filters.featured_only;
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        p: 2,
-        bgcolor: 'background.paper',
-      }}
-    >
+    <div className="flex flex-col gap-4 p-4 bg-background">
       {/* Row 1: search + sort */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
-        <TextField
-          size="small"
-          fullWidth
-          placeholder="Search by name, profession, description..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          sx={{ flex: '1 1 260px', bgcolor: 'background.default', borderRadius: 1 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={16} />
-              </InputAdornment>
-            ),
-            endAdornment: searchInput ? (
-              <InputAdornment position="end">
-                <Box
-                  role="button"
-                  aria-label="Clear search"
-                  sx={{ cursor: 'pointer', display: 'flex' }}
-                  onClick={() => setSearchInput('')}
-                >
-                  <X size={14} />
-                </Box>
-              </InputAdornment>
-            ) : null,
-          }}
-        />
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[260px]">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, profession, description..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex"
+              onClick={() => setSearchInput('')}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'block' } }}>
-            Sort
-          </Typography>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground hidden sm:block">Sort</span>
           <Select value={filters.sortBy ?? 'featured'} onValueChange={(v) => setSort(v as PersonalitySort)}>
             <SelectTrigger style={{ width: 160 }} aria-label="Sort personalities">
               <SelectValue />
@@ -140,37 +139,28 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               ))}
             </SelectContent>
           </Select>
-        </Box>
+        </div>
 
         <Button
           variant="outline"
           size="sm"
           onClick={() => setDrawerOpen(true)}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          className="inline-flex items-center gap-1.5"
           aria-label="More filters"
         >
           <SlidersHorizontal size={16} />
           More
         </Button>
-      </Box>
+      </div>
 
       {/* Row 2: profession chips */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          overflowX: 'auto',
-          pb: 0.5,
-          scrollSnapType: 'x mandatory',
-          '&::-webkit-scrollbar': { height: 6 },
-          '&::-webkit-scrollbar-thumb': { bgcolor: 'divider', borderRadius: 3 },
-        }}
+      <div
+        className="flex gap-2 overflow-x-auto pb-1"
+        style={{ scrollSnapType: 'x mandatory' }}
       >
-        <Chip
+        <FilterChip
           label="All"
-          clickable
-          color={isAllActive ? 'primary' : 'default'}
-          variant={isAllActive ? 'filled' : 'outlined'}
+          active={isAllActive}
           onClick={() =>
             onFiltersChange({
               ...filters,
@@ -179,39 +169,30 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               featured_only: undefined,
             })
           }
-          sx={{ scrollSnapAlign: 'start', flexShrink: 0 }}
         />
-        <Chip
+        <FilterChip
           label="Living"
-          clickable
-          color={filters.is_living === true ? 'primary' : 'default'}
-          variant={filters.is_living === true ? 'filled' : 'outlined'}
+          active={filters.is_living === true}
           onClick={() => setLiving(filters.is_living === true ? null : true)}
-          sx={{ scrollSnapAlign: 'start', flexShrink: 0 }}
         />
-        <Chip
+        <FilterChip
           label="Historical"
-          clickable
-          color={filters.is_living === false ? 'primary' : 'default'}
-          variant={filters.is_living === false ? 'filled' : 'outlined'}
+          active={filters.is_living === false}
           onClick={() => setLiving(filters.is_living === false ? null : false)}
-          sx={{ scrollSnapAlign: 'start', flexShrink: 0 }}
         />
         {professionChips.map((profession) => {
           const active = filters.profession === profession;
           return (
-            <Chip
+            <FilterChip
               key={profession}
               label={profession}
-              clickable
-              color={active ? 'primary' : 'default'}
-              variant={active ? 'filled' : 'outlined'}
+              active={active}
               onClick={() => setProfession(active ? null : profession)}
-              sx={{ scrollSnapAlign: 'start', flexShrink: 0, textTransform: 'capitalize' }}
+              capitalize
             />
           );
         })}
-      </Box>
+      </div>
 
       {/* More filters drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -221,8 +202,8 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
             <SheetDescription>Refine the personalities directory.</SheetDescription>
           </SheetHeader>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-6 mt-4">
+            <div className="flex flex-col gap-2">
               <Label>Verification status</Label>
               <Select
                 value={filters.verification_status ?? 'all'}
@@ -243,9 +224,9 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
                   <SelectItem value="disputed">Disputed</SelectItem>
                 </SelectContent>
               </Select>
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Checkbox
                 id="featured-only"
                 checked={filters.featured_only === true}
@@ -259,9 +240,9 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               <Label htmlFor="featured-only">
                 Featured only
               </Label>
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <div className="flex items-start gap-3">
               <Checkbox
                 id="include-adult"
                 checked={filters.exclude_adult === false}
@@ -272,17 +253,17 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
                   })
                 }
               />
-              <Box>
+              <div>
                 <Label htmlFor="include-adult">
                   Include adult performers
                 </Label>
-                <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                <span className="block text-xs text-muted-foreground">
                   Hidden by default. Opt in to browse performers alongside other personalities.
-                </Typography>
-              </Box>
-            </Box>
+                </span>
+              </div>
+            </div>
 
-            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            <div className="flex gap-2 mt-2">
               <Button
                 variant="outline"
                 style={{ flex: 1 }}
@@ -297,10 +278,10 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
               <Button style={{ flex: 1 }} onClick={() => setDrawerOpen(false)}>
                 Done
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
-    </Box>
+    </div>
   );
 }

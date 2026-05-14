@@ -30,7 +30,7 @@ back up, and restore the deployment.
 ## 2. First-time setup (runbook)
 
 Assumes Plane is co-located on the **existing queer.guide VPS** that already
-runs Meilisearch + Caddy (`meilisearch/docker-compose.yml`). No new
+runs Meilisearch + Caddy (`Dev/web/meilisearch/docker-compose.yml`). No new
 VM, no Cloudflare Tunnel — traffic flows Internet → Caddy:443 → `plane-proxy:80`
 over a shared Docker network `web`.
 
@@ -61,11 +61,11 @@ docker network inspect web >/dev/null 2>&1 || docker network create web
 
 ### 2.3 Attach Caddy + Meilisearch to the shared network
 
-Edit the existing `meilisearch/docker-compose.yml` on the VPS to add
+Edit the existing `Dev/web/meilisearch/docker-compose.yml` on the VPS to add
 the `web` network to the `caddy` service, then restart it:
 
 ```yaml
-# meilisearch/docker-compose.yml  (caddy service only)
+# Dev/web/meilisearch/docker-compose.yml  (caddy service only)
   caddy:
     image: caddy:2-alpine
     container_name: caddy
@@ -110,7 +110,7 @@ plane.queer.guide {
 Reload:
 
 ```bash
-cd meilisearch
+cd Dev/web/meilisearch
 docker compose up -d    # picks up the new network
 docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
 ```

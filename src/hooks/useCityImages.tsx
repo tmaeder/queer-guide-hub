@@ -38,12 +38,13 @@ export const useCityImages = () => {
       setLoading(true);
       try {
         const { data, error: functionError } = await supabase.functions.invoke(
-          'fetch-city-images',
+          'fetch-images',
           {
             body: {
-              cityId,
-              cityName,
-              countryName,
+              entity_type: 'city',
+              id: cityId,
+              name: cityName,
+              country: countryName,
               forceUpdate: !!opts.refresh,
             },
           },

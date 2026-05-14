@@ -109,10 +109,10 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 bg-muted/30">
         <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-xs font-semibold">Run log stream</span>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{pipelineRunId.slice(0, 8)}</Badge>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{events.length} events</Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{pipelineRunId.slice(0, 8)}</Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0">{events.length} events</Badge>
         {errorCount > 0 && (
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">
+          <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">
             {errorCount} errors
           </Badge>
         )}
@@ -122,13 +122,13 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         <div className="flex gap-1">
           <button
             onClick={() => setFilter('all')}
-            className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
               filter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-accent'
             }`}
           >All</button>
           <button
             onClick={() => setFilter('errors')}
-            className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
               filter === 'errors' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-accent'
             }`}
           >Errors</button>
@@ -162,7 +162,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         </Tooltip>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto font-mono text-[11px] bg-background">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto font-mono text-xs2 bg-background">
         {filtered.length === 0 ? (
           <div className="p-6 text-center text-muted-foreground">
             <Filter className="h-4 w-4 inline mr-1" />
@@ -180,7 +180,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
                 <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded hover:bg-muted/30 ${isError ? 'bg-red-50/30 dark:bg-red-950/20' : ''}`}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-muted-foreground text-[10px] whitespace-nowrap cursor-help">
+                      <span className="text-muted-foreground text-2xs whitespace-nowrap cursor-help">
                         {formatDistanceToNow(new Date(e.created_at), { addSuffix: false })}
                       </span>
                     </TooltipTrigger>
@@ -192,13 +192,13 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
                     <span className={isError ? 'text-destructive' : ''}>{e.new_status}</span>
                   </span>
                   {e.staging_id && (
-                    <span className="text-muted-foreground text-[10px]">{e.staging_id.slice(0, 8)}</span>
+                    <span className="text-muted-foreground text-2xs">{e.staging_id.slice(0, 8)}</span>
                   )}
                   {typeof errorMsg === 'string' && (
                     <span className="text-destructive truncate flex-1" title={errorMsg}>{errorMsg}</span>
                   )}
                   {e.actor && (
-                    <span className="text-muted-foreground text-[10px] ml-auto">{e.actor}</span>
+                    <span className="text-muted-foreground text-2xs ml-auto">{e.actor}</span>
                   )}
                 </div>
               );

@@ -3,25 +3,15 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, RefreshCw, Trash2, Play, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-
-interface DlqRow {
-  id: number;
-  staging_id: string | null;
-  source_slug: string | null;
-  stage: string;
-  error_code: string | null;
-  error_message: string | null;
-  attempts: number;
-  max_attempts: number;
-  status: string;
-  next_retry_at: string;
-  last_attempt_at: string | null;
-  created_at: string;
-}
+import {
+  fetchDlqRows,
+  retryDlqItem,
+  type DlqRow,
+} from '@/hooks/usePipelineBuilderTabs';
 
 interface SummaryRow {
   source_slug: string | null;
@@ -43,7 +33,6 @@ const statusClass: Record<string, string> = {
 
 export default function DLQTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [filter, setFilter] = useState<StatusFilter>('pending');
 
   const { data: summary = [] } = useQuery<SummaryRow[]>({
@@ -61,13 +50,7 @@ export default function DLQTab() {
 
   const { data: rows = [], isLoading } = useQuery<DlqRow[]>({
     queryKey: ['dlq-rows', filter],
-    queryFn: async () => {
-      let q = supabase.from('ingestion_dlq').select('*').order('next_retry_at', { ascending: true }).limit(200);
-      if (filter !== 'all') q = q.eq('status', filter);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as DlqRow[];
-    },
+    queryFn: () => fetchDlqRows(filter),
     refetchInterval: 15_000,
   });
 
@@ -77,21 +60,16 @@ export default function DLQTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'DLQ consumer triggered', description: 'Processing up to 50 items' });
+      toast.success('DLQ consumer triggered: Processing up to 50 items');
       qc.invalidateQueries({ queryKey: ['dlq-rows'] });
     },
-    onError: (e: Error) => toast({ title: 'DLQ consumer failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`DLQ consumer failed: ${e.message}`),
   });
 
   const retryNow = useMutation({
-    mutationFn: async (id: number) => {
-      const { error } = await supabase.from('ingestion_dlq').update({
-        status: 'pending', next_retry_at: new Date().toISOString(), locked_until: null,
-      }).eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: (id: number) => retryDlqItem(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
-    onError: (e: Error) => toast({ title: 'Retry failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Retry failed: ${e.message}`),
   });
 
   const resolveItem = useMutation({
@@ -100,7 +78,7 @@ export default function DLQTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dlq-rows'] }),
-    onError: (e: Error) => toast({ title: 'Resolve failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Resolve failed: ${e.message}`),
   });
 
   const totals = useMemo(() => summary.reduce(
@@ -115,7 +93,7 @@ export default function DLQTab() {
   const FilterButton = ({ value, label }: { value: StatusFilter; label: string }) => (
     <button
       onClick={() => setFilter(value)}
-      className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+      className={`text-xs2 px-2.5 py-1 rounded border transition-colors ${
         filter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -159,7 +137,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
                 {['Source', 'Stage', 'Status', 'Items', 'Next retry'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -171,7 +149,7 @@ export default function DLQTab() {
                   <td className="px-3 py-2 font-mono text-xs">{r.source_slug ?? '—'}</td>
                   <td className="px-3 py-2 font-mono text-xs">{r.stage}</td>
                   <td className="px-3 py-2">
-                    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
+                    <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>
@@ -192,7 +170,7 @@ export default function DLQTab() {
             <thead className="bg-muted/40 sticky top-0">
               <tr className="border-b border-border">
                 {['Stage', 'Source', 'Error', 'Attempts', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -208,7 +186,7 @@ export default function DLQTab() {
                   <td className="px-3 py-2 align-top max-w-[360px]">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="font-mono text-[11px] text-destructive truncate cursor-help">
+                        <div className="font-mono text-xs2 text-destructive truncate cursor-help">
                           {r.error_code && <strong>{r.error_code}: </strong>}
                           {r.error_message ?? '—'}
                         </div>
@@ -224,7 +202,7 @@ export default function DLQTab() {
                     {r.attempts}/{r.max_attempts}
                   </td>
                   <td className="px-3 py-2 align-top">
-                    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
+                    <span className={`inline-block text-2xs px-2 py-0.5 rounded-full ${statusClass[r.status] || 'bg-muted'}`}>
                       {r.status}
                     </span>
                   </td>

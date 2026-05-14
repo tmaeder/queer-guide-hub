@@ -9,8 +9,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { mapStyle } from '@/config/mapStyle';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
@@ -60,7 +59,7 @@ const PRIMARY_LAYER = 'entity-primary-circle';
 const PRIMARY_LABEL = 'entity-primary-label';
 const NEARBY_LAYER = 'entity-nearby-circle';
 
-export const EntityMap: React.FC<EntityMapProps> = ({
+export const EntityMap = ({
   center,
   zoom = 14,
   height = 300,
@@ -75,6 +74,7 @@ export const EntityMap: React.FC<EntityMapProps> = ({
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState(false);
 
   const primary = markers.filter((m) => m.primary);
   const nearby = markers.filter((m) => !m.primary);
@@ -135,8 +135,16 @@ export const EntityMap: React.FC<EntityMapProps> = ({
       setMapReady(true);
       mapRef.current = map;
     });
+    map.on('error', () => setMapError(true));
+
+    // Hard timeout: if tiles can't load (blocked by network policy, CDN
+    // outage), show a fallback rather than spin forever.
+    const timeoutId = window.setTimeout(() => {
+      setMapError((prev) => (mapRef.current ? prev : true));
+    }, 5000);
 
     return () => {
+      window.clearTimeout(timeoutId);
       mapRef.current = null;
       map.remove();
     };
@@ -273,8 +281,8 @@ export const EntityMap: React.FC<EntityMapProps> = ({
   }, [primary, nearby, mapReady, showPopup]);
 
   return (
-    <Box className={className} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}>
-      <Box ref={containerRef} sx={{ height, width: '100%' }} />
+    <div className={className} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
+      <div ref={containerRef} style={{ height, width: '100%' }} />
 
       <div
         ref={tooltipRef}
@@ -292,22 +300,37 @@ export const EntityMap: React.FC<EntityMapProps> = ({
         }}
       />
 
-      {!mapReady && (
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: 'rgba(255,255,255,0.7)',
-            zIndex: 5,
-          }}
+      {!mapReady && !mapError && (
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(255,255,255,0.7)', zIndex: 5 }}
         >
-          <CircularProgress size={24} aria-label="Loading" />
-        </Box>
+          <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+        </div>
       )}
-    </Box>
+
+      {mapError && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center"
+          style={{ backgroundColor: 'hsl(var(--muted))', zIndex: 5 }}
+          role="status"
+        >
+          <p className="text-sm text-muted-foreground">
+            Map couldn&rsquo;t load.
+          </p>
+          {primary[0] && (
+            <a
+              href={`https://www.openstreetmap.org/?mlat=${primary[0].lat}&mlon=${primary[0].lng}#map=15/${primary[0].lat}/${primary[0].lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium underline"
+            >
+              Open in OpenStreetMap
+            </a>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

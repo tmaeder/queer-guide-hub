@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteCountry, updateCountry } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -20,12 +18,12 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { logAdminGeoEdit } from '@/lib/admin-audit';
 
 interface CountryRow {
@@ -66,7 +64,6 @@ const fmtCurrency = (n: number | null) =>
     : '-';
 
 export default function AdminCountries() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -109,13 +106,13 @@ export default function AdminCountries() {
   const handleDelete = async (country: CountryRow) => {
     if (!confirm(`Delete "${country.name}"? This will affect related data.`)) return;
     try {
-      const { error } = await supabase.from('countries').delete().eq('id', country.id);
+      const { error } = await deleteCountry(country.id);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'delete', country.id, country as unknown as Record<string, unknown>, null);
       toast({ title: 'Success', description: `${country.name} deleted` });
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete country', variant: 'destructive' });
+      toast.error('Error: Failed to delete country');
     }
   };
 
@@ -135,7 +132,7 @@ export default function AdminCountries() {
         lgbt_rights_status: formData.lgbt_rights_status || null,
         equality_score: formData.equality_score ? parseFloat(formData.equality_score) : null,
       };
-      const { error } = await supabase.from('countries').update(update).eq('id', editingCountry.id);
+      const { error } = await updateCountry(editingCountry.id, update);
       if (error) throw error;
       void logAdminGeoEdit('countries', 'update', editingCountry.id, editingCountry as unknown as Record<string, unknown>, update);
       toast({ title: 'Success', description: `${formData.name} updated` });
@@ -143,7 +140,7 @@ export default function AdminCountries() {
       setEditingCountry(null);
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to update country', variant: 'destructive' });
+      toast.error('Error: Failed to update country');
     }
   };
 
@@ -180,19 +177,17 @@ export default function AdminCountries() {
       columnHelper.accessor('name', {
         header: 'Country',
         cell: (info) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             {info.row.original.flag_emoji && (
               <span style={{ fontSize: 18, lineHeight: 1 }}>{info.row.original.flag_emoji}</span>
             )}
-            <Box>
+            <div>
               <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
               {info.row.original.code && (
-                <Typography variant="body2" color="text.secondary">
-                  {info.row.original.code}
-                </Typography>
+                <p className="text-sm text-muted-foreground">{info.row.original.code}</p>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -220,7 +215,7 @@ export default function AdminCountries() {
         header: 'LGBT legal status',
         cell: (info) => {
           const v = info.getValue();
-          if (!v) return <span style={{ color: 'var(--muted-foreground)' }}>-</span>;
+          if (!v) return <span className="text-muted-foreground">-</span>;
           const lower = v.toLowerCase();
           const tone =
             lower.includes('legal') || lower.includes('protected') || lower.includes('marriage')
@@ -403,87 +398,80 @@ export default function AdminCountries() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Countries Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage countries, their information, and geographical data
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent style={{ maxWidth: 672 }}>
+    <AdminEntityTable
+      title="Countries Management"
+      subtitle="Manage countries, their information, and geographical data"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Country</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, py: 2 }}>
-            <Box>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <div>
               <Label>Country Name</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Country Code</Label>
               <Input
                 value={formData.code}
                 onChange={(e) => setFormData((p) => ({ ...p, code: e.target.value }))}
                 maxLength={3}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Capital City</Label>
               <Input
                 value={formData.capital}
                 onChange={(e) => setFormData((p) => ({ ...p, capital: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Currency</Label>
               <Input
                 value={formData.currency}
                 onChange={(e) => setFormData((p) => ({ ...p, currency: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Population</Label>
               <Input
                 type="number"
                 value={formData.population}
                 onChange={(e) => setFormData((p) => ({ ...p, population: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Area (km2)</Label>
               <Input
                 type="number"
                 value={formData.area_km2}
                 onChange={(e) => setFormData((p) => ({ ...p, area_km2: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>GDP (USD)</Label>
               <Input
                 type="number"
                 value={formData.gdp_usd}
                 onChange={(e) => setFormData((p) => ({ ...p, gdp_usd: e.target.value }))}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Flag emoji</Label>
               <Input
                 value={formData.flag_emoji}
                 onChange={(e) => setFormData((p) => ({ ...p, flag_emoji: e.target.value }))}
                 maxLength={8}
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>LGBT legal status</Label>
               <Input
                 value={formData.lgbt_legal_status}
@@ -491,8 +479,8 @@ export default function AdminCountries() {
                   setFormData((p) => ({ ...p, lgbt_legal_status: e.target.value }))
                 }
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>LGBT rights status</Label>
               <Input
                 value={formData.lgbt_rights_status}
@@ -500,16 +488,16 @@ export default function AdminCountries() {
                   setFormData((p) => ({ ...p, lgbt_rights_status: e.target.value }))
                 }
               />
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Label>Equality score</Label>
               <Input
                 type="number"
                 value={formData.equality_score}
                 onChange={(e) => setFormData((p) => ({ ...p, equality_score: e.target.value }))}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
               Cancel
@@ -518,6 +506,7 @@ export default function AdminCountries() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }

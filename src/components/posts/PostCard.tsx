@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { MotionCard as Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -141,7 +139,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
     );
 
     const contentElement = (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-4">
         <ContentSanitizer
           content={content}
           style={{ whiteSpace: 'pre-wrap' }}
@@ -150,7 +148,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
 
         {/* Display tags as badges */}
         {post.tags && post.tags.length > 0 && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          <div className="flex flex-wrap gap-1">
             {post.tags.map((tag, index) => (
               <Badge
                 key={index}
@@ -160,126 +158,87 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 #{tag}
               </Badge>
             ))}
-          </Box>
+          </div>
         )}
 
         {/* Images */}
         {post.images && post.images.length > 0 && (
-          <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
             {post.images.slice(0, 4).map((image, index) => (
-              <Box
+              <div
                 key={index}
-                sx={{
-                  position: 'relative',
-                  aspectRatio: '16/9',
-                  bgcolor: 'action.hover',
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                }}
+                className="relative bg-muted rounded-md overflow-hidden"
+                style={{ aspectRatio: '16/9' }}
               >
-                <Box
-                  component="img"
+                <img
                   src={image}
                   alt="Post image"
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className="w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
                   }}
                 />
-              </Box>
+              </div>
             ))}
             {post.images.length > 4 && (
-              <Box
-                sx={{
-                  aspectRatio: '16/9',
-                  bgcolor: 'action.hover',
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'text.secondary',
-                }}
+              <div
+                className="bg-muted rounded-md flex items-center justify-center text-muted-foreground"
+                style={{ aspectRatio: '16/9' }}
               >
                 +{post.images.length - 4} more
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
         )}
 
         {/* Link Preview */}
         {post.post_type === 'link' && post.link_url && (
           <Card>
             <CardContent style={{ padding: 16 }}>
-              <Box
-                component="a"
+              <a
                 href={post.link_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                sx={{
-                  display: 'block',
-                  m: -2,
-                  p: 2,
-                  borderRadius: 1,
-                  transition: 'background-color 0.2s',
-                  '&:hover': { bgcolor: 'action.hover' },
-                  textDecoration: 'none',
-                  color: 'inherit',
-                }}
+                className="block -m-2 p-4 rounded-md transition-colors hover:bg-muted no-underline text-foreground"
               >
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <div className="flex items-start gap-3">
                   <ExternalLink
                     style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))', marginTop: 4, flexShrink: 0 }}
                   />
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <div className="min-w-0 flex-1">
                     {post.link_title && (
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          fontWeight: 500,
-                          color: 'text.primary',
+                      <p
+                        className="font-medium text-foreground mb-1"
+                        style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
-                          mb: 0.5,
                         }}
                       >
                         {post.link_title}
-                      </Typography>
+                      </p>
                     )}
                     {post.link_description && (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontSize: '0.875rem',
-                          color: 'text.secondary',
+                      <p
+                        className="text-sm text-muted-foreground mb-1"
+                        style={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
-                          mb: 0.5,
                         }}
                       >
                         {post.link_description}
-                      </Typography>
+                      </p>
                     )}
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.75rem',
-                        color: 'text.secondary',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        display: 'block',
-                      }}
-                    >
+                    <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap block">
                       {new URL(post.link_url).hostname}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
+                    </span>
+                  </div>
+                </div>
+              </a>
             </CardContent>
           </Card>
         )}
@@ -288,10 +247,10 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
         {post.post_type === 'poll' && post.poll_options && (
           <Card>
             <CardContent style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+              <p className="font-medium">
                 Poll
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              </p>
+              <div className="flex flex-col gap-2">
                 {(post.poll_options as { options?: string[] })?.options?.map((option: string, index: number) => (
                   <Button
                     key={index}
@@ -320,14 +279,14 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                     {option}
                   </Button>
                 )) || []}
-              </Box>
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+              </div>
+              <span className="text-xs text-muted-foreground">
                 Voting not yet implemented
-              </Typography>
+              </span>
             </CardContent>
           </Card>
         )}
-      </Box>
+      </div>
     );
 
     return contentElement;
@@ -336,8 +295,8 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
   return (
     <Card>
       <CardHeader style={{ paddingBottom: 16 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
             <Avatar style={{ height: 40, width: 40 }}>
               <AvatarImage src={post.profiles?.avatar_url || undefined} />
               <AvatarFallback>
@@ -351,21 +310,13 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               >
                 {post.profiles?.display_name || 'Unknown User'}
               </LocalizedLink>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  fontSize: '0.875rem',
-                  color: 'text.secondary',
-                }}
-              >
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                 <span>&bull;</span>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center gap-1">
                   {getVisibilityIcon()}
                   <span>{getVisibilityLabel()}</span>
-                </Box>
+                </div>
                 {post.post_type !== 'text' && (
                   <>
                     <span>&bull;</span>
@@ -377,9 +328,9 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                     </Badge>
                   </>
                 )}
-              </Box>
+              </div>
             </div>
-          </Box>
+          </div>
 
           {(isOwnPost || user) && (
             <DropdownMenu>
@@ -401,7 +352,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                       Edit Post
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      style={{ color: '#ef4444' }}
+                      className="text-destructive"
                       onClick={() => setShowDeleteDialog(true)}
                     >
                       <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
@@ -413,30 +364,21 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-        </Box>
+        </div>
       </CardHeader>
 
       <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {renderPostContent()}
 
         {/* Actions */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            pt: 2,
-            borderTop: 1,
-            borderColor: 'divider',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <div className="flex items-center gap-6">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLikeToggle}
               disabled={isLiking || !user}
-              style={post.user_liked ? { color: '#ef4444' } : {}}
+              style={post.user_liked ? { color: 'hsl(var(--foreground))' } : {}}
             >
               <Heart
                 style={{
@@ -463,18 +405,18 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 <ChevronDown style={{ height: 16, width: 16, marginLeft: 4 }} />
               )}
             </Button>
-          </Box>
+          </div>
 
           <Button variant="ghost" size="sm" onClick={handleShare}>
             <Share2 style={{ height: 16, width: 16 }} />
           </Button>
-        </Box>
+        </div>
 
         {/* Comments Section */}
         {showComments && user && (
-          <Box sx={{ pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <div className="pt-4 border-t border-border">
             <CommentsSection postId={post.id} />
-          </Box>
+          </div>
         )}
       </CardContent>
 
@@ -494,7 +436,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 onDelete?.(post.id);
                 setShowDeleteDialog(false);
               }}
-              style={{ backgroundColor: '#ef4444', color: 'white' }}
+              className="bg-destructive text-destructive-foreground"
             >
               Delete
             </AlertDialogAction>

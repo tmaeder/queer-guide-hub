@@ -94,9 +94,6 @@ gcp_jwt_path = "supabase/gcp.json"
 [functions.create-booking]
 verify_jwt = false
 
-[functions.fetch-news]
-verify_jwt = false
-
 [functions.get-pexels-images]
 verify_jwt = false
 
@@ -139,9 +136,6 @@ verify_jwt = true
 [functions.send-templated-email]
 verify_jwt = true
 
-[functions.import-foursquare-venues]
-verify_jwt = false
-
 [functions.import-tripadvisor-venues]
 verify_jwt = false
 
@@ -157,9 +151,6 @@ verify_jwt = false
 [functions.enrich-venue]
 verify_jwt = false
 
-[functions.bulk-scrape-events]
-verify_jwt = true
-
 [functions.manage-placeholder-images]
 verify_jwt = false
 
@@ -169,16 +160,10 @@ verify_jwt = true
 [functions.mapbox-geocoding]
 verify_jwt = false
 
-[functions.fetch-ilga-data]
-verify_jwt = false
-
 [functions.import-ilga-data]
-verify_jwt = true
+verify_jwt = false
 
 [functions.update-musician-concerts]
-verify_jwt = false
-
-[functions.background-import-manager]
 verify_jwt = false
 
 [functions.import-adult-models-csv]
@@ -191,9 +176,6 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.cloudflare-api]
-verify_jwt = true
-
-[functions.scrape-gaycities-events]
 verify_jwt = true
 
 [functions.scrape-spartacus]
@@ -336,3 +318,125 @@ verify_jwt = false
 
 [functions.sync-supabase-advisors]
 verify_jwt = true
+
+[functions.pipeline-media-process]
+verify_jwt = false
+
+[functions.pipeline-safety-relevance]
+verify_jwt = false
+
+[functions.source-community-submissions]
+verify_jwt = false
+
+[functions.source-shopify]
+verify_jwt = false
+
+[functions.source-personality-staging]
+verify_jwt = false
+
+[functions.pipeline-apply-rules]
+verify_jwt = false
+
+[functions.pipeline-geocode]
+verify_jwt = false
+
+[functions.pipeline-ai-suggest]
+verify_jwt = false
+
+[functions.pipeline-geo-validate]
+verify_jwt = false
+
+# source-* functions referenced as pipeline node types — invoked by
+# pipeline-executor with service-role bearer, so JWT verification must
+# be off (same reasoning as pipeline-* siblings).
+[functions.source-tags-extract]
+verify_jwt = false
+
+[functions.source-queer-villages]
+verify_jwt = false
+
+[functions.source-etsy]
+verify_jwt = false
+
+[functions.source-osm-venue]
+verify_jwt = false
+
+[functions.source-email-ingestions]
+verify_jwt = false
+
+[functions.geo-link-content]
+verify_jwt = false
+
+[functions.validate-links]
+verify_jwt = false
+
+[functions.marketplace-fx-sync]
+verify_jwt = false
+
+[functions.populate-embeddings]
+verify_jwt = false
+
+[functions.feedback-embed]
+verify_jwt = false
+
+# Cron-invoked functions (called via net.http_post with service-role bearer)
+[functions.enrich-logos]
+verify_jwt = false
+
+[functions.feedback-story-titler]
+verify_jwt = false
+
+[functions.fetch-city-images]
+verify_jwt = false
+
+[functions.fetch-country-images]
+verify_jwt = false
+
+[functions.fetch-event-images]
+verify_jwt = false
+
+[functions.fetch-personality-images]
+verify_jwt = false
+
+[functions.fetch-venue-images]
+verify_jwt = false
+
+[functions.fetch-village-images]
+verify_jwt = false
+
+[functions.github-notifications-poller]
+verify_jwt = false
+
+[functions.push-dispatcher]
+verify_jwt = false
+
+[functions.refresh-watched-urls]
+verify_jwt = false
+
+[functions.trip-nudges]
+verify_jwt = false
+
+[functions.venue-url-checker]
+verify_jwt = false
+
+# Workflow/pipeline functions (invoked by dispatcher with service-role bearer)
+[functions.marketplace-image-mirror]
+verify_jwt = false
+
+[functions.marketplace-relevance]
+verify_jwt = false
+
+[functions.marketplace-ingestion]
+verify_jwt = false
+
+[functions.social-media-ingestion]
+verify_jwt = false
+
+[functions.scrape-events-daily]
+verify_jwt = false
+
+[functions.news-pipeline]
+verify_jwt = false
+
+[functions.personality-pipeline]
+verify_jwt = false

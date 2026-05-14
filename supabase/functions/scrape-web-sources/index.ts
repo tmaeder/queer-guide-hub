@@ -80,6 +80,8 @@ const USER_AGENTS = [
 const MAX_SOURCES_PER_RUN = 1   // process only 1 per invocation
 const DB_FETCH_LIMIT = 50       // over-fetch so in-memory interval filter has enough candidates
 const MAX_ITEMS_PER_SOURCE = 500
+const WALL_CLOCK_LIMIT_MS = 40_000
+const MAX_PAGES_PER_INVOCATION = 25
 
 // ─── HTML Fetch ─────────────────────────────────────────────────────────────
 
@@ -122,7 +124,7 @@ async function crawlWithFirecrawl(
   }
 
   const config = source.scrape_config
-  const limit = Math.min((config.limit as number) || 100, source.max_pages_per_run)
+  const limit = Math.min((config.limit as number) || 100, source.max_pages_per_run, MAX_PAGES_PER_INVOCATION)
 
   const crawlBody: Record<string, unknown> = {
     url: source.url,
@@ -172,7 +174,7 @@ async function crawlWithFirecrawl(
 async function pollFirecrawlJob(
   apiKey: string,
   jobId: string,
-  maxWaitMs = 240000,
+  maxWaitMs = WALL_CLOCK_LIMIT_MS,
 ): Promise<{ pages: { url: string; html?: string; markdown?: string }[]; error?: string }> {
   const start = Date.now()
   let pollInterval = 5000
@@ -211,7 +213,7 @@ async function crawlViaSitemap(
   source: ScrapeSource,
 ): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
   const config = source.scrape_config
-  const maxPages = Math.min((config.limit as number) || 200, source.max_pages_per_run)
+  const maxPages = Math.min((config.limit as number) || 200, source.max_pages_per_run, MAX_PAGES_PER_INVOCATION)
   const includePatterns = (config.include_paths as string[]) || []
   const baseUrl = source.url.replace(/\/+$/, '')
   const pages: { url: string; html: string }[] = []
@@ -238,7 +240,12 @@ async function crawlViaSitemap(
 
   // 3. Fetch each product page with rate limiting
   const rateLimitMs = source.rate_limit_ms || 2000
+  const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
   for (const url of productUrls.slice(0, maxPages)) {
+    if (Date.now() > deadline) {
+      console.log(`[${source.slug}] Sitemap: wall-clock limit reached after ${pages.length} pages`)
+      break
+    }
     try {
       const html = await fetchPage(url, source.user_agent)
       pages.push({ url, html })
@@ -352,7 +359,7 @@ async function crawlNative(
   source: ScrapeSource,
 ): Promise<{ pages: { url: string; html: string }[]; error?: string }> {
   const config = source.scrape_config
-  const maxPages = Math.min((config.limit as number) || 100, source.max_pages_per_run)
+  const maxPages = Math.min((config.limit as number) || 100, source.max_pages_per_run, MAX_PAGES_PER_INVOCATION)
   const maxDepth = (config.max_depth as number) || 3
   const includePatterns = (config.include_paths as string[]) || []
   const excludePatterns = (config.exclude_paths as string[]) || [
@@ -367,8 +374,13 @@ async function crawlNative(
   const queue: { url: string; depth: number }[] = [{ url: source.url, depth: 0 }]
 
   const rateLimitMs = source.rate_limit_ms || 2000
+  const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
 
   while (queue.length > 0 && pages.length < maxPages) {
+    if (Date.now() > deadline) {
+      console.log(`[${source.slug}] Native crawl: wall-clock limit reached after ${pages.length} pages`)
+      break
+    }
     const { url, depth } = queue.shift()!
 
     // Normalize URL (remove fragments, trailing slashes)
@@ -1318,8 +1330,15 @@ async function processSource(
 
     // ── Trigger ingestion pipeline ───────────────────────────
     if (itemsStaged > 0) {
-      supabase.functions.invoke('ingestion-pipeline', {
-        body: { job_id: job.id, stage: 'ai_validation' },
+      const pipelineName = source.target_table === 'events'
+        ? 'events-ingestion-bulletproof'
+        : 'venue-ingestion-unified'
+      supabase.functions.invoke('pipeline-executor', {
+        body: {
+          action: 'start',
+          pipeline_name: pipelineName,
+          context: { triggered_by: `scrape-web-sources:${source.slug}`, job_id: job.id, target_table: source.target_table },
+        },
       }).catch(err => console.error(`[${source.slug}] Pipeline trigger failed:`, err))
     }
 

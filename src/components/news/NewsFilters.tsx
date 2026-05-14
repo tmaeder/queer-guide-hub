@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -14,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { X, Filter, MapPin, Calendar, Building, Globe, Map, TrendingUp, Tag } from 'lucide-react';
-import { Tables } from '@/integrations/supabase/types';
+import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { NewsCategory } from '@/hooks/useNews';
@@ -24,11 +22,13 @@ type NewsSource = Tables<'news_sources'>;
 interface CountryOption {
   id: string;
   name: string;
+  article_count?: number;
 }
 
 interface CityOption {
   id: string;
   name: string;
+  article_count?: number;
 }
 
 interface NewsFiltersProps {
@@ -42,6 +42,7 @@ interface NewsFiltersProps {
     userLocation?: { lat: number; lng: number };
     dateRange?: { from?: string; to?: string };
     featured?: boolean;
+    inStory?: boolean;
     category?: string;
   }) => void;
   trendingTags?: { tag: string; count: number }[];
@@ -66,18 +67,25 @@ export const NewsFilters = ({
   const [locationLoading, setLocationLoading] = useState(false);
   const [dateRange, setDateRange] = useState<string>('');
   const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [inStoryOnly, setInStoryOnly] = useState(false);
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
 
-  // Fetch countries and cities
+  // Fetch only countries/cities that actually have news content (E2). The
+  // RPCs come from migration news_qa_countries_with_articles_rpc and return
+  // {id, name, article_count} so the Select can show counts.
   useEffect(() => {
     const fetchData = async () => {
-      const [{ data: countriesData }, { data: citiesData }] = await Promise.all([
-        supabase.from('countries').select('id, name').order('name'),
-        supabase.from('cities').select('id, name').order('name'),
+      const [countriesRes, citiesRes] = await Promise.all([
+        supabase.rpc('news_countries_with_articles'),
+        supabase.rpc('news_cities_with_articles'),
       ]);
-      if (countriesData) setCountries(countriesData);
-      if (citiesData) setCities(citiesData);
+      if (!countriesRes.error && Array.isArray(countriesRes.data)) {
+        setCountries(countriesRes.data as CountryOption[]);
+      }
+      if (!citiesRes.error && Array.isArray(citiesRes.data)) {
+        setCities(citiesRes.data as CityOption[]);
+      }
     };
     fetchData();
   }, []);
@@ -95,6 +103,7 @@ export const NewsFilters = ({
         userLocation: overrides.userLocation !== undefined ? overrides.userLocation : userLocation,
         dateRange: overrides.dateRange !== undefined ? overrides.dateRange : dateRange,
         featuredOnly: overrides.featuredOnly !== undefined ? overrides.featuredOnly : featuredOnly,
+        inStoryOnly: overrides.inStoryOnly !== undefined ? overrides.inStoryOnly : inStoryOnly,
         category:
           overrides.selectedCategory !== undefined ? overrides.selectedCategory : selectedCategory,
       };
@@ -110,6 +119,7 @@ export const NewsFilters = ({
         filters.userLocation = current.userLocation;
       }
       if (current.featuredOnly) filters.featured = true;
+      if (current.inStoryOnly) filters.inStory = true;
       if (current.category) filters.category = current.category;
 
       // Convert date range string to from/to
@@ -167,6 +177,7 @@ export const NewsFilters = ({
       userLocation,
       dateRange,
       featuredOnly,
+      inStoryOnly,
       sources,
       onFiltersChange,
     ],
@@ -254,6 +265,12 @@ export const NewsFilters = ({
     emitFilters({ featuredOnly: newVal });
   };
 
+  const handleInStoryToggle = () => {
+    const newVal = !inStoryOnly;
+    setInStoryOnly(newVal);
+    emitFilters({ inStoryOnly: newVal });
+  };
+
   const clearFilters = () => {
     setSource('');
     setSelectedCategory('');
@@ -264,6 +281,7 @@ export const NewsFilters = ({
     setUserLocation(null);
     setDateRange('');
     setFeaturedOnly(false);
+    setInStoryOnly(false);
     onFiltersChange({});
   };
 
@@ -287,25 +305,33 @@ export const NewsFilters = ({
       </CardHeader>
       <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Featured Only */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">
             Featured Only
-          </Box>
+          </span>
           <Switch checked={featuredOnly} onCheckedChange={handleFeaturedToggle} />
-        </Box>
+        </div>
+
+        {/* Multi-article stories only */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">
+            Multi-article stories only
+          </span>
+          <Switch checked={inStoryOnly} onCheckedChange={handleInStoryToggle} />
+        </div>
 
         <Separator />
 
         {/* Category Filter */}
         {categories.length > 0 && (
           <>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
                 <Tag style={{ height: 16, width: 16 }} />
-                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                <span className="text-sm font-medium">
                   Category
-                </Box>
-              </Box>
+                </span>
+              </div>
               <Select value={selectedCategory || 'all'} onValueChange={handleCategoryChange}>
                 <SelectTrigger style={{ width: '100%' }}>
                   <SelectValue placeholder="All categories" />
@@ -319,39 +345,39 @@ export const NewsFilters = ({
                   ))}
                 </SelectContent>
               </Select>
-            </Box>
+            </div>
             <Separator />
           </>
         )}
 
         {/* Near Me */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <MapPin style={{ height: 16, width: 16 }} />
-              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              <span className="text-sm font-medium">
                 Near Me
-              </Box>
-            </Box>
+              </span>
+            </div>
             <Switch checked={nearMe} onCheckedChange={handleNearMe} disabled={locationLoading} />
-          </Box>
+          </div>
           {nearMe && (
-            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            <p className="text-xs text-muted-foreground">
               Showing news relevant to your location
-            </Typography>
+            </p>
           )}
-        </Box>
+        </div>
 
         <Separator />
 
         {/* Countries Filter */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
             <Globe style={{ height: 16, width: 16 }} />
-            <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+            <span className="text-sm font-medium">
               Country
-            </Box>
-          </Box>
+            </span>
+          </div>
           <Select onValueChange={handleCountryToggle}>
             <SelectTrigger style={{ width: '100%' }}>
               <SelectValue placeholder="Select country" />
@@ -360,12 +386,13 @@ export const NewsFilters = ({
               {countries.map((country) => (
                 <SelectItem key={country.id} value={country.id}>
                   {country.name}
+                  {country.article_count ? ` (${country.article_count})` : ''}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {selectedCountries.length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            <div className="flex flex-wrap gap-1">
               {selectedCountries.map((countryId) => {
                 const country = countries.find((c) => c.id === countryId);
                 return country ? (
@@ -380,18 +407,18 @@ export const NewsFilters = ({
                   </Badge>
                 ) : null;
               })}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
 
         {/* Cities Filter */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
             <Map style={{ height: 16, width: 16 }} />
-            <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+            <span className="text-sm font-medium">
               City
-            </Box>
-          </Box>
+            </span>
+          </div>
           <Select onValueChange={handleCityToggle}>
             <SelectTrigger style={{ width: '100%' }}>
               <SelectValue placeholder="Select city" />
@@ -400,12 +427,13 @@ export const NewsFilters = ({
               {cities.map((city) => (
                 <SelectItem key={city.id} value={city.id}>
                   {city.name}
+                  {city.article_count ? ` (${city.article_count})` : ''}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {selectedCities.length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            <div className="flex flex-wrap gap-1">
               {selectedCities.map((cityId) => {
                 const city = cities.find((c) => c.id === cityId);
                 return city ? (
@@ -420,21 +448,21 @@ export const NewsFilters = ({
                   </Badge>
                 ) : null;
               })}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
 
         <Separator />
 
         {/* Source Filter */}
         {sources.length > 0 && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
               <Building style={{ height: 16, width: 16 }} />
-              <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              <span className="text-sm font-medium">
                 Source
-              </Box>
-            </Box>
+              </span>
+            </div>
             <Select value={source} onValueChange={handleSourceChange}>
               <SelectTrigger style={{ width: '100%' }}>
                 <SelectValue placeholder="All sources" />
@@ -448,17 +476,17 @@ export const NewsFilters = ({
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
         )}
 
         {/* Date Range Filter */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
             <Calendar style={{ height: 16, width: 16 }} />
-            <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+            <span className="text-sm font-medium">
               Published Date
-            </Box>
-          </Box>
+            </span>
+          </div>
           <Select value={dateRange} onValueChange={handleDateRangeChange}>
             <SelectTrigger style={{ width: '100%' }}>
               <SelectValue placeholder="All dates" />
@@ -474,20 +502,20 @@ export const NewsFilters = ({
               <SelectItem value="2023">2023</SelectItem>
             </SelectContent>
           </Select>
-        </Box>
+        </div>
 
         {/* Trending Tags */}
         {trendingTags.length > 0 && (
           <>
             <Separator />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
                 <TrendingUp style={{ height: 16, width: 16 }} />
-                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                <span className="text-sm font-medium">
                   Trending Topics
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1">
                 {trendingTags.slice(0, 10).map(({ tag }) => (
                   <Badge
                     key={tag}
@@ -498,8 +526,8 @@ export const NewsFilters = ({
                     {tag}
                   </Badge>
                 ))}
-              </Box>
-            </Box>
+              </div>
+            </div>
           </>
         )}
 

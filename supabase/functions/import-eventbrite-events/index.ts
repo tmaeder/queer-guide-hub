@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { corsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts';
 
@@ -70,7 +69,7 @@ interface EventbriteResponse {
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -189,7 +188,7 @@ serve(async (req) => {
               price_max: priceMax,
               max_attendees: event.capacity || null,
               status: 'active',
-              featured: false
+              is_featured: false
             };
 
             // AI enrichment — enhance description and classify event type

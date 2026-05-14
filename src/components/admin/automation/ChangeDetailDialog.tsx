@@ -2,14 +2,9 @@
  * ChangeDetailDialog — Shows old vs new diff for a proposed content change.
  */
 
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import type { ContentChange } from '@/hooks/useAutomation';
 
@@ -50,163 +45,105 @@ export function ChangeDetailDialog({
   const isFlag = change.change_type === 'flag';
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        Change Detail
-        <Chip size="small" label={change.change_type} color="info" sx={{ ml: 1 }} />
-        <Chip
-          size="small"
-          label={change.status}
-          color={isPending ? 'warning' : isApplied ? 'success' : 'default'}
-        />
-      </DialogTitle>
-
-      <DialogContent dividers>
-        {/* Metadata */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Content
-            </Typography>
-            <Typography variant="body2" fontWeight={600}>
-              {change.content_name}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Type
-            </Typography>
-            <Typography variant="body2">{change.content_type}</Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Field
-            </Typography>
-            <Typography variant="body2" fontWeight={600}>
-              {change.field_name}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" color="text.secondary">
-              Confidence
-            </Typography>
-            <Typography variant="body2" fontWeight={600}>
-              {Math.round(change.confidence * 100)}%
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Reasoning */}
-        {change.reasoning && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="caption" color="text.secondary">
-              Reasoning
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ mt: 0.5, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent>
+        <DialogTitle>
+          <span className="flex items-center gap-2">
+            Change Detail
+            <Badge variant="secondary" className="ml-2">{change.change_type}</Badge>
+            <Badge
+              variant={isPending ? 'secondary' : isApplied ? 'default' : 'outline'}
             >
-              {change.reasoning}
-            </Typography>
-          </Box>
-        )}
+              {change.status}
+            </Badge>
+          </span>
+        </DialogTitle>
 
-        {/* Diff view */}
-        {!isFlag && (
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mb: 0.5, display: 'block' }}
-              >
-                Old Value
-              </Typography>
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: 1,
-                  bgcolor: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  fontFamily: 'monospace',
-                  fontSize: '0.8rem',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  maxHeight: 300,
-                  overflow: 'auto',
-                }}
-              >
-                {formatValue(change.old_value)}
-              </Box>
-            </Box>
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mb: 0.5, display: 'block' }}
-              >
-                New Value
-              </Typography>
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: 1,
-                  bgcolor: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  fontFamily: 'monospace',
-                  fontSize: '0.8rem',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  maxHeight: 300,
-                  overflow: 'auto',
-                }}
-              >
-                {formatValue(change.new_value)}
-              </Box>
-            </Box>
-          </Box>
-        )}
+        <div className="border-t border-b py-4">
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <span className="text-xs text-muted-foreground">Content</span>
+              <p className="text-sm font-semibold">{change.content_name}</p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Type</span>
+              <p className="text-sm">{change.content_type}</p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Field</span>
+              <p className="text-sm font-semibold">{change.field_name}</p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Confidence</span>
+              <p className="text-sm font-semibold">{Math.round(change.confidence * 100)}%</p>
+            </div>
+          </div>
 
-        {isFlag && (
-          <Box sx={{ p: 2, bgcolor: '#fffbeb', border: '1px solid #fde68a', borderRadius: 1 }}>
-            <Typography variant="body2">
-              This is a <strong>flag-only</strong> change. No data modification proposed — review
-              the issue described above.
-            </Typography>
-          </Box>
-        )}
-      </DialogContent>
+          {change.reasoning && (
+            <div className="mb-6">
+              <span className="text-xs text-muted-foreground">Reasoning</span>
+              <p className="text-sm mt-1 p-3 bg-muted rounded-sm">{change.reasoning}</p>
+            </div>
+          )}
 
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        {isPending && (
-          <>
-            <Button variant="outline" onClick={() => onReject(change.id)}>
-              <XCircle size={14} />
-              Reject
-            </Button>
-            {!isFlag && (
-              <Button onClick={() => onApprove(change.id)}>
-                <CheckCircle2 size={14} />
-                Approve & Apply
-              </Button>
-            )}
-            {isFlag && (
+          {!isFlag && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs text-muted-foreground mb-1 block">Old Value</span>
+                <div className="p-3 rounded-sm font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
+                  {formatValue(change.old_value)}
+                </div>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground mb-1 block">New Value</span>
+                <div className="p-3 rounded-sm font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                  {formatValue(change.new_value)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isFlag && (
+            <div className="p-4 rounded-sm" style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a' }}>
+              <p className="text-sm">
+                This is a <strong>flag-only</strong> change. No data modification proposed — review
+                the issue described above.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          {isPending && (
+            <>
               <Button variant="outline" onClick={() => onReject(change.id)}>
-                Dismiss Flag
+                <XCircle size={14} className="mr-1" />
+                Reject
               </Button>
-            )}
-          </>
-        )}
-        {isApplied && (
-          <Button variant="outline" onClick={() => onRevert(change.id)}>
-            <RotateCcw size={14} />
-            Revert
+              {!isFlag && (
+                <Button onClick={() => onApprove(change.id)}>
+                  <CheckCircle2 size={14} className="mr-1" />
+                  Approve & Apply
+                </Button>
+              )}
+              {isFlag && (
+                <Button variant="outline" onClick={() => onReject(change.id)}>
+                  Dismiss Flag
+                </Button>
+              )}
+            </>
+          )}
+          {isApplied && (
+            <Button variant="outline" onClick={() => onRevert(change.id)}>
+              <RotateCcw size={14} className="mr-1" />
+              Revert
+            </Button>
+          )}
+          <Button variant="ghost" onClick={onClose}>
+            Close
           </Button>
-        )}
-        <Button variant="ghost" onClick={onClose}>
-          Close
-        </Button>
-      </DialogActions>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

@@ -15,6 +15,7 @@ import {
   isEntityTypeMismatch,
   type ClassifyInput,
 } from '../_shared/entity-classifier.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -22,13 +23,13 @@ import {
 // Rejects hard errors, flags multi-warning items for review.
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
   try {
     const body = await req.json().catch(() => ({}))
-    const _pipelineRunId = body.pipeline_run_id as string
+    const pipelineRunId = body.pipeline_run_id as string | undefined
     const entityType    = body.entityType as string
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
@@ -42,6 +43,7 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
+    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (entityType)    query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
@@ -106,6 +108,9 @@ Deno.serve(async (req) => {
           ?? (meta.published_at as string | undefined)
 
         if (title.length < 6) errors.push('E_TITLE_TOO_SHORT')
+        else if (title.length < 15 && !/\s/.test(title)) errors.push('E_TITLE_NOT_INFORMATIVE')
+        else if (/^(unnamed|untitled|test|no title|undefined|null)\b/i.test(title)) errors.push('E_TITLE_PLACEHOLDER')
+        else if (/^[\p{Emoji}\p{Emoji_Component}\p{So}\s·༻༺𐫱]+$/u.test(title)) errors.push('E_TITLE_EMOJI_ONLY')
         if (title.length > 500) warnings.push('W_TITLE_TRUNCATED')
         if (!sourceId) errors.push('E_MISSING_SOURCE')
         if (!url) errors.push('E_MISSING_URL')
@@ -377,4 +382,4 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-validate', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

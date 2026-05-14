@@ -1,13 +1,16 @@
 /**
- * Barrel re-export. Each feature lives in its own file under api/ so
- * additions don't keep growing this surface, and tests can import the
- * one slice they care about. Existing call-sites that did
- * `from "../shared/api"` continue to work unchanged.
+ * Legacy barrel – re-exports every public symbol from the api/ directory
+ * so that existing imports like `from "../../shared/api"` keep working.
  */
-
-export * from "./api/submit";
-export * from "./api/discovery";
-export * from "./api/enrich";
-export * from "./api/watch";
-export * from "./api/render";
-export * from "./api/upload";
+export { submitItem, fetchStatus, bulkSubmit, fetchMySubmissions } from "./api/submit";
+export type { BulkResult, SubmissionRow } from "./api/submit";
+export { findSimilarItems, findExisting } from "./api/discovery";
+export type { SimilarHit, ExistingMatch } from "./api/discovery";
+export { renderUrl, scanSitemap } from "./api/render";
+export type { SitemapEntry } from "./api/render";
+export { listWatched, addWatched, removeWatched } from "./api/watch";
+export type { WatchedRow } from "./api/watch";
+export { enrichItem } from "./api/enrich";
+export type { EnrichResponse } from "./api/enrich";
+export { uploadCapture } from "./api/upload";
+export { API, SUPABASE_URL, ANON_KEY, authHeaders, pgrstHeaders, jwtSub, ensureOk } from "./api/client";

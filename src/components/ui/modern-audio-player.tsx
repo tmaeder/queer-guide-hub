@@ -237,7 +237,7 @@ export function ModernAudioPlayer({
           {getBestQualityDownload() && (
             <a
               href={getAudioUrl(getBestQualityDownload()!.file_path)}
-              style={{ color: 'hsl(var(--brand))', textDecoration: 'underline', marginLeft: 8 }}
+              style={{ color: 'hsl(var(--foreground))', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
               Download MP3

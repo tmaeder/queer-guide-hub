@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react';
 import { formatCurrency } from '@/lib/currency';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,12 +39,12 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Calendar as CalendarIcon, MapPin, Star } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 interface EventRow {
@@ -69,8 +67,9 @@ interface EventRow {
   price_max: number | null;
   max_attendees: number | null;
   age_restriction: string | null;
-  featured: boolean;
+  is_featured: boolean;
   status: string | null;
+  organizer_id: string | null;
   organizer_name: string | null;
   organizer_contact: string | null;
   website: string | null;
@@ -96,6 +95,7 @@ const eventTypes = [
   'sports',
   'theater',
   'comedy',
+  'cruise',
   'other',
 ];
 
@@ -129,9 +129,10 @@ const emptyForm = {
   age_restriction: '',
   website: '',
   ticket_url: '',
+  organizer_id: '',
   organizer_name: '',
   organizer_contact: '',
-  featured: false,
+  is_featured: false,
   tags: [] as string[],
   images: [] as string[],
 };
@@ -140,7 +141,6 @@ export default function AdminEvents() {
   const { user } = useAuth();
   const { createEvent, updateEvent, deleteEvent } = useEvents();
   const { venues } = useVenues();
-  const { toast } = useToast();
   const { resolveAddress } = useAddressResolver();
   const queryClient = useQueryClient();
 
@@ -191,6 +191,25 @@ export default function AdminEvents() {
     }
   };
 
+
+  const organizers = useMemo(() => venues.filter((v) => v.is_organizer), [venues]);
+
+  const handleOrganizerSelect = (organizerId: string) => {
+    if (organizerId === 'custom' || !organizerId) {
+      setFormData((prev) => ({ ...prev, organizer_id: '', organizer_name: '', organizer_contact: '' }));
+      return;
+    }
+    const org = venues.find((v) => v.id === organizerId);
+    if (org) {
+      setFormData((prev) => ({
+        ...prev,
+        organizer_id: organizerId,
+        organizer_name: org.name,
+        organizer_contact: org.email || org.phone || '',
+      }));
+    }
+  };
+
   const handleAddressChange = async (
     address: string,
     coordinates?: { lat: number; lng: number },
@@ -225,7 +244,7 @@ export default function AdminEvents() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!startDate) {
-      toast({ title: 'Error', description: 'Please select a start date', variant: 'destructive' });
+      toast.error('Error: Please select a start date');
       return;
     }
 
@@ -233,6 +252,7 @@ export default function AdminEvents() {
       const eventData = {
         ...formData,
         venue_id: formData.venue_id || null,
+        organizer_id: formData.organizer_id || null,
         latitude: formData.latitude,
         longitude: formData.longitude,
         age_restriction: formData.age_restriction === 'none' ? null : formData.age_restriction,
@@ -248,21 +268,17 @@ export default function AdminEvents() {
       if (editingEvent) {
         const { error } = await updateEvent(editingEvent.id, eventData);
         if (error) throw new Error(error);
-        toast({ title: 'Success', description: 'Event updated' });
+        toast.success('Success: Event updated');
       } else {
         const { error } = await createEvent(eventData);
         if (error) throw new Error(error);
-        toast({ title: 'Success', description: 'Event created' });
+        toast.success('Success: Event created');
       }
       resetForm();
       setIsCreateDialogOpen(false);
       invalidateTable();
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message :'Failed to save event',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -288,9 +304,10 @@ export default function AdminEvents() {
       age_restriction: event.age_restriction || '',
       website: event.website || '',
       ticket_url: event.ticket_url || '',
+      organizer_id: event.organizer_id || '',
       organizer_name: event.organizer_name || '',
       organizer_contact: event.organizer_contact || '',
-      featured: event.featured,
+      is_featured: event.is_featured,
       tags: event.tags || [],
       images: event.images || [],
     });
@@ -305,14 +322,10 @@ export default function AdminEvents() {
     try {
       const { error } = await deleteEvent(event.id);
       if (error) throw new Error(error);
-      toast({ title: 'Success', description: 'Event deleted' });
+      toast.success('Success: Event deleted');
       invalidateTable();
     } catch (error: unknown) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message :'Failed to delete',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -327,7 +340,7 @@ export default function AdminEvents() {
       { header: 'Country', accessor: (r) => r.country },
       { header: 'Organizer', accessor: (r) => r.organizer_name },
       { header: 'Is Free', accessor: (r) => formatBoolean(r.is_free) },
-      { header: 'Featured', accessor: (r) => formatBoolean(r.featured) },
+      { header: 'Featured', accessor: (r) => formatBoolean(r.is_featured) },
       { header: 'Tags', accessor: (r) => formatArray(r.tags) },
       { header: 'Created At', accessor: (r) => formatDateTime(r.created_at) },
     ];
@@ -340,19 +353,15 @@ export default function AdminEvents() {
       columnHelper.accessor('title', {
         header: 'Title',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
             {info.row.original.venue_name && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MapPin style={{ height: 11, width: 11 }} />
                 {info.row.original.venue_name}
-              </Typography>
+              </div>
             )}
-          </Box>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -375,10 +384,10 @@ export default function AdminEvents() {
         cell: (info) => {
           const d = info.getValue();
           return d ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <CalendarIcon style={{ height: 12, width: 12 }} />
               {format(new Date(d), 'MMM d, yyyy HH:mm')}
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -390,10 +399,10 @@ export default function AdminEvents() {
         cell: (info) => {
           const d = info.getValue();
           return d ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <CalendarIcon style={{ height: 12, width: 12 }} />
               {format(new Date(d), 'MMM d, yyyy HH:mm')}
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -428,7 +437,7 @@ export default function AdminEvents() {
           ),
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
-      columnHelper.accessor('featured', {
+      columnHelper.accessor('is_featured', {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
@@ -464,7 +473,7 @@ export default function AdminEvents() {
     () => ({
       tableName: 'events',
       select:
-        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,featured,status,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
+        'id,title,description,event_type,venue_id,venue_name,address,city,state,country,latitude,longitude,start_date,end_date,is_free,price_min,price_max,max_attendees,age_restriction,is_featured,status,organizer_id,organizer_name,organizer_contact,website,ticket_url,tags,images,created_at',
       columns,
       defaultSort: { column: 'start_date', direction: 'desc' },
       defaultPageSize: 50,
@@ -502,7 +511,7 @@ export default function AdminEvents() {
             label: s.charAt(0).toUpperCase() + s.slice(1),
           })),
         },
-        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
         { key: 'is_free', label: 'Free', type: 'boolean', column: 'is_free' },
       ],
       bulkEditFields: [
@@ -526,7 +535,7 @@ export default function AdminEvents() {
             label: s.charAt(0).toUpperCase() + s.slice(1),
           })),
         },
-        { key: 'featured', label: 'Featured', type: 'boolean', column: 'featured' },
+        { key: 'is_featured', label: 'Featured', type: 'boolean', column: 'is_featured' },
         { key: 'is_free', label: 'Free Event', type: 'boolean', column: 'is_free' },
       ],
       rowActions: [
@@ -540,7 +549,7 @@ export default function AdminEvents() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           <EventsCsvImport onImportComplete={invalidateTable} />
           <EventbriteImport onImportComplete={invalidateTable} />
           <TicketmasterImport onImportComplete={invalidateTable} />
@@ -554,7 +563,7 @@ export default function AdminEvents() {
           >
             Create Event
           </Button>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDeleteEvent/invalidateTable are stable, adding would defeat memoization
@@ -562,18 +571,13 @@ export default function AdminEvents() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Events Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Create and manage events
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
+    <AdminEntityTable
+      title="Events Management"
+      subtitle="Create and manage events"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <>
       {/* Create/Edit Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflow: 'auto' }}>
@@ -581,14 +585,13 @@ export default function AdminEvents() {
             <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="flex flex-col gap-6">
               {/* Basic Info */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Event Details
-                </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
+              <div className="flex flex-col gap-4">
+                <h3 className="font-semibold">Event Details
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label htmlFor="title">Event Title</Label>
                     <Input
                       id="title"
@@ -596,8 +599,8 @@ export default function AdminEvents() {
                       onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
                       required
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Event Type</Label>
                     <Select
                       value={formData.event_type}
@@ -614,12 +617,12 @@ export default function AdminEvents() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
                 {formData.event_type === 'pride' && (
-                  <Box>
+                  <div>
                     <Label>Pride type</Label>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                    <div className="flex flex-wrap gap-2 mt-2">
                       {PRIDE_SUBTYPES.map(({ tag, label }) => {
                         const active = formData.tags.includes(tag);
                         return (
@@ -642,26 +645,25 @@ export default function AdminEvents() {
                           </Button>
                         );
                       })}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
-                <Box>
+                <div>
                   <Label>Description</Label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
                     rows={3}
                   />
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               {/* Date & Time */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Date & Time
-                </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
+              <div className="flex flex-col gap-4">
+                <h3 className="font-semibold">Date & Time
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label>Start Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -687,8 +689,8 @@ export default function AdminEvents() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>End Date (Optional)</Label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -714,16 +716,15 @@ export default function AdminEvents() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </Box>
-                </Box>
-              </Box>
+                  </div>
+                </div>
+              </div>
 
               {/* Location */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Location
-                </Typography>
-                <Box>
+              <div className="flex flex-col gap-4">
+                <h3 className="font-semibold">Location
+                </h3>
+                <div>
                   <Label>Select Venue (Optional)</Label>
                   <VenueCombobox
                     venues={venues}
@@ -731,16 +732,16 @@ export default function AdminEvents() {
                     onValueChange={handleVenueSelect}
                     placeholder="Search and select venue"
                   />
-                </Box>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label>Venue Name</Label>
                     <Input
                       value={formData.venue_name}
                       onChange={(e) => setFormData((p) => ({ ...p, venue_name: e.target.value }))}
                       disabled={!!formData.venue_id}
                     />
-                  </Box>
+                  </div>
                   <LocationAutocomplete
                     value={formData.address}
                     onChange={handleAddressChange}
@@ -748,9 +749,9 @@ export default function AdminEvents() {
                     disabled={!!formData.venue_id}
                     label="Address"
                   />
-                </Box>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-                  <Box>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
                     <Label>City</Label>
                     <Input
                       value={formData.city}
@@ -758,42 +759,41 @@ export default function AdminEvents() {
                       required
                       disabled={!!formData.venue_id}
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>State</Label>
                     <Input
                       value={formData.state}
                       onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))}
                       disabled={!!formData.venue_id}
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Country</Label>
                     <Input
                       value={formData.country}
                       onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
                       disabled={!!formData.venue_id}
                     />
-                  </Box>
-                </Box>
-              </Box>
+                  </div>
+                </div>
+              </div>
 
               {/* Pricing & Capacity */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Pricing & Capacity
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex flex-col gap-4">
+                <h3 className="font-semibold">Pricing & Capacity
+                </h3>
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="is_free"
                     checked={formData.is_free}
                     onCheckedChange={(c) => setFormData((p) => ({ ...p, is_free: c as boolean }))}
                   />
                   <Label htmlFor="is_free">Free Event</Label>
-                </Box>
+                </div>
                 {!formData.is_free && (
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                    <Box>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <Label>Min Price</Label>
                       <Input
                         type="number"
@@ -801,8 +801,8 @@ export default function AdminEvents() {
                         value={formData.price_min}
                         onChange={(e) => setFormData((p) => ({ ...p, price_min: e.target.value }))}
                       />
-                    </Box>
-                    <Box>
+                    </div>
+                    <div>
                       <Label>Max Price</Label>
                       <Input
                         type="number"
@@ -810,11 +810,11 @@ export default function AdminEvents() {
                         value={formData.price_max}
                         onChange={(e) => setFormData((p) => ({ ...p, price_max: e.target.value }))}
                       />
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label>Max Attendees</Label>
                     <Input
                       type="number"
@@ -823,8 +823,8 @@ export default function AdminEvents() {
                         setFormData((p) => ({ ...p, max_attendees: e.target.value }))
                       }
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Age Restriction</Label>
                     <Select
                       value={formData.age_restriction}
@@ -840,60 +840,70 @@ export default function AdminEvents() {
                         <SelectItem value="all_ages">All Ages</SelectItem>
                       </SelectContent>
                     </Select>
-                  </Box>
-                </Box>
-              </Box>
+                  </div>
+                </div>
+              </div>
 
               {/* Additional Info */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Additional Information
-                </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
+              <div className="flex flex-col gap-4">
+                <h3 className="font-semibold">Additional Information
+                </h3>
+                <div>
+                  <Label>Select Organizer (Optional)</Label>
+                  <VenueCombobox
+                    venues={organizers}
+                    value={formData.organizer_id}
+                    onValueChange={handleOrganizerSelect}
+                    placeholder="Search organizers..."
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label>Organizer Name</Label>
                     <Input
                       value={formData.organizer_name}
                       onChange={(e) =>
                         setFormData((p) => ({ ...p, organizer_name: e.target.value }))
                       }
+                      disabled={!!formData.organizer_id}
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Organizer Contact</Label>
                     <Input
                       value={formData.organizer_contact}
                       onChange={(e) =>
                         setFormData((p) => ({ ...p, organizer_contact: e.target.value }))
                       }
+                      disabled={!!formData.organizer_id}
                     />
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label>Website</Label>
                     <Input
                       value={formData.website}
                       onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
                     />
-                  </Box>
-                  <Box>
+                  </div>
+                  <div>
                     <Label>Ticket URL</Label>
                     <Input
                       value={formData.ticket_url}
                       onChange={(e) => setFormData((p) => ({ ...p, ticket_url: e.target.value }))}
                     />
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    id="featured"
-                    checked={formData.featured}
-                    onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c as boolean }))}
+                    id="is_featured"
+                    checked={formData.is_featured}
+                    onCheckedChange={(c) => setFormData((p) => ({ ...p, is_featured: c as boolean }))}
                   />
-                  <Label htmlFor="featured">Featured Event</Label>
-                </Box>
-              </Box>
+                  <Label htmlFor="is_featured">Featured Event</Label>
+                </div>
+              </div>
 
               <EventImageUpload
                 images={formData.images}
@@ -903,10 +913,12 @@ export default function AdminEvents() {
               <Button type="submit" style={{ width: '100%' }}>
                 {editingEvent ? 'Update Event' : 'Create Event'}
               </Button>
-            </Box>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
-    </Box>
+        </>
+      }
+    />
   );
 }

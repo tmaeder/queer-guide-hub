@@ -142,7 +142,7 @@ function CommentNode({ comment, depth, readOnly, onReply, onResolve, onUnresolve
           <span>·</span>
           <span>{ts}</span>
           {typeLabel[comment.comment_type] && (
-            <span className="ml-1 px-1.5 py-0.5 bg-muted text-foreground/80 text-[10px] uppercase tracking-wide">
+            <span className="ml-1 px-1.5 py-0.5 bg-muted text-foreground/80 text-2xs uppercase tracking-wide">
               {typeLabel[comment.comment_type]}
             </span>
           )}

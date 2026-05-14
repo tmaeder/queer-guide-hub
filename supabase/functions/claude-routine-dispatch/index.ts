@@ -52,7 +52,14 @@ function userClientFor(req: Request) {
   });
 }
 
-serve(async (req) => {
+function userClientFor(req: Request) {
+  const auth = req.headers.get('Authorization') ?? '';
+  return createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: auth } },
+  });
+}
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
   if (req.method !== 'POST') return errorResponse('method_not_allowed', 405, req);
 

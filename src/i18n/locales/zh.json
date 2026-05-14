@@ -140,7 +140,31 @@
     "empty": {
       "title": "规划你的第一次行程",
       "description": "创建行程表，查看每个目的地的 LGBTQ+ 安全信息，把一切都集中在一处。",
-      "cta": "创建第一次行程"
+      "cta": "创建第一次行程",
+      "hero": {
+        "title": "[ZH] Plan a trip you'll feel safe on.",
+        "subtitle": "[ZH] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[ZH] Start from scratch",
+          "description": "[ZH] Empty itinerary, your destinations, your pace.",
+          "cta": "[ZH] Create trip"
+        },
+        "template": {
+          "title": "[ZH] Use a template",
+          "description": "[ZH] Pre-built itineraries you can fork and edit.",
+          "cta": "[ZH] Browse templates"
+        },
+        "discover": {
+          "title": "[ZH] Fork a public trip",
+          "description": "[ZH] Real itineraries from other QG travelers.",
+          "cta": "[ZH] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[ZH] From real travelers",
+      "discoverTitle": "[ZH] Recent public trips",
+      "discoverCta": "[ZH] Open Discover"
     },
     "filteredEmpty": {
       "title": "没有匹配的行程",
@@ -163,7 +187,8 @@
         "planning": "规划中",
         "active": "进行中",
         "completed": "已完成",
-        "archived": "已归档"
+        "archived": "已归档",
+        "saved": "[ZH] Saved"
       },
       "sort": {
         "recent": "最近更新",
@@ -196,7 +221,7 @@
       "samples": {
         "berlin": "柏林骄傲周",
         "barcelona": "巴塞罗那：海滩与夜生活",
-        "bangkok": "曼谷与普吉岛探索"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}} 天"
     },
@@ -239,7 +264,7 @@
         "cityCountryPlaceholder": "搜索城市…",
         "noCityMatch": "未找到匹配的城市。",
         "addNewPlace": "将「{{query}}」添加为新地点",
-        "datesUnlockHint": "添加日期可解锁住宿、航班和安全建议。",
+        "datesUnlockHint": "添加日期以获取住宿、航班和安全建议。",
         "defaultTitle": "前往{{city}}的行程",
         "titleField": "行程标题",
         "titlePlaceholder": "例如：柏林骄傲周 2026",
@@ -313,7 +338,11 @@
       "fitAll": "查看全部",
       "fitAllAria": "将所有地点框入视图",
       "filterAll": "所有天数",
-      "dayLabel": "第 {{number}} 天"
+      "dayLabel": "第 {{number}} 天",
+      "showAttractions": "[ZH] Attractions",
+      "showEvents": "[ZH] Events",
+      "suggestedVenue": "[ZH] Suggested venue",
+      "eventOn": "[ZH] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "还没有安全信息",
@@ -435,8 +464,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "开始打包清单",
-      "emptyDescription": "添加物品或使用模板开始。",
+      "emptyTitle": "暂无物品。",
+      "emptyDescription": "添加物品或使用模板。",
       "progress": "已打包 {{checked}} / {{total}}",
       "addItem": "添加物品…",
       "removeAria": "移除物品",
@@ -552,7 +581,91 @@
     },
     "discover": {
       "title": "发现地点",
-      "button": "浏览市场"
+      "button": "浏览市场",
+      "eyebrow": "[ZH] Real travelers",
+      "subtitle": "[ZH] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[ZH] Filter by city…",
+      "aria": "[ZH] Discover public trips",
+      "sortAria": "[ZH] Sort trips",
+      "viewAria": "[ZH] View mode",
+      "filterAria": "[ZH] Filter trips",
+      "filtersAria": "[ZH] Open filters",
+      "filters": {
+        "title": "[ZH] undefined",
+        "travelerType": "[ZH] undefined",
+        "duration": "[ZH] undefined",
+        "minEquality": "[ZH] undefined",
+        "minEqualityAria": "[ZH] undefined",
+        "minEqualityHint": "[ZH] undefined",
+        "noMin": "[ZH] undefined",
+        "quality": "[ZH] undefined",
+        "hasCover": "[ZH] undefined",
+        "hasOwnerProfile": "[ZH] undefined",
+        "clear": "[ZH] undefined"
+      },
+      "activeCountAria": "[ZH] {{count}} active",
+      "view": {
+        "list": "[ZH] List view",
+        "map": "[ZH] Map view"
+      },
+      "sort": {
+        "recent": "[ZH] Most recent",
+        "trending": "[ZH] Trending",
+        "most_places": "[ZH] Most places",
+        "longest": "[ZH] Longest",
+        "safest": "[ZH] Safest"
+      },
+      "filter": {
+        "dated": "[ZH] Has dates",
+        "multiday": "[ZH] Multi-day",
+        "safe": "[ZH] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[ZH] Any",
+        "solo": "[ZH] Solo",
+        "couple": "[ZH] Couple",
+        "group": "[ZH] Group",
+        "family": "[ZH] Family"
+      },
+      "duration": {
+        "any": "[ZH] Any length",
+        "weekend": "[ZH] Weekend (1–3 days)",
+        "week": "[ZH] Week (4–9 days)",
+        "long": "[ZH] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[ZH] Europe",
+        "north_america": "[ZH] North America",
+        "latin_america": "[ZH] Latin America",
+        "asia": "[ZH] Asia",
+        "oceania": "[ZH] Oceania",
+        "africa": "[ZH] Africa",
+        "middle_east": "[ZH] Middle East",
+        "other": "[ZH] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[ZH] Staff picks",
+        "title": "[ZH] Trips worth copying"
+      },
+      "all": "[ZH] All public trips",
+      "moreInspiration": "[ZH] More inspiration",
+      "moreInspirationDescription": "[ZH] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[ZH] No public trips yet",
+      "emptyFiltered": "[ZH] No public trips match that city. Try a different one.",
+      "emptyDescription": "[ZH] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[ZH] A QG traveler",
+      "placeCount": "[ZH] {{count}} places",
+      "fork": "[ZH] Fork into my trips",
+      "forkAria": "[ZH] Fork this trip",
+      "forking": "[ZH] Forking…",
+      "forked": "[ZH] Trip forked",
+      "forkedDescription": "[ZH] Your copy is ready — edit days and places freely.",
+      "forkError": "[ZH] Could not create trip",
+      "inspiredTitle": "[ZH] Inspired by: {{title}}",
+      "signalsAria": "[ZH] Trip activity",
+      "forkCount": "[ZH] {{count}} forks",
+      "saveCount": "[ZH] {{count}} saves",
+      "filtersButton": "[ZH] Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -675,6 +788,26 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "next": {
+      "live": "[ZH] Active now",
+      "countdown": "[ZH] Coming up",
+      "upcoming": "[ZH] Upcoming",
+      "open": "[ZH] Open trip",
+      "openLive": "[ZH] Open today's plan",
+      "today": "[ZH] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[ZH] Inspired by your trips",
+      "title": "[ZH] Public trips you might like",
+      "cta": "[ZH] See all"
+    },
+    "save": {
+      "save": "[ZH] Save",
+      "saved": "[ZH] Saved",
+      "saveAria": "[ZH] Save trip",
+      "unsaveAria": "[ZH] Unsave trip",
+      "error": "[ZH] Could not update save"
     }
   },
   "auth": {
@@ -708,7 +841,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[ZH] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +872,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[ZH] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[ZH] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -751,14 +887,16 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "可选。跳过也可以。",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[ZH] Free, takes a minute.",
+      "haveAccountQ": "[ZH] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +938,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[ZH] Continue to The Queer Guide",
+      "banner": "[ZH] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[ZH] Verification email sent. Check your inbox.",
+      "resendShort": "[ZH] Resend",
+      "gateTitle": "[ZH] Verify your email first",
+      "gateDescription": "[ZH] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[ZH] Sign in required",
+      "description": "[ZH] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1004,6 +1152,77 @@
       "legal": "法律",
       "relationships": "关系",
       "women": "女性"
+    },
+    "quick_exit": "[ZH] Quick exit",
+    "quick_exit_aria": "[ZH] Leave this page immediately (ESC)",
+    "hide_screen": "[ZH] Hide screen",
+    "reveal_aria": "[ZH] Click anywhere to show the page again",
+    "hidden_hint": "[ZH] Page hidden. Click anywhere to show again.",
+    "hero_label": "[ZH] Recommended right now",
+    "expect_title": "[ZH] What happens when you call",
+    "expect_short": "[ZH] What to expect",
+    "expect_1": "[ZH] You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "[ZH] You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "[ZH] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "[ZH] If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "[ZH] While you wait",
+    "self_help_title": "[ZH] Steady yourself",
+    "self_help_desc": "[ZH] Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "[ZH] 4-7-8 breathing",
+    "breathing_1": "[ZH] Breathe in through your nose for 4 seconds.",
+    "breathing_2": "[ZH] Hold your breath for 7 seconds.",
+    "breathing_3": "[ZH] Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "[ZH] Repeat 4 times.",
+    "grounding_title": "[ZH] 5-4-3-2-1 grounding",
+    "grounding_intro": "[ZH] Name, out loud or in your head:",
+    "grounding_5": "[ZH] 5 things you can see",
+    "grounding_4": "[ZH] 4 things you can touch",
+    "grounding_3": "[ZH] 3 things you can hear",
+    "grounding_2": "[ZH] 2 things you can smell",
+    "grounding_1": "[ZH] 1 thing you can taste",
+    "safety_plan_title": "[ZH] Safety plan",
+    "safety_plan_desc": "[ZH] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "[ZH] Open template (Stanley-Brown)",
+    "report": "[ZH] Report",
+    "report_aria": "[ZH] Report a problem with this hotline",
+    "report_title": "[ZH] Report this hotline",
+    "report_desc": "[ZH] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "[ZH] Reason",
+    "report_detail": "[ZH] Details (optional)",
+    "report_submit": "[ZH] Submit report",
+    "report_thanks": "[ZH] Thank you. We'll review it.",
+    "filter_intersection": "[ZH] Population",
+    "filter_intersection_all": "[ZH] All",
+    "badge_reports_police": "[ZH] May report to police",
+    "operator": "[ZH] Operated by",
+    "verified_on": "[ZH] Verified",
+    "affiliation": {
+      "religious": "[ZH] religious",
+      "state": "[ZH] state",
+      "ngo": "[ZH] NGO",
+      "secular": "[ZH] secular"
+    },
+    "channel": {
+      "phone": "[ZH] Call",
+      "sms": "[ZH] Text",
+      "whatsapp": "[ZH] WhatsApp",
+      "chat": "[ZH] Chat",
+      "email": "[ZH] Email"
+    },
+    "intersection": {
+      "trans-youth": "[ZH] Trans youth",
+      "asylum": "[ZH] Asylum seekers",
+      "sex-work": "[ZH] Sex workers",
+      "hiv": "[ZH] HIV+",
+      "elders": "[ZH] Elders",
+      "deaf": "[ZH] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[ZH] Number disconnected / no answer",
+      "wrong_number": "[ZH] Wrong number",
+      "closed": "[ZH] Service has shut down",
+      "unsafe": "[ZH] Unsafe / harmful experience",
+      "other": "[ZH] Other"
     }
   },
   "sos": {
@@ -1021,9 +1240,9 @@
     "error": "发送求助失败，请重试。"
   },
   "home": {
-    "heroLine1": "发现。",
-    "heroLine2": "连接。",
-    "heroLine3": "归属。",
+    "heroLine1": "酷儿场所、",
+    "heroLine2": "活动和人物。",
+    "heroLine3": "遍布全球。",
     "subtitle": "安全的场所、丰富的活动和懂你的社群——无论你在哪里。",
     "browseVenues": "浏览场所",
     "viewEvents": "查看活动",
@@ -1106,7 +1325,8 @@
       "accessibility": "无障碍",
       "bookings": "预订",
       "tripInbox": "旅行收件箱",
-      "extension": "浏览器扩展"
+      "extension": "浏览器扩展",
+      "footprint": "[ZH] Footprint"
     },
     "modes": {
       "dating": "寻找爱情",
@@ -1122,7 +1342,10 @@
       "accessibility": "无障碍",
       "legal": "法律",
       "contact": "联系"
-    }
+    },
+    "signUp": "[ZH] Sign up",
+    "navigation": "[ZH] Navigation",
+    "signIn": "[ZH] Sign in"
   },
   "pages": {
     "venues": {
@@ -1134,8 +1357,8 @@
       "gridView": "网格视图",
       "mapView": "地图视图",
       "submit": "提交",
-      "emptyTitle": "还没有找到符合你风格的地点",
-      "emptyDescription": "尝试扩大搜索范围或探索其他城市。",
+      "emptyTitle": "没有匹配筛选条件的场所。",
+      "emptyDescription": "扩大搜索范围或切换城市。",
       "submitVenue": "提交场所",
       "clearFilters": "清除筛选",
       "emptyDataset": {
@@ -1211,8 +1434,8 @@
       "clearFilterPast": "清除过去活动筛选",
       "noPastEvents": "未找到过去的活动",
       "noPastEventsDesc": "没有过去的活动符合这些筛选条件。关闭切换以查看即将举办的活动。",
-      "emptyTitle": "舞池暂时空空的……",
-      "emptyDescription": "请稍后再来或扩大筛选范围来发现有趣的活动。",
+      "emptyTitle": "暂无活动。",
+      "emptyDescription": "扩大筛选范围或稍后再来。",
       "emptyDataset": {
         "title": "暂无活动",
         "body": "我们还没有在这里添加活动。欢迎提交一个,帮助我们丰富指南。"
@@ -1220,6 +1443,45 @@
       "filteredEmpty": {
         "title": "没有匹配筛选条件的活动",
         "body": "尝试调整筛选条件或搜索以查看更多结果。"
+      },
+      "prideSubtype": "[ZH] Pride type",
+      "mapView": "[ZH] Map view",
+      "preset": {
+        "label": "[ZH] Quick filters",
+        "thisWeekend": "[ZH] This weekend",
+        "nearMe": "[ZH] Near me",
+        "pride": "[ZH] Pride season",
+        "thisMonth": "[ZH] This month",
+        "free": "[ZH] Free",
+        "featured": "[ZH] Featured"
+      },
+      "rail": {
+        "featured": "[ZH] Featured this week",
+        "featuredSubtitle": "[ZH] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[ZH] No events match your filters",
+        "body": "[ZH] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[ZH] Drop \"{{city}}\" filter",
+        "clearDate": "[ZH] Drop date filter",
+        "viewAll": "[ZH] View all upcoming events",
+        "sameCityHeader": "[ZH] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[ZH] Try other cities in your date range",
+        "fallbackHeader": "[ZH] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[ZH] Spotlight",
+        "happeningNow": "[ZH] Happening now",
+        "tomorrow": "[ZH] Starts tomorrow",
+        "inDays_one": "[ZH] Starts in {{count}} day",
+        "inDays_other": "[ZH] Starts in {{count}} days",
+        "nearbyCount_one": "[ZH] {{count}} event in {{city}}",
+        "nearbyCount_other": "[ZH] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[ZH] Sort events",
+      "sort": {
+        "dateAsc": "[ZH] Soonest first",
+        "dateDesc": "[ZH] Latest first"
       }
     },
     "eventDetail": {
@@ -1278,19 +1540,74 @@
       "subtitle": "查找LGBTQ+友好目的地的航班、酒店和活动",
       "activitiesComingSoon": "活动即将推出。",
       "browseDestinations": "浏览目的地",
-      "exploreCta": "探索LGBTQ+友好目的地",
-      "exploreDescription": "发现城市和国家，附带详细的安全信息和旅行指南"
+      "exploreCta": "目的地",
+      "exploreDescription": "附带安全信息和旅行指南的城市和国家。",
+      "hotels": {
+        "typeLabel": "[ZH] Type",
+        "priceMin": "[ZH] Min €",
+        "priceMax": "[ZH] Max €",
+        "priceUnavailable": "[ZH] Price on request",
+        "clearFilters": "[ZH] Clear filters",
+        "noResultsWithFilters": "[ZH] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[ZH] Any type",
+          "hotel": "[ZH] Hotel",
+          "boutique": "[ZH] Boutique Hotel",
+          "bnb": "[ZH] B&B",
+          "hostel": "[ZH] Hostel",
+          "guesthouse": "[ZH] Guesthouse",
+          "apartment": "[ZH] Apartment",
+          "resort": "[ZH] Resort"
+        }
+      },
+      "hero": {
+        "title": "[ZH] Plan a trip",
+        "subtitle": "[ZH] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[ZH] Where to?",
+        "start": "[ZH] Start",
+        "end": "[ZH] End",
+        "cta": "[ZH] Plan this trip",
+        "discover": "[ZH] Or",
+        "discoverLink": "[ZH] browse public trips",
+        "discoverTail": "[ZH] from the community.",
+        "errors": {
+          "city": "[ZH] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[ZH] Continue planning",
+        "placeCount": "[ZH] {{count}} places"
+      },
+      "pride": {
+        "title": "[ZH] Pride this season",
+        "window": "[ZH] Next 4 months",
+        "empty": "[ZH] No upcoming Pride events.",
+        "safety": "[ZH] Equality score"
+      },
+      "inspiration": {
+        "villages": "[ZH] Queer villages",
+        "publicTrips": "[ZH] Public trips",
+        "viewAll": "[ZH] View all",
+        "noVillages": "[ZH] No villages yet.",
+        "noTrips": "[ZH] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[ZH] Book now",
+        "subtitle": "[ZH] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "市集",
       "subtitle": "发现并支持提供产品和服务的本地商家",
       "listBusiness": "登记你的商家",
-      "emptyTitle": "货架上还空空的",
-      "emptyDescription": "酷儿企业每天都在加入。",
+      "emptyTitle": "暂无列表。",
+      "emptyDescription": "每周都有新增。",
       "signInRequired": "需要登录",
       "signInList": "创建免费账户以登记你的商家。",
       "signInFavorites": "请登录以保存收藏。",
-      "loadError": "加载市集时出错。请重试。"
+      "loadError": "加载市集时出错。请重试。",
+      "emptyFiltersTitle": "[ZH] No listings match these filters.",
+      "emptyFiltersDescription": "[ZH] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "未找到商品",
@@ -1326,10 +1643,24 @@
       "filters": "筛选",
       "activeFilters": "已选筛选条件",
       "clearAll": "全部清除",
-      "emptyTitle": "新闻编辑室很安静",
-      "emptyDescription": "目前没有故事——请稍后再来。",
+      "emptyTitle": "暂无文章。",
+      "emptyDescription": "稍后再来。",
       "previous": "上一页",
-      "next": "下一页"
+      "next": "下一页",
+      "filteredEmptyTitle": "[ZH] No news matches your filters.",
+      "filteredEmptyDescription": "[ZH] Reset filters or try another topic.",
+      "resetFilters": "[ZH] Reset filters",
+      "filterSearch": "[ZH] Search",
+      "filterCategory": "[ZH] Category",
+      "filterSource": "[ZH] Source",
+      "filterFeatured": "[ZH] Featured only",
+      "trendingTags": "[ZH] Trending",
+      "minRead": "[ZH] min read",
+      "share": "[ZH] Share",
+      "linkCopied": "[ZH] Link copied",
+      "density": "[ZH] Density",
+      "comfortable": "[ZH] Comfortable",
+      "compact": "[ZH] Compact"
     },
     "newsDetail": {
       "notFound": "未找到文章",
@@ -1352,12 +1683,26 @@
     },
     "personalities": {
       "title": "人物",
-      "subtitle": "浏览8,000+位LGBTQ+活动家、艺术家、作家、运动员和历史人物。",
       "active": "已选：",
       "clearAll": "全部清除",
       "emptyTitle": "没有符合你筛选条件的人物",
       "emptyDescription": "尝试清除筛选条件或搜索其他名字。",
-      "loadingMore": "加载更多中…"
+      "loadingMore": "加载更多中…",
+      "view": {
+        "grid": "[ZH] Grid",
+        "timeline": "[ZH] Timeline",
+        "map": "[ZH] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[ZH] Born this week",
+        "diedThisWeek": "[ZH] Remembered this week",
+        "browseByEra": "[ZH] Browse by era",
+        "browseByField": "[ZH] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[ZH] In the news",
+        "relatedEvents": "[ZH] Related events"
+      }
     },
     "groups": {
       "title": "社区小组",
@@ -1365,8 +1710,8 @@
       "discover": "发现",
       "myGroups": "我的小组",
       "popular": "热门",
-      "emptyTitle": "这里还没有小组",
-      "emptyDescription": "成为火花——创建第一个小组，将人们聚在一起。",
+      "emptyTitle": "暂无小组。",
+      "emptyDescription": "创建第一个。",
       "createGroup": "创建小组",
       "mostPopular": "最热门小组",
       "noPopular": "暂无热门小组。"
@@ -1439,6 +1784,15 @@
       "body": "在每次预订前 30 分钟收到浏览器通知，以及护照或签证即将到期时再次提醒。",
       "turnOn": "开启",
       "turnOff": "关闭"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "查看详情",
+      "share": "分享",
+      "linkCopied": "已复制链接",
+      "linkCopiedDescription": "现在可以粘贴",
+      "shareFailed": "分享失败"
     }
   }
 }

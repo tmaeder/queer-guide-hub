@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,18 +66,18 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
     >
       <div style={{ maxWidth: '70%', order: isOwn ? 2 : 1 }}>
         {!isOwn && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+          <div className="flex items-center gap-2 mb-1">
             <Avatar style={{ height: 24, width: 24 }}>
               <AvatarImage src={message.sender?.avatar_url || ''} />
               <AvatarFallback>{message.sender?.display_name?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
-            <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            <span className="text-xs text-muted-foreground">
               {message.sender?.display_name || 'Unknown User'}
-            </Box>
-          </Box>
+            </span>
+          </div>
         )}
 
-        <Box sx={{ position: 'relative' }}>
+        <div className="relative">
           <div
             style={{
               paddingLeft: 16,
@@ -97,7 +95,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
             }}
           >
-            <Typography sx={{ fontSize: '0.875rem' }}>{message.content}</Typography>
+            <p className="text-sm">{message.content}</p>
           </div>
 
           <div
@@ -108,13 +106,13 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               marginTop: 4,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-              </Box>
+              </span>
 
               {isOwn && <MessageStatusIcon status={message.status} />}
-            </Box>
+            </div>
 
             <Button
               variant="ghost"
@@ -139,7 +137,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
                 zIndex: 10,
               }}
             >
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <div className="flex gap-1">
                 {commonEmojis.map((emoji) => (
                   <Button
                     key={emoji}
@@ -159,7 +157,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
                     {emoji}
                   </Button>
                 ))}
-              </Box>
+              </div>
             </div>
           )}
 
@@ -172,7 +170,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               ))}
             </div>
           )}
-        </Box>
+        </div>
       </div>
     </div>
   );
@@ -210,11 +208,11 @@ const TypingIndicatorComponent = ({ typingUsers }: TypingIndicatorProps) => {
       <span>
         {names} {verb} typing
       </span>
-      <Box sx={{ display: 'flex', gap: 0.5 }}>
-        <Box sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%' }} />
-        <Box sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%' }} />
-        <Box sx={{ width: 4, height: 4, bgcolor: 'primary.main', borderRadius: '50%' }} />
-      </Box>
+      <div className="flex gap-1">
+        <div className="w-1 h-1 bg-primary rounded-full" />
+        <div className="w-1 h-1 bg-primary rounded-full" />
+        <div className="w-1 h-1 bg-primary rounded-full" />
+      </div>
     </div>
   );
 };
@@ -260,7 +258,7 @@ const ConversationList = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <div className="flex flex-col gap-2">
       {conversations.map((conversation) => (
         <Card
           key={conversation.id}
@@ -280,58 +278,39 @@ const ConversationList = ({
                 <AvatarFallback>{getConversationTitle(conversation).charAt(0)}</AvatarFallback>
               </Avatar>
 
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        fontWeight: 500,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap text-sm">
                       {getConversationTitle(conversation)}
-                    </Typography>
+                    </p>
                     {getOtherParticipant(conversation)?.profile?.user_mode && (
                       <UserModeBadge
                         mode={getOtherParticipant(conversation)?.profile?.user_mode || ''}
                         size="sm"
                       />
                     )}
-                  </Box>
+                  </div>
                   {conversation.last_message_at && (
-                    <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                    <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(conversation.last_message_at), {
                         addSuffix: true,
                       })}
-                    </Box>
+                    </span>
                   )}
-                </Box>
+                </div>
 
                 {conversation.last_message && (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: '0.875rem',
-                      color: 'text.secondary',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <p className="text-sm text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                     {conversation.last_message.content}
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
             </div>
           </CardContent>
         </Card>
       ))}
-    </Box>
+    </div>
   );
 };
 
@@ -483,17 +462,9 @@ const MessageInput = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent style={{ width: 320, padding: 16 }} side="top">
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
-              Choose an emoji
-            </Typography>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: 'repeat(8, 1fr)', md: 'repeat(10, 1fr)' },
-                gap: 0.5,
-              }}
-            >
+          <div className="flex flex-col gap-3">
+            <p className="font-medium text-sm">Choose an emoji</p>
+            <div className="grid grid-cols-8 md:grid-cols-10 gap-1">
               {commonEmojis.map((emoji, index) => (
                 <Button
                   key={index}
@@ -505,8 +476,8 @@ const MessageInput = ({
                   <span style={{ fontSize: '1.125rem' }}>{emoji}</span>
                 </Button>
               ))}
-            </Box>
-          </Box>
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
 
@@ -623,70 +594,31 @@ export const MessagingInterface = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 384 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              border: 4,
-              borderColor: 'primary.main',
-              borderTopColor: 'transparent',
-              borderRadius: '50%',
-              mx: 'auto',
-              mb: 2,
-            }}
-          />
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p style={{ color: 'var(--muted-foreground)' }}>Loading messages...</p>
-        </Box>
+        </div>
       </div>
     );
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        height: { xs: 'calc(100vh - 200px)', md: 600 },
-        overflow: 'hidden',
-        bgcolor: 'background.default',
-      }}
-    >
+    <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] overflow-hidden bg-background">
       {/* Conversation List - Full width on mobile, 1/3 on desktop */}
-      <Box
-        sx={{
-          display: { xs: selectedConversation ? 'none' : 'flex', md: 'flex' },
-          width: { xs: '100%', md: '33.333%' },
-          borderRight: 1,
-          borderColor: 'divider',
-          bgcolor: 'rgba(var(--background-rgb), 0.5)',
-          flexDirection: 'column',
-        }}
+      <div
+        className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r flex-col`}
+        style={{ backgroundColor: 'rgba(var(--background-rgb), 0.5)' }}
       >
-        <Box sx={{ p: { xs: 1.5, md: 2 }, borderBottom: 1, borderColor: 'divider' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              mb: { xs: 1.5, md: 2 },
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: 600, fontSize: { xs: '1.125rem', md: '1rem' } }}
-            >
-              Messages
-            </Typography>
+        <div className="p-3 md:p-4 border-b">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h6 className="font-semibold text-lg md:text-base">Messages</h6>
             <Button size="sm" variant="outline" style={{ borderRadius: '50%', height: 36 }}>
               <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                New
-              </Box>
+              <span className="hidden sm:inline">New</span>
             </Button>
-          </Box>
+          </div>
 
-          <Box sx={{ position: 'relative' }}>
+          <div className="relative">
             <Search
               style={{
                 position: 'absolute',
@@ -704,18 +636,18 @@ export const MessagingInterface = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ paddingLeft: 40, borderRadius: 50, height: 44 }}
             />
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         <ScrollArea style={{ flex: 1 }}>
-          <Box sx={{ p: { xs: 1.5, md: 2 } }}>
+          <div className="p-3 md:p-4">
             {filteredConversations.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
+              <div className="text-center py-8">
                 <MessageCircle
                   style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                 />
                 <p style={{ color: 'var(--muted-foreground)' }}>No conversations yet</p>
-              </Box>
+              </div>
             ) : (
               <ConversationList
                 conversations={filteredConversations}
@@ -724,32 +656,26 @@ export const MessagingInterface = () => {
                 currentUserId={user?.id || ''}
               />
             )}
-          </Box>
+          </div>
         </ScrollArea>
-      </Box>
+      </div>
 
       {/* Chat Area - Full width on mobile when conversation selected */}
-      <Box
-        sx={{
-          flex: 1,
-          flexDirection: 'column',
-          display: { xs: selectedConversation ? 'flex' : 'none', md: 'flex' },
-        }}
+      <div
+        className={`flex-1 flex-col ${selectedConversation ? 'flex' : 'hidden md:flex'}`}
       >
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <Box
-              sx={{
-                p: { xs: 1.5, md: 2 },
-                borderBottom: 1,
-                borderColor: 'divider',
-                bgcolor: 'rgba(var(--background-rgb), 0.5)',
+            <div
+              className="p-3 md:p-4 border-b"
+              style={{
+                backgroundColor: 'rgba(var(--background-rgb), 0.5)',
                 backdropFilter: 'blur(8px)',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   {/* Back button for mobile */}
                   <Button
                     variant="ghost"
@@ -772,7 +698,7 @@ export const MessagingInterface = () => {
                     </svg>
                   </Button>
 
-                  <Box sx={{ position: 'relative' }}>
+                  <div className="relative">
                     <Avatar style={{ height: 40, width: 40 }}>
                       <AvatarImage
                         src={
@@ -796,32 +722,24 @@ export const MessagingInterface = () => {
                         right: -2,
                         width: 12,
                         height: 12,
-                        backgroundColor: '#22c55e',
+                        backgroundColor: 'hsl(var(--foreground))',
                         border: '2px solid var(--background)',
                         borderRadius: '50%',
                       }}
                     ></div>
-                  </Box>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        fontWeight: 500,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                       {conversations
                         .find((c) => c.id === selectedConversation)
                         ?.participants?.find((p) => p.user_id !== user?.id)?.profile
                         ?.display_name || 'Unknown User'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#16a34a' }}>
+                    </p>
+                    <p className="text-sm text-foreground">
                       Online
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
 
                 <Button
                   variant="ghost"
@@ -830,8 +748,8 @@ export const MessagingInterface = () => {
                 >
                   <MoreVertical style={{ height: 16, width: 16 }} />
                 </Button>
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             {/* Messages */}
             <ScrollArea
@@ -841,16 +759,16 @@ export const MessagingInterface = () => {
                   'linear-gradient(to bottom, color-mix(in srgb, var(--background) 50%, transparent), var(--background))',
               }}
             >
-              <Box sx={{ p: { xs: 1.5, md: 2 } }}>
+              <div className="p-3 md:p-4">
                 {currentMessages.length === 0 ? (
-                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <div className="text-center py-8">
                     <MessageCircle
                       style={{ height: 48, width: 48, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
                     />
                     <p style={{ color: 'var(--muted-foreground)' }}>
                       No messages yet. Start the conversation!
                     </p>
-                  </Box>
+                  </div>
                 ) : (
                   <div>
                     {currentMessages.map((message) => (
@@ -866,7 +784,7 @@ export const MessagingInterface = () => {
                     <div ref={messagesEndRef} />
                   </div>
                 )}
-              </Box>
+              </div>
             </ScrollArea>
 
             {/* Message Input */}
@@ -879,33 +797,25 @@ export const MessagingInterface = () => {
             />
           </>
         ) : (
-          <Box
-            sx={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+          <div
+            className="flex-1 flex items-center justify-center"
+            style={{
               background:
                 'linear-gradient(to bottom, rgba(var(--background-rgb), 0.5), var(--background))',
             }}
           >
-            <Box sx={{ textAlign: 'center', px: 2 }}>
+            <div className="text-center px-4">
               <MessageCircle
                 style={{ height: 64, width: 64, color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }}
               />
-              <Typography variant="h6" sx={{ fontSize: '1.125rem', fontWeight: 500, mb: 1 }}>
-                Select a conversation
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.secondary', fontSize: { xs: '0.875rem', md: '1rem' } }}
-              >
+              <h6 className="text-lg font-medium mb-2">Select a conversation</h6>
+              <p className="text-muted-foreground text-sm md:text-base">
                 Choose a conversation from the list to start messaging
-              </Typography>
-            </Box>
-          </Box>
+              </p>
+            </div>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };

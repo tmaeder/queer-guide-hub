@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { Box, Typography } from '@mui/material';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,8 +44,6 @@ interface Preview {
   mismatchCount: number;
 }
 
-// RFC 4180-ish CSV parser — same shape the edge function uses, kept tiny so
-// we can run a per-row entity-type classification before commit.
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -82,8 +79,6 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Stage 1: read the file, classify each row locally, surface a preview.
-  // The user must confirm before any data is staged — issue #113.
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -127,7 +122,6 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
         ) {
           mismatchCount++;
         }
-        // Cap the preview list so a 10k-row CSV doesn't render 10k <li>s.
         if (previewRows.length < 50) {
           previewRows.push({
             rowNumber: i + 1,
@@ -149,7 +143,6 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
     }
   };
 
-  // Stage 2: actually upload after the user confirms.
   const handleConfirmUpload = async () => {
     if (!preview) return;
     setIsUploading(true);
@@ -245,38 +238,32 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
           <DialogTitle>Import Personalities from CSV</DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {/* Instructions */}
           <Card>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <h6 className="text-base font-semibold mb-2 flex items-center gap-2">
                 <FileText />
                 CSV Format Requirements
-              </Typography>
-              <Box component="ul" sx={{ fontSize: '0.875rem', color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Box component="li"><Typography component="strong">Required columns:</Typography> name</Box>
-                <Box component="li"><Typography component="strong">Optional columns:</Typography> description, birth_date (YYYY-MM-DD), death_date (YYYY-MM-DD), is_living (true/false), profession, nationality, birth_place, image_url, website_url, pronouns, verification_status (verified/pending/disputed), visibility (public/private/draft), is_featured (true/false), fields (comma-separated)</Box>
-                <Box component="li"><Typography component="strong">Fields:</Typography> music, arts, entertainment, sports, politics, activism, science, business, literature, media</Box>
-                <Box component="li"><Typography component="strong">Date format:</Typography> YYYY-MM-DD (e.g., 1947-03-25)</Box>
-                <Box component="li"><Typography component="strong">Boolean format:</Typography> true/false</Box>
-              </Box>
+              </h6>
+              <ul className="text-sm text-muted-foreground flex flex-col gap-1">
+                <li><strong>Required columns:</strong> name</li>
+                <li><strong>Optional columns:</strong> description, birth_date (YYYY-MM-DD), death_date (YYYY-MM-DD), is_living (true/false), profession, nationality, birth_place, image_url, website_url, pronouns, verification_status (verified/pending/disputed), visibility (public/private/draft), is_featured (true/false), fields (comma-separated)</li>
+                <li><strong>Fields:</strong> music, arts, entertainment, sports, politics, activism, science, business, literature, media</li>
+                <li><strong>Date format:</strong> YYYY-MM-DD (e.g., 1947-03-25)</li>
+                <li><strong>Boolean format:</strong> true/false</li>
+              </ul>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={downloadTemplate}
-
-              >
+              <Button variant="ghost" size="sm" onClick={downloadTemplate}>
                 <Download />
                 Download Template
               </Button>
             </CardContent>
           </Card>
 
-          {/* File picker — stage 1: classify locally before commit */}
           {!importResult && !preview && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box>
+            <div className="flex flex-col gap-4">
+              <div>
                 <Label htmlFor="csv-file">Select CSV File</Label>
                 <Input
                   id="csv-file"
@@ -286,91 +273,86 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                   onChange={handleFileSelect}
                   disabled={isUploading}
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
 
-          {/* Preview — stage 2: show detected entity types per row */}
           {!importResult && preview && (
             <Card>
               <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                  Preview: detected entity types
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                <h6 className="text-base font-semibold mb-2">Preview: detected entity types</h6>
+                <p className="text-sm text-muted-foreground mb-4">
                   {preview.totalRows} rows in <strong>{preview.file.name}</strong>. The
                   AI validator will reject any row whose detected type doesn't
                   match <strong>{EXPECTED_KIND}</strong>.
-                </Typography>
+                </p>
 
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+                <div className="flex flex-wrap gap-4 mb-4">
                   {(Object.keys(preview.histogram) as EntityKind[]).map((k) => (
-                    <Box key={k} sx={{ minWidth: 100 }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        {k.replace('_', ' ')}
-                      </Typography>
-                      <Typography variant="h5" sx={{
-                        fontWeight: 700,
-                        color: k === EXPECTED_KIND
-                          ? 'success.main'
-                          : (preview.histogram[k] > 0 ? 'warning.main' : 'text.disabled'),
-                      }}>
+                    <div key={k} className="min-w-[100px]">
+                      <span className="text-xs text-muted-foreground">{k.replace('_', ' ')}</span>
+                      <div
+                        className="text-xl font-bold"
+                        style={{
+                          color: k === EXPECTED_KIND
+                            ? 'hsl(var(--success))'
+                            : (preview.histogram[k] > 0 ? 'hsl(var(--warning))' : 'hsl(var(--muted-foreground))'),
+                        }}
+                      >
                         {preview.histogram[k]}
-                      </Typography>
-                    </Box>
+                      </div>
+                    </div>
                   ))}
-                </Box>
+                </div>
 
                 {preview.mismatchCount > 0 && (
-                  <Box sx={{ p: 2, mb: 2, bgcolor: 'warning.light', color: 'warning.contrastText' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                  <div className="p-4 mb-4" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
+                    <p className="text-sm font-semibold mb-2">
                       ⚠ {preview.mismatchCount} of {preview.totalRows} rows look like
                       a different entity type than {EXPECTED_KIND}. The validator
                       will reject these — they will not be inserted.
-                    </Typography>
-                    <Box component="label" sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
+                    </p>
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={acknowledgeMismatch}
                         onChange={(e) => setAcknowledgeMismatch(e.target.checked)}
                       />
-                      <Typography variant="body2">
+                      <span className="text-sm">
                         I understand. Proceed and let the validator route mismatches.
-                      </Typography>
-                    </Box>
-                  </Box>
+                      </span>
+                    </label>
+                  </div>
                 )}
 
-                <Typography variant="caption" sx={{ color: 'text.secondary', mb: 0.5, display: 'block' }}>
+                <span className="text-xs text-muted-foreground mb-1 block">
                   First {preview.rows.length} rows:
-                </Typography>
-                <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', maxHeight: 240, overflowY: 'auto', fontSize: '0.875rem' }}>
+                </span>
+                <ul className="m-0 p-0 list-none max-h-[240px] overflow-y-auto text-sm">
                   {preview.rows.map((r) => {
                     const mismatch = r.classification.classified_as !== EXPECTED_KIND &&
                       r.classification.classified_as !== 'unknown' &&
                       r.classification.confidence >= 0.45;
                     return (
-                      <Box component="li" key={r.rowNumber} sx={{
-                        py: 0.5,
-                        display: 'grid',
-                        gridTemplateColumns: '60px 1fr 120px',
-                        gap: 1,
-                        color: mismatch ? 'error.main' : 'inherit',
-                      }}>
-                        <Typography variant="caption">#{r.rowNumber}</Typography>
-                        <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {r.name}
-                        </Typography>
-                        <Typography variant="caption" sx={{ textAlign: 'right' }}>
-                          {r.classification.classified_as}{' '}
-                          ({Math.round(r.classification.confidence * 100)}%)
-                        </Typography>
-                      </Box>
+                      <li
+                        key={r.rowNumber}
+                        className="py-1 grid gap-2"
+                        style={{
+                          gridTemplateColumns: '60px 1fr 120px',
+                          color: mismatch ? 'hsl(var(--destructive))' : 'inherit',
+                        }}
+                      >
+                        <span className="text-xs">#{r.rowNumber}</span>
+                        <p className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">{r.name}</p>
+                        <span className="text-xs text-right">
+                          {r.classification.classified_as} ({Math.round(r.classification.confidence * 100)}%)
+                        </span>
+                      </li>
                     );
                   })}
-                </Box>
+                </ul>
 
-                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                <div className="flex gap-2 mt-4">
                   <Button
                     onClick={handleConfirmUpload}
                     disabled={isUploading || (preview.mismatchCount > 0 && !acknowledgeMismatch)}
@@ -381,82 +363,70 @@ export function PersonalitiesCsvImport({ onImportComplete }: { onImportComplete?
                   <Button onClick={resetImport} variant="outline" size="sm" disabled={isUploading}>
                     Cancel
                   </Button>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Import Results */}
           {importResult && (
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                  {importResult.success ? (
-                    <CheckCircle />
-                  ) : (
-                    <AlertCircle />
-                  )}
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <div className="flex items-center gap-2 mb-3">
+                  {importResult.success ? <CheckCircle /> : <AlertCircle />}
+                  <h6 className="text-base font-semibold">
                     {importResult.success ? 'Import Successful' : 'Import Failed'}
-                  </Typography>
-                </Box>
+                  </h6>
+                </div>
 
                 {importResult.success ? (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.875rem' }}>
-                    <Typography>✅ Successfully imported <Typography component="strong">{importResult.imported}</Typography> personalities</Typography>
-                    <Typography>📊 Total personalities processed: <Typography component="strong">{importResult.total_parsed}</Typography></Typography>
+                  <div className="flex flex-col gap-2 text-sm">
+                    <p>✅ Successfully imported <strong>{importResult.imported}</strong> personalities</p>
+                    <p>📊 Total personalities processed: <strong>{importResult.total_parsed}</strong></p>
                     {importResult.errors && importResult.errors.length > 0 && (
-                      <Box>
-                        <Typography sx={{ color: 'warning.main' }}>⚠️ Some rows had errors:</Typography>
-                        <Box component="ul" sx={{ listStylePosition: 'inside', color: 'warning.main', ml: 2 }}>
+                      <div>
+                        <p style={{ color: 'hsl(var(--warning))' }}>⚠️ Some rows had errors:</p>
+                        <ul className="list-inside ml-4" style={{ color: 'hsl(var(--warning))' }}>
                           {importResult.errors.map((error, index) => (
-                            <Box component="li" key={index}>{error}</Box>
+                            <li key={index}>{error}</li>
                           ))}
-                        </Box>
-                      </Box>
+                        </ul>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 ) : (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, fontSize: '0.875rem' }}>
-                    <Typography sx={{ color: 'error.main' }}>❌ {importResult.error}</Typography>
+                  <div className="flex flex-col gap-2 text-sm">
+                    <p className="text-destructive">❌ {importResult.error}</p>
                     {importResult.details && (
-                      <Typography sx={{ color: 'text.secondary' }}>{importResult.details}</Typography>
+                      <p className="text-muted-foreground">{importResult.details}</p>
                     )}
                     {importResult.hint && (
-                      <Typography sx={{ color: 'info.main' }}>💡 {importResult.hint}</Typography>
+                      <p style={{ color: 'hsl(var(--primary))' }}>💡 {importResult.hint}</p>
                     )}
                     {importResult.errors && importResult.errors.length > 0 && (
-                      <Box>
-                        <Typography sx={{ color: 'error.main' }}>Errors found:</Typography>
-                        <Box component="ul" sx={{ listStylePosition: 'inside', color: 'error.main', ml: 2 }}>
+                      <div>
+                        <p className="text-destructive">Errors found:</p>
+                        <ul className="list-inside ml-4 text-destructive">
                           {importResult.errors.map((error, index) => (
-                            <Box component="li" key={index}>{error}</Box>
+                            <li key={index}>{error}</li>
                           ))}
-                        </Box>
-                      </Box>
+                        </ul>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 )}
 
-                <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                  <Button
-                    onClick={resetImport}
-                    variant="outline"
-                    size="sm"
-                  >
+                <div className="flex gap-2 mt-4">
+                  <Button onClick={resetImport} variant="outline" size="sm">
                     Import Another File
                   </Button>
-                  <Button
-                    onClick={() => setIsOpen(false)}
-                    size="sm"
-                  >
+                  <Button onClick={() => setIsOpen(false)} size="sm">
                     Close
                   </Button>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
-        </Box>
+        </div>
       </DialogContent>
     </Dialog>
   );

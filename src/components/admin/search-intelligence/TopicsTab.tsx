@@ -1,15 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import Alert from '@mui/material/Alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 import { ClusterTagPicker } from './ClusterTagPicker';
 
@@ -44,7 +42,6 @@ export function TopicsTab() {
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // create form
   const [slug, setSlug] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -109,168 +106,117 @@ export function TopicsTab() {
   };
 
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            New topic cluster
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
+        <CardContent className="pt-6">
+          <h6 className="text-lg font-medium mb-1">New topic cluster</h6>
+          <p className="text-sm text-muted-foreground mb-4">
             Editorial bundles that group multiple unified_tags. Surfaced as facets and hub pages.
             Add tags via the cluster detail view (coming next).
-          </Typography>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={2}
-            sx={{ mt: 2, flexWrap: 'wrap' }}
-          >
-            <TextField
-              label="Slug"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value.toLowerCase())}
-              sx={{ minWidth: 180 }}
-              placeholder="pride-europe-2026"
-              required
-            />
-            <TextField
-              label="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              sx={{ minWidth: 220 }}
-              required
-            />
-            <TextField
-              label="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              fullWidth
-              multiline
-              maxRows={3}
-            />
-            <FormControlLabel
-              control={
-                <Switch checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} />
-              }
-              label="Featured"
-            />
+          </p>
+          <div className="flex flex-col md:flex-row gap-4 flex-wrap">
+            <div className="flex flex-col gap-2 min-w-[180px]">
+              <Label htmlFor="t-slug">Slug *</Label>
+              <Input id="t-slug" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} placeholder="pride-europe-2026" />
+            </div>
+            <div className="flex flex-col gap-2 min-w-[220px]">
+              <Label htmlFor="t-name">Name *</Label>
+              <Input id="t-name" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-2 flex-1 min-w-[240px]">
+              <Label htmlFor="t-desc">Description</Label>
+              <Textarea id="t-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch id="t-feat" checked={isFeatured} onCheckedChange={setIsFeatured} />
+              <Label htmlFor="t-feat">Featured</Label>
+            </div>
             <Button onClick={create} disabled={busy === 'create' || !slug || !name}>
               {busy === 'create' ? 'Creating…' : 'Create'}
             </Button>
-          </Stack>
+          </div>
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
+            <Alert variant="destructive" className="mt-4">
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
         </CardContent>
       </Card>
 
-      <Box>
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-          <Typography variant="h6">Topic clusters</Typography>
-          <TextField
-            select
-            label="Status"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            size="small"
-            sx={{ minWidth: 140 }}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="draft">Draft</MenuItem>
-            <MenuItem value="archived">Archived</MenuItem>
-          </TextField>
+      <div>
+        <div className="flex flex-row items-center gap-4 mb-4">
+          <h6 className="text-lg font-medium">Topic clusters</h6>
+          <Select value={statusFilter || '__all__'} onValueChange={(v) => setStatusFilter(v === '__all__' ? '' : v)}>
+            <SelectTrigger className="min-w-[140px] h-9 w-auto"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="archived">Archived</SelectItem>
+            </SelectContent>
+          </Select>
           <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
             Refresh
           </Button>
-        </Stack>
+        </div>
         {loading ? (
-          <Typography>Loading…</Typography>
+          <p>Loading…</p>
         ) : clusters.length === 0 ? (
-          <Typography color="text.secondary">No clusters yet.</Typography>
+          <p className="text-muted-foreground">No clusters yet.</p>
         ) : (
-          <Stack spacing={1}>
+          <div className="flex flex-col gap-2">
             {clusters.map((c) => (
               <Card key={c.id}>
-                <CardContent>
-                  <Stack
-                    direction={{ xs: 'column', md: 'row' }}
-                    justifyContent="space-between"
-                    spacing={2}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="subtitle2">{c.name}</Typography>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex flex-row items-center gap-2">
+                        <h6 className="text-sm font-medium">{c.name}</h6>
                         <Badge variant={STATUS_VARIANT[c.status]}>{c.status}</Badge>
                         {c.is_featured && <Badge variant="default">featured</Badge>}
-                      </Stack>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ fontFamily: 'monospace' }}
-                      >
-                        {c.slug}
-                      </Typography>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-mono">{c.slug}</p>
                       {c.description && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                          {c.description}
-                        </Typography>
+                        <p className="text-sm text-muted-foreground mt-1">{c.description}</p>
                       )}
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                      <p className="text-xs text-muted-foreground mt-2">
                         {c.tag_count} tag(s) · created {new Date(c.created_at).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                    <Stack direction="row" spacing={1} alignItems="flex-start">
+                      </p>
+                    </div>
+                    <div className="flex flex-row gap-2 items-start">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          setExpandedId(expandedId === c.id ? null : c.id)
-                        }
+                        onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
                       >
                         {expandedId === c.id ? 'Hide tags' : 'Manage tags'}
                       </Button>
                       {c.status === 'draft' && (
-                        <Button
-                          size="sm"
-                          onClick={() => setStatus(c.id, 'active')}
-                          disabled={busy === c.id}
-                        >
+                        <Button size="sm" onClick={() => setStatus(c.id, 'active')} disabled={busy === c.id}>
                           Publish
                         </Button>
                       )}
                       {c.status === 'active' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setStatus(c.id, 'draft')}
-                          disabled={busy === c.id}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => setStatus(c.id, 'draft')} disabled={busy === c.id}>
                           Unpublish
                         </Button>
                       )}
                       {c.status !== 'archived' && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => archive(c.id)}
-                          disabled={busy === c.id}
-                        >
+                        <Button size="sm" variant="destructive" onClick={() => archive(c.id)} disabled={busy === c.id}>
                           Archive
                         </Button>
                       )}
-                    </Stack>
-                  </Stack>
+                    </div>
+                  </div>
                   {expandedId === c.id && (
                     <ClusterTagPicker clusterId={c.id} onChange={refresh} />
                   )}
                 </CardContent>
               </Card>
             ))}
-          </Stack>
+          </div>
         )}
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 }

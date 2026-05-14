@@ -51,26 +51,26 @@
 ### Deferred — operational decisions
 | Item | Why |
 | --- | --- |
-| **Multilingual embedder migration (768 → 1024)** | Requires full re-embed of ~13k content_embeddings rows + HNSW rebuild + cost approval for CF Workers AI on bge-m3. Documented in `SEARCH_SYSTEM.md`. The `*_i18n` columns + the proxy's keyword-search side already cover most multilingual UX without this. Revisit when there's a clear semantic-multilingual gap. |
-| **A/B harness for ranking-rule changes** | 3 PRs and ~1200 LOC for an empty harness. Until specific ranking-rule hypotheses exist to test, the harness sits unused. Park as Phase 4. |
+| **Multilingual embedder migration (768 → 1024)** *(parked)* | Requires full re-embed of ~13k content_embeddings rows + HNSW rebuild + cost approval for CF Workers AI on bge-m3. Documented in `SEARCH_SYSTEM.md`. The `*_i18n` columns + the proxy's keyword-search side already cover most multilingual UX without this. Revisit when there's a clear semantic-multilingual gap and budget approval. |
+| **A/B harness for ranking-rule changes** *(parked)* | 3 PRs and ~1200 LOC for an empty harness. Until specific ranking-rule hypotheses exist to test, the harness sits unused. Revisit when a concrete hypothesis emerges (e.g. "demote events older than 30 days" or "boost personalities tagged with the user's locale"). |
 
 ### Deferred — needs follow-up after watching production
 | Item | Why |
 | --- | --- |
-| **Image mirror reader cutover** | Storefront still reads `entity.images[]` / `image_url`. Cut over after dual-write (#176) has been in production ~1 month. |
+| **Image mirror reader cutover** *(parked)* | Storefront still reads `entity.images[]` / `image_url`. Cut over after dual-write (#176) has been in production ~1 month — substantial frontend refactor across many components, user-facing risk if a regression slips. Revisit ~2026-05-22. |
 | ~~**Marketplace `image_hashes JSONB` consolidation**~~ | Shipped: migration `20260429300000` adds a `canonicalize_image_url` SQL helper (twin of the JS one in `_shared/image-assets.ts`) and a BEFORE INSERT/UPDATE OF images trigger on `marketplace_listings` that populates `image_hashes` as `[{url, url_hash, sort_order}, ...]`. `url_hash` uses the same canonicalisation as `image_assets.url_hash`, so consumers can JOIN cleanly. One-shot backfill at the end of the migration populates pre-existing rows. |
 | ~~**`fetch-city-images` / `fetch-country-images` `image_assets` integration**~~ | Shipped: extends `upsertImageAsset` to optionally accept `width` / `height` / `bytes` / `format`; both functions now call it after the existing entity UPDATE with the dimensions + license + attribution that were already decoded at fetch time. URL-mirroring producers (`fetch-{venue,event,personality,village}-images`) leave the new fields off so they don't blank out values an earlier run already populated. |
 | ~~**Reviewer queue for translations**~~ | Shipped: `translate-i18n-batch` cuts over to `ai_suggestions` with `suggestion_type='translation'`. The shared `applySuggestion` gains a `translation` branch (read-merge-write into `<table>.<field>_i18n`). Producer auto-applies inline (translations don't have an LLM-derived confidence; the JSONB merge is non-destructive to other locales). Idempotency: partial unique index on `(entity_type, entity_id, locale, (proposed_value->>'field')) where status in ('pending','approved')`. |
-| **Settings (`master_event_id` distinctAttribute, `cluster_ids` filterable)** | Manual one-time apply via the Settings tab once #181 has reindexed events. Intentionally not auto-applied from a migration. |
-| **AI suggestion *producer* cutover (remaining producers)** | `auto-tag-content`, `automation-auto-tagger`, and `content-automation/modules/auto-tagger.ts` shipped above. Remaining direct-tag-write paths (e.g. legacy `fetch-news` direct upsert at line 635) need separate PRs — `fetch-news` cutover is gated on confirming the function is no longer scheduled in production. |
-| **Edit-then-approve UI for Suggestions** | Endpoint accepts a new `proposed_value`; UI doesn't expose an edit form yet. |
-| **Tag-picker for cluster-tag linking** | Endpoints exist (`POST /clusters/:id/tags`); UI is curl-only today. |
+| ~~**Settings (`master_event_id` distinctAttribute, `cluster_ids` filterable)**~~ | Shipped via `scripts/configure-meili.sh`. The `apply()` helper grew an optional 5th `distinct` arg; events index now sends `distinctAttribute=master_event_id` and `cluster_ids` is appended to every index's `filterableAttributes`. Operators trigger by re-running the existing setup script — same vehicle they already use for embedder + searchable/sortable settings. Still operator-invoked; not run by a migration. |
+| ~~**AI suggestion *producer* cutover (remaining producers)**~~ | Shipped: `auto-tag-content`, `automation-auto-tagger`, and `content-automation/modules/auto-tagger.ts` cutover above; legacy `fetch-news` direct-upsert duplicate-trigger removed via migration `20260429310000` (unschedules `fetch-news-every-2-hours` and sets `workflow_definitions.is_enabled=false` for `fetch-news` after a sanity-check that the canonical `wf-news-pipeline` / `news-ingestion` is enabled). The function itself is preserved for manual admin triggers from NewsSourcesManager; only the automated duplicate cron + workflow-dispatcher trigger are stopped. Recovery path is documented in the migration body. |
+| ~~**Edit-then-approve UI for Suggestions**~~ | Already shipped. `SuggestionsTab.tsx` has an Edit button that opens a JSON textarea with parse-error feedback and a Save & Approve action that PATCHes `proposed_value`. PR #212 added a value-only variant for `suggestion_type='translation'` rows. |
+| ~~**Tag-picker for cluster-tag linking**~~ | Already shipped. `src/components/admin/search-intelligence/ClusterTagPicker.tsx` is wired into the Topics tab — inline picker with debounced search, link/unlink, current-tag list, entity-reach summary. Endpoints (`POST /clusters/:id/tags`, `DELETE /clusters/:id/tags/:tag_id`) implemented in `search-intelligence/index.ts:1410-1447`. |
 
 ### Polish
 - ~~Visibility score axis weights: code constants today, could be in `search_settings_versions` per doc 02.~~ Shipped: migration `20260429280000` seeds the initial active weights row and replaces `compute_visibility_score` to load weights from `search_settings_versions(index_name='visibility_score', channel='active', latest version)` at function entry. Operators tune relevance by inserting a new version row; the TS const at `src/lib/visibilityScore.ts` now documents the seeded defaults and serves as a fallback if the active row is deleted.
-- `image_assets.embedding`: jsonb placeholder. Pick a vision model + dimensions before populating.
+- `image_assets.embedding` *(parked)*: stays as `jsonb` placeholder. Picking a vision model now would commit the schema arbitrarily — different models have incompatible dims (CLIP=512, bge-vision=1024, SigLIP=768/1024). `jsonb` is forward-compatible; convert to `vector(N)` once a vision model is selected and budgeted.
 - ~~`events.timezone` adapter usage — column exists (#172); ingestion adapters need to opt in.~~ Shipped: migration `20260429290000` updates `commit_event_staging_item` to read `timezone` from the normalized JSONB and write it on INSERT/UPDATE; `import-eventbrite-events` and `import-ticketmaster-events` thread their API timezone fields into `eventData`. Follow-up: `bulk-scrape-events` now ports `inferTimezone(city, country)` from the scraper package (via a Deno-compatible `_shared/infer-timezone.ts`) and emits timezone in `mapJsonLdToEvent()` so all three extraction paths (JSON-LD / microdata / RDFa) populate it.
-- Remove the legacy Meili `synonyms` map once #175 has been in production for ~1 week.
+- ~~Remove the legacy Meili `synonyms` map once #175 has been in production for ~1 week.~~ Shipped: lines 72-83 of `scripts/configure-meili.sh` removed; the search-proxy worker (#175) loads `search_synonyms` from Postgres on a 5-minute KV cache as the source of truth. The script's header comment notes the one-time clear command operators can run to wipe the legacy static synonyms from the live `venues` index. Shipped 6 days early on the 7-day soak; the static map only affected the `venues` index while the Postgres path already serves all other indexes, so the safety margin the soak was buying is small.
 
 ## Risks (current)
 
@@ -86,15 +86,28 @@
 
 ## Open questions
 
-- Should `search_synonyms.locale` join to a future `locales` table, or stay as a free-form BCP-47 string? *(Current: free-form with regex check.)*
+- ~~Should `search_synonyms.locale` join to a future `locales` table, or stay as a free-form BCP-47 string? *(Current: free-form with regex check.)*~~ Resolved: stay free-form. BCP-47 is itself a globally-recognized standard; introducing a `locales` join table creates curation overhead (which locales are supported? who maintains it?) for no real lookup benefit. The regex check `^(\*|[a-z]{2}(-[A-Z]{2})?)$` already enforces well-formedness.
 - ~~Visibility score axis weights belong in code or in `search_settings_versions`? Doc 02 says configurable; current migration ships them as constants for reproducibility.~~ Resolved: migration `20260429280000` moves them into `search_settings_versions`, with the TS const kept as a reference default + fallback.
-- Where does `image_assets.embedding` go — `vector(768)` (current text embedder), `vector(1024)` (post bge-m3), or stay as `jsonb` until a vision model is selected?
+- ~~Where does `image_assets.embedding` go — `vector(768)` (current text embedder), `vector(1024)` (post bge-m3), or stay as `jsonb` until a vision model is selected?~~ Resolved: stay `jsonb`. Vision models have incompatible dims (CLIP=512, bge-vision=1024, SigLIP=768/1024); committing to a `vector(N)` type before a model is selected forces an `ALTER COLUMN` later regardless. `jsonb` is forward-compatible — convert when a vision model + budget exist.
 
 ## Roadmap (forward)
 
 **Phase 4 (optional, when justified):**
-- Multilingual embedder migration (Q7).
-- A/B ranking harness (Q8).
-- Production-data-driven follow-ups: AI producer cutover, image-reader cutover, perceptual hash backfill, edit-then-approve UI, tag-picker UI.
+- Multilingual embedder migration (Q7) — needs budget + clear semantic-multilingual gap.
+- A/B ranking harness (Q8) — needs a concrete ranking-rule hypothesis to test.
+- Image-reader cutover — storefront switches reads from `entity.images[]` / `image_url` to `image_assets` joins, after dual-write (#176) has been in production ~1 month. Substantial frontend refactor.
+- Perceptual hash backfill — compute pHash for existing `image_assets` rows so visual dedup works across entities. Substantial: per-row image fetch + decode + hash. Needs a Deno-compatible image-decode lib.
 
-The core Search Intelligence system (Phases 0–3) is **complete and shipped**. Future work is incremental — no foundational pieces remain.
+**Shipped in the rollup follow-up (Apr 30):**
+- AI suggestion producer cutover across all four producers (`auto-tag-content`, `automation-auto-tagger`, `content-automation/modules/auto-tagger`, `translate-i18n-batch`) — see PRs #206, #208, #209.
+- Translation-aware SuggestionsTab with value-only edit form — PRs #210, #212.
+- Visibility-score axis weights → `search_settings_versions` — PR #211.
+- `events.timezone` wired into commit RPC + all event ingestion paths (Eventbrite, Ticketmaster, bulk-scrape) — PRs #213, #215.
+- Marketplace `image_hashes` → `image_assets` crosslink trigger — PR #214.
+- `fetch-city/country-images` → `image_assets` registry — PR #216.
+- Doc cleanup — PR #219.
+- Legacy Meili synonyms map removed; Postgres is the source of truth — PR #221.
+- Legacy `fetch-news` automated cron disabled in favour of `wf-news-pipeline` (manual admin trigger preserved) — PR #224.
+- `master_event_id` distinctAttribute + `cluster_ids` filterable baked into `configure-meili.sh` — PR #225.
+
+The core Search Intelligence system (Phases 0–3) and all of its actionable Phase 3.5 polish are **complete and shipped**. Remaining Phase 4 items are decision-gated.

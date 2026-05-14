@@ -63,8 +63,14 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
       props.onBlur?.(e);
     };
 
-    // Show typed placeholder only when input is empty and not focused
-    const showTypedPlaceholder = !inputValue && !isFocused;
+    // Show typed placeholder only when input is empty and not focused.
+    // Drop falsy / empty entries — i18n bundles loading mid-render can
+    // leave undefined slots in the array which would crash TextType.
+    const safePlaceholders = placeholders.filter(
+      (p): p is string => typeof p === 'string' && p.length > 0,
+    );
+    const showTypedPlaceholder =
+      !inputValue && !isFocused && safePlaceholders.length > 0;
 
     return (
       <div style={{ position: 'relative' }}>
@@ -97,7 +103,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
             }}
           >
             <TextType
-              text={placeholders}
+              text={safePlaceholders}
               typingSpeed={typingSpeed}
               pauseDuration={pauseDuration}
               showCursor={showCursor}

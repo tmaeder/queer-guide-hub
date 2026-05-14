@@ -4,10 +4,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Shield, AlertTriangle, CheckCircle, Activity, Users, MapPin, DollarSign } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { listFrom } from '@/hooks/usePageFetchers';
+import { Shield, AlertTriangle, CheckCircle, Activity, Users, MapPin, DollarSign, Loader2 } from 'lucide-react';
 
 interface SecurityMetric {
   id: string;
@@ -54,15 +52,14 @@ export function EnhancedSecurityDashboard() {
       setLoading(true);
 
       // Fetch recent security events
-      const { data: events, error: eventsError } = await supabase
-        .from('security_events')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const events = await listFrom<SecurityMetric & { event_type: string }>(
+        'security_events',
+        '*',
+        { col: 'created_at', ascending: false },
+        50,
+      );
 
-      if (eventsError) throw eventsError;
-
-      setSecurityEvents(events || []);
+      setSecurityEvents(events);
 
       // Calculate stats - determine severity from event type
       const eventStats = events?.reduce((acc, event) => {
@@ -138,11 +135,11 @@ export function EnhancedSecurityDashboard() {
   const getSeverityIcon = (event: SecurityMetric) => {
     // Determine severity from event type
     if (event.event_type.includes('CRITICAL') || event.event_type.includes('SECURITY_INCIDENT')) {
-      return <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />;
+      return <AlertTriangle className="h-4 w-4 text-destructive" />;
     } else if (event.event_type.includes('ADMIN') || event.event_type.includes('ACCESS') || event.event_type.includes('FINANCIAL')) {
-      return <Shield style={{ height: 16, width: 16, color: 'var(--secondary)' }} />;
+      return <Shield className="h-4 w-4 text-secondary" />;
     } else {
-      return <CheckCircle style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />;
+      return <CheckCircle className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -168,68 +165,68 @@ export function EnhancedSecurityDashboard() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 256 }}>
-        <Box sx={{ animation: 'spin 1s linear infinite', height: 32, width: 32, bgcolor: 'primary.main' }} />
-      </Box>
+      <div className="flex items-center justify-center min-h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Security Overview Cards */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Critical Events</Typography>
+              <p className="text-sm font-medium">Critical Events</p>
             </CardTitle>
-            <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'error.main' }}>{stats.criticalEvents}</Typography>
-            <Typography variant="caption" color="text.secondary">Require immediate attention</Typography>
+            <p className="text-2xl font-bold text-destructive">{stats.criticalEvents}</p>
+            <p className="text-xs text-muted-foreground">Require immediate attention</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>High Priority</Typography>
+              <p className="text-sm font-medium">High Priority</p>
             </CardTitle>
-            <Shield style={{ height: 16, width: 16, color: 'var(--secondary)' }} />
+            <Shield className="h-4 w-4 text-secondary" />
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{stats.highEvents}</Typography>
-            <Typography variant="caption" color="text.secondary">Security events</Typography>
+            <p className="text-2xl font-bold">{stats.highEvents}</p>
+            <p className="text-xs text-muted-foreground">Security events</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Privacy Updates</Typography>
+              <p className="text-sm font-medium">Privacy Updates</p>
             </CardTitle>
-            <Users style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{stats.privacyUpdates}</Typography>
-            <Typography variant="caption" color="text.secondary">Settings changed</Typography>
+            <p className="text-2xl font-bold">{stats.privacyUpdates}</p>
+            <p className="text-xs text-muted-foreground">Settings changed</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Admin Access</Typography>
+              <p className="text-sm font-medium">Admin Access</p>
             </CardTitle>
-            <DollarSign style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{stats.adminDataAccess}</Typography>
-            <Typography variant="caption" color="text.secondary">Sensitive data access</Typography>
+            <p className="text-2xl font-bold">{stats.adminDataAccess}</p>
+            <p className="text-xs text-muted-foreground">Sensitive data access</p>
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       {/* Security Actions */}
       <Card>
@@ -240,18 +237,18 @@ export function EnhancedSecurityDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button onClick={triggerLocationAnonymization} variant="outline">
-                <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />
+                <MapPin className="h-4 w-4 mr-2" />
                 Anonymize Location Data
               </Button>
               <Button onClick={fetchSecurityData} variant="outline">
-                <Activity style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Activity className="h-4 w-4 mr-2" />
                 Refresh Data
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -264,52 +261,49 @@ export function EnhancedSecurityDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             {securityEvents.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+              <div className="text-center py-8 text-muted-foreground">
                 No security events recorded
-              </Box>
+              </div>
             ) : (
               securityEvents.map((event) => (
-                <Box key={event.id} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                  <Box sx={{ flexShrink: 0 }}>
+                <div key={event.id} className="flex items-start gap-4 p-4 border border-border rounded-lg">
+                  <div className="flex-shrink-0">
                     {getSeverityIcon(event)}
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">
                         {event.event_type.replace(/_/g, ' ')}
-                      </Typography>
+                      </p>
                       {getSeverityBadge(event)}
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
+                    </div>
+                    <p className="text-sm text-muted-foreground">
                       {new Date(event.created_at).toLocaleString()}
-                    </Typography>
+                    </p>
                     {event.metadata && Object.keys(event.metadata).length > 0 && (
-                      <Box sx={{ mt: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
+                      <div className="mt-2 text-xs text-muted-foreground">
                         <details>
                           <summary style={{ cursor: 'pointer' }}>Event details</summary>
-                          <Box
-                            component="pre"
-                            sx={{ mt: 0.5, p: 1, bgcolor: 'action.hover', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto' }}
-                          >
+                          <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-auto">
                             {JSON.stringify(event.metadata, null, 2)}
-                          </Box>
+                          </pre>
                         </details>
-                      </Box>
+                      </div>
                     )}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               ))
             )}
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
       {/* Security Status Alert */}
       {stats.criticalEvents > 0 && (
         <Alert variant="destructive">
-          <AlertTriangle style={{ height: 16, width: 16 }} />
+          <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Critical Security Alert</AlertTitle>
           <AlertDescription>
             You have {stats.criticalEvents} critical security event(s) that require immediate attention.
@@ -317,6 +311,6 @@ export function EnhancedSecurityDashboard() {
           </AlertDescription>
         </Alert>
       )}
-    </Box>
+    </div>
   );
 }

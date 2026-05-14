@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, X, Eye, Merge, RotateCcw } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -104,12 +102,6 @@ export function CMSDuplicateManager() {
   const pendingCandidates = duplicateCandidates.filter(c => c.status === 'pending');
   const reviewedCandidates = duplicateCandidates.filter(c => c.status !== 'pending');
 
-  const getScoreColor = (score: number) => {
-    if (score >= 0.9) return 'error.main';
-    if (score >= 0.8) return 'warning.main';
-    return 'success.main';
-  };
-
   const getStatusStyle = (status: string): React.CSSProperties => {
     switch (status) {
       case 'pending': return { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde68a' };
@@ -123,23 +115,14 @@ export function CMSDuplicateManager() {
   const runDuplicateDetection = async () => {
     setIsRunningDetection(true);
     try {
-      const { data: events, error: eventsError } = await supabase
-        .from('events')
-        .select('id, title, created_at, description')
-        .limit(100);
-
-      const { data: venues, error: venuesError } = await supabase
-        .from('venues')
-        .select('id, name, created_at, description')
-        .limit(100);
-
-      const { data: _personalities, error: personalitiesError } = await supabase
-        .from('personalities')
-        .select('id, name, created_at, description')
-        .limit(100);
-
-      if (eventsError || venuesError || personalitiesError) {
-        console.error('Error fetching content:', { eventsError, venuesError, personalitiesError });
+      let events: Array<{ id: string; title?: string; created_at: string; description?: string }> = [];
+      let venues: Array<{ id: string; name?: string; created_at: string; description?: string }> = [];
+      try {
+        events = await listFrom('events', 'id, title, created_at, description', undefined, 100);
+        venues = await listFrom('venues', 'id, name, created_at, description', undefined, 100);
+        await listFrom('personalities', 'id, name, created_at, description', undefined, 100);
+      } catch (err) {
+        console.error('Error fetching content:', err);
         toast.error('Failed to fetch content for duplicate detection');
         return;
       }
@@ -242,23 +225,25 @@ export function CMSDuplicateManager() {
     return intersection.length / allWords.size;
   };
 
-  const handleDecision = (candidateId: string, decision: string) => {
-    console.log(`Decision for ${candidateId}: ${decision}`);
+  const handleDecision = (_candidateId: string, _decision: string) => {
+    // TODO: wire to a mutation that records the reviewer decision and
+    // applies the merge / split / dismiss action. Was a debug-only
+    // console.log.
   };
 
   const CandidateComparison = ({ candidate }: { candidate: { id: string; type: string; item1: Record<string, unknown>; item2: Record<string, unknown>; similarity_score: number } }) => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Similarity Score */}
-      <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: getScoreColor(candidate.similarity_score) }}>
+      <div className="text-center">
+        <h4 className="text-xl font-bold">
           {Math.round(candidate.similarity_score * 100)}%
-        </Typography>
-        <Typography variant="body2" color="text.secondary">Similarity Score</Typography>
+        </h4>
+        <p className="text-sm text-muted-foreground">Similarity Score</p>
         <Progress value={candidate.similarity_score * 100} />
-      </Box>
+      </div>
 
       {/* Side-by-side comparison */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+      <div className="grid grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Original Content</CardTitle>
@@ -268,18 +253,18 @@ export function CMSDuplicateManager() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box>
+            <div className="flex flex-col gap-3">
+              <div>
                 <Label>Title</Label>
-                <Typography variant="body2">{Object.values(candidate.content_1.title)[0] as string}</Typography>
-              </Box>
-              <Box>
+                <p className="text-sm">{Object.values(candidate.content_1.title)[0] as string}</p>
+              </div>
+              <div>
                 <Label>Type</Label>
                 <Badge variant="outline">
                   {candidate.content_1.content_type}
                 </Badge>
-              </Box>
-            </Box>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -292,21 +277,21 @@ export function CMSDuplicateManager() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box>
+            <div className="flex flex-col gap-3">
+              <div>
                 <Label>Title</Label>
-                <Typography variant="body2">{Object.values(candidate.content_2.title)[0] as string}</Typography>
-              </Box>
-              <Box>
+                <p className="text-sm">{Object.values(candidate.content_2.title)[0] as string}</p>
+              </div>
+              <div>
                 <Label>Type</Label>
                 <Badge variant="outline">
                   {candidate.content_2.content_type}
                 </Badge>
-              </Box>
-            </Box>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       {/* Matching Criteria */}
       <Card>
@@ -314,51 +299,51 @@ export function CMSDuplicateManager() {
           <CardTitle>Matching Criteria</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="body2">Title Similarity</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm">Title Similarity</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm">
                   {Math.round(candidate.matching_criteria.title_similarity * 100)}%
-                </Typography>
+                </p>
                 {candidate.matching_criteria.title_similarity > 0.8 ?
                   <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
                   <X style={{ height: 16, width: 16, color: '#ef4444' }} />
                 }
-              </Box>
-            </Box>
+              </div>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="body2">Location Match</Typography>
+            <div className="flex items-center justify-between">
+              <p className="text-sm">Location Match</p>
               {candidate.matching_criteria.location_match ?
                 <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
                 <X style={{ height: 16, width: 16, color: '#ef4444' }} />
               }
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="body2">Date Overlap</Typography>
+            <div className="flex items-center justify-between">
+              <p className="text-sm">Date Overlap</p>
               {candidate.matching_criteria.date_overlap ?
                 <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
                 <X style={{ height: 16, width: 16, color: '#ef4444' }} />
               }
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="body2">External ID Match</Typography>
+            <div className="flex items-center justify-between">
+              <p className="text-sm">External ID Match</p>
               {candidate.matching_criteria.external_id_match ?
                 <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
                 <X style={{ height: 16, width: 16, color: '#ef4444' }} />
               }
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Decision Actions */}
       {candidate.status === 'pending' && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
+        <div className="flex flex-col gap-4">
+          <div>
             <Label htmlFor="reason">Decision Reason</Label>
             <Textarea
               id="reason"
@@ -367,9 +352,9 @@ export function CMSDuplicateManager() {
               placeholder="Explain your decision..."
               rows={3}
             />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Button
               onClick={() => handleDecision(candidate.id, 'merge')}
 
@@ -391,20 +376,20 @@ export function CMSDuplicateManager() {
             >
               Defer
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>Duplicate Detection</Typography>
-          <Typography variant="body2" color="text.secondary">Review and manage potential duplicate content</Typography>
-        </Box>
+      <div className="flex items-center justify-between">
+        <div>
+          <h5 className="text-lg font-semibold">Duplicate Detection</h5>
+          <p className="text-sm text-muted-foreground">Review and manage potential duplicate content</p>
+        </div>
         <Button
           variant="outline"
           onClick={runDuplicateDetection}
@@ -413,16 +398,16 @@ export function CMSDuplicateManager() {
           <RotateCcw style={{ height: 16, width: 16, marginRight: 8, ...(isRunningDetection ? { animation: 'spin 1s linear infinite' } : {}) }} />
           {isRunningDetection ? 'Running...' : 'Run Detection'}
         </Button>
-      </Box>
+      </div>
 
       {/* Stats */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Pending Review</CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'warning.main' }}>{pendingCandidates.length}</Typography>
+            <h5 className="text-lg font-semibold">{pendingCandidates.length}</h5>
           </CardContent>
         </Card>
 
@@ -431,9 +416,9 @@ export function CMSDuplicateManager() {
             <CardTitle>Auto-Merged</CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+            <h5 className="text-lg font-semibold">
               {reviewedCandidates.filter(c => c.status === 'merged').length}
-            </Typography>
+            </h5>
           </CardContent>
         </Card>
 
@@ -442,9 +427,9 @@ export function CMSDuplicateManager() {
             <CardTitle>Not Duplicates</CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'info.main' }}>
+            <h5 className="text-lg font-semibold">
               {reviewedCandidates.filter(c => c.status === 'not_duplicate').length}
-            </Typography>
+            </h5>
           </CardContent>
         </Card>
 
@@ -453,12 +438,12 @@ export function CMSDuplicateManager() {
             <CardTitle>Deferred</CardTitle>
           </CardHeader>
           <CardContent>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
+            <h5 className="text-lg font-semibold">
               {reviewedCandidates.filter(c => c.status === 'deferred').length}
-            </Typography>
+            </h5>
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       <Tabs defaultValue="pending">
         <TabsList>
@@ -467,21 +452,21 @@ export function CMSDuplicateManager() {
         </TabsList>
 
         <TabsContent value="pending">
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             {pendingCandidates.length === 0 ? (
               <Card>
                 <CardContent>
                   <Check style={{ height: 48, width: 48, color: '#22c55e', margin: '0 auto 16px' }} />
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No pending duplicates</Typography>
-                  <Typography variant="body2" color="text.secondary">All potential duplicates have been reviewed</Typography>
+                  <h6 className="text-base font-semibold">No pending duplicates</h6>
+                  <p className="text-sm text-muted-foreground">All potential duplicates have been reviewed</p>
                 </CardContent>
               </Card>
             ) : (
               pendingCandidates.map((candidate) => (
                 <Card key={candidate.id}>
                   <CardHeader>
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                      <Box sx={{ flex: 1 }}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
                         <CardTitle>
                           <AlertTriangle style={{ height: 20, width: 20, color: '#eab308' }} />
                           Potential Duplicate Detected
@@ -492,22 +477,22 @@ export function CMSDuplicateManager() {
                         <CardDescription>
                           Found {new Date(candidate.created_at).toLocaleString()}
                         </CardDescription>
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box>
-                          <Typography sx={{ fontWeight: 500 }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <p>
                             "{Object.values(candidate.content_1.title)[0] as string}"
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">vs</Typography>
-                          <Typography sx={{ fontWeight: 500 }}>
+                          </p>
+                          <p className="text-sm text-muted-foreground">vs</p>
+                          <p>
                             "{Object.values(candidate.content_2.title)[0] as string}"
-                          </Typography>
-                        </Box>
-                      </Box>
+                          </p>
+                        </div>
+                      </div>
 
                       <Dialog>
                         <DialogTrigger asChild>
@@ -526,21 +511,21 @@ export function CMSDuplicateManager() {
                           <CandidateComparison candidate={candidate} />
                         </DialogContent>
                       </Dialog>
-                    </Box>
+                    </div>
                   </CardContent>
                 </Card>
               ))
             )}
-          </Box>
+          </div>
         </TabsContent>
 
         <TabsContent value="reviewed">
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             {reviewedCandidates.map((candidate) => (
               <Card key={candidate.id}>
                 <CardHeader>
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                    <Box sx={{ flex: 1 }}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
                       <CardTitle>
                         <Badge style={getStatusStyle(candidate.status)}>
                           {candidate.status.replace('_', ' ')}
@@ -550,32 +535,32 @@ export function CMSDuplicateManager() {
                       <CardDescription>
                         Reviewed {candidate.reviewed_at ? new Date(candidate.reviewed_at).toLocaleString() : 'Unknown'}
                       </CardDescription>
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">Content 1:</Typography>
-                      <Typography sx={{ fontWeight: 500 }}>"{Object.values(candidate.content_1.title)[0] as string}"</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">Content 2:</Typography>
-                      <Typography sx={{ fontWeight: 500 }}>"{Object.values(candidate.content_2.title)[0] as string}"</Typography>
-                    </Box>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">Content 1:</p>
+                      <p>"{Object.values(candidate.content_1.title)[0] as string}"</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">Content 2:</p>
+                      <p>"{Object.values(candidate.content_2.title)[0] as string}"</p>
+                    </div>
                     {candidate.decision_reason && (
-                      <Box sx={{ mt: 1.5, p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Decision Reason:</Typography>
-                        <Typography variant="body2">{candidate.decision_reason}</Typography>
-                      </Box>
+                      <div className="mt-3 p-3 bg-muted rounded-lg">
+                        <p className="text-sm text-muted-foreground">Decision Reason:</p>
+                        <p className="text-sm">{candidate.decision_reason}</p>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             ))}
-          </Box>
+          </div>
         </TabsContent>
       </Tabs>
-    </Box>
+    </div>
   );
 }

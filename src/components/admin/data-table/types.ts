@@ -64,6 +64,7 @@ export interface AdminTableConfig<TData> {
   toolbarActions?: React.ReactNode;
   defaultSort?: { column: string; direction: 'asc' | 'desc' };
   defaultPageSize?: number;
+  defaultFilters?: Record<string, unknown>;
   enableSelection?: boolean;
   enableGrouping?: boolean;
   enableSearch?: boolean;
@@ -71,6 +72,7 @@ export interface AdminTableConfig<TData> {
   baseFilters?: Record<string, unknown>;
   exportColumns?: ExportColumnDef<TData>[];
   contentTypeId?: string;
+  onRowClick?: (row: TData) => void;
   /** Callback after bulk edit mutation succeeds */
   onBulkEditSuccess?: () => void;
   /** Callback after bulk delete mutation succeeds */

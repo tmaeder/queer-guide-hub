@@ -169,7 +169,7 @@ function ConnectCard({
           {t("extension.connect.detected", "Extension")} <code>{ext.id.slice(0, 6)}…</code>{ext.version ? ` v${ext.version}` : ""} {t("extension.connect.installed", "is installed in this browser.")}
         </p>
         {status === "connected" ? (
-          <div className="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 p-3">
+          <div className="bg-muted border border-border p-3">
             <p className="font-medium">{t("extension.connect.done.title", "Connected.")}</p>
             <p className="text-muted-foreground">
               {t("extension.connect.done.body", "Open the extension popup on any page to capture content for queer.guide.")}

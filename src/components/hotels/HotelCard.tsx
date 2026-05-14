@@ -1,13 +1,12 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Star, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
+import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import type { Hotel } from '@/hooks/useHotels';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { safeText } from '@/utils/safeDisplay';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 interface HotelCardProps {
   hotel?: Hotel;
@@ -27,35 +26,35 @@ const TYPE_LABELS: Record<string, string> = {
 function PriceIndicator({ range }: { range: number | null }) {
   if (!range) return null;
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+    <div className="flex items-center" style={{ gap: 1 }}>
       {Array.from({ length: 4 }, (_, i) => (
         <DollarSign
           key={i}
           style={{ width: 12, height: 12, color: i < range ? 'currentColor' : 'hsl(var(--muted-foreground))' }}
         />
       ))}
-    </Box>
+    </div>
   );
 }
 
 const HotelCardFixture = () => (
-  <Paper elevation={1} sx={{ overflow: 'hidden', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
-    <Box sx={{ height: 180, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+  <div className="overflow-hidden rounded-xl h-full flex flex-col bg-card border shadow-sm">
+    <div className="bg-accent flex items-center justify-center" style={{ height: 180 }}>
       <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
-    </Box>
-    <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 600 }} noWrap>Sample Hotel</Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+    </div>
+    <div className="p-4 flex-1 flex flex-col gap-1">
+      <p className="font-semibold truncate">Sample Hotel</p>
+      <div className="flex items-center gap-1 text-muted-foreground">
         <MapPin style={{ width: 14, height: 14 }} />
-        <Typography variant="body2" noWrap>Berlin, Germany</Typography>
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto', pt: 1 }}>
+        <p className="text-sm truncate">Berlin, Germany</p>
+      </div>
+      <div className="flex items-center gap-2 mt-auto pt-2">
         <Star style={{ width: 14, height: 14 }} />
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>4.5</Typography>
+        <p className="text-sm font-semibold">4.5</p>
         <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>LGBTQ+</Badge>
-      </Box>
-    </Box>
-  </Paper>
+      </div>
+    </div>
+  </div>
 );
 
 export function HotelCard({ hotel, loading = false }: HotelCardProps) {
@@ -81,55 +80,40 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
   return (
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
     <LocalizedLink to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
-      <Paper
-        elevation={1}
-        sx={{
-          overflow: 'hidden',
-          borderRadius: 3,
-          transition: 'all 0.2s',
-          '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 },
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <CardHoverEffect>
+      <div className="overflow-hidden rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col bg-card border shadow-sm">
         {/* Image */}
-        <Box
-          sx={{ position: 'relative', height: 180, overflow: 'hidden', bgcolor: 'action.hover' }}
-        >
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={hotelName}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-              }}
-            >
-              <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
-            </Box>
-          )}
-          {hotel.featured && (
-            <Badge
-              style={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                backgroundColor: 'hsl(var(--primary))',
-                color: 'white',
-              }}
-            >
-              Featured
-            </Badge>
-          )}
+        <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
+          <img
+            src={imageUrl || getRandomFallbackImage()}
+            alt={hotelName}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            loading="lazy"
+            decoding="async"
+          />
+          {/*
+            Featured badge is now driven by the curated `featured_priority`
+            column added in 20260504114754_hotels_featured_priority.sql.
+            Until types.ts is regenerated we cast here; once regenerated
+            the cast can be removed.
+          */}
+          {(() => {
+            const fp = (hotel as { featured_priority?: number | null })
+              .featured_priority;
+            return typeof fp === 'number' ? (
+              <Badge
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'white',
+                }}
+              >
+                Featured
+              </Badge>
+            ) : null;
+          })()}
           {typeLabel && (
             <Badge
               variant="outline"
@@ -143,44 +127,67 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
               {typeLabel}
             </Badge>
           )}
-        </Box>
+        </div>
 
         {/* Content */}
-        <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <div className="p-4 flex-1 flex flex-col gap-1">
           {hotelName && (
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }} noWrap>
+            <p
+              className="font-semibold truncate"
+              style={{ lineHeight: 1.3 }}
+              title={hotelName}
+            >
               {hotelName}
-            </Typography>
+            </p>
           )}
 
           {location && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+            <div className="flex items-center gap-1 text-muted-foreground">
               <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
-              <Typography variant="body2" noWrap>
+              <p className="text-sm truncate" title={location}>
                 {location}
-              </Typography>
-            </Box>
+              </p>
+            </div>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto', pt: 1 }}>
+          <div className="flex items-center gap-2 mt-auto pt-2">
             {hasNumericRating && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                {/* TODO(polish): no token match — star rating amber */}
-                <Star style={{ width: 14, height: 14, fill: '#f59e0b', color: '#f59e0b' }} />
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              <div className="flex items-center" style={{ gap: 1 }}>
+                <Star style={{ width: 14, height: 14, fill: 'currentColor' }} />
+                <p className="text-sm font-semibold">
                   {hotel.star_rating}
-                </Typography>
-              </Box>
+                </p>
+              </div>
             )}
             <PriceIndicator range={hotel.price_range} />
-            {hotel.lgbtq_friendly && (
-              <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
-                LGBTQ+
-              </Badge>
-            )}
-          </Box>
-        </Box>
-      </Paper>
+            {(() => {
+              // Prefer up to 2 of the row's actual tags (e.g. clothing-optional,
+              // power-host) over a generic 'LGBTQ+' pill that's set on 100% of
+              // rows. Fall back to LGBTQ+ only if no tags exist.
+              const tags = (hotel.tags ?? [])
+                .filter((t): t is string => typeof t === 'string' && t.length > 0)
+                .slice(0, 2);
+              if (tags.length > 0) {
+                return tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    style={{ fontSize: '0.65rem', padding: '1px 5px' }}
+                  >
+                    {tag}
+                  </Badge>
+                ));
+              }
+              return hotel.lgbtq_friendly ? (
+                <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                  LGBTQ+
+                </Badge>
+              ) : null;
+            })()}
+          </div>
+        </div>
+      </div>
+      </CardHoverEffect>
     </LocalizedLink>
     </Skeleton>
   );

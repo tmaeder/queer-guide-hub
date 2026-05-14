@@ -14,8 +14,7 @@
  *  - news_alert: recent (<7d) LGBTQ+-flagged news in trip countries
  */
 
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -100,7 +99,7 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
 
   let q = admin
     .from('events')
-    .select('id, title, start_date, end_date, city_id, country_id, featured, status')
+    .select('id, title, start_date, end_date, city_id, country_id, is_featured, status')
     .eq('status', 'active')
     .lte('start_date', `${trip.end_date}T23:59:59Z`)
     .gte('end_date', `${trip.start_date}T00:00:00Z`)
@@ -118,9 +117,9 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
     id: string;
     title: string;
     start_date: string;
-    featured: boolean | null;
+    is_featured: boolean | null;
   }[])) {
-    if (!e.featured) continue; // only surface featured events at launch
+    if (!e.is_featured) continue; // only surface featured events at launch
     rows.push({
       trip_id: trip.id,
       kind: 'event_overlap',
@@ -213,7 +212,7 @@ async function scanOne(admin: any, trip: TripRow): Promise<number> {
   return rows.length;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);

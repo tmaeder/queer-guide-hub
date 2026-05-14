@@ -15,8 +15,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useImportHub } from '@/hooks/useImportHub';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import {
   Upload,
   Eye,
@@ -31,8 +32,6 @@ import {
   Sliders,
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import {
   classifyEntityType,
   expectedEntityTypeFor,
@@ -113,7 +112,6 @@ function findImportItem(key: string): ImportItem | null {
 
 export const ImportJobCreator = () => {
   const { createImportJob, parseCSVPreview, loading } = useImportHub();
-  const { toast } = useToast();
 
   const [importType, setImportType] = useState('');
   const [duplicateStrategy, setDuplicateStrategy] = useState<'skip' | 'overwrite' | 'create_new'>(
@@ -161,16 +159,13 @@ export const ImportJobCreator = () => {
   const [citySearch, setCitySearch] = useState('');
 
   useEffect(() => {
-    supabase
-      .from('cities')
-      .select('name, countries!inner(name)')
-      .order('name')
-      .then(({ data }) => {
-        if (data)
-          setAllCities(
-            data.map((c: { name: string; countries?: { name?: string } }) => ({ name: c.name, country: c.countries?.name || '' })),
-          );
-      });
+    listFrom<{ name: string; countries?: { name?: string } }>(
+      'cities',
+      'name, countries!inner(name)',
+      { col: 'name' },
+    ).then((data) => {
+      setAllCities(data.map((c) => ({ name: c.name, country: c.countries?.name || '' })));
+    });
   }, []);
 
   const selected = findImportItem(importType);
@@ -181,15 +176,11 @@ export const ImportJobCreator = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.csv')) {
-      toast({
-        title: 'Invalid file',
-        description: 'Please select a CSV file',
-        variant: 'destructive',
-      });
+      toast.error('Invalid file: Please select a CSV file');
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
-      toast({ title: 'Too large', description: 'Max 50 MB', variant: 'destructive' });
+      toast.error('Too large: Max 50 MB');
       return;
     }
     setFileName(file.name);
@@ -212,7 +203,7 @@ export const ImportJobCreator = () => {
         setUniqueKeyFields(suggested.slice(0, 2));
       }
     } catch {
-      toast({ title: 'Read error', description: 'Failed to read CSV', variant: 'destructive' });
+      toast.error('Read error: Failed to read CSV');
     }
   };
 
@@ -230,7 +221,7 @@ export const ImportJobCreator = () => {
 
   const handleSubmit = async () => {
     if (!selected) {
-      toast({ title: 'Select an import type', variant: 'destructive' });
+      toast.error('Select an import type');
       return;
     }
 
@@ -262,21 +253,17 @@ export const ImportJobCreator = () => {
         }
         const { error } = await supabase.functions.invoke(importType, { body });
         if (error) throw error;
-        toast({ title: 'Scraper started', description: desc });
+        toast.success(`Scraper started: ${desc}`);
         resetForm();
         return;
       } catch (err) {
-        toast({
-          title: 'Scraper failed',
-          description: err instanceof Error ? err.message : 'Unknown error',
-          variant: 'destructive',
-        });
+        toast.error(`Scraper failed: ${err}`);
         return;
       }
     }
 
     if (!csvData) {
-      toast({ title: 'Upload a CSV file', variant: 'destructive' });
+      toast.error('Upload a CSV file');
       return;
     }
 
@@ -332,7 +319,7 @@ export const ImportJobCreator = () => {
 
   /* ── Render ── */
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+    <div className="flex flex-col gap-5">
       {/* ── CSV / Edge Function Imports ── */}
       <Card>
         <CardHeader>
@@ -342,7 +329,7 @@ export const ImportJobCreator = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label>What to import</Label>
             <Select
               value={importType}
@@ -372,12 +359,12 @@ export const ImportJobCreator = () => {
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
           {/* CSV mode */}
           {selected?.mode === 'csv' && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="csv-file">CSV File (max 50 MB)</Label>
                 <Input
                   id="csv-file"
@@ -388,39 +375,26 @@ export const ImportJobCreator = () => {
                   disabled={loading}
                 />
                 {fileName && (
-                  <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+                  <p className="text-xs text-muted-foreground">
                     {fileName}
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
 
               {csvPreview && (
                 <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: -1 }}>
+                  <div className="flex items-center gap-2 -mb-2">
                     <Eye style={{ height: 14, width: 14 }} />
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                    <p className="text-sm font-medium">
                       Preview (first 5 rows)
-                    </Typography>
-                  </Box>
+                    </p>
+                  </div>
                   {detectionSummary && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 0.75,
-                        p: 1,
-                        border: 1,
-                        borderColor:
-                          detectionSummary.mismatches > 0 ? 'error.main' : 'divider',
-                        borderRadius: 1,
-                        bgcolor:
-                          detectionSummary.mismatches > 0 ? 'error.50' : 'action.hover',
-                      }}
-                    >
-                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                    <div className={`flex flex-col gap-1.5 p-2 border rounded ${detectionSummary.mismatches > 0 ? "border-destructive bg-destructive/10" : "border-border bg-muted"}`}>
+                      <p className="text-xs font-semibold">
                         Detected entity types ({detectionSummary.rows.length} rows scanned)
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      </p>
+                      <div className="flex flex-wrap gap-1">
                         {(['personality', 'venue', 'event', 'tag', 'unknown'] as const)
                           .filter((t) => detectionSummary.byType[t] > 0)
                           .map((t) => {
@@ -436,26 +410,24 @@ export const ImportJobCreator = () => {
                               </Badge>
                             );
                           })}
-                      </Box>
+                      </div>
                       {detectionSummary.mismatches > 0 && expectedType && (
-                        <Typography sx={{ fontSize: '0.75rem', color: 'error.main' }}>
+                        <p className="text-xs text-destructive">
                           {detectionSummary.mismatches} row(s) don&apos;t look like{' '}
                           <b>{expectedType}</b>. They will still be staged as{' '}
                           <b>{expectedType}</b> by this import; the AI validator may reject
                           them. To route per-row to the correct table, use the pipeline DAG
                           with the <code>source-csv-upload</code> node instead.
-                        </Typography>
+                        </p>
                       )}
                       {detectionSummary.unknownCount > 0 && (
-                        <Typography
-                          sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
-                        >
+                        <p className="text-xs text-muted-foreground">
                           {detectionSummary.unknownCount} row(s) couldn&apos;t be auto-classified
                           and will fall back to <b>{expectedType ?? 'job-level type'}</b>.
-                        </Typography>
+                        </p>
                       )}
                       {detectionSummary.mismatches > 0 && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 0.5 }}>
+                        <div className="flex items-center gap-2 pt-1">
                           <Checkbox
                             id="ack-routing"
                             checked={routingAcknowledged}
@@ -465,48 +437,23 @@ export const ImportJobCreator = () => {
                             I understand mixed-type rows will be staged as{' '}
                             {expectedType ?? 'the selected type'}.
                           </Label>
-                        </Box>
+                        </div>
                       )}
-                    </Box>
+                    </div>
                   )}
-                  <Box
-                    sx={{ overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 1 }}
-                  >
-                    <Box
-                      component="table"
-                      sx={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}
-                    >
+                  <div className="overflow-x-auto border border-border rounded">
+                    <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
                       <thead>
-                        <Box component="tr" sx={{ bgcolor: 'action.hover' }}>
-                          <Box
-                            component="th"
-                            sx={{
-                              p: 0.75,
-                              textAlign: 'left',
-                              fontWeight: 600,
-                              borderBottom: 1,
-                              borderColor: 'divider',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
+                        <tr className="bg-muted">
+                          <th className="p-1.5 text-left font-semibold border-b border-border whitespace-nowrap">
                             detected
-                          </Box>
+                          </th>
                           {csvPreview.headers.map((h, i) => (
-                            <Box
-                              component="th"
-                              key={i}
-                              sx={{
-                                p: 0.75,
-                                textAlign: 'left',
-                                fontWeight: 600,
-                                borderBottom: 1,
-                                borderColor: 'divider',
-                              }}
-                            >
+                            <th key={i} className="p-1.5 text-left font-semibold border-b border-border">
                               {h}
-                            </Box>
+                            </th>
                           ))}
-                        </Box>
+                        </tr>
                       </thead>
                       <tbody>
                         {csvPreview.rows.map((row, i) => {
@@ -518,38 +465,25 @@ export const ImportJobCreator = () => {
                             detectedType !== expectedType;
                           return (
                             <tr key={i}>
-                              <Box
-                                component="td"
-                                sx={{
-                                  p: 0.75,
-                                  borderBottom: 1,
-                                  borderColor: 'divider',
-                                  whiteSpace: 'nowrap',
-                                }}
-                                title={detected?.reason}
-                              >
+                              <td className="p-1.5 border-b border-border whitespace-nowrap" title={detected?.reason}>
                                 <Badge variant={isMismatch ? 'destructive' : 'secondary'}>
                                   {detectedType}
                                 </Badge>
-                              </Box>
+                              </td>
                               {csvPreview.headers.map((h, j) => (
-                                <Box
-                                  component="td"
-                                  key={j}
-                                  sx={{ p: 0.75, borderBottom: 1, borderColor: 'divider' }}
-                                >
+                                <td key={j} className="p-1.5 border-b border-border">
                                   {row[h] || '-'}
-                                </Box>
+                                </td>
                               ))}
                             </tr>
                           );
                         })}
                       </tbody>
-                    </Box>
-                  </Box>
+                    </table>
+                  </div>
 
-                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 200 }}>
+                  <div className="flex gap-4 flex-wrap">
+                    <div className="flex flex-col gap-1" style={{ minWidth: 200 }}>
                       <Label>Duplicates</Label>
                       <Select
                         value={duplicateStrategy}
@@ -564,20 +498,10 @@ export const ImportJobCreator = () => {
                           <SelectItem value="create_new">Create new</SelectItem>
                         </SelectContent>
                       </Select>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 0.5,
-                        flex: 1,
-                        minWidth: 200,
-                      }}
-                    >
+                    </div>
+                    <div className="flex flex-col gap-1 flex-1" style={{ minWidth: 200 }}>
                       <Label>Unique key fields</Label>
-                      <Box
-                        sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}
-                      >
+                      <div className="flex flex-wrap gap-1 items-center">
                         {uniqueKeyFields.map((f) => (
                           <Badge key={f} variant="secondary">
                             {f}
@@ -615,12 +539,12 @@ export const ImportJobCreator = () => {
                               ))}
                           </SelectContent>
                         </Select>
-                      </Box>
-                    </Box>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
-            </Box>
+            </div>
           )}
 
           {/* Events scraper config */}
@@ -635,9 +559,9 @@ export const ImportJobCreator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <div className="flex flex-col gap-1">
                   <Label>Cities ({scraperCities.length})</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div className="flex flex-wrap gap-1">
                     {scraperCities.map((city) => (
                       <Badge key={city} variant="secondary">
                         {city}
@@ -654,22 +578,14 @@ export const ImportJobCreator = () => {
                         </button>
                       </Badge>
                     ))}
-                  </Box>
+                  </div>
                   <Input
                     placeholder="Search cities..."
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
 
                   />
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 0.5,
-                      maxHeight: 150,
-                      overflowY: 'auto',
-                    }}
-                  >
+                  <div className="flex flex-wrap gap-1 overflow-y-auto" style={{ maxHeight: 150 }}>
                     {allCities
                       .filter((c) => {
                         const slug = c.name.toLowerCase().replace(/\s+/g, '-');
@@ -697,9 +613,9 @@ export const ImportJobCreator = () => {
                           </Button>
                         );
                       })}
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
                   <Label>Max cities:</Label>
                   <Select
                     value={scraperMaxCities.toString()}
@@ -716,7 +632,7 @@ export const ImportJobCreator = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -733,13 +649,13 @@ export const ImportJobCreator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <div className="flex flex-col gap-1">
                   <Label>Venue types</Label>
                   {[
                     { type: 'saunas', label: 'Saunas' },
                     { type: 'goingout', label: 'Bars & Clubs' },
                   ].map(({ type, label }) => (
-                    <Box key={type} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div key={type} className="flex items-center gap-2">
                       <Checkbox
                         id={`vt-${type}`}
                         checked={spartacusTypes.includes(type)}
@@ -750,12 +666,12 @@ export const ImportJobCreator = () => {
                         }
                       />
                       <Label htmlFor={`vt-${type}`}>{label}</Label>
-                    </Box>
+                    </div>
                   ))}
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                </div>
+                <div className="flex flex-col gap-1">
                   <Label>Countries ({spartacusCountries.length})</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div className="flex flex-wrap gap-1">
                     {spartacusCountries.map((c) => (
                       <Badge key={c} variant="secondary">
                         {c}
@@ -774,8 +690,8 @@ export const ImportJobCreator = () => {
                         </button>
                       </Badge>
                     ))}
-                  </Box>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
                     {['germany', 'spain', 'uk', 'france', 'netherlands', 'thailand', 'usa']
                       .filter((c) => !spartacusCountries.includes(c))
                       .map((c) => (
@@ -790,10 +706,10 @@ export const ImportJobCreator = () => {
                           {c}
                         </Button>
                       ))}
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </div>
+                </div>
+                <div className="flex gap-4 items-center flex-wrap">
+                  <div className="flex items-center gap-2">
                     <Label>Max cities/country:</Label>
                     <Select
                       value={spartacusMaxCities.toString()}
@@ -810,8 +726,8 @@ export const ImportJobCreator = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       id="discover"
                       checked={spartacusDiscover}
@@ -820,15 +736,15 @@ export const ImportJobCreator = () => {
                     <Label htmlFor="discover" style={{ fontSize: '0.85rem' }}>
                       Discover cities
                     </Label>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
 
           {/* Submit */}
           {selected && (
-            <Box sx={{ display: 'flex', pt: 1 }}>
+            <div className="flex pt-2">
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? (
                   <>
@@ -844,7 +760,7 @@ export const ImportJobCreator = () => {
                   </>
                 )}
               </Button>
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -859,6 +775,6 @@ export const ImportJobCreator = () => {
           isImporting={loading}
         />
       )}
-    </Box>
+    </div>
   );
 };

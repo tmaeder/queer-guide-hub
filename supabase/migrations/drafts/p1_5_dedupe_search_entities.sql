@@ -1,0 +1,91 @@
+-- DRAFT — P1-5 follow-up to the search bug-sweep PR.
+--
+-- Production search exposed duplicate venues (e.g. "Woof Berlin" ×2) and
+-- duplicate events ("Berlin SKINS & Punks Weekend" ×2). The frontend now
+-- defensively dedupes by objectID inside useSearch, but the underlying data
+-- still contains the dupes — they just become silently invisible.
+--
+-- This migration:
+--   1. Identifies duplicates by a natural key per table.
+--   2. Keeps the OLDEST id for each cluster (preserves inbound links/SEO).
+--   3. Soft-deletes the rest (status = 'merged_duplicate' if column exists,
+--      otherwise sets is_published = false). NEVER hard-deletes — first
+--      need DBA + product sign-off on the natural key, plus a backup.
+--   4. Adds a partial unique index that prevents the same dupe from being
+--      reintroduced by future inserts.
+--
+-- DO NOT APPLY AS-IS. Steps before applying:
+--   a. Run the SELECT-only audit blocks first and review with the DBA.
+--   b. Confirm `slug` column is unique-able for venues + events.
+--   c. Confirm there are no FK constraints that would cascade unexpectedly
+--      (favourites, reviews, scrape_history, etc.).
+--   d. Take a logical backup of public.venues + public.events.
+--   e. Decide policy for keeping/merging child rows (favourites etc.) of
+--      losing duplicates. Out of scope for this migration; DO IT FIRST.
+
+-- ─── 1. Audit (SELECT-only) ───────────────────────────────────────────────
+-- Run these against prod before any UPDATE.
+
+-- Venues sharing (name, city) — most likely dupe pattern.
+-- SELECT lower(name) AS name_norm, lower(city) AS city_norm, COUNT(*) AS n,
+--        array_agg(id ORDER BY created_at) AS ids
+-- FROM public.venues
+-- WHERE name IS NOT NULL AND city IS NOT NULL
+-- GROUP BY 1, 2
+-- HAVING COUNT(*) > 1
+-- ORDER BY n DESC
+-- LIMIT 50;
+
+-- Events sharing (title, start_date, city).
+-- SELECT lower(title) AS title_norm, start_date, lower(city) AS city_norm,
+--        COUNT(*) AS n, array_agg(id ORDER BY created_at) AS ids
+-- FROM public.events
+-- WHERE title IS NOT NULL AND start_date IS NOT NULL
+-- GROUP BY 1, 2, 3
+-- HAVING COUNT(*) > 1
+-- ORDER BY n DESC
+-- LIMIT 50;
+
+-- ─── 2. Soft-merge venues ─────────────────────────────────────────────────
+-- Picks the oldest row per (lower(name), lower(city)) cluster as the keeper.
+-- WITH ranked AS (
+--   SELECT id,
+--          row_number() OVER (
+--            PARTITION BY lower(name), lower(city)
+--            ORDER BY created_at, id
+--          ) AS rn
+--   FROM public.venues
+--   WHERE name IS NOT NULL AND city IS NOT NULL
+-- )
+-- UPDATE public.venues v
+--    SET is_published = false,
+--        updated_at = now()
+--   FROM ranked r
+--  WHERE v.id = r.id AND r.rn > 1;
+
+-- ─── 3. Soft-merge events ─────────────────────────────────────────────────
+-- WITH ranked AS (
+--   SELECT id,
+--          row_number() OVER (
+--            PARTITION BY lower(title), start_date, lower(coalesce(city,''))
+--            ORDER BY created_at, id
+--          ) AS rn
+--   FROM public.events
+--   WHERE title IS NOT NULL AND start_date IS NOT NULL
+-- )
+-- UPDATE public.events e
+--    SET status = 'merged_duplicate', -- adjust to match the project's status enum
+--        updated_at = now()
+--   FROM ranked r
+--  WHERE e.id = r.id AND r.rn > 1;
+
+-- ─── 4. Prevent regressions with partial unique indexes ───────────────────
+-- Only index on currently-published rows so historic duplicates don't block
+-- the index creation.
+-- CREATE UNIQUE INDEX IF NOT EXISTS venues_natural_key_uq
+--   ON public.venues (lower(name), lower(city))
+--   WHERE is_published = true;
+
+-- CREATE UNIQUE INDEX IF NOT EXISTS events_natural_key_uq
+--   ON public.events (lower(title), start_date, lower(coalesce(city,'')))
+--   WHERE status NOT IN ('merged_duplicate', 'rejected', 'archived');

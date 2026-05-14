@@ -13,9 +13,13 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Send, Check } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchSendEventMembers,
+  fetchSendEventGroups,
+  postEventToGroup,
+  type SendEventMemberOption as MemberOption,
+  type SendEventGroupOption as GroupOption,
+} from '@/hooks/useSendEventDialog';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -27,18 +31,6 @@ interface SendEventDialogProps {
   eventDate: string;
   eventVenue?: string;
   eventPath: string;
-}
-
-interface MemberOption {
-  id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-}
-
-interface GroupOption {
-  id: string;
-  name: string;
-  image_url: string | null;
 }
 
 export function SendEventDialog({
@@ -80,25 +72,7 @@ export function SendEventDialog({
     if (!user) return;
     setLoadingMembers(true);
     try {
-      let q = supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .neq('user_id', user.id)
-        .order('display_name')
-        .limit(30);
-
-      if (query.trim()) {
-        q = q.ilike('display_name', `%${query.trim()}%`);
-      }
-
-      const { data } = await q;
-      setMembers(
-        (data || []).map((p) => ({
-          id: p.user_id,
-          display_name: p.display_name,
-          avatar_url: p.avatar_url,
-        })),
-      );
+      setMembers(await fetchSendEventMembers(user.id, query));
     } finally {
       setLoadingMembers(false);
     }
@@ -108,20 +82,7 @@ export function SendEventDialog({
     if (!user) return;
     setLoadingGroups(true);
     try {
-      const { data } = await supabase
-        .from('group_memberships')
-        .select('group_id, community_groups(id, name, image_url)')
-        .eq('user_id', user.id)
-        .order('joined_at', { ascending: false });
-
-      setGroups(
-        (data || [])
-          .map((row) => {
-            const g = row.community_groups as { id: string; name: string; image_url: string | null } | null;
-            return g ? { id: g.id, name: g.name, image_url: g.image_url } : null;
-          })
-          .filter((g): g is GroupOption => g !== null),
-      );
+      setGroups(await fetchSendEventGroups(user.id));
     } finally {
       setLoadingGroups(false);
     }
@@ -165,13 +126,7 @@ export function SendEventDialog({
     if (!selectedGroup || !user) return;
     setSending(true);
     try {
-      const { error } = await supabase.from('group_posts').insert({
-        group_id: selectedGroup.id,
-        user_id: user.id,
-        content: buildEventMessage(),
-        post_type: 'text',
-      });
-      if (error) throw error;
+      await postEventToGroup(selectedGroup.id, user.id, buildEventMessage());
       toast({ title: 'Posted', description: `Event shared to ${selectedGroup.name}` });
       onOpenChange(false);
     } catch {
@@ -196,30 +151,18 @@ export function SendEventDialog({
     selected: boolean,
     onSelect: () => void,
   ) => (
-    <Box
+    <div
       key={id}
       onClick={onSelect}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        px: 1.5,
-        py: 1,
-        borderRadius: 1,
-        cursor: 'pointer',
-        bgcolor: selected ? 'action.selected' : 'transparent',
-        '&:hover': { bgcolor: selected ? 'action.selected' : 'action.hover' },
-      }}
+      className={`flex items-center gap-3 px-3 py-2 rounded cursor-pointer ${selected ? 'bg-accent' : 'hover:bg-muted'}`}
     >
       <Avatar style={{ width: 36, height: 36 }}>
         <AvatarImage src={avatarUrl || undefined} />
         <AvatarFallback>{initials(name)}</AvatarFallback>
       </Avatar>
-      <Typography variant="body2" sx={{ flex: 1 }}>
-        {name || 'Anonymous'}
-      </Typography>
+      <p className="text-sm flex-1">{name || 'Anonymous'}</p>
       {selected && <Check style={{ width: 16, height: 16, color: 'hsl(var(--primary))' }} />}
-    </Box>
+    </div>
   );
 
   const canSend = activeTab === 'member' ? !!selectedMember : !!selectedGroup;
@@ -239,7 +182,7 @@ export function SendEventDialog({
           </TabsList>
 
           <TabsContent value="member">
-            <Box sx={{ position: 'relative', mt: 1.5 }}>
+            <div className="relative mt-3">
               <Search
                 style={{
                   position: 'absolute',
@@ -257,16 +200,12 @@ export function SendEventDialog({
                 onChange={(e) => setSearch(e.target.value)}
                 style={{ paddingLeft: 36 }}
               />
-            </Box>
+            </div>
             <ScrollArea style={{ height: 220, marginTop: 8 }}>
               {loadingMembers && members.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                  Loading...
-                </Typography>
+                <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
               ) : members.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                  No members found
-                </Typography>
+                <p className="text-sm text-muted-foreground text-center py-8">No members found</p>
               ) : (
                 members.map((m) =>
                   renderRow(m.id, m.display_name, m.avatar_url, selectedMember?.id === m.id, () =>
@@ -280,13 +219,9 @@ export function SendEventDialog({
           <TabsContent value="group">
             <ScrollArea style={{ height: 264, marginTop: 8 }}>
               {loadingGroups && groups.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                  Loading...
-                </Typography>
+                <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
               ) : groups.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                  No groups joined yet
-                </Typography>
+                <p className="text-sm text-muted-foreground text-center py-8">No groups joined yet</p>
               ) : (
                 groups.map((g) =>
                   renderRow(g.id, g.name, g.image_url, selectedGroup?.id === g.id, () =>

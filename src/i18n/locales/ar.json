@@ -140,7 +140,31 @@
     "empty": {
       "title": "خطّط لأول رحلة لك",
       "description": "أنشئ مسارًا، وتحقق من معلومات الأمان لمجتمع الميم لكل وجهة، واحتفظ بكل شيء في مكان واحد.",
-      "cta": "إنشاء أول رحلة"
+      "cta": "إنشاء أول رحلة",
+      "hero": {
+        "title": "[AR] Plan a trip you'll feel safe on.",
+        "subtitle": "[AR] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[AR] Start from scratch",
+          "description": "[AR] Empty itinerary, your destinations, your pace.",
+          "cta": "[AR] Create trip"
+        },
+        "template": {
+          "title": "[AR] Use a template",
+          "description": "[AR] Pre-built itineraries you can fork and edit.",
+          "cta": "[AR] Browse templates"
+        },
+        "discover": {
+          "title": "[AR] Fork a public trip",
+          "description": "[AR] Real itineraries from other QG travelers.",
+          "cta": "[AR] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[AR] From real travelers",
+      "discoverTitle": "[AR] Recent public trips",
+      "discoverCta": "[AR] Open Discover"
     },
     "filteredEmpty": {
       "title": "لا توجد رحلات مطابقة",
@@ -163,7 +187,8 @@
         "planning": "قيد التخطيط",
         "active": "نشطة",
         "completed": "مكتملة",
-        "archived": "مؤرشفة"
+        "archived": "مؤرشفة",
+        "saved": "[AR] Saved"
       },
       "sort": {
         "recent": "آخر التحديثات",
@@ -196,7 +221,7 @@
       "samples": {
         "berlin": "أسبوع الفخر في برلين",
         "barcelona": "برشلونة: الشاطئ والليل",
-        "bangkok": "مستكشف بانكوك وبوكيت"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}} يوم"
     },
@@ -239,7 +264,7 @@
         "cityCountryPlaceholder": "ابحث عن مدينة…",
         "noCityMatch": "لم يتم العثور على مدينة مطابقة.",
         "addNewPlace": "إضافة «{{query}}» كمكان جديد",
-        "datesUnlockHint": "إضافة التواريخ تفتح اقتراحات الإقامة والطيران والسلامة.",
+        "datesUnlockHint": "أضف تواريخ للحصول على اقتراحات الإقامة والرحلات والسلامة.",
         "defaultTitle": "رحلة إلى {{city}}",
         "titleField": "عنوان الرحلة",
         "titlePlaceholder": "مثل: أسبوع الفخر برلين 2026",
@@ -313,7 +338,11 @@
       "fitAll": "عرض الكل",
       "fitAllAria": "ضبط كل الأماكن على الشاشة",
       "filterAll": "كل الأيام",
-      "dayLabel": "اليوم {{number}}"
+      "dayLabel": "اليوم {{number}}",
+      "showAttractions": "[AR] Attractions",
+      "showEvents": "[AR] Events",
+      "suggestedVenue": "[AR] Suggested venue",
+      "eventOn": "[AR] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "لا توجد معلومات أمان بعد",
@@ -435,8 +464,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "ابدأ قائمة الأمتعة",
-      "emptyDescription": "أضف عناصر أو استخدم قالبًا للبدء.",
+      "emptyTitle": "لا عناصر بعد.",
+      "emptyDescription": "أضف عناصر أو استخدم قالبًا.",
       "progress": "{{checked}} من {{total}} جاهزة",
       "addItem": "إضافة عنصر…",
       "removeAria": "إزالة العنصر",
@@ -552,7 +581,91 @@
     },
     "discover": {
       "title": "اكتشاف أماكن",
-      "button": "تصفح السوق"
+      "button": "تصفح السوق",
+      "eyebrow": "[AR] Real travelers",
+      "subtitle": "[AR] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[AR] Filter by city…",
+      "aria": "[AR] Discover public trips",
+      "sortAria": "[AR] Sort trips",
+      "viewAria": "[AR] View mode",
+      "filterAria": "[AR] Filter trips",
+      "filtersAria": "[AR] Open filters",
+      "filters": {
+        "title": "[AR] undefined",
+        "travelerType": "[AR] undefined",
+        "duration": "[AR] undefined",
+        "minEquality": "[AR] undefined",
+        "minEqualityAria": "[AR] undefined",
+        "minEqualityHint": "[AR] undefined",
+        "noMin": "[AR] undefined",
+        "quality": "[AR] undefined",
+        "hasCover": "[AR] undefined",
+        "hasOwnerProfile": "[AR] undefined",
+        "clear": "[AR] undefined"
+      },
+      "activeCountAria": "[AR] {{count}} active",
+      "view": {
+        "list": "[AR] List view",
+        "map": "[AR] Map view"
+      },
+      "sort": {
+        "recent": "[AR] Most recent",
+        "trending": "[AR] Trending",
+        "most_places": "[AR] Most places",
+        "longest": "[AR] Longest",
+        "safest": "[AR] Safest"
+      },
+      "filter": {
+        "dated": "[AR] Has dates",
+        "multiday": "[AR] Multi-day",
+        "safe": "[AR] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[AR] Any",
+        "solo": "[AR] Solo",
+        "couple": "[AR] Couple",
+        "group": "[AR] Group",
+        "family": "[AR] Family"
+      },
+      "duration": {
+        "any": "[AR] Any length",
+        "weekend": "[AR] Weekend (1–3 days)",
+        "week": "[AR] Week (4–9 days)",
+        "long": "[AR] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[AR] Europe",
+        "north_america": "[AR] North America",
+        "latin_america": "[AR] Latin America",
+        "asia": "[AR] Asia",
+        "oceania": "[AR] Oceania",
+        "africa": "[AR] Africa",
+        "middle_east": "[AR] Middle East",
+        "other": "[AR] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[AR] Staff picks",
+        "title": "[AR] Trips worth copying"
+      },
+      "all": "[AR] All public trips",
+      "moreInspiration": "[AR] More inspiration",
+      "moreInspirationDescription": "[AR] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[AR] No public trips yet",
+      "emptyFiltered": "[AR] No public trips match that city. Try a different one.",
+      "emptyDescription": "[AR] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[AR] A QG traveler",
+      "placeCount": "[AR] {{count}} places",
+      "fork": "[AR] Fork into my trips",
+      "forkAria": "[AR] Fork this trip",
+      "forking": "[AR] Forking…",
+      "forked": "[AR] Trip forked",
+      "forkedDescription": "[AR] Your copy is ready — edit days and places freely.",
+      "forkError": "[AR] Could not create trip",
+      "inspiredTitle": "[AR] Inspired by: {{title}}",
+      "signalsAria": "[AR] Trip activity",
+      "forkCount": "[AR] {{count}} forks",
+      "saveCount": "[AR] {{count}} saves",
+      "filtersButton": "[AR] Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -675,6 +788,26 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "next": {
+      "live": "[AR] Active now",
+      "countdown": "[AR] Coming up",
+      "upcoming": "[AR] Upcoming",
+      "open": "[AR] Open trip",
+      "openLive": "[AR] Open today's plan",
+      "today": "[AR] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[AR] Inspired by your trips",
+      "title": "[AR] Public trips you might like",
+      "cta": "[AR] See all"
+    },
+    "save": {
+      "save": "[AR] Save",
+      "saved": "[AR] Saved",
+      "saveAria": "[AR] Save trip",
+      "unsaveAria": "[AR] Unsave trip",
+      "error": "[AR] Could not update save"
     }
   },
   "auth": {
@@ -708,7 +841,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[AR] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +872,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[AR] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[AR] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -751,14 +887,16 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "اختياري. تخطَّ إذا تفضّل.",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[AR] Free, takes a minute.",
+      "haveAccountQ": "[AR] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +938,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[AR] Continue to The Queer Guide",
+      "banner": "[AR] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[AR] Verification email sent. Check your inbox.",
+      "resendShort": "[AR] Resend",
+      "gateTitle": "[AR] Verify your email first",
+      "gateDescription": "[AR] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[AR] Sign in required",
+      "description": "[AR] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1004,6 +1152,77 @@
       "legal": "قانوني",
       "relationships": "العلاقات",
       "women": "النساء"
+    },
+    "quick_exit": "[AR] Quick exit",
+    "quick_exit_aria": "[AR] Leave this page immediately (ESC)",
+    "hide_screen": "[AR] Hide screen",
+    "reveal_aria": "[AR] Click anywhere to show the page again",
+    "hidden_hint": "[AR] Page hidden. Click anywhere to show again.",
+    "hero_label": "[AR] Recommended right now",
+    "expect_title": "[AR] What happens when you call",
+    "expect_short": "[AR] What to expect",
+    "expect_1": "[AR] You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "[AR] You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "[AR] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "[AR] If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "[AR] While you wait",
+    "self_help_title": "[AR] Steady yourself",
+    "self_help_desc": "[AR] Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "[AR] 4-7-8 breathing",
+    "breathing_1": "[AR] Breathe in through your nose for 4 seconds.",
+    "breathing_2": "[AR] Hold your breath for 7 seconds.",
+    "breathing_3": "[AR] Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "[AR] Repeat 4 times.",
+    "grounding_title": "[AR] 5-4-3-2-1 grounding",
+    "grounding_intro": "[AR] Name, out loud or in your head:",
+    "grounding_5": "[AR] 5 things you can see",
+    "grounding_4": "[AR] 4 things you can touch",
+    "grounding_3": "[AR] 3 things you can hear",
+    "grounding_2": "[AR] 2 things you can smell",
+    "grounding_1": "[AR] 1 thing you can taste",
+    "safety_plan_title": "[AR] Safety plan",
+    "safety_plan_desc": "[AR] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "[AR] Open template (Stanley-Brown)",
+    "report": "[AR] Report",
+    "report_aria": "[AR] Report a problem with this hotline",
+    "report_title": "[AR] Report this hotline",
+    "report_desc": "[AR] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "[AR] Reason",
+    "report_detail": "[AR] Details (optional)",
+    "report_submit": "[AR] Submit report",
+    "report_thanks": "[AR] Thank you. We'll review it.",
+    "filter_intersection": "[AR] Population",
+    "filter_intersection_all": "[AR] All",
+    "badge_reports_police": "[AR] May report to police",
+    "operator": "[AR] Operated by",
+    "verified_on": "[AR] Verified",
+    "affiliation": {
+      "religious": "[AR] religious",
+      "state": "[AR] state",
+      "ngo": "[AR] NGO",
+      "secular": "[AR] secular"
+    },
+    "channel": {
+      "phone": "[AR] Call",
+      "sms": "[AR] Text",
+      "whatsapp": "[AR] WhatsApp",
+      "chat": "[AR] Chat",
+      "email": "[AR] Email"
+    },
+    "intersection": {
+      "trans-youth": "[AR] Trans youth",
+      "asylum": "[AR] Asylum seekers",
+      "sex-work": "[AR] Sex workers",
+      "hiv": "[AR] HIV+",
+      "elders": "[AR] Elders",
+      "deaf": "[AR] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[AR] Number disconnected / no answer",
+      "wrong_number": "[AR] Wrong number",
+      "closed": "[AR] Service has shut down",
+      "unsafe": "[AR] Unsafe / harmful experience",
+      "other": "[AR] Other"
     }
   },
   "sos": {
@@ -1021,9 +1240,9 @@
     "error": "فشل إرسال التنبيه. يرجى المحاولة مجدداً."
   },
   "home": {
-    "heroLine1": "اكتشف.",
-    "heroLine2": "تواصل.",
-    "heroLine3": "انتمِ.",
+    "heroLine1": "أماكن كويرية،",
+    "heroLine2": "فعاليات وأشخاص.",
+    "heroLine3": "حول العالم.",
     "subtitle": "أماكن آمنة، فعاليات نابضة بالحياة، ومجتمعات تفهمك — أينما كنت.",
     "browseVenues": "تصفح الأماكن",
     "viewEvents": "عرض الفعاليات",
@@ -1106,7 +1325,8 @@
       "accessibility": "إمكانية الوصول",
       "bookings": "الحجوزات",
       "tripInbox": "بريد الرحلة",
-      "extension": "إضافة المتصفح"
+      "extension": "إضافة المتصفح",
+      "footprint": "[AR] Footprint"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -1122,7 +1342,10 @@
       "accessibility": "إمكانية الوصول",
       "legal": "قانوني",
       "contact": "تواصل معنا"
-    }
+    },
+    "signUp": "[AR] Sign up",
+    "navigation": "[AR] Navigation",
+    "signIn": "[AR] Sign in"
   },
   "pages": {
     "venues": {
@@ -1134,8 +1357,8 @@
       "gridView": "عرض شبكي",
       "mapView": "عرض الخريطة",
       "submit": "إرسال",
-      "emptyTitle": "لم نجد أماكن تناسب ذوقك بعد",
-      "emptyDescription": "حاول توسيع بحثك أو استكشاف مدينة أخرى.",
+      "emptyTitle": "لا أماكن تطابق فلاترك.",
+      "emptyDescription": "وسّع البحث أو جرّب مدينة أخرى.",
       "submitVenue": "إضافة مكان",
       "clearFilters": "مسح الفلاتر",
       "emptyDataset": {
@@ -1211,8 +1434,8 @@
       "clearFilterPast": "مسح فلتر الفعاليات السابقة",
       "noPastEvents": "لم يتم العثور على فعاليات سابقة",
       "noPastEventsDesc": "لا توجد فعاليات سابقة تطابق هذه الفلاتر. أوقف التبديل لعرض الفعاليات القادمة.",
-      "emptyTitle": "حلبة الرقص فارغة... حالياً",
-      "emptyDescription": "عد قريباً أو وسّع الفلاتر للعثور على شيء ممتع.",
+      "emptyTitle": "لا فعاليات بعد.",
+      "emptyDescription": "وسّع الفلاتر أو عد لاحقاً.",
       "emptyDataset": {
         "title": "لا توجد فعاليات بعد",
         "body": "لم نضف أي فعاليات هنا بعد. ساعدنا على تطوير الدليل بإضافة واحدة."
@@ -1220,6 +1443,45 @@
       "filteredEmpty": {
         "title": "لا توجد فعاليات تطابق فلاترك",
         "body": "حاول تعديل الفلاتر أو البحث لرؤية نتائج أكثر."
+      },
+      "prideSubtype": "[AR] Pride type",
+      "mapView": "[AR] Map view",
+      "preset": {
+        "label": "[AR] Quick filters",
+        "thisWeekend": "[AR] This weekend",
+        "nearMe": "[AR] Near me",
+        "pride": "[AR] Pride season",
+        "thisMonth": "[AR] This month",
+        "free": "[AR] Free",
+        "featured": "[AR] Featured"
+      },
+      "rail": {
+        "featured": "[AR] Featured this week",
+        "featuredSubtitle": "[AR] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[AR] No events match your filters",
+        "body": "[AR] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[AR] Drop \"{{city}}\" filter",
+        "clearDate": "[AR] Drop date filter",
+        "viewAll": "[AR] View all upcoming events",
+        "sameCityHeader": "[AR] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[AR] Try other cities in your date range",
+        "fallbackHeader": "[AR] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[AR] Spotlight",
+        "happeningNow": "[AR] Happening now",
+        "tomorrow": "[AR] Starts tomorrow",
+        "inDays_one": "[AR] Starts in {{count}} day",
+        "inDays_other": "[AR] Starts in {{count}} days",
+        "nearbyCount_one": "[AR] {{count}} event in {{city}}",
+        "nearbyCount_other": "[AR] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[AR] Sort events",
+      "sort": {
+        "dateAsc": "[AR] Soonest first",
+        "dateDesc": "[AR] Latest first"
       }
     },
     "eventDetail": {
@@ -1278,19 +1540,74 @@
       "subtitle": "ابحث عن رحلات وفنادق وأنشطة في وجهات صديقة لمجتمع LGBTQ+",
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
-      "exploreCta": "استكشف وجهات صديقة لمجتمع LGBTQ+",
-      "exploreDescription": "اكتشف مدناً وبلداناً مع معلومات أمان مفصلة وأدلة سفر"
+      "exploreCta": "الوجهات",
+      "exploreDescription": "مدن وبلدان مع معلومات أمان وأدلة سفر.",
+      "hotels": {
+        "typeLabel": "[AR] Type",
+        "priceMin": "[AR] Min €",
+        "priceMax": "[AR] Max €",
+        "priceUnavailable": "[AR] Price on request",
+        "clearFilters": "[AR] Clear filters",
+        "noResultsWithFilters": "[AR] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[AR] Any type",
+          "hotel": "[AR] Hotel",
+          "boutique": "[AR] Boutique Hotel",
+          "bnb": "[AR] B&B",
+          "hostel": "[AR] Hostel",
+          "guesthouse": "[AR] Guesthouse",
+          "apartment": "[AR] Apartment",
+          "resort": "[AR] Resort"
+        }
+      },
+      "hero": {
+        "title": "[AR] Plan a trip",
+        "subtitle": "[AR] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[AR] Where to?",
+        "start": "[AR] Start",
+        "end": "[AR] End",
+        "cta": "[AR] Plan this trip",
+        "discover": "[AR] Or",
+        "discoverLink": "[AR] browse public trips",
+        "discoverTail": "[AR] from the community.",
+        "errors": {
+          "city": "[AR] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[AR] Continue planning",
+        "placeCount": "[AR] {{count}} places"
+      },
+      "pride": {
+        "title": "[AR] Pride this season",
+        "window": "[AR] Next 4 months",
+        "empty": "[AR] No upcoming Pride events.",
+        "safety": "[AR] Equality score"
+      },
+      "inspiration": {
+        "villages": "[AR] Queer villages",
+        "publicTrips": "[AR] Public trips",
+        "viewAll": "[AR] View all",
+        "noVillages": "[AR] No villages yet.",
+        "noTrips": "[AR] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[AR] Book now",
+        "subtitle": "[AR] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "السوق",
       "subtitle": "اكتشف وادعم الأعمال المحلية التي تقدم منتجات وخدمات",
       "listBusiness": "أضف نشاطك التجاري",
-      "emptyTitle": "لا يوجد شيء على الرفوف بعد",
-      "emptyDescription": "أعمال مملوكة لأفراد مجتمع الكوير تنضم كل يوم.",
+      "emptyTitle": "لا إعلانات بعد.",
+      "emptyDescription": "تُضاف المزيد كل أسبوع.",
       "signInRequired": "يجب تسجيل الدخول",
       "signInList": "أنشئ حساباً مجانياً لإدراج نشاطك التجاري.",
       "signInFavorites": "يرجى تسجيل الدخول لحفظ المفضلة.",
-      "loadError": "حدث خطأ أثناء تحميل السوق. يرجى المحاولة مرة أخرى."
+      "loadError": "حدث خطأ أثناء تحميل السوق. يرجى المحاولة مرة أخرى.",
+      "emptyFiltersTitle": "[AR] No listings match these filters.",
+      "emptyFiltersDescription": "[AR] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "العنصر غير موجود",
@@ -1326,10 +1643,24 @@
       "filters": "الفلاتر",
       "activeFilters": "الفلاتر النشطة",
       "clearAll": "مسح الكل",
-      "emptyTitle": "غرفة الأخبار هادئة",
-      "emptyDescription": "لا توجد قصص حالياً — عد قريباً.",
+      "emptyTitle": "لا مقالات بعد.",
+      "emptyDescription": "عد لاحقاً.",
       "previous": "السابق",
-      "next": "التالي"
+      "next": "التالي",
+      "filteredEmptyTitle": "[AR] No news matches your filters.",
+      "filteredEmptyDescription": "[AR] Reset filters or try another topic.",
+      "resetFilters": "[AR] Reset filters",
+      "filterSearch": "[AR] Search",
+      "filterCategory": "[AR] Category",
+      "filterSource": "[AR] Source",
+      "filterFeatured": "[AR] Featured only",
+      "trendingTags": "[AR] Trending",
+      "minRead": "[AR] min read",
+      "share": "[AR] Share",
+      "linkCopied": "[AR] Link copied",
+      "density": "[AR] Density",
+      "comfortable": "[AR] Comfortable",
+      "compact": "[AR] Compact"
     },
     "newsDetail": {
       "notFound": "المقال غير موجود",
@@ -1352,12 +1683,26 @@
     },
     "personalities": {
       "title": "شخصيات",
-      "subtitle": "تصفح أكثر من 8,000 ناشط وفنان وكاتب ورياضي وأيقونة تاريخية من مجتمع LGBTQ+.",
       "active": "نشط:",
       "clearAll": "مسح الكل",
       "emptyTitle": "لا توجد شخصيات تطابق فلاترك",
       "emptyDescription": "حاول إزالة فلتر أو البحث باسم مختلف.",
-      "loadingMore": "جارٍ تحميل المزيد…"
+      "loadingMore": "جارٍ تحميل المزيد…",
+      "view": {
+        "grid": "[AR] Grid",
+        "timeline": "[AR] Timeline",
+        "map": "[AR] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[AR] Born this week",
+        "diedThisWeek": "[AR] Remembered this week",
+        "browseByEra": "[AR] Browse by era",
+        "browseByField": "[AR] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[AR] In the news",
+        "relatedEvents": "[AR] Related events"
+      }
     },
     "groups": {
       "title": "مجموعات المجتمع",
@@ -1365,8 +1710,8 @@
       "discover": "اكتشف",
       "myGroups": "مجموعاتي",
       "popular": "شائع",
-      "emptyTitle": "لا توجد مجموعات هنا بعد",
-      "emptyDescription": "كن الشرارة — أنشئ أول مجموعة واجمع الناس معاً.",
+      "emptyTitle": "لا مجموعات بعد.",
+      "emptyDescription": "أنشئ الأولى.",
       "createGroup": "إنشاء مجموعة",
       "mostPopular": "المجموعات الأكثر شعبية",
       "noPopular": "لا توجد مجموعات شائعة متاحة بعد."
@@ -1439,6 +1784,15 @@
       "body": "تلقَّ إشعارًا في المتصفح قبل 30 دقيقة من كل حجز، وعند اقتراب انتهاء صلاحية جواز السفر أو التأشيرة.",
       "turnOn": "تشغيل",
       "turnOff": "إيقاف"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "عرض التفاصيل",
+      "share": "مشاركة",
+      "linkCopied": "تم نسخ الرابط",
+      "linkCopiedDescription": "يمكنك لصقه الآن",
+      "shareFailed": "فشل في المشاركة"
     }
   }
 }

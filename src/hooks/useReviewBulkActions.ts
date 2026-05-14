@@ -62,7 +62,7 @@ export function useReviewBulkActions(
       title: 'Apply All Enrichments',
       desc: `This will apply all ${c.automation} pending automation suggestions to their target content. Suggested values will overwrite current values.`,
       icon: Zap,
-      color: '#DB2777',
+      color: 'hsl(var(--foreground))',
     },
     dedup: {
       title: 'Resolve Duplicates',

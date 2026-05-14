@@ -1,21 +1,37 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
+import { getCorsHeaders, getServiceClient, requireAdmin, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
 
-interface _OptimizationJob {
-  id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  totalImages: number;
-  processedImages: number;
-  successfulImages: number;
-  failedImages: number;
-  createdAt: string;
-  updatedAt: string;
-  results?: unknown[];
+const BATCH_SIZE = 15
+const FETCH_TIMEOUT_MS = 8000
+const BUCKET = 'optimized-images'
+
+const CDN_PATTERNS = [
+  'res.cloudinary.com', 'upload.wikimedia.org', 'images.pexels.com',
+  'images.unsplash.com', 'fastly.4sqi.net', 'i0.wp.com',
+  'googleusercontent.com', 'fbcdn.net', '.cloudfront.net',
+  'akamaized.net', 'imgix', 's.yimg.com', 'bloximages.',
+  'pyxis.nymag.com', 'supabase',
+]
+
+function isOnCdn(url: string): boolean {
+  const lower = url.toLowerCase()
+  return CDN_PATTERNS.some(p => lower.includes(p)) ||
+    lower.includes('cdn.') || lower.includes('static.') ||
+    lower.includes('media.') || lower.includes('assets.') ||
+    lower.includes('img.') || lower.includes('images.')
 }
 
-serve(async (req) => {
+function extFromContentType(ct: string): string {
+  if (ct.includes('png')) return 'png'
+  if (ct.includes('webp')) return 'webp'
+  if (ct.includes('avif')) return 'avif'
+  if (ct.includes('gif')) return 'gif'
+  if (ct.includes('svg')) return 'svg'
+  return 'jpg'
+}
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: getCorsHeaders(req) });
+    return new Response(null, { headers: getCorsHeaders(req) })
   }
 
   const supabase = getServiceClient()
@@ -23,246 +39,136 @@ serve(async (req) => {
   if (auth instanceof Response) return auth
 
   try {
-    const { action, jobId, batchSize = 10 } = await req.json()
-    const safeBatchSize = Math.min(batchSize || 10, 50);
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
+    const batchSize = Math.min(body.batch_size || BATCH_SIZE, 50)
+    const mode = body.mode || 'auto' // 'auto' | 'mirror' | 'mark_cdn'
 
-    if (action === 'start') {
-      // Get all images from storage
-      console.log('🚀 Starting batch image optimization...')
+    // Fetch pending images
+    const { data: pending, error: fetchErr } = await supabase
+      .from('image_assets')
+      .select('id, url, format')
+      .eq('status', 'active')
+      .eq('optimization_status', 'pending')
+      .order('created_at', { ascending: true })
+      .limit(batchSize)
 
-      const { data: buckets } = await supabase.storage.listBuckets()
-      const allImages: unknown[] = []
-
-      for (const bucket of buckets || []) {
-        const { data: files } = await supabase.storage
-          .from(bucket.name)
-          .list('', { limit: 1000 })
-
-        const imageFiles = files?.filter(file => {
-          const ext = file.name.toLowerCase()
-          return ext.endsWith('.jpg') || ext.endsWith('.jpeg') ||
-                 ext.endsWith('.png') || ext.endsWith('.webp') ||
-                 ext.endsWith('.avif') || ext.endsWith('.gif')
-        }) || []
-
-        allImages.push(...imageFiles.map(file => ({
-          ...file,
-          bucket: bucket.name,
-          path: `${bucket.name}/${file.name}`
-        })))
-      }
-
-      // Create optimization job record
-      const jobId = crypto.randomUUID()
-      const job = {
-        id: jobId,
-        status: 'pending',
-        total_images: allImages.length,
-        processed_images: 0,
-        successful_images: 0,
-        failed_images: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-
-  // Store job in database
-  const { error: insertError } = await supabase.from('image_optimization_jobs').insert([job])
-  if (insertError) {
-    console.error('Failed to insert job:', insertError)
-    throw insertError
-  }
-
-      console.log(`📊 Created optimization job ${jobId} for ${allImages.length} images`)
-
-      // Start background processing
-      const backgroundTask = async () => {
-        console.log(`🔄 Starting background optimization for job ${jobId}`)
-        await processImagesInBatches(supabase, jobId, allImages, safeBatchSize)
-      }
-
-      // Use EdgeRuntime.waitUntil to continue processing after response
-      EdgeRuntime.waitUntil(backgroundTask())
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          jobId,
-          message: `Started optimization job for ${allImages.length} images`,
-          totalImages: allImages.length
-        }),
-        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-      )
+    if (fetchErr) return errorResponse(`Query failed: ${fetchErr.message}`, 500, req)
+    if (!pending || pending.length === 0) {
+      return jsonResponse({ done: true, processed: 0, remaining: 0, message: 'All images optimized' }, 200, req)
     }
 
-    if (action === 'status' && jobId) {
-      // Get job status
-      const { data: job } = await supabase
-        .from('image_optimization_jobs')
-        .select('*')
-        .eq('id', jobId)
-        .single()
+    // Get remaining count
+    const { count: remaining } = await supabase
+      .from('image_assets')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active')
+      .eq('optimization_status', 'pending')
 
-      return new Response(
-        JSON.stringify({ success: true, job }),
-        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-      )
+    let mirrored = 0
+    let cdnMarked = 0
+    let failed = 0
+
+    for (const row of pending) {
+      const url = row.url as string
+      const id = row.id as string
+
+      // Phase 1: If on a known CDN, just mark it
+      if (mode !== 'mirror' && isOnCdn(url)) {
+        await supabase
+          .from('image_assets')
+          .update({ optimization_status: 'cdn_optimized', optimized_at: new Date().toISOString() })
+          .eq('id', id)
+        cdnMarked++
+        continue
+      }
+
+      // Phase 2: Download and mirror to Storage
+      try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
+        const imgRes = await fetch(url, {
+          signal: controller.signal,
+          headers: { 'User-Agent': 'QueerGuide-ImageOptimizer/1.0' },
+        })
+        clearTimeout(timeout)
+
+        if (!imgRes.ok) {
+          await supabase
+            .from('image_assets')
+            .update({ optimization_status: 'failed' })
+            .eq('id', id)
+          failed++
+          continue
+        }
+
+        const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
+        const buffer = await imgRes.arrayBuffer()
+
+        if (buffer.byteLength < 100) {
+          await supabase
+            .from('image_assets')
+            .update({ optimization_status: 'failed' })
+            .eq('id', id)
+          failed++
+          continue
+        }
+
+        const ext = extFromContentType(contentType)
+        const filePath = `${id}.${ext}`
+
+        const { data: uploadData, error: uploadErr } = await supabase.storage
+          .from(BUCKET)
+          .upload(filePath, buffer, {
+            contentType,
+            cacheControl: '31536000',
+            upsert: true,
+          })
+
+        if (uploadErr) {
+          console.error(`Upload failed for ${id}:`, uploadErr.message)
+          await supabase
+            .from('image_assets')
+            .update({ optimization_status: 'failed' })
+            .eq('id', id)
+          failed++
+          continue
+        }
+
+        const { data: pubUrl } = supabase.storage.from(BUCKET).getPublicUrl(uploadData.path)
+
+        await supabase
+          .from('image_assets')
+          .update({
+            optimization_status: 'optimized',
+            optimized_url: pubUrl.publicUrl,
+            optimized_at: new Date().toISOString(),
+            bytes: buffer.byteLength,
+          })
+          .eq('id', id)
+
+        mirrored++
+      } catch (err) {
+        console.error(`Mirror failed for ${id}:`, (err as Error).message)
+        await supabase
+          .from('image_assets')
+          .update({ optimization_status: 'failed' })
+          .eq('id', id)
+        failed++
+      }
     }
 
-    if (action === 'list') {
-      // List all optimization jobs
-      const { data: jobs } = await supabase
-        .from('image_optimization_jobs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20)
-
-      return new Response(
-        JSON.stringify({ success: true, jobs }),
-        { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-      )
-    }
-
-    throw new Error('Invalid action')
+    return jsonResponse({
+      done: false,
+      processed: pending.length,
+      mirrored,
+      cdn_marked: cdnMarked,
+      failed,
+      remaining: (remaining ?? 0) - pending.length,
+    }, 200, req)
 
   } catch (error) {
-    console.error('Optimization error:', error)
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Internal server error'
-      }),
-      {
-        status: 500,
-        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' }
-      }
-    )
+    console.error('optimize-images-batch error:', error)
+    return errorResponse('Internal server error', 500, req)
   }
 })
-
-async function processImagesInBatches(
-  supabase: unknown,
-  jobId: string,
-  images: unknown[],
-  batchSize: number
-) {
-  try {
-    console.log(`📦 Processing ${images.length} images in batches of ${batchSize}`)
-
-    // Update job status to processing
-    await supabase
-      .from('image_optimization_jobs')
-      .update({
-        status: 'processing',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', jobId)
-
-    let processedCount = 0
-    let successCount = 0
-    let failCount = 0
-    const results: unknown[] = []
-
-    // Process in batches
-    for (let i = 0; i < images.length; i += batchSize) {
-      const batch = images.slice(i, i + batchSize)
-      console.log(`🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(images.length / batchSize)}`)
-
-      // Process each image in the batch
-      for (const image of batch) {
-        try {
-          const result = await optimizeImage(supabase, image)
-          results.push(result)
-          successCount++
-          console.log(`✅ Optimized: ${image.name}`)
-        } catch (error) {
-          console.error(`❌ Failed to optimize ${image.name}:`, error)
-          results.push({
-            fileName: image.name,
-            bucket: image.bucket,
-            status: 'failed',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          })
-          failCount++
-        }
-
-        processedCount++
-
-        // Update progress every 5 images
-        if (processedCount % 5 === 0) {
-          await supabase
-            .from('image_optimization_jobs')
-            .update({
-              processed_images: processedCount,
-              successful_images: successCount,
-              failed_images: failCount,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', jobId)
-        }
-      }
-
-      // Small delay between batches to prevent overwhelming the system
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
-
-    // Final update
-    await supabase
-      .from('image_optimization_jobs')
-      .update({
-        status: 'completed',
-        processed_images: processedCount,
-        successful_images: successCount,
-        failed_images: failCount,
-        results: results,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', jobId)
-
-    console.log(`🎉 Job ${jobId} completed: ${successCount} successful, ${failCount} failed`)
-
-  } catch (error) {
-    console.error(`💥 Job ${jobId} failed:`, error)
-
-    // Mark job as failed
-    await supabase
-      .from('image_optimization_jobs')
-      .update({
-        status: 'failed',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', jobId)
-  }
-}
-
-async function optimizeImage(supabase: unknown, image: unknown) {
-  // Simulate image optimization process
-  // In a real implementation, this would:
-  // 1. Download the original image from storage
-  // 2. Generate AVIF, WebP, and JPEG versions
-  // 3. Create multiple sizes (320, 640, 768, 1024, 1280, 1440, 1920)
-  // 4. Upload optimized versions back to storage
-  // 5. Return optimization results
-
-  console.log(`🖼️  Processing image: ${image.name}`)
-
-  // Simulate processing time
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  // Mock optimization results
-  const originalSize = image.metadata?.size || 100000
-  const optimizedSizes = {
-    avif: Math.round(originalSize * 0.3),
-    webp: Math.round(originalSize * 0.5),
-    jpeg: Math.round(originalSize * 0.7)
-  }
-
-  return {
-    fileName: image.name,
-    bucket: image.bucket,
-    status: 'completed',
-    originalSize,
-    optimizedSizes,
-    generatedFiles: 21, // 7 sizes x 3 formats
-    savings: Math.round(((originalSize - optimizedSizes.avif) / originalSize) * 100)
-  }
-}

@@ -2,7 +2,6 @@
 // Picks up a queued feedback_retest_runs row, hands it to the active runner,
 // and records the result. Mirror of claude-routine-dispatch.
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import {
   corsResponse,
   errorResponse,
@@ -17,7 +16,7 @@ interface BodyShape {
   runner?: string;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
   if (req.method !== 'POST') return errorResponse('method_not_allowed', 405, req);
 
@@ -35,7 +34,9 @@ serve(async (req) => {
 
   const { data: retest, error } = await service
     .from('feedback_retest_runs')
-    .select('id,routine_run_id,kind,status,runner, routine:feedback_routine_runs(story_id)')
+    .select(
+      'id,routine_run_id,kind,status,runner, routine:feedback_routine_runs(story_id, files_changed)',
+    )
     .eq('id', body.retest_id)
     .single<{
       id: string;
@@ -43,7 +44,7 @@ serve(async (req) => {
       kind: 'typecheck' | 'lint' | 'unit' | 'e2e' | 'targeted';
       status: string;
       runner: string;
-      routine: { story_id: string } | null;
+      routine: { story_id: string; files_changed: string[] | null } | null;
     }>();
   if (error || !retest) return errorResponse('retest_not_found', 404, req);
   if (retest.status !== 'queued') {
@@ -81,6 +82,8 @@ serve(async (req) => {
       callbackUrl,
       hmacSecret,
       service,
+      filesChanged:
+        retest.kind === 'targeted' ? retest.routine?.files_changed ?? [] : undefined,
     });
   } catch (e) {
     const msg = (e as Error).message;

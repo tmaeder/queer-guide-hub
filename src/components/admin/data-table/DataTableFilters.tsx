@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
 import {
   Select,
   SelectContent,
@@ -16,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { listWhereNotNull } from '@/hooks/usePageFetchers';
 import type { EntityFilterConfig } from './types';
 
 interface DataTableFiltersProps {
@@ -49,13 +48,13 @@ interface FilterControlProps {
 function FilterControl({ config, value, onChange }: FilterControlProps) {
   if (config.type === 'boolean') {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <div className="flex items-center gap-2">
         <Switch
           checked={value === true}
           onCheckedChange={(checked) => onChange(checked || undefined)}
         />
         <Label style={{ fontSize: 13, whiteSpace: 'nowrap' }}>{config.label}</Label>
-      </Box>
+      </div>
     );
   }
 
@@ -96,7 +95,7 @@ function SelectFilter({ config, value, onChange }: SelectFilterProps) {
   const options = useFilterOptions(config);
 
   return (
-    <Box sx={{ minWidth: 130 }}>
+    <div style={{ minWidth: 130 }}>
       <Select
         value={(value as string) || 'all'}
         onValueChange={(v) => onChange(v === 'all' ? undefined : v)}
@@ -113,7 +112,7 @@ function SelectFilter({ config, value, onChange }: SelectFilterProps) {
           ))}
         </SelectContent>
       </Select>
-    </Box>
+    </div>
   );
 }
 
@@ -143,7 +142,7 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
         : `${config.label} (${value.length})`;
 
   return (
-    <Box sx={{ minWidth: 130 }}>
+    <div style={{ minWidth: 130 }}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -164,35 +163,26 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
           </Button>
         </PopoverTrigger>
         <PopoverContent style={{ width: 220, padding: 8, maxHeight: 320, overflow: 'auto' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <div className="flex flex-col gap-1">
             {options.map((opt) => (
-              <Box
+              <div
                 key={opt.value}
                 onClick={() => toggle(opt.value)}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  px: 1,
-                  py: 0.75,
-                  cursor: 'pointer',
-                  borderRadius: 1,
-                  '&:hover': { backgroundColor: 'action.hover' },
-                }}
+                className="flex items-center gap-2 px-2 py-1.5 cursor-pointer rounded hover:bg-muted"
               >
                 <Checkbox checked={selected.has(opt.value)} />
                 <span style={{ fontSize: 13 }}>{opt.label}</span>
-              </Box>
+              </div>
             ))}
             {options.length === 0 && (
               <span style={{ fontSize: 13, color: 'var(--muted-foreground)', padding: 8 }}>
                 No options
               </span>
             )}
-          </Box>
+          </div>
         </PopoverContent>
       </Popover>
-    </Box>
+    </div>
   );
 }
 
@@ -227,7 +217,7 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
           : config.label;
 
   return (
-    <Box sx={{ minWidth: 160 }}>
+    <div style={{ minWidth: 160 }}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -249,9 +239,9 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
           </Button>
         </PopoverTrigger>
         <PopoverContent style={{ width: 'auto', padding: 8 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Box>
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-4">
+              <div>
                 <Label style={{ fontSize: 12 }}>From</Label>
                 <Calendar
                   mode="single"
@@ -259,20 +249,20 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
                   onSelect={(d) => update({ from: d, to })}
                   initialFocus
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label style={{ fontSize: 12 }}>To</Label>
                 <Calendar
                   mode="single"
                   selected={to}
                   onSelect={(d) => update({ from, to: d })}
                 />
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
-    </Box>
+    </div>
   );
 }
 
@@ -286,16 +276,16 @@ function useFilterOptions(config: EntityFilterConfig): { value: string; label: s
       if (!config.dynamicSource) return [];
       const { table, column, labelColumn } = config.dynamicSource;
       const selectCols = labelColumn ? `${column}, ${labelColumn}` : column;
-      const { data, error } = await supabase
-        .from(table as 'venues')
-        .select(selectCols)
-        .not(column, 'is', null)
-        .order(labelColumn || column);
-      if (error) throw error;
+      const data = await listWhereNotNull<Record<string, string>>(
+        table,
+        selectCols,
+        column,
+        labelColumn || column,
+      );
 
       const seen = new Set<string>();
       const options: { value: string; label: string }[] = [];
-      for (const row of data || []) {
+      for (const row of data) {
         const val = (row as unknown as Record<string, string>)[column];
         if (val && !seen.has(val)) {
           seen.add(val);

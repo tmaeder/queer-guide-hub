@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
 interface AdultModelRow {
@@ -7,7 +6,7 @@ interface AdultModelRow {
   name: string;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   // Handle CORS preflight requests
@@ -201,6 +200,7 @@ serve(async (req) => {
           verification_status: 'pending',
           is_featured: false,
           is_living: true,
+          is_adult: true,
           fields: row['pornhub-profile'] && row['pornhub-profile'].trim() !== '' 
             ? { pornhub_profile: row['pornhub-profile'].trim() }
             : null,

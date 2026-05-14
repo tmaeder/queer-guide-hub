@@ -1,12 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import LinearProgress from '@mui/material/LinearProgress';
-import Alert from '@mui/material/Alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { callSearchIntelligence } from '@/hooks/useSearchIntelligence';
 
 type Status = 'ok' | 'warn' | 'fail' | 'na';
@@ -73,16 +69,18 @@ export function SetupTab() {
     refresh();
   }, [refresh]);
 
-  if (loading && !data) return <Typography>Loading…</Typography>;
+  if (loading && !data) return <p>Loading…</p>;
   if (error) {
     return (
-      <Alert severity="error">
-        <Typography variant="body2">{error}</Typography>
-        <Typography variant="caption">
-          The /setup-status endpoint is admin-only. If you see "Not found", redeploy the
-          search-intelligence edge function and re-apply the verify_search_intelligence_install
-          migration.
-        </Typography>
+      <Alert variant="destructive">
+        <AlertDescription>
+          <p className="text-sm">{error}</p>
+          <p className="text-xs">
+            The /setup-status endpoint is admin-only. If you see "Not found", redeploy the
+            search-intelligence edge function and re-apply the verify_search_intelligence_install
+            migration.
+          </p>
+        </AlertDescription>
       </Alert>
     );
   }
@@ -92,7 +90,6 @@ export function SetupTab() {
     data.summary.ok + data.summary.warn + data.summary.fail + data.summary.na;
   const okPct = total === 0 ? 0 : Math.round((data.summary.ok / total) * 100);
 
-  // Group checks by category, ordered.
   const grouped = new Map<string, Check[]>();
   for (const c of data.checks) {
     const arr = grouped.get(c.category) ?? [];
@@ -104,61 +101,46 @@ export function SetupTab() {
     ...[...grouped.keys()].filter((c) => !CATEGORY_ORDER.includes(c)),
   ];
 
+  const barColor = data.summary.fail > 0 ? '#ef4444' : data.summary.warn > 0 ? '#f59e0b' : '#10b981';
+
   return (
-    <Stack spacing={3}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardContent>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems={{ md: 'center' }}
-            spacing={2}
-          >
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h6">Install status</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Self-test for the Search Intelligence rollup. Re-runnable; no
-                writes.
-              </Typography>
-            </Box>
-            <Stack direction="row" spacing={1} alignItems="center">
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+            <div className="flex-1">
+              <h6 className="text-base font-semibold">Install status</h6>
+              <p className="text-sm text-muted-foreground">
+                Self-test for the Search Intelligence rollup. Re-runnable; no writes.
+              </p>
+            </div>
+            <div className="flex flex-row gap-2 items-center">
               <Badge variant="default">{data.summary.ok} ok</Badge>
               <Badge variant="secondary">{data.summary.warn} warn</Badge>
               <Badge variant="destructive">{data.summary.fail} fail</Badge>
               <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
                 Refresh
               </Button>
-            </Stack>
-          </Stack>
-          <Box sx={{ mt: 2 }}>
-            <LinearProgress
-              variant="determinate"
-              value={okPct}
-              sx={{
-                height: 6,
-                backgroundColor: 'rgba(0,0,0,0.06)',
-                '& .MuiLinearProgress-bar': {
-                  backgroundColor:
-                    data.summary.fail > 0
-                      ? '#ef4444'
-                      : data.summary.warn > 0
-                        ? '#f59e0b'
-                        : '#10b981',
-                },
-              }}
-            />
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="h-1.5 w-full overflow-hidden" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
+              <div className="h-full" style={{ width: `${okPct}%`, backgroundColor: barColor }} />
+            </div>
+            <span className="text-xs text-muted-foreground mt-1 block">
               {okPct}% of checks passing ({data.summary.ok} of {total})
-            </Typography>
-          </Box>
+            </span>
+          </div>
         </CardContent>
       </Card>
 
       {data.summary.fail > 0 && (
-        <Alert severity="error">
-          {data.summary.fail} check(s) failing. Most common causes: a migration didn't apply,
-          a webhook secret isn't set, or an edge function isn't redeployed. See the per-check
-          detail below.
+        <Alert variant="destructive">
+          <AlertDescription>
+            {data.summary.fail} check(s) failing. Most common causes: a migration didn't apply,
+            a webhook secret isn't set, or an edge function isn't redeployed. See the per-check
+            detail below.
+          </AlertDescription>
         </Alert>
       )}
 
@@ -167,33 +149,30 @@ export function SetupTab() {
         return (
           <Card key={cat}>
             <CardContent>
-              <Typography variant="subtitle2" sx={{ textTransform: 'uppercase', mb: 1.5 }}>
+              <p className="text-sm font-semibold uppercase mb-3">
                 {cat}{' '}
-                <Typography component="span" variant="caption" color="text.secondary">
+                <span className="text-xs text-muted-foreground">
                   ({checks.length})
-                </Typography>
-              </Typography>
-              <Stack spacing={0.5}>
+                </span>
+              </p>
+              <div className="flex flex-col gap-1">
                 {checks.map((c) => (
-                  <Stack
+                  <div
                     key={`${c.category}-${c.name}`}
-                    direction="row"
-                    spacing={2}
-                    alignItems="center"
-                    sx={{ fontFamily: 'monospace', fontSize: 13 }}
+                    className="flex flex-row gap-4 items-center font-mono text-[13px]"
                   >
                     <Badge variant={STATUS_VARIANT[c.status]}>
                       {STATUS_LABEL[c.status]}
                     </Badge>
-                    <Box sx={{ minWidth: 280, flexShrink: 0 }}>{c.name}</Box>
-                    <Box sx={{ flex: 1, color: 'text.secondary' }}>{c.detail}</Box>
-                  </Stack>
+                    <div className="min-w-[280px] shrink-0">{c.name}</div>
+                    <div className="flex-1 text-muted-foreground">{c.detail}</div>
+                  </div>
                 ))}
-              </Stack>
+              </div>
             </CardContent>
           </Card>
         );
       })}
-    </Stack>
+    </div>
   );
 }

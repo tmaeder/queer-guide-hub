@@ -1,15 +1,12 @@
 import { useState } from 'react';
-import { Plus, Edit2, Trash2, Handshake, Globe, AlertCircle, RefreshCw } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import TextField from '@mui/material/TextField';
-import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import { Plus, Edit2, Trash2, Handshake, Globe, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
 import { toast } from 'sonner';
 
@@ -98,71 +95,70 @@ export function AffiliatePartnersManager() {
   };
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress  aria-label="Loading"/></Box>;
+    return <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin" aria-label="Loading" /></div>;
   }
 
   if (fetchError) {
     return (
-      <Box sx={{ p: 3, maxWidth: 1000, mx: 'auto' }}>
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
+      <div className="p-6 max-w-[1000px] mx-auto">
+        <div className="rounded-md border bg-card p-8 text-center">
           <AlertCircle style={{ width: 32, height: 32, color: '#ef4444', margin: '0 auto 12px' }} />
-          <Typography variant="h6" sx={{ mb: 1 }}>Failed to load affiliate partners</Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>{fetchError}</Typography>
+          <h6 className="text-lg font-medium mb-1">Failed to load affiliate partners</h6>
+          <p className="text-muted-foreground mb-4">{fetchError}</p>
           <Button onClick={fetchPartners} variant="outline">
             <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
             Retry
           </Button>
-        </Paper>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1000, mx: 'auto' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="p-6 max-w-[1000px] mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h5 className="text-xl font-medium flex items-center gap-2">
           <Handshake style={{ width: 24, height: 24 }} />
           Affiliate Partners
-        </Typography>
+        </h5>
         <Button onClick={openCreate}><Plus className="w-4 h-4 mr-1" /> Add Partner</Button>
-      </Box>
+      </div>
 
       {partners.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography color="text.secondary">No affiliate partners configured yet.</Typography>
-        </Paper>
+        <div className="rounded-md border bg-card p-8 text-center">
+          <p className="text-muted-foreground">No affiliate partners configured yet.</p>
+        </div>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {partners.map(p => (
-            <Paper key={p.id} sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>{p.partner_name}</Typography>
-                  <Chip
-                    size="small"
-                    label={p.enabled ? 'Active' : 'Disabled'}
-                    color={p.enabled ? 'success' : 'default'}
-                    variant="outlined"
-                  />
-                </Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
+            <div key={p.id} className="rounded-md border bg-card p-5 flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base font-semibold">{p.partner_name}</span>
+                  <Badge variant="outline" className={p.enabled ? 'border-green-500 text-green-600' : ''}>
+                    {p.enabled ? 'Active' : 'Disabled'}
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap gap-1 mb-1">
                   {p.domains.map(d => (
-                    <Chip key={d} size="small" icon={<Globe style={{ width: 12, height: 12 }} />} label={d} variant="outlined" />
+                    <Badge key={d} variant="outline" className="gap-1">
+                      <Globe style={{ width: 12, height: 12 }} />{d}
+                    </Badge>
                   ))}
-                </Box>
+                </div>
                 {Object.keys(p.parameters).length > 0 && (
-                  <Typography variant="caption" color="text.secondary">
+                  <p className="text-xs text-muted-foreground">
                     Params: {Object.entries(p.parameters).map(([k, v]) => `${k}=${v}`).join(', ')}
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
               <Button size="sm" variant="ghost" onClick={() => openEdit(p)}><Edit2 className="w-4 h-4" /></Button>
               <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id, p.partner_name)}>
                 <Trash2 className="w-4 h-4 text-red-500" />
               </Button>
-            </Paper>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -170,59 +166,69 @@ export function AffiliatePartnersManager() {
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Partner' : 'Add Affiliate Partner'}</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField
-              label="Partner Name"
-              value={form.partner_name}
-              onChange={e => setForm(f => ({ ...f, partner_name: e.target.value }))}
-              size="small"
-              required
-            />
-            <TextField
-              label="Domains (comma-separated)"
-              value={form.domains}
-              onChange={e => setForm(f => ({ ...f, domains: e.target.value }))}
-              size="small"
-              placeholder="aviasales.com, search.aviasales.com"
-              helperText="Domains to match (without www)"
-            />
-            <TextField
-              label="URL Patterns (comma-separated, optional)"
-              value={form.url_patterns}
-              onChange={e => setForm(f => ({ ...f, url_patterns: e.target.value }))}
-              size="small"
-              placeholder="/flights/*, /hotels/*"
-            />
-            <TextField
-              label="Parameters (JSON)"
-              value={form.parameters}
-              onChange={e => setForm(f => ({ ...f, parameters: e.target.value }))}
-              size="small"
-              multiline
-              rows={3}
-              placeholder='{"marker": "452012"}'
-              helperText="Key-value pairs appended to matching URLs"
-            />
-            <TextField
-              label="Redirect Template (optional)"
-              value={form.redirect_template}
-              onChange={e => setForm(f => ({ ...f, redirect_template: e.target.value }))}
-              size="small"
-              placeholder="https://tp.media/r?..."
-            />
-            <TextField
-              label="Notes"
-              value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-              size="small"
-              multiline
-              rows={2}
-            />
-            <FormControlLabel
-              control={<Switch checked={form.enabled} onChange={e => setForm(f => ({ ...f, enabled: e.target.checked }))} />}
-              label="Enabled"
-            />
-          </Box>
+          <div className="flex flex-col gap-4 mt-2">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="partner_name">Partner Name *</Label>
+              <Input
+                id="partner_name"
+                value={form.partner_name}
+                onChange={e => setForm(f => ({ ...f, partner_name: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="domains">Domains (comma-separated)</Label>
+              <Input
+                id="domains"
+                value={form.domains}
+                onChange={e => setForm(f => ({ ...f, domains: e.target.value }))}
+                placeholder="aviasales.com, search.aviasales.com"
+              />
+              <p className="text-xs text-muted-foreground">Domains to match (without www)</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="url_patterns">URL Patterns (comma-separated, optional)</Label>
+              <Input
+                id="url_patterns"
+                value={form.url_patterns}
+                onChange={e => setForm(f => ({ ...f, url_patterns: e.target.value }))}
+                placeholder="/flights/*, /hotels/*"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="parameters">Parameters (JSON)</Label>
+              <Textarea
+                id="parameters"
+                value={form.parameters}
+                onChange={e => setForm(f => ({ ...f, parameters: e.target.value }))}
+                rows={3}
+                placeholder='{"marker": "452012"}'
+              />
+              <p className="text-xs text-muted-foreground">Key-value pairs appended to matching URLs</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="redirect_template">Redirect Template (optional)</Label>
+              <Input
+                id="redirect_template"
+                value={form.redirect_template}
+                onChange={e => setForm(f => ({ ...f, redirect_template: e.target.value }))}
+                placeholder="https://tp.media/r?..."
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                value={form.notes}
+                onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                rows={2}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch id="enabled" checked={form.enabled} onCheckedChange={v => setForm(f => ({ ...f, enabled: v }))} />
+              <Label htmlFor="enabled">Enabled</Label>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving}>
@@ -231,7 +237,7 @@ export function AffiliatePartnersManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }
 

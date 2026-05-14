@@ -6,6 +6,7 @@ import {
   routeRows,
   type EntityType,
 } from '../_shared/entity-type-classifier.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: CSV File Upload — generic adapter for all entity types.
@@ -131,7 +132,7 @@ function routeRawItems(
   )
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-csv-upload', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -226,4 +227,4 @@ Deno.serve(async (req) => {
     }
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

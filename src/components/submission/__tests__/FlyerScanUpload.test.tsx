@@ -135,8 +135,8 @@ describe('FlyerScanUpload — rejection feedback', () => {
     const { onFilesSelected } = renderIdle();
     const exe = makeFile('virus.exe', 'application/octet-stream');
 
-    const card = document.querySelector('.MuiCard-root, [class*="Card"]') as HTMLElement;
-    const dropTarget = card || document.body;
+    const dropTarget = getFileInput().closest('div')?.parentElement as HTMLElement;
+    expect(dropTarget).toBeTruthy();
     fireEvent.drop(dropTarget, {
       dataTransfer: { files: [exe], items: [], types: [] },
     });

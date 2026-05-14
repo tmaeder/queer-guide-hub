@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Car, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,33 +38,33 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
 
   if (compact) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+      <div className="flex items-center gap-3 p-4 bg-muted">
         <Car style={{ height: 20, width: 20, color: 'var(--primary)', flexShrink: 0 }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Rent a Car in {city}</Typography>
-          <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>Compare prices from top providers</Typography>
-        </Box>
+        <div className="flex-1">
+          <p className="font-semibold text-sm">Rent a Car in {city}</p>
+          <p className="text-xs text-muted-foreground">Compare prices from top providers</p>
+        </div>
         <Button size="sm" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
           <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
           Search
         </Button>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+    <div>
+      <div className="flex items-center gap-2 mb-3">
         <Car style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>Rent a Car in {city}</Typography>
-      </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}>
+        <p className="font-semibold text-base">Rent a Car in {city}</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card className="hover:shadow-sm transition-shadow">
           <CardContent style={{ padding: 16 }}>
-            <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', mb: 0.5 }}>DiscoverCars</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
+            <p className="font-semibold text-sm mb-1">DiscoverCars</p>
+            <p className="text-xs text-muted-foreground mb-3">
               Compare 500+ providers, free cancellation
-            </Typography>
+            </p>
             <Button size="sm" className="w-full" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
               <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
               Search Cars
@@ -75,17 +73,17 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
         </Card>
         <Card className="hover:shadow-sm transition-shadow">
           <CardContent style={{ padding: 16 }}>
-            <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', mb: 0.5 }}>Rentalcars.com</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
+            <p className="font-semibold text-sm mb-1">Rentalcars.com</p>
+            <p className="text-xs text-muted-foreground mb-3">
               Booking.com partner, loyalty rewards
-            </Typography>
+            </p>
             <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(rentalcarsUrl, '_blank', 'noopener')}>
               <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
               Search Cars
             </Button>
           </CardContent>
         </Card>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

@@ -7,12 +7,7 @@
 
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import MuiLink from '@mui/material/Link';
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
-import { Activity, Clock, Settings, ScanSearch, LinkIcon } from 'lucide-react';
+import { Activity, Clock, Settings, ScanSearch, LinkIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAutomation, type AutomationModule } from '@/hooks/useAutomation';
 import { LinkHealthDashboard } from '../LinkHealthDashboard';
@@ -60,36 +55,28 @@ export function AutomationDashboard() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress  aria-label="Loading"/>
-      </Box>
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h5 className="text-xl font-bold">
             Automation Modules
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </h5>
+          <p className="text-sm text-muted-foreground">
             Configure and run automation pipelines — review pending changes in{' '}
-            <MuiLink component={RouterLink} to="/admin/review?tab=automation" underline="hover">
+            <RouterLink to="/admin/review?tab=automation" className="underline hover:no-underline text-primary">
               Review &amp; Moderation
-            </MuiLink>
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+            </RouterLink>
+          </p>
+        </div>
+        <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -107,57 +94,48 @@ export function AutomationDashboard() {
             <ScanSearch size={15} />
             Full Scan All
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Progress bar — shown while any module is running */}
       {isRunning && activeRun && (
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-            <Typography variant="caption" color="text.secondary">
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-xs text-muted-foreground">
               {activeRun.fullScan ? 'Full scan in progress…' : `Running ${activeRun.slug}…`}
-            </Typography>
+            </span>
             {activeRun.slug === 'all' && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 {modulesCompleted} / {totalModules} modules
-              </Typography>
+              </span>
             )}
-          </Box>
-          <LinearProgress
-            variant={modulesCompleted > 0 ? 'determinate' : 'indeterminate'}
-            value={progressValue}
-            sx={{ borderRadius: 1 }}
-          />
-        </Box>
+          </div>
+          <div className="h-1 w-full bg-muted overflow-hidden rounded-sm">
+            <div
+              className={modulesCompleted > 0 ? 'h-full bg-primary transition-all' : 'h-full bg-primary animate-pulse'}
+              style={modulesCompleted > 0 ? { width: `${progressValue}%` } : { width: '50%' }}
+            />
+          </div>
+        </div>
       )}
 
       {/* Tabs */}
-      <Box sx={{ display: 'flex', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 0 }}>
+      <div className="flex gap-2 border-b border-border pb-0">
         {TABS.map(({ key, label, icon: Icon }) => (
-          <Box
+          <div
             key={key}
             onClick={() => setActiveTab(key)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              px: 2,
-              py: 1.25,
-              cursor: 'pointer',
-              borderBottom: 2,
-              borderColor: activeTab === key ? 'primary.main' : 'transparent',
-              color: activeTab === key ? 'primary.main' : 'text.secondary',
-              fontWeight: activeTab === key ? 700 : 500,
-              fontSize: '0.875rem',
-              transition: 'all 0.15s',
-              '&:hover': { color: 'primary.main' },
-            }}
+            className={`flex items-center gap-1.5 px-4 py-2.5 cursor-pointer border-b-2 text-sm transition-colors hover:text-primary ${
+              activeTab === key
+                ? 'border-primary text-primary font-bold'
+                : 'border-transparent text-muted-foreground font-medium'
+            }`}
           >
             <Icon size={16} />
             {label}
-          </Box>
+          </div>
         ))}
-      </Box>
+      </div>
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
@@ -190,7 +168,7 @@ export function AutomationDashboard() {
         onClose={() => setSettingsModule(null)}
         onSave={(moduleId, settings) => updateModuleSettings({ moduleId, settings })}
       />
-    </Box>
+    </div>
   );
 }
 
@@ -212,22 +190,16 @@ function OverviewTab({
   runningModuleSlug: string | null;
 }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Stats cards */}
       <AutomationStats stats={stats} />
 
       {/* Module cards grid */}
-      <Box>
-        <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+      <div>
+        <p className="text-base font-bold mb-4">
           Modules
-        </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-            gap: 2,
-          }}
-        >
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {modules.map((mod) => (
             <ModuleCard
               key={mod.id}
@@ -238,9 +210,9 @@ function OverviewTab({
               isRunning={runningModuleSlug === mod.slug}
             />
           ))}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -255,53 +227,45 @@ function SettingsTab({
   onSettings: (module: AutomationModule) => void;
 }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Typography variant="body2" color="text.secondary">
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-muted-foreground">
         Configure automation modules — thresholds, batch sizes, rate limits, and content types.
-      </Typography>
+      </p>
       {modules.map((mod) => (
-        <Box
+        <div
           key={mod.id}
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-          }}
+          className="p-4 rounded-lg border border-border flex items-center gap-4"
         >
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2" fontWeight={700}>
+          <div className="flex-1">
+            <p className="text-sm font-bold">
               {mod.display_name}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+            </p>
+            <p className="text-xs text-muted-foreground">
               {mod.description}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-              <Typography variant="caption">
+            </p>
+            <div className="flex gap-4 mt-2">
+              <span className="text-xs">
                 Threshold:{' '}
                 <strong>
                   {mod.auto_approve_threshold > 1
                     ? 'Manual only'
                     : `${Math.round(mod.auto_approve_threshold * 100)}%`}
                 </strong>
-              </Typography>
-              <Typography variant="caption">
+              </span>
+              <span className="text-xs">
                 Batch: <strong>{mod.batch_size}</strong>
-              </Typography>
-              <Typography variant="caption">
+              </span>
+              <span className="text-xs">
                 Rate: <strong>{mod.rate_limit_per_hour}/hr</strong>
-              </Typography>
-            </Box>
-          </Box>
+              </span>
+            </div>
+          </div>
           <Button size="sm" variant="outline" onClick={() => onSettings(mod)}>
             <Settings size={14} />
             Configure
           </Button>
-        </Box>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }

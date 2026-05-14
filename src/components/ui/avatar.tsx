@@ -1,108 +1,47 @@
-import * as React from 'react';
-import MuiAvatar from '@mui/material/Avatar';
-
-type ImageLoadingStatus = 'idle' | 'loading' | 'loaded' | 'error';
-
-const AvatarContext = React.createContext<{
-  status: ImageLoadingStatus;
-  setStatus: (status: ImageLoadingStatus) => void;
-}>({ status: 'idle', setStatus: () => {} });
+import * as React from "react"
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import { cn } from "@/lib/utils"
 
 const Avatar = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { className?: string }
->(({ className, children, style, ...props }, ref) => {
-  const [status, setStatus] = React.useState<ImageLoadingStatus>('idle');
-  return (
-    <AvatarContext.Provider value={{ status, setStatus }}>
-      <MuiAvatar
-        ref={ref}
-        className={className}
-        style={style}
-        sx={{ position: 'relative', borderRadius: 0 }}
-        {...(props as Record<string, unknown>)}
-      >
-        {children}
-      </MuiAvatar>
-    </AvatarContext.Provider>
-  );
-});
-Avatar.displayName = 'Avatar';
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn(
+      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      className
+    )}
+    {...props}
+  />
+))
+Avatar.displayName = AvatarPrimitive.Root.displayName
 
-const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
-  ({ className, src, alt, style, onLoad, onError, ...props }, ref) => {
-    const { setStatus } = React.useContext(AvatarContext);
-    const [hasError, setHasError] = React.useState(false);
+const AvatarImage = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Image>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Image
+    ref={ref}
+    className={cn("aspect-square h-full w-full object-cover", className)}
+    {...props}
+  />
+))
+AvatarImage.displayName = AvatarPrimitive.Image.displayName
 
-    React.useEffect(() => {
-      setHasError(false);
-      if (src) {
-        setStatus('loading');
-      } else {
-        setStatus('error');
-      }
-    }, [src, setStatus]);
+const AvatarFallback = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Fallback>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Fallback
+    ref={ref}
+    className={cn(
+      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      className
+    )}
+    {...props}
+  />
+))
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
 
-    if (!src || hasError) return null;
-
-    return (
-      <img
-        ref={ref}
-        src={src}
-        alt={alt || ''}
-        role="presentation"
-        className={className}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          ...style,
-        }}
-        onLoad={(e) => {
-          setStatus('loaded');
-          onLoad?.(e);
-        }}
-        onError={(e) => {
-          setHasError(true);
-          setStatus('error');
-          onError?.(e);
-        }}
-        {...props}
-      />
-    );
-  },
-);
-AvatarImage.displayName = 'AvatarImage';
-
-const AvatarFallback = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
-  ({ className, children, style, ...props }, ref) => {
-    const { status } = React.useContext(AvatarContext);
-
-    if (status === 'loaded') return null;
-
-    return (
-      <span
-        ref={ref}
-        className={className}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          width: '100%',
-          height: '100%',
-          alignItems: 'center',
-          justifyContent: 'center',
-          ...style,
-        }}
-        {...props}
-      >
-        {children}
-      </span>
-    );
-  },
-);
-AvatarFallback.displayName = 'AvatarFallback';
-
-export { Avatar, AvatarImage, AvatarFallback };
+export { Avatar, AvatarImage, AvatarFallback }

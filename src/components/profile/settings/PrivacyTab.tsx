@@ -5,10 +5,8 @@ import {
 } from '@/components/ui/select';
 import { SwitchField } from './fields';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
+import { RecognitionMailingForm } from '@/components/profile/RecognitionMailingForm';
 import type { ProfileFormData } from '@/types/profileForm';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { stack, row } from '@/lib/sx';
 
 const VISIBILITY_OPTIONS = [
   { value: 'public', label: 'Public' },
@@ -26,13 +24,13 @@ function VisibilityRow({ id, label, description, value, onChange }: {
   id: string; label: string; description: string; value: string; onChange: (v: string) => void;
 }) {
   return (
-    <Box sx={{ ...row(2), justifyContent: 'space-between' }}>
-      <Box>
+    <div className="flex items-center justify-between gap-4">
+      <div>
         <Label htmlFor={id}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>{label}</Typography>
+          <span className="text-sm font-medium">{label}</span>
         </Label>
-        <Typography variant="caption" color="text.secondary">{description}</Typography>
-      </Box>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger style={{ width: 128 }}>
           <SelectValue />
@@ -43,7 +41,7 @@ function VisibilityRow({ id, label, description, value, onChange }: {
           ))}
         </SelectContent>
       </Select>
-    </Box>
+    </div>
   );
 }
 
@@ -51,14 +49,14 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
   const ps = formData.privacy_settings;
 
   return (
-    <Box sx={stack(3)}>
+    <div className="flex flex-col gap-6">
       {/* Profile Visibility */}
       <Card>
         <CardHeader>
           <CardTitle>Privacy Settings</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={stack(2)}>
+          <div className="flex flex-col gap-4">
             <VisibilityRow
               id="profile_visibility"
               label="Profile Visibility"
@@ -101,7 +99,14 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
               checked={!!ps.phone_visible}
               onChange={(v) => onPrivacyChange('phone_visible', v)}
             />
-          </Box>
+            <SwitchField
+              id="appear_in_recognition"
+              label="Appear in annual recognition page"
+              description="If selected by the editorial team, your name may appear on the /contributors/:year page. Default off."
+              checked={!!ps.appear_in_recognition}
+              onChange={(v) => onPrivacyChange('appear_in_recognition', v)}
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -111,19 +116,21 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
           <CardTitle>Security Settings</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ ...row(2), justifyContent: 'space-between' }}>
-            <Box>
+          <div className="flex items-center justify-between gap-4">
+            <div>
               <Label>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Passkey Authentication</Typography>
+                <span className="text-sm font-medium">Passkey Authentication</span>
               </Label>
-              <Typography variant="caption" color="text.secondary">
+              <p className="text-xs text-muted-foreground">
                 {hasPasskey ? 'Passkey is enabled for secure login' : 'Add a passkey for enhanced security'}
-              </Typography>
-            </Box>
+              </p>
+            </div>
             <PasskeyButton mode="enroll" />
-          </Box>
+          </div>
         </CardContent>
       </Card>
-    </Box>
+
+      {ps.appear_in_recognition && <RecognitionMailingForm />}
+    </div>
   );
 }

@@ -1,8 +1,4 @@
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { shortcutHelp } from '@/hooks/useFeedbackShortcuts';
 
 export function ShortcutHelpDialog({
@@ -13,32 +9,21 @@ export function ShortcutHelpDialog({
   onClose: () => void;
 }) {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Keyboard shortcuts</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 1 }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-xs">
+        <DialogHeader>
+          <DialogTitle>Keyboard shortcuts</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-2" style={{ gridTemplateColumns: '80px 1fr' }}>
           {shortcutHelp.map((s) => (
-            <Box key={s.key} sx={{ display: 'contents' }}>
-              <Typography
-                variant="caption"
-                sx={{
-                  fontFamily: 'monospace',
-                  bgcolor: 'action.hover',
-                  px: 0.75,
-                  py: 0.25,
-                  borderRadius: 0.5,
-                  textAlign: 'center',
-                  fontSize: '0.7rem',
-                }}
-              >
+            <div key={s.key} style={{ display: 'contents' }}>
+              <span className="font-mono text-[0.7rem] bg-muted/40 px-1.5 py-0.5 rounded text-center">
                 {s.key}
-              </Typography>
-              <Typography variant="caption" sx={{ alignSelf: 'center', fontSize: '0.75rem' }}>
-                {s.label}
-              </Typography>
-            </Box>
+              </span>
+              <span className="self-center text-xs">{s.label}</span>
+            </div>
           ))}
-        </Box>
+        </div>
       </DialogContent>
     </Dialog>
   );

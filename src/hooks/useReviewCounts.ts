@@ -40,7 +40,14 @@ async function fetchReviewCounts(): Promise<ReviewCounts> {
   const staging = raw.review_staging ?? 0;
   const cmsReview = raw.review_cms ?? 0;
   const moderation = raw.review_moderation ?? 0;
-  const automation = 0; // content_flags table does not exist
+  let automation = raw.review_automation ?? 0;
+  if (!automation) {
+    const { count: automationCount } = await supabase
+      .from('content_flags' as never)
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending');
+    automation = automationCount ?? 0;
+  }
   const tagSuggestions = raw.review_tags ?? 0;
   const duplicates = raw.review_duplicates ?? 0;
   const feedback = raw.review_feedback ?? 0;

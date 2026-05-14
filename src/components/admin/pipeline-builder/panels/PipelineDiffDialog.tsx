@@ -87,7 +87,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
             <Button size="sm" variant="ghost" className="h-8 w-8 p-0 relative" disabled={!savedDef || totalChanges === 0}>
               <GitCompare className="h-3.5 w-3.5" />
               {totalChanges > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-semibold">
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-3xs rounded-full w-4 h-4 flex items-center justify-center font-semibold">
                   {totalChanges > 9 ? '9+' : totalChanges}
                 </span>
               )}
@@ -127,7 +127,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                     <div key={n.id} className="text-xs font-mono bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded px-2 py-1 flex gap-2">
                       <span className="text-green-700 dark:text-green-300">+</span>
                       <span>{labelFor(n)}</span>
-                      <span className="text-muted-foreground ml-auto text-[10px]">{n.id.slice(0, 16)}</span>
+                      <span className="text-muted-foreground ml-auto text-2xs">{n.id.slice(0, 16)}</span>
                     </div>
                   ))}
                 </div>
@@ -145,7 +145,7 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                     <div key={n.id} className="text-xs font-mono bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded px-2 py-1 flex gap-2">
                       <span className="text-destructive">−</span>
                       <span>{labelFor(n)}</span>
-                      <span className="text-muted-foreground ml-auto text-[10px]">{n.id.slice(0, 16)}</span>
+                      <span className="text-muted-foreground ml-auto text-2xs">{n.id.slice(0, 16)}</span>
                     </div>
                   ))}
                 </div>
@@ -165,10 +165,10 @@ export default function PipelineDiffDialog({ currentNodes, currentEdges, savedDe
                       <span>{labelFor(m.current)}</span>
                       <div className="flex gap-1">
                         {m.changes.map(c => (
-                          <Badge key={c} variant="outline" className="text-[9px] px-1 py-0 h-4 bg-amber-100 dark:bg-amber-900/40">{c}</Badge>
+                          <Badge key={c} variant="outline" className="text-3xs px-1 py-0 h-4 bg-amber-100 dark:bg-amber-900/40">{c}</Badge>
                         ))}
                       </div>
-                      <span className="text-muted-foreground ml-auto text-[10px]">{m.current.id.slice(0, 16)}</span>
+                      <span className="text-muted-foreground ml-auto text-2xs">{m.current.id.slice(0, 16)}</span>
                     </div>
                   ))}
                 </div>

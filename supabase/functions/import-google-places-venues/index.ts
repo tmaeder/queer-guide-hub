@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.5";
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts';
 import { getCorsHeaders, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts';
@@ -121,7 +120,7 @@ async function getPlaceDetails(apiKey: string, placeId: string): Promise<GoogleP
   return data.result;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const cors = getCorsHeaders(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
 
@@ -281,7 +280,7 @@ serve(async (req) => {
                 hours: hours,
                 images: [], // We can fetch photos separately if needed
                 verified: false,
-                featured: false,
+                is_featured: false,
                 google_place_id: placeDetails.place_id,
                 google_rating: placeDetails.rating || null,
                 google_review_count: placeDetails.user_ratings_total || null,

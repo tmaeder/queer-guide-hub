@@ -25,11 +25,8 @@ import {
   addMonths,
   subMonths,
 } from 'date-fns';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { formatEventTime } from '@/lib/event-time';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 
 type Event = Database['public']['Tables']['events']['Row'];
 interface EventsCalendarViewProps {
@@ -37,11 +34,11 @@ interface EventsCalendarViewProps {
   onEventSelect?: (event: Event) => void;
   onAttendanceUpdate?: (eventId: string, status: 'going' | 'interested' | 'not_going') => void;
 }
-export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
+export const EventsCalendarView = ({
   events,
   onEventSelect,
   onAttendanceUpdate,
-}) => {
+}: EventsCalendarViewProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
@@ -88,97 +85,97 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
     setCurrentMonth((prev) => (direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1)));
   };
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Enhanced Month Stats */}
-      <Box
-        sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}
-      >
+    <div className="flex flex-col gap-6">
+      {monthlyStats.totalEvents === 0 ? (
         <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}>
-                <CalendarIcon style={{ height: 20, width: 20 }} />
-              </Box>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                  {monthlyStats.totalEvents}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Events
-                </Typography>
-              </Box>
-            </Box>
+          <CardContent className="py-8 text-center">
+            <div className="mx-auto mb-3 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+              <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-1">
+              No events yet for {format(currentMonth, 'MMMM yyyy')}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Be the first — submit one to fill the month.
+            </p>
+            <Button asChild>
+              <a href="/submit/event">Submit an Event</a>
+            </Button>
           </CardContent>
         </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted rounded-lg relative">
+                  <CalendarIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <h5 className="text-2xl font-bold text-primary">
+                    {monthlyStats.totalEvents}
+                  </h5>
+                  <p className="text-sm text-muted-foreground">Total Events</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box
-                sx={{
-                  p: 1,
-                  bgcolor: 'success.main',
-                  borderRadius: 2,
-                  opacity: 0.1,
-                  position: 'relative',
-                }}
-              >
-                <Ticket style={{ height: 20, width: 20, color: 'hsl(var(--brand))' }} />
-              </Box>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                  {monthlyStats.freeEvents}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Free Events
-                </Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted relative">
+                  <Ticket className="h-5 w-5 text-foreground" />
+                </div>
+                <div>
+                  <h5 className="text-2xl font-bold text-foreground">
+                    {monthlyStats.freeEvents}
+                  </h5>
+                  <p className="text-sm text-muted-foreground">Free Events</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover', position: 'relative' }}>
-                <Star style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
-              </Box>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-                  {monthlyStats.eventTypes}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Categories
-                </Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
+          <Card>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-muted relative">
+                  <Star className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <h5 className="text-2xl font-bold text-secondary-foreground">
+                    {monthlyStats.eventTypes}
+                  </h5>
+                  <p className="text-sm text-muted-foreground">Categories</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Main Calendar Layout */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' }, gap: 3 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar Section */}
-        <Box>
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div className="flex items-center justify-between">
                 <CardTitle>
-                  <Box
-                    sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2, position: 'relative' }}
-                  >
-                    <CalendarIcon style={{ height: 20, width: 20 }} />
-                  </Box>
+                  <div className="p-2 bg-muted rounded-lg relative">
+                    <CalendarIcon className="h-5 w-5" />
+                  </div>
                   {format(currentMonth, 'MMMM yyyy')}
                 </CardTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
                     aria-label="Previous month"
                     onClick={() => navigateMonth('prev')}
                   >
-                    <ChevronLeft style={{ height: 20, width: 20 }} />
+                    <ChevronLeft className="h-5 w-5" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -186,10 +183,10 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                     aria-label="Next month"
                     onClick={() => navigateMonth('next')}
                   >
-                    <ChevronRight style={{ height: 20, width: 20 }} />
+                    <ChevronRight className="h-5 w-5" />
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Calendar
@@ -207,267 +204,161 @@ export const EventsCalendarView: React.FC<EventsCalendarViewProps> = ({
                     backgroundColor: 'hsl(var(--primary) / 0.1)',
                     color: 'hsl(var(--primary))',
                     fontWeight: 'bold',
+                    // Visible dot indicator under days with events.
+                    boxShadow: 'inset 0 -3px 0 0 hsl(var(--primary))',
                   },
                 }}
               />
             </CardContent>
           </Card>
-        </Box>
+        </div>
 
         {/* Events Section */}
-        <Box>
+        <div>
           <Card>
             <CardHeader>
               <CardTitle>
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    bgcolor: 'primary.main',
-                    borderRadius: '50%',
-                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  }}
-                />
+                <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
                 {format(selectedDate, 'MMM d, yyyy')}
               </CardTitle>
               {eventsForSelectedDate.length > 0 && (
-                <Typography variant="body2" color="text.secondary">
+                <p className="text-sm text-muted-foreground">
                   {eventsForSelectedDate.length} event
                   {eventsForSelectedDate.length !== 1 ? 's' : ''} found
-                </Typography>
+                </p>
               )}
             </CardHeader>
             <CardContent>
               {eventsForSelectedDate.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Box
-                    sx={{
-                      mx: 'auto',
-                      width: 48,
-                      height: 48,
-                      bgcolor: 'action.hover',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mb: 2,
-                    }}
-                  >
-                    <CalendarIcon
-                      style={{ height: 24, width: 24, color: 'var(--muted-foreground)' }}
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                <div className="text-center py-12">
+                  <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
+                    <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">
                     No events scheduled
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                  </p>
+                  <span className="text-xs text-muted-foreground mt-1">
                     Select another date to explore
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
               ) : (
-                <ScrollArea style={{ height: 400, paddingRight: 16 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="flex flex-col gap-4">
                     {eventsForSelectedDate.map((event) => (
-                      <Box key={event.id} sx={{ position: 'relative' }}>
-                        <Paper
-                          sx={{
-                            p: 2,
-                            transition: 'all 0.2s',
-                            border: 2,
-                            borderColor: 'transparent',
-                            '&:hover': {
-                              borderColor: 'primary.main',
-                              boxShadow: 3,
-                              transform: 'scale(1.02)',
-                            },
-                          }}
-                        >
+                      <div key={event.id} className="relative">
+                        <div className="p-4 transition-all border-2 border-transparent rounded-lg hover:border-primary hover:shadow-lg hover:scale-[1.02] bg-card">
                           {/* Event Header */}
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              justifyContent: 'space-between',
-                              gap: 1.5,
-                              mb: 1.5,
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                '&:hover': { color: 'primary.main' },
-                                transition: 'color 0.2s',
-                                overflow: 'hidden',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                              }}
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <p
+                              className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors line-clamp-2"
                               onClick={() => onEventSelect?.(event)}
                             >
                               {event.title}
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                            </p>
+                            <div className="flex gap-1 flex-shrink-0">
                               {event.is_free && (
-                                <Badge
-                                  variant="secondary"
-                                  style={{
-                                    fontSize: '0.75rem',
-                                    paddingLeft: 8,
-                                    paddingRight: 8,
-                                    paddingTop: 4,
-                                    paddingBottom: 4,
-                                  }}
-                                >
+                                <Badge variant="secondary" className="text-xs px-2 py-1">
                                   Free
                                 </Badge>
                               )}
-                              {event.featured && (
-                                <Badge
-                                  variant="default"
-                                  style={{
-                                    fontSize: '0.75rem',
-                                    paddingLeft: 8,
-                                    paddingRight: 8,
-                                    paddingTop: 4,
-                                    paddingBottom: 4,
-                                  }}
-                                >
-                                  <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+                              {event.is_featured && (
+                                <Badge variant="default" className="text-xs px-2 py-1">
+                                  <Star className="h-3 w-3 mr-1" />
                                   Featured
                                 </Badge>
                               )}
-                            </Box>
-                          </Box>
+                            </div>
+                          </div>
 
                           {/* Event Details */}
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1,
-                                color: 'text.secondary',
-                              }}
-                            >
-                              <Clock style={{ height: 12, width: 12, flexShrink: 0 }} />
-                              <Typography variant="caption">
+                          <div className="flex flex-col gap-2 mb-4">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Clock className="h-3 w-3 flex-shrink-0" />
+                              <span className="text-xs">
                                 {formatEventTime(event.start_date, event.end_date)}
-                              </Typography>
-                            </Box>
+                              </span>
+                            </div>
 
                             {(event.venue_name || event.city) && (
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1,
-                                  color: 'text.secondary',
-                                }}
-                              >
-                                <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <MapPin className="h-3 w-3 flex-shrink-0" />
+                                <span className="text-xs truncate">
                                   {event.venue_name && `${event.venue_name}, `}
                                   {event.city}
-                                </Typography>
-                              </Box>
+                                </span>
+                              </div>
                             )}
 
                             {event.event_type && (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
                                   {event.event_type}
                                 </Badge>
-                              </Box>
+                              </div>
                             )}
-                          </Box>
+                          </div>
 
                           {/* Action Buttons */}
-                          <Box sx={{ display: 'flex', gap: 1 }}>
+                          <div className="flex gap-2">
                             <Button
                               size="sm"
                               variant="outline"
-                              style={{ flex: 1 }}
+                              className="flex-1"
                               onClick={() => onEventSelect?.(event)}
                             >
-                              <Eye style={{ height: 12, width: 12, marginRight: 4 }} />
+                              <Eye className="h-3 w-3 mr-1" />
                               View
                             </Button>
 
                             {onAttendanceUpdate && (
-                              <>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button size="sm" variant="default" style={{ flex: 1 }}>
-                                      <Users style={{ height: 12, width: 12, marginRight: 4 }} />
-                                      Attend
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button size="sm" variant="default" className="flex-1">
+                                    <Users className="h-3 w-3 mr-1" />
+                                    Attend
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-48 p-2" align="center">
+                                  <div className="flex flex-col gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="w-full"
+                                      onClick={() => onAttendanceUpdate(event.id, 'going')}
+                                    >
+                                      I'm Going
                                     </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent style={{ width: 192, padding: 8 }} align="center">
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                      <Button
-                                        size="sm"
-                                        variant="default"
-                                        style={{ width: '100%' }}
-                                        onClick={() => onAttendanceUpdate(event.id, 'going')}
-                                      >
-                                        I'm Going
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        style={{ width: '100%' }}
-                                        onClick={() => onAttendanceUpdate(event.id, 'interested')}
-                                      >
-                                        Interested
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        style={{ width: '100%', color: 'var(--muted-foreground)' }}
-                                        onClick={() => onAttendanceUpdate(event.id, 'not_going')}
-                                      >
-                                        Not Going
-                                      </Button>
-                                    </Box>
-                                  </PopoverContent>
-                                </Popover>
-                              </>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="w-full"
+                                      onClick={() => onAttendanceUpdate(event.id, 'interested')}
+                                    >
+                                      Interested
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="w-full text-muted-foreground"
+                                      onClick={() => onAttendanceUpdate(event.id, 'not_going')}
+                                    >
+                                      Not Going
+                                    </Button>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
                             )}
-                          </Box>
-
-                          {/* Hover Indicator */}
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              inset: 0,
-                              borderRadius: 2,
-                              background:
-                                'linear-gradient(to right, hsl(var(--foreground) / 0.02), hsl(var(--foreground) / 0.04))',
-                              opacity: 0,
-                              transition: 'opacity 0.2s',
-                              pointerEvents: 'none',
-                              '.MuiBox-root:hover > &': { opacity: 1 },
-                            }}
-                          />
-                        </Paper>
-                      </Box>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 </ScrollArea>
               )}
             </CardContent>
           </Card>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };

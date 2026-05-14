@@ -35,8 +35,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ContentSanitizer } from '@/components/security/ContentSanitizer';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface CommentsSectionProps {
   postId: string;
@@ -96,7 +94,7 @@ const CommentItem = ({
 
   return (
     <>
-      <Box sx={{ display: 'flex', gap: 1.5, py: 1.5 }}>
+      <div className="flex gap-3 py-3">
         <Avatar>
           <AvatarImage src={comment.profiles?.avatar_url || undefined} />
           <AvatarFallback>
@@ -104,21 +102,19 @@ const CommentItem = ({
           </AvatarFallback>
         </Avatar>
 
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
             <LocalizedLink to={`/user/${comment.user_id}`} style={{ fontWeight: 500, fontSize: '0.875rem' }}>
               {comment.profiles?.display_name || 'Unknown User'}
             </LocalizedLink>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <span className="text-xs text-muted-foreground">
               {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            {renderCommentContent()}
-          </Typography>
+          <div className="text-sm mb-2">{renderCommentContent()}</div>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
@@ -148,8 +144,8 @@ const CommentItem = ({
                 Reply
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {(isOwnComment || user) && (
           <DropdownMenu>
@@ -180,7 +176,7 @@ const CommentItem = ({
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-      </Box>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -277,30 +273,17 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
     return (
       <Card>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Box
-                key={i}
-                sx={{
-                  display: 'flex',
-                  gap: 1.5,
-                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                }}
-              >
-                <Box
-                  sx={{ height: 32, width: 32, bgcolor: 'action.hover', borderRadius: '50%' }}
-                ></Box>
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Box
-                    sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: '25%' }}
-                  ></Box>
-                  <Box
-                    sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}
-                  ></Box>
-                </Box>
-              </Box>
+              <div key={i} className="flex gap-3 animate-pulse">
+                <div className="h-8 w-8 bg-accent rounded-full" />
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="h-3 bg-accent rounded-sm w-1/4" />
+                  <div className="h-4 bg-accent rounded-sm w-3/4" />
+                </div>
+              </div>
             ))}
-          </Box>
+          </div>
         </CardContent>
       </Card>
     );
@@ -310,34 +293,19 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
     <Card>
       <CardContent>
         {/* Comments Header */}
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-          <Typography
-            variant="subtitle1"
-            sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}
-          >
+        <div className="p-4 border-b">
+          <p className="font-medium flex items-center gap-2">
             <MessageCircle style={{ width: 16, height: 16 }} />
             Comments ({comments.length})
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {/* Add Comment */}
         {user && (
-          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+          <div className="p-4 border-b">
             {replyingTo && (
-              <Box
-                sx={{
-                  mb: 1,
-                  p: 1,
-                  bgcolor: 'action.hover',
-                  borderRadius: 1,
-                  fontSize: '0.75rem',
-                  color: 'text.secondary',
-                }}
-              >
-                Replying to{' '}
-                <Box component="span" sx={{ fontWeight: 500 }}>
-                  {replyingTo.username}
-                </Box>
+              <div className="mb-2 p-2 bg-accent rounded-sm text-xs text-muted-foreground">
+                Replying to <span className="font-medium">{replyingTo.username}</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -345,14 +313,13 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                     setReplyingTo(null);
                     setNewComment('');
                   }}
-
                 >
                   Cancel
                 </Button>
-              </Box>
+              </div>
             )}
 
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <div className="flex gap-3">
               <Avatar>
                 <AvatarImage src={user.user_metadata?.avatar_url} />
                 <AvatarFallback>
@@ -360,76 +327,55 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                 </AvatarFallback>
               </Avatar>
 
-              <Box sx={{ flex: 1 }}>
+              <div className="flex-1">
                 <Textarea
                   ref={textareaRef}
                   placeholder="Add a comment... Use @ to mention users and # for tags"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={handleKeyPress}
-
                   maxLength={500}
                 />
 
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    mt: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      fontSize: '0.75rem',
-                      color: 'text.secondary',
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
                       <AtSign style={{ width: 12, height: 12 }} />
                       <span>mention</span>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    </div>
+                    <div className="flex items-center gap-1">
                       <Hash style={{ width: 12, height: 12 }} />
                       <span>tag</span>
-                    </Box>
+                    </div>
                     <span>• Ctrl+Enter to post</span>
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {newComment.length}/500
-                    </Typography>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{newComment.length}/500</span>
                     <Button
                       size="sm"
                       onClick={handleSubmitComment}
                       disabled={!newComment.trim() || isCreatingComment}
-
                     >
                       <Send style={{ width: 12, height: 12, marginRight: 4 }} />
                       {isCreatingComment ? 'Posting...' : 'Post'}
                     </Button>
-                  </Box>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Comments List */}
-        <Box sx={{ '& > *': { borderBottom: 1, borderColor: 'divider' } }}>
+        <div className="[&>*]:border-b [&>*]:border-border">
           {comments.length === 0 ? (
-            <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-              <MessageCircle
-                style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }}
-              />
-              <Typography variant="body2">No comments yet. Be the first to comment!</Typography>
-            </Box>
+            <div className="p-8 text-center text-muted-foreground">
+              <MessageCircle style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
+              <p className="text-sm">No comments yet. Be the first to comment!</p>
+            </div>
           ) : (
-            <Box sx={{ px: 2 }}>
+            <div className="px-4">
               {comments.map((comment) => (
                 <CommentItem
                   key={comment.id}
@@ -441,9 +387,9 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                   isLiking={isLikingComment}
                 />
               ))}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

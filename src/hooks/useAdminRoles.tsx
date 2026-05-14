@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 type UserRole = Database['public']['Tables']['user_roles']['Row'];
 type AppRole = Database['public']['Enums']['app_role'];
@@ -27,8 +27,13 @@ export function useAdminRoles() {
       setIsModerator(false);
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchUserRoles defined below, re-run on user/authLoading change
-  }, [user, authLoading]);
+    // Depend on user.id, not the user object — Supabase emits a fresh user
+    // reference on every TOKEN_REFRESHED (fires on tab visibility / window
+    // focus). Re-running on identity churn forces loading=true, which causes
+    // AdminRouteGuard to unmount its children and wipe transient editor state
+    // (e.g. an open CMS edit dialog). See feedback 10890b33.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchUserRoles defined below
+  }, [user?.id, authLoading]);
 
   const fetchUserRoles = async () => {
     if (!user) return;

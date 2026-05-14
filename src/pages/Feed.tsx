@@ -13,10 +13,6 @@ import {
 import { PostCard } from '@/components/posts/PostCard';
 import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -55,7 +51,7 @@ export default function Feed() {
       title="Feed"
       description="Sign in to share posts, connect with the community, and discover what's happening around you."
     >
-      <Container sx={{ py: 4 }}>
+      <div className="container mx-auto py-8 px-4">
         <PageHeader
           title="Feed"
           subtitle="Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and discover what's happening around you."
@@ -67,41 +63,41 @@ export default function Feed() {
         ) : (
           <>
             {/* Stats */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 4 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <Card>
-                <CardContent style={{ padding: 16, textAlign: 'center' }}>
-                  <Users style={{ height: 24, width: 24, margin: '0 auto 8px' }} />
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>{posts.length}</Typography>
-                  <Typography variant="body2" color="text.secondary">{t('pages.feed.activePosts', 'Active Posts')}</Typography>
+                <CardContent className="p-4 text-center">
+                  <Users className="h-6 w-6 mx-auto mb-2" />
+                  <h5 className="text-2xl font-bold">{posts.length}</h5>
+                  <p className="text-sm text-muted-foreground">{t('pages.feed.activePosts', 'Active Posts')}</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent style={{ padding: 16, textAlign: 'center' }}>
-                  <Heart style={{ height: 24, width: 24, color: 'hsl(var(--brand))', margin: '0 auto 8px' }} />
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                <CardContent className="p-4 text-center">
+                  <Heart className="h-6 w-6 mx-auto mb-2" style={{ color: 'hsl(var(--foreground))' }} />
+                  <h5 className="text-2xl font-bold">
                     {posts.reduce((sum, post) => sum + (post.likes_count || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">{t('pages.feed.totalLikes', 'Total Likes')}</Typography>
+                  </h5>
+                  <p className="text-sm text-muted-foreground">{t('pages.feed.totalLikes', 'Total Likes')}</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardContent style={{ padding: 16, textAlign: 'center' }}>
-                  <MessageCircle style={{ height: 24, width: 24, color: 'hsl(var(--foreground))', margin: '0 auto 8px' }} />
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                <CardContent className="p-4 text-center">
+                  <MessageCircle className="h-6 w-6 mx-auto mb-2 text-foreground" />
+                  <h5 className="text-2xl font-bold">
                     {posts.reduce((sum, post) => sum + (post.comments_count || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">{t('pages.feed.comments', 'Comments')}</Typography>
+                  </h5>
+                  <p className="text-sm text-muted-foreground">{t('pages.feed.comments', 'Comments')}</p>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
 
             {/* Create Post */}
             <Card>
-              <CardContent style={{ padding: 16 }}>
+              <CardContent className="p-4">
                 <CreatePostDialog>
-                  <Button variant="outline" style={{ width: '100%', justifyContent: 'flex-start', height: 56, textAlign: 'left' }}>
-                    <PenSquare style={{ height: 20, width: 20, marginRight: 12, color: 'hsl(var(--muted-foreground))' }} />
-                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  <Button variant="outline" className="w-full justify-start h-14 text-left">
+                    <PenSquare className="h-5 w-5 mr-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">
                       What's on your mind? Share with the community...
                     </span>
                   </Button>
@@ -110,18 +106,18 @@ export default function Feed() {
             </Card>
 
             {/* Search & Tabs */}
-            <Paper variant="outlined" sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
-              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 2 }}>
-                <Box sx={{ position: 'relative', flex: 1 }}>
-                  <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
+            <div className="p-4 mb-6 bg-background border border-border rounded">
+              <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={t('pages.feed.searchPlaceholder', 'Search posts or users...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ paddingLeft: 40 }}
+                    className="pl-10"
                   />
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
@@ -133,10 +129,10 @@ export default function Feed() {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-            </Paper>
+            </div>
 
             {/* Posts */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="flex flex-col gap-6">
               {sortedPosts.length === 0 ? (
                 searchTerm ? (
                   <EmptyState
@@ -154,7 +150,7 @@ export default function Feed() {
                   >
                     <CreatePostDialog>
                       <Button>
-                        <PenSquare style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <PenSquare className="h-4 w-4 mr-2" />
                         Create First Post
                       </Button>
                     </CreatePostDialog>
@@ -172,10 +168,10 @@ export default function Feed() {
                   />
                 ))
               )}
-            </Box>
+            </div>
           </>
         )}
-      </Container>
+      </div>
     </AuthGate>
   );
 }

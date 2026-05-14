@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Plus,
@@ -23,12 +21,12 @@ import {
   RefreshCw,
   Globe,
   Rss,
-  ArrowLeft,
   AlertCircle,
   CheckCircle,
   Tags,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -38,11 +36,10 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
+import { LEGACY_NEWS_TRIGGER_ENABLED } from '@/lib/featureFlags';
 
 interface NewsSourceRow {
   id: string;
@@ -83,9 +80,6 @@ const frequencies = [
 const columnHelper = createColumnHelper<NewsSourceRow>();
 
 export default function AdminNewsSources() {
-  const navigate = useNavigate();
-  const { canManageContent, loading } = useAdminRoles();
-  const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [keywordsDialogOpen, setKeywordsDialogOpen] = useState(false);
@@ -117,21 +111,18 @@ export default function AdminNewsSources() {
     e.preventDefault();
     try {
       if (editingSource) {
-        const { error } = await supabase
-          .from('news_sources')
-          .update(formData)
-          .eq('id', editingSource.id);
+        const { error } = await updateRow('news_sources', editingSource.id, formData);
         if (error) throw error;
-        toast({ title: 'Success', description: 'News source updated' });
+        toast.success('Success: News source updated');
       } else {
-        const { error } = await supabase.from('news_sources').insert([formData]);
+        const { error } = await insertInto('news_sources', formData);
         if (error) throw error;
-        toast({ title: 'Success', description: 'News source created' });
+        toast.success('Success: News source created');
       }
       setDialogOpen(false);
       resetForm();
     } catch {
-      toast({ title: 'Error', description: 'Failed to save news source', variant: 'destructive' });
+      toast.error('Error: Failed to save news source');
     }
   };
 
@@ -184,17 +175,16 @@ export default function AdminNewsSources() {
   const saveKeywords = async () => {
     if (!editingSource) return;
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .update({ keywords: editingKeywords })
-        .eq('id', editingSource.id);
+      const { error } = await updateRow('news_sources', editingSource.id, {
+        keywords: editingKeywords,
+      });
       if (error) throw error;
-      toast({ title: 'Success', description: 'Keywords updated' });
+      toast.success('Success: Keywords updated');
       setKeywordsDialogOpen(false);
       setEditingSource(null);
       setEditingKeywords([]);
     } catch {
-      toast({ title: 'Error', description: 'Failed to update keywords', variant: 'destructive' });
+      toast.error('Error: Failed to update keywords');
     }
   };
 
@@ -204,22 +194,12 @@ export default function AdminNewsSources() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                fontSize: '0.75rem',
-                maxWidth: 200,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <p className="text-sm text-muted-foreground">
               {info.row.original.url}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -228,14 +208,14 @@ export default function AdminNewsSources() {
         cell: (info) => {
           const val = info.getValue();
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               {val === 'rss' ? (
                 <Rss style={{ height: 14, width: 14 }} />
               ) : (
                 <Globe style={{ height: 14, width: 14 }} />
               )}
               <Badge variant="secondary">{val.toUpperCase()}</Badge>
-            </Box>
+            </div>
           );
         },
         meta: { serverSortable: true, groupable: true, hideable: true } satisfies AdminColumnMeta,
@@ -251,12 +231,12 @@ export default function AdminNewsSources() {
           const row = info.row.original;
           const active = info.getValue();
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               {row.status === 'error' ? (
                 <AlertCircle style={{ height: 14, width: 14, color: '#ef4444' }} />
               ) : (
                 <CheckCircle
-                  style={{ height: 14, width: 14, color: active ? '#22c55e' : '#94a3b8' }}
+                  style={{ height: 14, width: 14, color: active ? '#22c55e' : 'hsl(var(--muted-foreground))' }}
                 />
               )}
               <Badge
@@ -264,7 +244,7 @@ export default function AdminNewsSources() {
               >
                 {active ? row.status || 'Active' : 'Inactive'}
               </Badge>
-            </Box>
+            </div>
           );
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
@@ -342,7 +322,13 @@ export default function AdminNewsSources() {
       ],
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
-        { key: 'fetch', label: 'Fetch Now', icon: RefreshCw, onClick: triggerFetch },
+        {
+          key: 'fetch',
+          label: 'Fetch Now (legacy)',
+          icon: RefreshCw,
+          onClick: triggerFetch,
+          visible: () => LEGACY_NEWS_TRIGGER_ENABLED,
+        },
         {
           key: 'open',
           label: 'Open URL',
@@ -364,21 +350,17 @@ export default function AdminNewsSources() {
           onClick: async (row) => {
             if (!confirm(`Delete "${row.name}"?`)) return;
             try {
-              const { error } = await supabase.from('news_sources').delete().eq('id', row.id);
+              const { error } = await deleteRow('news_sources', row.id);
               if (error) throw error;
-              toast({ title: 'Success', description: 'Source deleted' });
+              toast.success('Success: Source deleted');
             } catch {
-              toast({
-                title: 'Error',
-                description: 'Failed to delete source',
-                variant: 'destructive',
-              });
+              toast.error('Error: Failed to delete source');
             }
           },
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <ExportExcelButton
             onExport={async () => {
               const cols: ExportColumnDef<Record<string, unknown>>[] = [
@@ -408,65 +390,26 @@ export default function AdminNewsSources() {
             <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
             Add Source
           </Button>
-        </Box>
+        </div>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast/triggerFetch are stable, adding would defeat memoization
     [columns],
   );
 
-  if (loading) {
-    return <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>Loading...</Box>;
-  }
-  if (!canManageContent()) {
-    return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Access Denied
-        </Typography>
-        <p>You don't have permission to access this page.</p>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            News Sources
-          </Typography>
-          <p style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Manage RSS feeds and API sources for the news hub
-          </p>
-        </div>
-      </Box>
-
-      {/* Table */}
-      <AdminDataTable config={tableConfig} />
-
+    <AdminEntityTable
+      title="News Sources"
+      subtitle="Manage RSS feeds and API sources for the news hub"
+      config={tableConfig}
+      afterTable={
+        <>
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 500 }}>
           <DialogHeader>
             <DialogTitle>{editingSource ? 'Edit News Source' : 'Add News Source'}</DialogTitle>
           </DialogHeader>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <Label htmlFor="name">Source Name</Label>
               <Input
@@ -488,7 +431,7 @@ export default function AdminNewsSources() {
                 required
               />
             </div>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Source Type</Label>
                 <Select
@@ -522,7 +465,7 @@ export default function AdminNewsSources() {
                   </SelectContent>
                 </Select>
               </div>
-            </Box>
+            </div>
             <div>
               <Label>Fetch Frequency</Label>
               <Select
@@ -541,21 +484,21 @@ export default function AdminNewsSources() {
                 </SelectContent>
               </Select>
             </div>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Switch
                 id="is_active"
                 checked={formData.is_active}
                 onCheckedChange={(c) => setFormData({ ...formData, is_active: c })}
               />
               <Label htmlFor="is_active">Active</Label>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit">{editingSource ? 'Update' : 'Create'}</Button>
-            </Box>
-          </Box>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -565,10 +508,10 @@ export default function AdminNewsSources() {
           <DialogHeader>
             <DialogTitle>Manage Keywords - {editingSource?.name}</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             <div>
               <Label>Current Keywords</Label>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              <div className="flex flex-wrap gap-2 mt-2">
                 {editingKeywords.map((kw, i) => (
                   <Badge
                     key={i}
@@ -590,11 +533,11 @@ export default function AdminNewsSources() {
                     </button>
                   </Badge>
                 ))}
-              </Box>
+              </div>
             </div>
             <div>
               <Label htmlFor="newKeyword">Add Keyword</Label>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+              <div className="flex gap-2 mt-2">
                 <Input
                   id="newKeyword"
                   value={newKeyword}
@@ -605,17 +548,19 @@ export default function AdminNewsSources() {
                 <Button type="button" onClick={addKeyword} disabled={!newKeyword.trim()}>
                   Add
                 </Button>
-              </Box>
+              </div>
             </div>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+            <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setKeywordsDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={saveKeywords}>Save Keywords</Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
-    </Box>
+        </>
+      }
+    />
   );
 }

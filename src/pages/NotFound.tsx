@@ -3,9 +3,8 @@ import { useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
+import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 
 const NotFound = () => {
   const location = useLocation();
@@ -16,33 +15,17 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <Box
-      sx={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: 'background.default',
-      }}
-    >
-      <Box sx={{ textAlign: 'center', maxWidth: '28rem', mx: 'auto', px: 2 }}>
-        <Typography variant="h2" sx={{ fontWeight: 700, mb: 2 }}>
-          404
-        </Typography>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+    <div className="min-h-[60vh] flex items-center justify-center bg-background">
+      <NotFoundMeta title={t('pages.notFound.title', 'Page not found')} />
+      <div className="text-center max-w-md mx-auto px-4">
+        <h2 className="text-5xl font-bold mb-4">404</h2>
+        <h6 className="text-base font-semibold mb-2">
           {t('pages.notFound.title', 'Page not found')}
-        </Typography>
-        <Typography color="text.secondary" sx={{ mb: 4 }}>
+        </h6>
+        <p className="text-muted-foreground mb-8">
           {t('pages.notFound.description', "The page you're looking for doesn't exist or has been moved.")}
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: 1.5,
-            justifyContent: 'center',
-          }}
-        >
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             variant="outline"
             onClick={() => window.history.back()}
@@ -57,9 +40,9 @@ const NotFound = () => {
               {t('pages.notFound.returnHome', 'Return Home')}
             </LocalizedLink>
           </Button>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,151 +1,60 @@
-import * as React from 'react';
-import MuiTabs from '@mui/material/Tabs';
-import MuiTab from '@mui/material/Tab';
-import { motion } from 'motion/react';
-import { tweens } from '@/lib/motion';
+import * as React from "react"
+import * as TabsPrimitive from "@radix-ui/react-tabs"
+import { cn } from "@/lib/utils"
 
-const TabsContext = React.createContext<{
-  value: string;
-  onValueChange: (value: string) => void;
-}>({ value: '', onValueChange: () => {} });
+const Tabs = TabsPrimitive.Root
 
-interface TabsProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'defaultValue'> {
-  defaultValue?: string;
-  value?: string;
-  onValueChange?: (value: string) => void;
-}
-
-const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
-  (
-    {
-      defaultValue = '',
-      value: controlledValue,
-      onValueChange,
-      className,
-      children,
-      style,
-      ...props
-    },
-    ref,
-  ) => {
-    const [internalValue, setInternalValue] = React.useState(defaultValue);
-    const isControlled = controlledValue !== undefined;
-    const value = isControlled ? controlledValue : internalValue;
-    const handleChange = (newValue: string) => {
-      if (!isControlled) setInternalValue(newValue);
-      onValueChange?.(newValue);
-    };
-    return (
-      <TabsContext.Provider value={{ value, onValueChange: handleChange }}>
-        <div ref={ref} className={className} style={style} {...props}>
-          {children}
-        </div>
-      </TabsContext.Provider>
-    );
-  },
-);
-Tabs.displayName = 'Tabs';
-
-interface TabsListProps extends React.HTMLAttributes<HTMLDivElement> {
+interface TabsListProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> {
   /**
-   * Layout variant. Defaults to 'scrollable' (for tab sets that may
-   * overflow). Pass 'fullWidth' for fixed tab sets inside dialogs — this
-   * guarantees tab hitboxes match their visual position across resize /
-   * scroll (avoids MUI's scrollable inner-scroller offset).
+   * Layout variant. Accepted for compatibility with prior MUI-backed wrapper.
+   * Currently has no visual effect — Radix tabs flex naturally.
    */
   variant?: 'fullWidth' | 'standard' | 'scrollable';
 }
 
-const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
-  ({ className, children, variant = 'scrollable', ..._props }, ref) => {
-    const { value, onValueChange } = React.useContext(TabsContext);
-    return (
-      <MuiTabs
-        ref={ref as React.Ref<HTMLDivElement>}
-        value={value}
-        onChange={(_, newValue) => onValueChange(newValue)}
-        className={className}
-        variant={variant}
-        scrollButtons={variant === 'scrollable' ? 'auto' : false}
-        sx={{
-          minHeight: 40,
-          bgcolor: 'action.hover',
-          borderRadius: 1.25,
-          p: 0.5,
-          '& .MuiTabs-indicator': { display: 'none' },
-          '& .MuiTabs-flexContainer': { gap: 0.5 },
-          '& .MuiTab-root': {
-            minHeight: 32,
-            textTransform: 'none',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            borderRadius: 1,
-            px: 1.5,
-            py: 0.75,
-            color: 'text.secondary',
-            '&.Mui-selected': { bgcolor: 'background.paper', color: 'text.primary' },
-          },
-        }}
-      >
-        {children}
-      </MuiTabs>
-    );
-  },
-);
-TabsList.displayName = 'TabsList';
+const TabsList = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.List>,
+  TabsListProps
+>(({ className, variant: _variant, ...props }, ref) => (
+  <TabsPrimitive.List
+    ref={ref}
+    className={cn(
+      "inline-flex h-11 items-center justify-start gap-6 border-b border-border text-muted-foreground",
+      className
+    )}
+    {...props}
+  />
+))
+TabsList.displayName = TabsPrimitive.List.displayName
 
-interface TabsTriggerProps extends React.HTMLAttributes<HTMLButtonElement> {
-  value: string;
-  disabled?: boolean;
-}
+const TabsTrigger = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      "relative inline-flex h-11 items-center justify-center whitespace-nowrap rounded-none px-1 text-sm font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:text-foreground data-[state=active]:text-foreground data-[state=active]:after:content-[''] data-[state=active]:after:absolute data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:-bottom-px data-[state=active]:after:h-0.5 data-[state=active]:after:bg-foreground",
+      className
+    )}
+    {...props}
+  />
+))
+TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 
-const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
-  ({ className, value, children, disabled, id, ...props }, ref) => (
-    <MuiTab
-      ref={ref as React.Ref<HTMLDivElement>}
-      value={value}
-      label={children}
-      disabled={disabled}
-      className={className}
-      id={id ?? `tab-${value}`}
-      aria-controls={`tabpanel-${value}`}
-      {...props}
-    />
-  ),
-);
-TabsTrigger.displayName = 'TabsTrigger';
+const TabsContent = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Content
+    ref={ref}
+    className={cn(
+      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      className
+    )}
+    {...props}
+  />
+))
+TabsContent.displayName = TabsPrimitive.Content.displayName
 
-interface TabsContentProps extends React.HTMLAttributes<HTMLDivElement> {
-  value: string;
-}
-
-const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
-  ({ className, value, children, style, ...props }, ref) => {
-    const { value: activeValue } = React.useContext(TabsContext);
-    const active = value === activeValue;
-    // Opacity-only transition, no y-translate, no AnimatePresence exit:
-    // a translating exit panel would linger briefly and intercept clicks on
-    // the tab bar. Tab switches are semantically instant.
-    if (!active) return null;
-    return (
-      <motion.div
-        ref={ref}
-        key={value}
-        className={className}
-        style={{ marginTop: 8, ...style }}
-        role="tabpanel"
-        aria-labelledby={`tab-${value}`}
-        id={`tabpanel-${value}`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={tweens.fast}
-        {...(props as object)}
-      >
-        {children}
-      </motion.div>
-    );
-  },
-);
-TabsContent.displayName = 'TabsContent';
-
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export { Tabs, TabsList, TabsTrigger, TabsContent }

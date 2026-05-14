@@ -71,6 +71,20 @@ function cacheKey(type: string, bk: string, fh: string): string {
   return `${type}|${bk}|${fh}`;
 }
 
+// ── Retry helper ─────────────────────────────────────────────────────────────
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 1, delayMs = 1000): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, delayMs));
+      return withRetry(fn, retries - 1, delayMs);
+    }
+    throw err;
+  }
+}
+
 // ── Supabase fetchers ─────────────────────────────────────────────────────────
 
 async function fetchVenuesInBbox(
@@ -79,15 +93,16 @@ async function fetchVenuesInBbox(
 ): Promise<PointFeature[]> {
   let query = supabase
     .from('venues')
-    .select('id, slug, name, category, latitude, longitude, city, country, featured')
+    .select('id, slug, name, category, latitude, longitude, city, country, is_featured')
     .neq('data_source', 'refuge_restrooms')
+    .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .gte('latitude', bbox.south)
     .lte('latitude', bbox.north)
     .gte('longitude', bbox.west)
     .lte('longitude', bbox.east)
-    .order('featured', { ascending: false });
+    .order('is_featured', { ascending: false });
 
   if (filters?.category) query = query.eq('category', filters.category);
   if (filters?.tags?.length) query = query.overlaps('tags', filters.tags);
@@ -114,7 +129,7 @@ async function fetchVenuesInBbox(
         city: v.city,
         country: v.country,
         category: v.category,
-        featured: v.featured,
+        featured: v.is_featured,
       }),
     },
   }));
@@ -127,11 +142,12 @@ async function fetchEventsInBbox(
   let query = supabase
     .from('events')
     .select(
-      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',
+      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues!events_venue_id_fkey(name, latitude, longitude)',
     )
     .eq('status', 'active')
+    .is('duplicate_of_id', null)
     .gte('start_date', new Date().toISOString())
-    .order('featured', { ascending: false })
+    .order('is_featured', { ascending: false })
     .order('start_date', { ascending: true });
 
   if (filters?.search) {
@@ -302,16 +318,16 @@ export function useViewportPoints({
           let features: PointFeature[] = [];
           switch (type) {
             case 'venues':
-              features = await fetchVenuesInBbox(quantized, filtersRef.current);
+              features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
               break;
             case 'events':
-              features = await fetchEventsInBbox(quantized, filtersRef.current);
+              features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
               break;
             case 'restrooms':
-              features = await fetchRestroomsInBbox(quantized);
+              features = await withRetry(() => fetchRestroomsInBbox(quantized));
               break;
             case 'hotels':
-              features = await fetchHotelsInBbox(quantized);
+              features = await withRetry(() => fetchHotelsInBbox(quantized));
               break;
           }
           featureCache.set(ck, features);

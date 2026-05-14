@@ -235,7 +235,7 @@ export function useTripTemplates() {
           .select(
             'id, title, start_date, end_date, images, city_id, event_type, cities:city_id(id, name, image_url, countries:country_id(currency))',
           )
-          .eq('featured', true)
+          .eq('is_featured', true)
           .gte('start_date', now.toISOString().slice(0, 10))
           .lte('start_date', horizon.toISOString().slice(0, 10))
           .or('event_type.ilike.%pride%,event_type.ilike.%festival%')

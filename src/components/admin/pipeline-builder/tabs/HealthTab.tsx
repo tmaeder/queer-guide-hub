@@ -151,19 +151,19 @@ export default function HealthTab() {
           title="Dead-letter — top failure clusters"
           extra={
             <>
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0">last 24h</Badge>
-              {deadLetter.length === 0 && <span className="text-[11px] font-normal text-muted-foreground">(no failures)</span>}
+              <Badge variant="outline" className="text-2xs px-1.5 py-0">last 24h</Badge>
+              {deadLetter.length === 0 && <span className="text-xs2 font-normal text-muted-foreground">(no failures)</span>}
             </>
           }
         >
           {deadLetter.length > 0 && (
             <div className="grid grid-cols-[120px_1fr_80px] gap-x-3 gap-y-1 text-xs">
-              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Stage</div>
-              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Error class</div>
-              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px] text-right">Count</div>
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">Stage</div>
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">Error class</div>
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs text-right">Count</div>
               {deadLetter.map((g, i) => (
                 <div key={i} className="contents">
-                  <div className="font-mono text-[11px] py-1 border-t border-border/40">{g.stage}</div>
+                  <div className="font-mono text-xs2 py-1 border-t border-border/40">{g.stage}</div>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="py-1 border-t border-border/40 truncate cursor-help">{g.errorClass}</div>
@@ -181,12 +181,12 @@ export default function HealthTab() {
 
         {/* Enrichment audit */}
         {enrichSummary.length > 0 && (
-          <SectionCard title="Enrichment outcomes" extra={<Badge variant="outline" className="text-[10px] px-1.5 py-0">last 24h</Badge>}>
+          <SectionCard title="Enrichment outcomes" extra={<Badge variant="outline" className="text-2xs px-1.5 py-0">last 24h</Badge>}>
             <div className="grid grid-cols-[1fr_80px_80px_80px] gap-x-3 gap-y-1 text-xs">
-              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Stage</div>
-              <div className="font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider text-[10px] text-right">Success</div>
-              <div className="font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider text-[10px] text-right">Partial</div>
-              <div className="font-semibold text-destructive uppercase tracking-wider text-[10px] text-right">Failed</div>
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">Stage</div>
+              <div className="font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider text-2xs text-right">Success</div>
+              <div className="font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider text-2xs text-right">Partial</div>
+              <div className="font-semibold text-destructive uppercase tracking-wider text-2xs text-right">Failed</div>
               {enrichSummary.map((s, i) => (
                 <div key={i} className="contents">
                   <div className="font-mono py-1 border-t border-border/40">{s.stage}</div>
@@ -205,7 +205,7 @@ export default function HealthTab() {
             <Shield className="h-4 w-4" />
             <span className="text-sm font-semibold">API Circuit Breakers</span>
             {openCircuits > 0 && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{openCircuits} open</Badge>
+              <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{openCircuits} open</Badge>
             )}
           </div>
           {circuitBreakers.length === 0 ? (
@@ -218,11 +218,11 @@ export default function HealthTab() {
                 <div key={cb.id} className="border border-border rounded-md bg-background p-3 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-medium text-sm truncate">{cb.api_name}</span>
-                    <span className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${cbClass[cb.state] || 'bg-muted'}`}>
+                    <span className={`text-3xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${cbClass[cb.state] || 'bg-muted'}`}>
                       {cb.state === 'half_open' ? 'half' : cb.state}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
+                  <div className="grid grid-cols-2 gap-1 text-xs2 text-muted-foreground">
                     <div>
                       Fails: <span className={`font-mono ${cb.failure_count > 0 ? 'text-destructive font-semibold' : ''}`}>
                         {cb.failure_count}/{cb.threshold}
@@ -241,7 +241,7 @@ export default function HealthTab() {
           title="Geo Health — Cities & Countries"
           extra={
             (geoHealth?.geo_merge_candidates ?? 0) > 0
-              ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">{geoHealth?.geo_merge_candidates} merge candidates</Badge>
+              ? <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-primary/10 text-primary border-primary/30">{geoHealth?.geo_merge_candidates} merge candidates</Badge>
               : undefined
           }
         >
@@ -258,7 +258,7 @@ export default function HealthTab() {
                 <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-green-600 dark:text-green-400'}`}>
                   {value ?? '–'}
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-1">{label}</div>
+                <div className="text-2xs text-muted-foreground mt-1">{label}</div>
               </div>
             ))}
           </div>
@@ -292,7 +292,7 @@ export default function HealthTab() {
           <SectionCard
             icon={Package}
             title="Staging"
-            extra={<Badge variant="outline" className="text-[10px] px-1.5 py-0">{totalStaging.toLocaleString()} items</Badge>}
+            extra={<Badge variant="outline" className="text-2xs px-1.5 py-0">{totalStaging.toLocaleString()} items</Badge>}
           >
             {stagingStats.length === 0 ? (
               <p className="text-xs text-muted-foreground">No staging items</p>
@@ -315,7 +315,7 @@ export default function HealthTab() {
                   {stagingStats.map(s => (
                     <div key={s.status} className="text-center p-2 border border-border rounded-md">
                       <div className="text-lg font-bold tabular-nums">{s.count.toLocaleString()}</div>
-                      <div className="text-[10px] text-muted-foreground capitalize mt-0.5">{s.status}</div>
+                      <div className="text-2xs text-muted-foreground capitalize mt-0.5">{s.status}</div>
                     </div>
                   ))}
                 </div>
@@ -342,7 +342,7 @@ export default function HealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Name', 'Type', 'Schedule', 'Enabled'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -351,13 +351,13 @@ export default function HealthTab() {
                   <tr key={def.id as string} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                     <td className="px-3 py-2 font-medium">{(def.display_name || def.name) as string}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
                         <GitBranch className="h-2.5 w-2.5" /> pipeline
                       </Badge>
                     </td>
                     <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
                     <td className="px-3 py-2">
-                      <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      <span className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
                         def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
                       }`}>
                         {def.is_enabled ? 'ON' : 'OFF'}
@@ -369,13 +369,13 @@ export default function HealthTab() {
                   <tr key={def.id as string} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                     <td className="px-3 py-2 font-medium">{(def.display_name || def.name) as string}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
                         <Workflow className="h-2.5 w-2.5" /> workflow
                       </Badge>
                     </td>
                     <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
                     <td className="px-3 py-2">
-                      <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      <span className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
                         def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
                       }`}>
                         {def.is_enabled ? 'ON' : 'OFF'}

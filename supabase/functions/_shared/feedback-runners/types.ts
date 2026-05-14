@@ -37,7 +37,7 @@ export interface FixDispatchResult {
 }
 
 export interface FixRunner {
-  name: 'mock' | 'github_actions' | 'webhook' | 'api';
+  name: 'mock' | 'github_actions' | 'webhook' | 'api' | 'local';
   dispatch(input: FixDispatchInput): Promise<FixDispatchResult>;
 }
 
@@ -49,6 +49,8 @@ export interface RetestDispatchInput {
   callbackUrl: string;
   hmacSecret: string;
   service: SupabaseClient;
+  /** Files changed by the routine run; only populated when kind='targeted'. */
+  filesChanged?: string[];
 }
 
 export interface RetestDispatchResult {
@@ -60,6 +62,6 @@ export interface RetestDispatchResult {
 }
 
 export interface RetestRunner {
-  name: 'mock' | 'github_actions' | 'webhook';
+  name: 'mock' | 'github_actions' | 'webhook' | 'local';
   dispatch(input: RetestDispatchInput): Promise<RetestDispatchResult>;
 }

@@ -37,6 +37,8 @@ export async function loadActiveSynonyms(env: Env): Promise<PgSynonym[]> {
 		// KV transient issue — fall through to fresh fetch.
 	}
 	let rows: PgSynonym[] = [];
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort("synonyms-timeout"), 3000);
 	try {
 		const res = await fetch(
 			`${env.SUPABASE_URL}/rest/v1/search_synonyms?select=terms,replacements,is_one_way,indexes,locale&status=eq.active`,
@@ -45,6 +47,7 @@ export async function loadActiveSynonyms(env: Env): Promise<PgSynonym[]> {
 					apikey: env.SUPABASE_SERVICE_KEY,
 					authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
 				},
+				signal: controller.signal,
 			},
 		);
 		if (res.ok) {
@@ -53,7 +56,9 @@ export async function loadActiveSynonyms(env: Env): Promise<PgSynonym[]> {
 			console.warn("loadActiveSynonyms: supabase", res.status, await res.text());
 		}
 	} catch (e) {
-		console.warn("loadActiveSynonyms: fetch failed", e);
+		console.warn("loadActiveSynonyms: fetch failed", (e as Error).message);
+	} finally {
+		clearTimeout(timer);
 	}
 	// Best-effort cache write.
 	try {

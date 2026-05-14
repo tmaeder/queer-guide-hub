@@ -169,8 +169,7 @@ export function ModernVideoPlayer({
           {video.renditions.find(r => r.codec === 'h264') && (
             <a
               href={getVideoUrl(video.renditions.find(r => r.codec === 'h264')!.file_path)}
-              // TODO(polish): no token match — link blue on dark video background
-              style={{ color: '#60a5fa', textDecoration: 'underline', marginLeft: 8 }}
+              style={{ color: 'inherit', textDecoration: 'underline', marginLeft: 8 }}
               download
             >
               Download MP4

@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (Country) — ILGA legal data + Wikipedia description.
 // Reads pending country staging rows, writes enriched_data.
@@ -63,7 +64,7 @@ function ilgaToEqualityScore(data: Record<string, unknown>): number {
   return Math.max(0, Math.min(100, score))
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-enrich-country', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -174,4 +175,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-enrich-country:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

@@ -3,36 +3,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Map as MapIcon, RefreshCw, Hotel, Bed, Loader2, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-
-interface CoverageRow {
-  id: number;
-  source_slug: string;
-  city_id: string | null;
-  accommodation_type: string | null;
-  expected_count: number | null;
-  actual_count: number;
-  last_run_at: string | null;
-  last_success_at: string | null;
-  success_ratio: number | null;
-  is_enabled: boolean;
-}
-
-interface HotelStats {
-  source: string;
-  accommodation_type: string;
-  staged: number;
-  validated: number;
-  unique_items: number;
-  duplicates: number;
-  committed: number;
-  rejected: number;
-  pending_review: number;
-  day: string;
-}
+import {
+  fetchSourceCoverageTargets,
+  fetchHotelIngestStats,
+  type CoverageTargetRow as CoverageRow,
+  type HotelIngestStats as HotelStats,
+} from '@/hooks/usePipelineBuilderTabs';
 
 function sloBadge(s: HotelStats) {
   const total = s.staged || 1;
@@ -43,7 +23,7 @@ function sloBadge(s: HotelStats) {
     : success >= 0.4                  ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
     : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300';
   return (
-    <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${className}`}>
+    <span className={`inline-block text-2xs px-2 py-0.5 rounded-full font-medium ${className}`}>
       {(success * 100).toFixed(0)}% commit
     </span>
   );
@@ -58,36 +38,23 @@ function RatioBar({ actual, expected }: { actual: number; expected: number | nul
       <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
         <div className={`h-full transition-all ${bg}`} style={{ width: `${pct * 100}%` }} />
       </div>
-      <span className="text-[11px] text-muted-foreground tabular-nums">{actual}/{expected}</span>
+      <span className="text-xs2 text-muted-foreground tabular-nums">{actual}/{expected}</span>
     </div>
   );
 }
 
 export default function CoverageTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['source-coverage'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('source_coverage_targets')
-        .select('*')
-        .order('source_slug')
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as CoverageRow[];
-    },
+    queryFn: fetchSourceCoverageTargets,
     refetchInterval: 60_000,
   });
 
   const { data: hotelStats = [] } = useQuery<HotelStats[]>({
     queryKey: ['hotel-ingest-stats'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('hotel_ingest_stats').select('*');
-      if (error) throw error;
-      return (data ?? []) as HotelStats[];
-    },
+    queryFn: fetchHotelIngestStats,
     refetchInterval: 60_000,
   });
 
@@ -97,10 +64,10 @@ export default function CoverageTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Coverage recomputed' });
+      toast.success('Coverage recomputed');
       qc.invalidateQueries({ queryKey: ['source-coverage'] });
     },
-    onError: (e: Error) => toast({ title: 'Refresh failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Refresh failed: ${e.message}`),
   });
 
   const bySource = useMemo(() => {
@@ -151,7 +118,7 @@ export default function CoverageTab() {
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
                 {['Source', 'Staged', 'Validated', 'Unique', 'Dupes', 'Committed', 'Rejected', 'Review', 'SLO'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -180,13 +147,13 @@ export default function CoverageTab() {
           <div className="px-4 py-2 border-b border-border text-xs font-semibold text-muted-foreground flex items-center gap-2 sticky top-0 bg-background z-10">
             <Bed className="h-3.5 w-3.5" />
             Coverage targets
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-1">{coverage.length}</Badge>
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 ml-1">{coverage.length}</Badge>
           </div>
           <table className="w-full text-sm">
             <thead className="bg-muted/40 sticky top-[37px] z-10">
               <tr className="border-b border-border">
                 {['Source', 'City', 'Type', 'Coverage', 'Last run', 'Enabled'].map(h => (
-                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -202,7 +169,7 @@ export default function CoverageTab() {
                     {r.city_id ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <code className="text-[10px] text-muted-foreground">{r.city_id.slice(0, 8)}</code>
+                          <code className="text-2xs text-muted-foreground">{r.city_id.slice(0, 8)}</code>
                         </TooltipTrigger>
                         <TooltipContent className="text-xs font-mono">{r.city_id}</TooltipContent>
                       </Tooltip>
