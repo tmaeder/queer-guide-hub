@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Suspense, lazy } from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,6 @@ import {
   Heart,
   Menu,
   User,
-  X,
   MapPin,
   Calendar,
   Store,
@@ -43,6 +42,7 @@ import {
   Luggage,
   LifeBuoy,
   Puzzle,
+  Footprints,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -58,7 +58,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotifications } from '@/hooks/useNotifications';
-import { NotificationList } from '@/components/notifications/NotificationList';
+const NotificationList = lazy(() =>
+  import('@/components/notifications/NotificationList').then((m) => ({
+    default: m.NotificationList,
+  })),
+);
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useInboxBadge } from '@/hooks/useInboxBadge';
 
@@ -99,6 +103,7 @@ const navigationSections = [
 const userMenuItems = [
   { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
   { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
+  { to: '/profile/footprint', icon: Footprints, labelKey: 'header.userMenu.footprint' },
   { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
   { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
   { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },
@@ -127,6 +132,7 @@ const legalItems = [
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [authSignupOpen, setAuthSignupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
@@ -213,15 +219,9 @@ export function Header() {
               Queer Guide
             </span>
           </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setDrawerOpen(false)}
-            aria-label={t('header.closeMenu', 'Close menu')}
-            className="h-11 w-11 p-0"
-          >
-            <X style={{ width: 20, height: 20 }} />
-          </Button>
+          {/* Close button is provided by SheetContent (top-right). Rendering a
+              second one here previously sat under it and tripped axe's
+              `target-size` rule (4×44 visible area). */}
         </div>
 
         {/* Scrollable content */}
@@ -274,12 +274,23 @@ export function Header() {
             </>
           )}
 
-          {/* Login CTA (logged out) */}
+          {/* Sign in / sign up CTAs (logged out) */}
           {!user && (
             <>
-              <div className="px-4 py-4">
+              <div className="px-4 py-4 flex flex-col gap-2">
                 <Button
                   variant="default"
+                  size="sm"
+                  style={{ width: '100%', fontWeight: 600, height: 44 }}
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    setAuthSignupOpen(true);
+                  }}
+                >
+                  {t('header.signUp', 'Sign Up')}
+                </Button>
+                <Button
+                  variant="outline"
                   size="sm"
                   style={{ width: '100%', fontWeight: 600, height: 44 }}
                   onClick={() => {
@@ -288,7 +299,7 @@ export function Header() {
                   }}
                 >
                   <User style={{ width: 16, height: 16, marginRight: 8 }} />
-                  {t('header.signInSignUp', 'Sign In / Sign Up')}
+                  {t('header.signIn', 'Sign In')}
                 </Button>
               </div>
               <div className="my-2" />
@@ -602,7 +613,9 @@ export function Header() {
 
                     {/* Notifications */}
                     <div className="mb-4">
-                      <NotificationList />
+                      <Suspense fallback={null}>
+                        <NotificationList />
+                      </Suspense>
                     </div>
 
                     <div className="my-2" />
@@ -651,9 +664,23 @@ export function Header() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button onClick={() => setAuthDialogOpen(true)} size="icon" aria-label={t('header.signIn', 'Sign in')}>
-                  <User style={{ width: 16, height: 16 }} />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAuthDialogOpen(true)}
+                    aria-label={t('header.signIn', 'Sign in')}
+                  >
+                    {t('header.signIn', 'Sign in')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setAuthSignupOpen(true)}
+                    aria-label={t('header.signUp', 'Sign up')}
+                  >
+                    {t('header.signUp', 'Sign up')}
+                  </Button>
+                </div>
               )}
 
               {/* Navigation dropdown (desktop) */}
@@ -756,6 +783,7 @@ export function Header() {
       {isMobile && mobileDrawer}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+      <AuthDialog open={authSignupOpen} onOpenChange={setAuthSignupOpen} defaultMode="signup" />
     </header>
   );
 }

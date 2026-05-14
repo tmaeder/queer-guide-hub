@@ -14,10 +14,18 @@ import type { SourceType } from '../types/connector.js';
  * Connection: uses SUPABASE_DB_URL (read-write postgres URI). Falls back to
  * PUBLISH_DB_URL.
  *
- * Idempotency: the unique index on (source_type, source_entity_id, payload_hash)
- * prevents duplicate stages of identical payloads. Hashes are computed from
- * a stable JSON serialization (keys sorted recursively) so the same
- * semantic payload always hashes identically regardless of key order.
+ * Idempotency: two unique indexes guard ingestion_staging.
+ *   1. (source_type, source_entity_id, payload_hash) — skips re-stages of
+ *      byte-identical payloads. Hashes are computed from a stable JSON
+ *      serialization (keys sorted recursively) so the same semantic payload
+ *      always hashes identically regardless of key order.
+ *   2. (coalesce(source_name, source_type), idempotency_key) WHERE
+ *      disposition <> 'rejected' — blocks re-publishing the same source row
+ *      while a prior staging entry is still pending/committing, even when
+ *      the payload has changed. idempotency_key is filled by a BEFORE INSERT
+ *      trigger from source_name + source_entity_id.
+ * We use unqualified `ON CONFLICT DO NOTHING` so either violation silently
+ * counts as a duplicate instead of failing the whole batch.
  */
 
 let pool: Pool | null = null;
@@ -113,9 +121,7 @@ export async function publishToStaging(
               'pending', 'pending', 'pending', now(), now()
        FROM unnest($5::text[], $6::text[], $7::text[], $8::text[])
             AS r(raw, sid, hash, etype)
-       ON CONFLICT (source_type, source_entity_id, payload_hash)
-         WHERE source_entity_id IS NOT NULL AND payload_hash IS NOT NULL
-         DO NOTHING
+       ON CONFLICT DO NOTHING
        RETURNING id`,
       [
         opts.sourceType,

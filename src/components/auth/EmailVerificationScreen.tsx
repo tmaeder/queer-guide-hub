@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -14,7 +15,8 @@ interface Props {
 const RESEND_COOLDOWN_SECONDS = 60;
 
 export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
-  const { resendVerification } = useAuth();
+  const { resendVerification, user } = useAuth();
+  const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const [cooldown, setCooldown] = useState(0);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
@@ -90,9 +92,15 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
               : t('auth.verifyEmail.resend', 'Resend verification email')}
           </Button>
 
-          <Button type="button" variant="ghost" onClick={onBackToLogin}>
-            {t('auth.verifyEmail.backToLogin', 'Back to sign in')}
-          </Button>
+          {user ? (
+            <Button type="button" onClick={() => navigate('/')}>
+              {t('auth.verifyEmail.continue', 'Continue to The Queer Guide')}
+            </Button>
+          ) : (
+            <Button type="button" variant="ghost" onClick={onBackToLogin}>
+              {t('auth.verifyEmail.backToLogin', 'Back to sign in')}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

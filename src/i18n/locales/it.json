@@ -313,7 +313,11 @@
       "fitAll": "Mostra tutto",
       "fitAllAria": "Inquadra tutti i luoghi",
       "filterAll": "Tutti i giorni",
-      "dayLabel": "Giorno {{number}}"
+      "dayLabel": "Giorno {{number}}",
+      "showAttractions": "[IT] Attractions",
+      "showEvents": "[IT] Events",
+      "suggestedVenue": "[IT] Suggested venue",
+      "eventOn": "[IT] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Nessuna informazione di sicurezza",
@@ -708,7 +712,8 @@
       "displayName": "Come vuoi essere chiamato/a?",
       "pronouns": "Scegli i tuoi pronomi",
       "country": "Opzionale",
-      "language": "Scegli la lingua"
+      "language": "Scegli la lingua",
+      "passwordMin8": "[IT] At least 8 characters"
     },
     "errors": {
       "emailRequired": "L'email è obbligatoria",
@@ -738,7 +743,9 @@
       "age": "Confermo di avere almeno 18 anni",
       "termsAria": "Accetta i termini di servizio",
       "privacyAria": "Accetta la privacy policy",
-      "ageAria": "Conferma di avere almeno 18 anni"
+      "ageAria": "Conferma di avere almeno 18 anni",
+      "combined": "[IT] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[IT] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continua con Google",
@@ -758,7 +765,9 @@
         "account": "Account",
         "profile": "Profilo",
         "interests": "Interessi"
-      }
+      },
+      "blurb": "[IT] Free, takes a minute.",
+      "haveAccountQ": "[IT] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "lei",
@@ -800,7 +809,17 @@
       "resend": "Reinvia email di verifica",
       "resendIn": "Reinvia tra {{seconds}}s",
       "resent": "Email di verifica inviata. Controlla la posta in arrivo.",
-      "backToLogin": "Torna all'accesso"
+      "backToLogin": "Torna all'accesso",
+      "continue": "[IT] Continue to The Queer Guide",
+      "banner": "[IT] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[IT] Verification email sent. Check your inbox.",
+      "resendShort": "[IT] Resend",
+      "gateTitle": "[IT] Verify your email first",
+      "gateDescription": "[IT] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[IT] Sign in required",
+      "description": "[IT] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1106,7 +1125,8 @@
       "accessibility": "Accessibilità",
       "bookings": "Prenotazioni",
       "tripInbox": "Posta viaggi",
-      "extension": "Estensione Browser"
+      "extension": "Estensione Browser",
+      "footprint": "[IT] Footprint"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -1122,7 +1142,10 @@
       "accessibility": "Accessibilità",
       "legal": "Note legali",
       "contact": "Contatti"
-    }
+    },
+    "signUp": "[IT] Sign up",
+    "navigation": "[IT] Navigation",
+    "signIn": "[IT] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,7 +1243,8 @@
       "filteredEmpty": {
         "title": "Nessun evento corrisponde ai tuoi filtri",
         "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
-      }
+      },
+      "prideSubtype": "[IT] Pride type"
     },
     "eventDetail": {
       "loadFailed": "Impossibile caricare i dettagli dell'evento.",
@@ -1279,7 +1303,25 @@
       "activitiesComingSoon": "Attività in arrivo.",
       "browseDestinations": "Esplora destinazioni",
       "exploreCta": "Destinazioni",
-      "exploreDescription": "Città e paesi con info sulla sicurezza e guide di viaggio."
+      "exploreDescription": "Città e paesi con info sulla sicurezza e guide di viaggio.",
+      "hotels": {
+        "typeLabel": "[IT] Type",
+        "priceMin": "[IT] Min €",
+        "priceMax": "[IT] Max €",
+        "priceUnavailable": "[IT] Price on request",
+        "clearFilters": "[IT] Clear filters",
+        "noResultsWithFilters": "[IT] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[IT] Any type",
+          "hotel": "[IT] Hotel",
+          "boutique": "[IT] Boutique Hotel",
+          "bnb": "[IT] B&B",
+          "hostel": "[IT] Hostel",
+          "guesthouse": "[IT] Guesthouse",
+          "apartment": "[IT] Apartment",
+          "resort": "[IT] Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "Mercato",
@@ -1329,7 +1371,14 @@
       "emptyTitle": "Nessun articolo ancora.",
       "emptyDescription": "Torna più tardi.",
       "previous": "Precedente",
-      "next": "Successivo"
+      "next": "Successivo",
+      "filteredEmptyTitle": "[IT] No news matches your filters.",
+      "filteredEmptyDescription": "[IT] Reset filters or try another topic.",
+      "resetFilters": "[IT] Reset filters",
+      "filterSearch": "[IT] Search",
+      "filterCategory": "[IT] Category",
+      "filterSource": "[IT] Source",
+      "filterFeatured": "[IT] Featured only"
     },
     "newsDetail": {
       "notFound": "Articolo non trovato",

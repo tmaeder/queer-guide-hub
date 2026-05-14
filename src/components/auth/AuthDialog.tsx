@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,16 @@ import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
+type Mode = 'signin' | 'signup';
+
 interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultMode?: Mode;
 }
 
-export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthDialogProps) {
+  const [mode, setMode] = useState<Mode>(defaultMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +27,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { toast } = useToast();
   const navigate = useLocalizedNavigate();
 
+  // Sync mode when the dialog is (re)opened with a different default
+  useEffect(() => {
+    if (open) setMode(defaultMode);
+  }, [open, defaultMode]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -30,9 +39,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     try {
       const { error } = await signIn(email, password);
       if (error) {
+        const msg = error instanceof Error ? error.message : (error as { message?: string })?.message;
         toast({
           title: 'Sign in failed',
-          description: error.message,
+          description: msg ?? 'Please try again later.',
           variant: 'destructive',
         });
       } else {
@@ -49,10 +59,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     }
   };
 
-  const handleSignUpClick = () => {
+  const goToSignUp = () => {
     onOpenChange(false);
-    navigate('/auth');
+    navigate('/auth?mode=signup');
   };
+
+  if (mode === 'signup') {
+    // Dialog can't host the full Signup component cleanly (links, OAuth redirects),
+    // so route to the dedicated /auth page in signup mode.
+    goToSignUp();
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -141,8 +158,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
 
             <div className="mt-4 text-center">
-              <Button variant="outline" onClick={handleSignUpClick} className="w-full">
-                Create your account with guided signup
+              <Button variant="outline" onClick={goToSignUp} className="w-full">
+                Create account
               </Button>
             </div>
           </div>
