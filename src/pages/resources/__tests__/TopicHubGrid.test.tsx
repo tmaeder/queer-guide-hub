@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { TopicHubGrid } from '../sections/TopicHubGrid';
 import { TOPIC_HUBS } from '../topics.config';
