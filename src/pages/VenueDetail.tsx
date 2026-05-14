@@ -12,6 +12,7 @@ import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import { useEvents } from '@/hooks/useEvents';
 import { useTranslation } from 'react-i18next';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MarketplaceForVenue } from '@/components/marketplace/MarketplaceForVenue';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
@@ -264,6 +265,7 @@ export default function VenueDetail() {
       {venue && (
         <>
           <div className="container mx-auto pb-8 px-4">
+            <MarketplaceForVenue venueId={venue.id} />
             <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-8" />
           </div>
 
