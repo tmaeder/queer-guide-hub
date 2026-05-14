@@ -133,6 +133,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       const relWeight = reliabilityMap.get(`${item.source_name ?? ''}|${item.entity_type ?? ''}`)
       const lowReliability = typeof relWeight === 'number' && relWeight < UNRELIABLE_THRESHOLD
 
+      if (combinedScore >= autoApproveAbove && !lowReliability) {
       // Trust-based auto-approve for community submissions
       if (item.source_name === 'community-submissions' && !forceReview && !dryRun) {
         const uid = (enriched.submitted_by as string) ?? null
@@ -162,6 +163,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
           if (e) { failed++; console.error(`approve ${item.id}: ${e.message}`); continue }
         }
         approved++
+      } else if (combinedScore < minConfidence || lowReliability) {
       } else if (forceReview || combinedScore < minConfidence || lowReliability) {
         if (!dryRun) {
           // Hard-fail review_queue insert: no swallowed errors. If the insert
