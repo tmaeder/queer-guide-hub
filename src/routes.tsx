@@ -444,6 +444,7 @@ export const AppRoutes = () => {
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />
                 <Route path="help" element={<HelpHotlines />} />
+                <Route path="help/:country" element={<HelpHotlines />} />
                 <Route path="submit" element={<SubmitHub />} />
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />
