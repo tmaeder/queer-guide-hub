@@ -313,7 +313,11 @@
       "fitAll": "すべて表示",
       "fitAllAria": "すべてのスポットを画面に収める",
       "filterAll": "すべての日",
-      "dayLabel": "{{number}}日目"
+      "dayLabel": "{{number}}日目",
+      "showAttractions": "[JA] Attractions",
+      "showEvents": "[JA] Events",
+      "suggestedVenue": "[JA] Suggested venue",
+      "eventOn": "[JA] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "まだ安全情報がありません",
@@ -708,7 +712,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[JA] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +743,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[JA] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[JA] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -758,7 +765,9 @@
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[JA] Free, takes a minute.",
+      "haveAccountQ": "[JA] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +809,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[JA] Continue to The Queer Guide",
+      "banner": "[JA] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[JA] Verification email sent. Check your inbox.",
+      "resendShort": "[JA] Resend",
+      "gateTitle": "[JA] Verify your email first",
+      "gateDescription": "[JA] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[JA] Sign in required",
+      "description": "[JA] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1106,7 +1125,8 @@
       "accessibility": "アクセシビリティ",
       "bookings": "予約",
       "tripInbox": "旅行の受信箱",
-      "extension": "ブラウザ拡張機能"
+      "extension": "ブラウザ拡張機能",
+      "footprint": "[JA] Footprint"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -1122,7 +1142,10 @@
       "accessibility": "アクセシビリティ",
       "legal": "法律",
       "contact": "お問い合わせ"
-    }
+    },
+    "signUp": "[JA] Sign up",
+    "navigation": "[JA] Navigation",
+    "signIn": "[JA] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,7 +1243,8 @@
       "filteredEmpty": {
         "title": "フィルターに一致するイベントがありません",
         "body": "フィルターや検索を調整して、より多くの結果を表示してください。"
-      }
+      },
+      "prideSubtype": "[JA] Pride type"
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",
@@ -1279,7 +1303,25 @@
       "activitiesComingSoon": "アクティビティは近日公開。",
       "browseDestinations": "目的地を探す",
       "exploreCta": "目的地",
-      "exploreDescription": "安全情報とトラベルガイド付きの都市と国。"
+      "exploreDescription": "安全情報とトラベルガイド付きの都市と国。",
+      "hotels": {
+        "typeLabel": "[JA] Type",
+        "priceMin": "[JA] Min €",
+        "priceMax": "[JA] Max €",
+        "priceUnavailable": "[JA] Price on request",
+        "clearFilters": "[JA] Clear filters",
+        "noResultsWithFilters": "[JA] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[JA] Any type",
+          "hotel": "[JA] Hotel",
+          "boutique": "[JA] Boutique Hotel",
+          "bnb": "[JA] B&B",
+          "hostel": "[JA] Hostel",
+          "guesthouse": "[JA] Guesthouse",
+          "apartment": "[JA] Apartment",
+          "resort": "[JA] Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "マーケットプレイス",
@@ -1329,7 +1371,14 @@
       "emptyTitle": "記事はまだありません。",
       "emptyDescription": "後で確認してください。",
       "previous": "前へ",
-      "next": "次へ"
+      "next": "次へ",
+      "filteredEmptyTitle": "[JA] No news matches your filters.",
+      "filteredEmptyDescription": "[JA] Reset filters or try another topic.",
+      "resetFilters": "[JA] Reset filters",
+      "filterSearch": "[JA] Search",
+      "filterCategory": "[JA] Category",
+      "filterSource": "[JA] Source",
+      "filterFeatured": "[JA] Featured only"
     },
     "newsDetail": {
       "notFound": "記事が見つかりません",

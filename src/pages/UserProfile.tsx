@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, MapPin, Calendar, Check, Shield, User, Share2, Flag } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
+import { TrustTierBadge } from '@/components/profile/TrustTierBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
@@ -182,6 +183,7 @@ export default function UserProfile() {
                         size="lg"
                       />
                     )}
+                    <TrustTierBadge userId={profile.user_id} showLabel />
                   </div>
 
                   <div className="flex flex-wrap gap-3 text-muted-foreground mb-3">

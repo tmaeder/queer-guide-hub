@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useTrackClick } from '@/hooks/useSearchActions';
@@ -24,7 +24,9 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { useSearchSuggestions, SearchSuggestion, TYPE_ICONS } from '@/hooks/useSearchSuggestions';
-import { SearchFiltersPanel } from './SearchFiltersPanel';
+const SearchFiltersPanel = lazy(() =>
+  import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
+);
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { SearchFilters } from '@/hooks/useSearch';
 
@@ -217,7 +219,12 @@ export const UniversalSearchBar = () => {
             </div>
           )}
           <Command shouldFilter={false} style={{ background: 'transparent' }}>
-            {showFilters && (<><SearchFiltersPanel filters={filters} onFiltersChange={setFilters} /><CommandSeparator /></>)}
+            {showFilters && (
+              <Suspense fallback={null}>
+                <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
+                <CommandSeparator />
+              </Suspense>
+            )}
             <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
               {!query && recentSearches.length > 0 && (
                 <>
