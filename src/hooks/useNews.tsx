@@ -68,14 +68,20 @@ export const useNews = () => {
         .select(
           `
           id, slug, title, excerpt, url, image_url, author,
-          published_at, source_id, views_count, is_featured,
-          country_ids, city_ids, tags, category, publisher_name
+          published_at, source_id, views_count, is_featured, is_premium,
+          country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,
         )
         .not('published_at', 'is', null)
+        .not('content', 'is', null)
+        .neq('content', '')
+        .or('quality_score.is.null,quality_score.gte.50')
         // Hide articles flagged or rejected by the news quality pipeline.
         // Legacy rows (quality_status NULL) and approved ones (passed) stay visible.
         .or('quality_status.is.null,quality_status.eq.passed')
+        // Hide rows that the canonical_url-dedup pass marked as duplicates of
+        // an older row (Group A4).
+        .is('duplicate_of_id', null)
         .order(sortField, { ascending: sortOrder });
 
       if (filters?.cityIds && filters.cityIds.length > 0) {
@@ -90,16 +96,24 @@ export const useNews = () => {
       if (filters?.location?.country_id) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('country_id', filters.location.country_id);
       }
-      if (filters?.search) {
+      if (filters?.search && filters.search.trim() !== '') {
+        const escaped = filters.search.replace(/[%_,]/g, (m) => `\\${m}`);
         queryBuilder = (queryBuilder as typeof queryBuilder).or(
-          `title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`,
+          `title.ilike.%${escaped}%,content.ilike.%${escaped}%`,
         );
       }
       if (filters?.sourceId) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('source_id', filters.sourceId);
       }
       if (filters?.category) {
-        queryBuilder = (queryBuilder as typeof queryBuilder).eq('category', filters.category);
+        // Filter on the canonical-category column from migration
+        // news_qa_backfill_category_canonical. We OR with the legacy
+        // `category` column so any rows the backfill hasn't classified yet
+        // (or future legacy categories) still match by name.
+        const cat = filters.category.replace(/[(),]/g, '');
+        queryBuilder = (queryBuilder as typeof queryBuilder).or(
+          `category_canonical.eq.${cat},category.eq.${cat}`,
+        );
       }
       if (filters?.featured !== undefined) {
         queryBuilder = (queryBuilder as typeof queryBuilder).eq('is_featured', filters.featured);
@@ -174,10 +188,14 @@ export const useNews = () => {
 
   const fetchSources = useCallback(async () => {
     try {
+      // Exclude aggregator providers (NewsAPI, GNews, NewsData, TheNewsAPI) so
+      // the Source dropdown only contains real publications.
+      // is_aggregator was added in migration news_qa_add_category_canonical_and_aggregator.
       const { data, error: fetchError } = await supabase
         .from('news_sources')
         .select('*')
         .eq('is_active', true)
+        .or('is_aggregator.is.null,is_aggregator.eq.false')
         .order('name', { ascending: true });
 
       if (fetchError) {
@@ -232,13 +250,18 @@ export const useNews = () => {
         .select(
           `
           id, slug, title, excerpt, url, image_url, author,
-          published_at, source_id, views_count, is_featured,
-          country_ids, city_ids, tags, category, publisher_name
+          published_at, source_id, views_count, is_featured, is_premium,
+          country_ids, city_ids, tags, category, category_canonical, publisher_name
         `,
         )
         .eq('is_featured', true)
+        .eq('is_premium', false)
         .not('published_at', 'is', null)
+        .not('content', 'is', null)
+        .neq('content', '')
+        .or('quality_score.is.null,quality_score.gte.50')
         .or('quality_status.is.null,quality_status.eq.passed')
+        .is('duplicate_of_id', null)
         .order('published_at', { ascending: false })
         .limit(5);
 

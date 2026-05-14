@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
 
 interface Props {
   onError?: (msg: string) => void;
@@ -29,7 +28,7 @@ export function OAuthButtons({ onError }: Props) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <div className="flex flex-col gap-3">
       <Button
         type="button"
         variant="outline"
@@ -58,7 +57,7 @@ export function OAuthButtons({ onError }: Props) {
         )}
         {t('auth.oauth.apple', 'Continue with Apple')}
       </Button>
-    </Box>
+    </div>
   );
 }
 

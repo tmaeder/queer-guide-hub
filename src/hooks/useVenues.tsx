@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { calculateDistanceKm } from '@/utils/calculateDistance';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 
@@ -14,6 +14,7 @@ export function useVenues(autoFetch: boolean = true) {
   const [hasMore, setHasMore] = useState(true);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [datasetTotal, setDatasetTotal] = useState<number | null>(null);
+  const [filteredTotal, setFilteredTotal] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +22,8 @@ export function useVenues(autoFetch: boolean = true) {
       const { count } = await supabase
         .from('venues')
         .select('id', { head: true, count: 'exact' })
-        .neq('data_source', 'refuge_restrooms');
+        .neq('data_source', 'refuge_restrooms')
+        .is('duplicate_of_id', null);
       if (!cancelled) setDatasetTotal(count ?? 0);
     })();
     return () => {
@@ -53,7 +55,7 @@ export function useVenues(autoFetch: boolean = true) {
       bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
       limit?: number;
     },
-    options?: { page?: number; pageSize?: number; append?: boolean },
+    options?: { page?: number; pageSize?: number; append?: boolean; sort?: string },
   ) => {
     let fetchedCount = 0;
     let totalCount: number | null = null;
@@ -67,8 +69,30 @@ export function useVenues(autoFetch: boolean = true) {
         .from('venues')
         .select('*', { count: 'exact' })
         .neq('data_source', 'refuge_restrooms')
-        .order('featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .is('duplicate_of_id', null);
+
+      // Server-side sort
+      const sort = options?.sort ?? 'featured';
+      switch (sort) {
+        case 'name':
+          query = query.order('name', { ascending: true });
+          break;
+        case 'category':
+          query = query.order('category', { ascending: true }).order('name', { ascending: true });
+          break;
+        case 'city':
+          query = query.order('city', { ascending: true }).order('name', { ascending: true });
+          break;
+        case 'created_at':
+          query = query.order('created_at', { ascending: false });
+          break;
+        case 'featured':
+        default:
+          query = query
+            .order('is_featured', { ascending: false })
+            .order('created_at', { ascending: false });
+          break;
+      }
 
       if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
@@ -159,6 +183,7 @@ export function useVenues(autoFetch: boolean = true) {
       // Track fetched and total counts for callers
       fetchedCount = processedVenues.length;
       totalCount = typeof count === 'number' ? count : null;
+      setFilteredTotal(totalCount);
 
       if (typeof count === 'number') {
         if (typeof page === 'number') {
@@ -238,6 +263,7 @@ export function useVenues(autoFetch: boolean = true) {
     error,
     hasMore,
     datasetTotal,
+    filteredTotal,
     fetchVenues,
     createVenue,
     updateVenue,

@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Box from '@mui/material/Box';
 
 interface UserRelationshipActionsProps {
   targetUserId: string;
@@ -76,7 +75,7 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
   if (relationshipStatus?.type === 'friend' && relationshipStatus.direction === 'received' && relationshipStatus.status === 'pending') {
     if (compact) {
       return (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <div className="flex gap-1">
           <Button
             variant="default"
             size="sm"
@@ -93,31 +92,21 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
           >
             <X style={{ height: 16, width: 16 }} />
           </Button>
-        </Box>
+        </div>
       );
     }
 
     return (
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <Button
-          variant="default"
-          onClick={handleAccept}
-          disabled={loading}
-
-        >
+      <div className="flex gap-2">
+        <Button variant="default" onClick={handleAccept} disabled={loading}>
           <Check style={{ height: 16, width: 16 }} />
           Accept
         </Button>
-        <Button
-          variant="outline"
-          onClick={handleReject}
-          disabled={loading}
-
-        >
+        <Button variant="outline" onClick={handleReject} disabled={loading}>
           <X style={{ height: 16, width: 16 }} />
           Reject
         </Button>
-      </Box>
+      </div>
     );
   }
 

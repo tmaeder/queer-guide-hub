@@ -1,7 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Upload, Music, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
+import { insertRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 
 interface AudioUploadProps {
@@ -79,7 +78,6 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
     try {
       setIsUploading(true);
 
-      // Upload to storage
       const filePath = `uploads/${audio.id}/${audio.file.name}`;
 
       const { data: _uploadData, error: uploadError } = await supabase.storage
@@ -92,25 +90,19 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
         a.id === audio.id ? { ...a, uploadProgress: 100 } : a
       ));
 
-      // Create audio record
-      const { data: _audioRecord, error: dbError } = await supabase
-        .from('audio_files')
-        .insert([{
-          id: audio.id,
-          title: audio.title,
-          artist: audio.artist || null,
-          album: audio.album || null,
-          description: audio.description || null,
-          original_filename: audio.file.name,
-          storage_path: filePath,
-          status: 'uploaded'
-        }])
-        .select()
-        .single();
+      const { error: dbError } = await insertRow('audio_files', {
+        id: audio.id,
+        title: audio.title,
+        artist: audio.artist || null,
+        album: audio.album || null,
+        description: audio.description || null,
+        original_filename: audio.file.name,
+        storage_path: filePath,
+        status: 'uploaded',
+      });
 
       if (dbError) throw dbError;
 
-      // Start processing
       const { error: processError } = await supabase.functions.invoke('process-audio', {
         body: {
           action: 'start',
@@ -125,7 +117,6 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
         a.id === audio.id ? { ...a, status: 'processing' } : a
       ));
 
-      // Poll for processing status
       pollProcessingStatus(audio.id);
 
       toast.success(`Started processing "${audio.title}"`);
@@ -173,7 +164,6 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       }
     }, 2000);
 
-    // Clean up after 10 minutes
     setTimeout(() => clearInterval(pollInterval), 600000);
   };
 
@@ -194,7 +184,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Upload Zone */}
       <Card>
         <CardHeader>
@@ -204,94 +194,83 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box
+          <div
             {...getRootProps()}
-            sx={{
-              border: 2,
-              borderStyle: 'dashed',
-              borderRadius: 2,
-              p: 4,
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              borderColor: isDragActive ? 'primary.main' : 'divider',
-              bgcolor: isDragActive ? 'primary.light' : 'transparent',
-              '&:hover': { borderColor: 'primary.main' },
-            }}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'}`}
           >
             <input {...getInputProps()} />
             <Upload style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
             {isDragActive ? (
-              <Typography variant="subtitle1">Drop audio files here...</Typography>
+              <p className="text-base font-medium">Drop audio files here...</p>
             ) : (
-              <Box>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              <div>
+                <p className="text-base font-medium mb-2">
                   Drag & drop audio files here, or click to select
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </p>
+                <p className="text-sm text-muted-foreground">
                   Supports MP3, WAV, AAC, FLAC, OGG, M4A
-                </Typography>
-              </Box>
+                </p>
+              </div>
             )}
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
       {/* Audio List */}
       {audios.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {audios.map((audio) => (
             <Card key={audio.id}>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                  <Box sx={{ flexShrink: 0 }}>
-                    <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
                       <Music style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
 
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Title</Typography>
+                  <div className="flex-1 flex flex-col gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm font-medium">Title</p>
                         <Input
                           value={audio.title}
                           onChange={(e) => updateAudioInfo(audio.id, 'title', e.target.value)}
                           placeholder="Track title"
                         />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Artist</Typography>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Artist</p>
                         <Input
                           value={audio.artist}
                           onChange={(e) => updateAudioInfo(audio.id, 'artist', e.target.value)}
                           placeholder="Artist name"
                         />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Album</Typography>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Album</p>
                         <Input
                           value={audio.album}
                           onChange={(e) => updateAudioInfo(audio.id, 'album', e.target.value)}
                           placeholder="Album name"
                         />
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
 
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>Description</Typography>
+                    <div>
+                      <p className="text-sm font-medium">Description</p>
                       <Textarea
                         value={audio.description}
                         onChange={(e) => updateAudioInfo(audio.id, 'description', e.target.value)}
                         placeholder="Track description"
                         rows={2}
                       />
-                    </Box>
+                    </div>
 
                     {/* Processing Options */}
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Quality</Typography>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium">Quality</p>
                         <Select
                           value={audio.config.quality}
                           onValueChange={(value: string) => updateAudioConfig(audio.id, 'quality', value)}
@@ -305,89 +284,82 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                             <SelectItem value="high">High Quality (Maximum)</SelectItem>
                           </SelectContent>
                         </Select>
-                      </Box>
+                      </div>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id={`transcript-${audio.id}`}
                           checked={audio.config.generateTranscript}
                           onCheckedChange={(checked) => updateAudioConfig(audio.id, 'generateTranscript', checked)}
                         />
-                        <label
-                          htmlFor={`transcript-${audio.id}`}
-                        >
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Generate transcript</Typography>
+                        <label htmlFor={`transcript-${audio.id}`}>
+                          <p className="text-sm font-medium">Generate transcript</p>
                         </label>
-                      </Box>
+                      </div>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         <Checkbox
                           id={`normalize-${audio.id}`}
                           checked={audio.config.normalizeLoudness}
                           onCheckedChange={(checked) => updateAudioConfig(audio.id, 'normalizeLoudness', checked)}
                         />
-                        <label
-                          htmlFor={`normalize-${audio.id}`}
-                        >
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Normalize loudness</Typography>
+                        <label htmlFor={`normalize-${audio.id}`}>
+                          <p className="text-sm font-medium">Normalize loudness</p>
                         </label>
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
 
                     {/* Status & Progress */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{
-                          width: 8, height: 8, borderRadius: '50%',
-                          bgcolor: audio.status === 'completed' ? 'success.main' :
-                                   audio.status === 'error' ? 'error.main' : 'warning.main'
-                        }} />
-                        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{audio.status}</Typography>
-                      </Box>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-2 h-2 rounded-full ${audio.status === 'completed' ? 'bg-green-500' : audio.status === 'error' ? 'bg-destructive' : 'bg-yellow-500'}`}
+                        />
+                        <p className="text-sm capitalize">{audio.status}</p>
+                      </div>
 
-                      <Typography variant="body2" color="text.secondary">
+                      <p className="text-sm text-muted-foreground">
                         Quality: {audio.config.quality} |
                         {audio.config.generateTranscript ? ' +Transcript' : ''}
                         {audio.config.normalizeLoudness ? ' +Normalized' : ''}
-                      </Typography>
-                    </Box>
+                      </p>
+                    </div>
 
                     {/* Progress Bars */}
                     {audio.status === 'uploading' && (
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2">Uploading...</Typography>
-                          <Typography variant="body2">{Math.round(audio.uploadProgress)}%</Typography>
-                        </Box>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <p className="text-sm">Uploading...</p>
+                          <p className="text-sm">{Math.round(audio.uploadProgress)}%</p>
+                        </div>
                         <Progress value={audio.uploadProgress} />
-                      </Box>
+                      </div>
                     )}
 
                     {audio.status === 'processing' && (
-                      <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2">Processing audio...</Typography>
-                          <Typography variant="body2">{audio.processingProgress || 0}%</Typography>
-                        </Box>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <p className="text-sm">Processing audio...</p>
+                          <p className="text-sm">{audio.processingProgress || 0}%</p>
+                        </div>
                         <Progress value={audio.processingProgress || 0} />
-                      </Box>
+                      </div>
                     )}
-                  </Box>
+                  </div>
 
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => removeAudio(audio.id)}
-
                   >
                     <X style={{ width: 16, height: 16 }} />
                   </Button>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

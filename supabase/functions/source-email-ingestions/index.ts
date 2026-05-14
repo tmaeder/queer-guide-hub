@@ -1,11 +1,12 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Stages AI-extracted events/venues from email_ingestions into ingestion_staging
 // so they flow through normalize → validate → dedup → enrich → quality → commit.
 // The email-ingest CF worker already does fast-path direct inserts;
 // pipeline dedup catches duplicates and merges/skips as appropriate.
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-email-ingestions', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -96,4 +97,4 @@ Deno.serve(async (req) => {
     console.error('source-email-ingestions:', err)
     return errorResponse((err as Error).message, 500, req)
   }
-})
+}))

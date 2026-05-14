@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import * as Icons from 'lucide-react';
+import { resolvePipelineIcon, AlertCircle, ArrowDownToLine, ArrowUpFromLine, Timer } from '../icon-registry';
 
 interface BaseNodeData {
   label?: string;
@@ -43,13 +43,11 @@ function formatDuration(ms: number): string {
 
 function BaseNode({ data, selected }: NodeProps) {
   const d = data as BaseNodeData;
-  const IconComponent = d.icon
-    ? (Icons as Record<string, unknown>)[d.icon] as React.ComponentType<{ className?: string }>
-    : Icons.Box;
+  const IconComponent = resolvePipelineIcon(d.icon);
   const color = d.color || '#6b7280';
   const status = d.status;
   const sc = status ? statusConfig[status] : null;
-  const StatusIcon = sc ? (Icons as Record<string, unknown>)[sc.icon] as React.ComponentType<{ className?: string }> : null;
+  const StatusIcon = sc ? resolvePipelineIcon(sc.icon) : null;
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -100,13 +98,13 @@ function BaseNode({ data, selected }: NodeProps) {
           {d.hasValidationIssue && !sc && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Icons.AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ml-auto shrink-0" />
+                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ml-auto shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="text-xs">Missing required config</TooltipContent>
             </Tooltip>
           )}
           {sc && (
-            <Badge variant="outline" className={`ml-auto text-[10px] px-1.5 py-0 gap-1 ${sc.className}`}>
+            <Badge variant="outline" className={`ml-auto text-2xs px-1.5 py-0 gap-1 ${sc.className}`}>
               {StatusIcon && <StatusIcon className="h-2.5 w-2.5" />}
               {status}
             </Badge>
@@ -115,20 +113,20 @@ function BaseNode({ data, selected }: NodeProps) {
 
         {/* Metrics bar */}
         {(d.itemsOut !== undefined || d.itemsIn !== undefined || d.durationMs) && (
-          <div className="flex items-center gap-3 px-3 py-1.5 text-[11px] font-mono border-t border-border/50">
+          <div className="flex items-center gap-3 px-3 py-1.5 text-xs2 font-mono border-t border-border/50">
             {d.itemsIn !== undefined && (
               <span className="text-muted-foreground" title="items in">
-                <Icons.ArrowDownToLine className="h-3 w-3 inline mr-0.5" />{d.itemsIn}
+                <ArrowDownToLine className="h-3 w-3 inline mr-0.5" />{d.itemsIn}
               </span>
             )}
             {d.itemsOut !== undefined && (
               <span className="font-semibold" style={{ color }} title="items out">
-                <Icons.ArrowUpFromLine className="h-3 w-3 inline mr-0.5" />{d.itemsOut}
+                <ArrowUpFromLine className="h-3 w-3 inline mr-0.5" />{d.itemsOut}
               </span>
             )}
             {d.durationMs !== undefined && d.durationMs > 0 && (
               <span className="ml-auto text-muted-foreground" title="duration">
-                <Icons.Timer className="h-3 w-3 inline mr-0.5" />{formatDuration(d.durationMs)}
+                <Timer className="h-3 w-3 inline mr-0.5" />{formatDuration(d.durationMs)}
               </span>
             )}
           </div>
@@ -138,7 +136,7 @@ function BaseNode({ data, selected }: NodeProps) {
         {d.errorMessage && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="px-3 py-1.5 text-[10px] text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
+              <div className="px-3 py-1.5 text-2xs text-destructive bg-destructive/5 border-t border-destructive/20 truncate cursor-help">
                 {d.errorMessage}
               </div>
             </TooltipTrigger>

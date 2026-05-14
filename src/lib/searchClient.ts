@@ -7,9 +7,8 @@
  */
 
 const SEARCH_URL =
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	(import.meta as any).env?.VITE_SEARCH_PROXY_URL ||
-	"https://queer-guide-search-proxy.maeder-tobiassimon.workers.dev";
+	import.meta.env.VITE_SEARCH_PROXY_URL ||
+	"https://search.queer.guide";
 
 const SESSION_KEY = "qg_sid";
 
@@ -22,16 +21,42 @@ export function getSessionId(): string {
 	return id;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function post<T = any>(path: string, body: object): Promise<T> {
+export interface SearchHit {
+	id: string;
+	objectID?: string;
+	type: string;
+	title?: string;
+	name?: string;
+	category?: string;
+	location?: string;
+	city?: string;
+	description?: string;
+	[key: string]: unknown;
+}
+
+// Write endpoints (/track, /feedback, /onboarding) need credentials: 'include'
+// so the signed qg_sid cookie travels — the worker uses it to verify the
+// session id (bug #14). Read endpoints don't need credentials and stay
+// `same-origin` to keep CORS simple.
+const WRITE_PATHS = new Set(["/track", "/feedback", "/onboarding"]);
+
+async function post<T>(path: string, body: object): Promise<T> {
 	const res = await fetch(`${SEARCH_URL}${path}`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(body),
+		credentials: WRITE_PATHS.has(path) ? "include" : "same-origin",
 		keepalive: true,
 	});
 	if (!res.ok) throw new Error(`${path} ${res.status}: ${await res.text()}`);
-	return (await res.json()) as T;
+	const data = (await res.json()) as T & { session_verified?: boolean };
+	// One-shot migration: once the worker confirms it has a verified signed
+	// cookie for this session, drop the legacy localStorage id so future
+	// sessions rely on the cookie alone.
+	if (data?.session_verified && typeof window !== "undefined") {
+		try { localStorage.removeItem(SESSION_KEY); } catch { /* private mode */ }
+	}
+	return data;
 }
 
 export type TrackEvent =
@@ -89,17 +114,23 @@ export async function submitOnboarding(
 	await post("/onboarding", { user_id: userId, ...prefs });
 }
 
-/** "More like this" — semantic neighbors of a given entity. */
+/**
+ * "More like this" — semantic neighbors of a given entity.
+ *
+ * `contentTypes` restricts the result set to specific entity types — pass
+ * `['personality']` from a personality detail page to keep articles and
+ * other cross-type hits out of the related rail.
+ */
 export async function fetchSimilar(
 	entity: { type: string; id: string },
 	limit = 10,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any[]> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const data = await post<{ results: any[] }>("/similar", {
+	contentTypes?: string[],
+): Promise<SearchHit[]> {
+	const data = await post<{ results: SearchHit[] }>("/similar", {
 		entity_type: entity.type,
 		entity_id: entity.id,
 		limit,
+		...(contentTypes && contentTypes.length > 0 ? { content_types: contentTypes } : {}),
 	});
 	return data.results ?? [];
 }
@@ -110,10 +141,8 @@ export async function fetchTrending(
 	city?: string,
 	limit = 10,
 	userId?: string | null,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any[]> {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const data = await post<{ trending: any[] }>("/trending", {
+): Promise<SearchHit[]> {
+	const data = await post<{ trending: SearchHit[] }>("/trending", {
 		types,
 		city,
 		limit,
@@ -128,11 +157,9 @@ export async function fetchAutocomplete(
 	query: string,
 	types?: string[],
 	limit = 6,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any[]> {
+): Promise<SearchHit[]> {
 	if (!query?.trim()) return [];
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const data = await post<{ suggestions: any[] }>("/autocomplete", {
+	const data = await post<{ suggestions: SearchHit[] }>("/autocomplete", {
 		query,
 		types,
 		limit,

@@ -1,10 +1,6 @@
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Clock, MapPin } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
+import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
 import { formatEventTime } from '@/lib/event-time';
 import type { Database } from '@/integrations/supabase/types';
@@ -18,16 +14,24 @@ interface FestivalScheduleProps {
   timezone?: string | null;
 }
 
+function MetaChip({ icon: Icon, label }: { icon?: React.ComponentType<{ style?: React.CSSProperties }>; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs border border-border">
+      {Icon && <Icon style={{ width: 12, height: 12 }} />}
+      {label}
+    </span>
+  );
+}
+
 export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
   if (events.length === 0) {
     return (
-      <Paper sx={{ p: 4, textAlign: 'center' }}>
-        <Typography color="text.secondary">No events scheduled yet.</Typography>
-      </Paper>
+      <div className="p-8 text-center bg-background border border-border">
+        <p className="text-muted-foreground">No events scheduled yet.</p>
+      </div>
     );
   }
 
-  // Group events by day
   const grouped = events.reduce<Record<string, EventRow[]>>((acc, event) => {
     const day = format(parseISO(event.start_date), 'yyyy-MM-dd');
     if (!acc[day]) acc[day] = [];
@@ -38,88 +42,37 @@ export function FestivalSchedule({ events, timezone }: FestivalScheduleProps) {
   const sortedDays = Object.keys(grouped).sort();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {sortedDays.map((day, dayIdx) => (
-        <Box key={day}>
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: 600, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}
-          >
+        <div key={day}>
+          <h6 className="text-base font-semibold mb-3 flex items-center gap-2">
             {format(parseISO(day), 'EEEE, MMMM d, yyyy')}
-            <Chip
-              size="small"
-              label={`${grouped[day].length} event${grouped[day].length !== 1 ? 's' : ''}`}
-            />
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1,
-              pl: 2,
-              borderLeft: 3,
-              borderColor: 'primary.main',
-            }}
-          >
+            <Badge variant="secondary">
+              {`${grouped[day].length} event${grouped[day].length !== 1 ? 's' : ''}`}
+            </Badge>
+          </h6>
+          <div className="flex flex-col gap-2 pl-4 border-l-[3px] border-primary">
             {grouped[day].map((event) => (
               <LocalizedLink key={event.id} to={`/events/${event.slug}`} style={{ textDecoration: 'none' }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      gap: 2,
-                    }}
-                  >
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        {event.title}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          mt: 0.5,
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        <Chip
-                          size="small"
-                          icon={<Clock style={{ width: 12, height: 12 }} />}
-                          label={formatEventTime(event.start_date, event.end_date, timezone)}
-                          variant="outlined"
-                        />
-                        {event.venues?.name && (
-                          <Chip
-                            size="small"
-                            icon={<MapPin style={{ width: 12, height: 12 }} />}
-                            label={event.venues.name}
-                            variant="outlined"
-                          />
-                        )}
-                        {event.event_type && (
-                          <Chip size="small" label={event.event_type} variant="outlined" />
-                        )}
-                      </Box>
-                    </Box>
-                    {event.is_free && <Chip size="small" label="Free" color="success" />}
-                  </Box>
-                </Paper>
+                <div className="p-4 transition-colors hover:bg-muted">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold">{event.title}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <MetaChip icon={Clock} label={formatEventTime(event.start_date, event.end_date, timezone)} />
+                        {event.venues?.name && <MetaChip icon={MapPin} label={event.venues.name} />}
+                        {event.event_type && <MetaChip label={event.event_type} />}
+                      </div>
+                    </div>
+                    {event.is_free && <Badge>Free</Badge>}
+                  </div>
+                </div>
               </LocalizedLink>
             ))}
-          </Box>
-          {dayIdx < sortedDays.length - 1 && <Divider sx={{ mt: 2 }} />}
-        </Box>
+          </div>
+          {dayIdx < sortedDays.length - 1 && <hr className="mt-4 border-border" />}
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }

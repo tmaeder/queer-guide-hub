@@ -15,7 +15,6 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { Youtube } from '@tiptap/extension-youtube';
 import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
-import Box from '@mui/material/Box';
 import { cn } from '@/lib/utils';
 import { EditorToolbar } from './EditorToolbar';
 
@@ -95,159 +94,22 @@ export function RichTextEditor({
   });
 
   return (
-    <Box
-      className={cn(className)}
-      sx={{
-        border: 1,
-        borderColor: 'divider',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        '&:focus-within': {
-          borderColor: 'primary.main',
-          boxShadow: (theme) =>
-            `0 0 0 2px ${
-              theme.palette.mode === 'dark'
-                ? 'rgba(144,202,249,0.25)'
-                : 'rgba(25,118,210,0.15)'
-            }`,
-        },
-      }}
+    <div
+      className={cn(
+        'border border-border rounded-lg overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15',
+        className,
+      )}
     >
       {/* Toolbar */}
       {editable && <EditorToolbar editor={editor} />}
 
       {/* Editor content area */}
-      <Box
-        sx={{
-          minHeight,
-          px: 2,
-          py: 1.5,
-          overflowY: 'auto',
-
-          /* ── Tiptap prose styles ────────────────────────── */
-          '& .tiptap': {
-            outline: 'none',
-            minHeight: 'inherit',
-          },
-
-          /* Placeholder */
-          '& .tiptap p.is-editor-empty:first-of-type::before': {
-            content: 'attr(data-placeholder)',
-            float: 'left',
-            color: 'text.disabled',
-            pointerEvents: 'none',
-            height: 0,
-          },
-
-          /* Prose resets */
-          '& .tiptap > * + *': { mt: 1 },
-
-          '& .tiptap h1': { fontSize: '2rem', fontWeight: 700, lineHeight: 1.2, mt: 3, mb: 1 },
-          '& .tiptap h2': { fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.25, mt: 2.5, mb: 1 },
-          '& .tiptap h3': { fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.3, mt: 2, mb: 0.75 },
-          '& .tiptap h4': { fontSize: '1.1rem', fontWeight: 600, lineHeight: 1.35, mt: 1.5, mb: 0.5 },
-
-          '& .tiptap p': { fontSize: '1rem', lineHeight: 1.7 },
-
-          '& .tiptap ul, & .tiptap ol': { pl: 3, my: 1 },
-          '& .tiptap li': { mb: 0.5 },
-
-          '& .tiptap blockquote': {
-            borderLeft: 3,
-            borderColor: 'divider',
-            pl: 2,
-            ml: 0,
-            fontStyle: 'italic',
-            color: 'text.secondary',
-          },
-
-          '& .tiptap a': {
-            color: 'primary.main',
-            textDecoration: 'underline',
-            cursor: 'pointer',
-          },
-
-          '& .tiptap img': {
-            maxWidth: '100%',
-            height: 'auto',
-            borderRadius: '6px',
-            my: 1,
-          },
-
-          '& .tiptap hr': {
-            borderColor: 'divider',
-            my: 2,
-          },
-
-          /* Inline code */
-          '& .tiptap code': {
-            bgcolor: 'action.hover',
-            borderRadius: '4px',
-            px: 0.75,
-            py: 0.25,
-            fontSize: '0.875em',
-            fontFamily: 'monospace',
-          },
-
-          /* Code block */
-          '& .tiptap pre': {
-            bgcolor: 'grey.900',
-            color: 'grey.100',
-            borderRadius: '8px',
-            p: 2,
-            my: 1.5,
-            overflowX: 'auto',
-            fontFamily: '"Fira Code", "JetBrains Mono", monospace',
-            fontSize: '0.875rem',
-            lineHeight: 1.6,
-            '& code': {
-              bgcolor: 'transparent',
-              p: 0,
-              borderRadius: 0,
-              color: 'inherit',
-              fontSize: 'inherit',
-            },
-          },
-
-          /* Highlight */
-          '& .tiptap mark': {
-            bgcolor: '#fef08a',
-            borderRadius: '2px',
-            px: 0.25,
-          },
-
-          /* Table */
-          '& .tiptap table': {
-            borderCollapse: 'collapse',
-            width: '100%',
-            my: 1.5,
-          },
-          '& .tiptap th, & .tiptap td': {
-            border: 1,
-            borderColor: 'divider',
-            px: 1.5,
-            py: 1,
-            textAlign: 'left',
-          },
-          '& .tiptap th': {
-            bgcolor: 'action.hover',
-            fontWeight: 600,
-          },
-
-          /* YouTube embed */
-          '& .tiptap iframe': {
-            borderRadius: '6px',
-            my: 1,
-          },
-
-          /* Selection */
-          '& .tiptap .is-editor-empty': {
-            minHeight: 'inherit',
-          },
-        }}
+      <div
+        className="px-4 py-3 overflow-y-auto rich-text-content"
+        style={{ minHeight }}
       >
         <EditorContent editor={editor} />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

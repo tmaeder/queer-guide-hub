@@ -15,12 +15,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Phone,
   ExternalLink,
@@ -36,8 +32,8 @@ import {
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
-import { supabase } from '@/integrations/supabase/client';
 import { useMeta } from '@/hooks/useMeta';
+import { useCMSPage } from '@/hooks/useCMSPage';
 import { useAuth } from '@/hooks/useAuth';
 import { useHotlineBookmarks } from '@/hooks/useHotlineBookmarks';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -45,6 +41,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { EmptyState } from '@/components/ui/EmptyState';
 import {
   Select,
@@ -144,8 +141,20 @@ function is247(hours: string): boolean {
   return h.includes('24/7') || h.includes('24 h') || h.includes('rund um die uhr');
 }
 
+const INTRO_HTML_CSS = `
+.qg-help-intro p { font-size: 1rem; line-height: 1.7; margin-bottom: 0.75rem; }
+.qg-help-intro strong { font-weight: 700; }
+.qg-help-intro a { color: hsl(var(--primary)); text-decoration: underline; }
+.qg-help-intro hr { border-color: hsl(var(--border)); margin: 1rem 0; }
+.qg-help-intro em { color: hsl(var(--muted-foreground)); }
+`;
+
 export default function HelpHotlines() {
-  const { t } = useTranslation();
+  // `ready` is authoritative when react-i18next is configured with
+  // `useSuspense: false` (see src/i18n/index.ts). Gate first paint on it so
+  // we never render fallback defaults during the brief init window — that
+  // was the source of the EN/DE bleed reported on /help.
+  const { t, ready } = useTranslation();
   const { user } = useAuth();
   const { bookmarkedIds, isBookmarked, toggle: toggleBookmark } = useHotlineBookmarks();
 
@@ -159,10 +168,10 @@ export default function HelpHotlines() {
   const [countryInitialized, setCountryInitialized] = useState(false);
 
   useMeta({
-    title: t('help.title', 'Hilfe & Krisen-Hotlines'),
+    title: t('help.title', 'Help & Crisis Hotlines'),
     description: t(
       'help.meta_description',
-      'Kostenlose, anonyme LGBTQIA+ Krisenhotlines und Beratungsstellen weltweit. Du bist nicht allein.',
+      'Free, anonymous LGBTQIA+ crisis hotlines and counselling services worldwide. You are not alone.',
     ),
     canonicalPath: '/help',
   });
@@ -185,29 +194,19 @@ export default function HelpHotlines() {
     localStorage.setItem('qg_help_topic', topicFilter);
   }, [topicFilter]);
 
+  // Migrated to useCMSPage hook (DUP-4).
+  // DUP-4 — pull cms_pages 'help' fetch into useCMSPage hook.
+  const { data: cmsResult, isLoading: cmsLoading } = useCMSPage('help');
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
+    setLoading(cmsLoading);
+    if (!cmsResult) return;
+    if (cmsResult.notFound || !cmsResult.page) {
+      setError(true);
+    } else {
+      setPage(cmsResult.page);
       setError(false);
-      const { data, error: fetchError } = await supabase
-        .from('cms_pages' as never)
-        .select('*')
-        .eq('slug', 'help')
-        .eq('workflow_state', 'published')
-        .single();
-      if (cancelled) return;
-      if (fetchError || !data) {
-        setError(true);
-      } else {
-        setPage(data as CMSPage);
-      }
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    }
+  }, [cmsLoading, cmsResult]);
 
   const hotlines: Hotline[] = useMemo(() => {
     const body = page?.body_json as HelpBodyJson | undefined;
@@ -278,98 +277,91 @@ export default function HelpHotlines() {
     setSearchQuery('');
   };
 
-  if (loading) {
+  if (loading || !ready) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Skeleton variant="text" width="40%" height={56} />
-        <Skeleton variant="text" width="60%" height={24} sx={{ mb: 3 }} />
-        <Skeleton variant="rounded" height={80} sx={{ mb: 3 }} />
-        <Skeleton variant="rounded" height={140} sx={{ mb: 2 }} />
-        <Skeleton variant="rounded" height={140} sx={{ mb: 2 }} />
-      </Container>
+      <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
+        <Skeleton className="mb-2 h-14 w-2/5" />
+        <Skeleton className="mb-6 h-6 w-3/5" />
+        <Skeleton className="mb-6 h-20 w-full rounded-md" />
+        <Skeleton className="mb-4 h-36 w-full rounded-md" />
+        <Skeleton className="mb-4 h-36 w-full rounded-md" />
+      </div>
     );
   }
 
   if (error || !page) {
     return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-          {t('help.error_title', 'Hilfe-Seite nicht verfügbar')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+      <div className="mx-auto w-full max-w-screen-lg px-4 py-16 text-center sm:px-6">
+        <h1 className="mb-2 text-3xl font-bold">
+          {t('help.error_title', 'Help page unavailable')}
+        </h1>
+        <p className="mb-6 text-muted-foreground">
           {t(
             'help.error_body',
-            'Bei akuter Gefahr wähle den Notruf: 112 (EU) oder 911 (US/CA).',
+            'In acute danger, call your local emergency number: 112 (EU) or 911 (US/CA).',
           )}
-        </Typography>
-      </Container>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Container sx={{ py: 4 }}>
+    <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
+      <style dangerouslySetInnerHTML={{ __html: INTRO_HTML_CSS }} />
       {/* Breadcrumb */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
-        <Typography
-          component={LocalizedLink}
+      <div className="mb-4 flex items-center gap-1">
+        <LocalizedLink
           to="/resources"
-          variant="body2"
-          sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { opacity: 0.7 } }}
+          className="text-sm text-muted-foreground no-underline hover:opacity-70"
         >
           {t('help.breadcrumb_resources', 'Resources')}
-        </Typography>
+        </LocalizedLink>
         <ChevronRight size={14} style={{ opacity: 0.5 }} />
-        <Typography
-          component={LocalizedLink}
+        <LocalizedLink
           to="/resources?category=Support+%26+News"
-          variant="body2"
-          sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { opacity: 0.7 } }}
+          className="text-sm text-muted-foreground no-underline hover:opacity-70"
         >
           {t('help.breadcrumb_support', 'Support & News')}
-        </Typography>
+        </LocalizedLink>
         <ChevronRight size={14} style={{ opacity: 0.5 }} />
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <span className="text-sm font-semibold">
           {t('help.breadcrumb_hotlines', 'Crisis Hotlines')}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       <PageHeader
-        title={page.title || t('help.title', 'Hilfe & Krisen-Hotlines')}
+        title={page.title || t('help.title', 'Help & Crisis Hotlines')}
         subtitle={
           page.subtitle ||
-          t('help.subtitle', 'Du bist nicht allein. Hier findest du sofortige Unterstützung.')
+          t('help.subtitle', 'You are not alone. Find immediate support here.')
         }
       />
 
       {/* Sticky emergency banner */}
-      <Alert
-        severity="error"
-        icon={<AlertTriangle size={24} />}
-        sx={{
-          mt: 3,
-          mb: 3,
-          borderRadius: 2,
-          position: 'sticky',
-          top: 64,
-          zIndex: 10,
-          '& .MuiAlert-message': { fontSize: '1rem', fontWeight: 500 },
-        }}
-      >
-        <AlertTitle sx={{ fontWeight: 700 }}>
-          {t('help.emergency_title', 'Akute Gefahr?')}
-        </AlertTitle>
-        {t(
-          'help.emergency_body',
-          'Wähle sofort den Notruf: 112 (EU) oder 911 (US/CA). Bei unmittelbarer Lebensgefahr zählt jede Sekunde.',
-        )}
-      </Alert>
+      <div className="sticky top-16 z-10 my-6">
+        <Alert variant="destructive" className="rounded-lg">
+          <AlertTriangle className="h-6 w-6" />
+          <AlertTitle className="font-bold">
+            {t('help.emergency_title', 'In acute danger?')}
+          </AlertTitle>
+          <AlertDescription>
+            {t(
+              'help.emergency_body',
+              'Call emergency services immediately: 112 (EU) or 911 (US/CA). Every second counts.',
+            )}
+          </AlertDescription>
+        </Alert>
+      </div>
 
       {/* Quick-action crisis bar */}
       {quickActionHotlines.length > 0 && (
-        <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <div className="mb-6 flex flex-col gap-2">
+          <span
+            className="text-xs font-semibold uppercase"
+            style={{ letterSpacing: 1 }}
+          >
             {t('help.quick_call', 'Quick call')}
-          </Typography>
+          </span>
           {quickActionHotlines.map((h) => {
             if (!h.phone) return null;
             const telHref = `tel:${h.phone.replace(/\s+/g, '')}`;
@@ -381,36 +373,29 @@ export default function HelpHotlines() {
                 className="w-full justify-between text-base"
               >
                 <a href={telHref}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <span className="flex items-center gap-2">
                     <Phone size={18} />
                     <span>{h.name}</span>
-                  </Box>
+                  </span>
                   <span>{h.phone}</span>
                 </a>
               </Button>
             );
           })}
-        </Box>
+        </div>
       )}
 
-      {/* CMS intro text — sanitized with DOMPurify (trusted admin content) */}
+      {/* CMS intro text */}
       {sanitizedIntroHtml && (
-        <Box
+        <div
+          className="qg-help-intro mb-8"
           dangerouslySetInnerHTML={{ __html: sanitizedIntroHtml }}
-          sx={{
-            mb: 4,
-            '& p': { fontSize: '1rem', lineHeight: 1.7, mb: 1.5 },
-            '& strong': { fontWeight: 700 },
-            '& a': { color: 'primary.main', textDecoration: 'underline' },
-            '& hr': { borderColor: 'divider', my: 2 },
-            '& em': { color: 'text.secondary' },
-          }}
         />
       )}
 
       {/* Search + Filters */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-        <Box sx={{ position: 'relative' }}>
+      <div className="mb-6 flex flex-col gap-4">
+        <div className="relative">
           <Input
             placeholder={t('help.search_placeholder', 'Search hotlines...')}
             value={searchQuery}
@@ -419,28 +404,30 @@ export default function HelpHotlines() {
           />
           <Search
             size={16}
-            style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, pointerEvents: 'none' }}
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              opacity: 0.4,
+              pointerEvents: 'none',
+            }}
           />
-        </Box>
+        </div>
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: 2,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Box sx={{ minWidth: 220, flex: '1 1 220px' }}>
-            <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}>
-              {t('help.filter_country', 'Land')}
-            </Typography>
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+          <div className="min-w-[220px] flex-[1_1_220px]">
+            <Label className="mb-1 block text-xs font-semibold">
+              {t('help.filter_country', 'Country')}
+            </Label>
             <Select value={countryFilter} onValueChange={setCountryFilter}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">{t('help.filter_country_all', 'Alle Länder')}</SelectItem>
+                <SelectItem value="ALL">
+                  {t('help.filter_country_all', 'All countries')}
+                </SelectItem>
                 {availableCountries.map((c) => (
                   <SelectItem key={c} value={c}>
                     {countryLabel(c)}
@@ -448,18 +435,20 @@ export default function HelpHotlines() {
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
-          <Box sx={{ minWidth: 220, flex: '1 1 220px' }}>
-            <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}>
-              {t('help.filter_topic', 'Thema')}
-            </Typography>
+          <div className="min-w-[220px] flex-[1_1_220px]">
+            <Label className="mb-1 block text-xs font-semibold">
+              {t('help.filter_topic', 'Topic')}
+            </Label>
             <Select value={topicFilter} onValueChange={setTopicFilter}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">{t('help.filter_topic_all', 'Alle Themen')}</SelectItem>
+                <SelectItem value="ALL">
+                  {t('help.filter_topic_all', 'All topics')}
+                </SelectItem>
                 {availableTopics.map((tp) => (
                   <SelectItem key={tp} value={tp}>
                     {t(`help.topic.${tp}`, tp)}
@@ -467,29 +456,28 @@ export default function HelpHotlines() {
                 ))}
               </SelectContent>
             </Select>
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
 
       {/* Saved hotlines */}
       {bookmarkedHotlines.length > 0 && (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+        <div className="mb-8">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-bold">
             <Heart size={16} />
             {t('help.saved_hotlines', 'Your saved hotlines')}
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-              gap: 2,
-            }}
-          >
+          </h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {bookmarkedHotlines.map((h) => (
-              <HotlineCard key={`saved-${h.id}`} hotline={h} isBookmarked toggleBookmark={toggleBookmark} />
+              <HotlineCard
+                key={`saved-${h.id}`}
+                hotline={h}
+                isBookmarked
+                toggleBookmark={toggleBookmark}
+              />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Main hotline grid */}
@@ -499,7 +487,7 @@ export default function HelpHotlines() {
           title={t('help.no_results_title', 'No hotlines found')}
           description={t(
             'help.no_results',
-            'Keine Hotlines mit diesen Filtern gefunden. Versuche "Alle Länder" oder prüfe die internationalen Verzeichnisse.',
+            'No hotlines match these filters. Try "All countries" or check the international directories.',
           )}
           primaryAction={{
             label: t('help.reset_filters', 'Reset filters'),
@@ -507,13 +495,7 @@ export default function HelpHotlines() {
           }}
         />
       ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-            gap: 2,
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {visibleHotlines.map((h) => (
             <HotlineCard
               key={h.id}
@@ -522,46 +504,49 @@ export default function HelpHotlines() {
               toggleBookmark={toggleBookmark}
             />
           ))}
-        </Box>
+        </div>
       )}
 
       {/* Related resources */}
-      <Box sx={{ mt: 5, pt: 3, borderTop: 1, borderColor: 'divider' }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
+      <div className="mt-12 border-t pt-6">
+        <h3 className="mb-3 text-sm font-bold">
           {t('help.related_resources', 'Related resources')}
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+        </h3>
+        <div className="mb-4 flex flex-wrap gap-2">
           {[
             { label: t('help.topic.health', 'Health'), cat: 'Health & Wellness' },
             { label: t('help.topic.trans', 'Trans'), cat: 'Gender Identity' },
             { label: t('help.topic.lgbtq', 'LGBTQIA+'), cat: 'Identity & Expression' },
             { label: t('help.topic.violence', 'Violence'), cat: 'Safety & Practices' },
             { label: t('help.topic.legal', 'Legal'), cat: 'Legal Rights' },
-            { label: t('help.topic.relationships', 'Relationships'), cat: 'Relationships & Connection' },
+            {
+              label: t('help.topic.relationships', 'Relationships'),
+              cat: 'Relationships & Connection',
+            },
           ].map(({ label, cat }) => (
-            <LocalizedLink key={cat} to={`/resources?category=${encodeURIComponent(cat)}`} style={{ textDecoration: 'none' }}>
+            <LocalizedLink
+              key={cat}
+              to={`/resources?category=${encodeURIComponent(cat)}`}
+              style={{ textDecoration: 'none' }}
+            >
               <Badge variant="secondary" className="cursor-pointer">
                 {label}
               </Badge>
             </LocalizedLink>
           ))}
-        </Box>
+        </div>
         <Button asChild variant="ghost" size="sm">
           <LocalizedLink to="/resources">
             {t('help.browse_resources', 'Browse all resources')}
             <ChevronRight size={16} className="ml-1" />
           </LocalizedLink>
         </Button>
-      </Box>
+      </div>
 
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}
-      >
-        {t('help.disclaimer', 'Queer Guide ersetzt keine professionelle Hilfe.')}
-      </Typography>
-    </Container>
+      <p className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
+        {t('help.disclaimer', 'Queer Guide does not replace professional help.')}
+      </p>
+    </div>
   );
 }
 
@@ -579,37 +564,46 @@ function HotlineCard({
   const h247 = is247(hotline.hours);
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="flex h-full flex-col">
       <CardHeader className="pb-2">
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+        <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-lg leading-snug">{hotline.name}</CardTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+          <div className="flex flex-shrink-0 items-center gap-1">
             <button
               onClick={() => toggleBookmark(hotline.id)}
-              aria-label={isBookmarked ? t('help.unsave', 'Remove from saved') : t('help.save', 'Save hotline')}
+              aria-label={
+                isBookmarked
+                  ? t('help.unsave', 'Remove from saved')
+                  : t('help.save', 'Save hotline')
+              }
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
             >
-              <Heart size={16} fill={isBookmarked ? 'currentColor' : 'none'} style={{ opacity: isBookmarked ? 1 : 0.4 }} />
+              <Heart
+                size={16}
+                fill={isBookmarked ? 'currentColor' : 'none'}
+                style={{ opacity: isBookmarked ? 1 : 0.4 }}
+              />
             </button>
             <Badge variant="outline" className="shrink-0">
               {countryLabel(hotline.country)}
             </Badge>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 flex-1">
-        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-          {hotline.description}
-        </Typography>
+      <CardContent className="flex flex-1 flex-col gap-3">
+        <p className="text-sm leading-relaxed text-muted-foreground">{hotline.description}</p>
 
-        {/* Topic badges — clickable, link to resources */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+        <div className="flex flex-wrap gap-1">
           {hotline.topics.map((tp) => {
             const resourceCat = TOPIC_TO_RESOURCE[tp];
             if (resourceCat) {
               return (
-                <LocalizedLink key={tp} to={`/resources?category=${encodeURIComponent(resourceCat)}`} style={{ textDecoration: 'none' }}>
-                  <Badge variant="secondary" className="text-xs cursor-pointer">
+                <LocalizedLink
+                  key={tp}
+                  to={`/resources?category=${encodeURIComponent(resourceCat)}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Badge variant="secondary" className="cursor-pointer text-xs">
                     {t(`help.topic.${tp}`, tp)}
                   </Badge>
                 </LocalizedLink>
@@ -621,12 +615,15 @@ function HotlineCard({
               </Badge>
             );
           })}
-        </Box>
+        </div>
 
-        {/* Feature badges */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+        <div className="flex flex-wrap gap-1">
           {h247 && (
-            <Badge variant="default" className="text-xs" style={{ backgroundColor: 'var(--brand, #b60d3d)', color: '#fff' }}>
+            <Badge
+              variant="default"
+              className="text-xs"
+              style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}
+            >
               <Zap size={10} className="mr-0.5" />
               {t('help.badge_24_7', '24/7')}
             </Badge>
@@ -643,22 +640,22 @@ function HotlineCard({
               {t('help.badge_anonymous', 'Anonymous')}
             </Badge>
           )}
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, fontSize: '0.875rem', color: 'text.secondary' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+        <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
             <Clock size={14} aria-hidden />
             <span>{hotline.hours}</span>
-          </Box>
+          </div>
           {hotline.languages.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <div className="flex items-center gap-2">
               <Languages size={14} aria-hidden />
               <span>{hotline.languages.map((l) => l.toUpperCase()).join(' · ')}</span>
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', gap: 1, mt: 'auto', pt: 1 }}>
+        <div className="mt-auto flex gap-2 pt-2">
           {telHref && (
             <Button
               asChild
@@ -682,7 +679,7 @@ function HotlineCard({
               </a>
             </Button>
           )}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

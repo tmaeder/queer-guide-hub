@@ -709,7 +709,7 @@ const ROUTE_MAP: Record<string, string> = {
   'fetch-wikipedia-data': 'enrichment/fetch-wikipedia',
   'fetch-personality-data': 'enrichment/fetch-personality',
   'stage-personality': 'ingestion/stage-personality',
-  'fetch-and-store-city-images': 'enrichment/fetch-city-images',
+  'fetch-images': 'enrichment/fetch-images',
   'fetch-news': 'enrichment/fetch-news',
   'geo-link-content': 'enrichment/geo-link',
   'link-locations': 'enrichment/link-locations',
@@ -732,12 +732,10 @@ const ROUTE_MAP: Record<string, string> = {
   'import-ticketmaster-events': 'imports/ticketmaster',
   'import-ilga-data': 'imports/ilga-data',
   'import-awin-products': 'imports/awin-products',
-  'background-import-manager': 'imports/background',
   'bulk-create-personalities': 'imports/bulk-personalities',
   'bulk-create-ai-tags': 'imports/bulk-ai-tags',
   'bulk-scrape-events': 'imports/bulk-scrape-events',
   // Ingestion
-  'ingestion-pipeline': 'ingestion/pipeline',
   'ingestion-review-api': 'ingestion/review',
   // Scraping
   'scrape-web-sources': 'scraping/web-sources',

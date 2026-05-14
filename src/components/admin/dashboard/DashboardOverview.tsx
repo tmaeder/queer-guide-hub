@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Box, Typography } from '@mui/material';
 import {
   TrendingUp,
   Users,
@@ -116,138 +115,84 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
 
   if (statsLoading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
-          }}
-        >
+      <div className="flex flex-col gap-6">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <Card
-              key={i}
-
-            >
+            <Card key={i}>
               <CardHeader>
-                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: 96 }}></Box>
+                <div className="h-4 bg-muted rounded w-24"></div>
               </CardHeader>
               <CardContent>
-                <Box
-                  sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: 64, mb: 1 }}
-                ></Box>
-                <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: 80 }}></Box>
+                <div className="h-8 bg-muted rounded w-16 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-20"></div>
               </CardContent>
             </Card>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Key Metrics */}
-      <Box>
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
-        >
+      <div>
+        <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
           <TrendingUp style={{ height: 20, width: 20 }} />
           Key Metrics
-        </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
-          }}
-        >
+        </h6>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {overviewCards.map((card) => {
             const Icon = card.icon;
             return (
-              <Card
-                key={card.title}
-
-                onClick={card.onClick}
-              >
-                <CardHeader
-
-                >
+              <Card key={card.title} onClick={card.onClick}>
+                <CardHeader>
                   <CardTitle>{card.title}</CardTitle>
                   <Icon style={{ height: 16, width: 16, color: 'rgba(0, 0, 0, 0.6)' }} />
                 </CardHeader>
                 <CardContent>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                    {card.value}
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      fontSize: 12,
-                      color: 'text.secondary',
-                    }}
-                  >
-                    <Badge
-                      variant={card.changeType === 'positive' ? 'default' : 'destructive'}
-
-                    >
+                  <div className="text-2xl font-bold">{card.value}</div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Badge variant={card.changeType === 'positive' ? 'default' : 'destructive'}>
                       {card.change}
                     </Badge>
-                    <Typography component="span" variant="caption">
-                      {card.description}
-                    </Typography>
+                    <span className="text-xs">{card.description}</span>
                     <ArrowUpRight style={{ height: 12, width: 12, marginLeft: 'auto' }} />
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* System Health */}
-      <Box>
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
-        >
+      <div>
+        <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
           <Activity style={{ height: 20, width: 20 }} />
           System Health
-        </Typography>
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
-          }}
-        >
+        </h6>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {systemCards.map((card) => {
             const Icon = card.icon;
             return (
               <Card key={card.title}>
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ p: 1, borderRadius: '50%', bgcolor: 'action.hover' }}>
-                      <Icon style={{ height: 16, width: 16, color: card.color }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {card.title}
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: card.color }}>
-                        {card.value}
-                      </Typography>
-                    </Box>
-                  </Box>
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-full bg-muted">
+                      <Icon style={{ height: 16, width: 16 }} className={card.color} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{card.title}</p>
+                      <h6 className={`text-base font-semibold ${card.color}`}>{card.value}</h6>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Storage Usage */}
       <Card>
@@ -255,24 +200,20 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
           <CardTitle>Storage Usage</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-              <Typography component="span" variant="body2">
-                Used Storage
-              </Typography>
-              <Typography component="span" variant="body2">
-                {systemHealth.storageUsed}% of limit
-              </Typography>
-            </Box>
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-sm">Used Storage</span>
+              <span className="text-sm">{systemHealth.storageUsed}% of limit</span>
+            </div>
             <Progress value={systemHealth.storageUsed} />
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <span className="text-xs text-muted-foreground">
               {systemHealth.storageUsed < 80
                 ? 'Storage usage is within normal limits'
                 : 'Consider archiving old data or upgrading storage'}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }

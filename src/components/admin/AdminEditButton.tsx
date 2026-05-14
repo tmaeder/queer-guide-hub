@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AdminEditDialog } from './AdminEditDialog';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
-import Tooltip from '@mui/material/Tooltip';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AdminEditButtonProps {
   contentType: string;
@@ -11,6 +12,8 @@ interface AdminEditButtonProps {
   contentName?: string;
   /** Current data for the content item — used to pre-fill the edit form */
   currentData?: Record<string, unknown>;
+  /** When provided, the owner of this content can also edit (in addition to admins/moderators). */
+  ownerUserId?: string | null;
   size?: 'sm' | 'default';
   onSaved?: () => void;
 }
@@ -20,26 +23,34 @@ export function AdminEditButton({
   contentId,
   contentName,
   currentData,
+  ownerUserId,
   size = 'sm',
   onSaved,
 }: AdminEditButtonProps) {
   const { canManageContent, loading } = useAdminRoles();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
-  if (loading || !canManageContent()) return null;
+  const isOwner = Boolean(ownerUserId && user?.id && ownerUserId === user.id);
+  if (loading || (!canManageContent() && !isOwner)) return null;
 
   return (
     <>
-      <Tooltip title="Edit (Admin)">
-        <Button
-          variant="outline"
-          size={size}
-          onClick={() => setOpen(true)}
-          aria-label="Edit content"
-        >
-          <Pencil style={{ width: 16, height: 16 }} />
-        </Button>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size={size}
+              onClick={() => setOpen(true)}
+              aria-label="Edit content"
+            >
+              <Pencil style={{ width: 16, height: 16 }} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Edit (Admin)</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <AdminEditDialog
         open={open}
         onOpenChange={setOpen}

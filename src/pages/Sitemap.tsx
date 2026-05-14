@@ -4,10 +4,7 @@ import { Search, Link2, Hash } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useDynamicSitemap } from '@/hooks/useDynamicSitemap';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Container from '@mui/material/Container';import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -101,25 +98,21 @@ export default function Sitemap() {
 
   if (isLoading) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em', mb: 2 }}>
-          Queer Guide Sitemap
-        </Typography>
-        <Typography color="text.secondary">Loading dynamic sitemap...</Typography>
-      </Container>
+      <div className="container mx-auto py-8 px-4">
+        <h4 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h4>
+        <p className="text-muted-foreground">Loading dynamic sitemap...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em', mb: 2 }}>
-          Queer Guide Sitemap
-        </Typography>
-        <Typography color="text.secondary">
+      <div className="container mx-auto py-8 px-4">
+        <h4 className="text-3xl font-bold tracking-tight mb-4">Queer Guide Sitemap</h4>
+        <p className="text-muted-foreground">
           Failed to load sitemap. Please try again later.
-        </Typography>
-      </Container>
+        </p>
+      </div>
     );
   }
 
@@ -130,45 +123,33 @@ export default function Sitemap() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <Box component="header" sx={{ py: 4 }}>
-        <Container>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <header className="py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
             <LocalizedLink to="/" style={{ marginLeft: -8, fontWeight: 700 }}>
               Queer Guide
             </LocalizedLink>
-            <Typography
-              component="a"
+            <a
               href="https://github.com/tmaeder/queer-guide-hub"
-              variant="body2"
-              sx={{ textUnderlineOffset: '4px', '&:hover': { textDecoration: 'underline' } }}
+              className="text-sm underline-offset-4 hover:underline"
             >
               GitHub
-            </Typography>
-          </Box>
-        </Container>
-        <Container>
-          <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: '-0.025em' }}>
-            Queer Guide Sitemap
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 1 }}>
+            </a>
+          </div>
+        </div>
+        <div className="container mx-auto px-4">
+          <h4 className="text-3xl font-bold tracking-tight">Queer Guide Sitemap</h4>
+          <p className="text-muted-foreground mt-2">
             Quickly jump to any main section.{' '}
-            <Typography component="span" aria-live="polite">
+            <span aria-live="polite">
               Showing {counts.visible} of {counts.total} links
-            </Typography>
-          </Typography>
+            </span>
+          </p>
 
-          <Box sx={{ mt: 2 }}>
-            <Box sx={{ position: 'relative', maxWidth: '36rem' }}>
+          <div className="mt-4">
+            <div className="relative max-w-xl">
               <Search
-                style={{
-                  position: 'absolute',
-                  left: 12,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: 16,
-                  height: 16,
-                  color: 'var(--mui-palette-text-secondary)',
-                }}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
                 aria-hidden
               />
               <Input
@@ -177,145 +158,83 @@ export default function Sitemap() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Filter pages by name or path"
                 aria-label="Filter sitemap links"
-
               />
               {query && (
                 <Button
                   variant="secondary"
-                  style={{
-                    position: 'absolute',
-                    right: 4,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2"
                   onClick={() => setQuery('')}
                   aria-label="Clear filter"
                 >
                   Clear
                 </Button>
               )}
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <Container>
-        <Box
-          component="main"
-          sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: '240px 1fr' } }}
-        >
-          <Box component="aside" sx={{ position: { md: 'sticky' }, top: { md: 96 } }}>
-            <Paper component="nav" aria-label="Section jump navigation" sx={{ p: 1.5 }}>
-              <Typography
-                variant="body2"
-                sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
-              >
-                <Hash style={{ width: 16, height: 16 }} /> Sections
-              </Typography>
-              <Box component="ul" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <div className="container mx-auto px-4">
+        <main className="grid gap-6 md:grid-cols-[240px_1fr]">
+          <aside className="md:sticky md:top-24">
+            <nav aria-label="Section jump navigation" className="p-3 bg-card rounded-lg border border-border">
+              <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <Hash className="w-4 h-4" /> Sections
+              </p>
+              <ul className="flex flex-col gap-1">
                 {filtered.map((section) => {
                   const id = slugify(section.title);
                   return (
                     <li key={section.title}>
-                      <Typography
-                        component="a"
+                      <a
                         href={`#${id}`}
-                        variant="body2"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          borderRadius: 1,
-                          px: 1,
-                          py: 0.5,
-                          '&:hover': { bgcolor: 'action.hover' },
-                          '&:focus-visible': {
-                            outline: 'none',
-                            boxShadow: (theme) => `0 0 0 2px ${theme.palette.primary.main}`,
-                          },
-                        }}
+                        className="flex items-center justify-between rounded px-2 py-1 text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         <span>{section.title}</span>
-                        <Typography component="span" color="text.secondary">
-                          {section.links.length}
-                        </Typography>
-                      </Typography>
+                        <span className="text-muted-foreground">{section.links.length}</span>
+                      </a>
                     </li>
                   );
                 })}
-              </Box>
-            </Paper>
-          </Box>
+              </ul>
+            </nav>
+          </aside>
 
-          <Box
-            component="section"
-            aria-label="Sitemap"
-            sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-          >
-            <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { sm: '1fr 1fr' } }}>
+          <section aria-label="Sitemap" className="flex flex-col gap-6">
+            <div className="grid gap-6 sm:grid-cols-2">
               {filtered.map((section) => {
                 const id = slugify(section.title);
                 return (
-                  <Paper component="article" key={section.title} id={id} sx={{ p: 2 }}>
-                    <Box
-                      component="header"
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 1.5,
-                        mb: 1.5,
-                      }}
-                    >
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        <Typography
-                          component="a"
+                  <article key={section.title} id={id} className="p-4 bg-card rounded-lg border border-border">
+                    <header className="flex items-center justify-between gap-3 mb-3">
+                      <h6 className="text-base font-semibold">
+                        <a
                           href={`#${id}`}
-                          sx={{
-                            textUnderlineOffset: '4px',
-                            '&:hover': { textDecoration: 'underline' },
-                          }}
+                          className="underline-offset-4 hover:underline"
                         >
                           {section.title}
-                        </Typography>
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        </a>
+                      </h6>
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="secondary"
                           size="sm"
                           onClick={() => handleCopySectionLink(id)}
                           aria-label={`Copy link to ${section.title}`}
                         >
-                          <Link2 style={{ width: 16, height: 16 }} />
+                          <Link2 className="w-4 h-4" />
                         </Button>
-                        <Typography variant="body2" color="text.secondary">
-                          {section.links.length}
-                        </Typography>
-                      </Box>
-                    </Box>
+                        <span className="text-sm text-muted-foreground">{section.links.length}</span>
+                      </div>
+                    </header>
 
                     {copied === id && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mb: 1 }}
-                        role="status"
-                      >
+                      <span className="block text-xs text-muted-foreground mb-2" role="status">
                         Copied section link
-                      </Typography>
+                      </span>
                     )}
 
-                    {/* Hierarchical list rendering: indent items under their hubs */}
-                    <Box
-                      component="ul"
-                      sx={{
-                        listStyleType: 'disc',
-                        pl: 2.5,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1,
-                      }}
-                    >
+                    <ul className="list-disc pl-6 flex flex-col gap-2">
                       {(() => {
                         const aboutChildren = new Set([
                           'About',
@@ -351,30 +270,14 @@ export default function Sitemap() {
                                   aria-label={`${link.label} page in ${section.title}`}
                                   aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                                 >
-                                  <Typography component="span" sx={{ fontWeight: 500 }}>
-                                    {link.label}
-                                  </Typography>
-                                  <Typography
-                                    component="span"
+                                  <span className="font-medium">{link.label}</span>
+                                  <span
                                     id={`${id}-${slugify(link.label)}-subtitle`}
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block' }}
+                                    className="block text-xs text-muted-foreground"
                                   >
                                     Page &bull; {link.to}
-                                  </Typography>
-                                  <Typography
-                                    component="span"
-                                    sx={{
-                                      position: 'absolute',
-                                      width: 1,
-                                      height: 1,
-                                      overflow: 'hidden',
-                                      clip: 'rect(0,0,0,0)',
-                                    }}
-                                  >
-                                    In section {section.title}
-                                  </Typography>
+                                  </span>
+                                  <span className="sr-only">In section {section.title}</span>
                                 </LocalizedLink>
                               </li>
                             );
@@ -387,42 +290,16 @@ export default function Sitemap() {
                                 aria-label={`${link.label} hub in ${section.title}`}
                                 aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                               >
-                                <Typography component="span" sx={{ fontWeight: 500 }}>
-                                  {link.label}
-                                </Typography>
-                                <Typography
-                                  component="span"
+                                <span className="font-medium">{link.label}</span>
+                                <span
                                   id={`${id}-${slugify(link.label)}-subtitle`}
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ display: 'block' }}
+                                  className="block text-xs text-muted-foreground"
                                 >
                                   Hub &bull; {link.to}
-                                </Typography>
-                                <Typography
-                                  component="span"
-                                  sx={{
-                                    position: 'absolute',
-                                    width: 1,
-                                    height: 1,
-                                    overflow: 'hidden',
-                                    clip: 'rect(0,0,0,0)',
-                                  }}
-                                >
-                                  In section {section.title}
-                                </Typography>
+                                </span>
+                                <span className="sr-only">In section {section.title}</span>
                               </LocalizedLink>
-                              <Box
-                                component="ul"
-                                sx={{
-                                  mt: 1,
-                                  listStyleType: 'disc',
-                                  pl: 2.5,
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  gap: 0.5,
-                                }}
-                              >
+                              <ul className="mt-2 list-disc pl-6 flex flex-col gap-1">
                                 {children.map((cl) => (
                                   <li key={cl.to}>
                                     <LocalizedLink
@@ -431,57 +308,39 @@ export default function Sitemap() {
                                       aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
                                       aria-describedby={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
                                     >
-                                      <Typography component="span" sx={{ fontWeight: 500 }}>
-                                        {cl.label}
-                                      </Typography>
-                                      <Typography
-                                        component="span"
+                                      <span className="font-medium">{cl.label}</span>
+                                      <span
                                         id={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ display: 'block' }}
+                                        className="block text-xs text-muted-foreground"
                                       >
                                         Under {link.label} &bull; {cl.to}
-                                      </Typography>
-                                      <Typography
-                                        component="span"
-                                        sx={{
-                                          position: 'absolute',
-                                          width: 1,
-                                          height: 1,
-                                          overflow: 'hidden',
-                                          clip: 'rect(0,0,0,0)',
-                                        }}
-                                      >
-                                        In section {section.title}
-                                      </Typography>
+                                      </span>
+                                      <span className="sr-only">In section {section.title}</span>
                                     </LocalizedLink>
                                   </li>
                                 ))}
-                              </Box>
+                              </ul>
                             </li>
                           );
                         });
                       })()}
-                    </Box>
-                  </Paper>
+                    </ul>
+                  </article>
                 );
               })}
-            </Box>
+            </div>
 
-            <Box sx={{ pt: 1 }}>
-              <Typography
-                component="a"
+            <div className="pt-2">
+              <a
                 href="#top"
-                variant="body2"
-                sx={{ textUnderlineOffset: '4px', '&:hover': { textDecoration: 'underline' } }}
+                className="text-sm underline-offset-4 hover:underline"
               >
                 Back to top
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Container>
+              </a>
+            </div>
+          </section>
+        </main>
+      </div>
     </>
   );
 }

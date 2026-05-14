@@ -1,11 +1,9 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
 import { MapPin, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import type { DiscoverableTrip } from '@/hooks/useDiscoverableTrips';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
 
@@ -51,83 +49,66 @@ export function PublicTripCard({ trip }: Props) {
       }}
       role="button"
       tabIndex={0}
-      sx={{
-        cursor: 'pointer',
-        transition: 'transform 0.15s, opacity 0.15s',
-        '&:hover': { opacity: 0.9 },
-        '&:focus-visible': { outline: '2px solid', outlineColor: 'brand.main', outlineOffset: 2 },
-      }}
+      className="cursor-pointer transition-[transform,opacity] duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
     >
       {trip.cover_image_url && (
         <CardImage src={trip.cover_image_url} alt={title} height={160} />
       )}
       <CardContent>
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }} noWrap>
-          {title}
-        </Typography>
+        <h6 className="font-bold mb-0.5 truncate text-lg">{title}</h6>
 
         {trip.description && (
-          <Typography
-            color="text.secondary"
-            sx={{
+          <p
+            className="text-muted-foreground mb-2 overflow-hidden"
+            style={{
               fontSize: 13,
-              mb: 1,
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
             }}
           >
             {trip.description}
-          </Typography>
+          </p>
         )}
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1 }}>
+        <div className="flex flex-col gap-1 mt-2">
           {dateRange && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'text.secondary' }}>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
               <Calendar size={12} />
-              <Typography variant="caption">{dateRange}</Typography>
-            </Box>
+              <span className="text-xs">{dateRange}</span>
+            </div>
           )}
           {trip.cities.length > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'text.secondary' }}>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
               <MapPin size={12} />
-              <Typography variant="caption" noWrap>
+              <span className="text-xs truncate">
                 {trip.cities.slice(0, 4).join(', ')}
                 {trip.cities.length > 4 && ` +${trip.cities.length - 4}`}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           )}
-        </Box>
+        </div>
 
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            mt: 1.5,
-            pt: 1.5,
-            borderTop: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Avatar
-            src={trip.owner?.avatar_url ?? undefined}
-            alt={trip.owner?.display_name ?? ''}
-            sx={{ width: 22, height: 22, fontSize: 11 }}
-          >
-            {(trip.owner?.display_name ?? '?').slice(0, 1).toUpperCase()}
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
+          <Avatar style={{ width: 22, height: 22 }}>
+            <AvatarImage
+              src={trip.owner?.avatar_url ?? undefined}
+              alt={trip.owner?.display_name ?? ''}
+            />
+            <AvatarFallback style={{ fontSize: 11 }}>
+              {(trip.owner?.display_name ?? '?').slice(0, 1).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
-          <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }} noWrap>
+          <span className="text-xs text-muted-foreground flex-1 truncate">
             {trip.owner?.display_name ?? t('trips.discover.anonymous', 'A QG traveler')}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
+          </span>
+          <span className="text-xs text-muted-foreground">
             {t('trips.discover.placeCount', {
               count: trip.place_count,
               defaultValue: '{{count}} places',
             })}
-          </Typography>
-        </Box>
+          </span>
+        </div>
       </CardContent>
     </Card>
   );

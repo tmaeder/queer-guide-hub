@@ -1,9 +1,7 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import { Plane, ArrowRight, ExternalLink, Hotel, MapPin, Star, Ticket } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import type { BookingResult } from '@/lib/booking/types';
 import { formatPrice } from '@/lib/booking/price';
 import { trackTravelEvent } from '@/utils/travelAnalytics';
@@ -54,108 +52,94 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
   return (
     <Card className="hover:shadow-md transition-shadow">
       {result.imageUrl && (
-        <Box
-          component="img"
+        <img
           src={result.imageUrl}
           alt={result.title}
-          sx={{ width: '100%', height: 140, objectFit: 'cover' }}
+          style={{ width: '100%', height: 140, objectFit: 'cover' }}
         />
       )}
       <CardContent style={{ padding: 16 }}>
-        {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <Icon style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--primary)' }} />
             {result.vertical === 'flight' ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography component="span" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>
-                  {result.originIata}
-                </Typography>
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-sm">{result.originIata}</span>
                 <ArrowRight style={{ height: 14, width: 14 }} />
-                <Typography component="span" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>
-                  {result.destinationIata}
-                </Typography>
-              </Box>
+                <span className="font-bold text-sm">{result.destinationIata}</span>
+              </div>
             ) : (
-              <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {result.title}
-              </Typography>
+              <p className="font-bold text-sm truncate">{result.title}</p>
             )}
-          </Box>
-          <Chip
-            label={formatPrice(result.price, result.currency)}
-            color="primary"
-            size="small"
-            sx={{ fontWeight: 700, fontSize: '0.875rem', ml: 1 }}
-          />
-        </Box>
+          </div>
+          <Badge className="ml-2 font-bold text-sm">
+            {formatPrice(result.price, result.currency)}
+          </Badge>
+        </div>
 
-        {/* Subtitle / meta */}
         {result.vertical === 'flight' && originCity && (
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1 }}>
+          <p className="text-xs text-muted-foreground mb-2">
             {originCity} to {result.destinationIata}
-          </Typography>
+          </p>
         )}
 
         {result.vertical === 'hotel' && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+          <div className="flex items-center gap-1 mb-2">
             {result.starRating && result.starRating > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+              <div className="flex items-center gap-0.5">
                 {Array.from({ length: result.starRating }).map((_, i) => (
                   <Star key={i} style={{ height: 12, width: 12, fill: 'currentColor', color: 'var(--primary)' }} />
                 ))}
-              </Box>
+              </div>
             )}
             {result.rating && (
-              <Chip label={result.rating.toFixed(1)} size="small" variant="outlined" sx={{ fontSize: '0.7rem', height: 20 }} />
+              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+                {result.rating.toFixed(1)}
+              </Badge>
             )}
             {result.lgbtqFriendly && (
-              <Chip label="LGBTQ+ Friendly" size="small" color="success" variant="outlined" sx={{ fontSize: '0.7rem', height: 20 }} />
+              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+                LGBTQ+ Friendly
+              </Badge>
             )}
-          </Box>
+          </div>
         )}
 
-        {/* Flight meta chips */}
         {result.vertical === 'flight' && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5, alignItems: 'center' }}>
+          <div className="flex gap-2 flex-wrap mb-3 items-center">
             {result.departureDate && (
-              <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+              <span className="text-xs text-muted-foreground">
                 {formatDate(result.departureDate)}
                 {result.returnDate && ` - ${formatDate(result.returnDate)}`}
-              </Typography>
+              </span>
             )}
             {result.airline && (
-              <Chip label={result.airline} size="small" variant="outlined" sx={{ fontSize: '0.7rem', height: 20 }} />
+              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>{result.airline}</Badge>
             )}
             {result.stops === 0 ? (
-              <Chip label="Direct" size="small" color="success" variant="outlined" sx={{ fontSize: '0.7rem', height: 20 }} />
+              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>Direct</Badge>
             ) : result.stops !== undefined ? (
-              <Chip label={`${result.stops} stop${result.stops > 1 ? 's' : ''}`} size="small" variant="outlined" sx={{ fontSize: '0.7rem', height: 20 }} />
+              <Badge variant="outline" style={{ fontSize: '0.7rem', height: 20 }}>
+                {result.stops} stop{result.stops > 1 ? 's' : ''}
+              </Badge>
             ) : null}
             {result.duration && (
-              <Typography component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                {formatDuration(result.duration)}
-              </Typography>
+              <span className="text-xs text-muted-foreground">{formatDuration(result.duration)}</span>
             )}
-          </Box>
+          </div>
         )}
 
-        {/* Activity meta */}
         {result.vertical === 'activity' && result.durationText && (
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1 }}>
-            {result.durationText}
-          </Typography>
+          <p className="text-xs text-muted-foreground mb-2">{result.durationText}</p>
         )}
 
-        {/* Original price */}
         {result.originalPrice && result.originalPrice > result.price && (
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', textDecoration: 'line-through', mb: 0.5 }}>
+          <p className="text-xs text-muted-foreground line-through mb-1">
             {formatPrice(result.originalPrice, result.currency)}
-          </Typography>
+          </p>
         )}
 
-        {/* Actions */}
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <Button size="sm" className="flex-1" onClick={handleBook}>
             <ExternalLink style={{ height: 14, width: 14, marginRight: 6 }} />
             {result.supportsInApp ? 'Book Now' : `Book ${result.vertical === 'flight' ? 'Flight' : result.vertical === 'hotel' ? 'Hotel' : 'Activity'}`}
@@ -165,7 +149,7 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
               <MapPin style={{ height: 14, width: 14 }} />
             </Button>
           )}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

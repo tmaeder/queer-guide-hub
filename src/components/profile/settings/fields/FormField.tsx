@@ -1,9 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { stack } from '@/lib/sx';
 
 interface FormFieldProps {
   id: string;
@@ -22,7 +19,7 @@ export function FormField({
   id, label, value, onChange, placeholder, description, multiline, rows = 3, type, disabled,
 }: FormFieldProps) {
   return (
-    <Box sx={stack(0.5)}>
+    <div className="flex flex-col gap-1">
       <Label htmlFor={id}>{label}</Label>
       {multiline ? (
         <Textarea
@@ -44,8 +41,8 @@ export function FormField({
         />
       )}
       {description && (
-        <Typography variant="caption" color="text.secondary">{description}</Typography>
+        <span className="text-xs text-muted-foreground">{description}</span>
       )}
-    </Box>
+    </div>
   );
 }

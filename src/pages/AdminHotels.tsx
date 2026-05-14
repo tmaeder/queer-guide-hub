@@ -1,15 +1,17 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MuiSelect from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -30,7 +32,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -216,14 +218,14 @@ export default function AdminHotels() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-sm text-muted-foreground">
               {HOTEL_TYPES.find((t) => t.value === info.row.original.hotel_type)?.label ||
                 info.row.original.hotel_type}
               {info.row.original.star_rating && ` · ${info.row.original.star_rating}★`}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -336,7 +338,7 @@ export default function AdminHotels() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <div className="flex gap-1">
           <ExportExcelButton onExport={handleExportExcel} />
           <Button
             size="sm"
@@ -348,7 +350,7 @@ export default function AdminHotels() {
             <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
             Add Hotel
           </Button>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleDelete is stable in practice, adding would defeat memoization
@@ -356,60 +358,54 @@ export default function AdminHotels() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Hotels & BnBs
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage LGBTQ+ friendly accommodations
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <AdminEntityTable
+      title="Hotels & BnBs"
+      subtitle="Manage LGBTQ+ friendly accommodations"
+      backHref={null}
+      config={tableConfig}
+      afterTable={
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent style={{ maxWidth: 600, maxHeight: '90vh', overflow: 'auto' }}>
           <DialogHeader>
             <DialogTitle>{editingHotel ? 'Edit Hotel' : 'Add New Hotel'}</DialogTitle>
           </DialogHeader>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
-          >
-            <TextField
-              label="Name"
-              value={formData.name}
-              onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
-              required
-              fullWidth
-              size="small"
-            />
-            <TextField
-              label="Description"
-              value={formData.description}
-              onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
-              multiline
-              rows={3}
-              fullWidth
-              size="small"
-            />
-            <FormControl fullWidth size="small">
-              <InputLabel>Type</InputLabel>
-              <MuiSelect
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="hotel-name">Name *</Label>
+              <Input
+                id="hotel-name"
+                value={formData.name}
+                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="hotel-desc">Description</Label>
+              <Textarea
+                id="hotel-desc"
+                value={formData.description}
+                onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
+                rows={3}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>Type</Label>
+              <Select
                 value={formData.hotel_type}
-                label="Type"
-                onChange={(e) => setFormData((p) => ({ ...p, hotel_type: e.target.value }))}
+                onValueChange={(v) => setFormData((p) => ({ ...p, hotel_type: v }))}
               >
-                {HOTEL_TYPES.map((t) => (
-                  <MenuItem key={t.value} value={t.value}>
-                    {t.label}
-                  </MenuItem>
-                ))}
-              </MuiSelect>
-            </FormControl>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {HOTEL_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <LocationAutocomplete
               value={formData.address}
               onChange={async (address, coordinates, components) => {
@@ -442,115 +438,118 @@ export default function AdminHotels() {
               placeholder="Search for hotel address..."
               label="Address"
             />
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <TextField
-                label="City"
-                value={formData.city}
-                onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
-                fullWidth
-                size="small"
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="hotel-city">City</Label>
+                <Input
+                  id="hotel-city"
+                  value={formData.city}
+                  onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
+                />
+              </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="hotel-country">Country</Label>
+                <Input
+                  id="hotel-country"
+                  value={formData.country}
+                  onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="hotel-website">Website</Label>
+              <Input
+                id="hotel-website"
+                value={formData.website}
+                onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
               />
-              <TextField
-                label="Country"
-                value={formData.country}
-                onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
-                fullWidth
-                size="small"
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="hotel-booking">Booking URL</Label>
+              <Input
+                id="hotel-booking"
+                value={formData.booking_url}
+                onChange={(e) => setFormData((p) => ({ ...p, booking_url: e.target.value }))}
               />
-            </Box>
-            <TextField
-              label="Website"
-              value={formData.website}
-              onChange={(e) => setFormData((p) => ({ ...p, website: e.target.value }))}
-              fullWidth
-              size="small"
-            />
-            <TextField
-              label="Booking URL"
-              value={formData.booking_url}
-              onChange={(e) => setFormData((p) => ({ ...p, booking_url: e.target.value }))}
-              fullWidth
-              size="small"
-            />
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <TextField
-                label="Phone"
-                value={formData.phone}
-                onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-                fullWidth
-                size="small"
+            </div>
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="hotel-phone">Phone</Label>
+                <Input
+                  id="hotel-phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
+                />
+              </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="hotel-email">Email</Label>
+                <Input
+                  id="hotel-email"
+                  value={formData.email}
+                  onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="hotel-stars">Star Rating</Label>
+                <Input
+                  id="hotel-stars"
+                  type="number"
+                  min={1}
+                  max={5}
+                  step={0.5}
+                  value={formData.star_rating}
+                  onChange={(e) => setFormData((p) => ({ ...p, star_rating: e.target.value }))}
+                />
+              </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="hotel-price">Price Range (1-4)</Label>
+                <Input
+                  id="hotel-price"
+                  type="number"
+                  min={1}
+                  max={4}
+                  value={formData.price_range}
+                  onChange={(e) => setFormData((p) => ({ ...p, price_range: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="hotel-safety">Queer Safety Notes</Label>
+              <Textarea
+                id="hotel-safety"
+                value={formData.queer_safety_notes}
+                onChange={(e) => setFormData((p) => ({ ...p, queer_safety_notes: e.target.value }))}
+                rows={2}
               />
-              <TextField
-                label="Email"
-                value={formData.email}
-                onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
-                fullWidth
-                size="small"
-              />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <TextField
-                label="Star Rating"
-                value={formData.star_rating}
-                onChange={(e) => setFormData((p) => ({ ...p, star_rating: e.target.value }))}
-                type="number"
-                fullWidth
-                size="small"
-                inputProps={{ min: 1, max: 5, step: 0.5 }}
-              />
-              <TextField
-                label="Price Range (1-4)"
-                value={formData.price_range}
-                onChange={(e) => setFormData((p) => ({ ...p, price_range: e.target.value }))}
-                type="number"
-                fullWidth
-                size="small"
-                inputProps={{ min: 1, max: 4 }}
-              />
-            </Box>
-            <TextField
-              label="Queer Safety Notes"
-              value={formData.queer_safety_notes}
-              onChange={(e) => setFormData((p) => ({ ...p, queer_safety_notes: e.target.value }))}
-              multiline
-              rows={2}
-              fullWidth
-              size="small"
-            />
-            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.lgbtq_friendly}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, lgbtq_friendly: e.target.checked }))
-                    }
-                    size="small"
-                  />
-                }
-                label="LGBTQ+ Friendly"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.featured}
-                    onChange={(e) => setFormData((p) => ({ ...p, featured: e.target.checked }))}
-                    size="small"
-                  />
-                }
-                label="Featured"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.verified}
-                    onChange={(e) => setFormData((p) => ({ ...p, verified: e.target.checked }))}
-                    size="small"
-                  />
-                }
-                label="Verified"
-              />
-            </Box>
+            </div>
+            <div className="flex gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="hotel-lgbtq"
+                  checked={formData.lgbtq_friendly}
+                  onCheckedChange={(c) => setFormData((p) => ({ ...p, lgbtq_friendly: c }))}
+                />
+                <Label htmlFor="hotel-lgbtq">LGBTQ+ Friendly</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="hotel-featured"
+                  checked={formData.featured}
+                  onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c }))}
+                />
+                <Label htmlFor="hotel-featured">Featured</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="hotel-verified"
+                  checked={formData.verified}
+                  onCheckedChange={(c) => setFormData((p) => ({ ...p, verified: c }))}
+                />
+                <Label htmlFor="hotel-verified">Verified</Label>
+              </div>
+            </div>
             <DialogFooter>
               <Button
                 variant="outline"
@@ -564,9 +563,10 @@ export default function AdminHotels() {
               </Button>
               <Button type="submit">{editingHotel ? 'Update Hotel' : 'Add Hotel'}</Button>
             </DialogFooter>
-          </Box>
+          </form>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }

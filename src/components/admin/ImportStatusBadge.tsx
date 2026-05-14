@@ -12,47 +12,17 @@ export const ImportStatusBadge = ({ status, showIcon = true, size = 'default' }:
   const getStatusConfig = (status: ImportJob['status']) => {
     switch (status) {
       case 'completed':
-        return {
-          variant: 'default' as const,
-          icon: CheckCircle,
-          label: 'Completed',
-          sx: { bgcolor: 'grey.100', color: 'text.primary', '&:hover': { opacity: 0.8 } }
-        };
+        return { variant: 'default' as const, icon: CheckCircle, label: 'Completed' };
       case 'failed':
-        return {
-          variant: 'destructive' as const,
-          icon: AlertTriangle,
-          label: 'Failed',
-          sx: { bgcolor: 'error.main', color: 'error.contrastText', '&:hover': { opacity: 0.8 } }
-        };
+        return { variant: 'destructive' as const, icon: AlertTriangle, label: 'Failed' };
       case 'processing':
-        return {
-          variant: 'secondary' as const,
-          icon: RefreshCw,
-          label: 'Processing',
-          sx: { bgcolor: 'grey.200', color: 'text.primary', '&:hover': { opacity: 0.8 } }
-        };
+        return { variant: 'secondary' as const, icon: RefreshCw, label: 'Processing' };
       case 'validating':
-        return {
-          variant: 'secondary' as const,
-          icon: RefreshCw,
-          label: 'Validating',
-          sx: { bgcolor: 'action.selected', color: 'text.primary', '&:hover': { opacity: 0.8 } }
-        };
+        return { variant: 'secondary' as const, icon: RefreshCw, label: 'Validating' };
       case 'cancelled':
-        return {
-          variant: 'outline' as const,
-          icon: X,
-          label: 'Cancelled',
-          sx: { bgcolor: 'action.disabledBackground', color: 'text.secondary', '&:hover': { opacity: 0.8 } }
-        };
+        return { variant: 'outline' as const, icon: X, label: 'Cancelled' };
       default:
-        return {
-          variant: 'outline' as const,
-          icon: Clock,
-          label: 'Pending',
-          sx: { bgcolor: 'warning.main', color: 'warning.contrastText', '&:hover': { opacity: 0.8 } }
-        };
+        return { variant: 'outline' as const, icon: Clock, label: 'Pending' };
     }
   };
 

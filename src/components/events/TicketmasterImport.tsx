@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Ticket, Loader2 } from "lucide-react";
-import Box from '@mui/material/Box';
 
 interface TicketmasterImportProps {
   onImportComplete?: () => void;
@@ -111,8 +110,8 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
         <DialogHeader>
           <DialogTitle>Import Events from Ticketmaster</DialogTitle>
         </DialogHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
+        <div className="flex flex-col gap-4">
+          <div>
             <Label htmlFor="keyword">Search Keyword *</Label>
             <Input
               id="keyword"
@@ -120,9 +119,9 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
-          </Box>
+          </div>
 
-          <Box>
+          <div>
             <Label htmlFor="city">City</Label>
             <Input
               id="city"
@@ -130,9 +129,9 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
               value={city}
               onChange={(e) => setCity(e.target.value)}
             />
-          </Box>
+          </div>
 
-          <Box>
+          <div>
             <Label htmlFor="country">Country</Label>
             <Select value={countryCode} onValueChange={setCountryCode}>
               <SelectTrigger>
@@ -146,9 +145,9 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
-          <Box>
+          <div>
             <Label htmlFor="classification">Classification</Label>
             <Select value={classificationName} onValueChange={setClassificationName}>
               <SelectTrigger>
@@ -162,9 +161,9 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Button
               variant="outline"
               style={{ flex: 1 }}
@@ -180,15 +179,15 @@ export const TicketmasterImport = ({ onImportComplete }: TicketmasterImportProps
             >
               {isLoading ? (
                 <>
-                  <Loader2 style={{ height: 16, width: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Importing...
                 </>
               ) : (
                 "Import Events"
               )}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

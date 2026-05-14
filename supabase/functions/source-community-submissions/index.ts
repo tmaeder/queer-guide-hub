@@ -1,9 +1,10 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Stages pending community_submissions (including flyer scan results) into
 // ingestion_staging so they flow through the full pipeline.
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-community-submissions', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -110,4 +111,4 @@ Deno.serve(async (req) => {
     console.error('source-community-submissions:', err)
     return errorResponse((err as Error).message, 500, req)
   }
-})
+}))

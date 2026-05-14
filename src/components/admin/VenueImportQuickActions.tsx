@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +9,9 @@ import {
   XCircle, Key, Database
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
-import { brandColors } from '@/theme/muiTheme';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere, listFrom } from '@/hooks/usePageFetchers';
 
 interface VenueSource {
   id: string;
@@ -50,7 +48,6 @@ const PROVIDER_COLORS: Record<string, string> = {
   'spartacus': '#a855f7',
 };
 
-// Map ingestion_sources slug to the data_source value stored in venues table
 const SLUG_TO_DATA_SOURCE: Record<string, string> = {
   'foursquare': 'foursquare',
   'google-places': 'google_places',
@@ -59,7 +56,6 @@ const SLUG_TO_DATA_SOURCE: Record<string, string> = {
   'spartacus': 'spartacus',
 };
 
-// Map slug to the VenueImportDialog provider type (only for API-based providers)
 const SLUG_TO_DIALOG_PROVIDER: Record<string, 'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor'> = {
   'foursquare': 'foursquare',
   'google-places': 'google-places',
@@ -68,7 +64,6 @@ const SLUG_TO_DIALOG_PROVIDER: Record<string, 'foursquare' | 'google-places' | '
 };
 
 export const VenueImportQuickActions = () => {
-  const { toast } = useToast();
   const [venueSources, setVenueSources] = useState<VenueSource[]>([]);
   const [venueStats, setVenueStats] = useState<VenueStats>({});
   const [totalVenues, setTotalVenues] = useState(0);
@@ -81,22 +76,18 @@ export const VenueImportQuickActions = () => {
     provider: 'foursquare' | 'google-places' | 'tomtom' | 'tripadvisor' | null;
   }>({ open: false, provider: null });
 
-  // Fetch venue sources from ingestion_sources
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoadingData(true);
 
-        // Fetch venue-related ingestion sources
-        const { data: sources, error: sourcesError } = await supabase
-          .from('ingestion_sources')
-          .select('id, name, slug, source_type, is_enabled, requires_api_key, edge_function, last_run_at, last_success_at, last_error, total_items_fetched, total_items_approved')
-          .eq('target_table', 'venues')
-          .order('name');
+        const sources = await listFromWhere<VenueSource>(
+          'ingestion_sources',
+          'id, name, slug, source_type, is_enabled, requires_api_key, edge_function, last_run_at, last_success_at, last_error, total_items_fetched, total_items_approved',
+          [{ col: 'target_table', val: 'venues' }],
+          { order: { col: 'name', ascending: true } },
+        );
 
-        if (sourcesError) throw sourcesError;
-
-        // Also include known venue import providers not in ingestion_sources
         const knownSlugs = (sources || []).map(s => s.slug);
         const extraSources: VenueSource[] = [];
 
@@ -119,17 +110,14 @@ export const VenueImportQuickActions = () => {
 
         setVenueSources([...(sources || []), ...extraSources]);
 
-        // Fetch venue counts grouped by data_source using RPC or aggregation
-        // Use a count query per data_source to avoid fetching all rows
-        const { data: allVenues, error: venueError } = await supabase
-          .from('venues')
-          .select('data_source');
-
-        if (venueError) throw venueError;
+        const allVenues = await listFrom<{ data_source: string | null }>(
+          'venues',
+          'data_source',
+        );
 
         const stats: VenueStats = {};
         let total = 0;
-        for (const v of (allVenues || [])) {
+        for (const v of allVenues) {
           const src = v.data_source || 'manual';
           stats[src] = (stats[src] || 0) + 1;
           total++;
@@ -137,7 +125,6 @@ export const VenueImportQuickActions = () => {
         setVenueStats(stats);
         setTotalVenues(total);
 
-        // Fetch API key statuses
         try {
           const { data: keyData, error: keyError } = await supabase.functions.invoke('manage-api-keys?action=status', {
             method: 'GET'
@@ -150,7 +137,7 @@ export const VenueImportQuickActions = () => {
             setApiKeyStatuses(statuses);
           }
         } catch {
-          // API key status check is optional — don't block the UI
+          // optional
         }
 
       } catch (error) {
@@ -220,26 +207,18 @@ export const VenueImportQuickActions = () => {
   const handleImportClick = async (source: VenueSource) => {
     const dialogProvider = SLUG_TO_DIALOG_PROVIDER[source.slug];
     if (dialogProvider) {
-      // API-based provider — open the VenueImportDialog
       setImportDialog({ open: true, provider: dialogProvider });
     } else if (source.source_type === 'scraper' && source.edge_function) {
-      // Scraper — invoke directly
       setLoadingStates(prev => ({ ...prev, [source.slug]: true }));
       try {
-        const { error } = await supabase.functions.invoke(source.edge_function, {
-          body: {}
-        });
+        const { error } = await supabase.functions.invoke(source.edge_function, { body: {} });
         if (error) throw error;
         toast({
           title: 'Scraper Started',
           description: `${source.name} scraper has been triggered. Check the Pipeline tab for progress.`,
         });
       } catch (error) {
-        toast({
-          title: 'Import Failed',
-          description: error instanceof Error ? error.message : 'An error occurred',
-          variant: 'destructive'
-        });
+        toast.error(`Import Failed: ${error}`);
       } finally {
         setLoadingStates(prev => ({ ...prev, [source.slug]: false }));
       }
@@ -252,22 +231,13 @@ export const VenueImportQuickActions = () => {
 
     try {
       const functionName = `import-${importDialog.provider}-venues`;
-      const { error } = await supabase.functions.invoke(functionName, {
-        body: { config }
-      });
+      const { error } = await supabase.functions.invoke(functionName, { body: { config } });
       if (error) throw error;
 
-      toast({
-        title: 'Import Started',
-        description: `Venue import has been initiated`,
-      });
+      toast.success(`Import Started: Venue import has been initiated`);
       setImportDialog({ open: false, provider: null });
     } catch (error) {
-      toast({
-        title: 'Import Failed',
-        description: error instanceof Error ? error.message : 'An error occurred during import',
-        variant: 'destructive'
-      });
+      toast.error(`Import Failed: ${error}`);
     } finally {
       setLoadingStates(prev => ({ ...prev, [importDialog.provider!]: false }));
     }
@@ -289,7 +259,6 @@ export const VenueImportQuickActions = () => {
     return 'Configure Import';
   };
 
-  // Compute manual/other stats
   const manualCount = venueStats['manual'] || 0;
   const nullCount = Object.entries(venueStats)
     .filter(([k]) => !Object.values(SLUG_TO_DATA_SOURCE).includes(k) && k !== 'manual')
@@ -299,61 +268,66 @@ export const VenueImportQuickActions = () => {
 
   if (loadingData) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Typography variant="h5">Venue Imports</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+      <div className="flex flex-col gap-6">
+        <h5 className="text-xl font-semibold">Venue Imports</h5>
+        <div className="flex justify-center p-8">
           <RefreshCw style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: '#6b7280' }} />
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h5">Venue Imports</Typography>
-          <Typography color="text.secondary">
+      <div className="flex items-center justify-between">
+        <div>
+          <h5 className="text-xl font-semibold">Venue Imports</h5>
+          <p className="text-muted-foreground">
             Import venues from APIs and scrapers — sources loaded from ingestion registry
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Badge variant="secondary">
           <Database style={{ width: 12, height: 12 }} />
           Data-Driven
         </Badge>
-      </Box>
+      </div>
 
       {/* Overall Stats */}
       <Card>
         <CardContent>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, 1fr)' }, gap: 2 }}>
-            <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#eff6ff', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ color: '#2563eb' }}>{totalVenues.toLocaleString()}</Typography>
-              <Typography variant="caption" sx={{ color: '#2563eb' }}>Total Venues</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#f0fdf4', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ color: '#16a34a' }}>{(manualCount + nullCount).toLocaleString()}</Typography>
-              <Typography variant="caption" sx={{ color: '#16a34a' }}>Manual / Other</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#fff7ed', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ color: '#ea580c' }}>{importedCount.toLocaleString()}</Typography>
-              <Typography variant="caption" sx={{ color: '#ea580c' }}>Imported</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#faf5ff', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ color: brandColors.main }}>{activeSources}</Typography>
-              <Typography variant="caption" sx={{ color: brandColors.main }}>Active Sources</Typography>
-            </Box>
-            <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: '#fef2f2', borderRadius: 2 }}>
-              <Typography variant="h5" sx={{ color: '#dc2626' }}>{venueSources.length}</Typography>
-              <Typography variant="caption" sx={{ color: '#dc2626' }}>Registered Sources</Typography>
-            </Box>
-          </Box>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#eff6ff' }}>
+              <div className="text-xl font-semibold" style={{ color: '#2563eb' }}>{totalVenues.toLocaleString()}</div>
+              <div className="text-xs" style={{ color: '#2563eb' }}>Total Venues</div>
+            </div>
+            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#f0fdf4' }}>
+              <div className="text-xl font-semibold" style={{ color: '#16a34a' }}>{(manualCount + nullCount).toLocaleString()}</div>
+              <div className="text-xs" style={{ color: '#16a34a' }}>Manual / Other</div>
+            </div>
+            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#fff7ed' }}>
+              <div className="text-xl font-semibold" style={{ color: '#ea580c' }}>{importedCount.toLocaleString()}</div>
+              <div className="text-xs" style={{ color: '#ea580c' }}>Imported</div>
+            </div>
+            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#faf5ff' }}>
+              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{activeSources}</div>
+              <div className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>Active Sources</div>
+            </div>
+            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#fef2f2' }}>
+              <div className="text-xl font-semibold" style={{ color: '#dc2626' }}>{venueSources.length}</div>
+              <div className="text-xs" style={{ color: '#dc2626' }}>Registered Sources</div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Provider Cards Grid */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: `repeat(${Math.min(venueSources.length, 4)}, 1fr)` }, gap: 2 }}>
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        style={{
+          gridTemplateColumns: undefined,
+        }}
+      >
         {venueSources.map((source) => {
           const color = PROVIDER_COLORS[source.slug] || '#6b7280';
           const icon = PROVIDER_ICONS[source.slug] || <Globe style={{ width: 24, height: 24 }} />;
@@ -362,15 +336,15 @@ export const VenueImportQuickActions = () => {
           return (
             <Card key={source.id}>
               <CardHeader>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box sx={{ p: 1, borderRadius: 2, color: 'white', bgcolor: color }}>
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-md text-white" style={{ backgroundColor: color }}>
                     {icon}
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  </div>
+                  <div className="flex items-center gap-1">
                     {getKeyStatusBadge(source)}
                     {getStatusIcon(source)}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
                 <CardTitle>{source.name}</CardTitle>
                 <CardDescription>
                   {source.source_type === 'scraper' ? 'Web scraper' : 'API import'} &middot; {source.is_enabled ? 'Enabled' : 'Disabled'}
@@ -378,47 +352,45 @@ export const VenueImportQuickActions = () => {
               </CardHeader>
               <CardContent>
                 {/* Stats */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Venues in DB:</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{venueCount.toLocaleString()}</Typography>
-                </Box>
+                <div className="flex justify-between">
+                  <p className="text-sm text-muted-foreground">Venues in DB:</p>
+                  <p className="text-sm font-semibold">{venueCount.toLocaleString()}</p>
+                </div>
                 {source.total_items_fetched != null && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" color="text.secondary">Total Fetched:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{source.total_items_fetched.toLocaleString()}</Typography>
-                  </Box>
+                  <div className="flex justify-between">
+                    <p className="text-sm text-muted-foreground">Total Fetched:</p>
+                    <p className="text-sm font-semibold">{source.total_items_fetched.toLocaleString()}</p>
+                  </div>
                 )}
 
                 {/* Status */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }}>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                     {getStatusText(source)}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
 
                 {source.last_error && (
-                  <Box sx={{ p: 1, borderRadius: 1, bgcolor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                    <Typography variant="caption" sx={{ color: '#dc2626' }}>
+                  <div
+                    className="p-2 rounded"
+                    style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
+                  >
+                    <span className="text-xs" style={{ color: '#dc2626' }}>
                       {source.last_error.slice(0, 80)}{source.last_error.length > 80 ? '...' : ''}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 )}
 
-                {/* Progress bar for loading state */}
+                {/* Progress bar */}
                 {loadingStates[source.slug] && (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <Typography variant="caption">Processing...</Typography>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs">Processing...</span>
                     <Progress value={45} />
-                  </Box>
+                  </div>
                 )}
 
                 {/* Action Button */}
                 <Button
-
                   size="sm"
                   variant={canImport(source) ? "default" : "secondary"}
                   disabled={!canImport(source)}
@@ -440,7 +412,7 @@ export const VenueImportQuickActions = () => {
             </Card>
           );
         })}
-      </Box>
+      </div>
 
       {/* Venue Breakdown */}
       <Card>
@@ -451,23 +423,34 @@ export const VenueImportQuickActions = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             {Object.entries(venueStats)
               .sort(([, a], [, b]) => b - a)
               .map(([source, count]) => (
-                <Box key={source} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, borderRadius: 1, bgcolor: 'rgba(0,0,0,0.02)' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                <div
+                  key={source}
+                  className="flex items-center justify-between p-2 rounded"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
+                >
+                  <p className="text-sm font-medium">
                     {source === 'manual' ? 'Manual / Untagged' : source}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: Math.max(4, (count / totalVenues) * 200), height: 8, borderRadius: 4, bgcolor: PROVIDER_COLORS[source] || '#94a3b8' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 50, textAlign: 'right' }}>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="rounded-md"
+                      style={{
+                        width: Math.max(4, (count / totalVenues) * 200),
+                        height: 8,
+                        backgroundColor: PROVIDER_COLORS[source] || '#94a3b8',
+                      }}
+                    />
+                    <p className="text-sm font-semibold text-right" style={{ minWidth: 50 }}>
                       {count.toLocaleString()}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
               ))}
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
@@ -481,6 +464,6 @@ export const VenueImportQuickActions = () => {
           isImporting={loadingStates[importDialog.provider] || false}
         />
       )}
-    </Box>
+    </div>
   );
 };

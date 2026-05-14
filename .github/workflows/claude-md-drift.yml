@@ -1,0 +1,54 @@
+name: claude-md-drift
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
+      - 'CLAUDE.md'
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      HEAD_REF: ${{ github.head_ref }}
+      HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+      BASE_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: sync CLAUDE.md repo stats
+        id: sync
+        run: |
+          actual_fns=$(ls supabase/functions/ | grep -v '^_' | wc -l | tr -d ' ')
+          actual_mig=$(ls supabase/migrations/ | wc -l | tr -d ' ')
+          sed -i -E "0,/^- \*\*Edge functions:\*\* [0-9]+$/s//- **Edge functions:** $actual_fns/" CLAUDE.md
+          sed -i -E "0,/^- \*\*Migrations:\*\* [0-9]+$/s//- **Migrations:** $actual_mig/" CLAUDE.md
+          if git diff --quiet CLAUDE.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "fns=$actual_fns" >> "$GITHUB_OUTPUT"
+            echo "mig=$actual_mig" >> "$GITHUB_OUTPUT"
+          fi
+      - name: commit drift fix (same-repo PRs)
+        if: steps.sync.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          FNS: ${{ steps.sync.outputs.fns }}
+          MIG: ${{ steps.sync.outputs.mig }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CLAUDE.md
+          git commit -m "chore(docs): sync CLAUDE.md repo counts (fns=${FNS}, mig=${MIG}) [skip ci]"
+          git push origin "HEAD:${HEAD_REF}"
+      - name: fail if drift remains (forks)
+        if: steps.sync.outputs.changed == 'true' && github.event.pull_request.head.repo.full_name != github.repository
+        env:
+          FNS: ${{ steps.sync.outputs.fns }}
+          MIG: ${{ steps.sync.outputs.mig }}
+        run: |
+          echo "::error::CLAUDE.md repo counts are stale (fns=${FNS}, mig=${MIG}); update CLAUDE.md in your fork."
+          exit 1

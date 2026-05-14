@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, MapPin, Calendar, Check, Shield, User, Share2, Flag } from 'lucide-react';
 import { StartConversationButton } from '@/components/messaging/StartConversationButton';
 import { UserModeBadge } from '@/components/profile/UserModeBadge';
+import { TrustTierBadge } from '@/components/profile/TrustTierBadge';
 import { UserRelationshipActions } from '@/components/profile/UserRelationshipActions';
 import { PhotoGallery } from '@/components/profile/PhotoGallery';
 import { UserPostsList } from '@/components/posts/UserPostsList';
@@ -15,9 +16,6 @@ import { SecureProfileViewer } from '@/components/profile/SecureProfileViewer';
 import { useSecurePublicProfile } from '@/hooks/useSecurePublicProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 export default function UserProfile() {
@@ -27,7 +25,6 @@ export default function UserProfile() {
   const { user: _currentUser } = useAuth();
   const { toast } = useToast();
 
-  // Use the new secure profile hook
   const { profile, loading: isLoading, error, isOwnProfile } = useSecurePublicProfile(userId);
 
   const handleShare = async () => {
@@ -35,18 +32,15 @@ export default function UserProfile() {
     const title = `${profile?.display_name}'s Profile`;
     const text = profile?.bio || `Check out ${profile?.display_name}'s profile`;
 
-    // Check if Web Share API is available and supported
     if (navigator.share && navigator.canShare && navigator.canShare({ title, text, url })) {
       try {
         await navigator.share({ title, text, url });
         return;
-      } catch (error) {
-        // If share fails or is cancelled, fall back to clipboard
-        console.log('Share cancelled or failed:', error);
+      } catch {
+        // fall back to clipboard
       }
     }
 
-    // Fallback: copy to clipboard
     try {
       await navigator.clipboard.writeText(url);
       toast({
@@ -54,7 +48,6 @@ export default function UserProfile() {
         description: 'Profile link copied to clipboard',
       });
     } catch (_error) {
-      // Final fallback: manual copy instruction
       toast({
         title: 'Share this profile',
         description: `Copy this link: ${url}`,
@@ -65,22 +58,20 @@ export default function UserProfile() {
 
   if (isLoading) {
     return (
-      <Container sx={{ p: 3 }}>
-        <Box
-          sx={{ display: 'flex', flexDirection: 'column', gap: 3, animation: 'pulse 2s infinite' }}
-        >
-          <Box sx={{ height: 32, bgcolor: 'action.hover', borderRadius: 1, width: '25%' }} />
-          <Box sx={{ height: 256, bgcolor: 'action.hover', borderRadius: 1 }} />
-          <Box sx={{ height: 128, bgcolor: 'action.hover', borderRadius: 1 }} />
-        </Box>
-      </Container>
+      <div className="container mx-auto p-6">
+        <div className="flex flex-col gap-6 animate-pulse">
+          <div className="h-8 bg-muted rounded w-1/4" />
+          <div className="h-64 bg-muted rounded" />
+          <div className="h-32 bg-muted rounded" />
+        </div>
+      </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <Container sx={{ p: 3 }}>
-        <Box sx={{ textAlign: 'center', py: 6 }}>
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
           <User
             style={{
               width: 48,
@@ -89,18 +80,16 @@ export default function UserProfile() {
               color: 'var(--muted-foreground)',
             }}
           />
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-            Profile not found
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
+          <p className="text-base font-medium mb-2">Profile not found</p>
+          <p className="text-muted-foreground mb-4">
             This user profile doesn't exist or has been removed.
-          </Typography>
+          </p>
           <Button onClick={() => navigate('/users')}>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Directory
           </Button>
-        </Box>
-      </Container>
+        </div>
+      </div>
     );
   }
 
@@ -117,11 +106,10 @@ export default function UserProfile() {
     return privacy?.profile_visibility || 'public';
   };
 
-  // Check if profile is private and user doesn't have access
   if (getProfileVisibility() === 'private' && !isOwnProfile) {
     return (
-      <Container sx={{ p: 3 }}>
-        <Box sx={{ textAlign: 'center', py: 6 }}>
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
           <Shield
             style={{
               width: 48,
@@ -130,31 +118,29 @@ export default function UserProfile() {
               color: 'var(--muted-foreground)',
             }}
           />
-          <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-            Private Profile
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
+          <p className="text-base font-medium mb-2">Private Profile</p>
+          <p className="text-muted-foreground mb-4">
             This user has set their profile to private.
-          </Typography>
+          </p>
           <Button onClick={() => navigate('/users')}>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back to Directory
           </Button>
-        </Box>
-      </Container>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="container mx-auto p-6">
+      <div className="flex flex-col gap-6">
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="flex items-center justify-between">
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back
           </Button>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={handleShare} aria-label="Share profile">
               <Share2 style={{ width: 16, height: 16 }} />
             </Button>
@@ -163,28 +149,14 @@ export default function UserProfile() {
                 <Flag style={{ width: 16, height: 16 }} />
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Profile Header */}
         <Card>
           <CardContent>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                gap: 3,
-                alignItems: 'flex-start',
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: { xs: 'center', md: 'left' },
-                }}
-              >
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <div className="flex flex-col items-center text-center md:text-left">
                 <Avatar style={{ width: 128, height: 128, marginBottom: 16 }}>
                   <AvatarImage src={profile.avatar_url || undefined} />
                   <AvatarFallback style={{ fontSize: '1.5rem' }}>
@@ -197,91 +169,76 @@ export default function UserProfile() {
                     Verified
                   </Badge>
                 )}
-              </Box>
+              </div>
 
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: { xs: 'column', md: 'row' },
-                      alignItems: { md: 'center' },
-                      gap: 1.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              <div className="flex-1 flex flex-col gap-4">
+                <div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+                    <h4 className="text-2xl font-bold">
                       {profile.display_name || 'Anonymous User'}
-                    </Typography>
+                    </h4>
                     {(profile as unknown as Record<string, unknown>)?.user_mode && (
                       <UserModeBadge
                         mode={(profile as unknown as Record<string, unknown>).user_mode}
                         size="lg"
                       />
                     )}
-                  </Box>
+                    <TrustTierBadge userId={profile.user_id} showLabel />
+                  </div>
 
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 1.5,
-                      color: 'text.secondary',
-                      mb: 1.5,
-                    }}
-                  >
+                  <div className="flex flex-wrap gap-3 text-muted-foreground mb-3">
                     {profile.pronouns && (
-                      <Typography variant="body2">{profile.pronouns}</Typography>
+                      <p className="text-sm">{profile.pronouns}</p>
                     )}
                     {(profile as unknown as Record<string, unknown>)?.age_range && (
                       <>
-                        {profile.pronouns && <Typography variant="body2">&#8226;</Typography>}
-                        <Typography variant="body2">
+                        {profile.pronouns && <p className="text-sm">&#8226;</p>}
+                        <p className="text-sm">
                           {(profile as unknown as Record<string, unknown>).age_range}
-                        </Typography>
+                        </p>
                       </>
                     )}
                     {profile.location && (
                       <>
-                        <Typography variant="body2">&#8226;</Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <p className="text-sm">&#8226;</p>
+                        <div className="flex items-center gap-1">
                           <MapPin style={{ width: 16, height: 16 }} />
-                          <Typography variant="body2">{profile.location}</Typography>
-                        </Box>
+                          <p className="text-sm">{profile.location}</p>
+                        </div>
                       </>
                     )}
-                  </Box>
+                  </div>
 
                   {profile.bio && (
-                    <Typography color="text.secondary" sx={{ mb: 2, maxWidth: '42rem' }}>
+                    <p className="text-muted-foreground mb-4 max-w-2xl">
                       {profile.bio}
-                    </Typography>
+                    </p>
                   )}
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Calendar style={{ width: 16, height: 16 }} />
-                    <Typography variant="body2" color="text.secondary">
+                    <p className="text-sm text-muted-foreground">
                       Joined {formatDate(profile.created_at)}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
 
                 {!isOwnProfile && (
-                  <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <div className="flex gap-3">
                     <StartConversationButton
                       userId={profile.user_id}
                       userName={profile.display_name || 'User'}
                       variant="default"
                     />
                     <UserRelationshipActions targetUserId={profile.user_id} />
-                  </Box>
+                  </div>
                 )}
 
                 {isOwnProfile && (
                   <Button onClick={() => navigate('/profile/settings')}>Edit Profile</Button>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -298,27 +255,26 @@ export default function UserProfile() {
           </TabsList>
 
           <TabsContent value="about">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="flex flex-col gap-6">
               <SecureProfileViewer profile={profile} isOwnProfile={isOwnProfile} />
-            </Box>
+            </div>
           </TabsContent>
 
           <TabsContent value="posts">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="flex flex-col gap-6">
               <UserPostsList userId={userId!} isOwnProfile={isOwnProfile} />
-            </Box>
+            </div>
           </TabsContent>
 
           <TabsContent value="photos">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="flex flex-col gap-6">
               <PhotoGallery userId={profile.user_id} isOwnProfile={isOwnProfile} />
-            </Box>
+            </div>
           </TabsContent>
 
           <TabsContent value="identity">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Identity information is now handled securely in SecureProfileViewer */}
-              <Box sx={{ textAlign: 'center', py: 4 }}>
+            <div className="flex flex-col gap-6">
+              <div className="text-center py-8">
                 <Shield
                   style={{
                     width: 48,
@@ -327,21 +283,18 @@ export default function UserProfile() {
                     color: 'var(--muted-foreground)',
                   }}
                 />
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Protected Information
-                </Typography>
-                <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
+                <p className="text-base font-medium mb-2">Protected Information</p>
+                <p className="text-muted-foreground max-w-md mx-auto">
                   Identity and personal details are protected by privacy settings. Only information
                   you've chosen to make public will be visible to others.
-                </Typography>
-              </Box>
-            </Box>
+                </p>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="contact">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Contact information is now handled securely in SecureProfileViewer */}
-              <Box sx={{ textAlign: 'center', py: 4 }}>
+            <div className="flex flex-col gap-6">
+              <div className="text-center py-8">
                 <Shield
                   style={{
                     width: 48,
@@ -350,18 +303,16 @@ export default function UserProfile() {
                     color: 'var(--muted-foreground)',
                   }}
                 />
-                <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1 }}>
-                  Contact Privacy
-                </Typography>
-                <Typography color="text.secondary" sx={{ maxWidth: '28rem', mx: 'auto' }}>
+                <p className="text-base font-medium mb-2">Contact Privacy</p>
+                <p className="text-muted-foreground max-w-md mx-auto">
                   Contact details are protected. Only users who have made their contact information
                   public will have it displayed here.
-                </Typography>
-              </Box>
-            </Box>
+                </p>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 }

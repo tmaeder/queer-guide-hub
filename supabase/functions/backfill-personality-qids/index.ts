@@ -30,6 +30,13 @@ async function wdEntity(qid: string) {
   return data.entities?.[qid] ?? null
 }
 
+async function wdLabel(qid: string): Promise<string | null> {
+  const ent = await wdEntity(qid)
+  if (!ent) return null
+  const labels = ent.labels as Record<string, { value: string }> | undefined
+  return labels?.en?.value ?? Object.values(labels ?? {})[0]?.value ?? null
+}
+
 function claim(entity: Record<string, unknown>, prop: string): string | null {
   const c = (entity.claims as Record<string, unknown>)?.[prop] as Array<Record<string, unknown>> | undefined
   if (!c?.length) return null
@@ -67,11 +74,33 @@ Deno.serve(async (req) => {
     const dryRun = body.dry_run as boolean || false
     const minScore = (body.min_match_score as number) || 0.7
 
-    const { data: rows, error } = await supabase.from('personalities')
-      .select('id, name, description, image_url, external_ids, birth_date, death_date, profession, nationality')
-      .is('wikidata_qid', null)
-      .order('view_count', { ascending: false, nullsFirst: false })
-      .limit(limit)
+    const mode = (body.mode as string) || 'qid' // 'qid' = find QIDs, 'enrich' = fill birth_place for those with QIDs
+
+    let rows: Array<Record<string, unknown>> | null = null
+    let error: { message: string } | null = null
+
+    if (mode === 'enrich') {
+      // Enrich personalities that have QID but missing birth_place
+      const res = await supabase.from('personalities')
+        .select('id, name, description, image_url, external_ids, birth_date, death_date, profession, nationality, wikidata_qid, birth_place')
+        .not('wikidata_qid', 'is', null)
+        .or('birth_place.is.null,birth_place.eq.')
+        .is('city_id', null)
+        .is('duplicate_of_id', null)
+        .order('view_count', { ascending: false, nullsFirst: false })
+        .limit(limit)
+      rows = res.data
+      error = res.error
+    } else {
+      const res = await supabase.from('personalities')
+        .select('id, name, description, image_url, external_ids, birth_date, death_date, profession, nationality, birth_place')
+        .is('wikidata_qid', null)
+        .is('duplicate_of_id', null)
+        .order('view_count', { ascending: false, nullsFirst: false })
+        .limit(limit)
+      rows = res.data
+      error = res.error
+    }
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
     if (!rows?.length) return jsonResponse({ success: true, message: 'no rows need qid', scanned: 0 }, 200, req)
 
@@ -81,33 +110,66 @@ Deno.serve(async (req) => {
       // Politeness delay ~300ms per row
       await new Promise(r => setTimeout(r, 300))
 
-      const hit = await wdSearch(row.name)
-      if (!hit?.id) { skipped++; continue }
+      let qid: string | null = null
+      let sim = 1.0
 
-      // Basic similarity sanity check
-      const label = String(hit.label ?? '').toLowerCase()
-      const nameL = String(row.name).toLowerCase()
-      const sim = label === nameL ? 1.0 : (label.includes(nameL) || nameL.includes(label) ? 0.85 : 0.6)
-      if (sim < minScore) { skipped++; continue }
+      if (mode === 'enrich') {
+        // Already have QID
+        qid = row.wikidata_qid as string
+      } else {
+        const hit = await wdSearch(row.name as string)
+        if (!hit?.id) { skipped++; continue }
+
+        const label = String(hit.label ?? '').toLowerCase()
+        const nameL = String(row.name).toLowerCase()
+        sim = label === nameL ? 1.0 : (label.includes(nameL) || nameL.includes(label) ? 0.85 : 0.6)
+        if (sim < minScore) { skipped++; continue }
+        qid = hit.id
+      }
 
       matched++
-      const patch: Record<string, unknown> = { wikidata_qid: hit.id }
-      const ent = await wdEntity(hit.id)
+      const patch: Record<string, unknown> = mode === 'enrich' ? {} : { wikidata_qid: qid }
+      const ent = await wdEntity(qid!)
       if (ent) {
-        if (!row.description && hit.description) patch.description = hit.description
+        if (!row.description && mode !== 'enrich') {
+          const labels = ent.labels as Record<string, { value: string }> | undefined
+          const desc = (ent.descriptions as Record<string, { value: string }>)?.en?.value
+          if (desc) patch.description = desc
+          void labels // used above in wdLabel
+        }
         if (!row.birth_date) { const b = fmtDate(claim(ent, 'P569')); if (b) patch.birth_date = b }
         if (!row.death_date) { const d = fmtDate(claim(ent, 'P570')); if (d) patch.death_date = d }
         if (!row.image_url) {
           const img = claim(ent, 'P18')
           if (img) patch.image_url = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(img)}`
         }
-        const ext: Record<string, string> = { ...((row.external_ids as Record<string, string>) ?? {}) }
-        for (const [prop, key] of Object.entries(WD_EXT)) {
-          const v = claim(ent, prop)
-          if (v && !ext[key]) ext[key] = v
+        // P19 = place of birth → birth_place
+        if (!row.birth_place) {
+          const placeQid = claim(ent, 'P19')
+          if (placeQid) {
+            const placeName = await wdLabel(placeQid)
+            if (placeName) patch.birth_place = placeName
+          }
         }
-        if (Object.keys(ext).length) patch.external_ids = ext
+        // P27 = country of citizenship → nationality
+        if (!row.nationality) {
+          const citizenQid = claim(ent, 'P27')
+          if (citizenQid) {
+            const citizenName = await wdLabel(citizenQid)
+            if (citizenName) patch.nationality = citizenName
+          }
+        }
+        if (mode !== 'enrich') {
+          const ext: Record<string, string> = { ...((row.external_ids as Record<string, string>) ?? {}) }
+          for (const [prop, key] of Object.entries(WD_EXT)) {
+            const v = claim(ent, prop)
+            if (v && !ext[key]) ext[key] = v
+          }
+          if (Object.keys(ext).length) patch.external_ids = ext
+        }
       }
+
+      if (Object.keys(patch).length === 0) { skipped++; continue }
 
       if (!dryRun) {
         const { error: upErr } = await supabase.from('personalities')
@@ -115,20 +177,22 @@ Deno.serve(async (req) => {
           .eq('id', row.id)
         if (!upErr) {
           updated++
-          await supabase.from('personality_sources').insert({
-            personality_id: row.id,
-            source_slug: 'wikidata-backfill',
-            source_entity_id: hit.id,
-            raw: { hit, qid: hit.id },
-            confidence: sim,
-          }).select().maybeSingle()
+          if (mode !== 'enrich') {
+            await supabase.from('personality_sources').insert({
+              personality_id: row.id,
+              source_slug: 'wikidata-backfill',
+              source_entity_id: qid,
+              raw: { qid },
+              confidence: sim,
+            }).select().maybeSingle()
+          }
         }
       } else {
         updated++
       }
     }
 
-    return jsonResponse({ success: true, scanned: rows.length, matched, updated, skipped, dry_run: dryRun }, 200, req)
+    return jsonResponse({ success: true, mode, scanned: rows.length, matched, updated, skipped, dry_run: dryRun }, 200, req)
   } catch (error) {
     console.error('backfill-personality-qids:', error)
     return errorResponse((error as Error).message, 500, req)

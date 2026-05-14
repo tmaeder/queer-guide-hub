@@ -4,13 +4,10 @@
 
 import React from 'react';
 import { Link as RouterLink } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Switch from '@mui/material/Switch';
-import MuiLink from '@mui/material/Link';
 import { Play, Settings, CheckCircle2, Clock, AlertTriangle, XCircle, Link2, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import type { AutomationModule } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -28,116 +25,78 @@ const STATUS_ICON: Record<string, React.ElementType> = {
   failed: XCircle,
 };
 
-const STATUS_COLOR: Record<string, 'success' | 'warning' | 'error'> = {
-  success: 'success',
-  partial: 'warning',
-  failed: 'error',
+const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  success: 'default',
+  partial: 'secondary',
+  failed: 'destructive',
 };
 
 export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: Props) {
   const StatusIcon = STATUS_ICON[module.last_run_status ?? ''] ?? Clock;
-  const statusColor = STATUS_COLOR[module.last_run_status ?? ''] ?? 'default';
+  const statusVariant = STATUS_VARIANT[module.last_run_status ?? ''] ?? 'outline';
 
   return (
-    <Box
-      sx={{
-        p: 2.5,
-        borderRadius: 2,
-        border: '1px solid',
-        borderColor: module.is_enabled ? 'divider' : 'action.disabledBackground',
-        bgcolor: 'background.paper',
-        opacity: module.is_enabled ? 1 : 0.7,
-        transition: 'all 0.2s',
-      }}
+    <div
+      className={`p-5 rounded-md border bg-background transition-all ${module.is_enabled ? 'border-border opacity-100' : 'border-muted opacity-70'}`}
     >
       {/* Header */}
-      <Box
-        sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="subtitle1" fontWeight={700} noWrap>
-            {module.display_name}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
-            {module.description}
-          </Typography>
-        </Box>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-base font-bold truncate">{module.display_name}</p>
+          <p className="text-xs text-muted-foreground block mt-0.5">{module.description}</p>
+        </div>
         <Switch
-          size="small"
           checked={module.is_enabled}
-          onChange={(_, checked) => onToggle(module.id, checked)}
+          onCheckedChange={(checked) => onToggle(module.id, checked)}
         />
-      </Box>
+      </div>
 
       {/* Content types */}
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1.5 }}>
+      <div className="flex gap-1 flex-wrap mb-3">
         {module.content_types.map((ct) => (
-          <Chip
-            key={ct}
-            label={ct}
-            size="small"
-            variant="outlined"
-            sx={{ fontSize: '0.7rem', height: 22 }}
-          />
+          <Badge key={ct} variant="outline" className="text-[0.7rem] h-[22px]">
+            {ct}
+          </Badge>
         ))}
-      </Box>
+      </div>
 
       {/* Stats row */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 1.5 }}>
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Runs
-          </Typography>
-          <Typography variant="body2" fontWeight={600}>
-            {module.total_runs}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Proposed
-          </Typography>
-          <Typography variant="body2" fontWeight={600}>
-            {module.total_changes_proposed}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Applied
-          </Typography>
-          <Typography variant="body2" fontWeight={600}>
-            {module.total_changes_applied}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Threshold
-          </Typography>
-          <Typography variant="body2" fontWeight={600}>
-            {Math.round(module.auto_approve_threshold * 100)}%
-          </Typography>
-        </Box>
-      </Box>
+      <div className="flex gap-4 mb-3">
+        <div>
+          <p className="text-xs text-muted-foreground">Runs</p>
+          <p className="text-sm font-semibold">{module.total_runs}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Proposed</p>
+          <p className="text-sm font-semibold">{module.total_changes_proposed}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Applied</p>
+          <p className="text-sm font-semibold">{module.total_changes_applied}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Threshold</p>
+          <p className="text-sm font-semibold">{Math.round(module.auto_approve_threshold * 100)}%</p>
+        </div>
+      </div>
 
       {/* Last run status */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+      <div className="flex items-center gap-2 mb-4">
         <StatusIcon size={14} />
-        <Typography variant="caption" color="text.secondary">
+        <p className="text-xs text-muted-foreground">
           {module.last_run_at
             ? `Last run ${formatDistanceToNow(new Date(module.last_run_at), { addSuffix: true })}`
             : 'Never run'}
-        </Typography>
+        </p>
         {module.last_run_status && (
-          <Chip
-            size="small"
-            label={module.last_run_status}
-            color={statusColor}
-            sx={{ height: 20, fontSize: '0.65rem' }}
-          />
+          <Badge variant={statusVariant} className="h-5 text-[0.65rem]">
+            {module.last_run_status}
+          </Badge>
         )}
-      </Box>
+      </div>
 
       {/* Actions */}
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <div className="flex gap-2">
         <Button
           size="sm"
           variant="outline"
@@ -157,35 +116,29 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
         <Button size="sm" variant="ghost" onClick={() => onSettings(module)}>
           <Settings size={14} />
         </Button>
-      </Box>
+      </div>
 
       {/* Contextual links */}
-      <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
+      <div className="flex gap-4 mt-3 flex-wrap">
         {module.slug === 'link-sanitizer' && (
-          <MuiLink
-            component={RouterLink}
+          <RouterLink
             to="/admin/links"
-            variant="caption"
-            underline="hover"
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+            className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             <Link2 size={12} />
             Link Health
-          </MuiLink>
+          </RouterLink>
         )}
         {module.total_changes_proposed > 0 && (
-          <MuiLink
-            component={RouterLink}
+          <RouterLink
             to="/admin/review?tab=automation"
-            variant="caption"
-            underline="hover"
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+            className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             <ClipboardCheck size={12} />
             View pending changes
-          </MuiLink>
+          </RouterLink>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

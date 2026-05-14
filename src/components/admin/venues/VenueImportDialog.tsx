@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Plus, X, MapPin, Search, Settings } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import Box from '@mui/material/Box';
 
 interface VenueImportDialogProps {
   open: boolean;
@@ -193,7 +192,7 @@ export function VenueImportDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <Box component="span" sx={{ fontSize: '1.5rem' }}>{getProviderIcon()}</Box>
+            <span className="text-2xl">{getProviderIcon()}</span>
             Import from {getProviderName()}
           </DialogTitle>
           <DialogDescription>
@@ -220,7 +219,7 @@ export function VenueImportDialog({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <div className="flex flex-wrap gap-2">
                   {config.locations.map((location) => (
                     <Badge key={location} variant="secondary">
                       {location}
@@ -234,9 +233,9 @@ export function VenueImportDialog({
                       </Button>
                     </Badge>
                   ))}
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <div className="flex gap-2">
                   <Input
                     placeholder="Add location (e.g., Miami, FL)"
                     value={newLocation}
@@ -246,11 +245,11 @@ export function VenueImportDialog({
                   <Button onClick={addLocation} disabled={!newLocation.trim()}>
                     <Plus style={{ height: 16, width: 16 }} />
                   </Button>
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   <Label>Quick Add Popular Locations:</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <div className="flex flex-wrap gap-2">
                     {DEFAULT_LOCATIONS
                       .filter(loc => !config.locations.includes(loc))
                       .slice(0, 5)
@@ -265,18 +264,18 @@ export function VenueImportDialog({
                           {location}
                         </Button>
                       ))}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Import Limits</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="limit">Venues per Location (Optional)</Label>
                     <Select
                       value={config.limit?.toString() || "default"}
@@ -296,9 +295,9 @@ export function VenueImportDialog({
                         <SelectItem value="50">50 venues</SelectItem>
                       </SelectContent>
                     </Select>
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="radius">Search Radius (Optional)</Label>
                     <Select
                       value={config.radius?.toString() || "default"}
@@ -318,7 +317,7 @@ export function VenueImportDialog({
                         <SelectItem value="50000">50 km</SelectItem>
                       </SelectContent>
                     </Select>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -327,7 +326,7 @@ export function VenueImportDialog({
                   <CardTitle>Import Options</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       id="reimport"
                       checked={config.isReimport}
@@ -336,9 +335,9 @@ export function VenueImportDialog({
                       }
                     />
                     <Label htmlFor="reimport">Update existing venues</Label>
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       id="images"
                       checked={config.includeImages}
@@ -347,9 +346,9 @@ export function VenueImportDialog({
                       }
                     />
                     <Label htmlFor="images">Include images</Label>
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       id="reviews"
                       checked={config.includeReviews}
@@ -358,10 +357,10 @@ export function VenueImportDialog({
                       }
                     />
                     <Label htmlFor="reviews">Include review data</Label>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
+            </div>
           </TabsContent>
 
           <TabsContent value="search">
@@ -376,7 +375,7 @@ export function VenueImportDialog({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <div className="flex flex-wrap gap-2">
                   {config.searchTerms.map((term) => (
                     <Badge key={term} variant="secondary">
                       {term}
@@ -390,9 +389,9 @@ export function VenueImportDialog({
                       </Button>
                     </Badge>
                   ))}
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <div className="flex gap-2">
                   <Input
                     placeholder="Add search term (e.g., drag bar, queer bookstore)"
                     value={newSearchTerm}
@@ -402,11 +401,11 @@ export function VenueImportDialog({
                   <Button onClick={addSearchTerm} disabled={!newSearchTerm.trim()}>
                     <Plus style={{ height: 16, width: 16 }} />
                   </Button>
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   <Label>Popular LGBTQ+ Search Terms:</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <div className="flex flex-wrap gap-2">
                     {DEFAULT_SEARCH_TERMS[provider]
                       .filter(term => !config.searchTerms.includes(term))
                       .map((term) => (
@@ -420,8 +419,8 @@ export function VenueImportDialog({
                           {term}
                         </Button>
                       ))}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -434,9 +433,9 @@ export function VenueImportDialog({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 1 }}>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {CATEGORIES[provider].map((category) => (
-                      <Box key={category} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div key={category} className="flex items-center gap-2">
                         <Checkbox
                           id={`category-${category}`}
                           checked={config.categories.includes(category)}
@@ -457,9 +456,9 @@ export function VenueImportDialog({
                         <Label htmlFor={`category-${category}`}>
                           {category}
                         </Label>
-                      </Box>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -477,8 +476,8 @@ export function VenueImportDialog({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="minRating">Minimum Rating</Label>
                     <Select
                       value={config.filters.minRating?.toString() || ''}
@@ -500,10 +499,10 @@ export function VenueImportDialog({
                         <SelectItem value="4.5">4.5+</SelectItem>
                       </SelectContent>
                     </Select>
-                  </Box>
+                  </div>
 
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         id="openNow"
                         checked={config.filters.openNow || false}
@@ -515,9 +514,9 @@ export function VenueImportDialog({
                         }
                       />
                       <Label htmlFor="openNow">Only venues open now</Label>
-                    </Box>
-                  </Box>
-                </Box>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -525,19 +524,19 @@ export function VenueImportDialog({
 
         <Separator />
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+        <div className="flex justify-between">
+          <div className="text-sm text-muted-foreground">
             This will search {config.locations.length} location(s) with {config.searchTerms.length} search term(s)
-          </Box>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          </div>
+          <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button onClick={handleImport} disabled={isImporting || config.locations.length === 0}>
               {isImporting ? 'Importing...' : 'Start Import'}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

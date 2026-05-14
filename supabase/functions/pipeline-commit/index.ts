@@ -314,7 +314,6 @@ async function detectTarget(supabase: ReturnType<typeof getServiceClient>, runId
     .from('ingestion_staging')
     .select('target_table', { count: 'exact' })
     .eq('disposition', 'pending')
-    .eq('ai_validation_status', 'approved')
     .limit(1)
   if (runId) q.eq('pipeline_run_id', runId)
   const { data } = await q
@@ -361,7 +360,7 @@ function buildRecord(
       record.content   = normalized.description
       record.url       = ((normalized.urls as string[]) ?? [])[0]
       record.image_url = ((normalized.images as string[]) ?? [])[0]
-      if (meta.source_name)  record.source_name  = meta.source_name
+      if (meta.source_name)  record.publisher_name = meta.source_name
       if (meta.published_at) record.published_at = meta.published_at
       break
 

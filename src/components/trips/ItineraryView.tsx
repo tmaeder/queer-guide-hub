@@ -1,13 +1,9 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import { Plus, MapPin, Hotel, CalendarDays, Star, Trash2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import type { TripDay, TripPlace } from '@/hooks/useTrips';
 import { useTripMutations } from '@/hooks/useTrips';
 import { getScoreRingColor } from '@/utils/equalityScore';
@@ -46,36 +42,26 @@ function PlaceCard({ place, tripId }: PlaceCardProps) {
   const ringColor = getScoreRingColor(eqScore);
 
   return (
-    <Card variant="outlined" sx={{ mb: 1 }}>
-      <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
-        <Box className="flex items-center gap-2">
-          <Box
-            className="rounded-full flex items-center justify-center shrink-0"
-            sx={{ width: 28, height: 28, bgcolor: 'action.hover' }}
-          >
+    <Card className="mb-2">
+      <CardContent className="py-3 px-4">
+        <div className="flex items-center gap-2">
+          <div className="rounded-full flex items-center justify-center shrink-0 w-7 h-7 bg-muted">
             <Icon size={14} />
-          </Box>
+          </div>
 
           <div className="flex-1 min-w-0">
-            <Box className="flex items-center gap-1.5">
-              <Typography variant="body2" fontWeight={600} noWrap>
-                {PlaceName(place)}
-              </Typography>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold truncate">{PlaceName(place)}</p>
               {eqScore !== null && (
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: ringColor,
-                    flexShrink: 0,
-                  }}
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: ringColor }}
                   title={`Equality score: ${eqScore}`}
                 />
               )}
-            </Box>
-            <Box className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Chip label={cat} size="small" variant="outlined" sx={{ height: 18, fontSize: 11 }} />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Badge variant="outline" className="h-[18px] text-[11px]">{cat}</Badge>
               {place.start_time && (
                 <span className="flex items-center gap-0.5">
                   <Clock size={10} />
@@ -85,17 +71,18 @@ function PlaceCard({ place, tripId }: PlaceCardProps) {
               {place.countries?.name && (
                 <span>{place.countries.name}</span>
               )}
-            </Box>
+            </div>
           </div>
 
-          <IconButton
-            size="small"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => removePlace.mutate({ id: place.id, tripId })}
-            sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
+            className="h-7 w-7 p-0 opacity-50 hover:opacity-100"
           >
             <Trash2 size={14} />
-          </IconButton>
-        </Box>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -123,68 +110,68 @@ export function ItineraryView({ tripId, days, places }: Props) {
   return (
     <div>
       {unassigned.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+        <div className="mb-6">
+          <p className="text-sm font-semibold text-muted-foreground mb-2">
             Unassigned Places
-          </Typography>
+          </p>
           {unassigned.map((place) => (
             <PlaceCard key={place.id} place={place} tripId={tripId} />
           ))}
-        </Box>
+        </div>
       )}
 
       {days.length === 0 && unassigned.length === 0 && (
-        <Box className="text-center py-12">
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground mb-4">
             Your itinerary is empty. Add some places to get started.
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
 
       {days.map((day) => {
         const dayPlaces = placesByDay(day.id);
         return (
-          <Box key={day.id} sx={{ mb: 3 }}>
-            <Box className="flex items-center justify-between mb-1.5">
-              <Box className="flex items-center gap-2">
-                <Typography variant="subtitle1" fontWeight={600}>
+          <div key={day.id} className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <p className="text-base font-semibold">
                   {format(new Date(day.date), 'EEE, MMM d')}
-                </Typography>
+                </p>
                 {day.title && (
-                  <Typography variant="body2" color="text.secondary">
+                  <p className="text-sm text-muted-foreground">
                     -- {day.title}
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
               <Button
-                size="small"
-                startIcon={<Plus size={14} />}
+                size="sm"
+                variant="ghost"
                 onClick={() => openAddDialog(day.id)}
               >
+                <Plus size={14} className="mr-1" />
                 Add
               </Button>
-            </Box>
+            </div>
 
             {dayPlaces.length === 0 && (
-              <Typography variant="body2" color="text.secondary" sx={{ ml: 1, mb: 1 }}>
+              <p className="text-sm text-muted-foreground ml-2 mb-2">
                 No places for this day yet.
-              </Typography>
+              </p>
             )}
 
             {dayPlaces.map((place) => (
               <PlaceCard key={place.id} place={place} tripId={tripId} />
             ))}
-          </Box>
+          </div>
         );
       })}
 
       <Button
-        variant="outlined"
-        startIcon={<Plus size={16} />}
+        variant="outline"
         onClick={() => openAddDialog(null)}
-        fullWidth
-        sx={{ mt: 2 }}
+        className="w-full mt-4"
       >
+        <Plus size={16} className="mr-2" />
         Add Place
       </Button>
 

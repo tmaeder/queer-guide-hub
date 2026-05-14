@@ -22,26 +22,26 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
       />
       <style>{`
         .rdp-root {
-          --rdp-accent-color: #333333;
-          --rdp-accent-background-color: #333333;
+          --rdp-accent-color: hsl(var(--foreground));
+          --rdp-accent-background-color: hsl(var(--foreground));
           --rdp-day_button-height: 36px;
           --rdp-day_button-width: 36px;
         }
         .rdp-day_button {
-          border-radius: 6px;
+          border-radius: 0;
           font-size: 0.875rem;
         }
         .rdp-day_button:hover:not([disabled]) {
-          background-color: #f5f5f5;
+          background-color: hsl(var(--muted));
         }
         .rdp-selected .rdp-day_button {
-          background-color: #333333 !important;
-          color: #ffffff !important;
+          background-color: hsl(var(--foreground)) !important;
+          color: hsl(var(--background)) !important;
         }
         .rdp-today .rdp-day_button {
-          background-color: #f5f5f5;
-          color: #333333;
-          font-weight: 600;
+          background-color: hsl(var(--muted));
+          color: hsl(var(--foreground));
+          font-weight: 700;
         }
         .rdp-outside .rdp-day_button {
           color: hsl(var(--muted-foreground));
@@ -52,26 +52,24 @@ function Calendar({ showOutsideDays = true, style, ...props }: CalendarProps) {
           opacity: 0.5;
         }
         .rdp-range_middle .rdp-day_button {
-          background-color: #f5f5f5 !important;
-          color: #333333 !important;
+          background-color: hsl(var(--muted)) !important;
+          color: hsl(var(--foreground)) !important;
         }
         .rdp-range_start .rdp-day_button,
         .rdp-range_end .rdp-day_button {
-          background-color: #333333 !important;
-          color: #ffffff !important;
-        }
-        .rdp-button_previous:hover,
-        .rdp-button_next:hover {
-          opacity: 1;
+          background-color: hsl(var(--foreground)) !important;
+          color: hsl(var(--background)) !important;
         }
         .rdp-weekday {
           color: hsl(var(--muted-foreground));
-          font-weight: 400;
-          font-size: 0.8rem;
+          font-weight: 600;
+          font-size: 0.7rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
         }
         .rdp-month_caption {
           font-size: 0.875rem;
-          font-weight: 500;
+          font-weight: 700;
         }
       `}</style>
     </>

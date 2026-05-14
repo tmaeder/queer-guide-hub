@@ -1,0 +1,59 @@
+name: Meili direct resync + country backfill
+on:
+  workflow_dispatch:
+    inputs:
+      backfill_countries:
+        description: 'Run NULL country backfill on venues'
+        type: boolean
+        default: true
+      resync_venues:
+        description: 'Re-push all venues to Meilisearch'
+        type: boolean
+        default: true
+      resync_events:
+        description: 'Re-push all events to Meilisearch'
+        type: boolean
+        default: true
+concurrency:
+  group: meili-resync
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      MEILI_KEY: ${{ secrets.MEILI_MASTER_KEY }}
+      MEILI_URL: https://s.queer.guide
+      DO_BACKFILL: ${{ inputs.backfill_countries }}
+      DO_VENUES: ${{ inputs.resync_venues }}
+      DO_EVENTS: ${{ inputs.resync_events }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql + jq
+        run: sudo apt-get -y install postgresql-client jq
+
+      - name: Backfill NULL countries from city_id
+        if: ${{ env.DO_BACKFILL == 'true' }}
+        run: |
+          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+            BEGIN;
+            ALTER TABLE venues DISABLE TRIGGER USER;
+            UPDATE venues v
+              SET country = c.code
+              FROM cities ci
+              JOIN countries c ON c.id = ci.country_id
+              WHERE v.country IS NULL AND v.city_id = ci.id;
+            ALTER TABLE venues ENABLE TRIGGER USER;
+            COMMIT;
+          SQL
+          echo "Post-backfill venues with NULL country:"
+          psql "$DB_URL" -At -c "SELECT COUNT(*) FROM venues WHERE country IS NULL;"
+
+      - name: Resync venues to Meili
+        if: ${{ env.DO_VENUES == 'true' }}
+        run: bash scripts/meili-direct-resync.sh venues
+
+      - name: Resync events to Meili
+        if: ${{ env.DO_EVENTS == 'true' }}
+        run: bash scripts/meili-direct-resync.sh events

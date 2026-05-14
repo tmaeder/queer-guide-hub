@@ -32,12 +32,12 @@ const STEPS: Array<{
       <div className="space-y-2">
         <p>Everything you do is reachable from the keyboard:</p>
         <ul className="space-y-1.5 text-sm">
-          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">{MOD}K</kbd> Quick-add a node</li>
-          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">{MOD}F</kbd> Find node on canvas</li>
-          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">{MOD}S</kbd> Save</li>
-          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">{MOD}Enter</kbd> Run</li>
-          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">{MOD}Z</kbd> / <kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">{MOD}L</kbd> Undo / Auto-layout</li>
-          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">?</kbd> Full cheat sheet</li>
+          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">{MOD}K</kbd> Quick-add a node</li>
+          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">{MOD}F</kbd> Find node on canvas</li>
+          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">{MOD}S</kbd> Save</li>
+          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">{MOD}Enter</kbd> Run</li>
+          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">{MOD}Z</kbd> / <kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">{MOD}L</kbd> Undo / Auto-layout</li>
+          <li className="flex items-center gap-2"><kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">?</kbd> Full cheat sheet</li>
         </ul>
       </div>
     ),
@@ -58,7 +58,7 @@ const STEPS: Array<{
     description: (
       <div className="space-y-2">
         <p>Use <strong>Dry Run</strong> to test your pipeline without writing to production tables. The dry-run mode skips commits.</p>
-        <p>Pipelines with a <code className="bg-muted px-1 rounded text-[11px]">commit</code> node show a confirmation prompt before running for real.</p>
+        <p>Pipelines with a <code className="bg-muted px-1 rounded text-xs2">commit</code> node show a confirmation prompt before running for real.</p>
       </div>
     ),
   },
@@ -87,7 +87,7 @@ const STEPS: Array<{
     title: "You're ready",
     description: (
       <>
-        <p className="mb-3">That's the core loop. Open the <kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-[11px]">?</kbd> cheat sheet anytime to see the full list of shortcuts.</p>
+        <p className="mb-3">That's the core loop. Open the <kbd className="h-5 px-1.5 bg-muted rounded border border-border font-mono text-xs2">?</kbd> cheat sheet anytime to see the full list of shortcuts.</p>
         <p className="text-muted-foreground text-sm">This tour won't show again. You can relaunch it from the keyboard shortcuts dialog footer.</p>
       </>
     ),

@@ -3,7 +3,7 @@ import { useReactFlow } from '@xyflow/react';
 import { ZoomIn, ZoomOut, Maximize, Crosshair, Camera, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface CanvasControlsProps {
   pipelineName: string;
@@ -17,7 +17,6 @@ interface CanvasControlsProps {
  */
 export default function CanvasControls({ pipelineName, hasSelection }: CanvasControlsProps) {
   const { zoomIn, zoomOut, fitView, getViewport, getNodes } = useReactFlow();
-  const { toast } = useToast();
   const [zoom, setZoom] = useState(1);
   const [exporting, setExporting] = useState(false);
 
@@ -43,36 +42,31 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
   const handleExportPNG = useCallback(async () => {
     setExporting(true);
     try {
-      const { default: html2canvas } = await import('html2canvas');
-      const viewport = document.querySelector('.react-flow__viewport') as HTMLElement | null;
+      const { toPng } = await import('html-to-image');
       const container = document.querySelector('.react-flow') as HTMLElement | null;
-      if (!container || !viewport) throw new Error('Canvas not found');
+      if (!container) throw new Error('Canvas not found');
 
-      // Capture the whole react-flow container (includes background)
-      const canvas = await html2canvas(container, {
+      const dataUrl = await toPng(container, {
         backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false,
-        useCORS: true,
+        pixelRatio: 2,
       });
 
-      canvas.toBlob((blob) => {
-        if (!blob) throw new Error('Failed to create PNG');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${pipelineName || 'pipeline'}-${Date.now()}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${pipelineName || 'pipeline'}-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
 
-      toast({ title: 'Canvas exported as PNG' });
-    } catch (e) {
-      toast({ title: 'Export failed', description: (e as Error).message, variant: 'destructive' });
+      toast.success('Canvas exported as PNG');
+    } catch (_e) {
+      toast.error('Export failed');
     } finally {
       setExporting(false);
     }
-  }, [pipelineName, toast]);
+  }, [pipelineName]);
 
   return (
     <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 bg-popover border border-border rounded-lg shadow-lg p-1">
@@ -94,7 +88,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
         <TooltipContent side="left" className="text-xs">Zoom out</TooltipContent>
       </Tooltip>
 
-      <div className="text-[10px] text-center font-mono text-muted-foreground py-0.5 select-none">
+      <div className="text-2xs text-center font-mono text-muted-foreground py-0.5 select-none">
         {Math.round(zoom * 100)}%
       </div>
 

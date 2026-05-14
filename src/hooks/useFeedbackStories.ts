@@ -11,7 +11,7 @@ import type {
 } from '@/components/admin/feedback/types';
 
 const STORY_COLUMNS =
-  'id,title,summary,brief_title,narrative,narrative_edited,status,priority,labels,assignee_id,created_by,created_at,updated_at,resolved_at,origin,handoffs';
+  'id,title,summary,brief_title,narrative,narrative_edited,status,priority,labels,assignee_id,created_by,created_at,updated_at,resolved_at,origin,handoffs,approved_for_claude_at,approved_by,needs_followup_reason,archived_at,archived_by,archive_reason';
 
 export function useStories() {
   return useQuery<StoryWithCounts[]>({

@@ -40,12 +40,14 @@ export interface Bbox {
  * Guards against invalid bounds from MapLibre during init or on certain devices.
  */
 export function clampBbox(bbox: Bbox): Bbox {
-  return {
-    west: Math.max(-180, Math.min(180, bbox.west)),
-    south: Math.max(-90, Math.min(90, bbox.south)),
-    east: Math.max(-180, Math.min(180, bbox.east)),
-    north: Math.max(-90, Math.min(90, bbox.north)),
-  };
+  let west = Math.max(-180, Math.min(180, bbox.west));
+  let east = Math.max(-180, Math.min(180, bbox.east));
+  let south = Math.max(-90, Math.min(90, bbox.south));
+  let north = Math.max(-90, Math.min(90, bbox.north));
+  // If clamping collapsed the bbox (world wrap at low zoom), expand to full range
+  if (west >= east) { west = -180; east = 180; }
+  if (south >= north) { south = -90; north = 90; }
+  return { west, south, east, north };
 }
 
 /**

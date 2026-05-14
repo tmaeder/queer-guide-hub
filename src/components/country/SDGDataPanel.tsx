@@ -2,8 +2,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { SDGData } from '@/hooks/useSDGData';
 
 interface SDGDataPanelProps {
@@ -40,7 +38,7 @@ const formatValue = (value: number | null | undefined, unit: string): string => 
   return value.toFixed(2);
 };
 
-export const SDGDataPanel: React.FC<SDGDataPanelProps> = ({ data }) => {
+export const SDGDataPanel = ({ data, countryName: _countryName }: SDGDataPanelProps) => {
   if (!data.hasData) {
     return null;
   }
@@ -49,64 +47,36 @@ export const SDGDataPanel: React.FC<SDGDataPanelProps> = ({ data }) => {
     <Card>
       <CardHeader>
         <CardTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center gap-2">
             <Target style={{ height: 20, width: 20 }} />
             UN Sustainable Development Goals
-          </Box>
+          </div>
           {data.lastSyncedAt && (
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', fontWeight: 400 }}>
+            <span className="text-xs text-muted-foreground font-normal">
               Updated {new Date(data.lastSyncedAt).toLocaleDateString()}
-            </Typography>
+            </span>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: '1fr 1fr',
-              md: 'repeat(3, 1fr)',
-            },
-          }}
-        >
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {SDG_GOALS.map((goal) => {
             const goalData = data.goals[String(goal.number)];
             const hasValue = goalData?.value != null;
 
             return (
-              <Box
+              <div
                 key={goal.number}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 0.5,
-                  p: 2,
-                  borderRadius: 2,
-                  borderLeft: `4px solid ${goal.color}`,
-                  bgcolor: 'action.hover',
-                  transition: 'box-shadow 0.2s',
-                  '&:hover': {
-                    boxShadow: 1,
-                  },
-                }}
+                className="flex flex-col gap-1 p-4 bg-muted transition-shadow hover:shadow-sm"
+                style={{ borderLeft: `4px solid ${goal.color}` }}
               >
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      color: goal.color,
-                    }}
+                <div className="flex items-center justify-between">
+                  <span
+                    className="text-xs font-bold uppercase"
+                    style={{ letterSpacing: '0.05em', color: goal.color }}
                   >
                     SDG {goal.number}
-                  </Typography>
+                  </span>
                   {hasValue && goalData?.year && (
                     <Badge
                       variant="outline"
@@ -115,41 +85,28 @@ export const SDGDataPanel: React.FC<SDGDataPanelProps> = ({ data }) => {
                       {goalData.year}
                     </Badge>
                   )}
-                </Box>
+                </div>
 
-                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.3 }}>
-                  {goal.title}
-                </Typography>
+                <p className="text-sm font-semibold leading-tight">{goal.title}</p>
 
                 {hasValue ? (
                   <>
-                    <Typography
-                      sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'text.primary', mt: 0.5 }}
-                    >
+                    <p className="text-xl font-bold mt-1">
                       {formatValue(goalData.value, goalData.unit || '')}
-                    </Typography>
-                    <Typography
-                      sx={{ fontSize: '0.7rem', color: 'text.secondary', lineHeight: 1.3 }}
-                    >
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-tight">
                       {goalData.description}
-                    </Typography>
+                    </p>
                   </>
                 ) : (
-                  <Typography
-                    sx={{
-                      fontSize: '0.8rem',
-                      color: 'text.disabled',
-                      mt: 0.5,
-                      fontStyle: 'italic',
-                    }}
-                  >
+                  <p className="text-sm mt-1 italic" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
                     No data available
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
             );
           })}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

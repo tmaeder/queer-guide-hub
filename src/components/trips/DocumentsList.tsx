@@ -1,9 +1,4 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-import Skeleton from '@mui/material/Skeleton';
 import {
   Plus,
   FileText,
@@ -28,6 +23,8 @@ import { expiryStatus, expiryLabel, type ExpiryLevel } from '@/utils/docExpiry';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { AddDocumentDialog } from './AddDocumentDialog';
 import {
@@ -58,11 +55,11 @@ const ICON_BY_TYPE: Record<DocType, typeof FileText> = {
   other: FileText,
 };
 
-const EXPIRY_CHIP_COLOR: Record<ExpiryLevel, 'default' | 'warning' | 'error' | 'success'> = {
-  ok: 'default',
-  warning: 'warning',
-  urgent: 'error',
-  expired: 'error',
+const EXPIRY_BADGE_VARIANT: Record<ExpiryLevel, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  ok: 'outline',
+  warning: 'secondary',
+  urgent: 'destructive',
+  expired: 'destructive',
 };
 
 export function DocumentsList({ tripId, embedded = false }: Props) {
@@ -106,43 +103,36 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
   };
 
   return (
-    <Box>
+    <div>
       {!embedded && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        <div className="flex items-center justify-between mb-4">
+          <h6 className="text-base font-bold">
             {tripId === null
               ? t('docs.list.personalTitle', 'Personal documents')
               : t('docs.list.tripTitle', 'Trip documents')}
-          </Typography>
+          </h6>
           <Button variant="brand" size="sm" onClick={() => setAddOpen(true)}>
             <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
             {t('docs.list.add', 'Add document')}
           </Button>
-        </Box>
+        </div>
       )}
 
       {embedded && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <div className="flex justify-end mb-2">
           <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)}>
             <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
             {t('docs.list.add', 'Add document')}
           </Button>
-        </Box>
+        </div>
       )}
 
       {isLoading && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div className="flex flex-col gap-2">
           {[1, 2].map((i) => (
             <Skeleton key={i} variant="rounded" height={68} />
           ))}
-        </Box>
+        </div>
       )}
 
       {!isLoading && (docs?.length ?? 0) === 0 && (
@@ -166,7 +156,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
       )}
 
       {!isLoading && (docs?.length ?? 0) > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div className="flex flex-col gap-2">
           {(docs ?? []).map((doc) => {
             const Icon = ICON_BY_TYPE[doc.doc_type] ?? FileText;
             const status = expiryStatus(doc.expiry_date);
@@ -176,78 +166,63 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
             return (
               <Card key={doc.id}>
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Box
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        bgcolor: 'action.hover',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-muted flex items-center justify-center flex-shrink-0">
                       {isImage ? <ImageIcon size={16} /> : <Icon size={16} />}
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography sx={{ fontWeight: 600 }}>{doc.title}</Typography>
-                        <Chip
-                          label={t(`docs.type.${doc.doc_type}`, doc.doc_type.replace('_', ' '))}
-                          size="small"
-                          sx={{ textTransform: 'capitalize' }}
-                        />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold">{doc.title}</p>
+                        <Badge variant="secondary" className="capitalize">
+                          {t(`docs.type.${doc.doc_type}`, doc.doc_type.replace('_', ' '))}
+                        </Badge>
                         {label && (
-                          <Chip
-                            icon={
-                              status.level === 'expired' || status.level === 'urgent' ? (
-                                <AlertTriangle size={12} />
-                              ) : (
-                                <Clock size={12} />
-                              )
-                            }
-                            label={label}
-                            size="small"
-                            color={EXPIRY_CHIP_COLOR[status.level]}
-                            variant={status.level === 'ok' ? 'outlined' : 'filled'}
-                          />
+                          <Badge variant={EXPIRY_BADGE_VARIANT[status.level]} className="inline-flex items-center gap-1">
+                            {status.level === 'expired' || status.level === 'urgent' ? (
+                              <AlertTriangle size={12} />
+                            ) : (
+                              <Clock size={12} />
+                            )}
+                            {label}
+                          </Badge>
                         )}
-                      </Box>
+                      </div>
                       {doc.notes && (
-                        <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary', mt: 0.25 }}>
+                        <p className="text-[0.8125rem] text-muted-foreground mt-0.5">
                           {doc.notes}
-                        </Typography>
+                        </p>
                       )}
-                      <Typography sx={{ fontSize: '0.6875rem', color: 'text.secondary', mt: 0.25 }}>
+                      <p className="text-[0.6875rem] text-muted-foreground mt-0.5">
                         {t('docs.list.uploaded', 'Uploaded')}{' '}
                         {format(new Date(doc.created_at), 'MMM d, yyyy')}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                      <IconButton
-                        size="small"
+                      </p>
+                    </div>
+                    <div className="flex items-center flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-11 w-11 p-0"
                         onClick={() => void handleDownload(doc)}
                         aria-label={t('docs.list.open', 'Open')}
-                        sx={{ minWidth: 44, minHeight: 44 }}
                       >
                         <Download size={14} />
-                      </IconButton>
-                      <IconButton
-                        size="small"
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-11 w-11 p-0 opacity-60 hover:opacity-100"
                         onClick={() => setDeleteCandidate(doc)}
                         aria-label={t('docs.list.delete', 'Delete')}
-                        sx={{ minWidth: 44, minHeight: 44, opacity: 0.6, '&:hover': { opacity: 1 } }}
                       >
                         <Trash2 size={14} />
-                      </IconButton>
-                    </Box>
-                  </Box>
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
-        </Box>
+        </div>
       )}
 
       <AddDocumentDialog open={addOpen} onClose={() => setAddOpen(false)} tripId={tripId} />
@@ -278,6 +253,6 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }

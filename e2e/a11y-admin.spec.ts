@@ -21,7 +21,7 @@ test.describe('Admin shell — automated a11y', () => {
     test(`${route} has no serious/critical axe violations`, async ({ page }) => {
       await page.goto(route);
       await page.waitForLoadState('networkidle').catch(() => {});
-      if (!page.url().includes('/admin')) {
+      if (!new URL(page.url()).pathname.startsWith('/admin')) {
         test.skip(true, 'Admin requires auth; provide E2E_STORAGE_STATE pointing at a signed-in session.');
         return;
       }
@@ -42,8 +42,10 @@ test.describe('Admin shell — automated a11y', () => {
 
   test('admin shell exposes a skip link to main content', async ({ page }) => {
     await page.goto('/admin');
-    await page.waitForLoadState('domcontentloaded');
-    if (!page.url().includes('/admin')) {
+    // networkidle, not domcontentloaded — AdminRouteGuard redirects unauthenticated
+    // sessions away via a useEffect that fires after DOMContentLoaded.
+    await page.waitForLoadState('networkidle').catch(() => {});
+    if (!new URL(page.url()).pathname.startsWith('/admin')) {
       test.skip(true, 'Admin requires auth; run with a signed-in session to assert skip link.');
       return;
     }

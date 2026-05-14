@@ -1,17 +1,16 @@
 /**
- * ContentWarningBanner — Displays content sensitivity warnings to users.
+ * ContentWarningBanner — content sensitivity warnings.
  *
- * Reads from `content_warnings` JSONB field on venues, events, news, etc.
- * Shows appropriate warning for legal, medical, NSFW content.
+ * Reads from `content_warnings` JSONB on venues, events, news, etc.
+ * Strict-monochrome: warnings are differentiated by icon + bold label,
+ * not hue. The relevance-score badge collapses to the same neutral
+ * treatment with the score communicated by text only.
  */
 
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import { AlertTriangle, Scale, Stethoscope, EyeOff } from 'lucide-react';
+import { AlertTriangle, Scale, Stethoscope, EyeOff, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface ContentWarnings {
   legal?: boolean;
@@ -29,27 +28,24 @@ const FLAG_CONFIG = {
   legal: {
     icon: Scale,
     label: 'Legal',
-    color: '#d97706' as const,
-    message: 'This content discusses legal matters, laws, or regulations.',
+    message: 'Discusses legal matters, laws, or regulations.',
   },
   medical: {
     icon: Stethoscope,
     label: 'Medical',
-    color: '#2563eb' as const,
-    message: 'This content contains medical or health-related information.',
+    message: 'Contains medical or health information.',
   },
   nsfw: {
     icon: EyeOff,
     label: 'NSFW',
-    color: '#dc2626' as const,
-    message: 'This content may contain adult or explicit material.',
+    message: 'May contain adult or explicit material.',
   },
 } as const;
 
-export const ContentWarningBanner: React.FC<ContentWarningBannerProps> = ({
+export const ContentWarningBanner = ({
   warnings,
   compact = false,
-}) => {
+}: ContentWarningBannerProps) => {
   const [dismissed, setDismissed] = useState(false);
 
   if (!warnings || dismissed) return null;
@@ -62,131 +58,78 @@ export const ContentWarningBanner: React.FC<ContentWarningBannerProps> = ({
     return null;
   }
 
-  // Compact mode: just show chips inline
   if (compact) {
     return (
-      <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+      <div className="flex flex-wrap gap-1">
         {activeFlags.map((flag) => {
           const config = FLAG_CONFIG[flag];
           const Icon = config.icon;
           return (
-            <Chip
-              key={flag}
-              icon={<Icon size={12} />}
-              label={config.label}
-              size="small"
-              variant="outlined"
-              sx={{
-                height: 22,
-                fontSize: '0.7rem',
-                borderColor: config.color,
-                color: config.color,
-                '& .MuiChip-icon': { color: config.color },
-              }}
-            />
+            <Badge key={flag} variant="outline" className="h-[22px] gap-1">
+              <Icon size={12} aria-hidden="true" />
+              {config.label}
+            </Badge>
           );
         })}
-      </Box>
+      </div>
     );
   }
 
-  // Full banner mode
   return (
-    <Alert
-      severity="warning"
-      icon={<AlertTriangle size={20} />}
-      action={
-        <Button color="inherit" size="small" onClick={() => setDismissed(true)}>
-          Dismiss
-        </Button>
-      }
-      sx={{ mb: 2 }}
-    >
-      <Box>
-        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-          Content Notice
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: warnings.warnings?.length ? 1 : 0 }}>
+    <div className="mb-4 flex items-start gap-3 border border-foreground bg-background p-4">
+      <AlertTriangle size={20} className="mt-0.5 shrink-0 text-foreground" aria-hidden="true" />
+      <div className="flex-1">
+        <p className="mb-2 text-sm font-bold uppercase tracking-wide">Content Notice</p>
+        <ul className={`flex flex-col gap-1 ${warnings.warnings?.length ? 'mb-2' : ''}`}>
           {activeFlags.map((flag) => {
             const config = FLAG_CONFIG[flag];
             const Icon = config.icon;
             return (
-              <Chip
-                key={flag}
-                icon={<Icon size={12} />}
-                label={config.message}
-                size="small"
-                sx={{
-                  height: 'auto',
-                  '& .MuiChip-label': { whiteSpace: 'normal', py: 0.5 },
-                  fontSize: '0.75rem',
-                }}
-              />
+              <li key={flag} className="flex items-start gap-2 text-sm">
+                <Icon size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <span><span className="font-semibold">{config.label}.</span> {config.message}</span>
+              </li>
             );
           })}
-        </Box>
+        </ul>
         {warnings.warnings?.map((w, i) => (
-          <Typography key={i} variant="body2" color="text.secondary">
-            {w}
-          </Typography>
+          <p key={i} className="text-sm text-muted-foreground">{w}</p>
         ))}
-      </Box>
-    </Alert>
+      </div>
+      <Button variant="ghost" size="sm" onClick={() => setDismissed(true)} aria-label="Dismiss notice">
+        <X size={16} aria-hidden="true" />
+      </Button>
+    </div>
   );
 };
 
 /**
- * Compact flag badges for admin tables and review cards.
+ * Compact flag badges for admin tables and review cards. Score is text,
+ * not hue; severity reads from icon + label, not color.
  */
-export const SensitivityBadges: React.FC<{
+export const SensitivityBadges = ({ sensitivityFlags, relevanceScore }: {
   sensitivityFlags?: Array<{ category: string; severity: string }> | null;
   relevanceScore?: number | null;
-}> = ({ sensitivityFlags, relevanceScore }) => {
+}) => {
   return (
-    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div className="flex flex-wrap items-center gap-1">
       {relevanceScore != null && (
-        <Chip
-          label={`${(relevanceScore * 100).toFixed(0)}%`}
-          size="small"
-          sx={{
-            height: 20,
-            fontSize: '0.65rem',
-            fontWeight: 700,
-            bgcolor: relevanceScore >= 0.7
-              ? '#dcfce7'
-              : relevanceScore >= 0.3
-                ? '#fef9c3'
-                : '#fee2e2',
-            color: relevanceScore >= 0.7
-              ? '#166534'
-              : relevanceScore >= 0.3
-                ? '#854d0e'
-                : '#991b1b',
-          }}
-        />
+        <Badge variant="outline" className="h-5">
+          {`${(relevanceScore * 100).toFixed(0)}%`}
+        </Badge>
       )}
       {sensitivityFlags?.map((flag) => {
         const config = FLAG_CONFIG[flag.category as keyof typeof FLAG_CONFIG];
         if (!config) return null;
         const Icon = config.icon;
         return (
-          <Chip
-            key={flag.category}
-            icon={<Icon size={10} />}
-            label={config.label}
-            size="small"
-            sx={{
-              height: 20,
-              fontSize: '0.65rem',
-              borderColor: config.color,
-              color: config.color,
-              '& .MuiChip-icon': { color: config.color },
-            }}
-            variant="outlined"
-          />
+          <Badge key={flag.category} variant="outline" className="h-5 gap-1">
+            <Icon size={10} aria-hidden="true" />
+            {config.label}
+          </Badge>
         );
       })}
-    </Box>
+    </div>
   );
 };
 

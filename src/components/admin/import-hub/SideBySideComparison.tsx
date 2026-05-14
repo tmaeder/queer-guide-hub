@@ -1,12 +1,9 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, ArrowRight, Merge } from 'lucide-react';
 import { getFieldsForEntity, type FieldDef } from './StructuredFieldDisplay';
-import { brandColors } from '@/theme/muiTheme';
 
 interface SideBySideComparisonProps {
   entityType: string;
@@ -106,47 +103,34 @@ export function SideBySideComparison({
 
   const handleMerge = () => {
     if (!onMerge || !leftId || !rightId) return;
-    // Keep left by default, remove right
     onMerge(buildMergedData(), leftId, rightId);
   };
 
+  const gridCols = { gridTemplateColumns: '140px 1fr 40px 1fr' };
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
           <Merge style={{ width: 16, height: 16 }} />
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Side-by-Side Comparison
-          </Typography>
+          <h6 className="text-sm font-semibold">Side-by-Side Comparison</h6>
           <Badge variant="secondary">{diffFields.length} differences</Badge>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Comparison Table */}
       <Card>
         <CardContent>
           {/* Column Headers */}
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: '140px 1fr 40px 1fr',
-            gap: 0,
-            borderBottom: '2px solid var(--border)',
-            bgcolor: 'var(--muted)',
-          }}>
-            <Box sx={{ p: 1.5, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>
-              Field
-            </Box>
-            <Box sx={{ p: 1.5, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', color: '#3b82f6' }}>
-              {leftLabel}
-            </Box>
-            <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ArrowRight style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
-            </Box>
-            <Box sx={{ p: 1.5, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase', color: brandColors.main }}>
-              {rightLabel}
-            </Box>
-          </Box>
+          <div className="grid border-b-2 border-border bg-muted" style={gridCols}>
+            <div className="p-3 font-semibold text-xs uppercase text-muted-foreground">Field</div>
+            <div className="p-3 font-semibold text-xs uppercase" style={{ color: '#3b82f6' }}>{leftLabel}</div>
+            <div className="p-3 flex items-center justify-center">
+              <ArrowRight style={{ width: 14, height: 14 }} className="text-muted-foreground" />
+            </div>
+            <div className="p-3 font-semibold text-xs uppercase" style={{ color: 'hsl(var(--foreground))' }}>{rightLabel}</div>
+          </div>
 
           {/* Rows */}
           {fields.map((field, i) => {
@@ -155,70 +139,60 @@ export function SideBySideComparison({
             const isDiff = valuesAreDifferent(leftVal, rightVal);
 
             return (
-              <Box
+              <div
                 key={field.key}
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '140px 1fr 40px 1fr',
-                  gap: 0,
-                  borderBottom: i < fields.length - 1 ? '1px solid var(--border)' : 'none',
-                  bgcolor: isDiff ? 'rgba(250, 204, 21, 0.06)' : 'transparent',
-                  '&:hover': { bgcolor: isDiff ? 'rgba(250, 204, 21, 0.1)' : 'var(--muted)' },
-                }}
+                className={`grid ${i < fields.length - 1 ? 'border-b border-border' : ''} ${isDiff ? 'hover:bg-yellow-100/10' : 'hover:bg-muted'}`}
+                style={{ ...gridCols, backgroundColor: isDiff ? 'rgba(250, 204, 21, 0.06)' : 'transparent' }}
               >
                 {/* Field Name */}
-                <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: 'var(--muted-foreground)', fontSize: '0.7rem' }}>
+                <div className="p-3 flex items-center">
+                  <span className="text-xs font-semibold text-muted-foreground" style={{ fontSize: '0.7rem' }}>
                     {field.label}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
 
                 {/* Left Value */}
-                <Box
-                  sx={{
-                    p: 1.5,
+                <div
+                  className="p-3"
+                  style={{
                     cursor: isDiff ? 'pointer' : 'default',
                     borderLeft: choices[field.key] === 'left' && isDiff ? '3px solid #3b82f6' : '3px solid transparent',
-                    bgcolor: choices[field.key] === 'left' && isDiff ? 'rgba(59, 130, 246, 0.06)' : 'transparent',
+                    backgroundColor: choices[field.key] === 'left' && isDiff ? 'hsl(var(--muted))' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'left')}
                 >
-                  <Typography variant="body2" sx={{ fontSize: '0.8rem', wordBreak: 'break-word' }}>
-                    {formatCellValue(leftVal)}
-                  </Typography>
-                </Box>
+                  <p className="text-sm break-words" style={{ fontSize: '0.8rem' }}>{formatCellValue(leftVal)}</p>
+                </div>
 
                 {/* Selection Indicator */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="flex items-center justify-center">
                   {isDiff && (
-                    <Box
-                      sx={{
+                    <div
+                      className="flex items-center justify-center text-white font-bold"
+                      style={{
                         width: 20, height: 20, borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        bgcolor: choices[field.key] === 'left' ? '#3b82f6' : brandColors.main,
-                        color: 'white', fontSize: '0.6rem', fontWeight: 700,
+                        backgroundColor: choices[field.key] === 'left' ? '#3b82f6' : 'hsl(var(--foreground))',
+                        fontSize: '0.6rem',
                       }}
                     >
                       {choices[field.key] === 'left' ? 'L' : 'R'}
-                    </Box>
+                    </div>
                   )}
-                </Box>
+                </div>
 
                 {/* Right Value */}
-                <Box
-                  sx={{
-                    p: 1.5,
+                <div
+                  className="p-3"
+                  style={{
                     cursor: isDiff ? 'pointer' : 'default',
-                    borderLeft: choices[field.key] === 'right' && isDiff ? `3px solid ${brandColors.main}` : '3px solid transparent',
-                    bgcolor: choices[field.key] === 'right' && isDiff ? brandColors.main + '0F' : 'transparent',
+                    borderLeft: choices[field.key] === 'right' && isDiff ? `3px solid ${'hsl(var(--foreground))'}` : '3px solid transparent',
+                    backgroundColor: choices[field.key] === 'right' && isDiff ? 'hsl(var(--muted))' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'right')}
                 >
-                  <Typography variant="body2" sx={{ fontSize: '0.8rem', wordBreak: 'break-word' }}>
-                    {formatCellValue(rightVal)}
-                  </Typography>
-                </Box>
-              </Box>
+                  <p className="text-sm break-words" style={{ fontSize: '0.8rem' }}>{formatCellValue(rightVal)}</p>
+                </div>
+              </div>
             );
           })}
         </CardContent>
@@ -226,11 +200,9 @@ export function SideBySideComparison({
 
       {/* Actions */}
       {showActions && (
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <div className="flex gap-2 justify-end flex-wrap">
           {onCancel && (
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={onCancel}>Cancel</Button>
           )}
           {onKeepLeft && (
             <Button variant="outline" onClick={onKeepLeft} style={{ display: 'flex', gap: 6 }}>
@@ -250,8 +222,8 @@ export function SideBySideComparison({
               Merge & Keep Best
             </Button>
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

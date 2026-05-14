@@ -1,12 +1,6 @@
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import MuiButton from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ExternalLink, ShieldCheck, ShieldAlert, ShieldQuestion, RotateCcw } from 'lucide-react';
 import type { ContentLink } from '@/hooks/useContentLinks';
 
@@ -18,10 +12,10 @@ interface ScanResultDialogProps {
   scanning?: boolean;
 }
 
-const VERDICT_CONFIG: Record<string, { color: 'success' | 'error' | 'warning' | 'default'; label: string; Icon: typeof ShieldCheck }> = {
-  benign: { color: 'success', label: 'Safe', Icon: ShieldCheck },
-  malicious: { color: 'error', label: 'Malicious', Icon: ShieldAlert },
-  suspicious: { color: 'warning', label: 'Suspicious', Icon: ShieldQuestion },
+const VERDICT_CONFIG: Record<string, { className: string; label: string; Icon: typeof ShieldCheck }> = {
+  benign: { className: 'bg-green-500/10 text-green-700 border-green-500/30', label: 'Safe', Icon: ShieldCheck },
+  malicious: { className: 'bg-destructive/10 text-destructive border-destructive/30', label: 'Malicious', Icon: ShieldAlert },
+  suspicious: { className: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/30', label: 'Suspicious', Icon: ShieldQuestion },
 };
 
 export function ScanResultDialog({ open, link, onClose, onRescan, scanning }: ScanResultDialogProps) {
@@ -37,127 +31,116 @@ export function ScanResultDialog({ open, link, onClose, onRescan, scanning }: Sc
   const scannedAt = link.scanned_at;
 
   const hasResults = !!scanId;
+  const scoreColor = score > 50 ? 'text-destructive' : score > 20 ? 'text-yellow-600' : 'text-green-600';
+  const barColor = score > 50 ? 'bg-destructive' : score > 20 ? 'bg-yellow-500' : 'bg-green-500';
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        URL Scan Result
-        {config && (
-          <Chip
-            size="small"
-            label={config.label}
-            color={config.color}
-            icon={<config.Icon style={{ width: 14, height: 14 }} />}
-          />
-        )}
-      </DialogTitle>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent>
-        {/* URL */}
-        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem', mb: 2, wordBreak: 'break-all' }}>
+        <DialogTitle>
+          <span className="flex items-center gap-2">
+            URL Scan Result
+            {config && (
+              <Badge variant="outline" className={`${config.className} text-xs`}>
+                <config.Icon className="w-3.5 h-3.5 mr-1" />
+                {config.label}
+              </Badge>
+            )}
+          </span>
+        </DialogTitle>
+
+        <p className="font-mono text-xs mb-4 break-all">
           {link.original_url}
-        </Typography>
+        </p>
 
         {!hasResults ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <ShieldQuestion style={{ width: 48, height: 48, color: '#999', margin: '0 auto 16px' }} />
-            <Typography color="text.secondary">
+          <div className="text-center py-8">
+            <ShieldQuestion className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
               This URL has not been scanned yet.
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+            </p>
+            <span className="text-xs text-muted-foreground">
               Click "Scan Now" to analyze this URL with URLScan.io
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ) : (
           <>
-            {/* Score Bar */}
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="caption" color="text.secondary">Threat Score</Typography>
-                <Typography variant="caption" fontWeight={700}
-                  color={score > 50 ? 'error.main' : score > 20 ? 'warning.main' : 'success.main'}
-                >
+            <div className="mb-4">
+              <div className="flex justify-between mb-1">
+                <span className="text-xs text-muted-foreground">Threat Score</span>
+                <span className={`text-xs font-bold ${scoreColor}`}>
                   {score}/100
-                </Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={score}
-                color={score > 50 ? 'error' : score > 20 ? 'warning' : 'success'}
-                sx={{ height: 8, borderRadius: 1 }}
-              />
-            </Box>
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-sm bg-muted overflow-hidden">
+                <div className={`h-full ${barColor}`} style={{ width: `${Math.min(100, score)}%` }} />
+              </div>
+            </div>
 
-            {/* Screenshot */}
             {screenshotUrl && (
-              <Box sx={{ mb: 2, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+              <div className="mb-4 rounded-sm overflow-hidden border border-border">
                 <img
                   src={screenshotUrl}
                   alt="Page screenshot"
                   role="presentation"
-                  style={{ width: '100%', display: 'block' }}
+                  className="w-full block"
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
-              </Box>
+              </div>
             )}
 
-            {/* Categories */}
             {categories.length > 0 && (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+              <div className="mb-4">
+                <span className="text-xs text-muted-foreground mb-1 block">
                   Categories
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                </span>
+                <div className="flex flex-wrap gap-1">
                   {categories.map((cat, i) => (
-                    <Chip key={i} size="small" label={cat} variant="outlined" />
+                    <Badge key={i} variant="outline" className="text-xs">{cat}</Badge>
                   ))}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
 
-            {/* Brands (phishing) */}
             {brands.length > 0 && (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="caption" color="error.main" sx={{ mb: 0.5, display: 'block', fontWeight: 600 }}>
+              <div className="mb-4">
+                <span className="text-xs text-destructive mb-1 block font-semibold">
                   Brand Impersonation Detected
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                </span>
+                <div className="flex flex-wrap gap-1">
                   {brands.map((brand, i) => (
-                    <Chip key={i} size="small" label={brand} color="error" variant="outlined" />
+                    <Badge key={i} variant="outline" className="text-xs text-destructive border-destructive">{brand}</Badge>
                   ))}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
 
-            {/* Meta info */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="caption" color="text.secondary">
+            <div className="flex justify-between items-center mt-4 pt-2 border-t border-border">
+              <span className="text-xs text-muted-foreground">
                 Scanned: {scannedAt ? new Date(scannedAt).toLocaleString() : 'Unknown'}
-              </Typography>
+              </span>
               {scanId && (
                 <a
                   href={`https://urlscan.io/result/${scanId}/`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: '#0ea5e9', textDecoration: 'none' }}
+                  className="flex items-center gap-1 text-xs text-sky-500 no-underline"
                 >
-                  View on URLScan.io <ExternalLink style={{ width: 12, height: 12 }} />
+                  View on URLScan.io <ExternalLink className="w-3 h-3" />
                 </a>
               )}
-            </Box>
+            </div>
           </>
         )}
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>Close</Button>
+          <Button onClick={onRescan} disabled={scanning}>
+            <RotateCcw className={`w-4 h-4 mr-2 ${scanning ? 'animate-spin' : ''}`} />
+            {scanning ? 'Scanning...' : hasResults ? 'Re-scan' : 'Scan Now'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <MuiButton onClick={onClose}>Close</MuiButton>
-        <MuiButton
-          variant="contained"
-          onClick={onRescan}
-          disabled={scanning}
-          startIcon={<RotateCcw style={{ width: 16, height: 16, ...(scanning ? { animation: 'spin 1s linear infinite' } : {}) }} />}
-        >
-          {scanning ? 'Scanning...' : hasResults ? 'Re-scan' : 'Scan Now'}
-        </MuiButton>
-      </DialogActions>
     </Dialog>
   );
 }

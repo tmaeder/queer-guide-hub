@@ -3,10 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useToast } from '@/hooks/use-toast';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,7 +29,7 @@ import {
   CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchAllUserFavorites } from '@/hooks/usePageFetchers';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useCalendarFeed } from '@/hooks/useCalendarFeed';
 import { AuthGate } from '@/components/layout/AuthGate';
@@ -89,71 +85,12 @@ export default function Favorites() {
     if (!user) return;
     setLoading(true);
     try {
-      // Fetch venue favorites
-      const { data: venueFavorites } = await supabase
-        .from('venue_favorites')
-        .select('venue_id')
-        .eq('user_id', user.id);
-      const venueIds = venueFavorites?.map((f) => f.venue_id) || [];
-      const { data: venueData } =
-        venueIds.length > 0
-          ? await supabase
-              .from('venues')
-              .select('id, slug, name, description, image_url, location, rating, category')
-              .in('id', venueIds)
-          : {
-              data: [],
-            };
-
-      // Fetch event favorites
-      const { data: eventFavorites } = await supabase
-        .from('event_favorites')
-        .select('event_id')
-        .eq('user_id', user.id);
-      const eventIds = eventFavorites?.map((f) => f.event_id) || [];
-      const { data: eventData } =
-        eventIds.length > 0
-          ? await supabase
-              .from('events')
-              .select(
-                'id, slug, title, description, images, city, state, country, start_date, price_min, event_type',
-              )
-              .in('id', eventIds)
-          : {
-              data: [],
-            };
-
-      // Fetch marketplace favorites
-      const { data: marketplaceFavorites } = await supabase
-        .from('marketplace_favorites')
-        .select('listing_id')
-        .eq('user_id', user.id);
-      const listingIds = marketplaceFavorites?.map((f) => f.listing_id) || [];
-      const { data: marketplaceData } =
-        listingIds.length > 0
-          ? await supabase
-              .from('marketplace_listings')
-              .select('id, slug, title, description, images, location, price, category, business_name')
-              .in('id', listingIds)
-          : {
-              data: [],
-            };
-
-      // Fetch news favorites
-      const { data: newsFavorites } = await supabase
-        .from('news_favorites')
-        .select('article_id')
-        .eq('user_id', user.id);
-      const articleIds = newsFavorites?.map((f) => f.article_id) || [];
-      const { data: newsData } =
-        articleIds.length > 0
-          ? await supabase
-              .from('news_articles')
-              .select('id, slug, title, excerpt, image_url, category, published_at, views_count')
-              .in('id', articleIds)
-          : {
-              data: [],
-            };
+      const {
+        venues: venueData,
+        events: eventData,
+        marketplace: marketplaceData,
+        news: newsData,
+      } = await fetchAllUserFavorites(user.id);
 
       // Transform data
       const transformedFavorites = {
@@ -268,292 +205,140 @@ export default function Favorites() {
     };
     if (viewMode === 'grid') {
       return (
-        <Card
-          key={`${item.type}-${item.id}`}
-
-        >
-          <Box sx={{ position: 'relative' }}>
+        <Card key={`${item.type}-${item.id}`}>
+          <div className="relative">
             {item.image_url ? (
-              <Box
-                sx={{
-                  aspectRatio: '16/9',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  borderTopLeftRadius: 8,
-                  borderTopRightRadius: 8,
-                }}
-              >
-                <Box
-                  component="img"
+              <div className="aspect-video relative overflow-hidden rounded-t-md">
+                <img
                   src={item.image_url}
                   alt={item.title}
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    '.group:hover &': { transform: 'scale(1.05)' },
-                    transition: 'transform 200ms',
-                  }}
+                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                 />
-                <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
-                  <Badge
-                    variant="secondary"
-
-                  >
+                <div className="absolute top-2 left-2">
+                  <Badge variant="secondary">
                     {getIcon()}
-                    <Box component="span" sx={{ ml: 0.5, textTransform: 'capitalize' }}>
-                      {item.type}
-                    </Box>
+                    <span className="ml-1 capitalize">{item.type}</span>
                   </Badge>
-                </Box>
-                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                  <FavoriteButton
-                    itemId={item.id}
-                    type={item.type}
-                    variant="ghost"
-
-                  />
-                </Box>
-              </Box>
-            ) : (
-              <Box
-                sx={{
-                  aspectRatio: '16/9',
-                  bgcolor: 'action.hover',
-                  borderTopLeftRadius: 8,
-                  borderTopRightRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                }}
-              >
-                {getIcon()}
-                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                </div>
+                <div className="absolute top-2 right-2">
                   <FavoriteButton itemId={item.id} type={item.type} variant="ghost" />
-                </Box>
-              </Box>
+                </div>
+              </div>
+            ) : (
+              <div className="aspect-video bg-accent rounded-t-md flex items-center justify-center relative">
+                {getIcon()}
+                <div className="absolute top-2 right-2">
+                  <FavoriteButton itemId={item.id} type={item.type} variant="ghost" />
+                </div>
+              </div>
             )}
-          </Box>
+          </div>
           <CardContent>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                fontSize: '1.125rem',
-                mb: 1,
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                '.group:hover &': { color: 'primary.main' },
-                transition: 'color 150ms',
-              }}
-            >
+            <h6 className="font-semibold text-lg mb-2 overflow-hidden transition-colors duration-150 group-hover:text-primary [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
               {item.title}
-            </Typography>
+            </h6>
             {item.description && (
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'text.secondary',
-                  mb: 1.5,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
+              <p className="text-sm text-muted-foreground mb-2 overflow-hidden [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
                 {item.description}
-              </Typography>
+              </p>
             )}
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: 1,
-                fontSize: '0.75rem',
-                color: 'text.secondary',
-                mb: 1.5,
-              }}
-            >
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-2">
               {item.location && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center gap-1">
                   <MapPin style={{ height: 12, width: 12 }} />
                   {item.location}
-                </Box>
+                </div>
               )}
               {item.rating && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Star style={{ height: 12, width: 12, fill: '#facc15', color: '#facc15' }} />
+                <div className="flex items-center gap-1">
+                  <Star style={{ height: 12, width: 12, fill: 'currentColor' }} />
                   {item.rating}
-                </Box>
+                </div>
               )}
-              {item.category && (
-                <Badge variant="outline">
-                  {item.category}
-                </Badge>
-              )}
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {item.category && <Badge variant="outline">{item.category}</Badge>}
+            </div>
+            <div className="flex items-center justify-between">
               {item.price ? (
-                <Typography sx={{ fontWeight: 600, fontSize: '1.125rem', color: 'primary.main' }}>
-                  ${item.price}
-                </Typography>
+                <span className="font-semibold text-lg text-primary">${item.price}</span>
               ) : (
-                <Box />
+                <div />
               )}
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-
-              >
+              <Button asChild variant="outline" size="sm">
                 <LocalizedLink to={getItemUrl()}>
                   <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
                   View
                 </LocalizedLink>
               </Button>
-            </Box>
+            </div>
           </CardContent>
         </Card>
       );
     }
     return (
-      <Card
-        key={`${item.type}-${item.id}`}
-
-      >
+      <Card key={`${item.type}-${item.id}`}>
         <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+          <div className="flex items-start gap-4">
             {item.image_url && (
-              <Box sx={{ flexShrink: 0 }}>
-                <Box
-                  component="img"
+              <div className="flex-shrink-0">
+                <img
                   src={item.image_url}
                   alt={item.title}
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    objectFit: 'cover',
-                    borderRadius: 2,
-                    '.group:hover &': { transform: 'scale(1.05)' },
-                    transition: 'transform 200ms',
-                  }}
+                  className="w-20 h-20 object-cover rounded-md transition-transform duration-200 group-hover:scale-105"
                 />
-              </Box>
+              </div>
             )}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  gap: 1,
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
                     {getIcon()}
-                    <Badge
-                      variant="secondary"
-
-                    >
-                      {item.type}
-                    </Badge>
-                    {item.category && (
-                      <Badge variant="outline">
-                        {item.category}
-                      </Badge>
-                    )}
-                  </Box>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: '1.25rem',
-                      lineHeight: 'tight',
-                      mb: 1,
-                      '.group:hover &': { color: 'primary.main' },
-                      transition: 'color 150ms',
-                    }}
-                  >
+                    <Badge variant="secondary">{item.type}</Badge>
+                    {item.category && <Badge variant="outline">{item.category}</Badge>}
+                  </div>
+                  <h6 className="font-semibold text-xl leading-tight mb-2 transition-colors duration-150 group-hover:text-primary">
                     {item.title}
-                  </Typography>
+                  </h6>
                   {item.description && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        mb: 1.5,
-                      }}
-                    >
+                    <p className="text-sm text-muted-foreground overflow-hidden mb-2 [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
                       {item.description}
-                    </Typography>
+                    </p>
                   )}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      gap: 2,
-                      fontSize: '0.875rem',
-                      color: 'text.secondary',
-                    }}
-                  >
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     {item.location && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <div className="flex items-center gap-1">
                         <MapPin style={{ height: 12, width: 12 }} />
                         {item.location}
-                      </Box>
+                      </div>
                     )}
                     {item.date && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <div className="flex items-center gap-1">
                         <Calendar style={{ height: 12, width: 12 }} />
                         {new Date(item.date).toLocaleDateString()}
-                      </Box>
+                      </div>
                     )}
                     {item.rating && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Star
-                          style={{ height: 12, width: 12, fill: '#facc15', color: '#facc15' }}
-                        />
+                      <div className="flex items-center gap-1">
+                        <Star style={{ height: 12, width: 12, fill: 'currentColor' }} />
                         {item.rating}
-                      </Box>
+                      </div>
                     )}
-                  </Box>
-                </Box>
-                <Box
-                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}
-                >
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
                   <FavoriteButton itemId={item.id} type={item.type} variant="ghost" />
                   {item.price && (
-                    <Typography
-                      sx={{ fontWeight: 600, fontSize: '1.25rem', color: 'primary.main' }}
-                    >
-                      ${item.price}
-                    </Typography>
+                    <span className="font-semibold text-xl text-primary">${item.price}</span>
                   )}
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-
-                  >
+                  <Button asChild variant="outline" size="sm">
                     <LocalizedLink to={getItemUrl()}>
                       <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
                       View Details
                     </LocalizedLink>
                   </Button>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
+                </div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -567,30 +352,18 @@ export default function Favorites() {
     !loading && getTotalCount() > 0 ? (
       <>
         {getEventCount() > 0 && (
-          <Button
-            variant="outline"
-            onClick={handleCalendarSubscription}
-            disabled={calendarLoading}
-
-          >
+          <Button variant="outline" onClick={handleCalendarSubscription} disabled={calendarLoading}>
             <CalendarDays style={{ height: 16, width: 16 }} />
             Subscribe to Events Calendar
           </Button>
         )}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>View:</Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: 2,
-            }}
-          >
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">View:</span>
+          <div className="flex items-center rounded-md">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-
             >
               <List style={{ height: 16, width: 16 }} />
             </Button>
@@ -598,18 +371,22 @@ export default function Favorites() {
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('grid')}
-
             >
               <Grid style={{ height: 16, width: 16 }} />
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </>
     ) : undefined;
 
+  const gridClass =
+    viewMode === 'grid'
+      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+      : 'flex flex-col gap-4';
+
   return (
     <AuthGate title="Favorites" description="Please sign in to view your favorites">
-      <Container sx={{ py: 4 }}>
+      <div className="container mx-auto py-8 px-4">
         <PageHeader title="Favorites" subtitle={headerSubtitle} actions={headerActions} />
 
         {/* Calendar Subscription Dialog */}
@@ -626,24 +403,13 @@ export default function Favorites() {
               </DialogDescription>
             </DialogHeader>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
-                <Typography sx={{ fontWeight: 500, mb: 1 }}>Calendar Subscription URL:</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box
-                    component="code"
-                    sx={{
-                      flex: 1,
-                      p: 1,
-                      bgcolor: 'background.paper',
-                      borderRadius: 1,
-                      fontSize: '0.875rem',
-                      fontFamily: 'monospace',
-                      wordBreak: 'break-all',
-                    }}
-                  >
+            <div className="flex flex-col gap-4">
+              <div className="p-4 bg-accent rounded-md">
+                <p className="font-medium mb-2">Calendar Subscription URL:</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-2 bg-background rounded-sm text-sm font-mono break-all">
                     {calendarUrl}
-                  </Box>
+                  </code>
                   <Button
                     variant="outline"
                     size="sm"
@@ -652,46 +418,35 @@ export default function Favorites() {
                   >
                     <LinkIcon style={{ height: 16, width: 16 }} />
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
-              <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader>
                     <CardTitle>Subscribe in Calendar App</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Typography variant="body2" color="text.secondary">
+                    <p className="text-sm text-muted-foreground">
                       Copy the URL above and add it as a new calendar subscription in your preferred
                       calendar app.
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1,
-                        fontSize: '0.875rem',
-                      }}
-                    >
-                      <Box>
-                        <strong>Google Calendar:</strong> Settings &rarr; Add calendar &rarr; From
-                        URL
-                      </Box>
-                      <Box>
+                    </p>
+                    <div className="flex flex-col gap-2 text-sm">
+                      <div>
+                        <strong>Google Calendar:</strong> Settings &rarr; Add calendar &rarr; From URL
+                      </div>
+                      <div>
                         <strong>Apple Calendar:</strong> File &rarr; New Calendar Subscription
-                      </Box>
-                      <Box>
+                      </div>
+                      <div>
                         <strong>Outlook:</strong> Add calendar &rarr; Subscribe from web
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={copyCalendarFeedUrl}
                       disabled={calendarLoading}
-
                     >
                       <LinkIcon style={{ height: 16, width: 16, marginRight: 8 }} />
                       Copy Subscription URL
@@ -704,40 +459,33 @@ export default function Favorites() {
                     <CardTitle>Download Calendar File</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Typography variant="body2" color="text.secondary">
+                    <p className="text-sm text-muted-foreground">
                       Download a one-time .ics file that you can import into any calendar
                       application.
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
                       Note: Downloaded files won't automatically update when you add new favorites.
                       Use the subscription URL for automatic updates.
-                    </Typography>
+                    </p>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={downloadCalendarFile}
                       disabled={calendarLoading}
-
                     >
                       <Download style={{ height: 16, width: 16, marginRight: 8 }} />
                       Download .ics File
                     </Button>
                   </CardContent>
                 </Card>
-              </Box>
+              </div>
 
-              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>
-                  &bull; Only future events from your favorites will appear in the calendar
-                </Typography>
-                <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>
-                  &bull; The calendar updates automatically when you add or remove event favorites
-                </Typography>
-                <Typography sx={{ fontSize: 'inherit', color: 'inherit' }}>
-                  &bull; Calendar subscriptions are cached for up to 1 hour for better performance
-                </Typography>
-              </Box>
-            </Box>
+              <div className="text-xs text-muted-foreground">
+                <p>&bull; Only future events from your favorites will appear in the calendar</p>
+                <p>&bull; The calendar updates automatically when you add or remove event favorites</p>
+                <p>&bull; Calendar subscriptions are cached for up to 1 hour for better performance</p>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
 
@@ -761,12 +509,10 @@ export default function Favorites() {
             }}
           />
         ) : (
-          <Paper elevation={0} sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3 }}>
+          <div className="bg-background rounded-md p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
-                <TabsTrigger value="all">
-                  All ({getTabCount('all')})
-                </TabsTrigger>
+                <TabsTrigger value="all">All ({getTabCount('all')})</TabsTrigger>
                 <TabsTrigger value="venue">
                   <MapPin style={{ height: 12, width: 12 }} />
                   Venues ({getTabCount('venue')})
@@ -775,10 +521,7 @@ export default function Favorites() {
                   <Calendar style={{ height: 12, width: 12 }} />
                   Events ({getTabCount('event')})
                 </TabsTrigger>
-                <TabsTrigger
-                  value="marketplace"
-
-                >
+                <TabsTrigger value="marketplace">
                   <ShoppingBag style={{ height: 12, width: 12 }} />
                   Marketplace ({getTabCount('marketplace')})
                 </TabsTrigger>
@@ -789,52 +532,44 @@ export default function Favorites() {
               </TabsList>
 
               <TabsContent value="all">
-                <Box
-                  sx={
-                    viewMode === 'grid'
-                      ? {
-                          display: 'grid',
-                          gridTemplateColumns: {
-                            xs: '1fr',
-                            md: '1fr 1fr',
-                            lg: 'repeat(3, 1fr)',
-                            xl: 'repeat(4, 1fr)',
-                          },
-                          gap: 3,
-                        }
-                      : { display: 'flex', flexDirection: 'column', gap: 2 }
-                  }
-                >
-                  {getAllFavorites().map(renderFavoriteCard)}
-                </Box>
+                <div className={gridClass}>{getAllFavorites().map(renderFavoriteCard)}</div>
               </TabsContent>
 
               {Object.entries(favorites).map(([type, items]) => (
                 <TabsContent key={type} value={type}>
-                  <Box
-                    sx={
-                      viewMode === 'grid'
-                        ? {
-                            display: 'grid',
-                            gridTemplateColumns: {
-                              xs: '1fr',
-                              md: '1fr 1fr',
-                              lg: 'repeat(3, 1fr)',
-                              xl: 'repeat(4, 1fr)',
-                            },
-                            gap: 3,
+                  {type === 'marketplace' && items.length > 0 && (
+                    <div className="mb-4 flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const ids = items.map((i) => i.id).join(',');
+                          const params = new URLSearchParams({ ids, title: 'My favorites' });
+                          const url = `${window.location.origin}/marketplace/share?${params.toString()}`;
+                          try {
+                            if (navigator.share) {
+                              await navigator.share({ title: 'My marketplace favorites', url });
+                            } else {
+                              await navigator.clipboard.writeText(url);
+                              toast({ title: 'Link copied', description: 'Share link copied to clipboard.' });
+                            }
+                          } catch {
+                            /* user cancelled */
                           }
-                        : { display: 'flex', flexDirection: 'column', gap: 2 }
-                    }
-                  >
-                    {items.map(renderFavoriteCard)}
-                  </Box>
+                        }}
+                      >
+                        <LinkIcon style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
+                        Share list
+                      </Button>
+                    </div>
+                  )}
+                  <div className={gridClass}>{items.map(renderFavoriteCard)}</div>
                 </TabsContent>
               ))}
             </Tabs>
-          </Paper>
+          </div>
         )}
-      </Container>
+      </div>
     </AuthGate>
   );
 }

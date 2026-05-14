@@ -140,11 +140,11 @@ export default function AuditTab() {
         <div className="flex items-center gap-2 flex-wrap">
           <History className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-semibold">Audit Trail</span>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{events.length} events</Badge>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+          <Badge variant="outline" className="text-2xs px-1.5 py-0">{events.length} events</Badge>
+          <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
             <Save className="h-2.5 w-2.5" /> {counts.save} saves
           </Badge>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+          <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
             <Play className="h-2.5 w-2.5" /> {counts.run} runs
           </Badge>
 
@@ -163,7 +163,7 @@ export default function AuditTab() {
               <button
                 key={f}
                 onClick={() => setKindFilter(f)}
-                className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
                   kindFilter === f
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -193,9 +193,9 @@ export default function AuditTab() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 text-sm">
                             <span className="font-medium truncate">{e.pipeline_name}</span>
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">v{e.version}</Badge>
+                            <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{e.version}</Badge>
                           </div>
-                          <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                          <div className="flex items-center gap-3 text-xs2 text-muted-foreground mt-0.5">
                             <span>{e.nodes_count} nodes · {e.edges_count} edges</span>
                             {e.actor_id && (
                               <Tooltip>
@@ -212,7 +212,7 @@ export default function AuditTab() {
                         </div>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-[11px] text-muted-foreground whitespace-nowrap cursor-help">
+                            <span className="text-xs2 text-muted-foreground whitespace-nowrap cursor-help">
                               <Clock className="h-2.5 w-2.5 inline mr-1" />
                               {formatDistanceToNow(new Date(e.timestamp), { addSuffix: true })}
                             </span>
@@ -239,15 +239,15 @@ export default function AuditTab() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 text-sm">
                             <span className="font-medium truncate">{e.pipeline_name}</span>
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-1">
+                            <Badge variant="outline" className="text-2xs px-1.5 py-0 gap-1">
                               <Play className="h-2.5 w-2.5" />
                               {e.status}
                             </Badge>
                             {e.pipeline_version != null && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">v{e.pipeline_version}</Badge>
+                              <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{e.pipeline_version}</Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
+                          <div className="flex items-center gap-3 text-xs2 text-muted-foreground mt-0.5 flex-wrap">
                             <span>
                               <span className="text-green-700 dark:text-green-300 font-semibold">{e.items_succeeded ?? 0}</span>
                               <span> / {e.items_total ?? 0}</span>
@@ -271,7 +271,7 @@ export default function AuditTab() {
                         </div>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-[11px] text-muted-foreground whitespace-nowrap cursor-help">
+                            <span className="text-xs2 text-muted-foreground whitespace-nowrap cursor-help">
                               <Clock className="h-2.5 w-2.5 inline mr-1" />
                               {formatDistanceToNow(new Date(e.timestamp), { addSuffix: true })}
                             </span>
@@ -288,7 +288,7 @@ export default function AuditTab() {
             )}
           </div>
           {filtered.length > 0 && (
-            <div className="px-3 py-1.5 border-t border-border text-[11px] text-muted-foreground">
+            <div className="px-3 py-1.5 border-t border-border text-xs2 text-muted-foreground">
               Showing {filtered.length} of {events.length} events
             </div>
           )}

@@ -5,26 +5,17 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  TextField,
-  Tabs,
-  Tab,
-  ImageList,
-  ImageListItem,
-  CircularProgress,
-  Stack,
-  Chip,
-  Alert,
-  Button,
-  Tooltip,
-} from '@mui/material';
-import { Search, Check, ExternalLink, Camera } from 'lucide-react';
+import { Search, Check, ExternalLink, Camera, Loader2 } from 'lucide-react';
 import {
   useExternalImageSearch,
   type ExternalImage,
 } from '@/hooks/useExternalImageSearch';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ExternalImageSearchProps {
   onSelect: (image: ExternalImage) => void;
@@ -88,8 +79,8 @@ export default function ExternalImageSearch({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleTabChange = (_: unknown, value: SourceTab) => {
-    setActiveTab(value);
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as SourceTab);
     setSelectedId(null);
     clearResults();
   };
@@ -118,12 +109,14 @@ export default function ExternalImageSearch({
       : results.filter((r) => r.source === 'wikipedia');
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex flex-col h-full">
       {/* Search input */}
-      <Box sx={{ px: 0, pb: 1.5 }}>
-        <TextField
-          size="small"
-          fullWidth
+      <div className="px-0 pb-3 relative">
+        <Search
+          size={16}
+          className="text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+        />
+        <Input
           placeholder={
             activeTab === 'stock'
               ? 'Search Pexels & Unsplash...'
@@ -132,92 +125,71 @@ export default function ExternalImageSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          slotProps={{
-            input: {
-              startAdornment: <Search size={16} className="text-gray-400 mr-2" />,
-            },
-          }}
+          className="pl-9 h-9"
         />
-      </Box>
+      </div>
 
       {/* Source tabs */}
-      <Tabs
-        value={activeTab}
-        onChange={handleTabChange}
-        variant="fullWidth"
-        sx={{ minHeight: 36, borderBottom: 1, borderColor: 'divider' }}
-      >
-        <Tab
-          icon={<Camera size={14} />}
-          iconPosition="start"
-          label="Stock Photos"
-          value="stock"
-          sx={{ minHeight: 36, py: 0, fontSize: '0.8125rem' }}
-        />
-        <Tab
-          label="Wikimedia Commons"
-          value="wikimedia"
-          sx={{ minHeight: 36, py: 0, fontSize: '0.8125rem' }}
-        />
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList variant="fullWidth" className="border-b border-border min-h-9">
+          <TabsTrigger value="stock" className="text-[0.8125rem]">
+            <Camera size={14} className="mr-1" />
+            Stock Photos
+          </TabsTrigger>
+          <TabsTrigger value="wikimedia" className="text-[0.8125rem]">
+            Wikimedia Commons
+          </TabsTrigger>
+        </TabsList>
       </Tabs>
 
       {/* Results */}
-      <Box sx={{ flex: 1, overflow: 'auto', pt: 1.5 }}>
+      <div className="flex-1 overflow-auto pt-3">
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
+          <Alert variant="destructive" className="mb-2">
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {loading && displayResults.length === 0 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <CircularProgress  aria-label="Loading"/>
-          </Box>
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+          </div>
         )}
 
         {!loading && displayResults.length === 0 && query.trim() && (
-          <Box sx={{ textAlign: 'center', py: 6 }}>
+          <div className="text-center py-12">
             <Camera size={48} className="text-gray-300" style={{ margin: '0 auto 8px' }} />
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-sm text-muted-foreground">
               No images found for &ldquo;{query}&rdquo;
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
         {!query.trim() && !loading && (
-          <Box sx={{ textAlign: 'center', py: 6 }}>
+          <div className="text-center py-12">
             <Search size={48} className="text-gray-300" style={{ margin: '0 auto 8px' }} />
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-sm text-muted-foreground">
               Enter a search term to find images
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
         {displayResults.length > 0 && (
           <>
-            <ImageList cols={3} gap={8} sx={{ m: 0 }}>
+            <div className="grid grid-cols-3 gap-2 m-0">
               {displayResults.map((image) => {
                 const isSelected = selectedId === image.id;
 
                 return (
-                  <ImageListItem
+                  <div
                     key={image.id}
                     onClick={() => {
                       setSelectedId(image.id);
                       onSelect(image);
                     }}
-                    sx={{
-                      cursor: 'pointer',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                      border: 2,
-                      borderColor: isSelected ? 'primary.main' : 'transparent',
-                      position: 'relative',
-                      '&:hover': {
-                        borderColor: isSelected ? 'primary.main' : 'action.hover',
-                      },
-                      bgcolor: 'grey.50',
-                    }}
+                    className={`cursor-pointer rounded overflow-hidden border-2 relative bg-gray-50 hover:border-muted ${
+                      isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
+                    }`}
                   >
                     <img
                       src={image.thumbnail}
@@ -233,135 +205,95 @@ export default function ExternalImageSearch({
 
                     {/* Selected checkmark */}
                     {isSelected && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          top: 6,
-                          right: 6,
-                          bgcolor: 'primary.main',
-                          borderRadius: '50%',
-                          width: 24,
-                          height: 24,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
+                      <div className="absolute top-1.5 right-1.5 bg-primary rounded-full w-6 h-6 flex items-center justify-center">
                         <Check size={14} color="white" />
-                      </Box>
+                      </div>
                     )}
 
                     {/* Source badge */}
-                    <Chip
-                      label={image.source === 'wikipedia' ? 'Wiki' : image.source}
-                      size="small"
-                      sx={{
-                        position: 'absolute',
-                        top: 6,
-                        left: 6,
-                        height: 20,
-                        fontSize: '0.65rem',
-                        fontWeight: 600,
-                        bgcolor: SOURCE_COLORS[image.source] || '#666',
-                        color: 'white',
-                        textTransform: 'capitalize',
-                      }}
-                    />
+                    <span
+                      className="absolute top-1.5 left-1.5 h-5 px-1.5 text-[0.65rem] font-semibold text-white rounded capitalize flex items-center"
+                      style={{ backgroundColor: SOURCE_COLORS[image.source] || '#666' }}
+                    >
+                      {image.source === 'wikipedia' ? 'Wiki' : image.source}
+                    </span>
 
                     {/* Info */}
-                    <Box sx={{ p: 0.75 }}>
-                      <Tooltip title={image.alt}>
-                        <Typography
-                          variant="caption"
-                          noWrap
-                          display="block"
-                          sx={{ fontWeight: 500, fontSize: '0.7rem' }}
-                        >
-                          {image.alt}
-                        </Typography>
+                    <div className="p-1.5">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className="text-[0.7rem] font-medium block truncate">
+                            {image.alt}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent>{image.alt}</TooltipContent>
                       </Tooltip>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        noWrap
-                        display="block"
-                        sx={{ fontSize: '0.65rem' }}
-                      >
+                      <p className="text-[0.65rem] text-muted-foreground block truncate">
                         {image.photographer}
-                      </Typography>
-                    </Box>
-                  </ImageListItem>
+                      </p>
+                    </div>
+                  </div>
                 );
               })}
-            </ImageList>
+            </div>
 
             {/* Load more (stock photos only, Wikipedia returns all at once) */}
             {activeTab === 'stock' && !loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                <Button variant="outlined" size="small" onClick={handleLoadMore}>
+              <div className="flex justify-center py-3">
+                <Button variant="outline" size="sm" onClick={handleLoadMore}>
                   Load more
                 </Button>
-              </Box>
+              </div>
             )}
 
             {loading && displayResults.length > 0 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                <CircularProgress size={24} aria-label="Loading" />
-              </Box>
+              <div className="flex justify-center py-3">
+                <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+              </div>
             )}
           </>
         )}
-      </Box>
+      </div>
 
       {/* Selected image attribution */}
       {selectedImage && (
-        <Box
-          sx={{
-            mt: 1,
-            p: 1.5,
-            borderTop: 1,
-            borderColor: 'divider',
-            bgcolor: 'grey.50',
-            borderRadius: 1,
-          }}
-        >
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Box
-              component="img"
+        <div className="mt-1 p-3 border-t border-border bg-gray-50 rounded">
+          <div className="flex flex-row gap-3 items-center">
+            <img
               src={selectedImage.thumbnail}
               alt=""
-              sx={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 0.5 }}
+              className="w-10 h-10 object-cover rounded-sm"
             />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="caption" fontWeight={600} noWrap display="block">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold block truncate">
                 {selectedImage.photographer}
-              </Typography>
-              <Stack direction="row" spacing={0.5} alignItems="center">
+              </p>
+              <div className="flex flex-row gap-1 items-center">
                 {selectedImage.license && (
-                  <Chip
-                    label={selectedImage.license}
-                    size="small"
-                    variant="outlined"
-                    sx={{ height: 18, fontSize: '0.6rem' }}
-                  />
+                  <Badge variant="outline" className="h-[18px] text-[0.6rem]">
+                    {selectedImage.license}
+                  </Badge>
                 )}
                 {selectedImage.source_page_url && (
-                  <Tooltip title="View on source site">
-                    <a
-                      href={selectedImage.source_page_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ display: 'flex' }}
-                    >
-                      <ExternalLink size={12} className="text-gray-400" />
-                    </a>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <a
+                        href={selectedImage.source_page_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'flex' }}
+                      >
+                        <ExternalLink size={12} className="text-gray-400" />
+                      </a>
+                    </TooltipTrigger>
+                    <TooltipContent>View on source site</TooltipContent>
                   </Tooltip>
                 )}
-              </Stack>
-            </Box>
-          </Stack>
-        </Box>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

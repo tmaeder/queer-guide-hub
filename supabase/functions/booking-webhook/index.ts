@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
 
 /**
@@ -10,7 +9,7 @@ import { errorResponse, getServiceClient, jsonResponse } from "../_shared/supaba
  * Each provider has a different payload format — the webhook is stored raw
  * and processed by provider-specific handlers.
  */
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return errorResponse('POST required', 405);
   }

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
@@ -26,7 +25,7 @@ interface VenueData {
   tags?: string[];
   amenities?: string[];
   verified: boolean;
-  featured: boolean;
+  is_featured: boolean;
 }
 
 function parseCSV(csvText: string): VenueData[] {
@@ -126,7 +125,8 @@ function parseCSV(csvText: string): VenueData[] {
           break;
         case 'verified':
         case 'featured':
-          venueData[header] = value.toLowerCase() === 'true';
+        case 'is_featured':
+          venueData.is_featured = value.toLowerCase() === 'true';
           break;
       }
     });
@@ -147,7 +147,7 @@ function parseCSV(csvText: string): VenueData[] {
     // Set defaults
     venueData.country = venueData.country || 'US';
     venueData.verified = venueData.verified || false;
-    venueData.featured = venueData.featured || false;
+    venueData.is_featured = venueData.is_featured || false;
 
     venues.push(venueData as VenueData);
   }
@@ -155,7 +155,7 @@ function parseCSV(csvText: string): VenueData[] {
   return venues;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   console.log('Import venues CSV function called');
 

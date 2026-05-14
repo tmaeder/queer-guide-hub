@@ -131,7 +131,7 @@ export function JsonField({ field, value, onChange, error, disabled }: FieldProp
         `}
       />
       {!disabled && (
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-2xs text-muted-foreground">
           Validates on blur. Ctrl+Shift+F to format.
         </p>
       )}

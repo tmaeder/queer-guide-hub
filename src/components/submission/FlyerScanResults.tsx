@@ -6,9 +6,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Check, X, ChevronDown, ChevronUp, FileText } from 'lucide-react';
@@ -122,143 +120,124 @@ function ItemDetail({
   return (
     <>
       {/* Type toggle */}
-      <Box sx={{ display: 'flex', gap: 0.75, mb: 2 }}>
+      <div className="flex gap-1.5 mb-4">
         {imageUrl && (
-          <Box
-            component="img"
+          <img
             src={imageUrl}
             alt="Scanned flyer"
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 1.5,
-              objectFit: 'cover',
-              flexShrink: 0,
-            }}
+            className="w-12 h-12 rounded-md object-cover flex-shrink-0"
           />
         )}
-        <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
-          <Chip
-            label="Event"
-            size="small"
+        <div className="flex gap-1.5 items-center">
+          <Badge
             onClick={() => onChangeType('event')}
-            sx={{
+            style={{
               fontWeight: 600,
               fontSize: '0.75rem',
+              cursor: 'pointer',
               ...(detected_type === 'event'
-                ? { bgcolor: '#ec4899', color: '#fff' }
-                : { bgcolor: 'action.hover' }),
+                ? { backgroundColor: '#ec4899', color: '#fff' }
+                : {}),
             }}
-          />
-          <Chip
-            label="Venue"
-            size="small"
+            variant={detected_type === 'event' ? 'default' : 'secondary'}
+          >
+            Event
+          </Badge>
+          <Badge
             onClick={() => onChangeType('venue')}
-            sx={{
+            style={{
               fontWeight: 600,
               fontSize: '0.75rem',
+              cursor: 'pointer',
               ...(detected_type === 'venue'
-                ? { bgcolor: '#DB2777', color: '#fff' }
-                : { bgcolor: 'action.hover' }),
+                ? { backgroundColor: 'hsl(var(--foreground))', color: '#fff' }
+                : {}),
             }}
-          />
-        </Box>
-      </Box>
+            variant={detected_type === 'venue' ? 'default' : 'secondary'}
+          >
+            Venue
+          </Badge>
+        </div>
+      </div>
 
       {/* Duplicate warning */}
       {hasDuplicates && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            p: 1.5,
-            mb: 2,
-            borderRadius: 1.5,
-            bgcolor: '#fef3c7',
-          }}
+        <div
+          className="flex items-center gap-2 p-3 mb-4 rounded-md"
+          style={{ backgroundColor: '#fef3c7' }}
         >
           <AlertTriangle style={{ width: 16, height: 16, color: '#d97706', flexShrink: 0 }} />
-          <Typography variant="caption" sx={{ color: '#92400e' }}>
+          <span className="text-xs" style={{ color: '#92400e' }}>
             {matches.duplicate_events.length > 0
               ? `Similar event found: "${matches.duplicate_events[0].title}"`
               : `Similar venue found: "${matches.duplicate_venues[0].name}"`}{' '}
             — please check before submitting.
-          </Typography>
-        </Box>
+          </span>
+        </div>
       )}
 
       {/* Extracted fields */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mb: 2 }}>
+      <div className="flex flex-col gap-1.5 mb-4">
         {extractedFields.map(({ key, value, confidence }) => (
-          <Box key={key} sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-            <Box
-              sx={{
+          <div key={key} className="flex items-baseline gap-2">
+            <div
+              className="rounded-full flex-shrink-0"
+              style={{
                 width: 8,
                 height: 8,
-                borderRadius: '50%',
-                bgcolor: confidenceColor(confidence),
-                flexShrink: 0,
-                mt: '4px',
+                backgroundColor: confidenceColor(confidence),
+                marginTop: '4px',
               }}
               title={`${confidenceLabel(confidence)} confidence (${Math.round(confidence * 100)}%)`}
             />
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ minWidth: 80, flexShrink: 0 }}
-            >
+            <span className="text-xs text-muted-foreground flex-shrink-0" style={{ minWidth: 80 }}>
               {FIELD_LABELS[key] || key}
-            </Typography>
-            <Typography variant="caption" sx={{ fontWeight: 500, wordBreak: 'break-word' }}>
+            </span>
+            <span className="text-xs font-medium break-words">
               {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ))}
         {extractedFields.length === 0 && (
-          <Box role="status" data-testid="extraction-empty">
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+          <div role="status" data-testid="extraction-empty">
+            <span className="text-xs text-muted-foreground block mb-1">
               {t('submission.errors.extractionEmpty')}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Venue candidates */}
       {venueCandidates.length > 0 && (
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ fontWeight: 600, mb: 0.75, display: 'block' }}
-          >
+        <div className="mb-4">
+          <span className="text-xs text-muted-foreground font-semibold mb-1.5 block">
             Matching venues
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+          </span>
+          <div className="flex flex-wrap gap-1.5">
             {venueCandidates.map((v: VenueCandidate) => (
-              <Chip
+              <Badge
                 key={v.id}
-                label={`${v.name} (${Math.round(v.score * 100)}%)`}
-                size="small"
                 onClick={() => onSelectVenue(selectedVenueId === v.id ? null : v.id)}
-                icon={
-                  selectedVenueId === v.id ? <Check style={{ width: 14, height: 14 }} /> : undefined
-                }
-                sx={{
+                variant={selectedVenueId === v.id ? 'default' : 'outline'}
+                style={{
                   fontSize: '0.72rem',
+                  cursor: 'pointer',
                   ...(selectedVenueId === v.id
                     ? {
-                        bgcolor: '#DB277720',
-                        borderColor: '#DB2777',
+                        backgroundColor: '#DB277720',
+                        borderColor: 'hsl(var(--foreground))',
                         borderWidth: 1,
                         borderStyle: 'solid',
                       }
                     : {}),
                 }}
-              />
+              >
+                {selectedVenueId === v.id && <Check style={{ width: 14, height: 14, marginRight: 4 }} />}
+                {`${v.name} (${Math.round(v.score * 100)}%)`}
+              </Badge>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Apply button */}
@@ -267,7 +246,7 @@ function ItemDetail({
         onClick={onApply}
         style={{
           width: '100%',
-          backgroundColor: detected_type === 'event' ? '#ec4899' : '#DB2777',
+          backgroundColor: detected_type === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
           color: '#fff',
         }}
       >
@@ -322,9 +301,9 @@ export function FlyerScanResults({
     return (
       <Card>
         <CardContent data-testid="extraction-empty-card">
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             {t('submission.errors.extractionEmpty')}
-          </Typography>
+          </p>
           <Button variant="outline" size="sm" onClick={onDismiss} style={{ marginTop: 12 }}>
             {t('submission.errors.manualFallbackCta')}
           </Button>
@@ -341,12 +320,10 @@ export function FlyerScanResults({
     return (
       <Card>
         <CardContent>
-          <Box
-            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}
-          >
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-sm font-semibold">
               Scan results
-            </Typography>
+            </p>
             <Button
               variant="ghost"
               size="sm"
@@ -356,7 +333,7 @@ export function FlyerScanResults({
               <X style={{ width: 14, height: 14 }} />
               Dismiss
             </Button>
-          </Box>
+          </div>
           <ItemDetail
             item={effectiveItem}
             imageUrl={result.image_url}
@@ -374,10 +351,10 @@ export function FlyerScanResults({
   return (
     <Card>
       <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-sm font-semibold">
             Found {allItems.length} items{multipleFiles ? ` across ${results.length} files` : ''}
-          </Typography>
+          </p>
           <Button
             variant="ghost"
             size="sm"
@@ -387,9 +364,9 @@ export function FlyerScanResults({
             <X style={{ width: 14, height: 14 }} />
             Dismiss
           </Button>
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div className="flex flex-col gap-2">
           {allItems.map(({ resultIdx, itemIdx, item, result }, flatIdx) => {
             const isExpanded = expandedIdx === flatIdx;
             const effectiveType = getItemType(resultIdx, itemIdx);
@@ -399,77 +376,58 @@ export function FlyerScanResults({
                 : (item.fields.name?.value as string);
 
             return (
-              <Box
+              <div
                 key={`${resultIdx}-${itemIdx}`}
-                sx={{
-                  border: 1,
+                style={{
+                  border: '1px solid',
                   borderColor: isExpanded
                     ? effectiveType === 'event'
                       ? '#ec4899'
-                      : '#DB2777'
-                    : 'divider',
-                  borderRadius: 2,
+                      : 'hsl(var(--foreground))'
+                    : 'hsl(var(--border))',
+                  borderRadius: 8,
                   overflow: 'hidden',
                   transition: 'border-color 0.2s',
                 }}
               >
                 {/* Collapsed header */}
-                <Box
+                <div
                   onClick={() => setExpandedIdx(isExpanded ? -1 : flatIdx)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    p: 1.5,
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: 'action.hover' },
-                  }}
+                  className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted"
                 >
-                  <Chip
-                    label={effectiveType === 'event' ? 'Event' : 'Venue'}
-                    size="small"
-                    sx={{
+                  <Badge
+                    style={{
                       fontWeight: 600,
                       fontSize: '0.7rem',
                       height: 22,
-                      bgcolor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
-                      color: effectiveType === 'event' ? '#ec4899' : '#DB2777',
+                      backgroundColor: effectiveType === 'event' ? '#ec489920' : '#DB277720',
+                      color: effectiveType === 'event' ? '#ec4899' : 'hsl(var(--foreground))',
                     }}
-                  />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontWeight: 600,
-                        display: 'block',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+                    variant="outline"
+                  >
+                    {effectiveType === 'event' ? 'Event' : 'Venue'}
+                  </Badge>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-semibold block overflow-hidden text-ellipsis whitespace-nowrap">
                       {primaryField || 'Untitled'}
-                    </Typography>
+                    </span>
                     {multipleFiles && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                      >
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <FileText style={{ width: 10, height: 10 }} />
                         {result.source_file}
-                      </Typography>
+                      </span>
                     )}
-                  </Box>
+                  </div>
                   {isExpanded ? (
                     <ChevronUp style={{ width: 16, height: 16, color: '#999', flexShrink: 0 }} />
                   ) : (
                     <ChevronDown style={{ width: 16, height: 16, color: '#999', flexShrink: 0 }} />
                   )}
-                </Box>
+                </div>
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <Box sx={{ p: 1.5, pt: 0 }}>
+                  <div className="p-3 pt-0">
                     <ItemDetail
                       item={{ ...item, detected_type: effectiveType }}
                       imageUrl={result.image_url}
@@ -478,12 +436,12 @@ export function FlyerScanResults({
                       onChangeType={(type) => handleChangeType(resultIdx, itemIdx, type)}
                       onApply={() => onApply(resultIdx, itemIdx, effectiveType)}
                     />
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
             );
           })}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

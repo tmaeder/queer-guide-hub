@@ -8,6 +8,7 @@ import {
 } from '../_shared/hotel-pipeline-utils.ts'
 import { computeIdempotencyKey } from '../_shared/idempotency.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -16,7 +17,7 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 // into normalized_data for downstream dedup & commit.
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -141,7 +142,7 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-normalize', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))
 
 function guessEntityType(t: string | null): string {
   if (!t) return 'unknown'

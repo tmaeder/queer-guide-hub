@@ -2,7 +2,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Activity, BarChart3, Trash2, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { listFrom } from '@/hooks/usePageFetchers';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -58,15 +59,10 @@ function SectionHeader({ icon: Icon, title, badge }: { icon: React.ComponentType
 
 export default function ScraperHealthTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   const { data: coverage = [], isLoading: covLoading } = useQuery<CoverageRow[]>({
     queryKey: ['scraper-coverage'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('scraper_ingest_coverage').select('*').limit(200);
-      if (error) throw error;
-      return (data ?? []) as CoverageRow[];
-    },
+    queryFn: () => listFrom<CoverageRow>('scraper_ingest_coverage', '*', undefined, 200),
     refetchInterval: 120_000,
   });
 
@@ -82,11 +78,7 @@ export default function ScraperHealthTab() {
 
   const { data: quality = [] } = useQuery<QualityRow[]>({
     queryKey: ['pipeline-quality-dist'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('pipeline_quality_distribution').select('*').limit(200);
-      if (error) throw error;
-      return (data ?? []) as QualityRow[];
-    },
+    queryFn: () => listFrom<QualityRow>('pipeline_quality_distribution', '*', undefined, 200),
     refetchInterval: 5 * 60_000,
   });
 
@@ -97,10 +89,10 @@ export default function ScraperHealthTab() {
       return data as number;
     },
     onSuccess: (n, entityType) => {
-      toast({ title: `Pruned ${n} orphan ${entityType} mappings` });
+      toast.success(`Pruned ${n} orphan ${entityType} mappings`);
       qc.invalidateQueries({ queryKey: ['scraper-orphans'] });
     },
-    onError: (e: Error) => toast({ title: 'Prune failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Prune failed: ${e.message}`),
   });
 
   const totalOrphans = orphans.reduce((s, o) => s + o.orphan_count, 0);
@@ -114,7 +106,7 @@ export default function ScraperHealthTab() {
           title="Orphan mappings"
           badge={
             totalOrphans > 0
-              ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{totalOrphans} total</Badge>
+              ? <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{totalOrphans} total</Badge>
               : undefined
           }
         />
@@ -127,9 +119,9 @@ export default function ScraperHealthTab() {
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Entity type</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Orphans</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">Action</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Entity type</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Orphans</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -179,7 +171,7 @@ export default function ScraperHealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Source', 'Type', 'Parsed', 'Started', 'Geo', 'Phone', 'Website', 'Images', 'Tags', 'Address', 'Desc'].map(h => (
-                    <th key={h} className="text-left px-2 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-2 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -189,7 +181,7 @@ export default function ScraperHealthTab() {
                     <td className="px-2 py-1.5 font-mono text-xs">{c.source_name}</td>
                     <td className="px-2 py-1.5 text-xs capitalize">{c.entity_type}</td>
                     <td className="px-2 py-1.5 tabular-nums">{c.entities_parsed}</td>
-                    <td className="px-2 py-1.5 text-muted-foreground text-[11px]"
+                    <td className="px-2 py-1.5 text-muted-foreground text-xs2"
                         title={new Date(c.started_at).toISOString()}>
                       {formatDistanceToNow(new Date(c.started_at), { addSuffix: true })}
                     </td>
@@ -210,7 +202,7 @@ export default function ScraperHealthTab() {
 
       {/* Quality score distribution */}
       <div className="border border-border rounded-md bg-background overflow-hidden">
-        <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-[10px] px-1.5 py-0">30-day · per source × type</Badge>} />
+        <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-2xs px-1.5 py-0">30-day · per source × type</Badge>} />
         <div className="max-h-[400px] overflow-auto">
           {quality.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground text-xs">No scored items yet</div>
@@ -219,7 +211,7 @@ export default function ScraperHealthTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Entity', 'Source', 'N', 'min', 'p25', 'p50', 'p75', 'max', 'avg'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>

@@ -13,12 +13,10 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table/AdminEntityTable';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowLeft, Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { Eye, ExternalLink, MapPin, Shield, UserPlus } from 'lucide-react';
 import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
 import { UserDetailSheet } from '@/components/admin/users/UserDetailSheet';
 import { CreateUserDialog } from '@/components/admin/users/CreateUserDialog';
@@ -46,7 +44,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: '#ef4444',
   moderator: '#f97316',
   editor: '#3b82f6',
-  contributor: '#DB2777',
+  contributor: 'hsl(var(--foreground))',
 };
 
 const columnHelper = createColumnHelper<UserRow>();
@@ -68,16 +66,16 @@ export default function AdminUsers() {
           const name =
             info.getValue() || row.first_name || row.last_name || row.email || 'Anonymous';
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <div className="flex items-center gap-3">
               <Avatar style={{ width: 32, height: 32, flexShrink: 0 }}>
                 <AvatarImage src={row.avatar_url ?? undefined} alt={name} />
                 <AvatarFallback style={{ fontSize: '0.75rem' }}>
                   {name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <Box sx={{ minWidth: 0 }}>
-                <Box
-                  sx={{
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
                     fontWeight: 500,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -85,23 +83,22 @@ export default function AdminUsers() {
                   }}
                 >
                   {name}
-                </Box>
+                </div>
                 {row.email && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  <span
+                    className="block text-xs text-muted-foreground"
+                    style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
                   >
                     {row.email}
-                  </Typography>
+                  </span>
                 )}
                 {row.pronouns && (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs text-muted-foreground">
                     {row.pronouns}
-                  </Typography>
+                  </span>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           );
         },
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
@@ -122,9 +119,9 @@ export default function AdminUsers() {
           const roles = info.row.original._roles;
           if (!roles || roles.length === 0)
             return (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 user
-              </Typography>
+              </span>
             );
           const primary = roles.includes('admin') ? 'admin' : roles[0];
           return (
@@ -146,12 +143,12 @@ export default function AdminUsers() {
       columnHelper.accessor('is_online', {
         header: 'Online',
         cell: (info) => (
-          <Box
-            sx={{
+          <div
+            style={{
               width: 8,
               height: 8,
               borderRadius: '50%',
-              bgcolor: info.getValue() ? '#22c55e' : '#d1d5db',
+              backgroundColor: info.getValue() ? '#22c55e' : '#d1d5db',
             }}
             title={info.getValue() ? 'Online' : 'Offline'}
           />
@@ -180,7 +177,7 @@ export default function AdminUsers() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
               <span
                 style={{
@@ -192,7 +189,7 @@ export default function AdminUsers() {
               >
                 {val}
               </span>
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -306,7 +303,7 @@ export default function AdminUsers() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           {isAdmin && (
             <Button
               size="sm"
@@ -334,48 +331,33 @@ export default function AdminUsers() {
               await exportToExcel(allData, cols, generateFilename('users'));
             }}
           />
-        </Box>
+        </div>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- isAdmin/navigate are stable, adding would defeat memoization
-    [columns],
+    [columns, isAdmin, navigate],
   );
 
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            Users
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>Manage user accounts and permissions</p>
-        </div>
-      </Box>
-
-      <UserStatsCards />
-
-      <AdminDataTable config={tableConfig} />
-
-      <UserDetailSheet
-        user={selectedUser}
-        open={!!selectedUser}
-        onOpenChange={(open) => {
-          if (!open) setSelectedUser(null);
-        }}
-        onUserUpdated={() => setTableKey((k) => k + 1)}
-      />
-
-      <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
-    </Box>
+    <AdminEntityTable
+      title="Users"
+      subtitle="Manage user accounts and permissions"
+      backHref="/admin"
+      backLabel="Back to Admin"
+      config={tableConfig}
+      beforeTable={<UserStatsCards />}
+      afterTable={
+        <>
+          <UserDetailSheet
+            user={selectedUser}
+            open={!!selectedUser}
+            onOpenChange={(open) => {
+              if (!open) setSelectedUser(null);
+            }}
+            onUserUpdated={() => setTableKey((k) => k + 1)}
+          />
+          <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
+        </>
+      }
+    />
   );
 }

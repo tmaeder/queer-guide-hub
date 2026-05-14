@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Source: Queer Villages — stages existing queer_villages rows for re-enrichment.
 // Also pulls new entries from Wikidata LGBTQ+ neighborhood queries.
@@ -34,7 +35,7 @@ async function fetchFromWikidata(): Promise<Array<Record<string, unknown>>> {
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-queer-villages', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -156,4 +157,4 @@ Deno.serve(async (req) => {
     console.error('source-queer-villages:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

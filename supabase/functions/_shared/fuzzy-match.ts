@@ -31,8 +31,8 @@ export function normalizeText(text: string): string {
   return result
 }
 
-/** Normalize for title comparison: also strips common prefixes/suffixes. */
-const TITLE_NOISE = /\b(the|a|an|der|die|das|le|la|les|el|los|las|de|du|des|von|van)\b/g
+/** Normalize for title comparison: strips articles + common event noise words. */
+const TITLE_NOISE = /\b(the|a|an|der|die|das|le|la|les|el|los|las|de|du|des|von|van|event|party|night|edition|show|gala|meetup|gathering|soiree|bash|nite|nacht|abend|fiesta|festa|fete)\b/g
 const _EDITION_RE = /\b(\d{4}|\d{1,3}(?:st|nd|rd|th)\s+(?:edition|annual))\b/gi
 const YEAR_RE = /\b(20\d{2})\b/g
 
@@ -209,7 +209,15 @@ export function computeSimilarity(a: string, b: string): SimilarityResult {
   const cont = containmentScore(normA, normB)
 
   // Weighted composite: JW is best for typos, Jaccard for reordering, containment for abbreviations
-  const score = jw * 0.35 + lev * 0.25 + tj * 0.25 + cont * 0.15
+  let score = jw * 0.35 + lev * 0.25 + tj * 0.25 + cont * 0.15
+
+  // Full containment floor: if one string is entirely inside the other and
+  // the shorter string is meaningful (≥3 chars), treat as strong match.
+  // Handles "HRDR" vs "HRDR Event", "Berghain" vs "Berghain Party".
+  const shorter = normA.length <= normB.length ? normA : normB
+  if (cont === 1.0 && shorter.length >= 3) {
+    score = Math.max(score, 0.85)
+  }
 
   return {
     score,

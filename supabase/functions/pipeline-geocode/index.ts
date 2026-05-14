@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Geocode
@@ -61,7 +62,7 @@ async function photonGeocode(q: string): Promise<{ lat: number; lng: number } | 
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-geocode', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -148,4 +149,4 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-geocode', e, { severity: 'fatal' })
     return errorResponse((e as Error).message, 500, req)
   }
-})
+}))

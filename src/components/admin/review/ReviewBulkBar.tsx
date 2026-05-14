@@ -1,15 +1,11 @@
 /**
  * ReviewBulkBar — Sticky bottom bar for bulk review actions.
- *
- * Appears when items are selected. Shows selection count and action buttons.
  */
 
 import React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Paper from '@mui/material/Paper';
 import { Check, X, CheckCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface ReviewBulkBarProps {
   selectedCount: number;
@@ -21,7 +17,7 @@ interface ReviewBulkBarProps {
   loading?: boolean;
 }
 
-export const ReviewBulkBar: React.FC<ReviewBulkBarProps> = ({
+export const ReviewBulkBar = ({
   selectedCount,
   totalCount,
   onSelectAll,
@@ -29,78 +25,50 @@ export const ReviewBulkBar: React.FC<ReviewBulkBarProps> = ({
   onBulkApprove,
   onBulkReject,
   loading,
-}) => {
+}: ReviewBulkBarProps) => {
   if (selectedCount === 0) return null;
 
   return (
-    <Paper
-      elevation={8}
-      sx={{
-        position: 'sticky',
-        bottom: 16,
-        mx: 2,
-        px: 2,
-        py: 1.5,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-        borderRadius: 2,
-        zIndex: 50,
-      }}
+    <div
+      className="sticky bottom-4 mx-4 px-4 py-3 flex items-center gap-4 bg-background z-50"
+      style={{ boxShadow: '0 8px 16px rgba(0,0,0,0.15)' }}
     >
-      <Chip
-        label={`${selectedCount} selected`}
-        color="primary"
-        size="small"
-      />
+      <Badge>{selectedCount} selected</Badge>
 
       {selectedCount < totalCount && (
-        <Button
-          size="small"
-          variant="text"
-          startIcon={<CheckCheck size={14} />}
-          onClick={onSelectAll}
-          sx={{ textTransform: 'none' }}
-        >
+        <Button size="sm" variant="ghost" onClick={onSelectAll} style={{ textTransform: 'none' }}>
+          <CheckCheck size={14} className="mr-1" />
           Select all ({totalCount})
         </Button>
       )}
 
-      <Button
-        size="small"
-        variant="text"
-        onClick={onClearSelection}
-        sx={{ textTransform: 'none' }}
-      >
+      <Button size="sm" variant="ghost" onClick={onClearSelection} style={{ textTransform: 'none' }}>
         Clear
       </Button>
 
-      <Box sx={{ flex: 1 }} />
+      <div className="flex-1" />
 
       <Button
-        size="small"
-        variant="outlined"
-        color="error"
-        startIcon={<X size={14} />}
+        size="sm"
+        variant="outline"
         onClick={onBulkReject}
         disabled={loading}
-        sx={{ textTransform: 'none' }}
+        style={{ textTransform: 'none', borderColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive))' }}
       >
+        <X size={14} className="mr-1" />
         Reject
       </Button>
 
       <Button
-        size="small"
-        variant="contained"
-        color="success"
-        startIcon={<Check size={14} />}
+        size="sm"
         onClick={onBulkApprove}
         disabled={loading}
-        sx={{ textTransform: 'none' }}
+        style={{ textTransform: 'none', backgroundColor: 'hsl(142, 71%, 45%)' }}
       >
+        <Check size={14} className="mr-1" />
         Approve
       </Button>
-    </Paper>
+    </div>
   );
 };
 

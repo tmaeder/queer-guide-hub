@@ -7,9 +7,8 @@ import { AvatarBuilder, generateRandomConfig } from '@/components/profile/Avatar
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { updateRowsBy } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface AvatarData {
   avatarUrl?: string;
@@ -119,10 +118,11 @@ export const AvatarSettings = ({
         updated_at: new Date().toISOString(),
       };
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(profileUpdate)
-        .eq('user_id', user.id);
+      const { error: updateError } = await updateRowsBy(
+        'profiles',
+        { col: 'user_id', val: user.id },
+        profileUpdate,
+      );
 
       if (updateError) {
         throw updateError;
@@ -147,15 +147,15 @@ export const AvatarSettings = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-center">
         <AvatarDisplay
           avatarUrl={data.avatarUrl}
           avatarConfig={data.avatarConfig}
           email={data.email}
           size="lg"
         />
-      </Box>
+      </div>
 
       <Tabs defaultValue={data.avatarType || 'builder'} style={{ width: '100%' }}>
         <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
@@ -178,51 +178,18 @@ export const AvatarSettings = ({
         </TabsList>
 
         <TabsContent value="upload" style={{ marginTop: 16 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+          <div className="flex flex-col gap-4">
+            <div className="text-center">
+              <p className="text-sm">
                 Upload Your Photo
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              </p>
+              <p className="text-xs text-muted-foreground">
                 Use your own image as your profile picture
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-              }}
-            >
-              <Box
-                component="label"
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  height: 128,
-                  border: 2,
-                  borderStyle: 'dashed',
-                  borderColor: 'text.disabled',
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                  '&:hover': { bgcolor: 'action.hover' },
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    pt: 2.5,
-                    pb: 3,
-                  }}
-                >
+              </p>
+            </div>
+            <div className="flex items-center justify-center w-full">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground rounded-lg cursor-pointer transition-colors hover:bg-muted">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <Upload
                     style={{
                       width: 32,
@@ -231,58 +198,51 @@ export const AvatarSettings = ({
                       color: 'var(--muted-foreground)',
                     }}
                   />
-                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Click to upload
-                    </Box>
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  <p className="text-sm">
+                    <span className="font-semibold">Click to upload</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
                     PNG, JPG up to 5MB
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
                 <input
                   type="file"
                   style={{ display: 'none' }}
                   accept="image/*"
                   onChange={handleFileSelect}
                 />
-              </Box>
-            </Box>
-          </Box>
+              </label>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="builder" style={{ marginTop: 16 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+          <div className="flex flex-col gap-4">
+            <div className="text-center">
+              <p className="text-sm">
                 Avatar Builder
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              </p>
+              <p className="text-xs text-muted-foreground">
                 Create a custom avatar with our builder
-              </Typography>
-            </Box>
+              </p>
+            </div>
             <AvatarBuilder onSave={handleSaveAvatar} initialConfig={data.avatarConfig} />
-          </Box>
+          </div>
         </TabsContent>
 
         <TabsContent value="initials" style={{ marginTop: 16 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'center' }}>
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+          <div className="flex flex-col gap-4 text-center">
+            <div>
+              <p className="text-sm">
                 Initials Avatar
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              </p>
+              <p className="text-xs text-muted-foreground">
                 Auto-generated avatar based on your name
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box
-                component="img"
-                src={generateAvatarUrl(data.email, 64) || ''}
-                alt="Initials avatar preview"
-                sx={{ width: 64, height: 64, borderRadius: '50%' }}
-              />
-            </Box>
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <img src={generateAvatarUrl(data.email, 64) || ''} alt="Initials avatar preview" className="w-16 h-16 rounded-full" />
+            </div>
             <Button
               onClick={useInitials}
               size="lg"
@@ -294,37 +254,29 @@ export const AvatarSettings = ({
                 ? 'Using Initials'
                 : 'Use Initials Avatar'}
             </Button>
-          </Box>
+          </div>
         </TabsContent>
 
         <TabsContent value="random" style={{ marginTop: 16 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'center' }}>
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+          <div className="flex flex-col gap-4 text-center">
+            <div>
+              <p className="text-sm">
                 Random Avatar
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              </p>
+              <p className="text-xs text-muted-foreground">
                 Generate a random avatar instantly
-              </Typography>
-            </Box>
+              </p>
+            </div>
             <Button onClick={generateRandomAvatar} size="lg" style={{ width: '100%' }}>
               <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
               Generate Random Avatar
             </Button>
-          </Box>
+          </div>
         </TabsContent>
       </Tabs>
 
       {showSaveButton && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            pt: 2,
-            borderTop: 1,
-            borderColor: 'divider',
-          }}
-        >
+        <div className="flex justify-end pt-4 border-t border-border">
           <Button onClick={handleSave} disabled={saving} size="lg">
             {saving && (
               <RefreshCw
@@ -338,8 +290,8 @@ export const AvatarSettings = ({
             )}
             Save Avatar
           </Button>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };

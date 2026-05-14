@@ -1,9 +1,9 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useVenues } from '@/hooks/useVenues';
 import { useEvents } from '@/hooks/useEvents';
-import { useOptimizedCities, useOptimizedCountries } from '@/hooks/useOptimizedPlaces';
+import { useOptimizedCities, useOptimizedCountries } from '@/hooks/usePlaces';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ export const LAYER_COLORS: Record<LayerType, string> = {
   countries: '#dc2626', // red
   restrooms: '#10b981', // emerald
   hotels: '#f59e0b', // amber
-  neighbourhoods: '#DB2777', // brand
+  neighbourhoods: 'hsl(var(--foreground))', // brand
 };
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
@@ -67,6 +67,8 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
   // At zoom level 5+, restrict queries to visible map bounds
   // Below zoom 5, fetch globally to show broader context
   const shouldUseBounds = viewport.zoom >= 5;
+  const centerLng = viewport.center[0];
+  const centerLat = viewport.center[1];
   const viewportBounds = useMemo(() => {
     if (!shouldUseBounds) return undefined;
 
@@ -77,29 +79,30 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
     const lngDelta = 180 / zoomFactor;
 
     return {
-      minLat: Math.max(-90, viewport.center[1] - latDelta),
-      maxLat: Math.min(90, viewport.center[1] + latDelta),
-      minLng: viewport.center[0] - lngDelta,
-      maxLng: viewport.center[0] + lngDelta,
+      minLat: Math.max(-90, centerLat - latDelta),
+      maxLat: Math.min(90, centerLat + latDelta),
+      minLng: centerLng - lngDelta,
+      maxLng: centerLng + lngDelta,
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldUseBounds, viewport.center[0], viewport.center[1], viewport.zoom]);
+  }, [shouldUseBounds, centerLng, centerLat, viewport.zoom]);
 
   // ── Venues ─────────────────────────────────────────────────────────────────
   const venuesEnabled = enabledLayers.includes('venues');
   const { venues: rawVenues = [], isFetching: venuesFetching, fetchVenues } = useVenues(false);
+  const fetchVenuesRef = useRef(fetchVenues);
+  fetchVenuesRef.current = fetchVenues;
+  const tagsKey = filters?.tags?.length ? filters.tags.join(',') : '';
 
   useEffect(() => {
     if (!venuesEnabled) return;
-    fetchVenues({
+    fetchVenuesRef.current({
       limit: shouldUseBounds ? 200 : 500, // Reduce limit when using bounds
       ...(filters?.search ? { search: filters.search } : {}),
       ...(filters?.category ? { category: filters.category } : {}),
-      ...(filters?.tags?.length ? { tags: filters.tags } : {}),
+      ...(tagsKey ? { tags: tagsKey.split(',') } : {}),
       ...(viewportBounds ? { bounds: viewportBounds } : {}),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [venuesEnabled, filters?.search, filters?.category, JSON.stringify(filters?.tags), shouldUseBounds, viewportBounds]);
+  }, [venuesEnabled, filters?.search, filters?.category, tagsKey, shouldUseBounds, viewportBounds]);
 
   const venueMarkers = useMemo<MapMarker[]>(() => {
     if (!venuesEnabled) return [];
@@ -114,24 +117,26 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
         subtitle: v.category ?? undefined,
         color: LAYER_COLORS.venues,
         linkTo: `/venues/${v.slug}`,
-        meta: { city: v.city, country: v.country, category: v.category, featured: v.featured },
+        meta: { city: v.city, country: v.country, category: v.category, featured: v.is_featured },
       }));
   }, [rawVenues, venuesEnabled]);
 
   // ── Events ─────────────────────────────────────────────────────────────────
   const eventsEnabled = enabledLayers.includes('events');
   const { events: rawEvents = [], isFetching: eventsFetching, fetchEvents } = useEvents(false);
+  const dateRangeKey = filters?.dateRange ? `${filters.dateRange.start}|${filters.dateRange.end}` : '';
+  const dateRangeStart = filters?.dateRange?.start;
+  const dateRangeEnd = filters?.dateRange?.end;
 
   useEffect(() => {
     if (!eventsEnabled) return;
     fetchEvents({
       limit: shouldUseBounds ? 150 : 300,
       ...(filters?.search ? { search: filters.search } : {}),
-      ...(filters?.dateRange ? { dateRange: filters.dateRange } : {}),
+      ...(dateRangeStart && dateRangeEnd ? { dateRange: { start: dateRangeStart, end: dateRangeEnd } } : {}),
       ...(viewportBounds ? { bounds: viewportBounds } : {}),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventsEnabled, filters?.search, JSON.stringify(filters?.dateRange), shouldUseBounds, viewportBounds]);
+  }, [eventsEnabled, filters?.search, dateRangeKey, dateRangeStart, dateRangeEnd, shouldUseBounds, viewportBounds, fetchEvents]);
 
   const eventMarkers = useMemo<MapMarker[]>(() => {
     if (!eventsEnabled) return [];
@@ -176,14 +181,11 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Cities ─────────────────────────────────────────────────────────────────
   const citiesEnabled = enabledLayers.includes('cities');
-  const { cities: rawCities = [], isFetching: citiesFetching } = useOptimizedCities(
-    citiesEnabled
-      ? {
-          limit: 500,
-          ...(filters?.search ? { search: filters.search } : {}),
-        }
-      : { limit: 0 },
-  );
+  const { cities: rawCities = [], isFetching: citiesFetching } = useOptimizedCities({
+    enabled: citiesEnabled,
+    limit: 500,
+    ...(filters?.search ? { search: filters.search } : {}),
+  });
 
   const cityMarkers = useMemo<MapMarker[]>(() => {
     if (!citiesEnabled) return [];
@@ -209,14 +211,11 @@ export function useExploreMapData({ enabledLayers, viewport, filters }: UseExplo
 
   // ── Countries ──────────────────────────────────────────────────────────────
   const countriesEnabled = enabledLayers.includes('countries');
-  const { countries: rawCountries = [], isFetching: countriesFetching } = useOptimizedCountries(
-    countriesEnabled
-      ? {
-          limit: 250,
-          ...(filters?.search ? { search: filters.search } : {}),
-        }
-      : { limit: 0 },
-  );
+  const { countries: rawCountries = [], isFetching: countriesFetching } = useOptimizedCountries({
+    enabled: countriesEnabled,
+    limit: 250,
+    ...(filters?.search ? { search: filters.search } : {}),
+  });
 
   const countryMarkers = useMemo<MapMarker[]>(() => {
     if (!countriesEnabled) return [];

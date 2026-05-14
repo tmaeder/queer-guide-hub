@@ -34,10 +34,10 @@ import {
   Home,
   History,
   MessageSquarePlus,
-  Inbox,
+  Search,
+  Flag,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { brandColors } from '@/theme/muiTheme';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -52,15 +52,12 @@ export interface AdminNavItem {
   reviewCountKey?: string;
   /** Whether this item requires admin role (not just moderator) */
   adminOnly?: boolean;
-  /** Accent color for active state */
-  color?: string;
 }
 
 export interface AdminNavSection {
   id: string;
   label: string;
   icon: LucideIcon;
-  color: string;
   /** If true, this section is collapsible and starts expanded */
   collapsible?: boolean;
   defaultExpanded?: boolean;
@@ -75,14 +72,12 @@ export const adminNavSections: AdminNavSection[] = [
     id: 'cockpit',
     label: 'Cockpit',
     icon: LayoutDashboard,
-    color: brandColors.main,
     items: [
       {
         id: 'overview',
         label: 'Overview',
         icon: LayoutDashboard,
         route: '/admin',
-        color: brandColors.main,
       },
     ],
   },
@@ -92,7 +87,6 @@ export const adminNavSections: AdminNavSection[] = [
     id: 'content',
     label: 'Content',
     icon: Layers,
-    color: brandColors.main,
     collapsible: true,
     defaultExpanded: true,
     items: [
@@ -101,7 +95,6 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'All Content',
         icon: Layers,
         route: '/admin/content',
-        color: brandColors.main,
       },
       {
         id: 'venues',
@@ -109,7 +102,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Building,
         route: '/admin/content/venues',
         countTable: 'venues',
-        color: brandColors.main,
       },
       {
         id: 'events',
@@ -117,7 +109,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Calendar,
         route: '/admin/content/events',
         countTable: 'events',
-        color: '#ec4899',
       },
       {
         id: 'news',
@@ -125,7 +116,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Newspaper,
         route: '/admin/content/news_articles',
         countTable: 'news_articles',
-        color: '#3b82f6',
       },
       {
         id: 'personalities',
@@ -133,7 +123,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Users,
         route: '/admin/content/personalities',
         countTable: 'personalities',
-        color: '#f59e0b',
       },
       {
         id: 'cities',
@@ -141,7 +130,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: MapPin,
         route: '/admin/content/cities',
         countTable: 'cities',
-        color: '#10b981',
       },
       {
         id: 'countries',
@@ -149,7 +137,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Globe,
         route: '/admin/content/countries',
         countTable: 'countries',
-        color: '#6366f1',
       },
       {
         id: 'hotels',
@@ -157,7 +144,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Hotel,
         route: '/admin/content/hotels',
         countTable: 'hotels',
-        color: '#0ea5e9',
       },
       {
         id: 'villages',
@@ -165,7 +151,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Home,
         route: '/admin/content/queer_villages',
         countTable: 'queer_villages',
-        color: '#d946ef',
       },
       {
         id: 'marketplace',
@@ -173,7 +158,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: ShoppingBag,
         route: '/admin/content/marketplace_listings',
         countTable: 'marketplace_listings',
-        color: '#f97316',
       },
       {
         id: 'groups',
@@ -181,7 +165,13 @@ export const adminNavSections: AdminNavSection[] = [
         icon: UsersRound,
         route: '/admin/content/community_groups',
         countTable: 'community_groups',
-        color: '#a855f7',
+      },
+      {
+        id: 'quests',
+        label: 'Editorial Quests',
+        icon: Flag,
+        route: '/admin/quests',
+        countTable: 'quests',
       },
       {
         id: 'tags',
@@ -189,7 +179,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Tag,
         route: '/admin/content/unified_tags',
         countTable: 'unified_tags',
-        color: '#14b8a6',
       },
       {
         id: 'pages',
@@ -197,14 +186,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: FileText,
         route: '/admin/content/cms_pages',
         countTable: 'cms_pages',
-        color: '#64748b',
       },
       {
         id: 'media-library',
         label: 'Media Library',
         icon: Image,
         route: '/admin/media',
-        color: '#3b82f6',
       },
     ],
   },
@@ -214,7 +201,6 @@ export const adminNavSections: AdminNavSection[] = [
     id: 'import-review',
     label: 'Import & Review',
     icon: Download,
-    color: '#10b981',
     collapsible: true,
     defaultExpanded: true,
     items: [
@@ -223,7 +209,6 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Review Queue',
         icon: ClipboardCheck,
         route: '/admin/review',
-        color: '#f59e0b',
       },
       {
         id: 'feedback',
@@ -231,7 +216,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: MessageSquarePlus,
         route: '/admin/feedback',
         reviewCountKey: 'review_feedback',
-        color: '#DB2777',
       },
       {
         id: 'pipelines',
@@ -239,7 +223,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Workflow,
         route: '/admin/pipelines',
         adminOnly: true,
-        color: '#6366f1',
       },
       {
         id: 'email-ingestions',
@@ -247,7 +230,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Mail,
         route: '/admin/imports/email-ingestions',
         countTable: 'email_ingestions',
-        color: '#ec4899',
       },
       {
         id: 'ingestion-rules',
@@ -255,15 +237,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Filter,
         route: '/admin/ingestion-rules',
         adminOnly: true,
-        color: '#8b5cf6',
-      },
-      {
-        id: 'user-submissions',
-        label: 'Extension Submissions',
-        icon: Inbox,
-        route: '/admin/user-submissions',
-        adminOnly: true,
-        color: '#d4007f',
       },
     ],
   },
@@ -273,7 +246,6 @@ export const adminNavSections: AdminNavSection[] = [
     id: 'system',
     label: 'System',
     icon: Settings,
-    color: '#64748b',
     collapsible: true,
     defaultExpanded: false,
     items: [
@@ -283,7 +255,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Users,
         route: '/admin/users',
         adminOnly: true,
-        color: '#64748b',
       },
       {
         id: 'analytics',
@@ -291,7 +262,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: BarChart3,
         route: '/admin/analytics',
         adminOnly: true,
-        color: '#3b82f6',
       },
       {
         id: 'security',
@@ -299,7 +269,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Shield,
         route: '/admin/security',
         adminOnly: true,
-        color: '#ef4444',
       },
       {
         id: 'cloudflare',
@@ -307,7 +276,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Cloud,
         route: '/admin/cloudflare',
         adminOnly: true,
-        color: '#f59e0b',
       },
       {
         id: 'affiliates',
@@ -315,7 +283,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Handshake,
         route: '/admin/affiliates',
         adminOnly: true,
-        color: '#10b981',
       },
       {
         id: 'redirects',
@@ -324,7 +291,6 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/redirects',
         adminOnly: true,
         countTable: 'redirects',
-        color: brandColors.main,
       },
       {
         id: 'email-templates',
@@ -332,7 +298,6 @@ export const adminNavSections: AdminNavSection[] = [
         icon: Mail,
         route: '/admin/email-templates',
         adminOnly: true,
-        color: '#64748b',
       },
       {
         id: 'audit-log',
@@ -340,14 +305,19 @@ export const adminNavSections: AdminNavSection[] = [
         icon: History,
         route: '/admin/audit',
         adminOnly: true,
-        color: '#6366f1',
+      },
+      {
+        id: 'search-intelligence',
+        label: 'Search Intelligence',
+        icon: Search,
+        route: '/admin/search-intelligence',
+        adminOnly: true,
       },
       {
         id: 'settings',
         label: 'Settings',
         icon: Settings,
         route: '/admin/settings',
-        color: '#64748b',
       },
     ],
   },

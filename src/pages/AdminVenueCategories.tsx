@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,8 +12,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { useTaxonomyCRUD } from '@/hooks/useTaxonomyCRUD';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -48,6 +46,7 @@ const emptyForm = {
 
 export default function AdminVenueCategories() {
   const queryClient = useQueryClient();
+  const crud = useTaxonomyCRUD('venue_categories');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -86,11 +85,11 @@ export default function AdminVenueCategories() {
     }
     try {
       if (editingId) {
-        const { error } = await supabase.from('venue_categories').update(form).eq('id', editingId);
+        const { error } = await crud.upsert(form, editingId);
         if (error) throw error;
         toast.success('Category updated');
       } else {
-        const { error } = await supabase.from('venue_categories').insert([form]);
+        const { error } = await crud.upsert(form, null);
         if (error) throw error;
         toast.success('Category created');
       }
@@ -104,7 +103,7 @@ export default function AdminVenueCategories() {
   const handleDelete = async (row: CategoryRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('venue_categories').delete().eq('id', row.id);
+      const { error } = await crud.remove(row.id);
       if (error) throw error;
       toast.success('Category deleted');
       invalidateTable();
@@ -127,18 +126,18 @@ export default function AdminVenueCategories() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{ width: 16, height: 16, borderRadius: 1, flexShrink: 0 }}
+          <div className="flex items-center gap-2">
+            <div
+              className="w-4 h-4 rounded-sm flex-shrink-0"
               style={{ backgroundColor: info.row.original.color || '#6366f1' }}
             />
-            <Box>
+            <div>
               <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-              <Typography variant="caption" display="block" color="text.secondary">
+              <span className="block text-xs text-muted-foreground">
                 {info.row.original.slug}
-              </Typography>
-            </Box>
-          </Box>
+              </span>
+            </div>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -211,35 +210,28 @@ export default function AdminVenueCategories() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Venue Categories
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage venue categories and organization types
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+    <AdminEntityTable
+      title="Venue Categories"
+      subtitle="Manage venue categories and organization types"
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent style={{ maxWidth: 560 }}>
           <DialogHeader>
             <DialogTitle>{editingId ? 'Edit Category' : 'Create Category'}</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Box>
+          <div className="flex flex-col gap-4 pt-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label>Name *</Label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label>Slug *</Label>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <div className="flex gap-2">
                   <Input
                     value={form.slug}
                     onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
@@ -252,35 +244,35 @@ export default function AdminVenueCategories() {
                   >
                     Gen
                   </Button>
-                </Box>
-              </Box>
-            </Box>
-            <Box>
+                </div>
+              </div>
+            </div>
+            <div>
               <Label>Description</Label>
               <Textarea
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 rows={3}
               />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-              <Box>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
                 <Label>Icon</Label>
                 <Input
                   value={form.icon}
                   onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
                   placeholder="Lucide name"
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label>Color</Label>
                 <Input
                   type="color"
                   value={form.color}
                   onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
                 />
-              </Box>
-              <Box>
+              </div>
+              <div>
                 <Label>Sort Order</Label>
                 <Input
                   type="number"
@@ -289,16 +281,16 @@ export default function AdminVenueCategories() {
                     setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
                   }
                 />
-              </Box>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
               <Switch
                 checked={form.is_active}
                 onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
               />
               <Label>Active</Label>
-            </Box>
-          </Box>
+            </div>
+          </div>
           <DialogFooter style={{ marginTop: 16 }}>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
@@ -307,6 +299,7 @@ export default function AdminVenueCategories() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+      }
+    />
   );
 }

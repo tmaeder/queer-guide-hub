@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, renderWithProviders, screen } from '@/test/test-utils';
+import { fireEvent, renderWithProviders, screen, waitFor } from '@/test/test-utils';
 import type { Trip, TripMember } from '@/hooks/useTrips';
 
 // Hoisted mocks so the component's import graph picks them up before the
@@ -257,31 +257,31 @@ describe('TripCard', () => {
       expect(navigateSpy).not.toHaveBeenCalled();
     });
 
-    it('opens the delete confirm dialog from the menu', () => {
+    it('opens the delete confirm dialog from the menu', async () => {
       renderWithProviders(<TripCard trip={makeTrip()} />);
-      fireEvent.click(
-        screen.getByRole('button', { name: /trips\.card\.menuAria/ }),
-      );
+      const menuBtn = screen.getByRole('button', { name: /trips\.card\.menuAria/ });
+      // Radix DropdownMenu opens on pointerDown, not click
+      fireEvent.pointerDown(menuBtn, { button: 0, pointerType: 'mouse' });
+      fireEvent.click(menuBtn);
+      await waitFor(() => expect(screen.getByText('trips.card.delete')).toBeInTheDocument());
       fireEvent.click(screen.getByText('trips.card.delete'));
-      // The delete confirm description is unique to the open dialog state
-      expect(
-        screen.getByText(/trips\.card\.deleteConfirm/),
-      ).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByText(/trips\.card\.deleteConfirm/)).toBeInTheDocument(),
+      );
     });
 
-    it('fires deleteTrip.mutate when the user confirms deletion', () => {
+    it('fires deleteTrip.mutate when the user confirms deletion', async () => {
       renderWithProviders(<TripCard trip={makeTrip({ id: 'trip-42' })} />);
-      fireEvent.click(
-        screen.getByRole('button', { name: /trips\.card\.menuAria/ }),
-      );
+      const menuBtn = screen.getByRole('button', { name: /trips\.card\.menuAria/ });
+      fireEvent.pointerDown(menuBtn, { button: 0, pointerType: 'mouse' });
+      fireEvent.click(menuBtn);
+      await waitFor(() => expect(screen.getByText('trips.card.delete')).toBeInTheDocument());
       fireEvent.click(screen.getByText('trips.card.delete'));
 
       // After the confirm dialog opens, there are two "trips.card.delete" nodes:
       // the menu item (background, aria-hidden) and the confirm button (foreground).
-      // Pick the one inside the element whose sibling contains the deleteConfirm text.
+      await waitFor(() => expect(screen.getByText(/trips\.card\.deleteConfirm/)).toBeInTheDocument());
       const deleteNodes = screen.getAllByText('trips.card.delete');
-      // The confirm button in the dialog is rendered inside an element whose
-      // nearest form/dialog-descendant contains the deleteConfirm description.
       const confirm = deleteNodes.find((node) => {
         const dialogRoot = node.closest('[role="dialog"]');
         return dialogRoot !== null;

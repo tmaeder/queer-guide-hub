@@ -5,8 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PenSquare, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface UserPostsListProps {
   userId: string;
@@ -27,26 +25,26 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <Box sx={{ height: 40, width: 40, bgcolor: 'action.hover', borderRadius: '50%' }}></Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: 96 }}></Box>
-                  <Box sx={{ height: 12, bgcolor: 'action.hover', borderRadius: 1, width: 128 }}></Box>
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '100%' }}></Box>
-                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '75%' }}></Box>
-                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }}></Box>
-              </Box>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 bg-muted rounded-full"></div>
+                <div className="flex flex-col gap-2">
+                  <div className="h-4 bg-muted w-24"></div>
+                  <div className="h-3 bg-muted w-32"></div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="h-4 bg-muted w-full"></div>
+                <div className="h-4 bg-muted w-3/4"></div>
+                <div className="h-4 bg-muted w-1/2"></div>
+              </div>
             </CardContent>
           </Card>
         ))}
-      </Box>
+      </div>
     );
   }
 
@@ -55,15 +53,15 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
       <Card>
         <CardContent>
           <Users style={{ width: 48, height: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
-          <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
+          <h6 className="text-base font-medium mb-2">
             {isOwnProfile ? "You haven't posted anything yet" : "No posts yet"}
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
+          </h6>
+          <p className="text-muted-foreground mb-4">
             {isOwnProfile
               ? "Share your thoughts, experiences, or ask questions with the community."
               : "This user hasn't shared any posts yet."
             }
-          </Typography>
+          </p>
           {isOwnProfile && user && (
             <CreatePostDialog>
               <Button>
@@ -78,7 +76,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Create Post Button for Own Profile */}
       {isOwnProfile && user && (
         <Card>
@@ -94,7 +92,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
       )}
 
       {/* Posts List */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-4">
         {posts.map((post) => (
           <PostCard
             key={post.id}
@@ -105,7 +103,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
             isLiking={isLikingPost || isDeletingPost}
           />
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };

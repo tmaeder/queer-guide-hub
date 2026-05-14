@@ -1,0 +1,77 @@
+import { Tag } from 'lucide-react';
+import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+
+export const tagFields: FieldConfig[] = [
+  {
+    name: 'name',
+    label: 'Tag Name',
+    type: 'text',
+    required: true,
+    group: 'basic',
+    searchable: true,
+    sortable: true,
+  },
+  { name: 'slug', label: 'Slug', type: 'text', required: true, group: 'basic' },
+  { name: 'description', label: 'Description', type: 'textarea', group: 'basic', colSpan: 2 },
+  { name: 'short_description', label: 'Short Description', type: 'text', group: 'basic' },
+  { name: 'long_description', label: 'Long Description', type: 'richtext', group: 'basic', colSpan: 2 },
+  { name: 'category', label: 'Category', type: 'text', group: 'basic', filterable: true },
+  {
+    name: 'status',
+    label: 'Status',
+    type: 'select',
+    group: 'basic',
+    filterable: true,
+    options: [
+      { value: 'active', label: 'Active' },
+      { value: 'deprecated', label: 'Deprecated' },
+      { value: 'merged', label: 'Merged' },
+    ],
+  },
+  { name: 'color', label: 'Color', type: 'text', group: 'details', placeholder: '#6366f1' },
+  {
+    name: 'usage_count',
+    label: 'Usage Count',
+    type: 'number',
+    group: 'details',
+    readOnly: true,
+    sortable: true,
+  },
+  { name: 'wikipedia_url', label: 'Wikipedia URL', type: 'url', group: 'details' },
+  { name: 'wikidata_id', label: 'Wikidata ID', type: 'text', group: 'details', placeholder: 'Q12345' },
+  { name: 'is_sensitive', label: 'Sensitive', type: 'boolean', group: 'details' },
+  { name: 'sensitive_topics', label: 'Sensitive Topics', type: 'tags', group: 'details' },
+  { name: 'confidence_score', label: 'Confidence Score', type: 'number', group: 'details', readOnly: true, min: 0, max: 1 },
+  {
+    name: 'verification_status',
+    label: 'Verification',
+    type: 'select',
+    group: 'details',
+    options: [
+      { value: 'pending', label: 'Pending' },
+      { value: 'verified', label: 'Verified' },
+      { value: 'rejected', label: 'Rejected' },
+    ],
+  },
+  { name: 'image_url', label: 'Image', type: 'image', group: 'media' },
+  { name: 'image_alt', label: 'Image Alt Text', type: 'text', group: 'media' },
+  { name: 'image_source', label: 'Image Source', type: 'text', group: 'media' },
+  { name: 'image_license', label: 'Image License', type: 'text', group: 'media' },
+  { name: 'image_attribution', label: 'Image Attribution', type: 'text', group: 'media' },
+];
+
+export const unifiedTagsContentType: ContentTypeConfig = {
+  id: 'unified_tags',
+  tableName: 'unified_tags',
+  primaryKey: 'id',
+  titleField: 'name',
+  descriptionField: 'description',
+  imageField: 'image_url',
+  icon: Tag,
+  label: { singular: 'Tag', plural: 'Tags' },
+  color: '#14b8a6',
+  fields: tagFields,
+  defaults: { status: 'active' },
+  fieldGroupOrder: ['basic', 'details', 'media'],
+  translatableFields: ['name', 'description', 'short_description', 'long_description'],
+};
