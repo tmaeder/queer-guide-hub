@@ -110,6 +110,7 @@ export default tseslint.config(
       "src/components/cms/**",
       "src/pages/Admin*.tsx",
       "src/pages/admin/**",
+      "src/pages/admin-*/**",
       "src/pages/SecurityDashboard.tsx",
       // Functional color scales (equality score 0–100, SDG indicators).
       "src/utils/equalityScore.ts",
