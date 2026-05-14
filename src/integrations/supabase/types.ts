@@ -4640,11 +4640,16 @@ export type Database = {
       }
       feedback_retest_runs: {
         Row: {
+          assignee_id: string | null
+          brief_title: string | null
           created_at: string
           created_by: string | null
           external_ref: string | null
           finished_at: string | null
           id: string
+          labels: string[]
+          narrative: string | null
+          narrative_edited: boolean
           kind: string
           result: Json | null
           routine_run_id: string
@@ -5484,6 +5489,47 @@ export type Database = {
         ]
       }
       group_join_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          group_id: string
+          id: string
+          message: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          group_id: string
+          id?: string
+          message?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          group_id?: string
+          id?: string
+          message?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_join_requests_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_memberships: {
         Row: {
           created_at: string
           decided_at: string | null
@@ -11522,6 +11568,177 @@ export type Database = {
       }
       tag_favorites: {
         Row: {
+          action_type: string
+          actor: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string | null
+          id: number
+          reason: string | null
+          tag_id: string | null
+        }
+        Insert: {
+          action_type: string
+          actor?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string | null
+          id?: number
+          reason?: string | null
+          tag_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          actor?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string | null
+          id?: number
+          reason?: string | null
+          tag_id?: string | null
+        }
+        Relationships: []
+      }
+      tag_embeddings: {
+        Row: {
+          embedding: string
+          model: string
+          source_text: string
+          tag_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          embedding: string
+          model?: string
+          source_text: string
+          tag_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          embedding?: string
+          model?: string
+          source_text?: string
+          tag_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tag_embeddings_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: true
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_embeddings_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: true
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_embeddings_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: true
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_embeddings_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: true
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tag_relations: {
+        Row: {
+          confidence: number | null
+          id: string
+          relation_type: string
+          review_status: string | null
+          source_tag_id: string
+          target_tag_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          id?: string
+          relation_type: string
+          review_status?: string | null
+          source_tag_id: string
+          target_tag_id: string
+        }
+        Update: {
+          confidence?: number | null
+          id?: string
+          relation_type?: string
+          review_status?: string | null
+          source_tag_id?: string
+          target_tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tag_relations_source_tag_id_fkey"
+            columns: ["source_tag_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_relations_source_tag_id_fkey"
+            columns: ["source_tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_relations_source_tag_id_fkey"
+            columns: ["source_tag_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_relations_source_tag_id_fkey"
+            columns: ["source_tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_relations_target_tag_id_fkey"
+            columns: ["target_tag_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_relations_target_tag_id_fkey"
+            columns: ["target_tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_relations_target_tag_id_fkey"
+            columns: ["target_tag_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_relations_target_tag_id_fkey"
+            columns: ["target_tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tag_relationships: {
+      tag_favorites: {
+        Row: {
           created_at: string
           id: string
           tag_id: string
@@ -11541,6 +11758,119 @@ export type Database = {
         }
         Relationships: []
       }
+      tag_slug_redirects: {
+        Row: {
+          created_at: string | null
+          id: number
+          new_slug: string
+          old_slug: string
+          tag_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          new_slug: string
+          old_slug: string
+          tag_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          new_slug?: string
+          old_slug?: string
+          tag_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tag_slug_redirects_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_slug_redirects_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_slug_redirects_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_slug_redirects_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tag_sources: {
+        Row: {
+          claim_summary: string | null
+          fetched_at: string | null
+          id: string
+          source_id: string | null
+          source_type: string
+          source_url: string | null
+          tag_id: string
+        }
+        Insert: {
+          claim_summary?: string | null
+          fetched_at?: string | null
+          id?: string
+          source_id?: string | null
+          source_type: string
+          source_url?: string | null
+          tag_id: string
+        }
+        Update: {
+          claim_summary?: string | null
+          fetched_at?: string | null
+          id?: string
+          source_id?: string | null
+          source_type?: string
+          source_url?: string | null
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tag_sources_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tag_usage_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_sources_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags_with_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_sources_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "unified_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tag_sources_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "v_active_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tag_suggestions: {
       tag_relations: {
         Row: {
           confidence: number | null
@@ -12396,6 +12726,59 @@ export type Database = {
           },
         ]
       }
+      trip_nudges: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          body: string | null
+          created_at: string
+          dedupe_key: string
+          dismissed_at: string | null
+          id: string
+          kind: string
+          seen_at: string | null
+          severity: string
+          title: string
+          trip_id: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          body?: string | null
+          created_at?: string
+          dedupe_key: string
+          dismissed_at?: string | null
+          id?: string
+          kind: string
+          seen_at?: string | null
+          severity?: string
+          title: string
+          trip_id: string
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          body?: string | null
+          created_at?: string
+          dedupe_key?: string
+          dismissed_at?: string | null
+          id?: string
+          kind?: string
+          seen_at?: string | null
+          severity?: string
+          title?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_nudges_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_packing_items: {
         Row: {
           category: string | null
@@ -12633,6 +13016,208 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "trip_polls_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_recaps: {
+        Row: {
+          generated_at: string
+          generated_by: string | null
+          highlights: Json
+          summary: string
+          trip_id: string
+        }
+        Insert: {
+          generated_at?: string
+          generated_by?: string | null
+          highlights?: Json
+          summary: string
+          trip_id: string
+        }
+        Update: {
+          generated_at?: string
+          generated_by?: string | null
+          highlights?: Json
+          summary?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_recaps_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: true
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_safety_briefings: {
+        Row: {
+          article_count: number
+          country_ids: string[]
+          generated_at: string
+          narrative: string
+          risk_level: string | null
+          trip_id: string
+        }
+        Insert: {
+          article_count?: number
+          country_ids?: string[]
+          generated_at?: string
+          narrative: string
+          risk_level?: string | null
+          trip_id: string
+        }
+        Update: {
+          article_count?: number
+          country_ids?: string[]
+          generated_at?: string
+          narrative?: string
+          risk_level?: string | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_safety_briefings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: true
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_share_comments: {
+        Row: {
+          body: string
+          created_at: string
+          display_name: string
+          id: string
+          place_id: string
+          trip_id: string
+          viewer_fingerprint: string | null
+          viewer_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          display_name: string
+          id?: string
+          place_id: string
+          trip_id: string
+          viewer_fingerprint?: string | null
+          viewer_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          place_id?: string
+          trip_id?: string
+          viewer_fingerprint?: string | null
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_share_comments_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "trip_places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_share_comments_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_share_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          place_id: string
+          trip_id: string
+          viewer_fingerprint: string | null
+          viewer_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          place_id: string
+          trip_id: string
+          viewer_fingerprint?: string | null
+          viewer_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          place_id?: string
+          trip_id?: string
+          viewer_fingerprint?: string | null
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_share_reactions_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "trip_places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_share_reactions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_share_views: {
+        Row: {
+          id: string
+          referer_host: string | null
+          share_id: string
+          trip_id: string
+          viewed_at: string
+          viewer_user_id: string | null
+        }
+        Insert: {
+          id?: string
+          referer_host?: string | null
+          share_id: string
+          trip_id: string
+          viewed_at?: string
+          viewer_user_id?: string | null
+        }
+        Update: {
+          id?: string
+          referer_host?: string | null
+          share_id?: string
+          trip_id?: string
+          viewed_at?: string
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_share_views_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "trip_shares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_share_views_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
             referencedRelation: "trips"
@@ -13917,6 +14502,47 @@ export type Database = {
             referencedRelation: "news_quality_source_health"
             referencedColumns: ["source_id"]
           },
+          {
+            foreignKeyName: "venue_closed_audit_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_closed_audit: {
+        Row: {
+          closed_at: string
+          created_at: string
+          detail: Json | null
+          id: number
+          reason: string
+          reverted_at: string | null
+          reverted_by: string | null
+          venue_id: string
+        }
+        Insert: {
+          closed_at: string
+          created_at?: string
+          detail?: Json | null
+          id?: number
+          reason: string
+          reverted_at?: string | null
+          reverted_by?: string | null
+          venue_id: string
+        }
+        Update: {
+          closed_at?: string
+          created_at?: string
+          detail?: Json | null
+          id?: number
+          reason?: string
+          reverted_at?: string | null
+          reverted_by?: string | null
+          venue_id?: string
+        }
+        Relationships: [
           {
             foreignKeyName: "venue_closed_audit_venue_id_fkey"
             columns: ["venue_id"]
@@ -17762,6 +18388,15 @@ export type Database = {
         }[]
       }
       search_tags_with_aliases: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          description: string
+          id: string
+          matched_alias: string
+          name: string
+          rank: number
+          short_description: string
+          slug: string
         Args: { p_limit?: number; q: string }
         Returns: {
           id: string

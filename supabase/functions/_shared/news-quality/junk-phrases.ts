@@ -1,10 +1,11 @@
 // Versioned junk phrase list for the news sanitizer.
 // Bump JUNK_PHRASES_VERSION when adding/removing entries so audit logs stay coherent.
 
-export const JUNK_PHRASES_VERSION = '2026.04.27.0'
+export const JUNK_PHRASES_VERSION = '2026.04.27.1'
 
 // Exact-match snippets stripped wholesale (case-insensitive). Order matters: longer first.
 export const EXACT_PHRASES: ReadonlyArray<string> = [
+  // English paywall
   'ONLY AVAILABLE IN PAID PLANS',
   'this article is for subscribers only',
   'this content is for subscribers only',
@@ -15,6 +16,29 @@ export const EXACT_PHRASES: ReadonlyArray<string> = [
   'become a member to read more',
   'support our work — subscribe',
   'support our journalism',
+  // German paywall (de_DE / de_AT / de_CH variants)
+  'nur für abonnenten',
+  'nur mit abo lesen',
+  'jetzt abonnieren und weiterlesen',
+  'jetzt anmelden und weiterlesen',
+  'artikel im abo',
+  'weiterlesen mit abo',
+  'demnächst im abo',
+  // French paywall
+  'réservé aux abonnés',
+  'reservé aux abonnés',
+  'cet article est réservé aux abonnés',
+  'abonnez-vous pour continuer',
+  'lire la suite avec un abonnement',
+  's\u2019abonner pour lire la suite',
+  // Spanish paywall
+  'solo para suscriptores',
+  'sólo para suscriptores',
+  'suscríbete para seguir leyendo',
+  'inicia sesión para continuar',
+  // Italian paywall
+  'solo per abbonati',
+  'continua a leggere con l\u2019abbonamento',
   '[semi-satire]',
   '[satire]',
   '[parody]',
@@ -86,4 +110,8 @@ export const CRITICAL_PAYWALL_MARKERS: ReadonlyArray<string> = [
   'ONLY AVAILABLE IN PAID PLANS',
   'this article is for subscribers only',
   'subscribe to read the full article',
+  'nur für abonnenten',
+  'réservé aux abonnés',
+  'solo para suscriptores',
+  'solo per abbonati',
 ] as const
