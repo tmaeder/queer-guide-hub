@@ -1687,7 +1687,22 @@
       "clearAll": "Borrar todo",
       "emptyTitle": "Ninguna personalidad coincide con tus filtros",
       "emptyDescription": "Intenta borrar un filtro o buscar otro nombre.",
-      "loadingMore": "Cargando más…"
+      "loadingMore": "Cargando más…",
+      "view": {
+        "grid": "[ES] Grid",
+        "timeline": "[ES] Timeline",
+        "map": "[ES] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[ES] Born this week",
+        "diedThisWeek": "[ES] Remembered this week",
+        "browseByEra": "[ES] Browse by era",
+        "browseByField": "[ES] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[ES] In the news",
+        "relatedEvents": "[ES] Related events"
+      }
     },
     "groups": {
       "title": "Grupos comunitarios",

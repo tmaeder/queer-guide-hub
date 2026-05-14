@@ -135,7 +135,8 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       const relWeight = reliabilityMap.get(`${item.source_name ?? ''}|${item.entity_type ?? ''}`)
       const lowReliability = typeof relWeight === 'number' && relWeight < UNRELIABLE_THRESHOLD
 
-      // Trust-based auto-approve for community submissions
+      // Trust-based auto-approve for community submissions (runs before
+      // the main score-based gate so trusted submitters can skip review).
       if (item.source_name === 'community-submissions' && !forceReview && !dryRun) {
         const uid = (enriched.submitted_by as string) ?? null
         if (uid) {
