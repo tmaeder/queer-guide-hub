@@ -1244,7 +1244,45 @@
         "title": "Ningún evento coincide con tus filtros",
         "body": "Intenta ajustar tus filtros o búsqueda para ver más resultados."
       },
-      "prideSubtype": "[ES] Pride type"
+      "prideSubtype": "[ES] Pride type",
+      "mapView": "[ES] Map view",
+      "preset": {
+        "label": "[ES] Quick filters",
+        "thisWeekend": "[ES] This weekend",
+        "nearMe": "[ES] Near me",
+        "pride": "[ES] Pride season",
+        "thisMonth": "[ES] This month",
+        "free": "[ES] Free",
+        "featured": "[ES] Featured"
+      },
+      "rail": {
+        "featured": "[ES] Featured this week",
+        "featuredSubtitle": "[ES] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[ES] No events match your filters",
+        "body": "[ES] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[ES] Drop \"{{city}}\" filter",
+        "clearDate": "[ES] Drop date filter",
+        "viewAll": "[ES] View all upcoming events",
+        "sameCityHeader": "[ES] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[ES] Try other cities in your date range",
+        "fallbackHeader": "[ES] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[ES] Spotlight",
+        "happeningNow": "[ES] Happening now",
+        "tomorrow": "[ES] Starts tomorrow",
+        "inDays_one": "[ES] Starts in {{count}} day",
+        "inDays_other": "[ES] Starts in {{count}} days",
+        "nearbyCount_one": "[ES] {{count}} event in {{city}}",
+        "nearbyCount_other": "[ES] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[ES] Sort events",
+      "sort": {
+        "dateAsc": "[ES] Soonest first",
+        "dateDesc": "[ES] Latest first"
+      }
     },
     "eventDetail": {
       "loadFailed": "No se pudieron cargar los detalles del evento.",
