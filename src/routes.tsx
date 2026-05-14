@@ -78,6 +78,8 @@ const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
 const AdminEmailIngestions = lazy(() => import('./pages/AdminEmailIngestions'));
 const AdminSearchIntelligence = lazy(() => import('./pages/AdminSearchIntelligence'));
+const AdminRecognition = lazy(() => import('./pages/admin/Recognition'));
+const Contributors = lazyRetry(() => import('./pages/Contributors'));
 
 // New feature pages
 const Hotels = lazyRetry(() => import('./pages/Hotels'));
@@ -225,6 +227,8 @@ export const AppRoutes = () => {
               <Route path="/pattern-library" element={<PatternLibrary />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               <Route path="/onboarding/search" element={<SearchPersonalization />} />
+              <Route path="/contributors" element={<Contributors />} />
+              <Route path="/contributors/:year" element={<Contributors />} />
               {/* ── Unified Admin Console ── */}
               {/* All /admin/* routes wrapped in AdminShell layout with sidebar */}
               <Route
@@ -291,6 +295,7 @@ export const AppRoutes = () => {
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="redirects" element={<AdminRedirects />} />
                 <Route path="email-templates" element={<EmailTemplates />} />
+                <Route path="recognition" element={<AdminRecognition />} />
 
                 {/* Settings -- taxonomy management pages */}
                 <Route path="settings" element={<AdminTags />} />

@@ -36,6 +36,7 @@ import {
   MessageSquarePlus,
   Search,
   Flag,
+  Award,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -297,6 +298,13 @@ export const adminNavSections: AdminNavSection[] = [
         label: 'Email Templates',
         icon: Mail,
         route: '/admin/email-templates',
+        adminOnly: true,
+      },
+      {
+        id: 'recognition',
+        label: 'Recognition Wall',
+        icon: Award,
+        route: '/admin/recognition',
         adminOnly: true,
       },
       {
