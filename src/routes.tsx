@@ -23,6 +23,7 @@ const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 
 const Places = lazyRetry(() => import('./pages/Places'));
 const Resources = lazyRetry(() => import('./pages/Ressources'));
+const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
 const UserDirectory = lazyRetry(() => import('./pages/UserDirectory'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -399,6 +400,7 @@ export const AppRoutes = () => {
                 <Route path="quests" element={<Quests />} />
                 <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="resources" element={<Resources />} />
+                <Route path="resources/topic/:slug" element={<ResourceTopic />} />
                 <Route path="resources/c/:categorySlug" element={<Resources />} />
                 <Route path="resources/:tagName" element={<Resources />} />
                 <Route path="professions/:professionName" element={<ProfessionDetail />} />
