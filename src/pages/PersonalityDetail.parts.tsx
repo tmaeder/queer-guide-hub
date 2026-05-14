@@ -21,6 +21,8 @@ import { SocialLinksDisplay } from '@/components/profile/SocialLinksDisplay';
 import type { Personality } from '@/hooks/usePersonalities';
 import { fetchPublicPersonalityBySlugOrId } from '@/hooks/usePageFetchers';
 import { formatPersonDate, isoDateAttr } from '@/lib/personDate';
+import { usePersonalityRelated } from '@/hooks/usePersonalityRelated';
+import { useTranslation } from 'react-i18next';
 
 export interface SimilarPersonality {
   id: string;
@@ -249,6 +251,103 @@ export function PersonalityHero({
   );
 }
 
+function RelatedContent({ personality }: { personality: Personality }) {
+  const { t } = useTranslation();
+  const { news, events, loading } = usePersonalityRelated(personality.name, personality.slug);
+
+  if (loading) return null;
+  if (news.length === 0 && events.length === 0) return null;
+
+  return (
+    <>
+      {news.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('pages.personalities.detail.inTheNews', 'In the news')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-col divide-y divide-border">
+              {news.map((n) => (
+                <li key={n.id}>
+                  <LocalizedLink
+                    to={`/news/${n.slug}`}
+                    className="flex items-start gap-3 py-3 no-underline text-inherit hover:bg-accent transition-colors -mx-2 px-2 rounded"
+                  >
+                    {n.image_url && (
+                      <img
+                        src={n.image_url}
+                        alt=""
+                        loading="lazy"
+                        className="w-16 h-16 rounded-md object-cover flex-shrink-0 bg-muted"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium line-clamp-2">{n.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {n.publisher_name ? `${n.publisher_name} · ` : ''}
+                        <time dateTime={n.published_at}>
+                          {new Date(n.published_at).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </time>
+                      </p>
+                    </div>
+                  </LocalizedLink>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {events.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('pages.personalities.detail.relatedEvents', 'Related events')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {events.map((e) => (
+                <li key={e.id}>
+                  <LocalizedLink
+                    to={`/events/${e.slug ?? e.id}`}
+                    className="flex items-start gap-3 p-2 rounded no-underline text-inherit hover:bg-accent transition-colors"
+                  >
+                    {e.image_url && (
+                      <img
+                        src={e.image_url}
+                        alt=""
+                        loading="lazy"
+                        className="w-14 h-14 rounded-md object-cover flex-shrink-0 bg-muted"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium line-clamp-2">{e.title}</p>
+                      {e.start_at && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          <time dateTime={e.start_at}>
+                            {new Date(e.start_at).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </time>
+                        </p>
+                      )}
+                    </div>
+                  </LocalizedLink>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+    </>
+  );
+}
+
 export function PersonalityOverview({
   personality,
   similarPersonalities,
@@ -310,6 +409,8 @@ export function PersonalityOverview({
           </CardContent>
         </Card>
       )}
+
+      <RelatedContent personality={personality} />
 
       {similarPersonalities.length > 0 && (
         <Card>

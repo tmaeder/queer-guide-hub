@@ -9,7 +9,14 @@ import {
   useProfessionFacets,
   type PersonalityFilters,
 } from '@/hooks/usePersonalities';
-import { parseFilters, serializeFilters } from '@/lib/personalitiesFilters';
+import {
+  parseFilters,
+  serializeFilters,
+  ERAS,
+  eraFromYears,
+  type EraKey,
+  type View,
+} from '@/lib/personalitiesFilters';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -20,7 +27,14 @@ import { PersonalityCard, PersonalityCardSkeleton } from '@/components/personali
 import { PersonalitiesFiltersBar } from '@/components/personalities/PersonalitiesFiltersBar';
 import { StickyLetterBar } from '@/components/personalities/StickyLetterBar';
 import { FeaturedPersonalityRail } from '@/components/personalities/FeaturedPersonalityRail';
-import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';import { useTranslation } from 'react-i18next';
+import { EditorialEntries } from '@/components/personalities/EditorialEntries';
+import { PersonalitiesTimeline } from '@/components/personalities/PersonalitiesTimeline';
+import { PersonalitiesMap } from '@/components/map/PersonalitiesMap';
+import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityDialog';
+import { LayoutGrid, Rows3, Map as MapIcon } from 'lucide-react';
+import { GrainOverlay } from '@/components/effects/GrainOverlay';
+import { BackgroundDots } from '@/components/effects/BackgroundDots';
+import { useTranslation } from 'react-i18next';
 
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
@@ -47,6 +61,8 @@ function activeFilterCount(f: PersonalityFilters): number {
   if (f.verification_status) c++;
   if (f.name_starts_with) c++;
   if (f.exclude_adult === false) c++;
+  if (typeof f.birth_year_min === 'number' || typeof f.birth_year_max === 'number') c++;
+  if (f.tag) c++;
   return c;
 }
 
@@ -81,6 +97,7 @@ export default function Personalities() {
   const [filters, setFilters] = useState<PersonalityFilters>(
     () => parseFilters(searchParams).filters,
   );
+  const [view, setView] = useState<View>(() => parseFilters(searchParams).view);
   const initialPageRef = useRef<number>(pageFromParams(searchParams));
   const [page, setPage] = useState(initialPageRef.current);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
@@ -109,7 +126,7 @@ export default function Personalities() {
       append: false,
     });
     // Sync URL — serializeFilters from PR 1 + the page param from PR 5.
-    const nextParams = serializeFilters(filters);
+    const nextParams = serializeFilters(filters, { view });
     if (targetPage > 1) nextParams.set('page', String(targetPage));
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
@@ -124,15 +141,25 @@ export default function Personalities() {
     filters.name_starts_with,
     filters.sortBy,
     filters.exclude_adult,
+    filters.birth_year_min,
+    filters.birth_year_max,
+    filters.tag,
+    view,
   ]);
 
   // React to browser back/forward (external URL changes)
   useEffect(() => {
-    const { filters: fromUrl } = parseFilters(searchParams, validProfessions.length ? validProfessions : null);
+    const { filters: fromUrl, view: viewFromUrl } = parseFilters(
+      searchParams,
+      validProfessions.length ? validProfessions : null,
+    );
     const a = JSON.stringify(fromUrl);
     const b = JSON.stringify(filters);
     if (a !== b) {
       setFilters(fromUrl);
+    }
+    if (viewFromUrl !== view) {
+      setView(viewFromUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -144,7 +171,7 @@ export default function Personalities() {
     const { filters: cleaned, changed } = parseFilters(searchParams, validProfessions);
     if (changed) {
       setFilters(cleaned);
-      setSearchParams(serializeFilters(cleaned), { replace: true });
+      setSearchParams(serializeFilters(cleaned, { view }), { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [validProfessions]);
@@ -274,8 +301,46 @@ export default function Personalities() {
         onRemove: () => handleFiltersChange({ exclude_adult: true }),
       });
     }
+    const eraKey = eraFromYears(filters.birth_year_min, filters.birth_year_max);
+    if (eraKey) {
+      chips.push({
+        key: 'era',
+        label: `Era: ${ERAS[eraKey].label}`,
+        onRemove: () =>
+          handleFiltersChange({ birth_year_min: undefined, birth_year_max: undefined }),
+      });
+    }
+    if (filters.tag) {
+      chips.push({
+        key: 'tag',
+        label: `Tag: ${filters.tag}`,
+        onRemove: () => handleFiltersChange({ tag: undefined }),
+      });
+    }
     return chips;
   }, [filters, handleFiltersChange]);
+
+  const activeEra = useMemo<EraKey | undefined>(
+    () => eraFromYears(filters.birth_year_min, filters.birth_year_max),
+    [filters.birth_year_min, filters.birth_year_max],
+  );
+
+  const handleEraSelect = useCallback((era: EraKey | undefined) => {
+    if (!era) {
+      setFilters((prev) => ({
+        ...prev,
+        birth_year_min: undefined,
+        birth_year_max: undefined,
+      }));
+      return;
+    }
+    const { min, max } = ERAS[era];
+    setFilters((prev) => ({ ...prev, birth_year_min: min, birth_year_max: max }));
+  }, []);
+
+  const handleProfessionSelect = useCallback((profession: string | undefined) => {
+    setFilters((prev) => ({ ...prev, profession }));
+  }, []);
 
   const showLoadMoreButton =
     !loading && hasMore && autoLoadedCount >= AUTO_LOAD_CAP;
@@ -283,19 +348,24 @@ export default function Personalities() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8 md:py-16">
-        <PageHeader
-          title={t('pages.personalities.title', 'Personalities')}
-          subtitle={
-            loading && totalCount === 0
-              ? 'Loading personalities…'
-              : `Browse ${totalCount.toLocaleString()} LGBTQ+ activists, artists, writers, athletes, and historical icons.`
-          }
-          center
-          actions={
-            user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
-          }
-        />
+      <BackgroundDots className="border-b border-border" dotSpacing={24}>
+        <GrainOverlay opacity={0.025} />
+        <div className="container mx-auto px-4 pt-12 pb-8 md:pt-20 md:pb-12 relative">
+          <PageHeader
+            title={t('pages.personalities.title', 'Personalities')}
+            subtitle={
+              loading && totalCount === 0
+                ? 'Loading personalities…'
+                : `Browse ${totalCount.toLocaleString()} LGBTQ+ activists, artists, writers, athletes, and historical icons.`
+            }
+            center
+            actions={
+              user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
+            }
+          />
+        </div>
+      </BackgroundDots>
+      <div className="container mx-auto px-4 py-8 md:py-12">
 
         {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
         <div className="text-center text-xs text-muted-foreground mb-6">
@@ -324,11 +394,75 @@ export default function Personalities() {
           )}
         </div>
 
-        {/* Featured rail — only on the cold default view */}
-        {!hasAnyFilter && <FeaturedPersonalityRail />}
+        {/* Editorial entry points + featured rail — only on the cold default view */}
+        {!hasAnyFilter && (
+          <>
+            <EditorialEntries
+              activeEra={activeEra}
+              activeProfession={filters.profession}
+              onEraSelect={handleEraSelect}
+              onProfessionSelect={handleProfessionSelect}
+            />
+            <FeaturedPersonalityRail />
+          </>
+        )}
 
-        <div className="mb-4">
-          <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
+        <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
+          </div>
+          <div
+            role="tablist"
+            aria-label="View mode"
+            className="inline-flex border border-border rounded-md overflow-hidden"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'grid'}
+              onClick={() => setView('grid')}
+              className={
+                'px-3 py-2 text-sm flex items-center gap-1.5 ' +
+                (view === 'grid' ? 'bg-foreground text-background' : 'bg-background hover:bg-accent')
+              }
+              title="Grid view"
+            >
+              <LayoutGrid size={14} aria-hidden="true" />
+              <span className="hidden sm:inline">{t('pages.personalities.view.grid', 'Grid')}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'timeline'}
+              onClick={() => setView('timeline')}
+              className={
+                'px-3 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
+                (view === 'timeline'
+                  ? 'bg-foreground text-background'
+                  : 'bg-background hover:bg-accent')
+              }
+              title="Timeline view"
+            >
+              <Rows3 size={14} aria-hidden="true" />
+              <span className="hidden sm:inline">{t('pages.personalities.view.timeline', 'Timeline')}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'map'}
+              onClick={() => setView('map')}
+              className={
+                'px-3 py-2 text-sm flex items-center gap-1.5 border-l border-border ' +
+                (view === 'map'
+                  ? 'bg-foreground text-background'
+                  : 'bg-background hover:bg-accent')
+              }
+              title="Map view"
+            >
+              <MapIcon size={14} aria-hidden="true" />
+              <span className="hidden sm:inline">{t('pages.personalities.view.map', 'Map')}</span>
+            </button>
+          </div>
         </div>
 
         <StickyLetterBar
@@ -414,14 +548,20 @@ export default function Personalities() {
           />
         )}
 
-        {/* Grid */}
+        {/* Results — grid or timeline */}
         {personalities.length > 0 && (
           <>
-            <StaggerGrid className={GRID_CLASS}>
-              {personalities.map((p) => (
-                <PersonalityCard key={p.id} personality={p} />
-              ))}
-            </StaggerGrid>
+            {view === 'timeline' ? (
+              <PersonalitiesTimeline personalities={personalities} />
+            ) : view === 'map' ? (
+              <PersonalitiesMap personalities={personalities} />
+            ) : (
+              <StaggerGrid className={GRID_CLASS}>
+                {personalities.map((p) => (
+                  <PersonalityCard key={p.id} personality={p} />
+                ))}
+              </StaggerGrid>
+            )}
 
             {/* Sentinel for auto-load */}
             {hasMore && autoLoadedCount < AUTO_LOAD_CAP && (
