@@ -42,6 +42,7 @@ import {
   Luggage,
   LifeBuoy,
   Puzzle,
+  Footprints,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -102,6 +103,7 @@ const navigationSections = [
 const userMenuItems = [
   { to: '/trips', icon: Luggage, labelKey: 'header.userMenu.myTrips' },
   { to: '/favorites', icon: Heart, labelKey: 'header.userMenu.favorites' },
+  { to: '/profile/footprint', icon: Footprints, labelKey: 'header.userMenu.footprint' },
   { to: '/profile/settings', icon: Settings, labelKey: 'header.userMenu.settings' },
   { to: '/inbox', icon: Mail, labelKey: 'header.userMenu.inbox' },
   { to: '/friends', icon: Users, labelKey: 'header.userMenu.friends' },
