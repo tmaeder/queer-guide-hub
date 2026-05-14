@@ -28,24 +28,17 @@ export function HotelFilters({
     : HOTEL_TYPE_OPTIONS;
 
   return (
-    <div className="flex flex-wrap gap-3 mb-6">
-      <div className="relative flex-1 max-w-xs min-w-[200px]">
+    <div className="flex flex-wrap gap-3 mb-8 p-4 rounded-2xl border border-border bg-card/60 backdrop-blur-sm">
+      <div className="relative flex-1 max-w-sm min-w-[220px]">
         <Search
-          style={{
-            position: 'absolute',
-            left: 10,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 16,
-            height: 16,
-            color: 'hsl(var(--muted-foreground))',
-          }}
+          aria-hidden="true"
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
         />
         <Input
           placeholder="Search hotels..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          style={{ paddingLeft: 32 }}
+          className="pl-10"
         />
       </div>
 

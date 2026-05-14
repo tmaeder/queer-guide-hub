@@ -57,12 +57,15 @@ async function matchCity(
   countryCode: string | null,
   coords?: { lat: number; lon: number } | null,
 ): Promise<{ id: string; country_id: string } | null> {
+  // Strip parenthetical suffix: "Berlin (DE)" → "Berlin"
+  const cleanName = cityName.includes('(') ? cityName.split('(')[0].trim() : cityName
+
   // Try name + country first
   if (countryCode) {
     const { data } = await supabase
       .from('cities')
       .select('id, country_id')
-      .ilike('name', cityName)
+      .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
       .eq('country_code', countryCode)
       .is('duplicate_of_id', null)
       .order('population', { ascending: false, nullsFirst: false })
@@ -74,12 +77,24 @@ async function matchCity(
   const { data } = await supabase
     .from('cities')
     .select('id, country_id')
-    .ilike('name', cityName)
+    .or(`name.ilike.${cleanName},name.ilike.${cityName}`)
     .is('duplicate_of_id', null)
     .order('population', { ascending: false, nullsFirst: false })
     .limit(1)
     .single()
   if (data) return data
+
+  // Try alias match
+  const { data: aliasMatch } = await supabase
+    .from('city_aliases')
+    .select('city_id, cities!inner(id, country_id)')
+    .or(`alias.ilike.${cleanName},alias.ilike.${cityName}`)
+    .limit(1)
+    .single()
+  if (aliasMatch?.cities) {
+    const c = aliasMatch.cities as unknown as { id: string; country_id: string }
+    return { id: c.id, country_id: c.country_id }
+  }
 
   // City not found — auto-create if we have a country
   if (!countryCode) return null
@@ -87,7 +102,7 @@ async function matchCity(
   if (!countryId) return null
 
   const insert: Record<string, unknown> = {
-    name: cityName,
+    name: cleanName,
     country_id: countryId,
     data_source: 'nominatim-geocode',
   }

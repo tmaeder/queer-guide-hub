@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useDynamicSitemap } from '@/hooks/useDynamicSitemap';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 function setMetaTag(name: string, content: string) {
   let tag = document.querySelector(`meta[name="${name}"]`);
@@ -138,15 +139,13 @@ export default function Sitemap() {
           </div>
         </div>
         <div className="container mx-auto px-4">
-          <h4 className="text-3xl font-bold tracking-tight">Queer Guide Sitemap</h4>
-          <p className="text-muted-foreground mt-2">
-            Quickly jump to any main section.{' '}
-            <span aria-live="polite">
-              Showing {counts.visible} of {counts.total} links
-            </span>
-          </p>
+          <PageHeader
+            eyebrow="Navigation"
+            title="Queer Guide Sitemap"
+            subtitle={`Quickly jump to any main section. Showing ${counts.visible} of ${counts.total} links`}
+          />
 
-          <div className="mt-4">
+          <div>
             <div className="relative max-w-xl">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"

@@ -45,7 +45,7 @@ export function CardHoverEffect({
 
   if (reduced || lowEnd) {
     return (
-      <div className={cn('transition-opacity hover:opacity-85', className)}>
+      <div className={cn('rounded-xl transition-opacity hover:opacity-85', className)}>
         {children}
       </div>
     );
@@ -54,7 +54,7 @@ export function CardHoverEffect({
   return (
     <motion.div
       ref={cardRef}
-      className={cn('relative overflow-hidden', className)}
+      className={cn('relative overflow-hidden rounded-xl', className)}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}

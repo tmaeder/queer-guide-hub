@@ -30,13 +30,22 @@ const PaginationLink = ({ className, isActive, size = "icon", children, style, .
     className={className}
     style={{
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      borderRadius: 0, fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer',
-      textDecoration: 'none', color: 'inherit',
-      minWidth: size === "icon" ? 36 : undefined, height: 36,
+      borderRadius: 9999, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer',
+      textDecoration: 'none',
+      minWidth: size === "icon" ? 40 : undefined, height: 40,
       padding: size === "icon" ? 0 : '0 16px',
-      border: 'none',
-      backgroundColor: isActive ? 'var(--background, #fff)' : 'transparent',
+      border: isActive ? '1px solid hsl(var(--foreground))' : '1px solid transparent',
+      backgroundColor: isActive ? 'hsl(var(--foreground))' : 'transparent',
+      color: isActive ? 'hsl(var(--background))' : 'hsl(var(--foreground))',
+      transition: 'background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease',
+      boxShadow: isActive ? '0 1px 2px 0 hsl(0 0% 0% / 0.05)' : 'none',
       ...style,
+    }}
+    onMouseEnter={(e) => {
+      if (!isActive) (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'hsl(var(--muted))';
+    }}
+    onMouseLeave={(e) => {
+      if (!isActive) (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent';
     }}
     {...props}
   >
