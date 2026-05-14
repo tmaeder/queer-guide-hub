@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { PageLoading } from '@/components/ui/loading';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MarketplaceForCity } from '@/components/marketplace/MarketplaceForCity';
 import { TrendingStrip } from '@/components/discovery/TrendingStrip';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
@@ -227,6 +228,7 @@ export default function CityDetail() {
 
       <div className="mx-auto px-4 pb-8">
         <TrendingStrip city={city.name} className="mt-8" />
+        <MarketplaceForCity cityName={city.name} />
         <SimilarItems
           entity={{ type: 'city', id: city.id }}
           className="mt-6"

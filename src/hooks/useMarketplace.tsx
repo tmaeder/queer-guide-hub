@@ -8,7 +8,7 @@ type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listin
 
 export const PAGE_SIZE = 24;
 
-export type MarketplaceSort = 'newest' | 'oldest' | 'az' | 'za';
+export type MarketplaceSort = 'newest' | 'oldest' | 'az' | 'za' | 'price_asc' | 'price_desc' | 'most_viewed';
 
 export interface MarketplaceFiltersInput {
   category?: string;
@@ -18,6 +18,8 @@ export interface MarketplaceFiltersInput {
   tags?: string[];
   search?: string;
   businessType?: string;
+  categoryId?: string;
+  merchantDomain?: string;
 }
 
 export function useMarketplace() {
@@ -69,6 +71,15 @@ export function useMarketplace() {
         case 'za':
           query = query.order('title', { ascending: false });
           break;
+        case 'price_asc':
+          query = query.order('price_usd', { ascending: true, nullsFirst: false });
+          break;
+        case 'price_desc':
+          query = query.order('price_usd', { ascending: false, nullsFirst: false });
+          break;
+        case 'most_viewed':
+          query = query.order('views_count', { ascending: false, nullsFirst: false });
+          break;
         case 'newest':
         default:
           query = query.order('created_at', { ascending: false });
@@ -89,6 +100,14 @@ export function useMarketplace() {
 
       if (filters?.businessType) {
         query = query.eq('business_type', filters.businessType);
+      }
+
+      if (filters?.categoryId) {
+        query = query.eq('category_id', filters.categoryId);
+      }
+
+      if (filters?.merchantDomain) {
+        query = query.eq('merchant_domain', filters.merchantDomain);
       }
 
       if (filters?.priceRange) {
