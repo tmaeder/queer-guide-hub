@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { useParams } from "react-router";
 import { useTags } from "@/hooks/useTags";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { Card } from "@/components/ui/card";
 
 /**
  * Public tag detail page at /tags/:slug. Resolves the slug to a unified-tag
@@ -25,22 +23,19 @@ export default function TagDetail() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <PageHeader
-        eyebrow="Tag"
-        title={`#${tagDetails.name}`}
-        subtitle={`${tagDetails.total_count} item${tagDetails.total_count === 1 ? "" : "s"} across the guide`}
-      />
+      <h1 className="text-3xl font-bold mb-2">#{tagDetails.name}</h1>
+      <p className="text-muted-foreground mb-6">
+        {tagDetails.total_count} item{tagDetails.total_count === 1 ? "" : "s"}
+      </p>
       {tagDetails.usage_by_category.length > 0 && (
-        <Card className="overflow-hidden">
-          <ul className="divide-y divide-border">
-            {tagDetails.usage_by_category.map((u) => (
-              <li key={u.category} className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-muted/50">
-                <span className="capitalize text-sm font-medium">{u.category}</span>
-                <span className="font-mono text-sm text-muted-foreground">{u.count}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <ul className="space-y-1">
+          {tagDetails.usage_by_category.map((u) => (
+            <li key={u.category} className="flex justify-between border-b py-1">
+              <span className="capitalize">{u.category}</span>
+              <span className="font-mono">{u.count}</span>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

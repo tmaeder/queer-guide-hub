@@ -58,13 +58,10 @@ export function TripTemplates() {
     <div className="mt-12">
       <ScrollReveal direction="up">
         <div className="mb-6">
-          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Inspired starting points
-          </div>
-          <h2 className="font-bold text-2xl md:text-3xl tracking-tight">
+          <h5 className="font-bold text-2xl">
             Trip Templates
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground mt-2 max-w-xl">
+          </h5>
+          <p className="text-sm text-muted-foreground mt-1">
             Get inspired with curated LGBTQ+ travel itineraries
           </p>
         </div>

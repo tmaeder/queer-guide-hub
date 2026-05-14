@@ -21,7 +21,6 @@ import {
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function TripsPage() {
   const { t } = useTranslation();
@@ -49,32 +48,44 @@ export default function TripsPage() {
 
   return (
     <div className="container mx-auto py-8 md:py-12 px-4">
-      <PageHeader
-        eyebrow={t('trips.eyebrow', 'Your itineraries')}
-        title={hasAnyTrips ? `${t('trips.title')} · ${trips?.length}` : t('trips.title')}
-        subtitle={t('trips.subtitle')}
-        actions={
-          <>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => navigate('/trips/discover')}
-              aria-label={t('trips.discover.aria', 'Discover public trips')}
-            >
-              <Compass style={{ width: 18, height: 18, marginRight: 6 }} />
-              {t('trips.discover.button', 'Discover')}
-            </Button>
-            <Button
-              variant="brand"
-              size="lg"
-              onClick={() => setCreateOpen(true)}
-            >
-              <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
-              {t('trips.create')}
-            </Button>
-          </>
-        }
-      />
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <h3 className="text-3xl md:text-4xl mb-1">
+            {t('trips.title')}
+            {hasAnyTrips && (
+              <span
+                className="ml-3 text-muted-foreground font-medium tabular-nums"
+                style={{ fontSize: '0.65em' }}
+              >
+                · {trips?.length}
+              </span>
+            )}
+          </h3>
+          <p className="text-muted-foreground">{t('trips.subtitle')}</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/trips/discover')}
+            style={{ paddingLeft: 16, paddingRight: 16 }}
+            aria-label={t('trips.discover.aria', 'Discover public trips')}
+          >
+            <Compass style={{ width: 18, height: 18, marginRight: 6 }} />
+            {t('trips.discover.button', 'Discover')}
+          </Button>
+          <Button
+            variant="brand"
+            size="lg"
+            onClick={() => setCreateOpen(true)}
+            style={{ paddingLeft: 20, paddingRight: 20 }}
+          >
+            <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
+            {t('trips.create')}
+          </Button>
+        </div>
+      </div>
 
       {/* Travel inbox */}
       <TripsInboxSection />

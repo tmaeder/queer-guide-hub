@@ -58,17 +58,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart className="w-7 h-7 fill-current text-foreground" />
-            <h6 className="text-base font-bold tracking-tight">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <Heart
+              className="w-7 h-7 fill-current animate-pulse"
+              style={{ color: 'var(--primary)' }}
+            />
+            <h6 className="text-base font-bold gradient-text">
               The Queer Guide
             </h6>
           </div>
-          <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight text-center text-balance">
-            Welcome back
-          </DialogTitle>
-          <p className="text-sm md:text-base text-muted-foreground mt-2 text-center">
-            Sign in to continue
+          <DialogTitle>Welcome Back</DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Sign in to continue your journey
           </p>
         </DialogHeader>
 

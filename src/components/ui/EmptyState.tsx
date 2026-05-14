@@ -54,30 +54,40 @@ export const EmptyState = ({
   const bgOpacity = mood === 'playful' ? 0.09 : mood === 'encouraging' ? 0.07 : 0.04;
 
   return (
-    <Card className="text-center py-8 md:py-12">
+    <Card>
       <CardContent>
         <motion.div
-          className="w-16 h-16 rounded-2xl border border-border bg-background shadow-sm flex items-center justify-center mx-auto mb-5"
+          className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-5"
           style={{ backgroundColor: `hsl(var(--foreground) / ${bgOpacity})` }}
-          initial={false}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         >
           <Icon
             style={{
-              width: 28,
-              height: 28,
+              width: 32,
+              height: 32,
               color: 'hsl(var(--foreground))',
               opacity: iconOpacity,
             }}
           />
         </motion.div>
-        <h3 className="text-xl font-bold tracking-tight mb-2">
+        <motion.h6
+          className="text-lg font-semibold mb-2"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
+        >
           {title}
-        </h3>
-        <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-md mx-auto leading-relaxed">
+        </motion.h6>
+        <motion.p
+          className="text-sm text-muted-foreground mb-6 max-w-md mx-auto"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+        >
           {description}
-        </p>
+        </motion.p>
         {variant === 'filtered' && activeFilters && activeFilters.length > 0 && (
           <div
             className="flex flex-wrap gap-2 justify-center mb-6"

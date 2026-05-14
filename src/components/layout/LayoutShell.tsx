@@ -7,7 +7,6 @@ import { CookieConsentBanner } from '@/components/privacy/CookieConsentBanner';
 import { FeedbackButton } from '@/components/feedback/FeedbackButton';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
-import { GrainOverlay } from '@/components/effects/GrainOverlay';
 
 /**
  * Visual chrome around the route content: header, footer, banners, skip-link, background.
@@ -33,10 +32,11 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         Skip to main content
       </a>
 
-      {/* Background — solid + subtle mesh wash + film grain texture (B&W). */}
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-mesh opacity-50" />
-      <GrainOverlay />
+      {/* Background — solid color, no decorative effects */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 z-0 pointer-events-none bg-background"
+      />
       <AnalyticsTracker />
       <div className="relative z-10">
         <Header />

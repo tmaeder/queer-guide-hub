@@ -35,25 +35,25 @@ export function TripContextBar() {
     <div
       role="region"
       aria-label={t('trips.contextBar.ariaLabel', 'Active trip context')}
-      className="sticky top-0 z-[1099] border-b border-border/60 px-4 sm:px-6 py-2 backdrop-blur-md bg-foreground/[0.04] supports-[backdrop-filter]:bg-foreground/[0.03]"
+      className="sticky top-0 z-[1099] border-b border-border px-4 sm:px-6 py-1.5"
+      style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}
     >
       <div className="flex items-center gap-3 mx-auto" style={{ maxWidth: 1400, minHeight: 28 }}>
-        <span aria-hidden="true" className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-background shadow-sm flex-shrink-0">
-          <Luggage style={{ width: 14, height: 14, opacity: 0.8 }} />
-        </span>
-        <p className="text-sm font-semibold min-w-0 truncate tracking-tight">
+        <Luggage style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} aria-hidden />
+        <p className="text-sm font-semibold min-w-0 truncate">
           {displayTitle}
         </p>
-        <span className="text-xs hidden sm:inline flex-shrink-0 text-muted-foreground">
+        <span className="text-xs hidden sm:inline flex-shrink-0" style={{ opacity: 0.7 }}>
           · {phaseLabel(phase, t)} · {status}
         </span>
         <div className="flex-1" />
         <RouterLink
           to={`/trips/${activeTrip.id}`}
-          className="group/ctx text-sm font-semibold text-foreground inline-flex items-center gap-1 transition-opacity hover:opacity-85 flex-shrink-0 no-underline"
+          className="text-sm text-primary inline-flex items-center gap-0.5 transition-opacity hover:opacity-85 active:opacity-70 flex-shrink-0"
+          style={{ textDecoration: 'none' }}
         >
           {t('trips.contextBar.openTrip', 'Open trip')}
-          <ChevronRight style={{ width: 14, height: 14 }} aria-hidden className="transition-transform duration-200 group-hover/ctx:translate-x-0.5" />
+          <ChevronRight style={{ width: 14, height: 14 }} aria-hidden />
         </RouterLink>
         <Button
           variant="ghost"

@@ -22,6 +22,46 @@ function formatDate(dateStr: string): string {
   });
 }
 
+/** Keys to hide from meta display — internal or already shown in header */
+const META_HIDDEN_KEYS = new Set([
+  'id', 'entity_id', 'entity_table', 'queue_type', 'content_type',
+  'title', 'subtitle', 'status', 'created_at', 'updated_at',
+  'normalized_data', 'raw_data', 'source_data',
+]);
+
+function formatMetaValue(value: unknown): string {
+  if (value === null || value === undefined) return '—';
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value === 'number') {
+    if (value >= 0 && value <= 1 && value !== 0 && value !== 1) {
+      return `${Math.round(value * 100)}%`;
+    }
+    return String(value);
+  }
+  if (typeof value === 'string') {
+    if (/^[A-Z][A-Z_-]+$/.test(value)) {
+      return value.replace(/_/g, ' ').replace(/-/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    return value;
+  }
+  if (Array.isArray(value)) return value.join(', ');
+  return JSON.stringify(value);
+}
+
+function formatMetaKey(key: string): string {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function humanize(raw: string): string {
+  return raw
+    .replace(/_/g, ' ')
+    .replace(/-/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDetailPanelProps) {
   const { data: entityData, isLoading: entityLoading } = useEntityData(item);
   const { data: stagingData } = useStagingData(item);
@@ -33,24 +73,33 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
       )
     : [];
 
+  const metaEntries = item.meta
+    ? Object.entries(item.meta).filter(
+        ([k, v]) => !META_HIDDEN_KEYS.has(k) && v !== null && v !== undefined && v !== '',
+      )
+    : [];
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-3 border-b space-y-1">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-[10px]">
-            {item.queue_type}
+      <div className="px-4 py-3 border-b space-y-1.5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-[10px] normal-case">
+            {humanize(item.queue_type)}
           </Badge>
-          <Badge variant="outline" className="text-[10px]">
-            {item.content_type}
+          <Badge variant="secondary" className="text-[10px] normal-case">
+            {humanize(item.content_type)}
           </Badge>
           {item.confidence_score !== null && (
-            <Badge variant="secondary" className="text-[10px]">
-              {(item.confidence_score * 100).toFixed(0)}%
-            </Badge>
+            <span className="text-[10px] text-muted-foreground tabular-nums ml-auto">
+              Confidence: {(item.confidence_score * 100).toFixed(0)}%
+            </span>
           )}
         </div>
-        <h2 className="text-sm font-medium">{item.title}</h2>
+        <h2 className="text-base font-medium leading-tight">{item.title}</h2>
+        {item.subtitle && (
+          <p className="text-xs text-muted-foreground">{humanize(item.subtitle)}</p>
+        )}
         <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3 w-3" />
@@ -59,7 +108,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
           {item.source && (
             <span className="inline-flex items-center gap-1">
               <Zap className="h-3 w-3" />
-              {item.source}
+              {humanize(item.source)}
             </span>
           )}
           {item.reporter_id && (
@@ -90,15 +139,24 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
               </div>
             )}
 
-            {/* Meta / AI reasoning */}
-            {item.meta && Object.keys(item.meta).length > 0 && (
+            {/* Structured meta */}
+            {metaEntries.length > 0 && (
               <div className="border-t">
                 <p className="px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
                   Context
                 </p>
-                <pre className="text-[10px] text-muted-foreground p-3 overflow-auto max-h-32">
-                  {JSON.stringify(item.meta, null, 2)}
-                </pre>
+                <div className="divide-y">
+                  {metaEntries.map(([key, value]) => (
+                    <div key={key} className="flex items-baseline gap-3 px-3 py-1.5 text-xs">
+                      <span className="text-muted-foreground shrink-0 w-32 text-[10px] uppercase tracking-wider">
+                        {formatMetaKey(key)}
+                      </span>
+                      <span className="min-w-0 break-words">
+                        {formatMetaValue(value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </>

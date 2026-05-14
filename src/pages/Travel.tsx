@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Plane, Hotel, Ticket, TrendingUp, X } from 'lucide-react';
-import { PageHeader } from '@/components/layout/PageHeader';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -206,12 +205,14 @@ export default function Travel() {
       <SpecialOffersSection />
 
       {/* Hero */}
-      <PageHeader
-        center
-        eyebrow={t('pages.travel.eyebrow', 'Plan with confidence')}
-        title={t('pages.travel.title', 'Book Travel')}
-        subtitle={t('pages.travel.subtitle', 'Find flights, hotels, and activities for LGBTQ+ friendly destinations')}
-      />
+      <div className="border border-border bg-background p-6 sm:p-8 mb-8 text-center rounded">
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          {t('pages.travel.title', 'Book Travel')}
+        </h1>
+        <p className="text-muted-foreground max-w-[480px] mx-auto">
+          {t('pages.travel.subtitle', 'Find flights, hotels, and activities for LGBTQ+ friendly destinations')}
+        </p>
+      </div>
 
       {/* Tabs */}
       <div className="border border-border bg-background mb-8 rounded">

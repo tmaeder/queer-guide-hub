@@ -39,21 +39,14 @@ export function LanguageSwitcher() {
         ? pathWithoutLocale
         : `/${newLocale}${pathWithoutLocale}`;
 
-    // WCAG 3.1.1, 3.1.2 — update <html lang> before paint so assistive tech
-    // picks up the new language immediately, ahead of LocaleRouter's effect.
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = newLocale;
-    }
     i18n.changeLanguage(newLocale);
     navigate(newPath + location.search, { replace: true });
   };
 
   return (
     <Select value={currentLocale} onValueChange={handleChange}>
-      {/* WCAG 4.1.2 — combobox now points at its listbox via aria-controls. */}
       <SelectTrigger
         aria-label="Select language"
-        aria-controls="language-listbox"
         style={{
           width: 'auto',
           minWidth: 0,
@@ -67,7 +60,7 @@ export function LanguageSwitcher() {
         <Globe style={{ width: 16, height: 16, flexShrink: 0 }} />
         <SelectValue />
       </SelectTrigger>
-      <SelectContent id="language-listbox">
+      <SelectContent>
         {SUPPORTED_LOCALES.map((lang) => (
           <SelectItem key={lang} value={lang}>
             <span className="text-[0.8125rem]">{LANGUAGE_NAMES[lang]}</span>

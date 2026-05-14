@@ -187,8 +187,38 @@ export default tseslint.config(
       ],
     },
   },
-  // Rounded / shadow / gradient classes are now permitted in the
-  // softened editorial system (see src/index.css radius + gradient
-  // tokens). Color-literal block above remains in force: the palette
-  // stays strictly monochrome.
+  // P5 — block rounded, shadow, and gradient classes in new code.
+  // Existing uses are neutralized by tailwind.config.ts overrides but
+  // should not be added to new code.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/**/__tests__/**",
+      "src/test/**",
+      "src/components/admin/**",
+      "src/components/cms/**",
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "Literal[value=/rounded-(sm|md|lg|xl|2xl|3xl)/]",
+          message:
+            "Rounded corners are disabled — all radii are 0. Use rounded-none or remove the class.",
+        },
+        {
+          selector: "Literal[value=/shadow-(md|lg|xl|2xl)/]",
+          message:
+            "Shadows are disabled — use border or bg-muted for depth.",
+        },
+        {
+          selector: "Literal[value=/bg-gradient-to/]",
+          message:
+            "Gradients are not part of the design system — use solid bg tokens.",
+        },
+      ],
+    },
+  },
 );

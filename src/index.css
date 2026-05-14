@@ -16,16 +16,16 @@
   --text-xs2: 0.6875rem;
   --text-xs2--line-height: 1rem;
 
-  /* ── Border radius — softened editorial scale (B&W aesthetic, with curvature) ─── */
+  /* ── Border radius — editorial flat (all zero) ─────────────────── */
   --radius-none: 0;
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-  --radius-2xl: 28px;
-  --radius-3xl: 36px;
-  --radius-4xl: 44px;
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
   --radius-full: 9999px;
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
@@ -65,13 +65,9 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* ── Box shadow — restrained scale (B&W, no glow) ──────────────── */
+  /* ── Box shadow — flat, hairline divider only ──────────────────── */
   --shadow-none: none;
   --shadow-hairline: 0 1px 0 hsl(var(--border));
-  --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05), 0 1px 0 0 hsl(var(--border));
-  --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.08), 0 2px 4px -1px hsl(0 0% 0% / 0.04);
-  --shadow-lg: 0 12px 32px -6px hsl(0 0% 0% / 0.12), 0 4px 8px -2px hsl(0 0% 0% / 0.06);
-  --shadow-xl: 0 24px 48px -12px hsl(0 0% 0% / 0.18), 0 8px 16px -4px hsl(0 0% 0% / 0.08);
 }
 
 /* ── Self-hosted fonts (Inter only) ───────────────────────────────────
@@ -177,17 +173,8 @@
   --sidebar-border: 0 0% 88%;
   --sidebar-ring: 0 0% 4%;
 
-  --radius: 10px;
+  --radius: 0;
   --transition-smooth: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* ── Gradients — strictly B&W (no chromatic tint) ─────────────── */
-  --gradient-fade-down: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--background) / 0) 100%);
-  --gradient-fade-up: linear-gradient(0deg, hsl(var(--background)) 0%, hsl(var(--background) / 0) 100%);
-  --gradient-scrim: linear-gradient(180deg, hsl(0 0% 0% / 0) 0%, hsl(0 0% 0% / 0.15) 40%, hsl(0 0% 0% / 0.65) 100%);
-  --gradient-spotlight: radial-gradient(closest-side at 50% 50%, hsl(0 0% 100% / 0.10) 0%, hsl(0 0% 100% / 0) 100%);
-  --gradient-mesh: radial-gradient(at 20% 10%, hsl(0 0% 0% / 0.04) 0%, transparent 50%), radial-gradient(at 80% 20%, hsl(0 0% 0% / 0.03) 0%, transparent 50%), radial-gradient(at 50% 90%, hsl(0 0% 0% / 0.05) 0%, transparent 60%);
-  --gradient-button-fg: linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.92) 100%);
-  --gradient-divider: linear-gradient(90deg, hsl(var(--border) / 0) 0%, hsl(var(--border)) 50%, hsl(var(--border) / 0) 100%);
 
   /* Surface tonal layering (light) — five neutral steps. */
   --surface: 0 0% 100%;
@@ -278,10 +265,6 @@
   --cat-travel:      var(--foreground);
   --cat-news:        var(--foreground);
   --cat-community:   var(--foreground);
-
-  /* Dark-mode gradient overrides — invert lightness, keep B&W. */
-  --gradient-mesh: radial-gradient(at 20% 10%, hsl(0 0% 100% / 0.06) 0%, transparent 50%), radial-gradient(at 80% 20%, hsl(0 0% 100% / 0.04) 0%, transparent 50%), radial-gradient(at 50% 90%, hsl(0 0% 100% / 0.05) 0%, transparent 60%);
-  --gradient-spotlight: radial-gradient(closest-side at 50% 50%, hsl(0 0% 100% / 0.14) 0%, hsl(0 0% 100% / 0) 100%);
 }
 
 /* ── MapLibre popup theme (flat, monochrome) ───────────────────────── */
@@ -289,8 +272,8 @@
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
   border: 1px solid hsl(var(--border)) !important;
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-md) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 .maplibregl-popup-anchor-top .maplibregl-popup-tip,
 .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
@@ -369,7 +352,7 @@ body {
 [role="menuitem"]:focus-visible {
   outline: 2px solid hsl(var(--foreground)) !important;
   outline-offset: 2px !important;
-  border-radius: inherit;
+  border-radius: 0;
 }
 
 :focus:not(:focus-visible) {
@@ -422,36 +405,16 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.1;
 }
 
-/* ── Gradient utility classes (B&W only) ───────────────────────────── */
-.bg-mesh { background-image: var(--gradient-mesh); }
-.bg-scrim { background-image: var(--gradient-scrim); }
-.bg-fade-down { background-image: var(--gradient-fade-down); }
-.bg-fade-up { background-image: var(--gradient-fade-up); }
-.bg-spotlight { background-image: var(--gradient-spotlight); }
-.bg-button-fg { background-image: var(--gradient-button-fg); }
-.divider-soft {
-  height: 1px;
-  width: 100%;
-  background: var(--gradient-divider);
-  border: 0;
-}
-/* Subtle B&W gradient text for hero accents. */
-.text-gradient-fg {
-  background: linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.6) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-/* Backwards-compat shims for any remaining call sites. */
+/* ── Legacy gradient utilities — now flat solid ────────────────────── */
 .gradient-text {
-  background: linear-gradient(180deg, hsl(var(--foreground)) 0%, hsl(var(--foreground) / 0.6) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: hsl(var(--foreground));
+  -webkit-text-fill-color: hsl(var(--foreground));
+  background: none;
 }
-.bg-gradient-primary { background: hsl(var(--primary)); }
+
+.bg-gradient-primary {
+  background: hsl(var(--primary));
+}
 
 /* ── Animation Keyframes (functional only) ─────────────────────────── */
 
@@ -607,26 +570,5 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 767px) {
   button[aria-label="Share feedback"] {
     bottom: 96px !important;
-  }
-}
-
-/* WCAG 2.2 AA 2.5.8 — MapLibre attribution links must hit ≥24×24 tactile target.
-   Pad the anchor without altering its visible text size or the map layout. */
-.maplibregl-ctrl-attrib a {
-  display: inline-block;
-  min-height: 24px;
-  padding-block: 6px;
-}
-
-/* WCAG 2.5.5 AAA — icon-only header / map controls expand to 44×44 on touch
-   (coarse pointer) and narrow viewports. Desktop sizing is untouched. */
-@media (pointer: coarse), (max-width: 640px) {
-  header [aria-label="Search filters"],
-  header [aria-label="Open user menu"],
-  header [aria-label="Open navigation menu"],
-  header [aria-label="Open menu"],
-  .maplibregl-ctrl button {
-    min-width: 44px;
-    min-height: 44px;
   }
 }

@@ -11,13 +11,13 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 function Skeleton({ className, variant = "rounded", width, height, animation = "pulse", style, ...props }: SkeletonProps) {
   const variantClass =
     variant === "circular" ? "rounded-full"
-    : variant === "rectangular" ? "rounded-md"
-    : variant === "text" ? "rounded-md h-4"
-    : "rounded-xl"
+    : variant === "rectangular" ? "rounded-none"
+    : variant === "text" ? "rounded-sm h-4"
+    : "rounded-md"
   const animClass = animation === false ? "" : "animate-pulse"
   return (
     <div
-      className={cn("bg-muted/80", variantClass, animClass, className)}
+      className={cn("bg-muted", variantClass, animClass, className)}
       style={{ width, height, ...style }}
       {...props}
     />
