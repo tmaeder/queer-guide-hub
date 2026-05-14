@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Heart, Loader2 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCreateCheckoutSession } from '@/hooks/useDonations';
 import { useAuth } from '@/hooks/useAuth';
@@ -74,11 +72,11 @@ export function DonationForm() {
     <Card>
       <CardContent className="p-6 space-y-5">
         {/* Amount selection */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+        <div>
+          <p className="font-semibold text-sm mb-3">
             {t('donate.tipJar', 'Quick amounts')}
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
+          </p>
+          <div className="grid grid-cols-4 gap-2">
             {TIP_AMOUNTS.map((amount) => (
               <Button
                 key={amount}
@@ -89,29 +87,20 @@ export function DonationForm() {
                 {fmt(amount)}
               </Button>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Custom amount */}
-        <Box>
+        <div>
           <Label htmlFor="custom-amount">
             {t('donate.customAmount', 'Custom amount')} ({currency})
           </Label>
-          <Box sx={{ position: 'relative', mt: 0.5 }}>
-            <Box
-              sx={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'text.secondary',
-                fontSize: '0.875rem',
-                pointerEvents: 'none',
-                zIndex: 1,
-              }}
+          <div className="relative mt-1">
+            <div
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none z-10"
             >
               {getCurrencySymbol(currency)}
-            </Box>
+            </div>
             <Input
               id="custom-amount"
               type="number"
@@ -122,24 +111,15 @@ export function DonationForm() {
               onChange={(e) => handleCustomAmountChange(e.target.value)}
               style={{ paddingLeft: 28 }}
             />
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Frequency */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+        <div>
+          <p className="font-semibold text-sm mb-3">
             {t('donate.frequency', 'Frequency')}
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 1,
-              p: 0.5,
-              borderRadius: '10px',
-              bgcolor: 'action.hover',
-            }}
-          >
+          </p>
+          <div className="grid grid-cols-3 gap-2 p-1 rounded-[10px] bg-muted">
             {FREQUENCY_OPTIONS.map((opt) => (
               <Button
                 key={opt}
@@ -154,14 +134,14 @@ export function DonationForm() {
                 )}
               </Button>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
-        <Divider />
+        <Separator />
 
         {/* Donor info */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
+        <div className="flex flex-col gap-4">
+          <div>
             <Label htmlFor="donor-email">
               {t('donate.email', 'Email')} *
             </Label>
@@ -174,8 +154,8 @@ export function DonationForm() {
               placeholder="you@example.com"
               className="mt-1"
             />
-          </Box>
-          <Box>
+          </div>
+          <div>
             <Label htmlFor="donor-name">{t('donate.name', 'Name (optional)')}</Label>
             <Input
               id="donor-name"
@@ -184,8 +164,8 @@ export function DonationForm() {
               placeholder={t('donate.namePlaceholder', 'How you want to appear on the donor wall')}
               className="mt-1"
             />
-          </Box>
-          <Box>
+          </div>
+          <div>
             <Label htmlFor="donor-message">
               {t('donate.message', 'Message (optional)')}
             </Label>
@@ -196,8 +176,8 @@ export function DonationForm() {
               placeholder={t('donate.messagePlaceholder', 'Leave a message of support')}
               className="mt-1"
             />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          </div>
+          <div className="flex items-center gap-2">
             <Switch
               id="anonymous"
               checked={isAnonymous}
@@ -206,8 +186,8 @@ export function DonationForm() {
             <Label htmlFor="anonymous" className="cursor-pointer">
               {t('donate.anonymous', 'Donate anonymously')}
             </Label>
-          </Box>
-        </Box>
+          </div>
+        </div>
 
         {/* Submit */}
         <Button

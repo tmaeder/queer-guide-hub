@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,13 +19,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { useTaxonomyCRUD } from '@/hooks/useTaxonomyCRUD';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface EventAmenityRow {
   id: string;
@@ -54,8 +52,8 @@ const emptyForm = {
 };
 
 export default function AdminEventAmenities() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const crud = useTaxonomyCRUD('event_amenities');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -84,39 +82,38 @@ export default function AdminEventAmenities() {
 
   const handleSave = async () => {
     if (!form.name.trim()) {
-      toast({ title: 'Error', description: 'Name is required', variant: 'destructive' });
+      toast.error('Error: Name is required');
       return;
     }
     try {
+      const { error } = await crud.upsert(form, editingId);
+      if (error) throw error;
+      toast.success(`Success: ${editingId}`);
       if (editingId) {
-        const { error } = await supabase.from('event_amenities').update(form).eq('id', editingId);
+        const { error } = await crud.upsert(form, editingId);
         if (error) throw error;
-        toast({ title: 'Success', description: 'Event amenity updated' });
+        toast.success('Success: Event amenity updated');
       } else {
-        const { error } = await supabase.from('event_amenities').insert([form]);
+        const { error } = await crud.upsert(form, null);
         if (error) throw error;
-        toast({ title: 'Success', description: 'Event amenity created' });
+        toast.success('Success: Event amenity created');
       }
       setDialogOpen(false);
       invalidateTable();
     } catch (err: unknown) {
-      toast({
-        title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to save',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${err}`);
     }
   };
 
   const handleDelete = async (row: EventAmenityRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('event_amenities').delete().eq('id', row.id);
+      const { error } = await crud.remove(row.id);
       if (error) throw error;
-      toast({ title: 'Success', description: 'Event amenity deleted' });
+      toast.success('Success: Event amenity deleted');
       invalidateTable();
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+      toast.error('Error: Failed to delete');
     }
   };
 
@@ -198,93 +195,87 @@ export default function AdminEventAmenities() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Event Amenities
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage event amenities and features
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ maxWidth: 480 }}>
-          <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit Amenity' : 'Create Amenity'}</DialogTitle>
-          </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Box>
-              <Label>Name *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              />
-            </Box>
-            <Box>
-              <Label>Description</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={3}
-              />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-              <Box>
-                <Label>Icon</Label>
+    <AdminEntityTable
+      title="Event Amenities"
+      subtitle="Manage event amenities and features"
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent style={{ maxWidth: 480 }}>
+            <DialogHeader>
+              <DialogTitle>{editingId ? 'Edit Amenity' : 'Create Amenity'}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 pt-2">
+              <div>
+                <Label>Name *</Label>
                 <Input
-                  value={form.icon}
-                  onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-                  placeholder="Lucide name"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 />
-              </Box>
-              <Box>
-                <Label>Category</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Box>
-              <Box>
-                <Label>Sort Order</Label>
-                <Input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
-                  }
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={3}
                 />
-              </Box>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Switch
-                checked={form.is_active}
-                onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
-              />
-              <Label>Active</Label>
-            </Box>
-          </Box>
-          <DialogFooter style={{ marginTop: 16 }}>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Box>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Icon</Label>
+                  <Input
+                    value={form.icon}
+                    onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                    placeholder="Lucide name"
+                  />
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Sort Order</Label>
+                  <Input
+                    type="number"
+                    value={form.sort_order}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
+                    }
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={form.is_active}
+                  onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
+                />
+                <Label>Active</Label>
+              </div>
+            </div>
+            <DialogFooter style={{ marginTop: 16 }}>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      }
+    />
   );
 }

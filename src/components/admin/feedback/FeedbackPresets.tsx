@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import { Inbox, User, Clock, Bot, CircleSlash2 } from 'lucide-react';
 import type { FeedbackUrlState } from '@/hooks/useFeedbackUrlState';
 
@@ -27,19 +25,12 @@ export function FeedbackPresets({ state, update, clearFilters, currentUserId }: 
         update({ assignee: currentUserId ?? null });
         break;
       case 'overdue':
-        // Status filter set manually is tricky since "overdue" spans multiple
-        // statuses. Use `withClaude` style pseudo-filter via URL param.
-        // Clear everything; the orchestrator's SLA filter on the card level
-        // still drives the visible aging gradient. Here we just focus on
-        // open items by setting status!=done — approximated via no filter;
-        // admins combine with status selects if needed.
         update({ status: null });
         break;
       case 'with-claude':
         update({ withClaude: true });
         break;
       case 'unresolved':
-        // Everything except done
         update({ status: null, showDuplicates: false, showSpam: false });
         break;
       case 'all':
@@ -57,23 +48,26 @@ export function FeedbackPresets({ state, update, clearFilters, currentUserId }: 
   ];
 
   return (
-    <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 1.5 }}>
+    <div className="flex gap-1.5 flex-wrap">
       {PRESETS.map(({ id, label, icon: Icon }) => {
         const on = active === id;
         return (
-          <Chip
+          <button
             key={id}
-            icon={<Icon size={12} style={{ marginLeft: 8 }} />}
-            label={label}
+            type="button"
             onClick={() => apply(id)}
-            size="small"
-            variant={on ? 'filled' : 'outlined'}
-            color={on ? 'primary' : 'default'}
-            sx={{ fontSize: '0.7rem', cursor: 'pointer' }}
-          />
+            className={`inline-flex items-center gap-1.5 text-[0.7rem] px-2 py-1 rounded-full cursor-pointer border transition ${
+              on
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-transparent text-foreground border-border hover:bg-muted/40'
+            }`}
+          >
+            <Icon size={12} />
+            {label}
+          </button>
         );
       })}
-    </Box>
+    </div>
   );
 }
 
@@ -83,7 +77,5 @@ function detectActivePreset(
 ): PresetId {
   if (state.withClaude) return 'with-claude';
   if (currentUserId && state.assignee === currentUserId) return 'mine';
-  // crude default; 'overdue' + 'unresolved' can't be distinguished from
-  // freeform filters, so collapse to 'all' when none of the above apply.
   return 'all';
 }

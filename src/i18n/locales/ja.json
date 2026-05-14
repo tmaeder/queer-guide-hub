@@ -196,7 +196,7 @@
       "samples": {
         "berlin": "ベルリン・プライドウィーク",
         "barcelona": "バルセロナ：ビーチ＆ナイトライフ",
-        "bangkok": "バンコク＆プーケット エクスプローラー"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}} 日"
     },
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "都市を検索…",
         "noCityMatch": "一致する都市が見つかりません。",
         "addNewPlace": "「{{query}}」を新しい場所として追加",
-        "datesUnlockHint": "日付を追加すると、宿泊・フライト・安全情報の提案が表示されます。",
+        "datesUnlockHint": "日付を追加すると宿泊・フライト・安全の提案が表示されます。",
         "defaultTitle": "{{city}}への旅",
         "titleField": "旅のタイトル",
         "titlePlaceholder": "例：ベルリン・プライドウィーク 2026",
@@ -313,7 +313,11 @@
       "fitAll": "すべて表示",
       "fitAllAria": "すべてのスポットを画面に収める",
       "filterAll": "すべての日",
-      "dayLabel": "{{number}}日目"
+      "dayLabel": "{{number}}日目",
+      "showAttractions": "[JA] Attractions",
+      "showEvents": "[JA] Events",
+      "suggestedVenue": "[JA] Suggested venue",
+      "eventOn": "[JA] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "まだ安全情報がありません",
@@ -435,8 +439,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "パッキングリストを始めましょう",
-      "emptyDescription": "アイテムを追加するか、テンプレートから始めましょう。",
+      "emptyTitle": "アイテムなし。",
+      "emptyDescription": "アイテムを追加するかテンプレートを使用。",
       "progress": "{{checked}} / {{total}} 完了",
       "addItem": "アイテムを追加…",
       "removeAria": "アイテムを削除",
@@ -708,7 +712,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[JA] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +743,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[JA] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[JA] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -751,14 +758,16 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "任意。スキップしても構いません。",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[JA] Free, takes a minute.",
+      "haveAccountQ": "[JA] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +809,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[JA] Continue to The Queer Guide",
+      "banner": "[JA] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[JA] Verification email sent. Check your inbox.",
+      "resendShort": "[JA] Resend",
+      "gateTitle": "[JA] Verify your email first",
+      "gateDescription": "[JA] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[JA] Sign in required",
+      "description": "[JA] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1021,9 +1040,9 @@
     "error": "アラートの送信に失敗しました。もう一度お試しください。"
   },
   "home": {
-    "heroLine1": "発見。",
-    "heroLine2": "つながる。",
-    "heroLine3": "居場所。",
+    "heroLine1": "クィアな場所、",
+    "heroLine2": "イベント、人々。",
+    "heroLine3": "世界中で。",
     "subtitle": "安全なスポット、活気あるイベント、あなたを理解してくれるコミュニティ——どこにいても。",
     "browseVenues": "スポットを探す",
     "viewEvents": "イベントを見る",
@@ -1105,7 +1124,9 @@
       "myGroups": "マイグループ",
       "accessibility": "アクセシビリティ",
       "bookings": "予約",
-      "tripInbox": "旅行の受信箱"
+      "tripInbox": "旅行の受信箱",
+      "extension": "ブラウザ拡張機能",
+      "footprint": "[JA] Footprint"
     },
     "modes": {
       "dating": "恋人を探す",
@@ -1121,7 +1142,10 @@
       "accessibility": "アクセシビリティ",
       "legal": "法律",
       "contact": "お問い合わせ"
-    }
+    },
+    "signUp": "[JA] Sign up",
+    "navigation": "[JA] Navigation",
+    "signIn": "[JA] Sign in"
   },
   "pages": {
     "venues": {
@@ -1133,8 +1157,8 @@
       "gridView": "グリッド表示",
       "mapView": "マップ表示",
       "submit": "送信",
-      "emptyTitle": "まだあなたにぴったりのスポットが見つかりません",
-      "emptyDescription": "検索範囲を広げるか、別の都市を探してみてください。",
+      "emptyTitle": "フィルターに一致する場所なし。",
+      "emptyDescription": "検索範囲を広げるか都市を変更してください。",
       "submitVenue": "スポットを登録",
       "clearFilters": "フィルターをクリア",
       "emptyDataset": {
@@ -1210,8 +1234,8 @@
       "clearFilterPast": "過去のイベントフィルターをクリア",
       "noPastEvents": "過去のイベントが見つかりません",
       "noPastEventsDesc": "これらのフィルターに一致する過去のイベントはありません。トグルをオフにすると今後のイベントが表示されます。",
-      "emptyTitle": "ダンスフロアはまだ空っぽ…",
-      "emptyDescription": "また後で確認するか、フィルターを広げて楽しいイベントを見つけましょう。",
+      "emptyTitle": "イベントはまだありません。",
+      "emptyDescription": "フィルターを広げるか後で確認してください。",
       "emptyDataset": {
         "title": "まだイベントがありません",
         "body": "ここにはまだイベントを追加していません。ぜひ登録してガイドの成長にご協力ください。"
@@ -1219,6 +1243,45 @@
       "filteredEmpty": {
         "title": "フィルターに一致するイベントがありません",
         "body": "フィルターや検索を調整して、より多くの結果を表示してください。"
+      },
+      "prideSubtype": "[JA] Pride type",
+      "mapView": "[JA] Map view",
+      "preset": {
+        "label": "[JA] Quick filters",
+        "thisWeekend": "[JA] This weekend",
+        "nearMe": "[JA] Near me",
+        "pride": "[JA] Pride season",
+        "thisMonth": "[JA] This month",
+        "free": "[JA] Free",
+        "featured": "[JA] Featured"
+      },
+      "rail": {
+        "featured": "[JA] Featured this week",
+        "featuredSubtitle": "[JA] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[JA] No events match your filters",
+        "body": "[JA] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[JA] Drop \"{{city}}\" filter",
+        "clearDate": "[JA] Drop date filter",
+        "viewAll": "[JA] View all upcoming events",
+        "sameCityHeader": "[JA] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[JA] Try other cities in your date range",
+        "fallbackHeader": "[JA] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[JA] Spotlight",
+        "happeningNow": "[JA] Happening now",
+        "tomorrow": "[JA] Starts tomorrow",
+        "inDays_one": "[JA] Starts in {{count}} day",
+        "inDays_other": "[JA] Starts in {{count}} days",
+        "nearbyCount_one": "[JA] {{count}} event in {{city}}",
+        "nearbyCount_other": "[JA] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[JA] Sort events",
+      "sort": {
+        "dateAsc": "[JA] Soonest first",
+        "dateDesc": "[JA] Latest first"
       }
     },
     "eventDetail": {
@@ -1277,19 +1340,74 @@
       "subtitle": "LGBTQ+フレンドリーな目的地のフライト、ホテル、アクティビティを検索",
       "activitiesComingSoon": "アクティビティは近日公開。",
       "browseDestinations": "目的地を探す",
-      "exploreCta": "LGBTQ+フレンドリーな目的地を探索",
-      "exploreDescription": "詳細な安全情報と旅行ガイド付きで都市と国を探索"
+      "exploreCta": "目的地",
+      "exploreDescription": "安全情報とトラベルガイド付きの都市と国。",
+      "hotels": {
+        "typeLabel": "[JA] Type",
+        "priceMin": "[JA] Min €",
+        "priceMax": "[JA] Max €",
+        "priceUnavailable": "[JA] Price on request",
+        "clearFilters": "[JA] Clear filters",
+        "noResultsWithFilters": "[JA] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[JA] Any type",
+          "hotel": "[JA] Hotel",
+          "boutique": "[JA] Boutique Hotel",
+          "bnb": "[JA] B&B",
+          "hostel": "[JA] Hostel",
+          "guesthouse": "[JA] Guesthouse",
+          "apartment": "[JA] Apartment",
+          "resort": "[JA] Resort"
+        }
+      },
+      "hero": {
+        "title": "[JA] Plan a trip",
+        "subtitle": "[JA] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[JA] Where to?",
+        "start": "[JA] Start",
+        "end": "[JA] End",
+        "cta": "[JA] Plan this trip",
+        "discover": "[JA] Or",
+        "discoverLink": "[JA] browse public trips",
+        "discoverTail": "[JA] from the community.",
+        "errors": {
+          "city": "[JA] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[JA] Continue planning",
+        "placeCount": "[JA] {{count}} places"
+      },
+      "pride": {
+        "title": "[JA] Pride this season",
+        "window": "[JA] Next 4 months",
+        "empty": "[JA] No upcoming Pride events.",
+        "safety": "[JA] Equality score"
+      },
+      "inspiration": {
+        "villages": "[JA] Queer villages",
+        "publicTrips": "[JA] Public trips",
+        "viewAll": "[JA] View all",
+        "noVillages": "[JA] No villages yet.",
+        "noTrips": "[JA] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[JA] Book now",
+        "subtitle": "[JA] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "マーケットプレイス",
       "subtitle": "製品やサービスを提供する地元のビジネスを発見して応援しよう",
       "listBusiness": "あなたのビジネスを掲載",
-      "emptyTitle": "まだ棚に何もありません",
-      "emptyDescription": "クィアオーナーのビジネスが毎日参加しています。",
+      "emptyTitle": "リスティングはまだありません。",
+      "emptyDescription": "毎週追加されています。",
       "signInRequired": "ログインが必要です",
       "signInList": "無料アカウントを作成してビジネスを掲載しましょう。",
       "signInFavorites": "お気に入りを保存するにはログインしてください。",
-      "loadError": "マーケットプレイスの読み込み中にエラーが発生しました。もう一度お試しください。"
+      "loadError": "マーケットプレイスの読み込み中にエラーが発生しました。もう一度お試しください。",
+      "emptyFiltersTitle": "[JA] No listings match these filters.",
+      "emptyFiltersDescription": "[JA] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "アイテムが見つかりません",
@@ -1325,10 +1443,17 @@
       "filters": "フィルター",
       "activeFilters": "適用中のフィルター",
       "clearAll": "すべてクリア",
-      "emptyTitle": "ニュースルームは静かです",
-      "emptyDescription": "現在ストーリーはありません。また後で確認してください。",
+      "emptyTitle": "記事はまだありません。",
+      "emptyDescription": "後で確認してください。",
       "previous": "前へ",
-      "next": "次へ"
+      "next": "次へ",
+      "filteredEmptyTitle": "[JA] No news matches your filters.",
+      "filteredEmptyDescription": "[JA] Reset filters or try another topic.",
+      "resetFilters": "[JA] Reset filters",
+      "filterSearch": "[JA] Search",
+      "filterCategory": "[JA] Category",
+      "filterSource": "[JA] Source",
+      "filterFeatured": "[JA] Featured only"
     },
     "newsDetail": {
       "notFound": "記事が見つかりません",
@@ -1351,7 +1476,6 @@
     },
     "personalities": {
       "title": "人物",
-      "subtitle": "8,000人以上のLGBTQ+活動家、アーティスト、作家、アスリート、歴史的人物を閲覧。",
       "active": "選択中：",
       "clearAll": "すべてクリア",
       "emptyTitle": "フィルターに一致する人物がいません",
@@ -1364,8 +1488,8 @@
       "discover": "発見",
       "myGroups": "マイグループ",
       "popular": "人気",
-      "emptyTitle": "まだグループがありません",
-      "emptyDescription": "火付け役になろう——最初のグループを作って人々をつなげよう。",
+      "emptyTitle": "グループはまだありません。",
+      "emptyDescription": "最初のグループを作成しましょう。",
       "createGroup": "グループを作成",
       "mostPopular": "最も人気のグループ",
       "noPopular": "人気のグループはまだありません。"
@@ -1438,6 +1562,15 @@
       "body": "各予約の30分前、およびパスポートやビザの期限が近づいたときにブラウザ通知を受け取ります。",
       "turnOn": "オン",
       "turnOff": "オフ"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "詳細を見る",
+      "share": "共有",
+      "linkCopied": "リンクをコピーしました",
+      "linkCopiedDescription": "貼り付けることができます",
+      "shareFailed": "共有に失敗しました"
     }
   }
 }

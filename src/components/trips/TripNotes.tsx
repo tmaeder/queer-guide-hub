@@ -1,16 +1,21 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import { Plus, Pin, PinOff, Trash2, StickyNote } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
@@ -130,65 +135,51 @@ export function TripNotes({ tripId }: Props) {
   if (isLoading) return <PageLoadingState count={4} />;
 
   return (
-    <Box>
-      <Box className="flex items-center justify-between mb-3">
-        <Typography variant="subtitle2" color="text.secondary">
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-muted-foreground">
           {notes?.length || 0} {(notes?.length || 0) === 1 ? t('trips.notes.note', 'note') : t('trips.notes.notes', 'notes')}
-        </Typography>
+        </span>
         <Button size="sm" onClick={openNew}>
           <Plus size={14} />
           {t('trips.notes.newNote', 'New Note')}
         </Button>
-      </Box>
+      </div>
 
       {(!notes || notes.length === 0) && (
         <ScrollReveal>
-          <Box className="flex flex-col items-center justify-center py-16 text-center">
-            <Box
-              sx={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                bgcolor: 'action.hover',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 2,
-              }}
-            >
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
               <StickyNote size={24} style={{ opacity: 0.5 }} />
-            </Box>
-            <Typography variant="subtitle2" fontWeight={600}>
+            </div>
+            <span className="text-sm font-semibold">
               {t('trips.notes.noNotes', 'No notes yet')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+            </span>
+            <p className="text-sm text-muted-foreground">
               {t('trips.notes.noNotesHint', 'Create one to share information with your group')}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         </ScrollReveal>
       )}
 
-      <Box className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {notes?.map((note) => (
           <Card key={note.id} hoverable onClick={() => openEdit(note)}>
             <CardContent>
-              <Box className="flex items-start justify-between gap-1">
-                <Box className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-start justify-between gap-1">
+                <div className="flex items-center gap-1.5 min-w-0">
                   {note.is_pinned && <Pin size={12} style={{ flexShrink: 0 }} />}
-                  <Typography variant="subtitle2" fontWeight={600} noWrap>
+                  <span className="text-sm font-semibold truncate">
                     {note.title || t('trips.notes.untitled', 'Untitled')}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
                 <Badge variant="outline">{t(`trips.notes.category.${note.category || 'general'}`, note.category || 'general')}</Badge>
-              </Box>
+              </div>
 
               {note.content && (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    mt: 0.5,
-                    fontSize: 12,
+                <p
+                  className="mt-1 text-xs text-muted-foreground"
+                  style={{
                     display: '-webkit-box',
                     WebkitLineClamp: 3,
                     WebkitBoxOrient: 'vertical',
@@ -196,24 +187,24 @@ export function TripNotes({ tripId }: Props) {
                   }}
                 >
                   {note.content}
-                </Typography>
+                </p>
               )}
 
-              <Box className="flex items-center gap-2 mt-1.5">
-                <Avatar
-                  src={note.author?.avatar_url || undefined}
-                  sx={{ width: 18, height: 18, fontSize: 10 }}
-                >
-                  {(note.author?.display_name || 'U')[0].toUpperCase()}
+              <div className="flex items-center gap-2 mt-1.5">
+                <Avatar className="w-[18px] h-[18px]">
+                  {note.author?.avatar_url && <AvatarImage src={note.author.avatar_url} />}
+                  <AvatarFallback className="text-[10px]">
+                    {(note.author?.display_name || 'U')[0].toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
+                <span className="text-[10px] text-muted-foreground">
                   {formatDistanceToNow(new Date(note.updated_at), { addSuffix: true })}
-                </Typography>
-              </Box>
+                </span>
+              </div>
             </CardContent>
           </Card>
         ))}
-      </Box>
+      </div>
 
       {/* Edit / Create dialog */}
       <Dialog open={editOpen} onOpenChange={(o) => !o && setEditOpen(false)}>
@@ -222,65 +213,62 @@ export function TripNotes({ tripId }: Props) {
             <DialogTitle>{editingNote ? t('trips.notes.editNote', 'Edit Note') : t('trips.notes.newNote', 'New Note')}</DialogTitle>
           </DialogHeader>
 
-          <Box className="flex flex-col gap-3 mt-2">
-            <TextField
+          <div className="flex flex-col gap-3 mt-2">
+            <Input
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}
               placeholder={t('trips.notes.titlePlaceholder', 'Note title')}
-              fullWidth
-              size="small"
             />
-            <TextField
+            <Textarea
               value={formContent}
               onChange={(e) => setFormContent(e.target.value)}
               placeholder={t('trips.notes.contentPlaceholder', 'Write your note...')}
-              fullWidth
-              multiline
-              minRows={4}
-              maxRows={12}
-              size="small"
+              rows={4}
+              className="max-h-[300px]"
             />
-            <TextField
-              label={t('trips.notes.categoryLabel', 'Category')}
-              select
-              size="small"
-              value={formCategory}
-              onChange={(e) => setFormCategory(e.target.value)}
-              sx={{ maxWidth: 180 }}
-            >
-              {CATEGORIES.map((c) => (
-                <MenuItem key={c.value} value={c.value}>
-                  {t(`trips.notes.category.${c.value}`, c.label)}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
+            <div className="flex flex-col gap-1.5 max-w-[180px]">
+              <Label>{t('trips.notes.categoryLabel', 'Category')}</Label>
+              <Select value={formCategory} onValueChange={setFormCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {t(`trips.notes.category.${c.value}`, c.label)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-          <Box className="flex justify-between mt-4">
-            <Box className="flex gap-1">
+          <div className="flex justify-between mt-4">
+            <div className="flex gap-1">
               {editingNote && (
                 <>
-                  <IconButton
-                    size="small"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-11 w-11 p-0"
                     onClick={() =>
                       togglePin.mutate({ id: editingNote.id, isPinned: editingNote.is_pinned })
                     }
                     title={editingNote.is_pinned ? t('trips.notes.unpin', 'Unpin') : t('trips.notes.pin', 'Pin')}
-                    sx={{ minWidth: 44, minHeight: 44 }}
                   >
                     {editingNote.is_pinned ? <PinOff size={16} /> : <Pin size={16} />}
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-11 w-11 p-0 text-destructive"
                     onClick={() => setDeleteConfirmId(editingNote.id)}
-                    sx={{ minWidth: 44, minHeight: 44 }}
                   >
                     <Trash2 size={16} />
-                  </IconButton>
+                  </Button>
                 </>
               )}
-            </Box>
+            </div>
             <DialogFooter>
               <Button variant="outline" size="sm" onClick={() => setEditOpen(false)}>
                 {t('common.cancel', 'Cancel')}
@@ -293,7 +281,7 @@ export function TripNotes({ tripId }: Props) {
                 {editingNote ? t('common.save', 'Save') : t('common.create', 'Create')}
               </Button>
             </DialogFooter>
-          </Box>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -303,9 +291,9 @@ export function TripNotes({ tripId }: Props) {
           <DialogHeader>
             <DialogTitle>{t('trips.notes.deleteTitle', 'Delete Note')}</DialogTitle>
           </DialogHeader>
-          <Typography variant="body2" sx={{ mt: 1 }}>
+          <p className="text-sm mt-2">
             {t('trips.notes.deleteConfirm', 'Are you sure you want to delete this note? This cannot be undone.')}
-          </Typography>
+          </p>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setDeleteConfirmId(null)}>
               {t('common.cancel', 'Cancel')}
@@ -316,6 +304,6 @@ export function TripNotes({ tripId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }

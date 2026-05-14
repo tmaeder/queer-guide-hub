@@ -1,6 +1,4 @@
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Hotel, Plane, Train, Bus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -65,18 +63,11 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Accommodations */}
+    <div className="flex flex-col gap-6">
       {accommodations.length > 0 && (
-        <Box>
+        <div>
           <SectionHeader icon={<Hotel size={14} />} title={t('trips.suggestions.stayTitle')} />
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-              gap: 1.5,
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {accommodations.map((a) => (
               <SuggestionCard
                 key={a.id}
@@ -104,34 +95,27 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
                 }
               />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
-      {/* Transport */}
       {hasAnyTransport && (
-        <Box>
+        <div>
           <SectionHeader icon={<Plane size={14} />} title={t('trips.suggestions.getToTitle')} />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <div className="flex flex-col gap-3">
             {(['flight', 'rail', 'bus'] as const).map((mode) => {
               const group = transportGroups[mode];
               if (group.length === 0) return null;
               const Icon = mode === 'flight' ? Plane : mode === 'rail' ? Train : Bus;
               return (
-                <Box key={mode}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <div key={mode}>
+                  <div className="flex items-center gap-2 mb-2">
                     <Icon size={13} />
-                    <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span className="text-xs font-bold uppercase tracking-wider">
                       {t(`trips.suggestions.mode.${mode}`)}
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                      gap: 1.5,
-                    }}
-                  >
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {group.map((s) => (
                       <SuggestionCard
                         key={s.id}
@@ -153,39 +137,26 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
                         }
                       />
                     ))}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               );
             })}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
 function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-      <Box
-        sx={{
-          width: 28,
-          height: 28,
-          borderRadius: 1.25,
-          bgcolor: 'action.hover',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+    <div className="flex items-center gap-2 mb-3">
+      <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center">
         {icon}
-      </Box>
-      <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-      >
+      </div>
+      <p className="text-sm font-bold">
         {title}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 }

@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-
 interface Props {
   data: number[];
   color?: string;
@@ -13,7 +11,7 @@ interface Props {
  */
 export function SparklineCell({ data, color = '#3b82f6', width = 90, height = 22 }: Props) {
   if (data.length === 0) {
-    return <Box sx={{ width, height }} />;
+    return <span style={{ display: 'inline-block', width, height }} />;
   }
   const max = Math.max(1, ...data);
   const step = data.length > 1 ? width / (data.length - 1) : width;

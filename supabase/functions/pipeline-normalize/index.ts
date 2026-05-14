@@ -8,6 +8,7 @@ import {
 } from '../_shared/hotel-pipeline-utils.ts'
 import { computeIdempotencyKey } from '../_shared/idempotency.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -16,7 +17,7 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 // into normalized_data for downstream dedup & commit.
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -141,7 +142,7 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-normalize', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))
 
 function guessEntityType(t: string | null): string {
   if (!t) return 'unknown'
@@ -261,6 +262,12 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
     if (amenities.length)                n.amenities          = amenities
     if (bookingUrl)                      n.booking_url        = String(bookingUrl).trim()
     if (markers.length)                  n.lgbtq_markers      = markers
+
+    if (raw.is_organizer === true) n.is_organizer = true
+    const handles = raw.organizer_handles
+    if (handles && typeof handles === 'object' && !Array.isArray(handles)) {
+      n.organizer_handles = handles
+    }
   }
 
   if (entityType === 'country') {

@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import { X, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { usePWA } from './PWAProvider';
 
 const DISMISS_KEY = 'pwa-install-dismissed';
@@ -49,12 +46,10 @@ export function InstallBanner() {
   const [visible, setVisible] = useState(false);
   const [showIOSHint, setShowIOSHint] = useState(false);
 
-  // Count unique page navigations
   useEffect(() => {
     setPageCount((c) => c + 1);
   }, [location.pathname]);
 
-  // Show banner after enough pages visited
   useEffect(() => {
     if (isInstalled || isDismissed()) return;
     if (pageCount >= PAGES_BEFORE_PROMPT && (canInstall || isIOSSafari())) {
@@ -81,76 +76,52 @@ export function InstallBanner() {
   if (!visible) return null;
 
   return (
-    <Box
+    <div
       role="complementary"
       aria-label="Install app"
-      sx={{
-        position: 'fixed',
-        bottom: { xs: 16, sm: 24 },
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 1300,
-        width: { xs: 'calc(100% - 32px)', sm: 'auto' },
-        maxWidth: 420,
-        bgcolor: 'background.paper',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
-        p: 2,
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 1.5,
-        animation: 'slideUp 0.3s ease-out',
-        '@keyframes slideUp': {
-          from: { opacity: 0, transform: 'translateX(-50%) translateY(16px)' },
-          to: { opacity: 1, transform: 'translateX(-50%) translateY(0)' },
-        },
-      }}
+      className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1300] w-[calc(100%-32px)] sm:w-auto max-w-[420px] bg-background p-4 flex items-start gap-3 animate-in slide-in-from-bottom-4 fade-in duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.24)]"
     >
-      <Box
-        component="img"
+      <img
         src="/icons/icon-96.png"
         alt=""
-        sx={{ width: 40, height: 40, borderRadius: 1.5, flexShrink: 0, mt: 0.25 }}
+        className="w-10 h-10 rounded-md shrink-0 mt-0.5"
       />
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      <div className="flex-1 min-w-0">
         {showIOSHint ? (
           <>
-            <Typography variant="body2" fontWeight={600} gutterBottom>
-              Add to Home Screen
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <p className="text-sm font-semibold mb-1">Add to Home Screen</p>
+            <span className="text-xs text-muted-foreground">
               Tap the share button in Safari, then select "Add to Home Screen".
-            </Typography>
+            </span>
           </>
         ) : (
           <>
-            <Typography variant="body2" fontWeight={600} gutterBottom>
-              Install Queer Guide
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <p className="text-sm font-semibold mb-1">Install Queer Guide</p>
+            <span className="text-xs text-muted-foreground">
               Quick access from your home screen — works offline too.
-            </Typography>
+            </span>
           </>
         )}
         {!showIOSHint && (
           <Button
-            size="small"
-            variant="contained"
-            startIcon={<Download size={16} />}
+            size="sm"
             onClick={handleInstall}
-            sx={{ mt: 1, textTransform: 'none', fontWeight: 600, borderRadius: 2 }}
+            className="mt-2 font-semibold rounded-lg"
           >
+            <Download size={16} className="mr-2" />
             Install
           </Button>
         )}
-      </Box>
-      <IconButton
-        size="small"
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={handleDismiss}
         aria-label="Dismiss install prompt"
-        sx={{ ml: -0.5, mt: -0.5 }}
+        className="h-7 w-7 p-0 -ml-1 -mt-1"
       >
         <X size={18} />
-      </IconButton>
-    </Box>
+      </Button>
+    </div>
   );
 }

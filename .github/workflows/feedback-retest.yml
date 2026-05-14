@@ -1,0 +1,140 @@
+name: Feedback retest
+
+# Triggered by feedback-retest-dispatch (Supabase edge function) when an admin
+# starts a retest against a routine run's proposed fix and the project is
+# configured with FEEDBACK_RETEST_RUNNER=github_actions.
+#
+# Required repo secret: FEEDBACK_RUNNER_HMAC_SECRET (matches Supabase secret).
+#
+# Security: all dispatch payload values come from $GITHUB_EVENT_PATH via jq
+# rather than ${{ }} templating to avoid script injection vectors.
+
+on:
+  repository_dispatch:
+    types: [feedback-retest]
+
+permissions:
+  contents: read
+
+jobs:
+  retest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      HMAC_SECRET: ${{ secrets.FEEDBACK_RUNNER_HMAC_SECRET }}
+      REPO_FULL_NAME: ${{ github.repository }}
+    steps:
+      - name: Extract dispatch payload
+        id: payload
+        run: |
+          set -euo pipefail
+          RETEST_ID=$(jq -r '.client_payload.retest_id'      "$GITHUB_EVENT_PATH")
+          RUN_ID=$(jq -r    '.client_payload.routine_run_id' "$GITHUB_EVENT_PATH")
+          KIND=$(jq -r      '.client_payload.kind'           "$GITHUB_EVENT_PATH")
+          CALLBACK=$(jq -r  '.client_payload.callback_url'   "$GITHUB_EVENT_PATH")
+          # files_changed: array of source paths from the routine run; only
+          # populated when kind=targeted. Space-joined for downstream shell use.
+          FILES=$(jq -r '.client_payload.files_changed // [] | join(" ")' "$GITHUB_EVENT_PATH")
+          {
+            echo "retest_id=$RETEST_ID"
+            echo "routine_run_id=$RUN_ID"
+            echo "kind=$KIND"
+            echo "callback_url=$CALLBACK"
+            echo "files=$FILES"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Pick branch (fix branch if exists, else main)
+        id: head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.payload.outputs.routine_run_id }}
+        run: |
+          set -euo pipefail
+          BRANCH="feat/claude-fix-$RUN_ID"
+          if git ls-remote --exit-code --heads "https://github.com/$REPO_FULL_NAME.git" "$BRANCH" >/dev/null 2>&1; then
+            echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.head.outputs.branch }}
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Notify Supabase — running
+        env:
+          KIND_EVENT: running
+          RETEST_KIND: ${{ steps.payload.outputs.kind }}
+          RETEST_ID: ${{ steps.payload.outputs.retest_id }}
+          CALLBACK_URL: ${{ steps.payload.outputs.callback_url }}
+        run: ./.github/scripts/feedback-retest-callback.sh
+
+      - name: Run retest
+        id: run
+        env:
+          KIND: ${{ steps.payload.outputs.kind }}
+          FILES: ${{ steps.payload.outputs.files }}
+        run: |
+          set -euo pipefail
+          mkdir -p .retest
+          set +e
+          case "$KIND" in
+            typecheck) npm run typecheck > .retest/log 2>&1 ;;
+            lint)      npm run lint      > .retest/log 2>&1 ;;
+            unit)      npm test          > .retest/log 2>&1 ;;
+            e2e)       npx playwright test --reporter=line > .retest/log 2>&1 ;;
+            targeted)
+              # Targeted: ask Vitest which test files relate to the changed
+              # source files. If no files_changed were supplied, fall back to
+              # the full unit suite so the retest is never silently empty.
+              if [ -n "$FILES" ]; then
+                # shellcheck disable=SC2086
+                npx vitest run --related $FILES --reporter=verbose > .retest/log 2>&1
+              else
+                echo "no files_changed provided; running full unit suite" > .retest/log
+                npm test >> .retest/log 2>&1
+              fi
+              ;;
+            *)
+              echo "unknown kind: $KIND" > .retest/log
+              echo "passed=false" >> "$GITHUB_OUTPUT"
+              echo "exit_code=2"  >> "$GITHUB_OUTPUT"
+              exit 0 ;;
+          esac
+          RC=$?
+          set -e
+          if [ "$RC" -eq 0 ]; then
+            echo "passed=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "exit_code=$RC" >> "$GITHUB_OUTPUT"
+
+      - name: Capture log excerpt
+        id: log
+        run: |
+          set -euo pipefail
+          EXCERPT=$(tail -n 80 .retest/log | jq -R . | jq -s -c 'join("\n")')
+          echo "excerpt=$EXCERPT" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Supabase — result
+        if: always()
+        env:
+          KIND_EVENT: ${{ steps.run.outputs.passed == 'true' && 'passed' || 'failed' }}
+          RETEST_KIND: ${{ steps.payload.outputs.kind }}
+          RETEST_ID: ${{ steps.payload.outputs.retest_id }}
+          CALLBACK_URL: ${{ steps.payload.outputs.callback_url }}
+          EXIT_CODE: ${{ steps.run.outputs.exit_code }}
+          LOG_EXCERPT: ${{ steps.log.outputs.excerpt }}
+        run: ./.github/scripts/feedback-retest-callback.sh

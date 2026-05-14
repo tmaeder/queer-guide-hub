@@ -1,12 +1,13 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { scoreMarketplaceQuality } from '../_shared/marketplace-pipeline-utils.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Quality Score Node
 // Computes a 0-100 quality score based on data completeness
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-quality-score', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
@@ -24,7 +25,7 @@ Deno.serve(async (req) => {
       .select('id, normalized_data, enriched_data, entity_type, target_table')
       .eq('enrichment_status', 'pending')
       .in('dedup_status', ['unique', 'pending'])
-      .eq('ai_validation_status', 'approved')
+      .in('ai_validation_status', ['approved', 'pending'])
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
@@ -43,7 +44,9 @@ Deno.serve(async (req) => {
         ? computePersonalityScore(normalized)
         : (type === 'marketplace' || item.target_table === 'marketplace_listings')
           ? scoreMarketplaceQuality(normalized)
-          : computeScore(normalized, type)
+          : (type === 'news_article' || item.target_table === 'news_articles')
+            ? computeNewsScore(normalized)
+            : computeScore(normalized, type)
 
       if (!dryRun) {
         const belowMin = score < minScore
@@ -70,7 +73,55 @@ Deno.serve(async (req) => {
     console.error('pipeline-quality-score error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))
+
+/** News article rubric: title 15, content 30, image 15, author 10, excerpt 10, published_at 5, source 5, tags 10. */
+function computeNewsScore(data: Record<string, unknown>): number {
+  let score = 0
+  const meta = (data.metadata ?? {}) as Record<string, unknown>
+
+  // Title quality (15 pts)
+  const title = String(data.name ?? data.title ?? meta.title ?? '')
+  if (title.length >= 10) score += 5
+  if (title.length >= 30) score += 5
+  if (/\s/.test(title) && title.split(/\s+/).length >= 4) score += 5 // multi-word informative title
+
+  // Content depth (30 pts) — the most important signal
+  const desc = String(data.description ?? data.content ?? '')
+  const stripped = desc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  if (stripped.length > 0) score += 5
+  if (stripped.length > 100) score += 5
+  if (stripped.length > 300) score += 10
+  if (stripped.length > 800) score += 10
+
+  // Image (15 pts)
+  const images = data.images as string[] | undefined
+  const metaImage = meta.image_url as string | undefined
+  if ((images && images.length > 0) || metaImage) score += 15
+
+  // Author (10 pts)
+  const author = meta.author as string | undefined
+  if (author && author.length > 2) score += 10
+
+  // Excerpt (10 pts)
+  const excerpt = meta.excerpt as string | undefined
+  if (excerpt && excerpt.length > 20) score += 10
+
+  // Published date (5 pts)
+  const pubDate = meta.published_at as string | undefined
+  if (pubDate) score += 5
+
+  // Source (5 pts)
+  const sourceId = meta.source_id as string | undefined
+  if (sourceId) score += 5
+
+  // Tags (10 pts)
+  const tags = data.tags as string[] | undefined
+  if (tags && tags.length > 0) score += 5
+  if (tags && tags.length >= 3) score += 5
+
+  return Math.min(score, 100)
+}
 
 function computeScore(data: Record<string, unknown>, _entityType: string): number {
   let score = 0

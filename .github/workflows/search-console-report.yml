@@ -1,0 +1,35 @@
+name: Search Console Report
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 8 * * 1"
+concurrency:
+  group: search-console-report
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Generate weekly report
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          SEARCH_CONSOLE_PROPERTY: ${{ secrets.SEARCH_CONSOLE_PROPERTY }}
+        run: node scripts/search-console-report.mjs
+      - name: Commit report
+        run: |
+          if [ -z "$(git status --porcelain reports/)" ]; then
+            echo "No new report to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/
+          git commit -m "chore(seo): weekly Search Console report"
+          git push

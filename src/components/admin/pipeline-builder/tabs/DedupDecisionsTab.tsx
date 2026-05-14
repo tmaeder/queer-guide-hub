@@ -3,57 +3,32 @@ import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Merge, X, CheckCircle, Wand2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
-interface DedupRow {
-  id: string;
-  entity_type: string;
-  entity_a_id: string | null;
-  entity_b_id: string | null;
-  match_method: string;
-  confidence: number;
-  decision: string;
-  incoming_source_name: string | null;
-  incoming_source_id: string | null;
-  created_at: string;
-}
+import {
+  fetchPendingDedupDecisions,
+  setDedupDecision,
+  type DedupDecisionRow as DedupRow,
+} from '@/hooks/usePipelineBuilderTabs';
 
 type EntityFilter = 'all' | 'venue' | 'event' | 'place' | 'stay';
 
 export default function DedupDecisionsTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [entityFilter, setEntityFilter] = useState<EntityFilter>('all');
 
   const { data: rows = [], isLoading } = useQuery<DedupRow[]>({
     queryKey: ['dedup-decisions', entityFilter],
-    queryFn: async () => {
-      let q = supabase
-        .from('scraper_dedupe_decisions')
-        .select('*')
-        .eq('decision', 'pending')
-        .order('confidence', { ascending: false })
-        .limit(200);
-      if (entityFilter !== 'all') q = q.eq('entity_type', entityFilter);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as DedupRow[];
-    },
+    queryFn: () => fetchPendingDedupDecisions(entityFilter),
     refetchInterval: 60_000,
   });
 
   const resolve = useMutation({
-    mutationFn: async ({ id, decision }: { id: string; decision: 'merge' | 'skip' }) => {
-      const { error } = await supabase
-        .from('scraper_dedupe_decisions')
-        .update({ decision })
-        .eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, decision }: { id: string; decision: 'merge' | 'skip' }) =>
+      setDedupDecision(id, decision),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dedup-decisions'] }),
-    onError: (e: Error) => toast({ title: 'Update failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Update failed: ${e.message}`),
   });
 
   const autoResolve = useMutation({
@@ -66,10 +41,10 @@ export default function DedupDecisionsTab() {
       return data as number;
     },
     onSuccess: (n) => {
-      toast({ title: `Auto-resolved ${n} decisions` });
+      toast.success(`Auto-resolved ${n} decisions`);
       qc.invalidateQueries({ queryKey: ['dedup-decisions'] });
     },
-    onError: (e: Error) => toast({ title: 'Auto-resolve failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Auto-resolve failed: ${e.message}`),
   });
 
   const counts = useMemo(() => {
@@ -81,7 +56,7 @@ export default function DedupDecisionsTab() {
   const FilterButton = ({ value, label }: { value: EntityFilter; label: string }) => (
     <button
       onClick={() => setEntityFilter(value)}
-      className={`text-[11px] px-2.5 py-1 rounded border transition-colors capitalize ${
+      className={`text-xs2 px-2.5 py-1 rounded border transition-colors capitalize ${
         entityFilter === value
           ? 'bg-primary text-primary-foreground border-primary'
           : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -97,7 +72,7 @@ export default function DedupDecisionsTab() {
       <div className="flex items-center gap-2 flex-wrap">
         <Merge className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-semibold">Pending dedupe decisions</span>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{counts.all} pending</Badge>
+        <Badge variant="outline" className="text-2xs px-1.5 py-0">{counts.all} pending</Badge>
         <div className="flex-1" />
         <Button
           size="sm"
@@ -137,7 +112,7 @@ export default function DedupDecisionsTab() {
               <thead className="bg-muted/40 sticky top-0">
                 <tr className="border-b border-border">
                   {['Type', 'Method', 'Confidence', 'Canonical', 'Incoming', 'Created', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -150,19 +125,23 @@ export default function DedupDecisionsTab() {
                   return (
                     <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                       <td className="px-3 py-2">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{r.entity_type}</Badge>
+                        <Badge variant="outline" className="text-2xs px-1.5 py-0 capitalize">{r.entity_type}</Badge>
                       </td>
                       <td className="px-3 py-2 font-mono text-xs">{r.match_method}</td>
                       <td className={`px-3 py-2 font-mono tabular-nums font-semibold ${confColor}`}>
                         {r.confidence.toFixed(3)}
                       </td>
-                      <td className="px-3 py-2">
-                        <code className="text-[10px] bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>
+                      <td className="px-3 py-2" title={r.entity_a_id ?? undefined}>
+                        {r.entity_a_name
+                          ? <span className="text-xs truncate max-w-[180px] inline-block align-bottom">{r.entity_a_name}</span>
+                          : <code className="text-2xs bg-muted/60 px-1 rounded">{r.entity_a_id?.slice(0, 8) ?? '—'}</code>}
                       </td>
-                      <td className="px-3 py-2 text-[11px] font-mono text-muted-foreground">
-                        {r.incoming_source_name}/{r.incoming_source_id}
+                      <td className="px-3 py-2" title={r.entity_b_id ?? undefined}>
+                        {r.entity_b_name
+                          ? <span className="text-xs truncate max-w-[180px] inline-block align-bottom">{r.entity_b_name}</span>
+                          : <span className="text-xs2 font-mono text-muted-foreground">{r.incoming_source_name}/{r.incoming_source_id}</span>}
                       </td>
-                      <td className="px-3 py-2 text-[11px] text-muted-foreground"
+                      <td className="px-3 py-2 text-xs2 text-muted-foreground"
                           title={new Date(r.created_at).toISOString()}>
                         {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
                       </td>

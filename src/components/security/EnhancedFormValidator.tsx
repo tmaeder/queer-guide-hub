@@ -3,7 +3,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useContentValidation } from './EnhancedContentValidator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
-import Box from '@mui/material/Box';
 
 interface EnhancedFormValidatorProps {
   children: React.ReactNode;
@@ -137,7 +136,7 @@ export function EnhancedFormValidator({
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {(validationErrors.length > 0 || isBlocked) && (
         <Alert variant="destructive">
           <AlertTriangle style={{ height: 16, width: 16 }} />
@@ -147,18 +146,18 @@ export function EnhancedFormValidator({
             ) : (
               <div>
                 <span>Please fix the following issues:</span>
-                <Box component="ul" sx={{ listStyle: 'disc', listStylePosition: 'inside', mt: 1 }}>
+                <ul className="list-disc list-inside mt-2">
                   {validationErrors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
-                </Box>
+                </ul>
               </div>
             )}
           </AlertDescription>
         </Alert>
       )}
       {enhancedChildren}
-    </Box>
+    </div>
   );
 }
 

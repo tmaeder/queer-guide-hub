@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: ILGA World Database (GraphQL)
@@ -221,7 +222,7 @@ function calculateEqualityScore(data: Record<string, unknown>): number {
 
 // ─── HTTP Handler ────────────────────────────────────────────
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-ilga', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
@@ -259,4 +260,4 @@ Deno.serve(async (req) => {
     console.error('source-ilga error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

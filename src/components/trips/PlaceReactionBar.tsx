@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   REACTION_EMOJIS,
   useToggleReaction,
@@ -11,17 +10,9 @@ interface Props {
   tripId: string;
   placeId: string;
   summary: PlaceReactionSummary | undefined;
-  /** Disable interaction (e.g. on the owner's view or signed-out read-only). */
   disabled?: boolean;
 }
 
-/**
- * Inline emoji reaction bar for a single trip place on the shared-trip
- * page. Shows the 5 supported emojis with counts; tapping toggles the
- * viewer's reaction on/off (fingerprint-scoped for anon visitors).
- * Active emojis are visually lit; inactive emojis sit low-opacity so
- * the bar doesn't steal focus from the itinerary content.
- */
 export function PlaceReactionBar({ tripId, placeId, summary, disabled }: Props) {
   const toggle = useToggleReaction();
 
@@ -41,40 +32,35 @@ export function PlaceReactionBar({ tripId, placeId, summary, disabled }: Props) 
   };
 
   return (
-    <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-      {chips.map(({ emoji, count, mine }) => (
-        <Tooltip key={emoji} title={mine ? 'You reacted' : 'React'} placement="top">
-          <Box
-            component="button"
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              handleClick(emoji, mine);
-            }}
-            disabled={disabled}
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.25,
-              fontSize: 13,
-              lineHeight: 1,
-              border: 'none',
-              background: 'transparent',
-              cursor: disabled ? 'default' : 'pointer',
-              opacity: count > 0 || mine ? 1 : 0.5,
-              color: 'text.primary',
-              transition: 'opacity 0.15s, transform 0.15s',
-              '&:hover': disabled ? {} : { transform: 'scale(1.1)', opacity: 1 },
-              padding: '2px 4px',
-              fontWeight: mine ? 700 : 400,
-            }}
-          >
-            <span style={{ fontSize: 14 }}>{emoji}</span>
-            {count > 0 && <span style={{ fontSize: 11 }}>{count}</span>}
-          </Box>
-        </Tooltip>
-      ))}
-    </Box>
+    <TooltipProvider delayDuration={300}>
+      <div className="flex gap-1 mt-1">
+        {chips.map(({ emoji, count, mine }) => (
+          <Tooltip key={emoji}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleClick(emoji, mine);
+                }}
+                disabled={disabled}
+                className="inline-flex items-center gap-0.5 px-1 py-0.5 leading-none border-none bg-transparent transition hover:scale-110 hover:opacity-100 disabled:cursor-default text-foreground"
+                style={{
+                  cursor: disabled ? 'default' : 'pointer',
+                  opacity: count > 0 || mine ? 1 : 0.5,
+                  fontSize: 13,
+                  fontWeight: mine ? 700 : 400,
+                }}
+              >
+                <span style={{ fontSize: 14 }}>{emoji}</span>
+                {count > 0 && <span style={{ fontSize: 11 }}>{count}</span>}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">{mine ? 'You reacted' : 'React'}</TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }

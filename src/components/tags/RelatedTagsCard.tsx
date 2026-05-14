@@ -1,51 +1,87 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
-import { useSimilarTags } from '@/hooks/useTagRelationships';
+import { useMemo } from 'react';
+import { useSimilarTags, type SimilarTag } from '@/hooks/useTagRelationships';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
+import { useSafeMode } from '@/providers/SafeModeProvider';
+import { isAdultCategoryName } from '@/components/resources/categoryMeta';
 
 interface RelatedTagsCardProps {
   tagId: string;
+  /** Category of the source tag — used to prefer within-category results. */
+  sourceCategory?: string | null;
   onTagClick: (tag: { name: string; id: string }) => void;
 }
 
-export function RelatedTagsCard({ tagId, onTagClick }: RelatedTagsCardProps) {
-  const { data: similarTags, isLoading } = useSimilarTags(tagId, 10);
+/**
+ * Sort related tags: within-category first, then by score descending.
+ * When safe mode is on, adult-category tags are stripped entirely.
+ */
+function rankAndFilter(
+  tags: SimilarTag[],
+  sourceCategory: string | null | undefined,
+  safeEnabled: boolean,
+): SimilarTag[] {
+  let filtered = tags;
+
+  if (safeEnabled) {
+    filtered = filtered.filter((t) => !isAdultCategoryName(t.category));
+  }
+
+  if (!sourceCategory) return filtered;
+
+  return [...filtered].sort((a, b) => {
+    const aMatch = a.category === sourceCategory ? 1 : 0;
+    const bMatch = b.category === sourceCategory ? 1 : 0;
+    if (aMatch !== bMatch) return bMatch - aMatch;
+    return b.similarity_score - a.similarity_score;
+  });
+}
+
+export function RelatedTagsCard({ tagId, sourceCategory, onTagClick }: RelatedTagsCardProps) {
+  const { data: similarTags, isLoading } = useSimilarTags(tagId, 15);
+  const { enabled: safeEnabled } = useSafeMode();
+
+  const ranked = useMemo(
+    () => rankAndFilter(similarTags ?? [], sourceCategory, safeEnabled).slice(0, 10),
+    [similarTags, sourceCategory, safeEnabled],
+  );
 
   if (isLoading) {
     return (
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>
-          Related
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <div>
+        <h2 className="font-bold text-lg mb-4">Related</h2>
+        <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} variant="rounded" width={70 + i * 12} height={32} sx={{ borderRadius: 4 }} />
+            <Skeleton key={i} className="h-8 rounded-full" style={{ width: 70 + i * 12 }} />
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
-  if (!similarTags || similarTags.length === 0) return null;
+  if (ranked.length === 0) return null;
 
   return (
-    <Box>
-      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 2 }}>
-        Related
-      </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-        {similarTags.map((tag) => (
-          <Badge
+    <div>
+      <h2 className="font-bold text-lg mb-4">Related</h2>
+      <div className="flex flex-wrap gap-2">
+        {ranked.map((tag) => (
+          <LocalizedLink
             key={tag.tag_id}
-            variant="outline"
-
-            onClick={() => onTagClick({ name: tag.name, id: tag.tag_id })}
+            to={`/resources/${tag.slug || tag.name}`}
+            className="no-underline"
+            onClick={(e) => {
+              e.preventDefault();
+              onTagClick({ name: tag.name, id: tag.tag_id });
+            }}
           >
-            {tag.name}
-          </Badge>
+            <Badge variant="outline" className="cursor-pointer hover:bg-accent">
+              {tag.name}
+            </Badge>
+          </LocalizedLink>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

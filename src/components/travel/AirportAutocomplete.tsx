@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Plane } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchAirportByIata, searchAirports } from '@/hooks/useAirportSearch';
 
 interface Airport {
   iata_code: string;
@@ -42,12 +40,7 @@ export function AirportAutocomplete({
     } else if (value && !displayValue) {
       // Fallback: resolve IATA code to display label from DB
       const loadLabel = async () => {
-        const { data } = await supabase
-          .from('airports')
-          .select('iata_code, city_name, country_code')
-          .eq('iata_code', value)
-          .limit(1)
-          .maybeSingle();
+        const data = await fetchAirportByIata(value);
         if (data) {
           setDisplayValue(`${data.city_name || value} (${data.iata_code})`);
         } else {
@@ -79,14 +72,10 @@ export function AirportAutocomplete({
 
     // Exact IATA match gets priority (e.g. "LHR")
 
-    const { data } = await supabase
-      .from('airports')
-      .select('iata_code, name, city_name, country_code')
-      .or(`city_name.ilike.%${q}%,name.ilike.%${q}%,iata_code.ilike.%${q}%`)
-      .limit(30);
+    const data = await searchAirports(q);
 
     // Sort results by relevance: major airports first, then exact city match, then alphabetical
-    const sorted = (data || []).sort((a, b) => {
+    const sorted = data.sort((a, b) => {
       const aName = a.name?.toLowerCase() || '';
       const bName = b.name?.toLowerCase() || '';
       const aCityMatch = a.city_name?.toLowerCase() === q.toLowerCase();
@@ -133,11 +122,11 @@ export function AirportAutocomplete({
   };
 
   return (
-    <Box ref={containerRef} sx={{ position: 'relative' }}>
+    <div ref={containerRef} className="relative">
       {label && (
-        <Typography component="label" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5, display: 'block' }}>
+        <label className="text-sm font-medium mb-1 block">
           {label}
-        </Typography>
+        </label>
       )}
       <Input
         value={displayValue}
@@ -146,51 +135,31 @@ export function AirportAutocomplete({
         placeholder={placeholder}
       />
       {open && results.length > 0 && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            zIndex: 50,
-            bgcolor: 'background.paper',
-            maxHeight: 320,
-            overflow: 'auto',
-            mt: 0.5,
-          }}
-        >
+        <div className="absolute top-full left-0 right-0 z-50 bg-background max-h-80 overflow-auto mt-1 border border-border rounded-md shadow-md">
           {results.map((airport) => (
-            <Box
+            <div
               key={airport.iata_code}
               onClick={() => handleSelect(airport)}
-              sx={{
-                px: 2,
-                py: 1,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                '&:hover': { bgcolor: 'action.hover' },
-              }}
+              className="px-4 py-2 cursor-pointer flex items-center gap-2 hover:bg-muted"
             >
               <Plane style={{ height: 14, width: 14, flexShrink: 0, color: 'var(--muted-foreground)' }} />
-              <Box>
-                <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              <div>
+                <p className="text-sm font-medium">
                   {airport.city_name || airport.name} ({airport.iata_code})
-                </Typography>
-                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                  {airport.name}{airport.country_code ? ` \u00B7 ${airport.country_code}` : ''}
-                </Typography>
-              </Box>
-            </Box>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {airport.name}{airport.country_code ? ` · ${airport.country_code}` : ''}
+                </p>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
       {open && loading && (
-        <Box sx={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, bgcolor: 'background.paper', p: 2, mt: 0.5 }}>
-          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', textAlign: 'center' }}>Searching...</Typography>
-        </Box>
+        <div className="absolute top-full left-0 right-0 z-50 bg-background p-4 mt-1 border border-border rounded-md shadow-md">
+          <p className="text-sm text-muted-foreground text-center">Searching...</p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

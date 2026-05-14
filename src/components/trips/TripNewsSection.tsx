@@ -1,9 +1,7 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
 import { AlertTriangle, ExternalLink, Newspaper } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useTripNews } from '@/hooks/useTripNews';
 
 interface Props {
@@ -24,54 +22,41 @@ export function TripNewsSection({ countryIds }: Props) {
 
   if (isLoading) {
     return (
-      <Box sx={{ mt: 4 }}>
+      <div className="mt-8">
         <SectionHeading />
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Skeleton variant="rectangular" height={68} />
-          <Skeleton variant="rectangular" height={68} />
-          <Skeleton variant="rectangular" height={68} />
-        </Box>
-      </Box>
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-[68px] w-full" />
+          <Skeleton className="h-[68px] w-full" />
+          <Skeleton className="h-[68px] w-full" />
+        </div>
+      </div>
     );
   }
 
   if (!articles || articles.length === 0) {
     return (
-      <Box sx={{ mt: 4 }}>
+      <div className="mt-8">
         <SectionHeading />
-        <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+        <p className="text-sm text-muted-foreground py-4">
           {t('trips.news.empty', 'No recent news for these destinations.')}
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   const flaggedCount = articles.filter((a) => a.isSafetyFlagged).length;
 
   return (
-    <Box sx={{ mt: 4 }}>
+    <div className="mt-8">
       <SectionHeading flaggedCount={flaggedCount} />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <div className="flex flex-col gap-1">
         {articles.map((article) => (
-          <Box
+          <a
             key={article.id}
-            component="a"
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            sx={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 1.25,
-              p: 1.5,
-              textDecoration: 'none',
-              color: 'inherit',
-              borderTop: '1px solid',
-              borderColor: 'divider',
-              transition: 'background-color 120ms',
-              '&:hover': { bgcolor: 'action.hover' },
-              '&:first-of-type': { borderTop: 'none' },
-            }}
+            className="flex items-start gap-3 p-3 no-underline text-inherit border-t border-border first-of-type:border-t-0 transition-colors hover:bg-muted"
           >
             {article.isSafetyFlagged ? (
               <AlertTriangle
@@ -80,7 +65,7 @@ export function TripNewsSection({ countryIds }: Props) {
                   height: 16,
                   flexShrink: 0,
                   marginTop: 3,
-                  color: '#b45309',
+                  color: 'hsl(var(--foreground))',
                 }}
                 aria-label={t('trips.news.safetyFlag', 'Safety-relevant')}
               />
@@ -90,30 +75,14 @@ export function TripNewsSection({ countryIds }: Props) {
                 aria-hidden
               />
             )}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: article.isSafetyFlagged ? 700 : 500,
-                  lineHeight: 1.3,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
+            <div className="flex-1 min-w-0">
+              <p
+                className={`text-sm leading-tight overflow-hidden ${article.isSafetyFlagged ? 'font-bold' : 'font-medium'}`}
+                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
               >
                 {article.title}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  mt: 0.25,
-                  color: 'text.secondary',
-                  fontSize: 11,
-                }}
-              >
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5 text-muted-foreground" style={{ fontSize: 11 }}>
                 {article.publisher_name && <span>{article.publisher_name}</span>}
                 {article.publisher_name && <span>·</span>}
                 <span>
@@ -121,71 +90,46 @@ export function TripNewsSection({ countryIds }: Props) {
                     addSuffix: true,
                   })}
                 </span>
-              </Box>
-            </Box>
+              </div>
+            </div>
             <ExternalLink
               style={{ width: 12, height: 12, flexShrink: 0, marginTop: 5, opacity: 0.4 }}
               aria-hidden
             />
-          </Box>
+          </a>
         ))}
-      </Box>
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        sx={{ display: 'block', mt: 1.5, fontSize: 11 }}
-      >
+      </div>
+      <p className="block mt-3 text-muted-foreground" style={{ fontSize: 11 }}>
         {t('trips.news.disclaimer', {
           defaultValue:
             'News from {{lang}} sources, last 30 days. Safety flags are heuristic — verify with official advisories.',
           lang: i18n.language.toUpperCase(),
         })}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 }
 
 function SectionHeading({ flaggedCount = 0 }: { flaggedCount?: number }) {
   const { t } = useTranslation();
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        mb: 1.5,
-      }}
-    >
-      <Typography
-        variant="subtitle2"
-        sx={{
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          fontSize: '0.7rem',
-          color: 'text.secondary',
-        }}
-      >
+    <div className="flex items-center justify-between mb-3">
+      <p className="font-bold uppercase text-muted-foreground" style={{ letterSpacing: '0.04em', fontSize: '0.7rem' }}>
         {t('trips.news.heading', 'Recent news from your destinations')}
-      </Typography>
+      </p>
       {flaggedCount > 0 && (
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.5,
-            px: 1,
-            py: 0.25,
-            bgcolor: 'rgba(244,67,54,0.1)',
-            color: 'error.main',
+        <div
+          className="inline-flex items-center gap-1 px-2 py-0.5 font-bold"
+          style={{
+            backgroundColor: 'hsl(var(--destructive) / 0.1)',
+            color: 'hsl(var(--destructive))',
             fontSize: 11,
-            fontWeight: 700,
           }}
         >
           <AlertTriangle style={{ width: 11, height: 11 }} />
           {t('trips.news.flaggedBadge', '{{count}} safety alerts', { count: flaggedCount })}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

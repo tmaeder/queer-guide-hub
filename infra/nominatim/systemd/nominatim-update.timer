@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly OSM replication for Nominatim
+
+[Timer]
+# Sunday 04:00 UTC — runs before our 05:00 UTC pipeline-geo-validate cron
+OnCalendar=Sun *-*-* 04:00:00
+Persistent=true
+RandomizedDelaySec=15min
+
+[Install]
+WantedBy=timers.target

@@ -10,8 +10,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface PrivacySetting {
   key: string;
@@ -237,16 +235,16 @@ export function PrivacyControlCenter() {
     }
   };
 
-  const getCategoryBadgeSx = (category: string) => {
+  const getCategoryBadgeStyle = (category: string): React.CSSProperties => {
     switch (category) {
       case 'basic':
-        return { bgcolor: '#dbeafe', color: '#1e40af' };
+        return { backgroundColor: '#dbeafe', color: '#1e40af' };
       case 'sensitive':
-        return { bgcolor: '#ffedd5', color: '#9a3412' };
+        return { backgroundColor: '#ffedd5', color: '#9a3412' };
       case 'financial':
-        return { bgcolor: '#fee2e2', color: '#991b1b' };
+        return { backgroundColor: '#fee2e2', color: '#991b1b' };
       default:
-        return { bgcolor: 'grey.100', color: 'grey.800' };
+        return { backgroundColor: '#f3f4f6', color: '#1f2937' };
     }
   };
 
@@ -259,14 +257,14 @@ export function PrivacyControlCenter() {
   }, {} as Record<string, PrivacySetting[]>);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <Shield style={{ height: 24, width: 24 }} />
               <CardTitle>Privacy Control Center</CardTitle>
-            </Box>
+            </div>
             <Button
               variant="outline"
               onClick={setAllToPrivate}
@@ -275,7 +273,7 @@ export function PrivacyControlCenter() {
               <EyeOff style={{ height: 16, width: 16, marginRight: 8 }} />
               Set All Private
             </Button>
-          </Box>
+          </div>
           <CardDescription>
             Control who can see your personal information. Changes are saved automatically.
           </CardDescription>
@@ -294,55 +292,55 @@ export function PrivacyControlCenter() {
         <Card key={category}>
           <CardHeader>
             <CardTitle>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex items-center gap-2">
                 {getCategoryIcon(category)}
-                <Box component="span" sx={{ textTransform: 'capitalize' }}>{category} Information</Box>
-                <Badge variant="secondary" style={getCategoryBadgeSx(category)}>
+                <span className="capitalize">{category} Information</span>
+                <Badge variant="secondary" style={getCategoryBadgeStyle(category)}>
                   {categorySettings.length} settings
                 </Badge>
-              </Box>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               {categorySettings.map((setting, index) => (
                 <div key={setting.key}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                       {setting.icon}
                       <div>
-                        <Box sx={{ fontWeight: 500 }}>{setting.label}</Box>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+                        <p className="font-medium">{setting.label}</p>
+                        <p className="text-sm text-muted-foreground">
                           {setting.description}
-                        </Typography>
+                        </p>
                       </div>
-                    </Box>
+                    </div>
                     <Switch
                       checked={settings[setting.key] || false}
                       onCheckedChange={(checked) => updatePrivacySetting(setting.key, checked)}
                       disabled={loading}
                     />
-                  </Box>
+                  </div>
                   {index < categorySettings.length - 1 && <Separator style={{ marginTop: 16 }} />}
                 </div>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       ))}
 
       <Card>
         <CardContent style={{ paddingTop: 24 }}>
-          <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+          <div className="text-center flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
               Privacy settings are enforced at the database level for maximum security.
-            </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+            </p>
+            <p className="text-xs text-muted-foreground">
               Even administrators require justification to access sensitive data.
-            </Typography>
-          </Box>
+            </p>
+          </div>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }

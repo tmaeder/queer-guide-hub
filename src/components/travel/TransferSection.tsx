@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Bus, Shield, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,58 +26,58 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
 
   if (compact) {
     return (
-      <Box sx={{
-        display: 'flex', alignItems: 'center', gap: 1.5, p: 2, borderRadius: 1,
-        bgcolor: isLowSafety ? 'warning.light' : 'action.hover',
-      }}>
+      <div
+        className="flex items-center gap-3 p-4"
+        style={{ backgroundColor: isLowSafety ? 'hsl(var(--warning) / 0.15)' : 'hsl(var(--muted))' }}
+      >
         <Bus style={{ height: 20, width: 20, color: isLowSafety ? 'var(--warning)' : 'var(--primary)', flexShrink: 0 }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+        <div className="flex-1">
+          <p className="font-semibold text-sm">
             {isLowSafety ? 'Private Transfer Recommended' : `Airport Transfer in ${city}`}
-          </Typography>
+          </p>
           {isLowSafety && (
-            <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+            <p className="text-xs text-muted-foreground">
               Private transfers are safer in destinations with lower equality scores
-            </Typography>
+            </p>
           )}
-        </Box>
+        </div>
         <Button size="sm" onClick={() => window.open(kiwitaxiUrl, '_blank', 'noopener')}>
           Book
         </Button>
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+    <div>
+      <div className="flex items-center gap-2 mb-3">
         <Bus style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+        <p className="font-semibold text-base">
           Airport Transfers{airportCode ? ` (${airportCode})` : ''}
-        </Typography>
+        </p>
         {isLowSafety && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1 }}>
+          <div className="flex items-center gap-1 ml-2">
             <Shield style={{ height: 14, width: 14, color: 'var(--warning)' }} />
-            <Typography sx={{ fontSize: '0.7rem', color: 'warning.main', fontWeight: 600 }}>Recommended</Typography>
-          </Box>
+            <p className="text-xs font-semibold" style={{ color: 'var(--warning)' }}>Recommended</p>
+          </div>
         )}
-      </Box>
+      </div>
 
       {isLowSafety && (
-        <Box sx={{ bgcolor: 'warning.light', p: 1.5, borderRadius: 1, mb: 1.5 }}>
-          <Typography sx={{ fontSize: '0.75rem' }}>
+        <div className="p-3 mb-3" style={{ backgroundColor: 'hsl(var(--warning) / 0.15)' }}>
+          <p className="text-xs">
             This destination has a lower LGBTQ+ safety score. We recommend booking a private transfer for a safer, more comfortable arrival.
-          </Typography>
-        </Box>
+          </p>
+        </div>
       )}
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card className="hover:shadow-sm transition-shadow">
           <CardContent style={{ padding: 16 }}>
-            <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', mb: 0.5 }}>Kiwitaxi</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
+            <p className="font-semibold text-sm mb-1">Kiwitaxi</p>
+            <p className="text-xs text-muted-foreground mb-3">
               Pre-booked airport pickup, fixed price, meet & greet
-            </Typography>
+            </p>
             <Button size="sm" className="w-full" onClick={() => window.open(kiwitaxiUrl, '_blank', 'noopener')}>
               <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
               Book Transfer
@@ -88,17 +86,17 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
         </Card>
         <Card className="hover:shadow-sm transition-shadow">
           <CardContent style={{ padding: 16 }}>
-            <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', mb: 0.5 }}>GetTransfer</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
+            <p className="font-semibold text-sm mb-1">GetTransfer</p>
+            <p className="text-xs text-muted-foreground mb-3">
               Private drivers, any route, competitive bidding
-            </Typography>
+            </p>
             <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(getTransferUrl, '_blank', 'noopener')}>
               <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
               Get Quotes
             </Button>
           </CardContent>
         </Card>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

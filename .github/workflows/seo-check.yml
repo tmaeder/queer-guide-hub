@@ -1,0 +1,36 @@
+name: SEO Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Base URL to check
+        required: false
+        default: https://queer.guide
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_run:
+    workflows: [Deploy to Cloudflare Pages]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: seo-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run SEO check
+        env:
+          INPUT_BASE: ${{ github.event.inputs.base_url }}
+        run: |
+          BASE="${INPUT_BASE:-https://queer.guide}"
+          node scripts/seo-check.mjs "$BASE"

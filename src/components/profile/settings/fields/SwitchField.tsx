@@ -1,8 +1,5 @@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { row } from '@/lib/sx';
 
 interface SwitchFieldProps {
   id: string;
@@ -14,16 +11,16 @@ interface SwitchFieldProps {
 
 export function SwitchField({ id, label, description, checked, onChange }: SwitchFieldProps) {
   return (
-    <Box sx={{ ...row(2), justifyContent: 'space-between' }}>
-      <Box>
+    <div className="flex items-center justify-between gap-4">
+      <div>
         <Label htmlFor={id}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>{label}</Typography>
+          <span className="text-sm font-medium">{label}</span>
         </Label>
         {description && (
-          <Typography variant="caption" color="text.secondary">{description}</Typography>
+          <p className="text-xs text-muted-foreground">{description}</p>
         )}
-      </Box>
+      </div>
       <Switch id={id} checked={checked} onCheckedChange={onChange} />
-    </Box>
+    </div>
   );
 }

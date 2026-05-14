@@ -3,49 +3,31 @@
  *
  * Shows a solid-surface sign-in prompt when user is not authenticated.
  * Renders children when authenticated.
- *
- * Usage:
- *   <AuthGate title="Messages" description="Sign in to access your messages">
- *     <MessagingInterface />
- *   </AuthGate>
  */
 
 import React from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Container from '@mui/material/Container';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AuthGateProps {
-  /** Page title shown in the gate */
   title: string;
-  /** Description text */
   description?: string;
-  /** Content rendered when authenticated */
   children: React.ReactNode;
 }
 
-export const AuthGate: React.FC<AuthGateProps> = ({
+export const AuthGate = ({
   title,
   description = 'Please sign in to access this feature.',
   children,
-}) => {
+}: AuthGateProps) => {
   const { user } = useAuth();
 
   if (!user) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Paper
-          variant="outlined"
-          sx={{
-            p: { xs: 4, sm: 6 },
-            textAlign: 'center',
-            bgcolor: 'background.paper',
-          }}
-        >
+      <div className="container mx-auto py-8">
+        <div className="border border-border bg-card text-center p-8 sm:p-12">
           <Lock
             style={{
               width: 48,
@@ -54,17 +36,13 @@ export const AuthGate: React.FC<AuthGateProps> = ({
               color: 'hsl(var(--muted-foreground))',
             }}
           />
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            {title}
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
-            {description}
-          </Typography>
+          <h4 className="text-3xl font-bold mb-2">{title}</h4>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">{description}</p>
           <Button asChild>
             <LocalizedLink to="/auth">Sign In</LocalizedLink>
           </Button>
-        </Paper>
-      </Container>
+        </div>
+      </div>
     );
   }
 

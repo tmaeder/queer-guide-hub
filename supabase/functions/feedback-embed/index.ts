@@ -5,7 +5,6 @@
 // AI bge-base-en-v1.5 pipeline (same model as populate-embeddings).
 
 import 'https://deno.land/x/xhr@0.1.0/mod.ts';
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { getCorsHeaders, errorResponse, getServiceClient, jsonResponse } from '../_shared/supabase-client.ts';
 
 const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
@@ -44,7 +43,7 @@ async function cfEmbed(texts: string[], token: string): Promise<number[][]> {
   return (j.data ?? []).map((x: { embedding: number[] }) => x.embedding);
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) });
   }

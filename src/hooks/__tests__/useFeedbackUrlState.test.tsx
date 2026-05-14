@@ -28,7 +28,7 @@ describe('useFeedbackUrlState', () => {
         '/admin/feedback?tab=spam&q=crash&category=bug&status=new&priority=0&hasScreenshot=1&hasErrors=1&sel=abc123',
       ),
     });
-    expect(result.current.state.tab).toBe('spam');
+    expect(result.current.state.tab).toBe('triage');
     expect(result.current.state.q).toBe('crash');
     expect(result.current.state.category).toBe('bug');
     expect(result.current.state.status).toBe('new');
@@ -59,7 +59,7 @@ describe('useFeedbackUrlState', () => {
     act(() => result.current.clearFilters());
     expect(result.current.state.q).toBe('');
     expect(result.current.state.category).toBe(null);
-    expect(result.current.state.tab).toBe('spam');
+    expect(result.current.state.tab).toBe('triage');
     expect(result.current.state.sel).toBe('abc');
   });
 

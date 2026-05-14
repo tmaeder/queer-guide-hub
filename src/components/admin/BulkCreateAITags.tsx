@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from 'sonner';
 import { Loader2, Sparkles, CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -24,20 +22,15 @@ interface BulkCreateAITagsProps {
   onComplete?: () => void;
 }
 
-const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
+const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
   const [open, setOpen] = useState(false);
   const [terms, setTerms] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<BulkCreateResult[]>([]);
-  const { toast } = useToast();
 
   const handleSubmit = async () => {
     if (!terms.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter some terms to create tags",
-        variant: "destructive",
-      });
+      toast.error('Error: Please enter some terms to create tags');
       return;
     }
 
@@ -51,11 +44,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
         .filter(term => term.length > 0);
 
       if (termsList.length === 0) {
-        toast({
-          title: "Error",
-          description: "No valid terms found",
-          variant: "destructive",
-        });
+        toast.error('Error: No valid terms found');
         return;
       }
 
@@ -80,11 +69,7 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
 
     } catch (error) {
       console.error('Error in bulk create:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create tags",
-        variant: "destructive",
-      });
+      toast.error(`Error: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -93,11 +78,11 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'created':
-        return <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)' }} />;
+        return <CheckCircle className="w-4 h-4" style={{ color: 'var(--success)' }} />;
       case 'exists':
-        return <AlertCircle style={{ width: 16, height: 16, color: 'var(--warning)' }} />;
+        return <AlertCircle className="w-4 h-4" style={{ color: 'var(--warning)' }} />;
       case 'error':
-        return <XCircle style={{ width: 16, height: 16, color: 'var(--destructive)' }} />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
       default:
         return null;
     }
@@ -120,23 +105,21 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Sparkles style={{ width: 16, height: 16 }} />
+          <Sparkles className="w-4 h-4 mr-2" />
           AI Bulk Create
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <Sparkles style={{ width: 20, height: 20 }} />
+            <Sparkles className="w-5 h-5 inline-block mr-2" />
             AI-Powered Bulk Tag Creation
           </DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1, overflow: 'hidden' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              Enter terms (one per line)
-            </Typography>
+        <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium">Enter terms (one per line)</p>
             <Textarea
               placeholder={"pride\nrainbow flag\ncoming out\ndrag show\nqueer history"}
               value={terms}
@@ -144,64 +127,64 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
               style={{ minHeight: 128, resize: 'none' }}
               disabled={isLoading}
             />
-            <Typography variant="caption" color="text.secondary">
+            <span className="text-xs text-muted-foreground">
               Each term will be automatically categorized and enhanced with AI-generated descriptions using Wikipedia and OpenAI.
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
           {results.length > 0 && (
-            <Box sx={{ flex: 1, overflow: 'hidden' }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Results:</Typography>
-              <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, overflow: 'auto', maxHeight: 256 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 1.5 }}>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium mb-2">Results:</p>
+              <div className="border border-border rounded-sm overflow-auto max-h-64">
+                <div className="flex flex-col gap-2 p-3">
                   {results.map((result, index) => (
-                    <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div key={index} className="flex items-start justify-between gap-3 p-2 bg-muted rounded-sm">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
                           {getStatusIcon(result.status)}
-                          <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{result.term}</Typography>
+                          <p className="text-sm font-medium truncate">{result.term}</p>
                           {getStatusBadge(result.status)}
-                        </Box>
+                        </div>
                         {result.category && (
-                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                          <span className="text-xs text-muted-foreground mt-1 block">
                             Category: {result.category}
-                          </Typography>
+                          </span>
                         )}
                         {result.image_url && (
-                          <Box sx={{ mt: 0.5 }}>
-                            <img src={result.image_url} alt={result.term} style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 4, marginTop: 4 }} />
-                          </Box>
+                          <div className="mt-1">
+                            <img src={result.image_url} alt={result.term} className="w-16 h-12 object-cover rounded mt-1" />
+                          </div>
                         )}
                         {result.description && (
-                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                          <span className="text-xs text-muted-foreground mt-1 overflow-hidden line-clamp-2 block">
                             {result.description}
-                          </Typography>
+                          </span>
                         )}
                         {result.wikipedia_url && (
                           <a
                             href={result.wikipedia_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4 }}
+                            className="text-xs inline-flex items-center gap-1 mt-1"
                           >
-                            <ExternalLink style={{ width: 12, height: 12 }} />
+                            <ExternalLink className="w-3 h-3" />
                             Wikipedia
                           </a>
                         )}
                         {result.error && (
-                          <Typography variant="caption" color="error.main" sx={{ mt: 0.5 }}>
+                          <span className="text-xs text-destructive mt-1 block">
                             Error: {result.error}
-                          </Typography>
+                          </span>
                         )}
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                   ))}
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
           )}
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1, borderTop: 1, borderColor: 'divider' }}>
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
             <Button
               variant="outline"
               onClick={() => setOpen(false)}
@@ -212,13 +195,12 @@ const BulkCreateAITags: React.FC<BulkCreateAITagsProps> = ({ onComplete }) => {
             <Button
               onClick={handleSubmit}
               disabled={isLoading || !terms.trim()}
-
             >
-              {isLoading && <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />}
+              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Create Tags with AI
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

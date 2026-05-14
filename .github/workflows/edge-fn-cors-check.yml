@@ -1,0 +1,20 @@
+name: edge-fn-cors-check
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/**'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ban inline corsHeaders object literal in edge functions
+        run: |
+          hits=$(grep -rEl "^const corsHeaders\s*=\s*\{" supabase/functions --include='*.ts' \
+            | grep -v _shared || true)
+          if [ -n "$hits" ]; then
+            echo "::error::Inlined corsHeaders object literal in edge function(s):"
+            echo "$hits"
+            echo "Use getCorsHeaders(req) from supabase/functions/_shared/supabase-client.ts instead."
+            exit 1
+          fi

@@ -15,8 +15,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useImportHub } from '@/hooks/useImportHub';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import {
   Upload,
   Eye,
@@ -31,8 +32,14 @@ import {
   Sliders,
 } from 'lucide-react';
 import { VenueImportDialog } from './venues/VenueImportDialog';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import {
+  classifyEntityType,
+  expectedEntityTypeFor,
+  summarizeDetections,
+  type ClassifyResult,
+  type DetectionSummary,
+  type EntityType,
+} from '@/lib/entityTypeClassifier';
 
 /* ── Import types for CSV/API flows ── */
 const IMPORT_GROUPS = [
@@ -105,7 +112,6 @@ function findImportItem(key: string): ImportItem | null {
 
 export const ImportJobCreator = () => {
   const { createImportJob, parseCSVPreview, loading } = useImportHub();
-  const { toast } = useToast();
 
   const [importType, setImportType] = useState('');
   const [duplicateStrategy, setDuplicateStrategy] = useState<'skip' | 'overwrite' | 'create_new'>(
@@ -117,6 +123,9 @@ export const ImportJobCreator = () => {
     headers: string[];
     rows: Record<string, string>[];
   } | null>(null);
+  const [previewClassifications, setPreviewClassifications] = useState<ClassifyResult[]>([]);
+  const [detectionSummary, setDetectionSummary] = useState<DetectionSummary | null>(null);
+  const [routingAcknowledged, setRoutingAcknowledged] = useState(false);
   const [fileName, setFileName] = useState('');
   const [showVenueImportDialog, setShowVenueImportDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,42 +159,43 @@ export const ImportJobCreator = () => {
   const [citySearch, setCitySearch] = useState('');
 
   useEffect(() => {
-    supabase
-      .from('cities')
-      .select('name, countries!inner(name)')
-      .order('name')
-      .then(({ data }) => {
-        if (data)
-          setAllCities(
-            data.map((c: { name: string; countries?: { name?: string } }) => ({ name: c.name, country: c.countries?.name || '' })),
-          );
-      });
+    listFrom<{ name: string; countries?: { name?: string } }>(
+      'cities',
+      'name, countries!inner(name)',
+      { col: 'name' },
+    ).then((data) => {
+      setAllCities(data.map((c) => ({ name: c.name, country: c.countries?.name || '' })));
+    });
   }, []);
 
   const selected = findImportItem(importType);
+  const expectedType: EntityType | null = expectedEntityTypeFor(importType);
 
   /* ── CSV/API handlers ── */
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.csv')) {
-      toast({
-        title: 'Invalid file',
-        description: 'Please select a CSV file',
-        variant: 'destructive',
-      });
+      toast.error('Invalid file: Please select a CSV file');
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
-      toast({ title: 'Too large', description: 'Max 50 MB', variant: 'destructive' });
+      toast.error('Too large: Max 50 MB');
       return;
     }
     setFileName(file.name);
+    setRoutingAcknowledged(false);
     try {
       const text = await file.text();
       setCsvData(text);
       const preview = parseCSVPreview(text, 5);
       setCsvPreview(preview);
+      setPreviewClassifications(preview.rows.map((row) => classifyEntityType(row)));
+      // Full-file detection (capped at ~5000 rows for performance — same
+      // shape as parseCSVPreview but unbounded). The classifier is pure JS,
+      // a 5000-row scan with simple regex takes <100ms.
+      const fullPreview = parseCSVPreview(text, 5000);
+      setDetectionSummary(summarizeDetections(fullPreview.rows, expectedEntityTypeFor(importType)));
       if (selected?.requiredFields) {
         const suggested = selected.requiredFields.filter((f) =>
           preview.headers.some((h) => h.toLowerCase().includes(f.toLowerCase())),
@@ -193,7 +203,7 @@ export const ImportJobCreator = () => {
         setUniqueKeyFields(suggested.slice(0, 2));
       }
     } catch {
-      toast({ title: 'Read error', description: 'Failed to read CSV', variant: 'destructive' });
+      toast.error('Read error: Failed to read CSV');
     }
   };
 
@@ -201,6 +211,9 @@ export const ImportJobCreator = () => {
     setImportType('');
     setCsvData('');
     setCsvPreview(null);
+    setPreviewClassifications([]);
+    setDetectionSummary(null);
+    setRoutingAcknowledged(false);
     setFileName('');
     setUniqueKeyFields([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -208,7 +221,7 @@ export const ImportJobCreator = () => {
 
   const handleSubmit = async () => {
     if (!selected) {
-      toast({ title: 'Select an import type', variant: 'destructive' });
+      toast.error('Select an import type');
       return;
     }
 
@@ -240,21 +253,35 @@ export const ImportJobCreator = () => {
         }
         const { error } = await supabase.functions.invoke(importType, { body });
         if (error) throw error;
-        toast({ title: 'Scraper started', description: desc });
+        toast.success(`Scraper started: ${desc}`);
         resetForm();
         return;
       } catch (err) {
-        toast({
-          title: 'Scraper failed',
-          description: err instanceof Error ? err.message : 'Unknown error',
-          variant: 'destructive',
-        });
+        toast.error(`Scraper failed: ${err}`);
         return;
       }
     }
 
     if (!csvData) {
-      toast({ title: 'Upload a CSV file', variant: 'destructive' });
+      toast.error('Upload a CSV file');
+      return;
+    }
+
+    // Issue #113 guard: block submit when the CSV contains rows the
+    // classifier thinks belong elsewhere, until the user has explicitly
+    // acknowledged the routing. The legacy import-*-csv handlers stamp
+    // the whole batch with one target_table, so mismatches today silently
+    // ingest as the wrong entity type.
+    if (
+      detectionSummary &&
+      detectionSummary.mismatches > 0 &&
+      !routingAcknowledged
+    ) {
+      toast({
+        title: 'Mixed entity types detected',
+        description: `${detectionSummary.mismatches} row(s) look like a different entity type. Review the preview and check the acknowledgement box to continue.`,
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -292,7 +319,7 @@ export const ImportJobCreator = () => {
 
   /* ── Render ── */
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+    <div className="flex flex-col gap-5">
       {/* ── CSV / Edge Function Imports ── */}
       <Card>
         <CardHeader>
@@ -302,7 +329,7 @@ export const ImportJobCreator = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label>What to import</Label>
             <Select
               value={importType}
@@ -332,12 +359,12 @@ export const ImportJobCreator = () => {
                 ))}
               </SelectContent>
             </Select>
-          </Box>
+          </div>
 
           {/* CSV mode */}
           {selected?.mode === 'csv' && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="csv-file">CSV File (max 50 MB)</Label>
                 <Input
                   id="csv-file"
@@ -348,66 +375,115 @@ export const ImportJobCreator = () => {
                   disabled={loading}
                 />
                 {fileName && (
-                  <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+                  <p className="text-xs text-muted-foreground">
                     {fileName}
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
 
               {csvPreview && (
                 <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: -1 }}>
+                  <div className="flex items-center gap-2 -mb-2">
                     <Eye style={{ height: 14, width: 14 }} />
-                    <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                    <p className="text-sm font-medium">
                       Preview (first 5 rows)
-                    </Typography>
-                  </Box>
-                  <Box
-                    sx={{ overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 1 }}
-                  >
-                    <Box
-                      component="table"
-                      sx={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}
-                    >
+                    </p>
+                  </div>
+                  {detectionSummary && (
+                    <div className={`flex flex-col gap-1.5 p-2 border rounded ${detectionSummary.mismatches > 0 ? "border-destructive bg-destructive/10" : "border-border bg-muted"}`}>
+                      <p className="text-xs font-semibold">
+                        Detected entity types ({detectionSummary.rows.length} rows scanned)
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {(['personality', 'venue', 'event', 'tag', 'unknown'] as const)
+                          .filter((t) => detectionSummary.byType[t] > 0)
+                          .map((t) => {
+                            const count = detectionSummary.byType[t];
+                            const isMismatch =
+                              expectedType !== null && t !== 'unknown' && t !== expectedType;
+                            return (
+                              <Badge
+                                key={t}
+                                variant={isMismatch ? 'destructive' : 'secondary'}
+                              >
+                                {t}: {count}
+                              </Badge>
+                            );
+                          })}
+                      </div>
+                      {detectionSummary.mismatches > 0 && expectedType && (
+                        <p className="text-xs text-destructive">
+                          {detectionSummary.mismatches} row(s) don&apos;t look like{' '}
+                          <b>{expectedType}</b>. They will still be staged as{' '}
+                          <b>{expectedType}</b> by this import; the AI validator may reject
+                          them. To route per-row to the correct table, use the pipeline DAG
+                          with the <code>source-csv-upload</code> node instead.
+                        </p>
+                      )}
+                      {detectionSummary.unknownCount > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          {detectionSummary.unknownCount} row(s) couldn&apos;t be auto-classified
+                          and will fall back to <b>{expectedType ?? 'job-level type'}</b>.
+                        </p>
+                      )}
+                      {detectionSummary.mismatches > 0 && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <Checkbox
+                            id="ack-routing"
+                            checked={routingAcknowledged}
+                            onCheckedChange={(v) => setRoutingAcknowledged(!!v)}
+                          />
+                          <Label htmlFor="ack-routing" style={{ fontSize: '0.75rem' }}>
+                            I understand mixed-type rows will be staged as{' '}
+                            {expectedType ?? 'the selected type'}.
+                          </Label>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="overflow-x-auto border border-border rounded">
+                    <table className="w-full text-xs" style={{ borderCollapse: 'collapse' }}>
                       <thead>
-                        <Box component="tr" sx={{ bgcolor: 'action.hover' }}>
+                        <tr className="bg-muted">
+                          <th className="p-1.5 text-left font-semibold border-b border-border whitespace-nowrap">
+                            detected
+                          </th>
                           {csvPreview.headers.map((h, i) => (
-                            <Box
-                              component="th"
-                              key={i}
-                              sx={{
-                                p: 0.75,
-                                textAlign: 'left',
-                                fontWeight: 600,
-                                borderBottom: 1,
-                                borderColor: 'divider',
-                              }}
-                            >
+                            <th key={i} className="p-1.5 text-left font-semibold border-b border-border">
                               {h}
-                            </Box>
+                            </th>
                           ))}
-                        </Box>
+                        </tr>
                       </thead>
                       <tbody>
-                        {csvPreview.rows.map((row, i) => (
-                          <tr key={i}>
-                            {csvPreview.headers.map((h, j) => (
-                              <Box
-                                component="td"
-                                key={j}
-                                sx={{ p: 0.75, borderBottom: 1, borderColor: 'divider' }}
-                              >
-                                {row[h] || '-'}
-                              </Box>
-                            ))}
-                          </tr>
-                        ))}
+                        {csvPreview.rows.map((row, i) => {
+                          const detected = previewClassifications[i];
+                          const detectedType = detected?.entityType ?? 'unknown';
+                          const isMismatch =
+                            !!expectedType &&
+                            detectedType !== 'unknown' &&
+                            detectedType !== expectedType;
+                          return (
+                            <tr key={i}>
+                              <td className="p-1.5 border-b border-border whitespace-nowrap" title={detected?.reason}>
+                                <Badge variant={isMismatch ? 'destructive' : 'secondary'}>
+                                  {detectedType}
+                                </Badge>
+                              </td>
+                              {csvPreview.headers.map((h, j) => (
+                                <td key={j} className="p-1.5 border-b border-border">
+                                  {row[h] || '-'}
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
-                    </Box>
-                  </Box>
+                    </table>
+                  </div>
 
-                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 200 }}>
+                  <div className="flex gap-4 flex-wrap">
+                    <div className="flex flex-col gap-1" style={{ minWidth: 200 }}>
                       <Label>Duplicates</Label>
                       <Select
                         value={duplicateStrategy}
@@ -422,20 +498,10 @@ export const ImportJobCreator = () => {
                           <SelectItem value="create_new">Create new</SelectItem>
                         </SelectContent>
                       </Select>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 0.5,
-                        flex: 1,
-                        minWidth: 200,
-                      }}
-                    >
+                    </div>
+                    <div className="flex flex-col gap-1 flex-1" style={{ minWidth: 200 }}>
                       <Label>Unique key fields</Label>
-                      <Box
-                        sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center' }}
-                      >
+                      <div className="flex flex-wrap gap-1 items-center">
                         {uniqueKeyFields.map((f) => (
                           <Badge key={f} variant="secondary">
                             {f}
@@ -473,12 +539,12 @@ export const ImportJobCreator = () => {
                               ))}
                           </SelectContent>
                         </Select>
-                      </Box>
-                    </Box>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
-            </Box>
+            </div>
           )}
 
           {/* Events scraper config */}
@@ -493,9 +559,9 @@ export const ImportJobCreator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <div className="flex flex-col gap-1">
                   <Label>Cities ({scraperCities.length})</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div className="flex flex-wrap gap-1">
                     {scraperCities.map((city) => (
                       <Badge key={city} variant="secondary">
                         {city}
@@ -512,22 +578,14 @@ export const ImportJobCreator = () => {
                         </button>
                       </Badge>
                     ))}
-                  </Box>
+                  </div>
                   <Input
                     placeholder="Search cities..."
                     value={citySearch}
                     onChange={(e) => setCitySearch(e.target.value)}
 
                   />
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 0.5,
-                      maxHeight: 150,
-                      overflowY: 'auto',
-                    }}
-                  >
+                  <div className="flex flex-wrap gap-1 overflow-y-auto" style={{ maxHeight: 150 }}>
                     {allCities
                       .filter((c) => {
                         const slug = c.name.toLowerCase().replace(/\s+/g, '-');
@@ -555,9 +613,9 @@ export const ImportJobCreator = () => {
                           </Button>
                         );
                       })}
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
                   <Label>Max cities:</Label>
                   <Select
                     value={scraperMaxCities.toString()}
@@ -574,7 +632,7 @@ export const ImportJobCreator = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -591,13 +649,13 @@ export const ImportJobCreator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <div className="flex flex-col gap-1">
                   <Label>Venue types</Label>
                   {[
                     { type: 'saunas', label: 'Saunas' },
                     { type: 'goingout', label: 'Bars & Clubs' },
                   ].map(({ type, label }) => (
-                    <Box key={type} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div key={type} className="flex items-center gap-2">
                       <Checkbox
                         id={`vt-${type}`}
                         checked={spartacusTypes.includes(type)}
@@ -608,12 +666,12 @@ export const ImportJobCreator = () => {
                         }
                       />
                       <Label htmlFor={`vt-${type}`}>{label}</Label>
-                    </Box>
+                    </div>
                   ))}
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                </div>
+                <div className="flex flex-col gap-1">
                   <Label>Countries ({spartacusCountries.length})</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div className="flex flex-wrap gap-1">
                     {spartacusCountries.map((c) => (
                       <Badge key={c} variant="secondary">
                         {c}
@@ -632,8 +690,8 @@ export const ImportJobCreator = () => {
                         </button>
                       </Badge>
                     ))}
-                  </Box>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
                     {['germany', 'spain', 'uk', 'france', 'netherlands', 'thailand', 'usa']
                       .filter((c) => !spartacusCountries.includes(c))
                       .map((c) => (
@@ -648,10 +706,10 @@ export const ImportJobCreator = () => {
                           {c}
                         </Button>
                       ))}
-                  </Box>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </div>
+                </div>
+                <div className="flex gap-4 items-center flex-wrap">
+                  <div className="flex items-center gap-2">
                     <Label>Max cities/country:</Label>
                     <Select
                       value={spartacusMaxCities.toString()}
@@ -668,8 +726,8 @@ export const ImportJobCreator = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       id="discover"
                       checked={spartacusDiscover}
@@ -678,15 +736,15 @@ export const ImportJobCreator = () => {
                     <Label htmlFor="discover" style={{ fontSize: '0.85rem' }}>
                       Discover cities
                     </Label>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
 
           {/* Submit */}
           {selected && (
-            <Box sx={{ display: 'flex', pt: 1 }}>
+            <div className="flex pt-2">
               <Button onClick={handleSubmit} disabled={loading}>
                 {loading ? (
                   <>
@@ -702,7 +760,7 @@ export const ImportJobCreator = () => {
                   </>
                 )}
               </Button>
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -717,6 +775,6 @@ export const ImportJobCreator = () => {
           isImporting={loading}
         />
       )}
-    </Box>
+    </div>
   );
 };

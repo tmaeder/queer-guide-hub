@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import { listFrom, countRows } from '@/hooks/usePageFetchers';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,69 +17,46 @@ interface SecurityEvent {
 export function SecurityMonitoringDashboard() {
   const { data: recentEvents = [], isLoading } = useQuery({
     queryKey: ['security-events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('security_events')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error('Error fetching security events:', error);
-        throw error;
-      }
-      console.log('Security events fetched:', data?.length || 0);
-      return data as SecurityEvent[];
-    },
+    queryFn: () =>
+      listFrom<SecurityEvent>('security_events', '*', { col: 'created_at', ascending: false }, 50),
     refetchInterval: 30000,
   });
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_role_audit_log')
-        .select('id, admin_user_id, target_user_id, action, role_name, timestamp')
-        .order('timestamp', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () =>
+      listFrom<unknown>(
+        'user_role_audit_log',
+        'id, admin_user_id, target_user_id, action, role_name, timestamp',
+        { col: 'timestamp', ascending: false },
+        20,
+      ),
   });
 
   const { data: systemStats } = useQuery({
     queryKey: ['system-stats'],
     queryFn: async () => {
-      const [failedLogins, captchaVerifications, accessLogs] = await Promise.all([
-        supabase.from('failed_login_attempts').select('*', { count: 'exact', head: true }),
-        supabase.from('captcha_verifications').select('*', { count: 'exact', head: true }),
-        supabase.from('access_logs').select('*', { count: 'exact', head: true }),
+      const [totalFailedLogins, totalCaptchaVerifications, totalAccessLogs] = await Promise.all([
+        countRows('failed_login_attempts'),
+        countRows('captcha_verifications'),
+        countRows('access_logs'),
       ]);
-
-      return {
-        totalFailedLogins: failedLogins.count || 0,
-        totalCaptchaVerifications: captchaVerifications.count || 0,
-        totalAccessLogs: accessLogs.count || 0,
-      };
+      return { totalFailedLogins, totalCaptchaVerifications, totalAccessLogs };
     },
   });
 
   const { data: recentFailedLogins = [] } = useQuery({
     queryKey: ['recent-failed-logins'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('failed_login_attempts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () =>
+      listFrom<unknown>(
+        'failed_login_attempts',
+        '*',
+        { col: 'created_at', ascending: false },
+        10,
+      ),
   });
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: string): 'destructive' | 'secondary' | 'default' => {
     switch (severity) {
       case 'high':
         return 'destructive';
@@ -106,7 +81,7 @@ export function SecurityMonitoringDashboard() {
 
   const criticalEvents = recentEvents.filter(
     (e) =>
-      e.details?.severity === 'high' ||
+      (e.details as { severity?: string })?.severity === 'high' ||
       e.event_type.includes('XSS') ||
       e.event_type.includes('ESCALATION'),
   );
@@ -116,13 +91,11 @@ export function SecurityMonitoringDashboard() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-2">
         <Shield style={{ height: 24, width: 24 }} />
-        <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-          Security Monitoring Dashboard
-        </Typography>
-      </Box>
+        <h2 className="text-2xl font-bold">Security Monitoring Dashboard</h2>
+      </div>
 
       {criticalEvents.length > 0 && (
         <Alert variant="destructive">
@@ -134,145 +107,86 @@ export function SecurityMonitoringDashboard() {
       )}
 
       {/* System Statistics Overview */}
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(3, 1fr)' } }}>
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 1, bgcolor: 'action.hover', borderRadius: 2 }}>
-              <Activity style={{ height: 16, width: 16, color: 'var(--foreground)' }} />
-            </Box>
-            <Box>
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                Total Security Events
-              </Typography>
-              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                {recentEvents.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                Last 50 events
-              </Typography>
-            </Box>
-          </Box>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-muted rounded-md">
+              <Activity style={{ height: 16, width: 16 }} />
+            </div>
+            <div>
+              <p className="text-sm font-medium">Total Security Events</p>
+              <p className="text-2xl font-bold">{recentEvents.length}</p>
+              <p className="text-xs text-muted-foreground">Last 50 events</p>
+            </div>
+          </div>
         </Card>
 
         <Card>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 1, bgcolor: 'rgba(var(--destructive-rgb), 0.1)', borderRadius: 2 }}>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-md" style={{ backgroundColor: 'rgba(var(--destructive-rgb), 0.1)' }}>
               <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
-            </Box>
-            <Box>
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                Failed Login Attempts
-              </Typography>
-              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                {systemStats?.totalFailedLogins || 0}
-              </Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                Total recorded
-              </Typography>
-            </Box>
-          </Box>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Failed Login Attempts</p>
+              <p className="text-2xl font-bold">{systemStats?.totalFailedLogins || 0}</p>
+              <p className="text-xs text-muted-foreground">Total recorded</p>
+            </div>
+          </div>
         </Card>
 
         <Card>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 1, bgcolor: 'rgba(var(--success-rgb), 0.1)', borderRadius: 2 }}>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-md" style={{ backgroundColor: 'rgba(var(--success-rgb), 0.1)' }}>
               <Shield style={{ height: 16, width: 16, color: 'var(--success)' }} />
-            </Box>
-            <Box>
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                CAPTCHA Verifications
-              </Typography>
-              <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
-                {systemStats?.totalCaptchaVerifications || 0}
-              </Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                Total completed
-              </Typography>
-            </Box>
-          </Box>
+            </div>
+            <div>
+              <p className="text-sm font-medium">CAPTCHA Verifications</p>
+              <p className="text-2xl font-bold">{systemStats?.totalCaptchaVerifications || 0}</p>
+              <p className="text-xs text-muted-foreground">Total completed</p>
+            </div>
+          </div>
         </Card>
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { md: 'repeat(3, 1fr)' } }}>
+      <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Recent Security Events</CardTitle>
             <CardDescription>Latest security events and system alerts</CardDescription>
           </CardHeader>
           <CardContent>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-                maxHeight: 384,
-                overflowY: 'auto',
-              }}
-            >
-              {recentEvents.slice(0, 10).map((event) => (
-                <Box
-                  key={event.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 1.5,
-                    p: 1.5,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Box sx={{ mt: 0.5 }}>{getEventIcon(event.event_type)}</Box>
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
-                        {event.event_type.replace(/_/g, ' ')}
-                      </Box>
-                      <Badge variant={getSeverityColor(event.details?.severity || 'info')}>
-                        {event.details?.severity || 'info'}
+            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
+              {recentEvents.slice(0, 10).map((event) => {
+                const det = event.details as { severity?: string } | undefined;
+                return (
+                <div key={event.id} className="flex items-start gap-3 p-3 border border-border rounded-md">
+                  <div className="mt-1">{getEventIcon(event.event_type)}</div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{event.event_type.replace(/_/g, ' ')}</span>
+                      <Badge variant={getSeverityColor(det?.severity || 'info')}>
+                        {det?.severity || 'info'}
                       </Badge>
-                    </Box>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
-                    </Typography>
+                    </p>
                     {event.details && Object.keys(event.details).length > 0 && (
-                      <Box component="details" sx={{ fontSize: '0.75rem' }}>
-                        <Box
-                          component="summary"
-                          sx={{ cursor: 'pointer', color: 'text.secondary' }}
-                        >
-                          View details
-                        </Box>
-                        <Box
-                          component="pre"
-                          sx={{
-                            mt: 0.5,
-                            fontSize: '0.75rem',
-                            bgcolor: 'action.hover',
-                            p: 1,
-                            borderRadius: 1,
-                            overflowX: 'auto',
-                          }}
-                        >
+                      <details className="text-xs">
+                        <summary className="cursor-pointer text-muted-foreground">View details</summary>
+                        <pre className="mt-1 text-xs bg-muted p-2 rounded overflow-x-auto">
                           {JSON.stringify(event.details, null, 2)}
-                        </Box>
-                      </Box>
+                        </pre>
+                      </details>
                     )}
-                  </Box>
-                </Box>
-              ))}
+                  </div>
+                </div>
+                );
+              })}
               {recentEvents.length === 0 && (
-                <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
-                  No recent security events
-                </Typography>
+                <p className="text-muted-foreground text-center py-4">No recent security events</p>
               )}
-            </Box>
+            </div>
           </CardContent>
         </Card>
 
@@ -282,58 +196,31 @@ export function SecurityMonitoringDashboard() {
             <CardDescription>Recent role assignments and changes</CardDescription>
           </CardHeader>
           <CardContent>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-                maxHeight: 384,
-                overflowY: 'auto',
-              }}
-            >
+            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
               {auditLogs.map((log: Record<string, unknown>) => (
-                <Box
-                  key={log.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 1.5,
-                    p: 1.5,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                  }}
-                >
+                <div key={log.id as string} className="flex items-start gap-3 p-3 border border-border rounded-md">
                   <Users style={{ height: 16, width: 16, marginTop: 4 }} />
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
-                        Role {log.action}: {log.role_name}
-                      </Box>
-                      <Badge variant="outline">{log.action}</Badge>
-                    </Box>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                      Admin: {log.admin_user_id?.slice(0, 8)}... → Target:{' '}
-                      {log.target_user_id?.slice(0, 8)}...
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                      {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
-                    </Typography>
-                  </Box>
-                </Box>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">
+                        Role {log.action as string}: {log.role_name as string}
+                      </span>
+                      <Badge variant="outline">{log.action as string}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Admin: {(log.admin_user_id as string)?.slice(0, 8)}... → Target:{' '}
+                      {(log.target_user_id as string)?.slice(0, 8)}...
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(log.timestamp as string), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
               ))}
               {auditLogs.length === 0 && (
-                <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
-                  No recent role changes
-                </Typography>
+                <p className="text-muted-foreground text-center py-4">No recent role changes</p>
               )}
-            </Box>
+            </div>
           </CardContent>
         </Card>
 
@@ -343,62 +230,29 @@ export function SecurityMonitoringDashboard() {
             <CardDescription>Recent failed authentication attempts</CardDescription>
           </CardHeader>
           <CardContent>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-                maxHeight: 384,
-                overflowY: 'auto',
-              }}
-            >
+            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
               {recentFailedLogins.map((attempt: Record<string, unknown>) => (
-                <Box
-                  key={attempt.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 1.5,
-                    p: 1.5,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                  }}
-                >
-                  <AlertTriangle
-                    style={{ height: 16, width: 16, marginTop: 4, color: 'var(--destructive)' }}
-                  />
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <Box component="span" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
-                        {attempt.attempt_type.toUpperCase()} Failed
-                      </Box>
+                <div key={attempt.id as string} className="flex items-start gap-3 p-3 border border-border rounded-md">
+                  <AlertTriangle style={{ height: 16, width: 16, marginTop: 4, color: 'var(--destructive)' }} />
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{(attempt.attempt_type as string).toUpperCase()} Failed</span>
                       <Badge variant="destructive">Failed</Badge>
-                    </Box>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                      IP: {attempt.ip_address}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                      {formatDistanceToNow(new Date(attempt.created_at), { addSuffix: true })}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </div>
+                    <p className="text-xs text-muted-foreground">IP: {attempt.ip_address as string}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(attempt.created_at as string), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
               ))}
               {recentFailedLogins.length === 0 && (
-                <Typography sx={{ color: 'text.secondary', textAlign: 'center', py: 2 }}>
-                  No recent failed login attempts
-                </Typography>
+                <p className="text-muted-foreground text-center py-4">No recent failed login attempts</p>
               )}
-            </Box>
+            </div>
           </CardContent>
         </Card>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

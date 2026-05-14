@@ -3,7 +3,9 @@
  * Central type definitions for the unified Content Management System.
  */
 
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import type { ZodTypeAny } from 'zod';
 
 // ── Workflow & Visibility ──────────────────────────────────────────
 
@@ -31,6 +33,7 @@ export type FieldType =
   | 'location'
   | 'tags'
   | 'json'
+  | 'social_links'
   | 'city_autocomplete'
   | 'country_autocomplete';
 
@@ -78,6 +81,30 @@ export interface FieldConfig {
   sortable?: boolean;
   /** Filterable in list view */
   filterable?: boolean;
+  /** Show as a column in the admin list view */
+  listColumn?: boolean;
+  /**
+   * Custom cell renderer for the list view. Receives the full row (incl. joined
+   * relations from `ContentTypeConfig.listSelect`). When omitted the default
+   * by-type renderer reads `row[field.name]`.
+   */
+  listRender?: (row: Record<string, unknown>) => ReactNode;
+  /**
+   * Marks a field as virtual (computed/joined, no backing DB column on the
+   * primary table). Virtual fields are skipped during server-side filter/sort
+   * even if `filterable`/`sortable` is true.
+   */
+  virtual?: boolean;
+  /**
+   * For `select`-typed filters: load options at runtime from a related table.
+   * Replaces the static `options` list at filter render time.
+   */
+  dynamicOptions?: {
+    table: string;
+    valueColumn: string;
+    labelColumn: string;
+    orderBy?: string;
+  };
   /** Max length for text fields */
   maxLength?: number;
   /** Min length for text fields */
@@ -127,6 +154,13 @@ export interface ContentTypeConfig {
   color: string;
   /** Field definitions for the editor */
   fields: FieldConfig[];
+  /**
+   * Postgres select string used by the list view (Supabase syntax). Defaults to
+   * `'*'`. Override to fetch joined relations and aggregate counts that virtual
+   * `listRender` columns can read from. Example:
+   * `'*,countries(name,lgbt_legal_status),venues(count)'`.
+   */
+  listSelect?: string;
   /** Default values for new items */
   defaults?: Record<string, unknown>;
   /** Custom validator function */
@@ -137,7 +171,52 @@ export interface ContentTypeConfig {
   hasRichText?: boolean;
   /** Default field groups order */
   fieldGroupOrder?: FieldGroup[];
+  /** Zod schema for validation; overrides field-level rules when present. Auto-generated from fields if absent. */
+  validation?: ZodTypeAny;
+  /** Field names that participate in i18n via content_translations sidecar. */
+  translatableFields?: string[];
+  /** AI authoring assist config — which ops are available for this type. */
+  aiAssist?: AIAssistConfig;
+  /** Per-type workflow defaults. */
+  workflow?: ContentTypeWorkflowConfig;
+  /** Whether this type supports threaded comments (review/moderation). */
+  commentable?: boolean;
+  /** Cross-type bulk operations enabled for this type. */
+  bulkOps?: BulkOpKind[];
+  /** Initial sort for the admin list view (overridable by user). */
+  defaultSort?: { field: string; dir: 'asc' | 'desc' };
 }
+
+export type AIAssistOp =
+  | 'summarize'
+  | 'translate'
+  | 'alt_text'
+  | 'seo_draft'
+  | 'auto_tag'
+  | 'fact_check';
+
+export interface AIAssistConfig {
+  ops: AIAssistOp[];
+  /** Fields the AI is allowed to write to. Output is Zod-validated before apply. */
+  writableFields?: string[];
+}
+
+export interface ContentTypeWorkflowConfig {
+  /** Skip review and publish directly when an admin saves. */
+  autoPublish?: boolean;
+  /** Force review even for admins (e.g. community-submitted types). */
+  requiresReview?: boolean;
+  /** Default visibility for newly created items. */
+  defaultVisibility?: VisibilityLevel;
+}
+
+export type BulkOpKind =
+  | 'publish'
+  | 'archive'
+  | 'unpublish'
+  | 'translate'
+  | 'tag'
+  | 'delete';
 
 // ── Content Items ──────────────────────────────────────────────────
 

@@ -51,9 +51,9 @@
       "venues": "Search venues…",
       "events": "Find events…",
       "marketplace": "Browse marketplace…",
-      "people": "Discover people…",
+      "people": "Search people",
       "news": "Read news…",
-      "resources": "Explore resources…",
+      "resources": "Search resources",
       "personalities": "Meet personalities…"
     }
   },
@@ -135,6 +135,7 @@
     "placeholders": {
       "email": "you@example.com",
       "password": "At least 10 characters",
+      "passwordMin8": "At least 8 characters",
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
@@ -168,7 +169,13 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "Accept terms, privacy and confirm 18 or older"
+    },
+    "required": {
+      "title": "Sign in required",
+      "description": "Please sign in to continue."
     },
     "oauth": {
       "google": "Continue with Google",
@@ -176,19 +183,11 @@
     },
     "signup": {
       "title": "Create your account",
-      "stepIndicator": "Step {{current}} of {{total}}",
+      "blurb": "Free, takes a minute.",
       "haveAccount": "Sign in",
+      "haveAccountQ": "Already have an account? Sign in",
       "create": "Create account",
-      "orWithEmail": "Or with email",
-      "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
-      "lookingForTitle": "I'm looking for",
-      "interestsTitle": "Interests",
-      "steps": {
-        "account": "Account",
-        "profile": "Profile",
-        "interests": "Interests"
-      }
+      "orWithEmail": "Or with email"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -230,7 +229,13 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "Continue to The Queer Guide",
+      "banner": "Verify your email to unlock contributions and messaging.",
+      "bannerSent": "Verification email sent. Check your inbox.",
+      "resendShort": "Resend",
+      "gateTitle": "Verify your email first",
+      "gateDescription": "Confirm your email to contribute or message other members."
     }
   },
   "onboarding": {
@@ -468,7 +473,7 @@
       "samples": {
         "berlin": "Pride Week Berlin",
         "barcelona": "Barcelona Beach & Nightlife",
-        "bangkok": "Bangkok & Phuket Explorer"
+        "bangkok": "Bangkok & Phuket"
       }
     },
     "card": {
@@ -510,7 +515,7 @@
         "cityCountryPlaceholder": "Search a city…",
         "noCityMatch": "No matching city found.",
         "addNewPlace": "Add \"{{query}}\" as a new place",
-        "datesUnlockHint": "Adding dates unlocks accommodation, flight & safety suggestions.",
+        "datesUnlockHint": "Add dates for accommodation, flight, and safety suggestions.",
         "defaultTitle": "Trip to {{city}}",
         "titleField": "Trip title",
         "titlePlaceholder": "e.g. Pride Week Berlin 2026",
@@ -710,8 +715,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "Start your packing list",
-      "emptyDescription": "Add items or use a template to get started.",
+      "emptyTitle": "No items yet.",
+      "emptyDescription": "Add items or use a template.",
       "progress": "{{checked}} of {{total}} packed",
       "addItem": "Add item…",
       "removeAria": "Remove item",
@@ -826,7 +831,7 @@
       }
     },
     "discover": {
-      "title": "Discover places",
+      "title": "Places",
       "button": "Browse marketplace"
     },
     "polls": {
@@ -1017,13 +1022,13 @@
     "error": "Failed to send alert. Please try again."
   },
   "home": {
-    "heroLine1": "Discover.",
-    "heroLine2": "Connect.",
-    "heroLine3": "Belong.",
-    "subtitle": "Safe venues, vibrant events, and communities that get you — wherever you are.",
+    "heroLine1": "Queer venues,",
+    "heroLine2": "events, and people.",
+    "heroLine3": "Worldwide.",
+    "subtitle": "Verified safe places, real events, and the people behind them. Built by the community.",
     "browseVenues": "Browse Venues",
     "viewEvents": "View Events",
-    "explore": "Explore",
+    "explore": "Browse",
     "stats": {
       "venues": "Venues",
       "members": "Members",
@@ -1032,13 +1037,13 @@
     },
     "features": {
       "venues": "Venues",
-      "venuesDesc": "Verified queer-friendly spaces where you can be yourself",
+      "venuesDesc": "Bars, clubs, cafés, and community spaces verified by LGBTQ+ locals",
       "events": "Events",
       "eventsDesc": "Local and virtual gatherings in your area",
       "marketplace": "Marketplace",
       "marketplaceDesc": "Support queer-owned businesses and creators",
       "places": "Places",
-      "placesDesc": "Explore queer-friendly cities and countries",
+      "placesDesc": "Queer-friendly cities and countries",
       "hotels": "Hotels",
       "hotelsDesc": "Welcoming accommodations worldwide",
       "community": "Community",
@@ -1061,6 +1066,7 @@
   },
   "header": {
     "signInSignUp": "Sign In / Sign Up",
+    "signUp": "Sign up",
     "signOut": "Sign Out",
     "adminConsole": "Admin Console",
     "closeMenu": "Close menu",
@@ -1076,7 +1082,7 @@
     "submitProduct": "Submit Product",
     "submitHotel": "Submit Hotel",
     "nav": {
-      "discover": "Discover",
+      "discover": "Browse",
       "connect": "Connect",
       "more": "More",
       "venues": "Venues",
@@ -1099,11 +1105,13 @@
       "tripInbox": "Trip inbox",
       "bookings": "Bookings",
       "favorites": "Favorites",
+      "footprint": "Footprint",
       "settings": "Settings",
       "inbox": "Inbox",
       "friends": "Friends",
       "myGroups": "My Groups",
-      "accessibility": "Accessibility"
+      "accessibility": "Accessibility",
+      "extension": "Browser Extension"
     },
     "modes": {
       "dating": "Looking for Love",
@@ -1131,8 +1139,8 @@
       "gridView": "Grid view",
       "mapView": "Map view",
       "submit": "Submit",
-      "emptyTitle": "No spots match your vibe yet",
-      "emptyDescription": "Try widening your search or explore a different city.",
+      "emptyTitle": "No venues match your filters.",
+      "emptyDescription": "Try widening your search or switching cities.",
       "submitVenue": "Submit a Venue",
       "clearFilters": "Clear Filters",
       "emptyDataset": {
@@ -1170,10 +1178,11 @@
     },
     "events": {
       "title": "Events",
-      "subtitle": "Discover and join community events in your area",
+      "subtitle": "Community events in your area.",
       "submitEvent": "Submit Event",
       "gridView": "Grid view",
       "calendarView": "Calendar view",
+      "mapView": "Map view",
       "city": "City",
       "eventType": "Event Type",
       "prideSubtype": "Pride type",
@@ -1209,8 +1218,8 @@
       "clearFilterPast": "Clear past events filter",
       "noPastEvents": "No past events found",
       "noPastEventsDesc": "No past events match these filters. Turn off the toggle to see upcoming events.",
-      "emptyTitle": "The dance floor is empty... for now",
-      "emptyDescription": "Check back soon or widen your filters to find something fun.",
+      "emptyTitle": "No events yet.",
+      "emptyDescription": "Widen your filters or check back later.",
       "emptyDataset": {
         "title": "No events yet",
         "body": "We haven't added any events here yet. Help us grow the guide by submitting one."
@@ -1218,6 +1227,43 @@
       "filteredEmpty": {
         "title": "No events match your filters",
         "body": "Try adjusting your filters or search to see more results."
+      },
+      "preset": {
+        "label": "Quick filters",
+        "thisWeekend": "This weekend",
+        "nearMe": "Near me",
+        "pride": "Pride season",
+        "thisMonth": "This month",
+        "free": "Free",
+        "featured": "Featured"
+      },
+      "rail": {
+        "featured": "Featured this week",
+        "featuredSubtitle": "Editor picks"
+      },
+      "smartEmpty": {
+        "title": "No events match your filters",
+        "body": "Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "Drop \"{{city}}\" filter",
+        "clearDate": "Drop date filter",
+        "viewAll": "View all upcoming events",
+        "sameCityHeader": "Try in {{city}} on other dates",
+        "otherCitiesHeader": "Try other cities in your date range",
+        "fallbackHeader": "Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "Spotlight",
+        "happeningNow": "Happening now",
+        "tomorrow": "Starts tomorrow",
+        "inDays_one": "Starts in {{count}} day",
+        "inDays_other": "Starts in {{count}} days",
+        "nearbyCount_one": "{{count}} event in {{city}}",
+        "nearbyCount_other": "{{count}} events in {{city}}"
+      },
+      "sortLabel": "Sort events",
+      "sort": {
+        "dateAsc": "Soonest first",
+        "dateDesc": "Latest first"
       }
     },
     "eventDetail": {
@@ -1275,9 +1321,44 @@
       "title": "Book Travel",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
       "activitiesComingSoon": "Activities coming soon.",
-      "browseDestinations": "Browse Destinations",
-      "exploreCta": "Explore LGBTQ+ Friendly Destinations",
-      "exploreDescription": "Discover cities and countries with detailed safety information and travel guides",
+      "browseDestinations": "Browse destinations",
+      "exploreCta": "Explore LGBTQ+ friendly destinations",
+      "exploreDescription": "Browse cities and countries with detailed safety information and travel guides.",
+      "hero": {
+        "title": "Plan a trip",
+        "subtitle": "Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "Where to?",
+        "start": "Start",
+        "end": "End",
+        "cta": "Plan this trip",
+        "discover": "Or",
+        "discoverLink": "browse public trips",
+        "discoverTail": "from the community.",
+        "errors": {
+          "city": "Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "Continue planning",
+        "placeCount": "{{count}} places"
+      },
+      "pride": {
+        "title": "Pride this season",
+        "window": "Next 4 months",
+        "empty": "No upcoming Pride events.",
+        "safety": "Equality score"
+      },
+      "inspiration": {
+        "villages": "Queer villages",
+        "publicTrips": "Public trips",
+        "viewAll": "View all",
+        "noVillages": "No villages yet.",
+        "noTrips": "No public trips yet."
+      },
+      "bookNow": {
+        "title": "Book now",
+        "subtitle": "Search flights, hotels, and activities directly — no trip required."
+      },
       "hotels": {
         "typeLabel": "Type",
         "priceMin": "Min €",
@@ -1299,10 +1380,12 @@
     },
     "marketplace": {
       "title": "Marketplace",
-      "subtitle": "Discover and support local businesses offering products and services",
+      "subtitle": "Queer-friendly products and services.",
       "listBusiness": "List Your Business",
-      "emptyTitle": "Nothing on the shelves yet",
-      "emptyDescription": "Queer-owned businesses are joining every day.",
+      "emptyTitle": "No listings yet.",
+      "emptyDescription": "Check back soon or list your business.",
+      "emptyFiltersTitle": "No listings match these filters.",
+      "emptyFiltersDescription": "Try clearing filters or broadening your search.",
       "signInRequired": "Sign in required",
       "signInList": "Create a free account to list your business.",
       "signInFavorites": "Please sign in to save favorites.",
@@ -1336,16 +1419,16 @@
     },
     "news": {
       "title": "News",
-      "subtitle": "Stay informed with the latest news and stories from the LGBTQ+ community worldwide",
+      "subtitle": "Latest news from the LGBTQ+ community worldwide.",
       "featuredStories": "Featured Stories",
       "searchPlaceholder": "Quick search articles...",
       "filters": "Filters",
       "activeFilters": "Active filters",
       "clearAll": "Clear All",
-      "emptyTitle": "The newsroom is quiet",
-      "emptyDescription": "No stories right now. Check back soon.",
-      "filteredEmptyTitle": "No news matches your filters",
-      "filteredEmptyDescription": "Try resetting your filters or exploring another topic.",
+      "emptyTitle": "No articles yet.",
+      "emptyDescription": "Check back later.",
+      "filteredEmptyTitle": "No news matches your filters.",
+      "filteredEmptyDescription": "Reset filters or try another topic.",
       "resetFilters": "Reset filters",
       "filterSearch": "Search",
       "filterCategory": "Category",
@@ -1375,7 +1458,6 @@
     },
     "personalities": {
       "title": "Personalities",
-      "subtitle": "Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.",
       "active": "Active:",
       "clearAll": "Clear all",
       "emptyTitle": "No personalities match your filters",
@@ -1384,12 +1466,12 @@
     },
     "groups": {
       "title": "Community Groups",
-      "subtitle": "Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.",
-      "discover": "Discover",
+      "subtitle": "Find people, share experiences, build community.",
+      "discover": "Browse",
       "myGroups": "My Groups",
       "popular": "Popular",
-      "emptyTitle": "No groups here yet",
-      "emptyDescription": "Be the spark — create the first group and bring people together.",
+      "emptyTitle": "No groups yet.",
+      "emptyDescription": "Create the first one.",
       "createGroup": "Create a Group",
       "mostPopular": "Most Popular Groups",
       "noPopular": "No popular groups available yet."
@@ -1399,8 +1481,8 @@
     },
     "myGroups": {
       "title": "My Groups",
-      "subtitle": "Manage and explore your community groups",
-      "discoverGroups": "Discover Groups",
+      "subtitle": "Your community groups.",
+      "discoverGroups": "Browse Groups",
       "totalGroups": "Total Groups",
       "owned": "Owned",
       "memberOf": "Member Of",
@@ -1462,6 +1544,15 @@
       "body": "Get a browser notification 30 minutes before each reservation, and again when passport or visa dates get close.",
       "turnOn": "Turn on",
       "turnOff": "Turn off"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "View details",
+      "share": "Share",
+      "linkCopied": "Link copied",
+      "linkCopiedDescription": "You can paste it now",
+      "shareFailed": "Share failed"
     }
   }
 }

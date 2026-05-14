@@ -1,0 +1,69 @@
+name: Reconfigure Meilisearch
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_aliases:
+        description: 'Also run seed-city-aliases.sh'
+        type: boolean
+        default: true
+
+concurrency:
+  group: meili-reconfig
+  cancel-in-progress: false
+
+jobs:
+  reconfig:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
+      SSH_KEY: ${{ secrets.INFOMANIAK_SSH_PRIVATE_KEY }}
+      SSH_HOST: ${{ secrets.INFOMANIAK_SSH_HOST }}
+      SSH_USER: ${{ secrets.INFOMANIAK_SSH_USER }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify secrets
+        run: |
+          fail=0
+          for var in MEILI_MASTER_KEY SSH_KEY SSH_HOST SSH_USER; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Secret $var is not set"
+              fail=1
+            fi
+          done
+          [ "$fail" -eq 0 ]
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy scripts to VPS
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'cat > /tmp/configure-indexes.sh' < meilisearch/configure-indexes.sh
+          ssh "$SSH_USER@$SSH_HOST" 'cat > /tmp/seed-city-aliases.sh' < meilisearch/seed-city-aliases.sh
+
+      - name: Verify Meilisearch is reachable
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'curl -sf --max-time 5 http://localhost:7700/health'
+          echo "Meilisearch is healthy"
+
+      - name: Run configure-indexes.sh
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" \
+            "MEILI_URL=http://localhost:7700 MEILI_MASTER_KEY='${MEILI_MASTER_KEY}' bash /tmp/configure-indexes.sh"
+
+      - name: Run seed-city-aliases.sh
+        if: ${{ inputs.seed_aliases }}
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" \
+            "MEILI_URL=http://localhost:7700 MEILI_MASTER_KEY='${MEILI_MASTER_KEY}' bash /tmp/seed-city-aliases.sh"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" 'rm -f /tmp/configure-indexes.sh /tmp/seed-city-aliases.sh' || true

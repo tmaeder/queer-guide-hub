@@ -1,4 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { anthropicMessages } from '../_shared/anthropic-shim.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // pipeline-ai-suggest
@@ -14,13 +16,11 @@ interface NodeTypeDescriptor {
   category: string
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-ai-suggest', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('POST required', 405, req)
 
   const supabase = getServiceClient()
-  const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
-  if (!apiKey) return errorResponse('ANTHROPIC_API_KEY not configured', 500, req)
 
   try {
     const body = await req.json().catch(() => ({}))
@@ -68,26 +68,16 @@ Rules:
 - Keep config empty {} — admin will fill it in.
 - 3-10 nodes typical, 15 max.`
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
+    let json: { content: Array<{ type: string; text: string }> }
+    try {
+      json = await anthropicMessages({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
         messages: [{ role: 'user', content: prompt }],
-      }),
-    })
-
-    if (!resp.ok) {
-      const txt = await resp.text()
-      return errorResponse(`Anthropic ${resp.status}: ${txt.slice(0, 300)}`, 500, req)
+      })
+    } catch (e) {
+      return errorResponse(`LLM error: ${(e as Error).message}`, 500, req)
     }
-
-    const json = await resp.json() as { content: Array<{ type: string; text: string }> }
     const text = json.content?.find(c => c.type === 'text')?.text ?? ''
 
     // Strip accidental code fences
@@ -123,4 +113,4 @@ Rules:
     console.error('pipeline-ai-suggest error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

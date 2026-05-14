@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Source: OpenStreetMap (Overpass API) — LGBTQ+ venues
 // Queries OSM for nodes/ways tagged lgbtq=yes or similar identifiers
@@ -7,10 +8,40 @@ import type { RawItem, NormalizedItem } from '../_shared/source-adapter.ts'
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
 const UA = 'QueerGuideBot/1.0 (https://queer.guide; contact@queer.guide)'
+const OVERPASS_PER_CALL_MS = 25_000
+const WALL_CLOCK_LIMIT_MS = 90_000
+
+async function fetchOverpassWithRetry(query: string, city: string): Promise<unknown[] | null> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(OVERPASS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+        body: `data=${encodeURIComponent(query)}`,
+        signal: AbortSignal.timeout(OVERPASS_PER_CALL_MS),
+      })
+      if (res.ok) {
+        const json = await res.json() as { elements?: unknown[] }
+        return json.elements ?? []
+      }
+      if (res.status >= 500) {
+        console.warn(`OSM ${city} HTTP ${res.status} (attempt ${attempt + 1}/2)`)
+        await new Promise(r => setTimeout(r, 1500 * (attempt + 1)))
+        continue
+      }
+      console.warn(`OSM ${city} non-retryable HTTP ${res.status}`)
+      return null
+    } catch (e) {
+      console.warn(`OSM ${city} attempt ${attempt + 1}/2 failed:`, (e as Error).message)
+      if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
+    }
+  }
+  return null
+}
 
 // OSM tags that indicate LGBTQ+ relevance
 const LGBT_OVERPASS_QUERY = `
-[out:json][timeout:60];
+[out:json][timeout:20];
 (
   node["lgbtq"~"yes|primary|only"]["amenity"]({{bbox}});
   node["gay"="yes"]["amenity"]({{bbox}});
@@ -99,7 +130,7 @@ function osmToNormalized(el: Record<string, unknown>, city: string): NormalizedI
   } as NormalizedItem
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-osm-venue', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -111,33 +142,31 @@ Deno.serve(async (req) => {
     const nodeId        = body.node_id as string | undefined
 
     const allItems: RawItem[] = []
+    const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
+    let citiesQueried = 0
 
-    for (const city of CITIES) {
+    // Shuffle so that we don't always time out on the same trailing cities
+    const cityOrder = [...CITIES].sort(() => Math.random() - 0.5)
+
+    for (const city of cityOrder) {
       if (allItems.length >= limit) break
+      if (Date.now() > deadline) {
+        console.warn(`OSM wall-clock reached after ${citiesQueried} cities`)
+        break
+      }
       const bbox = city.bbox.join(',')
       const query = LGBT_OVERPASS_QUERY.replace(/\{\{bbox\}\}/g, bbox)
 
-      try {
-        const res = await fetch(OVERPASS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
-          body: `data=${encodeURIComponent(query)}`,
-          signal: AbortSignal.timeout(65_000),
-        })
-        if (!res.ok) {
-          console.warn(`OSM Overpass ${city.name}: HTTP ${res.status}`)
-          continue
-        }
-        const json = await res.json() as { elements?: unknown[] }
-        for (const el of json.elements ?? []) {
-          const e = el as Record<string, unknown>
-          const tags = (e.tags ?? {}) as Record<string, string>
-          if (!tags.name) continue // skip unnamed features
-          allItems.push({ sourceId: `osm-${e.type ?? 'node'}-${e.id}`, data: { el: e, city: city.name } })
-          if (allItems.length >= limit) break
-        }
-      } catch (e) {
-        console.warn(`OSM ${city.name} query failed:`, (e as Error).message)
+      const elements = await fetchOverpassWithRetry(query, city.name)
+      citiesQueried++
+      if (!elements) continue
+
+      for (const el of elements) {
+        const e = el as Record<string, unknown>
+        const tags = (e.tags ?? {}) as Record<string, string>
+        if (!tags.name) continue // skip unnamed features
+        allItems.push({ sourceId: `osm-${e.type ?? 'node'}-${e.id}`, data: { el: e, city: city.name } })
+        if (allItems.length >= limit) break
       }
     }
 
@@ -183,10 +212,10 @@ Deno.serve(async (req) => {
       items_processed: written,
       items_succeeded: written,
       items_failed: normalized.length - written,
-      cities_queried: CITIES.length,
+      cities_queried: citiesQueried,
     }, 200, req)
   } catch (error) {
     console.error('source-osm-venue:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

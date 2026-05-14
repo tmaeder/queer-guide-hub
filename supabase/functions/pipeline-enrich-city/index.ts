@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (City) — Wikipedia description + coordinates + image fetch.
 // Reads pending city staging rows, writes enriched_data, sets enrichment_status.
@@ -20,7 +21,7 @@ async function fetchWikipediaSummary(query: string): Promise<{ extract: string; 
   } catch { return null }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-enrich-city', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -121,4 +122,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-enrich-city:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

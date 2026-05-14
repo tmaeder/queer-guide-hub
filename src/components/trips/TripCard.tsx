@@ -1,18 +1,32 @@
 import { useState, type KeyboardEvent } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import AvatarGroup from '@mui/material/AvatarGroup';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import { MoreVertical, Calendar, Luggage, MapPin, ShieldCheck, ShieldAlert, AlertTriangle, Pin, PinOff } from 'lucide-react';
-import Tooltip from '@mui/material/Tooltip';
+import {
+  MoreVertical,
+  Calendar,
+  Luggage,
+  MapPin,
+  ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
+  Pin,
+  PinOff,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { Card, CardImage, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { phaseStatusText, getTripPhase } from './tripPhase';
 import { resolveTripTitle } from './tripTitle';
@@ -28,6 +42,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { Trip, TripMember } from '@/hooks/useTrips';
 import { useTripMutations } from '@/hooks/useTrips';
+import { cn } from '@/lib/utils';
 
 interface Props {
   trip: Trip & {
@@ -55,7 +70,6 @@ export function TripCard({ trip }: Props) {
   const { deleteTrip } = useTripMutations();
   const { toast } = useToast();
   const { activeTrip, setActiveTripId } = useActiveTrip();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const isActive = activeTrip?.id === trip.id;
@@ -63,9 +77,7 @@ export function TripCard({ trip }: Props) {
   const phase = getTripPhase(trip);
   const phaseStatus = phaseStatusText(trip, undefined, t);
 
-  const handleTogglePin = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAnchorEl(null);
+  const handleTogglePin = () => {
     setActiveTripId(isActive ? null : trip.id);
     toast({
       title: isActive ? t('trips.toast.unpinned', 'Trip unpinned') : t('trips.toast.pinned', 'Trip pinned'),
@@ -110,20 +122,11 @@ export function TripCard({ trip }: Props) {
     }
   };
 
-  const handleMenuClick = (e: React.MouseEvent<HTMLElement>) => {
-    e.stopPropagation();
-    setAnchorEl(e.currentTarget);
-  };
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAnchorEl(null);
+  const handleEdit = () => {
     navigate(`/trips/${trip.id}`);
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAnchorEl(null);
+  const handleDeleteClick = () => {
     setDeleteOpen(true);
   };
 
@@ -161,6 +164,16 @@ export function TripCard({ trip }: Props) {
 
   const status = statusConfig[trip.status];
 
+  const safetyBg =
+    safetyLevel === 'safe'
+      ? 'bg-foreground'
+      : safetyLevel === 'caution'
+        ? 'bg-muted-foreground'
+        : 'bg-destructive';
+
+  const visibleMembers = members.slice(0, 4);
+  const overflowMembers = members.length - visibleMembers.length;
+
   return (
     <>
       <Card
@@ -170,7 +183,6 @@ export function TripCard({ trip }: Props) {
         aria-label={t('trips.card.ariaLabel', { title: displayTitle })}
         onClick={handleNavigate}
         onKeyDown={handleKeyDown}
-
       >
         <CardImage
           src={trip.cover_image_url}
@@ -179,253 +191,172 @@ export function TripCard({ trip }: Props) {
           fallbackIcon={Luggage}
         >
           {safetyLevel && (
-            <Tooltip
-              title={t(`trips.card.safety.${safetyLevel}`)}
-              arrow
-              placement="top"
-            >
-              <Box
-                component="span"
-                aria-label={t(`trips.card.safety.${safetyLevel}`)}
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  left: 8,
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor:
-                    safetyLevel === 'safe'
-                      ? 'success.main'
-                      : safetyLevel === 'caution'
-                        ? 'warning.main'
-                        : 'error.main',
-                  color: 'common.white',
-                  boxShadow: 1,
-                  cursor: 'help',
-                }}
-              >
-                {safetyLevel === 'safe' && (
-                  <ShieldCheck style={{ width: 16, height: 16 }} />
-                )}
-                {safetyLevel === 'caution' && (
-                  <ShieldAlert style={{ width: 16, height: 16 }} />
-                )}
-                {safetyLevel === 'danger' && (
-                  <AlertTriangle style={{ width: 16, height: 16 }} />
-                )}
-              </Box>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  aria-label={t(`trips.card.safety.${safetyLevel}`)}
+                  className={cn(
+                    'absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-white shadow cursor-help',
+                    safetyBg,
+                  )}
+                >
+                  {safetyLevel === 'safe' && <ShieldCheck style={{ width: 16, height: 16 }} />}
+                  {safetyLevel === 'caution' && <ShieldAlert style={{ width: 16, height: 16 }} />}
+                  {safetyLevel === 'danger' && <AlertTriangle style={{ width: 16, height: 16 }} />}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t(`trips.card.safety.${safetyLevel}`)}</TooltipContent>
             </Tooltip>
           )}
-          <IconButton
-            className="trip-card-menu"
-            size="small"
-            onClick={handleMenuClick}
-            aria-label={t('trips.card.menuAria')}
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              bgcolor: 'background.paper',
-              boxShadow: 1,
-              '&:hover': { bgcolor: 'background.paper' },
-            }}
-          >
-            <MoreVertical style={{ width: 16, height: 16 }} />
-          </IconButton>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                aria-label={t('trips.card.menuAria')}
+                className="trip-card-menu absolute top-2 right-2 h-7 w-7 p-0 bg-background shadow"
+              >
+                <MoreVertical style={{ width: 16, height: 16 }} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem onClick={handleEdit}>
+                {t('trips.card.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleTogglePin} className="flex items-center gap-2">
+                {isActive ? (
+                  <PinOff style={{ width: 14, height: 14 }} aria-hidden />
+                ) : (
+                  <Pin style={{ width: 14, height: 14 }} aria-hidden />
+                )}
+                {isActive
+                  ? t('trips.card.unpin', 'Unpin from active')
+                  : t('trips.card.pin', 'Set as active trip')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive">
+                {t('trips.card.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardImage>
 
         <CardContent>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 700,
+          <h3
+            className="font-bold mb-2 overflow-hidden"
+            style={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              mb: 1,
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
               letterSpacing: '-0.01em',
             }}
           >
             {displayTitle}
-          </Typography>
+          </h3>
 
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
-              mb: 1.5,
-              flexWrap: 'wrap',
-              color: 'text.secondary',
-            }}
-          >
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+          <div className="flex items-center gap-3 mb-3 flex-wrap text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
               <Calendar
                 style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.7 }}
               />
-              <Typography variant="caption" sx={{ fontSize: '0.8125rem' }}>
-                {dateRange}
-              </Typography>
-            </Box>
+              <span className="text-[0.8125rem]">{dateRange}</span>
+            </span>
             {phase !== 'live' && phase !== 'memory' && (
-              <Typography
-                variant="caption"
-                sx={{ fontSize: '0.75rem', opacity: 0.7 }}
+              <span
+                className="text-xs opacity-70"
                 aria-label={t('trips.card.phaseStatus', 'Phase status')}
               >
                 · {phaseStatus}
-              </Typography>
+              </span>
             )}
             {isActiveToday && (
-              <Box
-                component="button"
+              <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/trips/${trip.id}/today`);
                 }}
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  px: 0.75,
-                  py: 0.25,
-                  bgcolor: 'brand.main',
-                  color: 'brand.contrastText',
-                  fontSize: '0.6875rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.6875rem] font-bold uppercase border-none cursor-pointer"
+                style={{
+                  background: 'hsl(var(--foreground))',
+                  color: 'hsl(var(--background))',
                   letterSpacing: '0.04em',
-                  border: 'none',
-                  cursor: 'pointer',
                   fontFamily: 'inherit',
                 }}
                 aria-label={t('trips.card.viewToday', 'View today')}
               >
-                <Box
-                  component="span"
-                  sx={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: '50%',
-                    bgcolor: 'currentColor',
-                    opacity: 0.9,
-                  }}
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: 'currentColor', opacity: 0.9 }}
                 />
                 {t('trips.card.activeToday', 'Active · Today')}
-              </Box>
+              </button>
             )}
             {(placeCount > 0 || dayCount > 0) && (
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    width: 3,
-                    height: 3,
-                    borderRadius: '50%',
-                    bgcolor: 'text.disabled',
-                  }}
+              <span className="inline-flex items-center gap-1">
+                <span
+                  className="rounded-full"
+                  style={{ width: 3, height: 3, background: 'hsl(var(--muted-foreground))', opacity: 0.5 }}
                 />
                 <MapPin
                   style={{ width: 13, height: 13, flexShrink: 0, opacity: 0.7 }}
                 />
-                <Typography variant="caption" sx={{ fontSize: '0.8125rem' }}>
+                <span className="text-[0.8125rem]">
                   {t('trips.card.placeCount', { count: placeCount })}
                   {dayCount > 0 &&
                     ` · ${t('trips.card.dayCount', { count: dayCount })}`}
-                </Typography>
-              </Box>
+                </span>
+              </span>
             )}
-          </Box>
+          </div>
 
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 1,
-            }}
-          >
+          <div className="flex items-center justify-between gap-2">
             <Badge
               variant={status.variant}
-              {...(status.brand && {
-                sx: {
-                  bgcolor: 'brand.main',
-                  color: 'brand.contrastText',
-                  borderColor: 'brand.main',
-                },
-              })}
+              className={status.brand ? 'border-transparent text-white' : undefined}
+              style={
+                status.brand
+                  ? {
+                      background: 'hsl(var(--foreground))',
+                      color: 'hsl(var(--background))',
+                    }
+                  : undefined
+              }
             >
               {status.label}
             </Badge>
 
             {members.length > 1 && (
-              <AvatarGroup
-                max={4}
-                sx={{
-                  '& .MuiAvatar-root': {
-                    width: 28,
-                    height: 28,
-                    fontSize: '0.75rem',
-                  },
-                }}
-              >
-                {members.map((m) => (
-                  <Avatar
-                    key={m.id}
-                    alt={m.profiles?.display_name || 'Member'}
-                    src={m.profiles?.avatar_url || undefined}
-                  >
-                    {(m.profiles?.display_name || 'U')[0].toUpperCase()}
+              <div className="flex -space-x-2">
+                {visibleMembers.map((m) => (
+                  <Avatar key={m.id} className="w-7 h-7 text-xs border-2 border-background">
+                    {m.profiles?.avatar_url && (
+                      <AvatarImage
+                        src={m.profiles.avatar_url}
+                        alt={m.profiles?.display_name || 'Member'}
+                      />
+                    )}
+                    <AvatarFallback>
+                      {(m.profiles?.display_name || 'U')[0].toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                 ))}
-              </AvatarGroup>
+                {overflowMembers > 0 && (
+                  <Avatar className="w-7 h-7 text-xs border-2 border-background">
+                    <AvatarFallback>+{overflowMembers}</AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
             )}
             {!members.length && trip.member_count > 1 && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 {t('trips.card.memberCount', { count: trip.member_count })}
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
         </CardContent>
       </Card>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={(e: React.SyntheticEvent) => {
-          e.stopPropagation?.();
-          setAnchorEl(null);
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <MenuItem onClick={handleEdit}>{t('trips.card.edit')}</MenuItem>
-        <MenuItem onClick={handleTogglePin} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {isActive ? (
-            <PinOff style={{ width: 14, height: 14 }} aria-hidden />
-          ) : (
-            <Pin style={{ width: 14, height: 14 }} aria-hidden />
-          )}
-          {isActive
-            ? t('trips.card.unpin', 'Unpin from active')
-            : t('trips.card.pin', 'Set as active trip')}
-        </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
-          {t('trips.card.delete')}
-        </MenuItem>
-      </Menu>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>

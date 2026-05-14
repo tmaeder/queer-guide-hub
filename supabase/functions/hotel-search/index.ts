@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, corsResponse, errorResponse, getServiceClient } from "../_shared/supabase-client.ts";
 
 /**
@@ -17,7 +16,7 @@ const MARKER = '452012';
 const TP_BASE = 'https://engine.hotellook.com/api/v2'; // Still serves cached data via TP
 const BOOKING_AFFILIATE_BASE = 'https://www.booking.com/searchresults.html';
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {

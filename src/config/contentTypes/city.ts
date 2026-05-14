@@ -1,0 +1,147 @@
+import { MapPin } from 'lucide-react';
+import type { ContentTypeConfig, FieldConfig } from '@/types/cms';
+
+const fmtNum = (n: unknown): string =>
+  typeof n === 'number' && Number.isFinite(n) ? new Intl.NumberFormat().format(n) : '-';
+
+export const cityFields: FieldConfig[] = [
+  {
+    name: 'name',
+    label: 'City Name',
+    type: 'text',
+    required: true,
+    group: 'basic',
+    searchable: true,
+    sortable: true,
+  },
+  { name: 'slug', label: 'Slug', type: 'text', group: 'basic' },
+  { name: 'description', label: 'Description', type: 'richtext', group: 'basic', colSpan: 2 },
+  { name: 'region_name', label: 'Region', type: 'text', group: 'basic' },
+  {
+    name: 'country',
+    label: 'Country',
+    type: 'country_autocomplete',
+    group: 'basic',
+    filterable: true,
+    relatedFields: { country_id: 'country_id' },
+  },
+  { name: 'population', label: 'Population', type: 'number', group: 'details', sortable: true },
+  { name: 'is_capital', label: 'Capital City', type: 'boolean', group: 'details' },
+  { name: 'is_major_city', label: 'Major City', type: 'boolean', group: 'details' },
+  { name: 'latitude', label: 'Latitude', type: 'number', group: 'location', min: -90, max: 90 },
+  { name: 'longitude', label: 'Longitude', type: 'number', group: 'location', min: -180, max: 180 },
+  { name: 'timezone', label: 'Timezone', type: 'text', group: 'location' },
+  { name: 'elevation_m', label: 'Elevation (m)', type: 'number', group: 'details' },
+  { name: 'climate_type', label: 'Climate', type: 'text', group: 'details' },
+  { name: 'founded_year', label: 'Founded Year', type: 'number', group: 'details' },
+  { name: 'area_km2', label: 'Area (km²)', type: 'number', group: 'details' },
+  { name: 'local_language', label: 'Local Language', type: 'text', group: 'details' },
+  { name: 'official_website', label: 'Official Website', type: 'url', group: 'details' },
+  { name: 'major_airport_code', label: 'Airport Code', type: 'text', group: 'details' },
+  { name: 'best_time_to_visit', label: 'Best Time to Visit', type: 'text', group: 'details' },
+  { name: 'local_customs', label: 'Local Customs', type: 'textarea', group: 'details' },
+  { name: 'mayor', label: 'Mayor', type: 'text', group: 'details' },
+  { name: 'cost_of_living', label: 'Cost of Living', type: 'json', group: 'details', helpText: 'Cost of living data' },
+  { name: 'transportation_info', label: 'Transportation', type: 'json', group: 'details', helpText: 'Transportation details' },
+  { name: 'demographics', label: 'Demographics', type: 'json', group: 'details', helpText: 'City demographics' },
+  { name: 'postal_codes', label: 'Postal Codes', type: 'tags', group: 'details' },
+  { name: 'area_codes', label: 'Area Codes', type: 'tags', group: 'details' },
+  { name: 'airport_codes', label: 'Airport Codes', type: 'tags', group: 'details' },
+  { name: 'sister_cities', label: 'Sister Cities', type: 'tags', group: 'details' },
+  { name: 'notable_landmarks', label: 'Notable Landmarks', type: 'tags', group: 'details' },
+  { name: 'economy_sectors', label: 'Economy Sectors', type: 'tags', group: 'details' },
+  { name: 'universities', label: 'Universities', type: 'tags', group: 'details' },
+  {
+    name: 'lgbt_friendly_rating',
+    label: 'LGBTQ+ Friendly Rating',
+    type: 'number',
+    group: 'lgbtq',
+    min: 0,
+    max: 10,
+  },
+  { name: 'image_url', label: 'City Image', type: 'image', group: 'media' },
+  { name: 'curated_image_url', label: 'Curated Image', type: 'image', group: 'media' },
+  { name: 'country_id', label: 'Country Reference', type: 'text', group: 'external', hidden: true },
+  {
+    name: 'country_name',
+    label: 'Country',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const c = row.countries as { name?: string } | null | undefined;
+      return c?.name ?? null;
+    },
+  },
+  {
+    name: 'lgbt_legal_status',
+    label: 'LGBT Legal',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const c = row.countries as { lgbt_legal_status?: string } | null | undefined;
+      return c?.lgbt_legal_status ?? null;
+    },
+  },
+  {
+    name: 'equality_score',
+    label: 'Equality Score',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const c = row.countries as { equality_score?: number } | null | undefined;
+      return c?.equality_score != null ? String(c.equality_score) : null;
+    },
+  },
+  {
+    name: 'venue_count',
+    label: 'Venues',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const venues = row.venues as Array<{ count?: number }> | null | undefined;
+      return fmtNum(venues?.[0]?.count ?? 0);
+    },
+  },
+  {
+    name: 'event_count',
+    label: 'Events',
+    type: 'text',
+    group: 'external',
+    hidden: true,
+    virtual: true,
+    listColumn: true,
+    listRender: (row) => {
+      const events = row.events as Array<{ count?: number }> | null | undefined;
+      return fmtNum(events?.[0]?.count ?? 0);
+    },
+  },
+];
+
+export const cityContentType: ContentTypeConfig = {
+  id: 'cities',
+  tableName: 'cities',
+  primaryKey: 'id',
+  titleField: 'name',
+  descriptionField: 'description',
+  imageField: 'image_url',
+  icon: MapPin,
+  label: { singular: 'City', plural: 'Cities' },
+  color: '#10b981',
+  fields: cityFields,
+  listSelect: '*,countries(name,equality_score,lgbt_legal_status),venues(count),events(count)',
+  fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],
+  translatableFields: ['name', 'description'],
+  commentable: true,
+};

@@ -1,10 +1,11 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Source: Personality Staging — reports personalities already in ingestion_staging
 // (put there by admin via stage-personality or import-personalities-csv).
 // The pipeline-executor picks them up in subsequent normalize/validate/commit nodes.
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-personality-staging', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -34,4 +35,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

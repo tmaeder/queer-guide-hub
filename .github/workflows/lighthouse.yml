@@ -1,0 +1,52 @@
+name: Lighthouse CI
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Base URL to audit
+        required: false
+        default: https://queer.guide
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_run:
+    workflows: [Deploy to Cloudflare Pages]
+    types: [completed]
+    branches: [main]
+concurrency:
+  group: lighthouse-ci
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Lighthouse CI
+        run: npm install -g "@lhci/cli@0.13.x"
+      - name: Run Lighthouse against key routes
+        env:
+          INPUT_BASE: ${{ github.event.inputs.base_url }}
+        run: |
+          BASE="${INPUT_BASE:-https://queer.guide}"
+          lhci collect \
+            --url="$BASE/" \
+            --url="$BASE/venues" \
+            --url="$BASE/events" \
+            --url="$BASE/travel" \
+            --url="$BASE/news" \
+            --url="$BASE/about" \
+            --numberOfRuns=1 \
+            --settings.preset=desktop \
+            --settings.skipAudits=uses-http2
+          lhci assert --assertions.categories:performance=warn --assertions.categories:accessibility=warn --assertions.categories:seo=warn --assertions.categories:best-practices=warn || true
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          retention-days: 30

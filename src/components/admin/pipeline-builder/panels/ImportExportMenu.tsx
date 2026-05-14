@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import type { Node, Edge } from '@xyflow/react';
 
 export interface PipelineExport {
@@ -73,11 +73,10 @@ function validate(obj: unknown): obj is PipelineExport {
 
 export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineDescription, onImport }: ImportExportMenuProps) {
   const fileInput = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   const handleExportFile = () => {
     if (nodes.length === 0) {
-      toast({ title: 'Nothing to export', description: 'Add at least one node first', variant: 'destructive' });
+      toast.error('Nothing to export: Add at least one node first');
       return;
     }
     const payload = serialize(nodes, edges, pipelineName || 'unnamed-pipeline', pipelineDescription);
@@ -93,15 +92,15 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
 
   const handleCopy = async () => {
     if (nodes.length === 0) {
-      toast({ title: 'Nothing to copy', variant: 'destructive' });
+      toast.error('Nothing to copy');
       return;
     }
     const payload = serialize(nodes, edges, pipelineName || 'unnamed-pipeline', pipelineDescription);
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
       toast({ title: 'Copied to clipboard', description: `${nodes.length} nodes, ${edges.length} edges` });
-    } catch (e) {
-      toast({ title: 'Copy failed', description: (e as Error).message, variant: 'destructive' });
+    } catch (_e) {
+      toast.error('Copy failed');
     }
   };
 
@@ -116,8 +115,8 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
       if (!validate(parsed)) throw new Error('Invalid pipeline format (missing version/nodes/edges)');
       onImport(parsed);
       toast({ title: 'Pipeline imported', description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
-    } catch (err) {
-      toast({ title: 'Import failed', description: (err as Error).message, variant: 'destructive' });
+    } catch (_err) {
+      toast.error('Import failed');
     } finally {
       if (fileInput.current) fileInput.current.value = '';
     }
@@ -130,8 +129,8 @@ export default function ImportExportMenu({ nodes, edges, pipelineName, pipelineD
       if (!validate(parsed)) throw new Error('Clipboard does not contain a valid pipeline export');
       onImport(parsed);
       toast({ title: 'Pipeline pasted', description: `${parsed.nodes.length} nodes, ${parsed.edges.length} edges` });
-    } catch (err) {
-      toast({ title: 'Paste failed', description: (err as Error).message, variant: 'destructive' });
+    } catch (_err) {
+      toast.error('Paste failed');
     }
   };
 

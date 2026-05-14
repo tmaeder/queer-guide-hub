@@ -1,0 +1,25 @@
+HTTP/2 200 
+date: Thu, 14 May 2026 13:16:03 GMT
+content-type: text/html; charset=utf-8
+access-control-allow-origin: *
+cache-control: public, max-age=0, must-revalidate
+speculation-rules: "/cdn-cgi/speculation"
+strict-transport-security: max-age=15552000; includeSubDomains; preload
+vary: User-Agent
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://widget.getyourguide.com https://www.googletagmanager.com https://www.clarity.ms https://scripts.clarity.ms; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https://protomaps.github.io; connect-src 'self' https://*.supabase.co https://*.maeder-tobiassimon.workers.dev https://*.queer.guide https://protomaps.github.io https://challenges.cloudflare.com https://js.stripe.com https://maps.googleapis.com https://maps.gstatic.com https://ipapi.co https://commons.wikimedia.org https://widget.getyourguide.com https://*.getyourguide.com https://api.travelpayouts.com https://pics.avs.io https://*.hotellook.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io https://www.google-analytics.com https://*.clarity.ms wss://*.supabase.co; frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://widget.getyourguide.com https://*.getyourguide.com; frame-ancestors 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
+cross-origin-opener-policy: same-origin
+onion-location: http://rlxm6jtzwf2r3brzxyim6kuutj3l2b2da2ceayoe37bwrhmsz3nugcid.onion%{REQUEST_URI}
+permissions-policy: camera=(), microphone=(), geolocation=(self), payment=(self), usb=()
+referrer-policy: same-origin
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-xss-protection: 1; mode=block
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=hRpaeU7ex6lEXHkBYywC0knzflDcPifNqPnJRNlSJ0gf7PvVmJH2dRmlbJoQn%2FUbpwHjxPG8bDVDWiOAwdIPsqBJTWm64lHiOm8ai1CoFlH2fyvI3nBJjpjV7bQc%2Bg%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+server: cloudflare
+cf-cache-status: DYNAMIC
+expect-ct: max-age=86400, enforce
+cf-ray: 9fba2cd76d1ccdef-MXP
+alt-svc: h3=":443"; ma=86400
+

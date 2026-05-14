@@ -1,12 +1,13 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { enrichVenueWithAI } from '../_shared/ai-enrichment.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (Venue/Hotel) — AI description + tags + LGBTQ context.
 // Reads pending venue/hotel staging rows, writes enriched_data, sets enrichment_status.
 // Idempotent (skips already-enriched rows).
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-enrich-venue', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -117,4 +118,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-enrich-venue:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

@@ -1,16 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
 import { Send, Reply, X, MessageCircle } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMessages, type TripMessage } from '@/hooks/useTripCollaboration';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 
 interface Props {
   tripId: string;
@@ -45,7 +44,8 @@ export function TripChat({ tripId }: Props) {
     sendMessage.mutate(
       { content: text, replyTo: replyTo?.id },
       {
-        onError: (err) => toast({ title: 'Failed to send message', description: String(err), variant: 'destructive' }),
+        onError: (err) =>
+          toast({ title: 'Failed to send message', description: String(err), variant: 'destructive' }),
       },
     );
     setInput('');
@@ -72,138 +72,125 @@ export function TripChat({ tripId }: Props) {
   if (isLoading) return <PageLoadingState count={3} variant="list" />;
 
   return (
-    <Box className="flex flex-col h-full" sx={{ minHeight: 400, maxHeight: 600 }}>
+    <div className="flex flex-col h-full min-h-[400px] max-h-[600px]">
       {/* Messages list */}
-      <Box
+      <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto space-y-3 p-3"
-        sx={{ overscrollBehavior: 'contain' }}
+        style={{ overscrollBehavior: 'contain' }}
       >
         {(!messages || messages.length === 0) && (
           <ScrollReveal>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center', flex: 1 }}>
-              <Box
-                sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  bgcolor: 'action.hover',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2,
-                }}
-              >
+            <div className="flex flex-col items-center justify-center py-10 text-center flex-1">
+              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
                 <MessageCircle size={24} style={{ opacity: 0.5 }} />
-              </Box>
-              <Typography variant="subtitle2" fontWeight={600}>
-                Start the conversation
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Share ideas for your trip
-              </Typography>
-            </Box>
+              </div>
+              <p className="text-sm font-semibold">Start the conversation</p>
+              <p className="text-sm text-muted-foreground">Share ideas for your trip</p>
+            </div>
           </ScrollReveal>
         )}
 
         {messages?.map((msg) => {
           const isOwn = msg.sender_id === user?.id;
           const replyMsg = findReplyMessage(msg.reply_to);
+          const initial = (msg.sender?.display_name || 'U')[0].toUpperCase();
           return (
-            <Box key={msg.id} className={`flex gap-2 group ${isOwn ? 'flex-row-reverse' : ''}`}>
-              <Avatar
-                src={msg.sender?.avatar_url || undefined}
-                alt={msg.sender?.display_name || 'User'}
-                sx={{ width: 24, height: 24, mt: 0.5 }}
-              >
-                {(msg.sender?.display_name || 'U')[0].toUpperCase()}
+            <div key={msg.id} className={cn('flex gap-2 group', isOwn && 'flex-row-reverse')}>
+              <Avatar className="h-6 w-6 mt-0.5">
+                {msg.sender?.avatar_url && (
+                  <AvatarImage src={msg.sender.avatar_url} alt={msg.sender?.display_name || 'User'} />
+                )}
+                <AvatarFallback className="text-[10px]">{initial}</AvatarFallback>
               </Avatar>
 
-              <Box className={`max-w-[75%] ${isOwn ? 'items-end' : 'items-start'}`}>
-                <Box className="flex items-center gap-1.5 mb-0.5">
-                  <Typography variant="caption" fontWeight={600} sx={{ fontSize: 11 }}>
+              <div className={cn('max-w-[75%]', isOwn ? 'items-end' : 'items-start')}>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[11px] font-semibold">
                     {isOwn ? 'You' : msg.sender?.display_name || 'Unknown'}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
                     {formatTimestamp(msg.created_at)}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
 
                 {replyMsg && (
-                  <Box
-                    className="border-l-2 border-primary/40 pl-2 mb-1 rounded-sm"
-                    sx={{ bgcolor: 'action.hover', py: 0.5, px: 1 }}
-                  >
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10, display: 'block' }}>
+                  <div className="border-l-2 border-primary/40 pl-2 mb-1 rounded-sm bg-muted py-1 px-2">
+                    <span className="block text-[10px] text-muted-foreground">
                       {replyMsg.sender?.display_name || 'Unknown'}
-                    </Typography>
-                    <Typography variant="caption" noWrap sx={{ fontSize: 11, maxWidth: 200, display: 'block' }}>
+                    </span>
+                    <span className="block text-[11px] truncate max-w-[200px]">
                       {replyMsg.content}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 )}
 
-                <Box
-                  sx={{
-                    bgcolor: isOwn ? 'primary.main' : 'action.hover',
-                    color: isOwn ? 'primary.contrastText' : 'text.primary',
-                    borderRadius: 2,
-                    p: 1.5,
-                  }}
+                <div
+                  className={cn(
+                    'rounded-lg p-3',
+                    isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
+                  )}
                 >
-                  <Typography variant="body2" sx={{ fontSize: 13, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                    {msg.content}
-                  </Typography>
-                </Box>
+                  <p className="text-[13px] whitespace-pre-wrap break-words">{msg.content}</p>
+                </div>
 
-                <IconButton
-                  size="small"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setReplyTo(msg)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  sx={{ p: 0.25, mt: 0.25, minWidth: 44, minHeight: 44 }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 mt-0.5"
                 >
                   <Reply size={12} />
-                </IconButton>
-              </Box>
-            </Box>
+                </Button>
+              </div>
+            </div>
           );
         })}
-      </Box>
+      </div>
 
       {/* Reply preview */}
       {replyTo && (
-        <Box className="flex items-center gap-2 px-3 py-1.5" sx={{ borderTop: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-border bg-muted">
           <Reply size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
-          <Box className="flex-1 min-w-0">
-            <Typography variant="caption" fontWeight={600} sx={{ fontSize: 11 }}>
+          <div className="flex-1 min-w-0">
+            <span className="block text-[11px] font-semibold">
               Replying to {replyTo.sender?.display_name || 'Unknown'}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', fontSize: 11 }}>
+            </span>
+            <span className="block text-[11px] text-muted-foreground truncate">
               {replyTo.content}
-            </Typography>
-          </Box>
-          <IconButton size="small" onClick={() => setReplyTo(null)} sx={{ p: 0.25, minWidth: 44, minHeight: 44 }}>
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setReplyTo(null)}
+            className="h-7 w-7 p-0"
+          >
             <X size={14} />
-          </IconButton>
-        </Box>
+          </Button>
+        </div>
       )}
 
       {/* Input */}
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', mt: 2, p: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
-        <TextField
+      <div className="flex gap-2 items-end mt-2 p-3 border-t border-border">
+        <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          multiline
-          maxRows={4}
-          size="small"
-          sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: 13 } }}
+          rows={1}
+          className="flex-1 text-[13px] min-h-[40px] max-h-[120px]"
         />
-        <IconButton color="primary" onClick={handleSend} disabled={!input.trim() || sendMessage.isPending}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSend}
+          disabled={!input.trim() || sendMessage.isPending}
+          className="h-9 w-9 p-0 text-primary"
+        >
           <Send size={18} />
-        </IconButton>
-      </Box>
-    </Box>
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -1,17 +1,11 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import Divider from '@mui/material/Divider';
-import { useTheme } from '@mui/material/styles';
 import { Plus, Trash2, ArrowRight, Utensils, Car, Home, Ticket, ShoppingBag, Package, Wallet, Sparkles } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
 import { useTripBudget, useBudgetMutations, type BudgetItem } from '@/hooks/useTripBudget';
@@ -56,7 +50,6 @@ interface Props {
 
 export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const { toast } = useToast();
   const { items, summary, isLoading } = useTripBudget(tripId, defaultCurrency);
   const { deleteBudgetItem } = useBudgetMutations(tripId);
@@ -69,13 +62,14 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   // Brand-aligned palette (magenta first, then amber, plus a handful of
   // derived hues). No `warning`/`info`/`success` defaults — they clash with
   // the Queer Guide palette.
+  const brand = 'hsl(var(--foreground))';
   const categoryColors: Record<string, string> = {
-    food: '#F59E0B', // amber
-    transport: '#06B6D4', // cyan
-    accommodation: theme.palette.brand?.main || '#DB2777', // brand magenta
-    activities: '#10B981', // emerald
-    shopping: '#8B5CF6', // violet
-    other: theme.palette.text.secondary as string,
+    food: '#F59E0B',
+    transport: '#06B6D4',
+    accommodation: brand,
+    activities: '#10B981',
+    shopping: '#8B5CF6',
+    other: 'hsl(var(--muted-foreground))',
   };
 
   const memberName = (userId: string) => {
@@ -125,45 +119,20 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   }
 
   if (items.length === 0) {
-    const brand = theme.palette.brand?.main || '#DB2777';
     return (
       <>
-        <Box
-          sx={{
-            textAlign: 'center',
-            py: { xs: 6, md: 10 },
-            px: 3,
-            border: '1.5px dashed',
-            borderColor: 'divider',
-            borderRadius: 3,
-          }}
-        >
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: 2,
-              bgcolor: `${brand}1a`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 1.5,
-            }}
+        <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-xl">
+          <div
+            className="w-14 h-14 rounded-lg flex items-center justify-center mx-auto mb-1.5"
+            style={{ backgroundColor: `${brand}1a` }}
           >
             <Wallet size={26} style={{ color: brand }} />
-          </Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-            {t('trips.budget.emptyTitle')}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}
-          >
+          </div>
+          <h6 className="font-bold mb-0.5 text-lg">{t('trips.budget.emptyTitle')}</h6>
+          <p className="text-sm text-muted-foreground mb-3 max-w-[360px] mx-auto">
             {t('trips.budget.emptyDescription')}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
+          </p>
+          <div className="flex gap-1 justify-center flex-wrap">
             <Button variant="brand" onClick={() => setDialogOpen(true)}>
               <Plus size={16} style={{ marginRight: 6 }} />
               {t('trips.budget.addExpense')}
@@ -172,8 +141,8 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               <Sparkles size={16} style={{ marginRight: 6 }} />
               {t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
         <AddBudgetDialog
           open={dialogOpen}
           onClose={() => setDialogOpen(false)}
@@ -197,87 +166,44 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {/* Summary card */}
       <Card>
         <CardContent>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              mb: 1,
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontWeight: 700,
-                color: 'text.secondary',
-                fontSize: '0.7rem',
-              }}
-            >
+          <div className="flex items-center justify-between mb-1">
+            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem]">
               {t('trips.budget.totalSpend')}
-            </Typography>
+            </span>
             <Badge variant="secondary">
               {t('trips.budget.membersCount', { count: members.length })}
             </Badge>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'baseline',
-              gap: 3,
-              flexWrap: 'wrap',
-            }}
-          >
+          </div>
+          <div className="flex items-baseline gap-3 flex-wrap">
             {Object.keys(summary.totalByCurrency).length > 1 && summary.totalConverted != null ? (
               <>
-                <Typography
-                  sx={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontSize: { xs: '1.5rem', md: '1.75rem' },
-                    fontWeight: 800,
-                    letterSpacing: '-0.02em',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
+                <span
+                  className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
                 >
                   {formatAmount(summary.totalConverted, defaultCurrency)}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontVariantNumeric: 'tabular-nums' }}
-                >
+                </span>
+                <span className="text-xs text-muted-foreground tabular-nums">
                   ({Object.entries(summary.totalByCurrency)
                     .map(([cur, total]) => formatAmount(total, cur))
                     .join(' + ')})
-                </Typography>
+                </span>
               </>
             ) : (
               Object.entries(summary.totalByCurrency).map(([cur, total]) => (
-                <Typography
+                <span
                   key={cur}
-                  sx={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontSize: { xs: '1.5rem', md: '1.75rem' },
-                    fontWeight: 800,
-                    letterSpacing: '-0.02em',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
+                  className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
                 >
                   {formatAmount(total, cur)}
-                </Typography>
+                </span>
               ))
             )}
-          </Box>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: 'block', mt: 0.5 }}
-          >
+          </div>
+          <span className="text-xs text-muted-foreground block mt-0.5">
             {t('trips.budget.itemsCount', { count: items.length })}
             {summary.unconvertedCount > 0 &&
               ` · ${t('trips.budget.unconvertedItems', { count: summary.unconvertedCount, defaultValue: '{{count}} item(s) skipped (unknown currency)' })}`}
-          </Typography>
+          </span>
         </CardContent>
       </Card>
 
@@ -285,21 +211,10 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {chartData.length > 0 && (
         <Card className="mt-3">
           <CardContent>
-            <Typography
-              variant="caption"
-              sx={{
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontWeight: 700,
-                color: 'text.secondary',
-                fontSize: '0.7rem',
-                display: 'block',
-                mb: 1,
-              }}
-            >
+            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem] block mb-1">
               {t('trips.budget.spendingByCategory')}
-            </Typography>
-            <Box sx={{ height: 200 }}>
+            </span>
+            <div style={{ height: 200 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -318,36 +233,20 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
                   <Tooltip formatter={(value: number) => formatAmount(value, primaryCurrency)} />
                 </PieChart>
               </ResponsiveContainer>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 0.75,
-                justifyContent: 'center',
-                mt: 2,
-              }}
-            >
+            </div>
+            <div className="flex flex-wrap gap-[0.375rem] justify-center mt-2">
               {chartData.map((d) => (
                 <Badge key={d.name} variant="outline">
-                  <Box
-                    component="span"
-                    sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        bgcolor: d.color,
-                      }}
+                  <span className="inline-flex items-center gap-0.5">
+                    <span
+                      className="inline-block w-2 h-2 rounded-full"
+                      style={{ backgroundColor: d.color }}
                     />
                     {d.name}: {formatAmount(d.value, primaryCurrency)}
-                  </Box>
+                  </span>
                 </Badge>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -363,206 +262,126 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         }
 
         return (
-          <Box key={cat} sx={{ mt: 3 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                mb: 1.25,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box
-                  sx={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 1.25,
-                    bgcolor: `${color}1f`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+          <div key={cat} className="mt-3">
+            <div className="flex items-center justify-between mb-[0.3125rem]">
+              <div className="flex items-center gap-1">
+                <div
+                  className="w-7 h-7 rounded-[0.3125rem] flex items-center justify-center"
+                  style={{ backgroundColor: `${color}1f` }}
                 >
                   <Icon size={14} style={{ color }} />
-                </Box>
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    fontWeight: 700,
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  }}
+                </div>
+                <span
+                  className="font-bold text-sm"
                 >
                   {categoryLabel(cat)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+                </span>
+              </div>
+              <div className="flex gap-1">
                 {Object.entries(catTotal).map(([cur, total]) => (
-                  <Typography
+                  <span
                     key={cur}
-                    variant="body2"
-                    sx={{
-                      fontWeight: 700,
-                      color: 'text.secondary',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
+                    className="text-sm font-bold text-muted-foreground tabular-nums"
                   >
                     {formatAmount(total, cur)}
-                  </Typography>
+                  </span>
                 ))}
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             {catItems.map((item) => (
               <Card key={item.id} className="mb-1">
                 <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <Avatar
-                      src={memberAvatar(item.paid_by)}
-                      sx={{ width: 32, height: 32, fontSize: 13 }}
-                    >
-                      {memberName(item.paid_by)[0]?.toUpperCase()}
+                  <div className="flex items-center gap-[0.3125rem]">
+                    <Avatar className="w-8 h-8 text-[13px]">
+                      {memberAvatar(item.paid_by) && (
+                        <AvatarImage src={memberAvatar(item.paid_by)} />
+                      )}
+                      <AvatarFallback>{memberName(item.paid_by)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap>
-                        {item.title}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          flexWrap: 'wrap',
-                          color: 'text.secondary',
-                        }}
-                      >
-                        {item.date && (
-                          <Typography variant="caption">{item.date}</Typography>
-                        )}
-                        <Typography variant="caption">
-                          {t('trips.budget.paidBy', {
-                            name: memberName(item.paid_by),
-                          })}
-                        </Typography>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{item.title}</p>
+                      <div className="flex items-center gap-1 flex-wrap text-muted-foreground">
+                        {item.date && <span className="text-xs">{item.date}</span>}
+                        <span className="text-xs">
+                          {t('trips.budget.paidBy', { name: memberName(item.paid_by) })}
+                        </span>
                         {item.split_among.length > 1 && (
                           <Badge variant="outline">
-                            {t('trips.budget.splitWays', {
-                              count: item.split_among.length,
-                            })}
+                            {t('trips.budget.splitWays', { count: item.split_among.length })}
                           </Badge>
                         )}
-                      </Box>
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 700,
-                        fontVariantNumeric: 'tabular-nums',
-                      }}
-                    >
+                      </div>
+                    </div>
+                    <span className="text-sm font-bold tabular-nums">
                       {formatAmount(Number(item.amount), item.currency)}
-                    </Typography>
-                    <IconButton
-                      size="small"
+                    </span>
+                    <Button
+                      variant="ghost"
+                      className="h-7 w-7 p-0 opacity-45 hover:opacity-100 hover:text-destructive transition-[opacity,color] duration-150"
                       onClick={() => setDeleteConfirmId(item.id)}
                       aria-label={t('trips.budget.deleteAria')}
-                      sx={{
-                        opacity: 0.45,
-                        '&:hover': { opacity: 1, color: 'error.main' },
-                        transition: 'opacity 0.15s, color 0.15s',
-                      }}
                     >
                       <Trash2 size={14} />
-                    </IconButton>
-                  </Box>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
-          </Box>
+          </div>
         );
       })}
 
       {/* Settlements */}
       {Object.keys(summary.perPersonBalance).length > 0 && (
-        <Box sx={{ mt: 4 }}>
-          <Divider sx={{ mb: 2 }} />
-          <Typography
-            variant="caption"
-            sx={{
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              fontWeight: 700,
-              color: 'text.secondary',
-              fontSize: '0.7rem',
-              display: 'block',
-              mb: 1,
-            }}
-          >
+        <div className="mt-4">
+          <div className="border-t border-border mb-2" />
+          <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem] block mb-1">
             {t('trips.budget.settlements')}
-          </Typography>
+          </span>
           {Object.entries(summary.perPersonBalance).map(([cur, settlements]) =>
             settlements.map((s, i) => (
               <Card key={`${cur}-${i}`} className="mb-1">
                 <CardContent>
-                  <Box className="flex items-center gap-2">
-                    <Avatar
-                      src={memberAvatar(s.from)}
-                      sx={{ width: 24, height: 24, fontSize: 11 }}
-                    >
-                      {memberName(s.from)[0]?.toUpperCase()}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-6 h-6 text-[11px]">
+                      {memberAvatar(s.from) && <AvatarImage src={memberAvatar(s.from)} />}
+                      <AvatarFallback>{memberName(s.from)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <Typography variant="body2">{memberName(s.from)}</Typography>
-                    <ArrowRight size={14} style={{ color: theme.palette.text.secondary }} />
-                    <Avatar
-                      src={memberAvatar(s.to)}
-                      sx={{ width: 24, height: 24, fontSize: 11 }}
-                    >
-                      {memberName(s.to)[0]?.toUpperCase()}
+                    <span className="text-sm">{memberName(s.from)}</span>
+                    <ArrowRight size={14} className="text-muted-foreground" />
+                    <Avatar className="w-6 h-6 text-[11px]">
+                      {memberAvatar(s.to) && <AvatarImage src={memberAvatar(s.to)} />}
+                      <AvatarFallback>{memberName(s.to)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <Typography variant="body2">{memberName(s.to)}</Typography>
-                    <Typography variant="body2" fontWeight={700} sx={{ ml: 'auto' }}>
+                    <span className="text-sm">{memberName(s.to)}</span>
+                    <span className="text-sm font-bold ml-auto">
                       {formatAmount(s.amount, cur)}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 </CardContent>
               </Card>
             )),
           )}
-        </Box>
+        </div>
       )}
 
       {/* FABs */}
-      <Fab
-        size="small"
+      <Button
+        variant="outline"
+        className="fixed bottom-[84px] right-7 h-10 w-10 p-0 rounded-full bg-background border-border shadow-md"
         onClick={() => setEstimateOpen(true)}
-        sx={{
-          position: 'fixed',
-          bottom: 84,
-          right: 28,
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          border: '1px solid',
-          borderColor: 'divider',
-          '&:hover': { bgcolor: 'action.hover' },
-        }}
         aria-label={t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
       >
         <Sparkles size={18} />
-      </Fab>
-      <Fab
-        size="medium"
+      </Button>
+      <Button
+        className="fixed bottom-6 right-6 h-14 w-14 p-0 rounded-full text-white shadow-lg hover:opacity-90"
+        style={{ backgroundColor: brand }}
         onClick={() => setDialogOpen(true)}
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          bgcolor: 'brand.main',
-          color: 'white',
-          '&:hover': { bgcolor: 'brand.dark' },
-        }}
       >
         <Plus size={22} />
-      </Fab>
+      </Button>
 
       <AddBudgetDialog
         open={dialogOpen}
@@ -586,12 +405,12 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
         defaultCurrency={defaultCurrency}
       />
 
-      <Box sx={{ mt: 4 }}>
+      <div className="mt-4">
         <Button variant="outline" size="sm" onClick={() => setBundleOpen(true)}>
           <Wallet style={{ width: 14, height: 14, marginRight: 6 }} />
           Bundle bookings
         </Button>
-      </Box>
+      </div>
 
       <BookingActivitySection tripId={tripId} />
 

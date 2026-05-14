@@ -5,6 +5,10 @@ import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { untypedFrom } from '@/integrations/supabase/untyped';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { MapPin, Check, X, Loader2 } from 'lucide-react';
 
 // Geo-mismatch triage — surfaces geo_validations rows where has_mismatch=true.
@@ -75,6 +79,10 @@ export default function GeoMismatchTab() {
       queryClient.invalidateQueries({ queryKey: ['geo-mismatches'] });
     },
     onError: (e: Error) => toast({ title: 'Apply failed', description: e.message, variant: 'destructive' }),
+      toast.success('Coords updated: Validated coords applied');
+      queryClient.invalidateQueries({ queryKey: ['geo-mismatches'] });
+    },
+    onError: (e: Error) => toast.error(`Apply failed: ${e.message}`),
   });
 
   const keepOriginal = useMutation({
@@ -89,6 +97,10 @@ export default function GeoMismatchTab() {
       queryClient.invalidateQueries({ queryKey: ['geo-mismatches'] });
     },
     onError: (e: Error) => toast({ title: 'Failed', description: e.message, variant: 'destructive' }),
+      toast.success('Marked resolved: Kept original coords');
+      queryClient.invalidateQueries({ queryKey: ['geo-mismatches'] });
+    },
+    onError: (e: Error) => toast.error(`Failed: ${e.message}`),
   });
 
   if (isLoading) {

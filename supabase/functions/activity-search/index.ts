@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, corsResponse, errorResponse } from "../_shared/supabase-client.ts";
 
 /**
@@ -13,7 +12,7 @@ const PARTNER_ID = '2PBDXWH';
 const _GYG_API_BASE = 'https://api.getyourguide.com/1';
 const _GYG_WIDGET_BASE = 'https://widget-api.getyourguide.com';
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {

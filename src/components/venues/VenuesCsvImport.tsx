@@ -6,8 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface VenuesCsvImportProps {
   onImportComplete?: () => void;
@@ -103,37 +101,33 @@ Central Park Cafe,Cozy cafe overlooking Central Park,cafe,2 E 60th St,New York,N
         <DialogHeader>
           <DialogTitle>Import Venues from CSV</DialogTitle>
         </DialogHeader>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
+        <div className="flex flex-col gap-4">
+          <div>
             <Label htmlFor="csv-file">Select CSV File</Label>
             <Input
               id="csv-file"
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-
             />
-          </Box>
+          </div>
 
-          <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-            <Typography variant="body2">CSV should include columns: name, description, category, address, city, state, country, postal_code, latitude, longitude, phone, website, email, instagram, price_range, tags, amenities, verified, featured</Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>Required fields: name, category, address, city, country</Typography>
-            <Typography variant="body2" sx={{ mt: 0.5 }}>Tags and amenities can be semicolon-separated (e.g., "tag1;tag2;tag3")</Typography>
-          </Box>
+          <div className="text-sm text-muted-foreground">
+            <p>CSV should include columns: name, description, category, address, city, state, country, postal_code, latitude, longitude, phone, website, email, instagram, price_range, tags, amenities, verified, featured</p>
+            <p className="mt-2">Required fields: name, category, address, city, country</p>
+            <p className="mt-1">Tags and amenities can be semicolon-separated (e.g., "tag1;tag2;tag3")</p>
+          </div>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div className="flex justify-between">
             <Button variant="outline" onClick={downloadTemplate}>
               <Download style={{ width: 16, height: 16, marginRight: 8 }} />
               Download Template
             </Button>
-            <Button
-              onClick={handleImport}
-              disabled={!file || isUploading}
-            >
+            <Button onClick={handleImport} disabled={!file || isUploading}>
               {isUploading ? "Importing..." : "Import Venues"}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

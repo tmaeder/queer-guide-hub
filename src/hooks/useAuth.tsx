@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   const signUp = async (email: string, password: string, metadata?: SignUpMetadata) => {
-    const redirectUrl = `${window.location.origin}/onboarding/welcome`;
+    const redirectUrl = `${window.location.origin}/`;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithOAuth = async (provider: OAuthProvider) => {
-    const redirectUrl = `${window.location.origin}/onboarding/welcome`;
+    const redirectUrl = `${window.location.origin}/`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       type: 'signup',
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/onboarding/welcome`,
+        emailRedirectTo: `${window.location.origin}/`,
       },
     });
     return { error };
@@ -149,9 +149,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Log security event for sign-in attempt
-      console.log('Sign-in attempt for email:', email);
-      
       // Add retry logic for auth requests
       let attempts = 0;
       const maxAttempts = 3;

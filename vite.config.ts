@@ -1,6 +1,8 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import tailwindcss from "@tailwindcss/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -31,6 +33,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    tailwindcss(),
     cfRocketLoaderBypass(),
     mode === 'production' && sentryVitePlugin({
       org: process.env.SENTRY_ORG || 'maedertobiassimon',
@@ -44,6 +47,13 @@ export default defineConfig(({ mode }) => ({
       },
       telemetry: false,
     }),
+    process.env.BUNDLE_STATS === '1' && visualizer({
+      filename: 'bundle-baselines/stats.html',
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true,
+      sourcemap: false,
+    }),
   ].filter(Boolean),
   define: {
     'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(process.env.CF_PAGES_COMMIT_SHA || ''),
@@ -52,6 +62,18 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // P0 audit follow-up: boneyard-js/react bundles its own React, which
+    // ends up in a separate Vite optimizeDeps cache bucket from the app's
+    // React, producing two `useRef` implementations and the classic
+    // "Invalid hook call" error on every <Skeleton> render in dev. Force
+    // dedupe so both modules share one instance.
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    // Pre-bundle boneyard-js/react against the same React instance Vite
+    // already has cached, so the Skeleton hooks resolve to the same
+    // dispatcher as the rest of the app.
+    include: ['boneyard-js/react'],
   },
   esbuild: mode === 'production' ? {
     drop: ['console', 'debugger'],
@@ -67,9 +89,6 @@ export default defineConfig(({ mode }) => ({
           }
           if (id.includes('node_modules/react-router-dom/') || id.includes('node_modules/react-router/') || id.includes('node_modules/@remix-run/')) {
             return 'router';
-          }
-          if (id.includes('node_modules/@mui/') || id.includes('node_modules/@emotion/')) {
-            return 'mui';
           }
           if (id.includes('node_modules/date-fns/')) {
             return 'utils';
@@ -132,7 +151,7 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     minify: mode === 'production' ? 'esbuild' : false,
     // Cloudflare Pages optimization
-    target: 'esnext',
+    target: 'es2022',
     sourcemap: mode === 'production' ? 'hidden' : true,
     ...(mode === 'production' && {
       reportCompressedSize: false,

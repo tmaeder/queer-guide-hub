@@ -1,18 +1,11 @@
 import { useLocation, Link as RouterLink } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import { Luggage, X, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
+import { Button } from '@/components/ui/button';
 import { getTripPhase, phaseLabel, phaseStatusText } from './tripPhase';
 import { resolveTripTitle } from './tripTitle';
 
-/**
- * Routes where the bar is suppressed — already inside trip context, admin shell,
- * auth flow, onboarding, or transactional / account contexts where a trip nudge
- * is noise.
- */
 const HIDDEN_PREFIXES = [
   '/trips',
   '/admin',
@@ -24,15 +17,6 @@ const HIDDEN_PREFIXES = [
   '/legal',
 ];
 
-/**
- * Slim sticky banner that surfaces the user's active trip across the app.
- * Renders nothing when:
- *   - the `VITE_TRIP_CONTEXT_BAR=off` kill-switch is set,
- *   - user has no trips,
- *   - user dismissed the bar for the current active trip,
- *   - current route already lives inside the trip context,
- *   - trip title is malformed (defensive guard for unsanitized DB rows).
- */
 export function TripContextBar() {
   const { pathname } = useLocation();
   const { activeTrip, isDismissed, dismiss } = useActiveTrip();
@@ -48,72 +32,39 @@ export function TripContextBar() {
   const status = phaseStatusText(activeTrip, undefined, t);
 
   return (
-    <Box
+    <div
       role="region"
       aria-label={t('trips.contextBar.ariaLabel', 'Active trip context')}
-      sx={(theme) => ({
-        position: 'sticky',
-        top: 0,
-        zIndex: theme.zIndex.appBar - 1,
-        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,115,134,0.08)' : 'rgba(182,13,61,0.06)',
-        borderBottom: `1px solid ${theme.palette.divider}`,
-        px: { xs: 2, sm: 3 },
-        py: 0.75,
-      })}
+      className="sticky top-0 z-[1099] border-b border-border px-4 sm:px-6 py-1.5"
+      style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          maxWidth: 1400,
-          mx: 'auto',
-          minHeight: 28,
-        }}
-      >
+      <div className="flex items-center gap-3 mx-auto" style={{ maxWidth: 1400, minHeight: 28 }}>
         <Luggage style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} aria-hidden />
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-        >
+        <p className="text-sm font-semibold min-w-0 truncate">
           {displayTitle}
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{ opacity: 0.7, display: { xs: 'none', sm: 'inline' }, flexShrink: 0 }}
-        >
+        </p>
+        <span className="text-xs hidden sm:inline flex-shrink-0" style={{ opacity: 0.7 }}>
           · {phaseLabel(phase, t)} · {status}
-        </Typography>
-        <Box sx={{ flex: 1 }} />
-        <Typography
-          component={RouterLink}
+        </span>
+        <div className="flex-1" />
+        <RouterLink
           to={`/trips/${activeTrip.id}`}
-          variant="body2"
-          sx={{
-            color: 'primary.main',
-            textDecoration: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.25,
-            opacity: 1,
-            transition: 'opacity 120ms',
-            '&:hover': { opacity: 0.85 },
-            '&:active': { opacity: 0.7 },
-            flexShrink: 0,
-          }}
+          className="text-sm text-primary inline-flex items-center gap-0.5 transition-opacity hover:opacity-85 active:opacity-70 flex-shrink-0"
+          style={{ textDecoration: 'none' }}
         >
           {t('trips.contextBar.openTrip', 'Open trip')}
           <ChevronRight style={{ width: 14, height: 14 }} aria-hidden />
-        </Typography>
-        <IconButton
+        </RouterLink>
+        <Button
+          variant="ghost"
+          size="sm"
           aria-label={t('trips.contextBar.dismissAria', 'Dismiss trip context bar')}
-          size="small"
           onClick={dismiss}
-          sx={{ p: 0.25, ml: 0.5 }}
+          className="h-6 w-6 p-0 ml-1"
         >
           <X style={{ width: 14, height: 14 }} />
-        </IconButton>
-      </Box>
-    </Box>
+        </Button>
+      </div>
+    </div>
   );
 }

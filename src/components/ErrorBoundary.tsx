@@ -2,8 +2,6 @@ import { Component, ErrorInfo, ReactNode } from 'react';
 import * as Sentry from '@sentry/react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface Props {
   children: ReactNode;
@@ -69,38 +67,29 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <Box sx={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
-          <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <AlertTriangle style={{ height: 48, width: 48, color: 'var(--destructive)', margin: '0 auto' }} />
-            <Typography variant="h6">Something went wrong</Typography>
-            <Typography variant="body2" color="text.secondary">
+        <div className="min-h-[50vh] flex items-center justify-center p-8">
+          <div className="text-center flex flex-col gap-4">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
+            <h6 className="text-base font-semibold">Something went wrong</h6>
+            <p className="text-sm text-muted-foreground">
               An unexpected error occurred. Please try refreshing the page.
-            </Typography>
+            </p>
             {import.meta.env.DEV && this.state.error && (
-              <Typography variant="caption" sx={{
-                fontFamily: 'monospace',
-                textAlign: 'left',
-                p: 1.5,
-                bgcolor: 'action.hover',
-                borderRadius: 1,
-                maxHeight: 160,
-                overflow: 'auto',
-                wordBreak: 'break-all',
-              }}>
+              <pre className="text-xs font-mono text-left p-3 bg-muted rounded-lg max-h-40 overflow-auto break-all">
                 {this.state.error.name}: {this.state.error.message}
-              </Typography>
+              </pre>
             )}
-            <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+            <div className="flex gap-3 justify-center">
               <Button onClick={this.handleRetry} variant="outline" size="sm">
-                <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
+                <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
               <Button onClick={() => window.location.href = '/'} size="sm">
                 Go Home
               </Button>
-            </Box>
-          </Box>
-        </Box>
+            </div>
+          </div>
+        </div>
       );
     }
 

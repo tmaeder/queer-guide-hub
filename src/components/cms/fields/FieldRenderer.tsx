@@ -14,6 +14,7 @@ import { ImagesField } from './ImagesField';
 import { LocationField } from './LocationField';
 import { TagsField } from './TagsField';
 import { JsonField } from './JsonField';
+import { SocialLinksField } from './SocialLinksField';
 import { CityAutocompleteField } from './CityAutocompleteField';
 import { CountryAutocompleteField } from './CountryAutocompleteField';
 
@@ -47,6 +48,7 @@ const FIELD_COMPONENTS: Record<string, React.ComponentType<FieldProps>> = {
   location: LocationField,
   tags: TagsField,
   json: JsonField,
+  social_links: SocialLinksField,
   city_autocomplete: CityAutocompleteField,
   country_autocomplete: CountryAutocompleteField,
 };

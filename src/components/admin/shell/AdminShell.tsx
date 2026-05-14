@@ -12,19 +12,14 @@
 
 import { useState, useCallback, useEffect, lazy, Suspense, createContext, useContext } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, ChevronRight } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getBreadcrumbsForRoute } from '@/config/adminNavigation';
-import { brandColors } from '@/theme/muiTheme';
 
 // ── Editor Context ────────────────────────────────────────────────────────────
 
@@ -62,54 +57,37 @@ const CMSEditorLayout = lazy(() =>
 /** Skeleton loading placeholder that mimics the sidebar + content layout */
 function ShellSkeleton() {
   return (
-    <Box sx={{ display: 'flex', width: '100%', minHeight: 'calc(100vh - 100px)' }}>
+    <div className="flex w-full" style={{ minHeight: 'var(--admin-content-min-h)' }}>
       {/* Skeleton sidebar */}
-      <Box
-        sx={{
-          width: 260,
-          flexShrink: 0,
-          borderRight: 1,
-          borderColor: 'divider',
-          bgcolor: 'background.paper',
-          p: 2,
-          display: { xs: 'none', md: 'block' },
-        }}
-      >
-        <Skeleton variant="rounded" width={160} height={24} sx={{ mb: 1 }} />
-        <Skeleton variant="text" width={100} sx={{ mb: 3 }} />
+      <div className="hidden md:block w-[260px] flex-shrink-0 border-r border-border bg-background p-4">
+        <Skeleton className="rounded w-40 h-6 mb-2" />
+        <Skeleton className="w-24 h-4 mb-6" />
         {Array.from({ length: 8 }).map((_, i) => (
-          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-            <Skeleton variant="rounded" width={28} height={28} sx={{ borderRadius: 0 }} />
-            <Skeleton variant="text" width={80 + Math.random() * 60} height={20} />
-          </Box>
+          <div key={i} className="flex items-center gap-3 mb-2">
+            <Skeleton className="rounded-none w-7 h-7" />
+            <Skeleton className="h-5" style={{ width: 80 + Math.random() * 60 }} />
+          </div>
         ))}
-      </Box>
+      </div>
 
       {/* Skeleton main content */}
-      <Box sx={{ flex: 1, p: 3 }}>
-        <Skeleton variant="text" width={200} height={32} sx={{ mb: 1 }} />
-        <Skeleton variant="text" width={300} height={20} sx={{ mb: 3 }} />
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
-          }}
-        >
+      <div className="flex-1 p-6">
+        <Skeleton className="w-[200px] h-8 mb-2" />
+        <Skeleton className="w-[300px] h-5 mb-6" />
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} variant="rounded" height={120} sx={{ borderRadius: 0 }} />
+            <Skeleton key={i} className="h-[120px] rounded-none" />
           ))}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export function AdminShell() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -142,162 +120,86 @@ export function AdminShell() {
 
   return (
     <AdminShellContext.Provider value={{ openEditor, closeEditor }}>
-      <Box
-        component="a"
+      <a
         href="#admin-main-content"
-        sx={{
-          position: 'absolute',
-          left: -9999,
-          top: 8,
-          zIndex: 2000,
-          px: 2,
-          py: 1,
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          textDecoration: 'none',
-          fontWeight: 600,
-          '&:focus': { left: 8, outline: `2px solid ${brandColors.main}` },
-        }}
+        className="absolute -left-[9999px] top-2 z-[2000] px-4 py-2 bg-background text-foreground no-underline font-semibold focus:left-2 focus:outline-2 focus:outline-[hsl(var(--foreground))]"
       >
         Skip to admin content
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          minHeight: 'calc(100vh - 100px)',
-          width: '100%',
-          bgcolor: 'grey.50',
-        }}
+      </a>
+      <div
+        className="flex w-full bg-muted/30"
+        style={{ minHeight: 'var(--admin-content-min-h)' }}
       >
         {/* Mobile hamburger with "Admin Console" label */}
         {isMobile && (
-          <Box
+          <button
+            type="button"
+            aria-label="Open admin navigation"
             onClick={() => setMobileOpen(true)}
-            sx={{
-              position: 'fixed',
-              top: 80,
-              left: 8,
-              zIndex: 1200,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              bgcolor: 'background.paper',
-              pl: 1,
-              pr: 1.5,
-              py: 0.75,
-              cursor: 'pointer',
-            }}
+            className="fixed flex items-center gap-1.5 bg-background pl-2 pr-3 py-1.5 cursor-pointer"
+            style={{ top: 80, left: 8, zIndex: 1200 }}
           >
-            <IconButton size="small" sx={{ p: 0.5 }}>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-1">
               <Menu size={18} />
-            </IconButton>
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 600,
-                fontSize: '0.75rem',
-                color: 'text.secondary',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            </Button>
+            <span className="font-semibold text-xs text-muted-foreground whitespace-nowrap">
               Admin Console
-            </Typography>
-          </Box>
+            </span>
+          </button>
         )}
 
         {/* Sidebar -- drawer on mobile, persistent on desktop */}
         {isMobile ? (
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={() => setMobileOpen(false)}
-            ModalProps={{ keepMounted: true }}
-            sx={{ '& .MuiDrawer-paper': { width: 260 } }}
-          >
-            {sidebar}
-          </Drawer>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetContent side="left" className="w-[260px] p-0">
+              {sidebar}
+            </SheetContent>
+          </Sheet>
         ) : (
-          <Box sx={{ flexShrink: 0 }}>{sidebar}</Box>
+          <div className="flex-shrink-0">{sidebar}</div>
         )}
 
         {/* Main content */}
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
+        <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Breadcrumb bar */}
           {breadcrumbs.length > 1 && (
-            <Box
-              sx={{
-                px: { xs: 2, sm: 3 },
-                py: 1.25,
-                bgcolor: 'background.paper',
-                borderBottom: 1,
-                borderColor: 'divider',
-                display: 'flex',
-                alignItems: 'center',
-                minHeight: 44,
-              }}
-            >
-              <Breadcrumbs
-                separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
-                sx={{
-                  '& .MuiBreadcrumbs-ol': { flexWrap: 'nowrap' },
-                  '& .MuiBreadcrumbs-separator': { mx: 0.75 },
-                }}
-              >
-                {breadcrumbs.map((crumb, i) => {
-                  const isLast = i === breadcrumbs.length - 1;
-                  if (isLast) {
+            <div className="px-4 sm:px-6 py-2.5 bg-background border-b border-border flex items-center min-h-[44px]">
+              <nav aria-label="Breadcrumb">
+                <ol className="flex items-center flex-nowrap">
+                  {breadcrumbs.map((crumb, i) => {
+                    const isLast = i === breadcrumbs.length - 1;
                     return (
-                      <Typography
-                        key={i}
-                        variant="body2"
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: '0.82rem',
-                          color: 'text.primary',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          maxWidth: { xs: 150, sm: 300, md: 500 },
-                        }}
-                      >
-                        {crumb.label}
-                      </Typography>
+                      <li key={i} className="flex items-center">
+                        {i > 0 && (
+                          <span className="mx-1.5">
+                            <ChevronRight size={14} className="text-muted-foreground" />
+                          </span>
+                        )}
+                        {isLast ? (
+                          <span
+                            className="font-semibold text-[0.82rem] text-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block"
+                          >
+                            {crumb.label}
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => crumb.route && navigate(crumb.route)}
+                            className="font-medium text-[0.82rem] text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))] bg-transparent border-0 p-0"
+                          >
+                            {crumb.label}
+                          </button>
+                        )}
+                      </li>
                     );
-                  }
-                  return (
-                    <Link
-                      key={i}
-                      component="button"
-                      variant="body2"
-                      underline="hover"
-                      onClick={() => crumb.route && navigate(crumb.route)}
-                      sx={{
-                        fontWeight: 500,
-                        fontSize: '0.82rem',
-                        color: 'text.secondary',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        '&:hover': { color: brandColors.main },
-                      }}
-                    >
-                      {crumb.label}
-                    </Link>
-                  );
-                })}
-              </Breadcrumbs>
-            </Box>
+                  })}
+                </ol>
+              </nav>
+            </div>
           )}
 
           {/* Content area */}
-          <Box id="admin-main-content" component="main" tabIndex={-1} sx={{ flex: 1, overflow: 'auto', p: { xs: 2, sm: 3 } }}>
+          <main id="admin-main-content" tabIndex={-1} className="flex-1 overflow-auto p-4 sm:p-6">
             {/* Editor overlay takes priority when open */}
             {editor ? (
               <Suspense fallback={<ShellSkeleton />}>
@@ -309,13 +211,15 @@ export function AdminShell() {
                 />
               </Suspense>
             ) : (
-              <Box key={location.pathname} className="content-enter">
-                <Outlet />
-              </Box>
+              <ErrorBoundary>
+                <div key={location.pathname} className="content-enter">
+                  <Outlet />
+                </div>
+              </ErrorBoundary>
             )}
-          </Box>
-        </Box>
-      </Box>
+          </main>
+        </div>
+      </div>
     </AdminShellContext.Provider>
   );
 }

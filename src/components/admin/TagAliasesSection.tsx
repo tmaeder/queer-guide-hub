@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTagAliases } from '@/hooks/useTagAliases';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,8 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Plus, X } from 'lucide-react';
 
 const ALIAS_TYPES = [
@@ -28,7 +26,6 @@ interface TagAliasesSectionProps {
 
 export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
   const { aliases, isLoading, createAlias, deleteAlias } = useTagAliases(tagId);
-  const { toast } = useToast();
   const [newAlias, setNewAlias] = useState('');
   const [newType, setNewType] = useState('synonym');
 
@@ -38,9 +35,9 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
     try {
       await createAlias.mutateAsync({ alias_name: trimmed, alias_type: newType });
       setNewAlias('');
-      toast({ title: 'Synonym added' });
+      toast.success('Synonym added');
     } catch {
-      toast({ title: 'Error', description: 'Failed to add synonym', variant: 'destructive' });
+      toast.error('Error: Failed to add synonym');
     }
   };
 
@@ -48,7 +45,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
     try {
       await deleteAlias.mutateAsync(aliasId);
     } catch {
-      toast({ title: 'Error', description: 'Failed to remove synonym', variant: 'destructive' });
+      toast.error('Error: Failed to remove synonym');
     }
   };
 
@@ -59,16 +56,14 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
   };
 
   return (
-    <Box>
+    <div>
       <Label>Synonyms / Aliases</Label>
       {isLoading ? (
-        <Typography variant="caption" color="text.secondary">
-          Loading...
-        </Typography>
+        <span className="text-xs text-muted-foreground">Loading...</span>
       ) : (
         <>
           {aliases.length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5, mb: 1 }}>
+            <div className="flex flex-wrap gap-1 mt-1 mb-2">
               {aliases.map((alias) => (
                 <Badge
                   key={alias.id}
@@ -76,16 +71,13 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
                   style={{ gap: 4, paddingRight: 2 }}
                 >
                   {alias.alias_name}
-                  <Typography
-                    variant="caption"
-                    sx={{ opacity: 0.6, fontSize: '0.65rem', ml: 0.25 }}
-                  >
+                  <span className="ml-0.5" style={{ opacity: 0.6, fontSize: '0.65rem' }}>
                     {alias.alias_type === 'abbreviation'
                       ? 'abbr'
                       : alias.alias_type === 'spelling_variant'
                         ? 'var'
                         : ''}
-                  </Typography>
+                  </span>
                   <button
                     type="button"
                     onClick={() => handleDelete(alias.id)}
@@ -102,14 +94,12 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
                   </button>
                 </Badge>
               ))}
-            </Box>
+            </div>
           )}
           {aliases.length === 0 && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-              No synonyms yet
-            </Typography>
+            <span className="block text-xs text-muted-foreground mb-2">No synonyms yet</span>
           )}
-          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-end' }}>
+          <div className="flex gap-1 items-end">
             <Input
               placeholder="Add synonym..."
               value={newAlias}
@@ -142,9 +132,9 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
             >
               <Plus style={{ width: 14, height: 14 }} />
             </Button>
-          </Box>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   );
 }

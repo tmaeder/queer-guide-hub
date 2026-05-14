@@ -456,8 +456,12 @@ Deno.serve(async (req) => {
 
     // Trigger pipeline
     if (totalFetched > 0) {
-      supabase.functions.invoke('ingestion-pipeline', {
-        body: { job_id: jobId, stage: 'ai_validation' },
+      supabase.functions.invoke('pipeline-executor', {
+        body: {
+          action: 'start',
+          pipeline_name: 'venue-ingestion-unified',
+          context: { triggered_by: 'scrape-spartacus', job_id: jobId },
+        },
       }).catch(err => console.error('Pipeline trigger failed:', err))
     }
 

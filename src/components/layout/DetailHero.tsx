@@ -1,39 +1,23 @@
-import Box from '@mui/material/Box';
-import type { SxProps, Theme } from '@mui/material/styles';
 import { Parallax } from '@/components/motion';
+import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 interface DetailHeroProps {
   imageUrl?: string | null;
   alt: string;
-  height?: SxProps<Theme>['height'];
+  /** Height in px or a Tailwind class. Default 192px on mobile, 240px on md+. */
+  heightClassName?: string;
 }
 
-export function DetailHero({ imageUrl, alt, height = { xs: 192, md: 240 } }: DetailHeroProps) {
-  if (!imageUrl) return null;
+export function DetailHero({ imageUrl, alt, heightClassName = 'h-48 md:h-60' }: DetailHeroProps) {
   return (
-    <Box
-      sx={{
-        width: '100%',
-        height,
-        borderRadius: 2,
-        overflow: 'hidden',
-        mb: 2,
-        position: 'relative',
-      }}
-    >
+    <div className={`w-full ${heightClassName} rounded-2xl overflow-hidden mb-4 relative`}>
       <Parallax speed={0.25}>
-        <Box
-          component="img"
-          src={imageUrl}
+        <img
+          src={imageUrl || getRandomFallbackImage()}
           alt={alt}
-          sx={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transform: 'scale(1.1)',
-          }}
+          className="w-full h-full object-cover scale-110"
         />
       </Parallax>
-    </Box>
+    </div>
   );
 }

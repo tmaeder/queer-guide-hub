@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Command,
   CommandEmpty,
@@ -16,9 +17,18 @@ import { Search, Filter, X, Check, ChevronDown, Navigation, Loader2 } from 'luci
 import { useUnifiedTags } from '@/hooks/useUnifiedTags';
 import { useAccessibilityAttributes } from '@/hooks/useAccessibilityAttributes';
 import { useTargetGroups } from '@/hooks/useTargetGroups';
-import Box from '@mui/material/Box';
 
 interface VenueFiltersProps {
+  /** Seed initial search input. Used for URL hydration on mount. */
+  initialSearch?: string;
+  /** Seed initial category chip selection. */
+  initialCategory?: string;
+  initialCity?: string;
+  initialTags?: string[];
+  initialAmenities?: string[];
+  initialServices?: string[];
+  initialAccessibilityAttributes?: string[];
+  initialTargetGroups?: string[];
   onFiltersChange: (filters: {
     search?: string;
     city?: string;
@@ -36,15 +46,34 @@ interface VenueFiltersProps {
 const categories = [
   'bar',
   'restaurant',
-  'cafe',
   'club',
   'hotel',
-  'bookstore',
+  'sauna',
+  'community_center',
+  'theater',
+  'gallery',
   'gym',
   'salon',
-  'healthcare',
-  'sauna',
-];
+  'organization',
+  'event-venue',
+  'other',
+] as const;
+
+const categoryLabels: Record<string, string> = {
+  bar: 'Bar',
+  restaurant: 'Restaurant',
+  club: 'Club',
+  hotel: 'Hotel',
+  sauna: 'Sauna',
+  community_center: 'Community',
+  theater: 'Theater',
+  gallery: 'Gallery',
+  gym: 'Gym',
+  salon: 'Salon',
+  organization: 'Organization',
+  'event-venue': 'Event Venue',
+  other: 'Other',
+};
 
 const commonAmenities = [
   'wifi',
@@ -82,17 +111,29 @@ const commonServices = [
   'art-exhibitions',
 ];
 
-export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
-  const [search, setSearch] = useState('');
-  const [city, setCity] = useState('');
-  const [category, setCategory] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+export function VenueFilters({
+  initialSearch = '',
+  initialCategory = '',
+  initialCity = '',
+  initialTags,
+  initialAmenities,
+  initialServices,
+  initialAccessibilityAttributes,
+  initialTargetGroups,
+  onFiltersChange,
+}: VenueFiltersProps) {
+  const [search, setSearch] = useState(initialSearch);
+  const [city, setCity] = useState(initialCity);
+  const [category, setCategory] = useState(initialCategory);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialTags ?? []);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialAmenities ?? []);
+  const [selectedServices, setSelectedServices] = useState<string[]>(initialServices ?? []);
   const [selectedAccessibilityAttributes, setSelectedAccessibilityAttributes] = useState<string[]>(
-    [],
+    initialAccessibilityAttributes ?? [],
   );
-  const [selectedTargetGroups, setSelectedTargetGroups] = useState<string[]>([]);
+  const [selectedTargetGroups, setSelectedTargetGroups] = useState<string[]>(
+    initialTargetGroups ?? [],
+  );
   const [tagsOpen, setTagsOpen] = useState(false);
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -113,6 +154,32 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
     fetchTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sync array filters when URL-driven props change (e.g. back/forward
+  // navigation). Compares joined keys so we don't fight user typing.
+  const initialTagsKey = (initialTags ?? []).join(',');
+  const initialAmenitiesKey = (initialAmenities ?? []).join(',');
+  const initialServicesKey = (initialServices ?? []).join(',');
+  const initialAccessibilityKey = (initialAccessibilityAttributes ?? []).join(',');
+  const initialTargetGroupsKey = (initialTargetGroups ?? []).join(',');
+  useEffect(() => {
+    setSelectedTags(initialTags ?? []);
+  }, [initialTagsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedAmenities(initialAmenities ?? []);
+  }, [initialAmenitiesKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedServices(initialServices ?? []);
+  }, [initialServicesKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedAccessibilityAttributes(initialAccessibilityAttributes ?? []);
+  }, [initialAccessibilityKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedTargetGroups(initialTargetGroups ?? []);
+  }, [initialTargetGroupsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setCity(initialCity);
+  }, [initialCity]);
 
   // Build current filters object
   const buildFilters = useCallback(
@@ -169,7 +236,18 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
 
   const handleSearch = () => {
     clearTimeout(debounceRef.current);
+    clearTimeout(searchDebounceRef.current);
     onFiltersChange(buildFilters());
+  };
+
+  // Debounced search-as-you-type (250ms after last keystroke).
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleSearchInput = (value: string) => {
+    setSearch(value);
+    clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      onFiltersChange(buildFilters({ search: value }));
+    }, 250);
   };
 
   const handleCategoryClick = (cat: string) => {
@@ -294,36 +372,38 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-2xl border border-border bg-card/60 backdrop-blur-sm">
       {/* Search Row */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
-        <Box sx={{ position: 'relative', flex: 1 }}>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search
             style={{
               position: 'absolute',
-              left: 12,
+              left: 14,
               top: '50%',
               transform: 'translateY(-50%)',
               width: 16,
               height: 16,
-              color: 'var(--muted-foreground)',
+              color: 'hsl(var(--muted-foreground))',
             }}
+            aria-hidden="true"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
           />
           <Input
             placeholder="Search venues & organizations..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-
+            className="pl-11 h-11 rounded-xl"
           />
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        </div>
+        <div className="flex gap-2">
           <Button
             variant={nearMe ? 'default' : 'outline'}
             onClick={handleNearMeToggle}
             disabled={isDetectingLocation}
             size="icon"
-
+            className="h-11 w-11 rounded-xl"
             aria-label="Find near me"
           >
             {isDetectingLocation ? (
@@ -334,8 +414,8 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           </Button>
           <Button
             onClick={handleSearch}
-
             size="icon"
+            className="h-11 w-11 rounded-xl"
             aria-label="Search"
           >
             <Search style={{ width: 16, height: 16 }} />
@@ -343,57 +423,48 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           <Button
             variant={showAdvanced ? 'default' : 'outline'}
             onClick={() => setShowAdvanced(!showAdvanced)}
-
+            className="h-11 rounded-xl gap-2"
             aria-label="Toggle filters"
           >
             <Filter style={{ width: 16, height: 16 }} />
             {activeFilterCount > 0 && (
-              <Box
-                component="span"
-                sx={{
-                  bgcolor: showAdvanced ? 'primary.contrastText' : 'primary.main',
-                  color: showAdvanced ? 'primary.main' : 'primary.contrastText',
-                  borderRadius: '50%',
-                  width: 20,
+              <span
+                className="rounded-full inline-flex items-center justify-center font-semibold"
+                style={{
+                  backgroundColor: showAdvanced ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
+                  color: showAdvanced ? 'hsl(var(--primary))' : 'hsl(var(--primary-foreground))',
+                  minWidth: 20,
                   height: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   fontSize: '0.7rem',
-                  fontWeight: 700,
+                  padding: '0 6px',
                 }}
               >
                 {activeFilterCount}
-              </Box>
+              </span>
             )}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Category Chips */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          flexWrap: 'wrap',
-        }}
-      >
+      {/* Category Chips — horizontally scroll on narrow screens (Airbnb-style),
+          wrap on wider screens. -mx + px keeps the scroll edge flush with card. */}
+      <div className="flex gap-1.5 overflow-x-auto sm:flex-wrap max-w-full -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
         {categories.map((cat) => (
           <Button
             key={cat}
             variant={category === cat ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleCategoryClick(cat)}
-
+            className="rounded-full h-8 px-3.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
           >
-            {cat}
+            {categoryLabels[cat] ?? cat}
           </Button>
         ))}
-      </Box>
+      </div>
 
-      {/* Active Filter Chips (always visible when filters applied and advanced is closed) */}
-      {hasActiveFilters && !showAdvanced && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center' }}>
+      {/* Active Filter Chips — always visible when any filter is on */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-1.5 items-center pt-1 px-1">
           {search && (
             <Badge variant="secondary">
               &ldquo;{search}&rdquo;
@@ -445,50 +516,65 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             Clear all
           </Button>
-        </Box>
+        </div>
       )}
 
-      {/* Advanced Filters Panel */}
+      {/* Advanced Filters Panel — inline on desktop, bottom-sheet on mobile */}
       {showAdvanced && (
-        <Box
-          component="nav"
-          aria-label="Venue filters"
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2.5,
-            pt: 2,
-            borderTop: 1,
-            borderColor: 'divider',
-          }}
-        >
-          {/* City input */}
-          <Box sx={{ maxWidth: 400 }}>
-            <Label htmlFor="city">
-              City
-            </Label>
+        <>
+          {/* Mobile: bottom sheet */}
+          <Sheet
+            open={showAdvanced}
+            onOpenChange={(o) => !o && setShowAdvanced(false)}
+          >
+            <SheetContent side="bottom" className="md:hidden max-h-[85dvh] overflow-y-auto p-4">
+              <SheetHeader>
+                <SheetTitle>Refine</SheetTitle>
+              </SheetHeader>
+              {renderAdvancedPanel()}
+            </SheetContent>
+          </Sheet>
+
+          {/* Desktop: inline */}
+          <nav
+            aria-label="Venue filters"
+            className="hidden md:flex flex-col gap-6 pt-5 mt-1 border-t border-border"
+          >
+            {renderAdvancedPanel()}
+          </nav>
+        </>
+      )}
+    </div>
+  );
+
+  function renderAdvancedPanel() {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+            Refine
+          </span>
+        </div>
+
+        {/* City input */}
+        <div className="max-w-[400px] flex flex-col gap-1.5">
+            <Label htmlFor="city" className="text-[11px] uppercase tracking-wider text-muted-foreground">City</Label>
             <Input
               id="city"
               placeholder="Enter city..."
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-
+              className="h-11 rounded-xl"
             />
-          </Box>
+          </div>
 
-          {/* Filter dropdowns — 3 columns on desktop */}
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-              gap: 2.5,
-            }}
-          >
+          {/* Filter dropdowns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Tags */}
             <FilterDropdown
               label="Tags"
-              dotColor="primary.main"
               open={tagsOpen}
               onOpenChange={setTagsOpen}
               selected={selectedTags}
@@ -503,7 +589,6 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {/* Amenities */}
             <FilterDropdown
               label="Amenities"
-              dotColor="#3b82f6"
               open={amenitiesOpen}
               onOpenChange={setAmenitiesOpen}
               selected={selectedAmenities}
@@ -517,7 +602,6 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {/* Services */}
             <FilterDropdown
               label="Services"
-              dotColor="#22c55e"
               open={servicesOpen}
               onOpenChange={setServicesOpen}
               selected={selectedServices}
@@ -531,7 +615,6 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {/* Accessibility */}
             <FilterDropdown
               label="Accessibility"
-              dotColor="#555555"
               open={accessibilityOpen}
               onOpenChange={setAccessibilityOpen}
               selected={selectedAccessibilityAttributes}
@@ -546,7 +629,6 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
             {/* Target Groups */}
             <FilterDropdown
               label="Target Groups"
-              dotColor="#f97316"
               open={targetGroupsOpen}
               onOpenChange={setTargetGroupsOpen}
               selected={selectedTargetGroups}
@@ -557,32 +639,25 @@ export function VenueFilters({ onFiltersChange }: VenueFiltersProps) {
               searchPlaceholder="Search target groups..."
               emptyMessage="No target groups found."
             />
-          </Box>
+          </div>
 
           {/* Clear button */}
           {hasActiveFilters && (
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
-              <Button
-                variant="outline"
-                onClick={clearFilters}
-                size="sm"
-
-              >
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={clearFilters} size="sm">
                 <X style={{ width: 14, height: 14 }} />
                 Clear All
               </Button>
-            </Box>
+            </div>
           )}
-        </Box>
-      )}
-    </Box>
-  );
+      </div>
+    );
+  }
 }
 
 // Extracted filter dropdown component to reduce repetition
 function FilterDropdown({
   label,
-  dotColor,
   open,
   onOpenChange,
   selected,
@@ -594,7 +669,6 @@ function FilterDropdown({
   emptyMessage,
 }: {
   label: string;
-  dotColor: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selected: string[];
@@ -608,12 +682,17 @@ function FilterDropdown({
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Label>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ width: 7, height: 7, bgcolor: dotColor, borderRadius: '50%' }} />
+    <div className="flex flex-col gap-2">
+      <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {label}
-        </Box>
+          {selected.length > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-[10px] font-semibold normal-case tracking-normal">
+              {selected.length}
+            </span>
+          )}
+        </div>
       </Label>
       <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
@@ -621,26 +700,28 @@ function FilterDropdown({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-
+            className="h-11 w-full justify-between rounded-xl font-normal"
           >
-            {selected.length > 0
-              ? `${selected.length} selected`
-              : placeholder}
+            <span className="truncate text-sm">
+              {selected.length > 0
+                ? `${selected.length} selected`
+                : placeholder}
+            </span>
             <ChevronDown
               style={{ marginLeft: 8, width: 14, height: 14, flexShrink: 0, opacity: 0.5 }}
             />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start">
+        <PopoverContent align="start" className="rounded-xl border-border shadow-lg p-0">
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
               <CommandEmpty>{emptyMessage}</CommandEmpty>
               <CommandGroup>
                 {loading ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+                  <div className="flex items-center justify-center p-4">
                     <Loader2 style={{ width: 16, height: 16 }} />
-                  </Box>
+                  </div>
                 ) : (
                   items.map((item) => (
                     <CommandItem
@@ -656,15 +737,15 @@ function FilterDropdown({
                           opacity: selected.includes(item.label) ? 1 : 0,
                         }}
                       />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         {item.color && (
-                          <Box
-                            sx={{ width: 10, height: 10, borderRadius: '50%', border: 1, borderColor: 'divider' }}
-                            style={{ backgroundColor: item.color }}
+                          <div
+                            className="rounded-full border border-border"
+                            style={{ width: 10, height: 10, backgroundColor: item.color }}
                           />
                         )}
                         {item.label}
-                      </Box>
+                      </div>
                     </CommandItem>
                   ))
                 )}
@@ -674,15 +755,15 @@ function FilterDropdown({
         </PopoverContent>
       </Popover>
       {selected.length > 0 && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+        <div className="flex flex-wrap gap-1">
           {selected.map((val) => (
             <Badge key={val} variant="secondary">
               {val}
               <X style={xStyle} role="button" aria-label="Remove filter" onClick={() => onToggle(val)} />
             </Badge>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

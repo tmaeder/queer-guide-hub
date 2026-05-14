@@ -7,13 +7,10 @@
  */
 
 import { useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Sparkles, Check, Loader2, AlertCircle } from 'lucide-react';
 import { useAutoTag, type TagSuggestion } from '@/hooks/useAutoTag';
 
@@ -45,7 +42,6 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
     setSelected(new Set());
     const result = await suggestTags(contentType, contentId);
     if (result?.tags) {
-      // Pre-select high confidence tags
       const highConf = new Set(
         result.tags
           .filter(t => t.confidence >= 0.85)
@@ -77,7 +73,6 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
     if (!suggestions || selected.size === 0) return;
     setApplying(true);
     try {
-      // Apply with threshold 0 so all get auto-approved
       const result = await applyTags(contentType, contentId, 0);
       if (result?.success) {
         setApplied(true);
@@ -94,148 +89,95 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
     <Card>
       <CardHeader>
         <CardTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Sparkles style={{ height: 16, width: 16, color: 'var(--mui-palette-primary-main)' }} />
+          <div className="flex items-center gap-2">
+            <Sparkles style={{ height: 16, width: 16 }} className="text-primary" />
             AI Tag Suggestions
-          </Box>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Initial state: show suggest button */}
         {!suggestions && !loading && !applied && (
-          <Button
-            variant="outline"
-            size="sm"
-
-            onClick={handleSuggest}
-          >
+          <Button variant="outline" size="sm" onClick={handleSuggest}>
             <Sparkles style={{ height: 14, width: 14, marginRight: 6 }} />
             Suggest Tags
           </Button>
         )}
 
-        {/* Loading */}
         {loading && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, py: 2 }}>
-            <Loader2 style={{ height: 20, width: 20, animation: 'spin 1s linear infinite' }} />
-            <Typography variant="caption" color="text.secondary">
-              Analyzing content…
-            </Typography>
-          </Box>
+          <div className="flex flex-col items-center gap-2 py-4">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-xs text-muted-foreground">Analyzing content…</span>
+          </div>
         )}
 
-        {/* Suggestions list */}
         {tags.length > 0 && !applied && (
           <>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <div className="flex flex-col gap-1">
               {tags.map((tag: TagSuggestion) => (
-                <Box
+                <div
                   key={tag.name}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.5,
-                    py: 0.25,
-                    px: 0.5,
-                    borderRadius: 1,
-                    '&:hover': { bgcolor: 'action.hover' },
-                  }}
+                  className="flex items-center gap-1 py-0.5 px-1 rounded hover:bg-muted"
                 >
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        size="small"
-                        checked={selected.has(tag.name)}
-                        onChange={() => handleToggle(tag.name)}
-                        sx={{ p: 0.25 }}
-                      />
-                    }
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-                        <Typography variant="body2" sx={{ fontSize: '0.8125rem' }}>
-                          {tag.name}
-                        </Typography>
-                        <Box
-                          component="span"
-                          sx={{
-                            fontSize: '0.6875rem',
-                            fontWeight: 600,
-                            color: confidenceColor(tag.confidence),
-                            lineHeight: 1,
-                          }}
-                        >
-                          {confidenceLabel(tag.confidence)}
-                        </Box>
-                        {tag.is_new && (
-                          <Badge
-                            variant="outline"
-                            style={{
-                              fontSize: '0.625rem',
-                              padding: '0 4px',
-                              lineHeight: '1.25rem',
-                            }}
-                          >
-                            NEW
-                          </Badge>
-                        )}
-                      </Box>
-                    }
-                    sx={{ m: 0, flex: 1 }}
+                  <Checkbox
+                    id={`autotag-${tag.name}`}
+                    checked={selected.has(tag.name)}
+                    onCheckedChange={() => handleToggle(tag.name)}
                   />
-                </Box>
+                  <label htmlFor={`autotag-${tag.name}`} className="flex items-center gap-1 flex-wrap flex-1 m-0 cursor-pointer">
+                    <span className="text-[0.8125rem]">{tag.name}</span>
+                    <span
+                      className="text-[0.6875rem] font-semibold leading-none"
+                      style={{ color: confidenceColor(tag.confidence) }}
+                    >
+                      {confidenceLabel(tag.confidence)}
+                    </span>
+                    {tag.is_new && (
+                      <Badge
+                        variant="outline"
+                        style={{ fontSize: '0.625rem', padding: '0 4px', lineHeight: '1.25rem' }}
+                      >
+                        NEW
+                      </Badge>
+                    )}
+                  </label>
+                </div>
               ))}
-            </Box>
+            </div>
 
-            {/* Action buttons */}
-            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-              <Button
-                size="sm"
-
-                onClick={handleApply}
-                disabled={applying || selected.size === 0}
-              >
+            <div className="flex gap-1 mt-1">
+              <Button size="sm" onClick={handleApply} disabled={applying || selected.size === 0}>
                 {applying ? (
-                  <Loader2 style={{ height: 14, width: 14, marginRight: 4, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="animate-spin" style={{ height: 14, width: 14, marginRight: 4 }} />
                 ) : (
                   <Check style={{ height: 14, width: 14, marginRight: 4 }} />
                 )}
                 Apply {selected.size > 0 ? `(${selected.size})` : ''}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-                disabled={applying}
-              >
+              <Button variant="outline" size="sm" onClick={handleSelectAll} disabled={applying}>
                 All
               </Button>
-            </Box>
+            </div>
           </>
         )}
 
-        {/* No suggestions */}
         {suggestions && tags.length === 0 && !loading && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
-            <AlertCircle style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-            <Typography variant="caption" color="text.secondary">
-              No tags suggested for this item
-            </Typography>
-          </Box>
+          <div className="flex items-center gap-2 py-2">
+            <AlertCircle style={{ height: 14, width: 14 }} className="text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">No tags suggested for this item</span>
+          </div>
         )}
 
-        {/* Applied state */}
         {applied && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 py-2">
               <Check style={{ height: 14, width: 14, color: '#16a34a' }} />
-              <Typography variant="caption" sx={{ color: '#16a34a', fontWeight: 500 }}>
+              <span className="text-xs font-medium" style={{ color: '#16a34a' }}>
                 Tags applied successfully
-              </Typography>
-            </Box>
+              </span>
+            </div>
             <Button
               variant="outline"
               size="sm"
-
               onClick={() => {
                 clearSuggestions();
                 setApplied(false);
@@ -245,7 +187,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
               <Sparkles style={{ height: 14, width: 14, marginRight: 6 }} />
               Re-suggest
             </Button>
-          </Box>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getServiceClient, jsonResponse, errorResponse } from "../_shared/supabase-client.ts";
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 
@@ -15,7 +14,7 @@ import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 const TRAVELPAYOUTS_BASE = 'https://api.travelpayouts.com/aviasales/v3/prices_for_dates';
 const PRICE_DROP_THRESHOLD = 0.15; // 15% drop triggers alert
 
-serve(async (_req) => {
+Deno.serve(async (_req) => {
   try {
     const supabase = getServiceClient();
     const apiToken = Deno.env.get('TRAVELPAYOUTS_API_TOKEN');

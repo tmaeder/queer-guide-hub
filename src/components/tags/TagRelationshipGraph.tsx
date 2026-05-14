@@ -6,9 +6,7 @@ import ForceGraph2D, {
 } from 'react-force-graph-2d';
 import { useTagGraph } from '@/hooks/useTagRelationships';
 import { useIsMobile } from '@/hooks/use-mobile';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Slider from '@mui/material/Slider';
+import { Slider } from '@/components/ui/slider';
 import {
   Select,
   SelectContent,
@@ -19,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Maximize2, Filter } from 'lucide-react';
+import { Maximize2, Filter, AlertTriangle } from 'lucide-react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 interface TagRelationshipGraphProps {
@@ -60,21 +58,8 @@ export default function TagRelationshipGraph({
 
   const categoryFilter = externalCategoryFilter || internalCategoryFilter;
 
-  const { data: graphData, isLoading } = useTagGraph(minScore, categoryFilter);
+  const { data: graphData, isLoading, error, refetch } = useTagGraph(minScore, categoryFilter);
 
-  // Measure container via a callback ref + ResizeObserver.
-  //
-  // Root cause of the prior left-bias: dimensions were seeded to 800x500 and
-  // a useEffect([]) tried to attach the ResizeObserver once. But the component
-  // early-returns a skeleton while data is loading, so containerRef.current
-  // was null on first mount and the observer never attached. After data
-  // arrived the graph container appeared, but the effect didn't re-run — so
-  // ForceGraph2D rendered at 800x500, d3's forceCenter settled at (400, 250),
-  // and zoomToFit cemented a stale viewport. When the real width surfaced the
-  // transform stayed put, leaving the cluster pinned to the left half.
-  //
-  // A callback ref fires every time the element attaches/detaches — surviving
-  // the skeleton → graph transition and every Grid ↔ Network remount.
   const setContainer = useCallback((el: HTMLDivElement | null) => {
     observerRef.current?.disconnect();
     observerRef.current = null;
@@ -103,9 +88,6 @@ export default function TagRelationshipGraph({
 
   useEffect(() => () => observerRef.current?.disconnect(), []);
 
-  // Re-center d3 force + reheat whenever dimensions change (initial measure,
-  // window resize, breakpoint). Without this the simulation keeps its
-  // original center and the cluster drifts left as the viewport widens.
   useEffect(() => {
     if (dimensions.width === 0 || dimensions.height === 0) return;
     const g = graphRef.current;
@@ -120,7 +102,6 @@ export default function TagRelationshipGraph({
     g.d3ReheatSimulation();
   }, [dimensions.width, dimensions.height]);
 
-  // Transform data for force-graph
   const forceData = useMemo(() => {
     if (!graphData) return { nodes: [], links: [] };
 
@@ -157,7 +138,6 @@ export default function TagRelationshipGraph({
     graphRef.current?.zoomToFit(400, 40);
   }, []);
 
-  // Custom node rendering with label
   const nodeCanvasObject = useCallback(
     (node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
       const n = node as ForceNode & { x: number; y: number; val: number };
@@ -166,7 +146,6 @@ export default function TagRelationshipGraph({
       const size = Math.sqrt(n.val || 3) * 3;
       const isHovered = hoveredNode?.id === n.id;
 
-      // Draw circle
       ctx.beginPath();
       ctx.arc(n.x, n.y, size, 0, 2 * Math.PI);
       ctx.fillStyle = isHovered ? '#ffffff' : NODE_COLOR;
@@ -175,7 +154,6 @@ export default function TagRelationshipGraph({
       ctx.lineWidth = isHovered ? 2 : 0.5;
       ctx.stroke();
 
-      // Draw label when zoomed in or hovered
       if (globalScale > 1.5 || isHovered) {
         const fontSize = isHovered ? 14 / globalScale : 11 / globalScale;
         ctx.font = `${isHovered ? 'bold ' : ''}${fontSize}px sans-serif`;
@@ -186,7 +164,6 @@ export default function TagRelationshipGraph({
         const textWidth = ctx.measureText(text).width;
         const padding = 2 / globalScale;
 
-        // Background
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(
           n.x - textWidth / 2 - padding,
@@ -195,7 +172,6 @@ export default function TagRelationshipGraph({
           fontSize + padding * 2,
         );
 
-        // Text
         ctx.fillStyle = '#ffffff';
         ctx.fillText(text, n.x, n.y + size + 2 / globalScale + padding);
       }
@@ -218,18 +194,38 @@ export default function TagRelationshipGraph({
     return <PageLoadingState count={1} />;
   }
 
-  // Mobile: show list fallback
+  if (error) {
+    return (
+      <div
+        role="alert"
+        data-testid="tag-graph-error"
+        className="flex flex-col items-center justify-center gap-3 p-8 text-center"
+      >
+        <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
+        <div>
+          <p className="text-base font-semibold">Couldn't load the tag graph</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            We hit an error fetching tag relationships. Please try again.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   if (isMobile) {
     const topNodes = [...(graphData?.nodes || [])]
       .sort((a, b) => b.usage_count - a.usage_count)
       .slice(0, 20);
 
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Typography variant="body2" color="text.secondary">
+      <div className="flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground">
           {graphData?.nodes.length || 0} tags, {graphData?.edges.length || 0} relationships
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+        </p>
+        <div className="grid grid-cols-2 gap-3">
           {topNodes.map((node) => (
             <Card
               key={node.id}
@@ -237,39 +233,26 @@ export default function TagRelationshipGraph({
               onClick={() => onTagClick({ id: node.id, name: node.name })}
             >
               <CardContent style={{ padding: 12 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <p className="text-sm font-semibold truncate" style={{ fontSize: '0.8rem' }}>
                   {node.name}
-                </Typography>
+                </p>
                 {node.category && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ mt: 0.5, display: 'block', fontSize: '0.7rem' }}
-                  >
+                  <span className="block text-xs text-muted-foreground mt-1" style={{ fontSize: '0.7rem' }}>
                     {node.category}
-                  </Typography>
+                  </span>
                 )}
               </CardContent>
             </Card>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+    <div className="flex flex-col gap-4 h-full">
       {/* Controls */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
+      <div className="flex flex-wrap items-center gap-4">
         {!externalCategoryFilter && categories.length > 0 && (
           <Select
             value={internalCategoryFilter || 'all'}
@@ -290,44 +273,36 @@ export default function TagRelationshipGraph({
           </Select>
         )}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 220 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-            Min. similarity
-          </Typography>
+        <div className="flex items-center gap-3" style={{ minWidth: 220 }}>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            Min. similarity {Math.round(minScore * 100)}%
+          </span>
           <Slider
-            value={minScore}
-            onChange={(_, val) => setMinScore(val as number)}
+            value={[minScore]}
+            onValueChange={([v]) => setMinScore(v)}
             min={0.7}
             max={0.95}
             step={0.05}
-            size="small"
-            valueLabelDisplay="auto"
-            valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
-            sx={{ width: 120 }}
+            style={{ width: 120 }}
           />
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <div className="flex gap-1">
           <Button variant="outline" size="sm" onClick={handleZoomToFit}>
             <Maximize2 style={{ width: 14, height: 14 }} />
           </Button>
-        </Box>
+        </div>
 
         <Badge variant="secondary">
           {forceData.nodes.length} tags, {forceData.links.length} links
         </Badge>
-      </Box>
+      </div>
 
       {/* Graph */}
-      <Box
+      <div
         ref={setContainer}
-        sx={{
-          flex: 1,
-          minHeight: 400,
-          overflow: 'hidden',
-          bgcolor: 'background.default',
-          position: 'relative',
-        }}
+        className="flex-1 overflow-hidden bg-background relative"
+        style={{ minHeight: 400 }}
       >
         {forceData.nodes.length > 0 && dimensions.width > 0 && dimensions.height > 0 ? (
           <ForceGraph2D
@@ -359,46 +334,37 @@ export default function TagRelationshipGraph({
             d3VelocityDecay={0.4}
           />
         ) : (
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
-          >
-            <Typography color="text.secondary">
+          <div className="flex items-center justify-center h-full">
+            <p className="text-muted-foreground">
               {forceData.nodes.length === 0
                 ? 'No relationships found. Try lowering the similarity threshold.'
                 : 'Preparing graph…'}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
         {/* Hover tooltip */}
         {hoveredNode && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 12,
-              right: 12,
-              bgcolor: 'background.paper',
-              p: 1.5,
-              pointerEvents: 'none',
-              maxWidth: 220,
-            }}
+          <div
+            className="absolute bg-background p-3 pointer-events-none"
+            style={{ top: 12, right: 12, maxWidth: 220 }}
           >
-            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+            <p className="text-sm font-semibold mb-1">
               {hoveredNode.name}
-            </Typography>
+            </p>
             {hoveredNode.category && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              <span className="block text-xs text-muted-foreground">
                 {hoveredNode.category}
-              </Typography>
+              </span>
             )}
             {hoveredNode.usage_count > 0 && (
-              <Typography variant="caption" color="text.secondary">
+              <span className="text-xs text-muted-foreground">
                 {hoveredNode.usage_count} uses
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

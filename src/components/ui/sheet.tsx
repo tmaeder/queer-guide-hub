@@ -1,8 +1,6 @@
 import * as React from 'react';
-import MuiDrawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const SheetContext = React.createContext<{
   open: boolean;
@@ -88,49 +86,91 @@ interface SheetContentProps extends React.HTMLAttributes<HTMLDivElement> {
   side?: SheetSide;
 }
 
+const sideClasses: Record<SheetSide, string> = {
+  right:
+    'inset-y-0 right-0 h-full w-full sm:w-[400px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
+  left:
+    'inset-y-0 left-0 h-full w-full sm:w-[400px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+  top:
+    'inset-x-0 top-0 w-full data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
+  bottom:
+    'inset-x-0 bottom-0 w-full data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+};
+
 const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
-  ({ className, children, side = 'right', ..._props }, ref) => {
+  ({ className, children, side = 'right', ...props }, ref) => {
     const { open, onOpenChange } = React.useContext(SheetContext);
-    const anchor =
-      side === 'left' ? 'left' : side === 'top' ? 'top' : side === 'bottom' ? 'bottom' : 'right';
+
+    React.useEffect(() => {
+      if (!open) return;
+      const handleKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onOpenChange(false);
+      };
+      document.addEventListener('keydown', handleKey);
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.removeEventListener('keydown', handleKey);
+        document.body.style.overflow = prev;
+      };
+    }, [open, onOpenChange]);
+
+    const dialogRefCallback = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        if (typeof ref === 'function') ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        if (!node) return;
+        requestAnimationFrame(() => {
+          const focusable = node.querySelector<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          );
+          (focusable || node).focus();
+        });
+      },
+      [ref],
+    );
+
+    if (!open) return null;
+
     return (
-      <MuiDrawer
-        open={open}
-        onClose={() => onOpenChange(false)}
-        anchor={anchor}
-        className={className}
-        PaperProps={{
-          ref: ref as React.Ref<HTMLDivElement>,
-          sx: {
-            width: side === 'left' || side === 'right' ? { xs: '100%', sm: 400 } : '100%',
-            height: side === 'top' || side === 'bottom' ? 'auto' : '100%',
-            p: 3,
-          },
-        }}
-      >
-        {children}
-        <IconButton
-          aria-label="Close"
+      <div className="fixed inset-0 z-50">
+        <div
+          className="fixed inset-0 bg-black/50 transition-opacity"
           onClick={() => onOpenChange(false)}
-          sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
-          size="small"
+          aria-hidden="true"
+        />
+        <div
+          ref={dialogRefCallback}
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          data-state={open ? 'open' : 'closed'}
+          className={cn(
+            'fixed bg-background p-6 border-2 border-foreground transition-transform duration-200 overflow-auto',
+            sideClasses[side],
+            className,
+          )}
+          {...props}
         >
-          <X style={{ width: 16, height: 16 }} />
-        </IconButton>
-      </MuiDrawer>
+          {children}
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => onOpenChange(false)}
+            className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
     );
   },
 );
 SheetContent.displayName = 'SheetContent';
 
 const SheetHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, style, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={className}
-      style={{ display: 'flex', flexDirection: 'column', gap: 8, ...style }}
-      {...props}
-    >
+  ({ className, children, ...props }, ref) => (
+    <div ref={ref} className={cn('flex flex-col gap-2', className)} {...props}>
       {children}
     </div>
   ),
@@ -138,13 +178,8 @@ const SheetHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
 SheetHeader.displayName = 'SheetHeader';
 
 const SheetFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, style, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={className}
-      style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 16, ...style }}
-      {...props}
-    >
+  ({ className, children, ...props }, ref) => (
+    <div ref={ref} className={cn('flex justify-end gap-2 pt-4', className)} {...props}>
       {children}
     </div>
   ),
@@ -152,18 +187,10 @@ const SheetFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
 SheetFooter.displayName = 'SheetFooter';
 
 const SheetTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, children, style, ...props }, ref) => (
-    <Typography
-      ref={ref}
-      variant="h6"
-      component="h2"
-      className={className}
-      style={style}
-      sx={{ fontWeight: 600 }}
-      {...(props as Record<string, unknown>)}
-    >
+  ({ className, children, ...props }, ref) => (
+    <h2 ref={ref} className={cn('text-lg font-semibold leading-tight', className)} {...props}>
       {children}
-    </Typography>
+    </h2>
   ),
 );
 SheetTitle.displayName = 'SheetTitle';
@@ -171,17 +198,10 @@ SheetTitle.displayName = 'SheetTitle';
 const SheetDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, style, ...props }, ref) => (
-  <Typography
-    ref={ref}
-    variant="body2"
-    color="text.secondary"
-    className={className}
-    style={style}
-    {...(props as Record<string, unknown>)}
-  >
+>(({ className, children, ...props }, ref) => (
+  <p ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props}>
     {children}
-  </Typography>
+  </p>
 ));
 SheetDescription.displayName = 'SheetDescription';
 

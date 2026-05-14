@@ -1,7 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
-import { useAuth } from '@/hooks/useAuth';
 import { useCentralizedTags } from '@/hooks/useCentralizedTags';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,8 +19,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Plus, Edit, Trash2, ImageOff } from 'lucide-react';
+import { toast } from 'sonner';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -39,12 +36,11 @@ import { TagImageUpload } from '@/components/admin/TagImageUpload';
 import BulkCreateAITags from '@/components/admin/BulkCreateAITags';
 import BatchAutoTagDialog from '@/components/admin/BatchAutoTagDialog';
 import { TagAliasesSection } from '@/components/admin/TagAliasesSection';
+import { normalizeTagName } from '@/utils/tagNormalization';
 import BatchGeoLinkDialog from '@/components/admin/BatchGeoLinkDialog';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface TagRow {
   id: string;
@@ -62,11 +58,7 @@ interface TagRow {
 const columnHelper = createColumnHelper<TagRow>();
 
 export default function AdminTags() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { canManageContent, loading: rolesLoading } = useAdminRoles();
   const { categoriesTree, createTag, updateTag, deleteTag, allTags: tags } = useCentralizedTags();
-  const { toast } = useToast();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<TagRow | null>(null);
@@ -88,14 +80,14 @@ export default function AdminTags() {
     e.preventDefault();
     try {
       const cleanData = {
-        name: formData.name.trim(),
+        name: normalizeTagName(formData.name),
         category: formData.category?.trim() || null,
         description: formData.description?.trim() || null,
         image_url: formData.image_url || null,
       };
       if (editingTag) {
         await updateTag(editingTag.id, cleanData);
-        toast({ title: 'Success', description: 'Tag updated successfully' });
+        toast.success('Success: Tag updated successfully');
       } else {
         await createTag({
           ...cleanData,
@@ -104,12 +96,12 @@ export default function AdminTags() {
             .replace(/\s+/g, '-')
             .replace(/[^a-z0-9-]/g, ''),
         });
-        toast({ title: 'Success', description: 'Tag created successfully' });
+        toast.success('Success: Tag created successfully');
       }
       resetForm();
       setIsCreateDialogOpen(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to save tag', variant: 'destructive' });
+      toast.error('Error: Failed to save tag');
     }
   };
 
@@ -128,9 +120,9 @@ export default function AdminTags() {
     if (confirm(`Delete tag "${tag.name}"?`)) {
       try {
         await deleteTag(tag.id);
-        toast({ title: 'Success', description: 'Tag deleted' });
+        toast.success('Success: Tag deleted');
       } catch {
-        toast({ title: 'Error', description: 'Failed to delete tag', variant: 'destructive' });
+        toast.error('Error: Failed to delete tag');
       }
     }
   };
@@ -154,17 +146,31 @@ export default function AdminTags() {
       setIsBulkEditOpen(false);
       setBulkEditTags({});
     } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update descriptions',
-        variant: 'destructive',
-      });
+      toast.error('Error: Failed to update descriptions');
     }
   };
 
-  // Column definitions
   const columns = useMemo(
     () => [
+      columnHelper.accessor('image_url', {
+        header: 'Image',
+        cell: (info) => {
+          const url = info.getValue();
+          if (!url) return <ImageOff className="h-4 w-4 text-muted-foreground opacity-40" />;
+          return (
+            <img
+              src={url}
+              alt=""
+              className="h-8 w-8 rounded object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          );
+        },
+        meta: {
+          defaultVisible: true,
+          hideable: true,
+        } satisfies AdminColumnMeta,
+      }),
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => <span style={{ fontWeight: 500 }}>{info.getValue()}</span>,
@@ -177,12 +183,7 @@ export default function AdminTags() {
       columnHelper.accessor('slug', {
         header: 'Slug',
         cell: (info) => (
-          <Typography
-            variant="body2"
-            sx={{ fontFamily: 'monospace', fontSize: 12, color: 'text.secondary' }}
-          >
-            {info.getValue()}
-          </Typography>
+          <span className="font-mono text-xs text-muted-foreground">{info.getValue()}</span>
         ),
         meta: {
           serverSortable: true,
@@ -224,23 +225,11 @@ export default function AdminTags() {
         cell: (info) => {
           const desc = info.getValue();
           if (!desc)
-            return (
-              <Typography variant="body2" color="text.secondary">
-                -
-              </Typography>
-            );
+            return <span className="text-sm text-muted-foreground">-</span>;
           return (
-            <Typography
-              variant="body2"
-              sx={{
-                maxWidth: 300,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <span className="text-sm max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap block">
               {desc}
-            </Typography>
+            </span>
           );
         },
         meta: { defaultVisible: false, hideable: true } satisfies AdminColumnMeta,
@@ -289,14 +278,19 @@ export default function AdminTags() {
             { value: 'merged', label: 'Merged' },
           ],
         },
+        {
+          key: 'has_image',
+          label: 'Has Image',
+          type: 'select',
+          column: 'image_url',
+          options: [
+            { value: 'not.is.null', label: 'With image' },
+            { value: 'is.null', label: 'Without image' },
+          ],
+        },
       ],
       bulkEditFields: [
-        {
-          key: 'category',
-          label: 'Category',
-          type: 'text',
-          column: 'category',
-        },
+        { key: 'category', label: 'Category', type: 'text', column: 'category' },
         {
           key: 'status',
           label: 'Status',
@@ -312,6 +306,20 @@ export default function AdminTags() {
       rowActions: [
         { key: 'edit', label: 'Edit', icon: Edit, onClick: handleEdit },
         {
+          key: 'clear-image',
+          label: 'Clear Image',
+          icon: ImageOff,
+          onClick: async (tag: TagRow) => {
+            if (!tag.image_url) return;
+            try {
+              await updateTag(tag.id, { image_url: null });
+              toast({ title: 'Image cleared', description: `Removed image from "${tag.name}"` });
+            } catch {
+              toast.error('Error: Failed to clear image');
+            }
+          },
+        },
+        {
           key: 'delete',
           label: 'Delete',
           icon: Trash2,
@@ -320,7 +328,7 @@ export default function AdminTags() {
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <div className="flex gap-1 flex-wrap">
           <TagsCsvImport onImportComplete={() => window.location.reload()} />
           <ExportExcelButton
             onExport={async () => {
@@ -345,13 +353,13 @@ export default function AdminTags() {
           <BatchAutoTagDialog onComplete={() => window.location.reload()} />
           <BatchGeoLinkDialog onComplete={() => window.location.reload()} />
           <Button variant="outline" size="sm" onClick={handleBulkEditDescriptions}>
-            <Edit style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Edit className="h-3.5 w-3.5 mr-1" />
             Bulk Descriptions
           </Button>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" onClick={resetForm}>
-                <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
+                <Plus className="h-3.5 w-3.5 mr-1" />
                 Create
               </Button>
             </DialogTrigger>
@@ -359,12 +367,8 @@ export default function AdminTags() {
               <DialogHeader>
                 <DialogTitle>{editingTag ? 'Edit Tag' : 'Create New Tag'}</DialogTitle>
               </DialogHeader>
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-              >
-                <Box>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div>
                   <Label htmlFor="name">Tag Name</Label>
                   <Input
                     id="name"
@@ -372,8 +376,8 @@ export default function AdminTags() {
                     onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
                     required
                   />
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label htmlFor="category">Category</Label>
                   <Select
                     value={formData.category}
@@ -397,8 +401,8 @@ export default function AdminTags() {
                       ))}
                     </SelectContent>
                   </Select>
-                </Box>
-                <Box>
+                </div>
+                <div>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
@@ -406,119 +410,88 @@ export default function AdminTags() {
                     onChange={(e) => setFormData((p) => ({ ...p, description: e.target.value }))}
                     rows={3}
                   />
-                </Box>
+                </div>
                 <TagImageUpload
                   currentImageUrl={formData.image_url}
                   onImageChange={(url) => setFormData((p) => ({ ...p, image_url: url }))}
                   tagName={formData.name}
                 />
                 {editingTag && <TagAliasesSection tagId={editingTag.id} />}
-                <Button type="submit" style={{ width: '100%' }}>
+                <Button type="submit" className="w-full">
                   {editingTag ? 'Update Tag' : 'Create Tag'}
                 </Button>
-              </Box>
+              </form>
             </DialogContent>
           </Dialog>
-        </Box>
+        </div>
       ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handlers are stable, adding would defeat memoization
     [columns, categoriesTree, isCreateDialogOpen, editingTag, formData],
   );
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
-  if (rolesLoading) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>Loading...</Typography>
-      </Box>
-    );
-  }
-  if (!canManageContent()) {
-    navigate('/');
-    return null;
-  }
-
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Button variant="outline" onClick={() => navigate('/admin')}>
-          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
-          Back
-        </Button>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Tags Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Create and manage content tags
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Tag Categorizer */}
-      <Box sx={{ mb: 3 }}>
-        <TagCategorizer />
-      </Box>
-
-      {/* Near-duplicate tag merge (find_unified_tag_duplicates + merge_unified_tag) */}
-      <TagMergeCandidates />
-
-      {/* Data Table */}
-      <AdminDataTable config={tableConfig} />
-
-      {/* Bulk Edit Descriptions Dialog */}
-      <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
-        <DialogContent style={{ maxWidth: 896, maxHeight: '80vh', overflowY: 'auto' }}>
-          <DialogHeader>
-            <DialogTitle>Bulk Edit Tag Descriptions</DialogTitle>
-            <Typography variant="body2" color="text.secondary">
-              Add descriptions to tags that don't have them.
-            </Typography>
-          </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {Object.entries(bulkEditTags).map(([tagId, description]) => {
-              const tag = tags.find((t) => t.id === tagId);
-              if (!tag) return null;
-              return (
-                <Box key={tagId} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <span style={{ fontWeight: 500 }}>{tag.name}</span>
-                    <Badge variant="outline">{tag.category}</Badge>
-                  </Box>
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))}
-                    placeholder="Enter description..."
-                    rows={2}
-                  />
-                </Box>
-              );
-            })}
-            {Object.keys(bulkEditTags).length === 0 && (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body2" color="text.secondary">
-                  All tags have descriptions!
-                </Typography>
-              </Box>
-            )}
-            {Object.keys(bulkEditTags).length > 0 && (
-              <Box sx={{ display: 'flex', gap: 1, pt: 2 }}>
-                <Button onClick={saveBulkDescriptions} style={{ flex: 1 }}>
-                  Save All ({Object.keys(bulkEditTags).length} tags)
-                </Button>
-                <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
-                  Cancel
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </DialogContent>
-      </Dialog>
-    </Box>
+    <AdminEntityTable
+      title="Tags Management"
+      subtitle="Create and manage content tags"
+      config={tableConfig}
+      beforeTable={
+        <>
+          <div className="mb-6">
+            <TagCategorizer />
+          </div>
+          <TagMergeCandidates />
+        </>
+      }
+      afterTable={
+        <Dialog open={isBulkEditOpen} onOpenChange={setIsBulkEditOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Bulk Edit Tag Descriptions</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                Add descriptions to tags that don't have them.
+              </p>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              {Object.entries(bulkEditTags).map(([tagId, description]) => {
+                const tag = tags.find((t) => t.id === tagId);
+                if (!tag) return null;
+                return (
+                  <div key={tagId} className="border border-border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium">{tag.name}</span>
+                      <Badge variant="outline">{tag.category}</Badge>
+                    </div>
+                    <Textarea
+                      value={description}
+                      onChange={(e) =>
+                        setBulkEditTags((p) => ({ ...p, [tagId]: e.target.value }))
+                      }
+                      placeholder="Enter description..."
+                      rows={2}
+                    />
+                  </div>
+                );
+              })}
+              {Object.keys(bulkEditTags).length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">All tags have descriptions!</p>
+                </div>
+              )}
+              {Object.keys(bulkEditTags).length > 0 && (
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={saveBulkDescriptions} className="flex-1">
+                    Save All ({Object.keys(bulkEditTags).length} tags)
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsBulkEditOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      }
+    />
   );
 }

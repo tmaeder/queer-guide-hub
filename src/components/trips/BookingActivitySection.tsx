@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { ExternalLink, MousePointerClick, Hotel, Ticket, Plane, UtensilsCrossed, Link2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useTripBookingClicks, type TripBookingClick } from '@/hooks/useTripBookingClicks';
@@ -24,11 +22,6 @@ const VERTICAL_LABEL: Record<TripBookingClick['vertical'], string> = {
   other: 'Other',
 };
 
-/**
- * Owner/editor-only summary of affiliate-link click activity on a
- * trip. Hidden entirely for non-editors (RLS returns empty) and when
- * there are no clicks yet.
- */
 export function BookingActivitySection({ tripId }: Props) {
   const { data, isLoading } = useTripBookingClicks(tripId);
 
@@ -39,64 +32,42 @@ export function BookingActivitySection({ tripId }: Props) {
     .sort((a, b) => b[1] - a[1]);
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography
-        variant="subtitle2"
-        sx={{
-          fontWeight: 700,
-          mb: 1.5,
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          fontSize: '0.7rem',
-          color: 'text.secondary',
-        }}
+    <div className="mt-8">
+      <p
+        className="font-bold mb-3 uppercase text-xs text-muted-foreground"
+        style={{ letterSpacing: '0.04em' }}
       >
         Booking activity
-      </Typography>
+      </p>
 
-      <Box sx={{ p: 2, bgcolor: 'action.hover', mb: 1.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+      <div className="p-4 bg-muted mb-3">
+        <div className="flex items-center gap-2 mb-3">
           <MousePointerClick size={16} style={{ opacity: 0.7 }} />
-          <Typography variant="body2">
+          <p className="text-sm">
             <strong>{data.total}</strong> booking click{data.total === 1 ? '' : 's'} from this trip
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <div className="flex flex-wrap gap-2">
           {verticalEntries.map(([v, count]) => {
             const Icon = VERTICAL_ICON[v];
             return (
-              <Box
+              <div
                 key={v}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  px: 1,
-                  py: 0.5,
-                  bgcolor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                }}
+                className="flex items-center gap-1 px-2 py-1 bg-background border border-border"
               >
                 <Icon size={12} />
-                <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                  {VERTICAL_LABEL[v]}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {count}
-                </Typography>
-              </Box>
+                <span className="text-xs font-semibold">{VERTICAL_LABEL[v]}</span>
+                <span className="text-xs text-muted-foreground">{count}</span>
+              </div>
             );
           })}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {data.recent.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
-            Recent clicks
-          </Typography>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-muted-foreground mb-1">Recent clicks</span>
           {data.recent.map((r) => {
             const Icon = VERTICAL_ICON[r.vertical];
             let host = r.destination_url;
@@ -106,54 +77,32 @@ export function BookingActivitySection({ tripId }: Props) {
               // leave as-is
             }
             return (
-              <Box
+              <div
                 key={r.id}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  px: 1,
-                  py: 0.75,
-                  bgcolor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                }}
+                className="flex items-center gap-2 px-2 py-1.5 bg-background border border-border"
               >
                 <Icon size={14} style={{ flexShrink: 0, opacity: 0.7 }} />
-                <Typography variant="caption" sx={{ fontWeight: 600, flexShrink: 0 }}>
-                  {r.provider}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                <span className="text-xs font-semibold flex-shrink-0">{r.provider}</span>
+                <span className="text-xs text-muted-foreground flex-1 min-w-0 truncate">
                   {host}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
+                </span>
+                <span className="text-xs text-muted-foreground flex-shrink-0">
                   {formatDistanceToNow(new Date(r.clicked_at), { addSuffix: true })}
-                </Typography>
-                <Box
-                  component="a"
+                </span>
+                <a
                   href={r.destination_url}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center' }}
+                  className="text-muted-foreground flex items-center"
                   aria-label="Open link"
                 >
                   <ExternalLink size={12} />
-                </Box>
-              </Box>
+                </a>
+              </div>
             );
           })}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

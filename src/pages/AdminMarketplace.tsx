@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useAuth } from '@/hooks/useAuth';
 import { useMarketplace } from '@/hooks/useMarketplace';
 import { Button } from '@/components/ui/button';
@@ -17,9 +15,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trash2, ArrowLeft, Download, RefreshCw, Star, MapPin } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Plus, Trash2, Download, RefreshCw, Star, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { deleteMarketplaceListing } from '@/hooks/usePageFetchers';
 import { ExportExcelButton } from '@/components/admin/ExportExcelButton';
 import {
   exportToExcel,
@@ -29,9 +28,7 @@ import {
   generateFilename,
   type ExportColumnDef,
 } from '@/utils/excelExport';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 
@@ -85,11 +82,8 @@ const formatCategory = (c: string) => c.replace(/_/g, ' ').replace(/\b\w/g, (l) 
 const columnHelper = createColumnHelper<MarketplaceRow>();
 
 export default function AdminMarketplace() {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const { canManageContent, loading: rolesLoading } = useAdminRoles();
   const { createListing } = useMarketplace();
-  const { toast } = useToast();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAwinImportOpen, setIsAwinImportOpen] = useState(false);
@@ -151,11 +145,11 @@ export default function AdminMarketplace() {
         created_by: user?.id,
       });
       if (error) throw new Error(error);
-      toast({ title: 'Success', description: 'Listing created' });
+      toast.success('Success: Listing created');
       resetForm();
       setIsCreateDialogOpen(false);
     } catch {
-      toast({ title: 'Error', description: 'Failed to create listing', variant: 'destructive' });
+      toast.error('Error: Failed to create listing');
     }
   };
 
@@ -169,11 +163,7 @@ export default function AdminMarketplace() {
       toast({ title: 'Import Successful', description: `Imported ${data.imported} products` });
       setIsAwinImportOpen(false);
     } catch (err: unknown) {
-      toast({
-        title: 'Import Failed',
-        description: err instanceof Error ? err.message : 'Failed to import',
-        variant: 'destructive',
-      });
+      toast.error(`Import Failed: ${err}`);
     } finally {
       setIsImporting(false);
     }
@@ -184,12 +174,12 @@ export default function AdminMarketplace() {
       columnHelper.accessor('title', {
         header: 'Title',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+            <p className="text-sm text-muted-foreground">
               {info.row.original.business_name}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -216,10 +206,10 @@ export default function AdminMarketplace() {
         cell: (info) => {
           const val = info.getValue();
           return val ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <div className="flex items-center gap-1">
               <MapPin style={{ height: 12, width: 12 }} />
               {val}
-            </Box>
+            </div>
           ) : (
             '-'
           );
@@ -312,20 +302,17 @@ export default function AdminMarketplace() {
           onClick: async (row) => {
             if (!confirm(`Delete "${row.title}"?`)) return;
             try {
-              const { error } = await supabase
-                .from('marketplace_listings')
-                .delete()
-                .eq('id', row.id);
+              const { error } = await deleteMarketplaceListing(row.id);
               if (error) throw error;
-              toast({ title: 'Success', description: 'Listing deleted' });
+              toast.success('Success: Listing deleted');
             } catch {
-              toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+              toast.error('Error: Failed to delete');
             }
           },
         },
       ],
       toolbarActions: (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <ExportExcelButton
             onExport={async () => {
               const cols: ExportColumnDef<Record<string, unknown>>[] = [
@@ -358,51 +345,19 @@ export default function AdminMarketplace() {
           >
             <Plus style={{ height: 14, width: 14, marginRight: 4 }} /> Create Listing
           </Button>
-        </Box>
+        </div>
       ),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is stable in practice, adding would defeat memoization
     [columns],
   );
 
-  if (rolesLoading) {
-    return <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>Loading...</Box>;
-  }
-  if (!canManageContent()) {
-    return (
-      <Box sx={{ maxWidth: 'lg', mx: 'auto', p: 3, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Access Denied
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{ maxWidth: 'lg', mx: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/admin')}
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
-        </Button>
-        <div>
-          <Typography variant="h4" component="h1" sx={{ fontSize: '1.875rem', fontWeight: 700 }}>
-            Marketplace
-          </Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
-            Manage marketplace listings and products
-          </p>
-        </div>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
+    <AdminEntityTable
+      title="Marketplace"
+      subtitle="Manage marketplace listings and products"
+      config={tableConfig}
+      afterTable={
+        <>
       {/* Create Listing Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent style={{ maxWidth: 896, maxHeight: '90vh', overflowY: 'auto' }}>
@@ -413,7 +368,7 @@ export default function AdminMarketplace() {
             onSubmit={handleSubmit}
             style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
           >
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Title</Label>
                 <Input
@@ -430,7 +385,7 @@ export default function AdminMarketplace() {
                   required
                 />
               </div>
-            </Box>
+            </div>
             <div>
               <Label>Description</Label>
               <Textarea
@@ -439,7 +394,7 @@ export default function AdminMarketplace() {
                 rows={3}
               />
             </div>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Category</Label>
                 <Select
@@ -483,8 +438,8 @@ export default function AdminMarketplace() {
                   </SelectContent>
                 </Select>
               </div>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Price</Label>
                 <Input
@@ -529,8 +484,8 @@ export default function AdminMarketplace() {
                   </SelectContent>
                 </Select>
               </div>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Phone</Label>
                 <Input
@@ -561,9 +516,9 @@ export default function AdminMarketplace() {
                   placeholder="City, State"
                 />
               </div>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            </div>
+            <div className="flex gap-6">
+              <div className="flex items-center gap-2">
                 <Checkbox
                   checked={formData.shipping_available}
                   onCheckedChange={(c) =>
@@ -571,15 +526,15 @@ export default function AdminMarketplace() {
                   }
                 />
                 <Label>Shipping Available</Label>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              </div>
+              <div className="flex items-center gap-2">
                 <Checkbox
                   checked={formData.featured}
                   onCheckedChange={(c) => setFormData((p) => ({ ...p, featured: c as boolean }))}
                 />
                 <Label>Featured</Label>
-              </Box>
-            </Box>
+              </div>
+            </div>
             <Button type="submit" style={{ width: '100%' }}>
               Create Listing
             </Button>
@@ -593,7 +548,7 @@ export default function AdminMarketplace() {
           <DialogHeader>
             <DialogTitle>Import from Awin CSV Feed</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             <div>
               <Label>Custom CSV Feed URL (Optional)</Label>
               <Input
@@ -602,7 +557,7 @@ export default function AdminMarketplace() {
                 onChange={(e) => setImportParams((p) => ({ ...p, csvUrl: e.target.value }))}
               />
             </div>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Max Products</Label>
                 <Input
@@ -636,8 +591,8 @@ export default function AdminMarketplace() {
                   }
                 />
               </div>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setIsAwinImportOpen(false)}
@@ -665,10 +620,12 @@ export default function AdminMarketplace() {
                   </>
                 )}
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
-    </Box>
+        </>
+      }
+    />
   );
 }

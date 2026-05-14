@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { Users, X } from 'lucide-react';
 
 import { useMeta } from '@/hooks/useMeta';
 import { useAuth } from '@/hooks/useAuth';
 import {
   usePersonalities,
+  useProfessionFacets,
   type PersonalityFilters,
-  type PersonalitySort,
 } from '@/hooks/usePersonalities';
+import { parseFilters, serializeFilters } from '@/lib/personalitiesFilters';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
@@ -27,46 +25,17 @@ import { AddPersonalityDialog } from '@/components/personalities/AddPersonalityD
 const PAGE_SIZE = 24;
 const AUTO_LOAD_CAP = 48;
 
-const GRID_SX = {
-  display: 'grid',
-  gridTemplateColumns: {
-    xs: 'repeat(2, minmax(0, 1fr))',
-    sm: 'repeat(3, minmax(0, 1fr))',
-    md: 'repeat(4, minmax(0, 1fr))',
-    lg: 'repeat(5, minmax(0, 1fr))',
-  },
-  gap: { xs: 1.5, sm: 2, md: 2.5 },
-  '& > *': { minWidth: 0 },
-} as const;
+const GRID_CLASS =
+  'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5 [&>*]:min-w-0';
 
-function filtersFromParams(params: URLSearchParams): PersonalityFilters {
-  return {
-    profession: params.get('profession') || undefined,
-    search: params.get('q') || undefined,
-    name_starts_with: params.get('letter') || undefined,
-    sortBy: (params.get('sort') as PersonalitySort) || 'featured',
-    is_living:
-      params.get('status') === 'living'
-        ? true
-        : params.get('status') === 'historical'
-          ? false
-          : undefined,
-    featured_only: params.get('featured') === '1' || undefined,
-    exclude_adult: params.get('include_adult') === '1' ? false : true,
-  };
-}
+const MAX_DEEP_LINK_PAGE = 50;
 
-function paramsFromFilters(filters: PersonalityFilters): URLSearchParams {
-  const p = new URLSearchParams();
-  if (filters.profession) p.set('profession', filters.profession);
-  if (filters.search) p.set('q', filters.search);
-  if (filters.name_starts_with) p.set('letter', filters.name_starts_with);
-  if (filters.sortBy && filters.sortBy !== 'featured') p.set('sort', filters.sortBy);
-  if (filters.is_living === true) p.set('status', 'living');
-  if (filters.is_living === false) p.set('status', 'historical');
-  if (filters.featured_only) p.set('featured', '1');
-  if (filters.exclude_adult === false) p.set('include_adult', '1');
-  return p;
+function pageFromParams(params: URLSearchParams): number {
+  const raw = params.get('page');
+  if (!raw) return 1;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, MAX_DEEP_LINK_PAGE);
 }
 
 function activeFilterCount(f: PersonalityFilters): number {
@@ -89,23 +58,31 @@ export default function Personalities() {
   useMeta({
     title: 'Personalities',
     description:
-      'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.',
+      'Browse thousands of LGBTQ+ activists, artists, writers, athletes, and historical icons.',
     canonicalPath: '/personalities',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'Notable LGBTQ+ Personalities',
       description:
-        'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.',
+        'Browse thousands of LGBTQ+ activists, artists, writers, athletes, and historical icons.',
       url: 'https://queer.guide/personalities',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
   });
 
-  const [filters, setFilters] = useState<PersonalityFilters>(() =>
-    filtersFromParams(searchParams),
+  // Profession facets are loaded once and used to validate the URL `profession` param.
+  const { facets: professionFacets } = useProfessionFacets(60);
+  const validProfessions = useMemo(
+    () => professionFacets.map((f) => f.profession),
+    [professionFacets],
   );
-  const [page, setPage] = useState(1);
+
+  const [filters, setFilters] = useState<PersonalityFilters>(
+    () => parseFilters(searchParams).filters,
+  );
+  const initialPageRef = useRef<number>(pageFromParams(searchParams));
+  const [page, setPage] = useState(initialPageRef.current);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -118,13 +95,22 @@ export default function Personalities() {
     fetchPersonalities,
   } = usePersonalities(false);
 
-  // Initial + filter-change fetch
+  // Initial + filter-change fetch. Honors ?page=N on first mount by loading
+  // N pages worth in a single Supabase range request, so deep links restore
+  // the visible card set without forcing the user to re-scroll.
   useEffect(() => {
-    setPage(1);
-    setAutoLoadedCount(0);
-    fetchPersonalities(filters, { page: 1, pageSize: PAGE_SIZE, append: false });
-    // Sync URL
-    const nextParams = paramsFromFilters(filters);
+    const targetPage = initialPageRef.current;
+    initialPageRef.current = 1; // only deep-link on the very first mount
+    setPage(targetPage);
+    setAutoLoadedCount(targetPage > 1 ? (targetPage - 1) * PAGE_SIZE : 0);
+    fetchPersonalities(filters, {
+      page: 1,
+      pageSize: targetPage * PAGE_SIZE,
+      append: false,
+    });
+    // Sync URL — serializeFilters from PR 1 + the page param from PR 5.
+    const nextParams = serializeFilters(filters);
+    if (targetPage > 1) nextParams.set('page', String(targetPage));
     if (nextParams.toString() !== searchParams.toString()) {
       setSearchParams(nextParams, { replace: true });
     }
@@ -142,8 +128,7 @@ export default function Personalities() {
 
   // React to browser back/forward (external URL changes)
   useEffect(() => {
-    const fromUrl = filtersFromParams(searchParams);
-    // Only overwrite local filters if URL has genuinely different content
+    const { filters: fromUrl } = parseFilters(searchParams, validProfessions.length ? validProfessions : null);
     const a = JSON.stringify(fromUrl);
     const b = JSON.stringify(filters);
     if (a !== b) {
@@ -151,6 +136,18 @@ export default function Personalities() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Once facets load, re-validate the current `profession` against the allowlist
+  // and rewrite the URL if it was stale (e.g. ?profession=Foo).
+  useEffect(() => {
+    if (!validProfessions.length) return;
+    const { filters: cleaned, changed } = parseFilters(searchParams, validProfessions);
+    if (changed) {
+      setFilters(cleaned);
+      setSearchParams(serializeFilters(cleaned), { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validProfessions]);
 
   const handleFiltersChange = useCallback((next: PersonalityFilters) => {
     setFilters((prev) => ({ ...prev, ...next }));
@@ -187,6 +184,7 @@ export default function Personalities() {
           });
           const fetched = result?.fetched ?? PAGE_SIZE;
           setAutoLoadedCount((c) => Math.min(AUTO_LOAD_CAP, c + fetched));
+          syncPageToUrl(nextPage);
         }
       },
       { rootMargin: '200px' },
@@ -194,7 +192,23 @@ export default function Personalities() {
 
     observer.observe(el);
     return () => observer.unobserve(el);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, loading, hasMore, filters, autoLoadedCount, fetchPersonalities]);
+
+  const syncPageToUrl = useCallback(
+    (n: number) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (n <= 1) next.delete('page');
+          else next.set('page', String(n));
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   const loadMoreManual = useCallback(async () => {
     const nextPage = page + 1;
@@ -204,7 +218,8 @@ export default function Personalities() {
       pageSize: PAGE_SIZE,
       append: true,
     });
-  }, [page, filters, fetchPersonalities]);
+    syncPageToUrl(nextPage);
+  }, [page, filters, fetchPersonalities, syncPageToUrl]);
 
   const hasAnyFilter = useMemo(() => activeFilterCount(filters) > 0, [filters]);
 
@@ -267,23 +282,54 @@ export default function Personalities() {
   const loadedCount = personalities.length;
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Container sx={{ px: 2, py: { xs: 4, md: 8 } }}>
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-8 md:py-16">
         <PageHeader
           title={t('pages.personalities.title', 'Personalities')}
-          subtitle={t('pages.personalities.subtitle', 'Browse 8,000+ LGBTQ+ activists, artists, writers, athletes, and historical icons.')}
+          subtitle={
+            loading && totalCount === 0
+              ? 'Loading personalities…'
+              : `Browse ${totalCount.toLocaleString()} LGBTQ+ activists, artists, writers, athletes, and historical icons.`
+          }
           center
           actions={
             user ? <AddPersonalityDialog onSuccess={() => window.location.reload()} /> : undefined
           }
         />
 
+        {/* NSFW visibility hint — surfaces the otherwise-hidden adult filter. */}
+        <div className="text-center text-xs text-muted-foreground mb-6">
+          {filters.exclude_adult !== false ? (
+            <>
+              Hiding adult performers ·{' '}
+              <button
+                type="button"
+                className="underline hover:no-underline"
+                onClick={() => handleFiltersChange({ exclude_adult: false })}
+              >
+                Show all
+              </button>
+            </>
+          ) : (
+            <>
+              Including adult performers ·{' '}
+              <button
+                type="button"
+                className="underline hover:no-underline"
+                onClick={() => handleFiltersChange({ exclude_adult: true })}
+              >
+                Hide
+              </button>
+            </>
+          )}
+        </div>
+
         {/* Featured rail — only on the cold default view */}
         {!hasAnyFilter && <FeaturedPersonalityRail />}
 
-        <Box sx={{ mb: 2 }}>
+        <div className="mb-4">
           <PersonalitiesFiltersBar filters={filters} onFiltersChange={handleFiltersChange} />
-        </Box>
+        </div>
 
         <StickyLetterBar
           letter={filters.name_starts_with ?? null}
@@ -292,18 +338,10 @@ export default function Personalities() {
 
         {/* Active filter chips */}
         {activeChips.length > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: 1,
-              mb: 2,
-            }}
-          >
-            <Typography variant="body2" sx={{ color: 'text.secondary', mr: 0.5 }}>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <p className="text-sm">
               Active:
-            </Typography>
+            </p>
             {activeChips.map((chip) => (
               <Badge
                 key={chip.key}
@@ -311,49 +349,41 @@ export default function Personalities() {
 
               >
                 {chip.label}
-                <Box
-                  component="button"
+                <button
                   type="button"
                   onClick={chip.onRemove}
                   aria-label={`Remove ${chip.label}`}
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    p: 0,
-                    ml: 0.25,
-                  }}
+                  className="inline-flex items-center justify-center bg-transparent border-none cursor-pointer p-0 ml-1"
                 >
                   <X size={12} />
-                </Box>
+                </button>
               </Badge>
             ))}
             <Button variant="ghost" size="sm" onClick={clearAll}>
               Clear all
             </Button>
-          </Box>
+          </div>
         )}
 
-        {/* Results toolbar */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 2,
-          }}
+        {/* Results toolbar — wrapped in a labelled <section> so the All
+            personalities heading gives screen reader users a landmark to jump
+            to (the page previously had H1 → H2 "Featured icons" → H3 cards
+            with no H2 above the main grid). */}
+        <h2 id="all-personalities-heading" className="sr-only">
+          All personalities
+        </h2>
+        <div
+          className="flex items-center justify-between mb-4"
+          aria-labelledby="all-personalities-heading"
         >
-          <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+          <p className="text-sm">
             {loading && personalities.length === 0
               ? 'Loading…'
               : totalCount > 0
                 ? `Showing ${loadedCount.toLocaleString()} of ${totalCount.toLocaleString()}`
                 : 'No results'}
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {/* Error state */}
         {error && personalities.length === 0 && (
@@ -367,11 +397,11 @@ export default function Personalities() {
 
         {/* Initial loading skeleton */}
         {loading && personalities.length === 0 && !error && (
-          <Box sx={GRID_SX}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
             {Array.from({ length: 10 }).map((_, i) => (
               <PersonalityCardSkeleton key={i} />
             ))}
-          </Box>
+          </div>
         )}
 
         {/* Empty state */}
@@ -387,7 +417,7 @@ export default function Personalities() {
         {/* Grid */}
         {personalities.length > 0 && (
           <>
-            <StaggerGrid sx={GRID_SX as Record<string, unknown>}>
+            <StaggerGrid className={GRID_CLASS}>
               {personalities.map((p) => (
                 <PersonalityCard key={p.id} personality={p} />
               ))}
@@ -395,29 +425,26 @@ export default function Personalities() {
 
             {/* Sentinel for auto-load */}
             {hasMore && autoLoadedCount < AUTO_LOAD_CAP && (
-              <Box ref={sentinelRef} sx={{ height: 40, mt: 4 }} aria-hidden="true" />
+              <div ref={sentinelRef} className="h-10 mt-8" aria-hidden="true" />
             )}
 
             {/* Manual load more after cap */}
             {showLoadMoreButton && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <div className="flex justify-center mt-8">
                 <Button onClick={loadMoreManual} variant="outline">
                   Load more ({(totalCount - loadedCount).toLocaleString()} more)
                 </Button>
-              </Box>
+              </div>
             )}
 
             {loading && personalities.length > 0 && (
-              <Typography
-                variant="body2"
-                sx={{ textAlign: 'center', color: 'text.secondary', mt: 3 }}
-              >
+              <p className="text-sm">
                 Loading more…
-              </Typography>
+              </p>
             )}
           </>
         )}
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 }

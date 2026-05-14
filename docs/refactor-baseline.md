@@ -1,5 +1,11 @@
 # Refactor Baseline — 2026-03-03
 
+> **Update 2026-05-01 (tech-debt BUILD-1):** Build time has dropped from
+> ~9m 48s baseline to ~34s. The improvement appears to come from
+> intervening Vite version bumps + lazy-loading. The historic numbers
+> below are kept for reference; current numbers are recorded in the
+> "Update 2026-05-01" section at the bottom of this doc.
+
 ## Environment
 - Node 22.22.0, npm 10.9.4
 - Vite 6.4.1 (upgraded from 5.4.x), React 18.3.1, TypeScript 5.5.3
@@ -57,3 +63,19 @@
 7. **251 JS chunks** — very aggressive code splitting, may cause waterfall on slow networks.
 8. **9:48 build time** — extremely slow, likely terser minification bottleneck.
 9. **Tests broken** — need npm install to fix esbuild binary mismatch.
+
+---
+
+## Update 2026-05-01 (tech-debt BUILD-1 / tech-debt cleanup pass)
+
+### Build
+- **Command:** `npm run build`
+- **Time:** **~34s** (down from 9m 48s — ~17× faster)
+- **Likely sources of the win:** Vite 6 maturity, npm install no longer needs `--legacy-peer-deps` (BUILD-5), supabase types as type-only imports (BUILD-2), App.tsx split (ARCH-6), various large-file splits (ARCH-2/4/7/9/10/11), no `any` (LINT-1 already at error), strict mode adds zero errors (LINT-2).
+- **Bundle shape regression guard:** `npm run build:check` (BUILD-3) fails CI if any chunk-name-prefix exceeds its KB limit or any `index-*` chunk contains `xyflow` / `PipelineBuilder` / `WorkflowDashboard` (admin-only code that must never leak public).
+
+### Tests
+- 250 files / 2210 tests pass on `main` (was 250/2208 before LINT-2; counts move as old tests are deleted alongside their hooks).
+
+### Plan-target outcome
+- BUILD-1 plan target was "build < 3 minutes". 34s comfortably clears it. Sourcemap upload to Sentry is intentionally disabled in this env (no auth token in dev), so the historic Sentry-upload bottleneck doesn't apply locally; production CI deploys may still want the post-build async upload pattern from the plan, but that's separate scheduling.

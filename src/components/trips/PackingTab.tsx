@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import LinearProgress from '@mui/material/LinearProgress';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import Collapse from '@mui/material/Collapse';
-import { useTheme } from '@mui/material/styles';
 import { Trash2, ChevronDown, ChevronRight, CheckSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import {
+  Collapsible,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -19,6 +18,7 @@ import {
   type PackingGroup,
 } from '@/hooks/useTripPacking';
 import { PackingMarketplaceSuggestions } from './packing/PackingMarketplaceSuggestions';
+import { cn } from '@/lib/utils';
 
 const CATEGORY_ORDER = [
   'clothing',
@@ -38,7 +38,6 @@ interface Props {
 
 export function PackingTab({ tripId }: Props) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const { toast } = useToast();
   const packing = useTripPacking(tripId);
   const grouped = packing.grouped ?? [];
@@ -132,89 +131,42 @@ export function PackingTab({ tripId }: Props) {
   };
 
   if (totalCount === 0) {
-    const brand = theme?.palette?.brand?.main || '#DB2777';
     return (
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: { xs: 6, md: 10 },
-          px: 3,
-          border: '1.5px dashed',
-          borderColor: 'divider',
-          borderRadius: 3,
-        }}
-      >
-        <Box
-          sx={{
-            width: 56,
-            height: 56,
-            borderRadius: 2,
-            bgcolor: `${brand}1a`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mx: 'auto',
-            mb: 1.5,
-          }}
+      <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-2xl">
+        <div
+          className="w-14 h-14 rounded-lg flex items-center justify-center mx-auto mb-3"
+          style={{ background: 'hsl(var(--foreground) / 0.1)' }}
         >
-          <CheckSquare size={26} style={{ color: brand }} />
-        </Box>
-        <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {t('trips.packing.emptyTitle')}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mb: 3, maxWidth: 360, mx: 'auto' }}
-        >
+          <CheckSquare size={26} style={{ color: 'hsl(var(--foreground))' }} />
+        </div>
+        <h3 className="text-lg font-bold mb-1">{t('trips.packing.emptyTitle')}</h3>
+        <p className="text-sm text-muted-foreground mb-6 max-w-[360px] mx-auto">
           {t('trips.packing.emptyDescription')}
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 1,
-            justifyContent: 'center',
-          }}
-        >
+        </p>
+        <div className="flex flex-wrap gap-2 justify-center">
           {TEMPLATES.map((tpl) => (
             <Badge
               key={tpl}
               variant="outline"
               onClick={() => handleTemplate(tpl)}
-
+              className="cursor-pointer"
             >
               {templateLabel(tpl)}
             </Badge>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
     <div>
       {/* Progress card */}
-      <Box
-        sx={{
-          p: { xs: 2, md: 2.5 },
-          mb: 3,
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'space-between',
-            mb: 1,
-            gap: 1,
-          }}
-        >
-          <Typography
-            sx={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 800,
-              fontSize: '1.375rem',
+      <div className="p-4 md:p-5 mb-6">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <p
+            className="font-extrabold text-[1.375rem]"
+            style={{
               letterSpacing: '-0.02em',
               fontVariantNumeric: 'tabular-nums',
             }}
@@ -223,236 +175,157 @@ export function PackingTab({ tripId }: Props) {
               checked: checkedCount,
               total: totalCount,
             })}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 700,
-              color: 'brand.main',
+          </p>
+          <span
+            className="text-sm font-bold"
+            style={{
+              color: 'hsl(var(--foreground))',
               fontVariantNumeric: 'tabular-nums',
             }}
           >
             {percentage}%
-          </Typography>
-        </Box>
-        <LinearProgress
-          variant="determinate"
-          value={percentage}
-          sx={{
-            height: 10,
-            borderRadius: 5,
-            bgcolor: 'action.hover',
-            '& .MuiLinearProgress-bar': {
-              bgcolor: 'brand.main',
-              borderRadius: 5,
-            },
-          }}
-        />
-      </Box>
+          </span>
+        </div>
+        <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${percentage}%`,
+              background: 'hsl(var(--foreground))',
+            }}
+          />
+        </div>
+      </div>
 
       {/* Template chip row */}
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          mb: 3,
-          overflowX: 'auto',
-          pb: 0.5,
-          '&::-webkit-scrollbar': { display: 'none' },
-          scrollbarWidth: 'none',
-        }}
+      <div
+        className="flex gap-2 mb-6 overflow-x-auto pb-1"
+        style={{ scrollbarWidth: 'none' }}
       >
         {TEMPLATES.map((tpl) => (
           <Badge
             key={tpl}
             variant="outline"
             onClick={() => handleTemplate(tpl)}
-
+            className="cursor-pointer whitespace-nowrap"
           >
             + {templateLabel(tpl)}
           </Badge>
         ))}
-      </Box>
+      </div>
 
       {/* Category groups */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <div className="flex flex-col gap-3">
         {allGroups.map((group) => {
           const isCollapsed = collapsed[group.category];
           const groupChecked = group.items.filter((i) => i.is_checked).length;
           const hasItems = group.items.length > 0;
-          const allChecked =
-            hasItems && groupChecked === group.items.length;
+          const allChecked = hasItems && groupChecked === group.items.length;
 
           return (
             <Card key={group.category}>
               <CardContent>
-                <Box
-                  component="button"
+                <button
                   type="button"
                   onClick={() => toggleCollapse(group.category)}
                   aria-expanded={!isCollapsed}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    width: '100%',
-                    border: 'none',
-                    bgcolor: 'transparent',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    color: 'inherit',
-                    fontFamily: 'inherit',
-                    p: 0,
-                    minHeight: 36,
-                  }}
+                  className="flex items-center gap-2 w-full border-none bg-transparent cursor-pointer text-left p-0 min-h-9"
+                  style={{ color: 'inherit', fontFamily: 'inherit' }}
                 >
                   {isCollapsed ? (
                     <ChevronRight size={16} />
                   ) : (
                     <ChevronDown size={16} />
                   )}
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      fontWeight: 700,
-                      flex: 1,
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      color: allChecked ? 'text.secondary' : 'text.primary',
-                    }}
+                  <span
+                    className={cn(
+                      'font-bold flex-1 text-sm',
+                      allChecked ? 'text-muted-foreground' : 'text-foreground',
+                    )}
                   >
                     {categoryLabel(group.category)}
-                  </Typography>
+                  </span>
                   {hasItems && (
-                    <Badge
-                      variant={allChecked ? 'default' : 'secondary'}
-
-                    >
+                    <Badge variant={allChecked ? 'default' : 'secondary'}>
                       {groupChecked}/{group.items.length}
                     </Badge>
                   )}
-                </Box>
+                </button>
 
-                <Collapse in={!isCollapsed}>
-                  <Box sx={{ mt: 1 }}>
-                    {group.items.map((item) => (
-                      <Box
-                        key={item.id}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          pl: 1,
-                          minHeight: 40,
-                          borderRadius: 1,
-                          '&:hover': { bgcolor: 'action.hover' },
-                          '&:hover .pack-delete': { opacity: 1 },
-                        }}
-                      >
-                        <Checkbox
-                          size="small"
-                          checked={item.is_checked}
+                <Collapsible open={!isCollapsed}>
+                  <CollapsibleContent>
+                    <div className="mt-2">
+                      {group.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="group/item flex items-center gap-1 pl-2 min-h-10 rounded hover:bg-muted/40"
+                        >
+                          <Checkbox
+                            checked={item.is_checked}
+                            onCheckedChange={(c) =>
+                              toggleChecked.mutate({
+                                id: item.id,
+                                is_checked: c === true,
+                              })
+                            }
+                            aria-label={item.name}
+                          />
+                          <span
+                            className={cn(
+                              'flex-1 text-sm ml-1',
+                              item.is_checked
+                                ? 'line-through text-muted-foreground/60'
+                                : 'text-foreground',
+                            )}
+                          >
+                            {item.name}
+                          </span>
+                          {item.quantity > 1 && (
+                            <Badge variant="secondary">×{item.quantity}</Badge>
+                          )}
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleDeleteItem(item.id)}
+                            aria-label={t('trips.packing.removeAria')}
+                            className="h-7 w-7 p-0 opacity-0 group-hover/item:opacity-100 hover:text-destructive transition-opacity"
+                          >
+                            <Trash2 size={13} />
+                          </Button>
+                        </div>
+                      ))}
+
+                      {/* Inline add input */}
+                      <div className="flex items-center gap-1 pl-2 mt-1">
+                        <Input
+                          placeholder={t('trips.packing.addItem')}
+                          value={newItemText[group.category] || ''}
                           onChange={(e) =>
-                            toggleChecked.mutate({
-                              id: item.id,
-                              is_checked: e.target.checked,
-                            })
+                            setNewItemText((prev) => ({
+                              ...prev,
+                              [group.category]: e.target.value,
+                            }))
                           }
-                          sx={{
-                            p: 0.5,
-                            color: 'text.secondary',
-                            '&.Mui-checked': { color: 'brand.main' },
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddItem(group.category);
+                            }
                           }}
-                          aria-label={item.name}
+                          className="border-0 border-b border-border rounded-none focus-visible:ring-0 focus-visible:border-primary text-sm h-10"
                         />
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            flex: 1,
-                            textDecoration: item.is_checked
-                              ? 'line-through'
-                              : 'none',
-                            color: item.is_checked
-                              ? 'text.disabled'
-                              : 'text.primary',
-                          }}
-                        >
-                          {item.name}
-                        </Typography>
-                        {item.quantity > 1 && (
-                          <Badge variant="secondary">×{item.quantity}</Badge>
-                        )}
-                        <IconButton
-                          className="pack-delete"
-                          size="small"
-                          onClick={() => handleDeleteItem(item.id)}
-                          aria-label={t('trips.packing.removeAria')}
-                          sx={{
-                            opacity: 0,
-                            transition: 'opacity 0.15s, color 0.15s',
-                            '&:hover': { color: 'error.main' },
-                          }}
-                        >
-                          <Trash2 size={13} />
-                        </IconButton>
-                      </Box>
-                    ))}
-
-                    {/* Inline add input */}
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        pl: 1,
-                        mt: 0.5,
-                      }}
-                    >
-                      <TextField
-                        placeholder={t('trips.packing.addItem')}
-                        size="small"
-                        variant="standard"
-                        fullWidth
-                        value={newItemText[group.category] || ''}
-                        onChange={(e) =>
-                          setNewItemText((prev) => ({
-                            ...prev,
-                            [group.category]: e.target.value,
-                          }))
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddItem(group.category);
-                          }
-                        }}
-                        sx={{
-                          '& .MuiInput-root': {
-                            fontSize: 14,
-                            minHeight: 40,
-                          },
-                          '& .MuiInput-input::placeholder': { opacity: 0.55 },
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                </Collapse>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </CardContent>
             </Card>
           );
         })}
-      </Box>
+      </div>
 
-      <Box
-        sx={{
-          mt: 4,
-          pt: 3,
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          opacity: 0.95,
-        }}
-      >
+      <div className="mt-8 pt-6 border-t border-border opacity-95">
         <PackingMarketplaceSuggestions tripId={tripId} />
-      </Box>
+      </div>
     </div>
   );
 }

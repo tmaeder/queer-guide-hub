@@ -18,7 +18,7 @@ describe('Tabs', () => {
   });
 
   it('wires aria-controls / aria-labelledby between trigger and panel', () => {
-    const { container, getByRole } = render(
+    const { getByRole } = render(
       <Tabs defaultValue="a">
         <TabsList variant="fullWidth">
           <TabsTrigger value="a">A</TabsTrigger>
@@ -26,11 +26,10 @@ describe('Tabs', () => {
         <TabsContent value="a">A panel</TabsContent>
       </Tabs>,
     );
-    const trigger = container.querySelector('#tab-a');
-    expect(trigger?.getAttribute('aria-controls')).toBe('tabpanel-a');
+    const trigger = getByRole('tab');
     const panel = getByRole('tabpanel');
-    expect(panel.getAttribute('aria-labelledby')).toBe('tab-a');
-    expect(panel.id).toBe('tabpanel-a');
+    expect(trigger.getAttribute('aria-controls')).toBe(panel.id);
+    expect(panel.getAttribute('aria-labelledby')).toBe(trigger.id);
   });
 
   it('only active panel rendered', () => {

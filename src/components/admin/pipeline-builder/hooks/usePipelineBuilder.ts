@@ -10,7 +10,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface PipelineNodeType {
   id: string;
@@ -118,7 +118,6 @@ export function usePipelineBuilder(pipelineId?: string) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
@@ -244,10 +243,10 @@ export function usePipelineBuilder(pipelineId?: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipeline-definitions'] });
       queryClient.invalidateQueries({ queryKey: ['pipeline-definition-by-name'] });
-      toast({ title: 'Pipeline saved' });
+      toast.success('Pipeline saved');
     },
     onError: (error: Error) => {
-      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+      toast.error(`Save failed: ${error.message}`);
     },
   });
 
@@ -280,7 +279,7 @@ export function usePipelineBuilder(pipelineId?: string) {
       toast({ title: data?.dry_run ? 'Dry run started' : 'Pipeline started', description: `Run ID: ${data?.pipeline_run_id}` });
     },
     onError: (error: Error) => {
-      toast({ title: 'Run failed', description: error.message, variant: 'destructive' });
+      toast.error(`Run failed: ${error.message}`);
     },
   });
 
