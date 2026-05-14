@@ -64,12 +64,17 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
     navigate('/auth?mode=signup');
   };
 
-  if (mode === 'signup') {
-    // Dialog can't host the full Signup component cleanly (links, OAuth redirects),
-    // so route to the dedicated /auth page in signup mode.
-    goToSignUp();
-    return null;
-  }
+  // Dialog can't host the full Signup component cleanly (links, OAuth redirects),
+  // so route to the dedicated /auth page in signup mode. Gated on `open` so a
+  // closed instance with defaultMode="signup" doesn't redirect during render.
+  useEffect(() => {
+    if (open && mode === 'signup') {
+      onOpenChange(false);
+      navigate('/auth?mode=signup');
+    }
+  }, [open, mode, onOpenChange, navigate]);
+
+  if (open && mode === 'signup') return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
