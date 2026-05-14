@@ -51,6 +51,9 @@ export function useEvents(autoFetch: boolean = true) {
       bounds?: { minLat: number; maxLat: number; minLng: number; maxLng: number };
       limit?: number;
       includePast?: boolean;
+      featured?: boolean;
+      isFree?: boolean;
+      sort?: 'date-asc' | 'date-desc' | 'popularity' | 'distance';
     },
     options?: { page?: number; pageSize?: number; append?: boolean; signal?: AbortSignal },
   ) => {
@@ -70,6 +73,9 @@ export function useEvents(autoFetch: boolean = true) {
       const useRpc =
         !filters?.bounds &&
         !filters?.nearMe &&
+        !filters?.featured &&
+        !filters?.isFree &&
+        !filters?.sort &&
         (Boolean(filters?.city) || Boolean(filters?.dateRange));
 
       let data: Event[] | null = null;
@@ -130,9 +136,16 @@ export function useEvents(autoFetch: boolean = true) {
             { count: 'exact' },
           )
           .eq('status', 'active')
-          .is('duplicate_of_id', null)
-          .order('is_featured', { ascending: false })
-          .order('start_date', { ascending: filters?.includePast ? false : true });
+          .is('duplicate_of_id', null);
+
+        const sort = filters?.sort ?? 'date-asc';
+        if (sort === 'date-desc') {
+          query = query.order('is_featured', { ascending: false }).order('start_date', { ascending: false });
+        } else {
+          // date-asc (default) and distance (sorted client-side after fetch)
+          query = query.order('is_featured', { ascending: false })
+            .order('start_date', { ascending: filters?.includePast ? false : true });
+        }
 
         const nowIso = new Date().toISOString();
         if (filters?.includePast) {
@@ -143,6 +156,22 @@ export function useEvents(autoFetch: boolean = true) {
 
         if (filters?.eventType) {
           query = query.eq('event_type', filters.eventType);
+        }
+
+        if (filters?.featured) {
+          query = query.eq('is_featured', true);
+        }
+
+        if (filters?.isFree) {
+          query = query.eq('is_free', true);
+        }
+
+        if (filters?.city) {
+          query = query.ilike('city', filters.city);
+        }
+
+        if (filters?.dateRange) {
+          query = query.gte('start_date', filters.dateRange.start).lte('start_date', filters.dateRange.end);
         }
 
         if (filters?.tags && filters.tags.length > 0) {

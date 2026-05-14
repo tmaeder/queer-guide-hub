@@ -313,7 +313,11 @@
       "fitAll": "Ver todo",
       "fitAllAria": "Encuadrar todos los lugares",
       "filterAll": "Todos los días",
-      "dayLabel": "Día {{number}}"
+      "dayLabel": "Día {{number}}",
+      "showAttractions": "[ES] Attractions",
+      "showEvents": "[ES] Events",
+      "suggestedVenue": "[ES] Suggested venue",
+      "eventOn": "[ES] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Aún sin información de seguridad",
@@ -708,7 +712,8 @@
       "displayName": "¿Cómo te llamamos?",
       "pronouns": "Elige tus pronombres",
       "country": "Opcional",
-      "language": "Elige idioma"
+      "language": "Elige idioma",
+      "passwordMin8": "[ES] At least 8 characters"
     },
     "errors": {
       "emailRequired": "El correo es obligatorio",
@@ -738,7 +743,9 @@
       "age": "Confirmo que tengo 18 años o más",
       "termsAria": "Aceptar términos de servicio",
       "privacyAria": "Aceptar política de privacidad",
-      "ageAria": "Confirmar que tengo 18 años o más"
+      "ageAria": "Confirmar que tengo 18 años o más",
+      "combined": "[ES] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[ES] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continuar con Google",
@@ -758,7 +765,9 @@
         "account": "Cuenta",
         "profile": "Perfil",
         "interests": "Intereses"
-      }
+      },
+      "blurb": "[ES] Free, takes a minute.",
+      "haveAccountQ": "[ES] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "ella",
@@ -800,7 +809,17 @@
       "resend": "Reenviar correo de verificación",
       "resendIn": "Reenviar en {{seconds}}s",
       "resent": "Correo de verificación enviado. Revisa tu bandeja de entrada.",
-      "backToLogin": "Volver a iniciar sesión"
+      "backToLogin": "Volver a iniciar sesión",
+      "continue": "[ES] Continue to The Queer Guide",
+      "banner": "[ES] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[ES] Verification email sent. Check your inbox.",
+      "resendShort": "[ES] Resend",
+      "gateTitle": "[ES] Verify your email first",
+      "gateDescription": "[ES] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[ES] Sign in required",
+      "description": "[ES] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1106,7 +1125,8 @@
       "accessibility": "Accesibilidad",
       "bookings": "Reservas",
       "tripInbox": "Bandeja de viajes",
-      "extension": "Extensión del Navegador"
+      "extension": "Extensión del Navegador",
+      "footprint": "[ES] Footprint"
     },
     "modes": {
       "dating": "Buscando el amor",
@@ -1122,7 +1142,10 @@
       "accessibility": "Accesibilidad",
       "legal": "Legal",
       "contact": "Contacto"
-    }
+    },
+    "signUp": "[ES] Sign up",
+    "navigation": "[ES] Navigation",
+    "signIn": "[ES] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,6 +1243,45 @@
       "filteredEmpty": {
         "title": "Ningún evento coincide con tus filtros",
         "body": "Intenta ajustar tus filtros o búsqueda para ver más resultados."
+      },
+      "prideSubtype": "[ES] Pride type",
+      "mapView": "[ES] Map view",
+      "preset": {
+        "label": "[ES] Quick filters",
+        "thisWeekend": "[ES] This weekend",
+        "nearMe": "[ES] Near me",
+        "pride": "[ES] Pride season",
+        "thisMonth": "[ES] This month",
+        "free": "[ES] Free",
+        "featured": "[ES] Featured"
+      },
+      "rail": {
+        "featured": "[ES] Featured this week",
+        "featuredSubtitle": "[ES] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[ES] No events match your filters",
+        "body": "[ES] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[ES] Drop \"{{city}}\" filter",
+        "clearDate": "[ES] Drop date filter",
+        "viewAll": "[ES] View all upcoming events",
+        "sameCityHeader": "[ES] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[ES] Try other cities in your date range",
+        "fallbackHeader": "[ES] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[ES] Spotlight",
+        "happeningNow": "[ES] Happening now",
+        "tomorrow": "[ES] Starts tomorrow",
+        "inDays_one": "[ES] Starts in {{count}} day",
+        "inDays_other": "[ES] Starts in {{count}} days",
+        "nearbyCount_one": "[ES] {{count}} event in {{city}}",
+        "nearbyCount_other": "[ES] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[ES] Sort events",
+      "sort": {
+        "dateAsc": "[ES] Soonest first",
+        "dateDesc": "[ES] Latest first"
       }
     },
     "eventDetail": {
@@ -1279,7 +1341,25 @@
       "activitiesComingSoon": "Actividades próximamente.",
       "browseDestinations": "Explorar destinos",
       "exploreCta": "Destinos",
-      "exploreDescription": "Ciudades y países con información de seguridad y guías de viaje."
+      "exploreDescription": "Ciudades y países con información de seguridad y guías de viaje.",
+      "hotels": {
+        "typeLabel": "[ES] Type",
+        "priceMin": "[ES] Min €",
+        "priceMax": "[ES] Max €",
+        "priceUnavailable": "[ES] Price on request",
+        "clearFilters": "[ES] Clear filters",
+        "noResultsWithFilters": "[ES] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[ES] Any type",
+          "hotel": "[ES] Hotel",
+          "boutique": "[ES] Boutique Hotel",
+          "bnb": "[ES] B&B",
+          "hostel": "[ES] Hostel",
+          "guesthouse": "[ES] Guesthouse",
+          "apartment": "[ES] Apartment",
+          "resort": "[ES] Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "Mercado",
@@ -1329,7 +1409,14 @@
       "emptyTitle": "Aún no hay artículos.",
       "emptyDescription": "Vuelve más tarde.",
       "previous": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "filteredEmptyTitle": "[ES] No news matches your filters.",
+      "filteredEmptyDescription": "[ES] Reset filters or try another topic.",
+      "resetFilters": "[ES] Reset filters",
+      "filterSearch": "[ES] Search",
+      "filterCategory": "[ES] Category",
+      "filterSource": "[ES] Source",
+      "filterFeatured": "[ES] Featured only"
     },
     "newsDetail": {
       "notFound": "Artículo no encontrado",

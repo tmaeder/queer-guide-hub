@@ -69,6 +69,9 @@ const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
+const AdminQuests = lazy(() => import('./pages/AdminQuests'));
+const Quests = lazyRetry(() => import('./pages/Quests'));
+const QuestDetail = lazyRetry(() => import('./pages/QuestDetail'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
@@ -126,6 +129,8 @@ const News = lazyRetry(() => import('./pages/News'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 
 const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
+const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
+const Footprint = lazyRetry(() => import('./pages/profile/Footprint'));
 const UserProfile = lazyRetry(() => import('./pages/UserProfile'));
 const Feed = lazyRetry(() => import('./pages/Feed'));
 
@@ -305,6 +310,7 @@ export const AppRoutes = () => {
                 <Route path="cities" element={<Navigate to="/admin/content/cities" replace />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
+                <Route path="quests" element={<AdminQuests />} />
                 <Route path="marketplace" element={<AdminMarketplace />} />
                 <Route path="groups" element={<AdminGroups />} />
                 <Route path="news-sources" element={<AdminNewsSources />} />
@@ -390,6 +396,8 @@ export const AppRoutes = () => {
                 <Route path="users" element={<UserDirectory />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                <Route path="quests" element={<Quests />} />
+                <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="resources" element={<Resources />} />
                 <Route path="resources/c/:categorySlug" element={<Resources />} />
                 <Route path="resources/:tagName" element={<Resources />} />
@@ -426,6 +434,8 @@ export const AppRoutes = () => {
                 <Route path="feed" element={<Feed />} />
                 <Route path="community" element={<Navigate to="/feed" replace />} />
                 <Route path="profile/settings" element={<ProfileSettings />} />
+                <Route path="profile/tiers" element={<ProfileTiers />} />
+                <Route path="profile/footprint" element={<Footprint />} />
                 <Route path="user/:userId" element={<UserProfile />} />
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />

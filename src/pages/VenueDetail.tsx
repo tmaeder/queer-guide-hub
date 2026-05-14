@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceForVenue } from '@/components/marketplace/MarketplaceForVenue';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { NotFoundMeta } from '@/components/seo/NotFoundMeta';
 import { useMeta } from '@/hooks/useMeta';
@@ -265,6 +266,10 @@ export default function VenueDetail() {
       {venue && (
         <>
           <div className="container mx-auto pb-8 px-4">
+            <div className="mt-6 flex flex-wrap gap-2">
+              <MarkVisitedButton entityType="venue" entityId={venue.id} kind="visited" />
+              <MarkVisitedButton entityType="venue" entityId={venue.id} kind="saved" />
+            </div>
             <MarketplaceForVenue venueId={venue.id} />
             <SimilarItems entity={{ type: 'venue', id: venue.id }} className="mt-8" />
           </div>

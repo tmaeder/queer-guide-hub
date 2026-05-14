@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { AddToTripDialog } from '@/components/trips/AddToTripDialog';
+import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { SendEventDialog } from '@/components/messaging/SendEventDialog';
 import { EntityDetailLayout, type EntityDetailTab } from '@/components/entity/EntityDetailLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -319,6 +320,10 @@ export default function EventDetail() {
           />
 
           <div className="container mx-auto pb-8">
+            <div className="mt-6 flex flex-wrap gap-2 px-4">
+              <MarkVisitedButton entityType="event" entityId={event.id} kind="visited" />
+              <MarkVisitedButton entityType="event" entityId={event.id} kind="saved" />
+            </div>
             <SimilarItems entity={{ type: 'event', id: event.id }} className="mt-8" />
           </div>
         </>

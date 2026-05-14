@@ -316,7 +316,11 @@
       "fitAll": "Tout voir",
       "fitAllAria": "Cadrer tous les lieux",
       "filterAll": "Tous les jours",
-      "dayLabel": "Jour {{number}}"
+      "dayLabel": "Jour {{number}}",
+      "showAttractions": "[FR] Attractions",
+      "showEvents": "[FR] Events",
+      "suggestedVenue": "[FR] Suggested venue",
+      "eventOn": "[FR] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Pas encore d'informations de sécurité",
@@ -712,7 +716,8 @@
       "displayName": "Comment on t'appelle ?",
       "pronouns": "Choisis tes pronoms",
       "country": "Facultatif",
-      "language": "Choisis une langue"
+      "language": "Choisis une langue",
+      "passwordMin8": "[FR] At least 8 characters"
     },
     "errors": {
       "emailRequired": "L'email est requis",
@@ -742,7 +747,9 @@
       "age": "Je confirme avoir 18 ans ou plus",
       "termsAria": "Accepter les conditions d'utilisation",
       "privacyAria": "Accepter la politique de confidentialité",
-      "ageAria": "Confirmer avoir 18 ans ou plus"
+      "ageAria": "Confirmer avoir 18 ans ou plus",
+      "combined": "[FR] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[FR] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continuer avec Google",
@@ -762,7 +769,9 @@
         "account": "Compte",
         "profile": "Profil",
         "interests": "Centres d'intérêt"
-      }
+      },
+      "blurb": "[FR] Free, takes a minute.",
+      "haveAccountQ": "[FR] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "elle",
@@ -804,7 +813,17 @@
       "resend": "Renvoyer l'email de vérification",
       "resendIn": "Renvoyer dans {{seconds}}s",
       "resent": "Email de vérification envoyé. Vérifie ta boîte de réception.",
-      "backToLogin": "Retour à la connexion"
+      "backToLogin": "Retour à la connexion",
+      "continue": "[FR] Continue to The Queer Guide",
+      "banner": "[FR] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[FR] Verification email sent. Check your inbox.",
+      "resendShort": "[FR] Resend",
+      "gateTitle": "[FR] Verify your email first",
+      "gateDescription": "[FR] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[FR] Sign in required",
+      "description": "[FR] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1110,7 +1129,8 @@
       "accessibility": "Accessibilité",
       "bookings": "Réservations",
       "tripInbox": "Boîte de réception voyages",
-      "extension": "Extension Navigateur"
+      "extension": "Extension Navigateur",
+      "footprint": "[FR] Footprint"
     },
     "modes": {
       "dating": "En quête d'amour",
@@ -1126,7 +1146,10 @@
       "accessibility": "Accessibilité",
       "legal": "Mentions légales",
       "contact": "Contact"
-    }
+    },
+    "signUp": "[FR] Sign up",
+    "navigation": "[FR] Navigation",
+    "signIn": "[FR] Sign in"
   },
   "pages": {
     "venues": {
@@ -1224,6 +1247,45 @@
       "filteredEmpty": {
         "title": "Aucun événement ne correspond à tes filtres",
         "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
+      },
+      "prideSubtype": "[FR] Pride type",
+      "mapView": "[FR] Map view",
+      "preset": {
+        "label": "[FR] Quick filters",
+        "thisWeekend": "[FR] This weekend",
+        "nearMe": "[FR] Near me",
+        "pride": "[FR] Pride season",
+        "thisMonth": "[FR] This month",
+        "free": "[FR] Free",
+        "featured": "[FR] Featured"
+      },
+      "rail": {
+        "featured": "[FR] Featured this week",
+        "featuredSubtitle": "[FR] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[FR] No events match your filters",
+        "body": "[FR] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[FR] Drop \"{{city}}\" filter",
+        "clearDate": "[FR] Drop date filter",
+        "viewAll": "[FR] View all upcoming events",
+        "sameCityHeader": "[FR] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[FR] Try other cities in your date range",
+        "fallbackHeader": "[FR] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[FR] Spotlight",
+        "happeningNow": "[FR] Happening now",
+        "tomorrow": "[FR] Starts tomorrow",
+        "inDays_one": "[FR] Starts in {{count}} day",
+        "inDays_other": "[FR] Starts in {{count}} days",
+        "nearbyCount_one": "[FR] {{count}} event in {{city}}",
+        "nearbyCount_other": "[FR] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[FR] Sort events",
+      "sort": {
+        "dateAsc": "[FR] Soonest first",
+        "dateDesc": "[FR] Latest first"
       }
     },
     "eventDetail": {
@@ -1283,7 +1345,25 @@
       "activitiesComingSoon": "Activités bientôt disponibles.",
       "browseDestinations": "Parcourir les destinations",
       "exploreCta": "Destinations",
-      "exploreDescription": "Villes et pays avec infos de sécurité et guides de voyage."
+      "exploreDescription": "Villes et pays avec infos de sécurité et guides de voyage.",
+      "hotels": {
+        "typeLabel": "[FR] Type",
+        "priceMin": "[FR] Min €",
+        "priceMax": "[FR] Max €",
+        "priceUnavailable": "[FR] Price on request",
+        "clearFilters": "[FR] Clear filters",
+        "noResultsWithFilters": "[FR] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[FR] Any type",
+          "hotel": "[FR] Hotel",
+          "boutique": "[FR] Boutique Hotel",
+          "bnb": "[FR] B&B",
+          "hostel": "[FR] Hostel",
+          "guesthouse": "[FR] Guesthouse",
+          "apartment": "[FR] Apartment",
+          "resort": "[FR] Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "Marché",
@@ -1333,7 +1413,14 @@
       "emptyTitle": "Pas encore d'articles.",
       "emptyDescription": "Reviens plus tard.",
       "previous": "Précédent",
-      "next": "Suivant"
+      "next": "Suivant",
+      "filteredEmptyTitle": "[FR] No news matches your filters.",
+      "filteredEmptyDescription": "[FR] Reset filters or try another topic.",
+      "resetFilters": "[FR] Reset filters",
+      "filterSearch": "[FR] Search",
+      "filterCategory": "[FR] Category",
+      "filterSource": "[FR] Source",
+      "filterFeatured": "[FR] Featured only"
     },
     "newsDetail": {
       "notFound": "Article introuvable",
