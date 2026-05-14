@@ -617,3 +617,16 @@ h1, h2, h3, h4, h5, h6 {
   min-height: 24px;
   padding-block: 6px;
 }
+
+/* WCAG 2.5.5 AAA — icon-only header / map controls expand to 44×44 on touch
+   (coarse pointer) and narrow viewports. Desktop sizing is untouched. */
+@media (pointer: coarse), (max-width: 640px) {
+  header [aria-label="Search filters"],
+  header [aria-label="Open user menu"],
+  header [aria-label="Open navigation menu"],
+  header [aria-label="Open menu"],
+  .maplibregl-ctrl button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
