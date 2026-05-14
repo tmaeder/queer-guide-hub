@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useLocation } from 'react-router';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TripContextBar } from '@/components/trips/TripContextBar';
-import { CookieConsentBanner } from '@/components/privacy/CookieConsentBanner';
-import { FeedbackButton } from '@/components/feedback/FeedbackButton';
-import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { GrainOverlay } from '@/components/effects/GrainOverlay';
+
+// Peripheral chrome — banners and the feedback FAB. None of these are
+// above-the-fold or interaction-critical on first paint, so defer their
+// modules to a lazy chunk and mount them via Suspense with a null
+// fallback. Each only briefly delays its own appearance, never the rest
+// of the page.
+const FeedbackButton = lazy(() =>
+  import('@/components/feedback/FeedbackButton').then((m) => ({ default: m.FeedbackButton })),
+);
+const CookieConsentBanner = lazy(() =>
+  import('@/components/privacy/CookieConsentBanner').then((m) => ({ default: m.CookieConsentBanner })),
+);
+const InstallBanner = lazy(() =>
+  import('@/components/pwa/InstallBanner').then((m) => ({ default: m.InstallBanner })),
+);
 
 /**
  * Visual chrome around the route content: header, footer, banners, skip-link, background.
@@ -48,9 +60,11 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
           <Footer />
         </div>
       )}
-      <CookieConsentBanner />
-      <FeedbackButton />
-      <InstallBanner />
+      <Suspense fallback={null}>
+        <CookieConsentBanner />
+        <FeedbackButton />
+        <InstallBanner />
+      </Suspense>
     </div>
   );
 };
