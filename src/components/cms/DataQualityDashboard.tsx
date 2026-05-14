@@ -4,123 +4,16 @@
  */
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import Tooltip from '@mui/material/Tooltip';
-import { RefreshCw, AlertTriangle, CheckCircle2, FileText, Clock, Languages } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { RefreshCw, AlertTriangle, CheckCircle2, FileText, Clock, Languages, Loader2 } from 'lucide-react';
 import { contentTypeRegistry } from '@/config/contentTypeRegistry';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/i18n/languages';
-import type { ContentTypeConfig } from '@/types/cms';
-
-interface QualityRow {
-  id: string;
-  label: string;
-  color: string;
-  total: number;
-  published: number;
-  draft: number;
-  review: number;
-  missingRequired: number;
-  staleDays: number;
-  staleCount: number;
-  untranslated: number;
-  expectedTranslations: number;
-  error: string | null;
-}
-
-const STALE_DAYS = 180;
-
-function firstRequiredTextField(config: ContentTypeConfig): string | null {
-  const f = config.fields.find(
-    (x) => x.required && !x.readOnly && (x.type === 'text' || x.type === 'richtext'),
-  );
-  return f?.name ?? null;
-}
-
-async function headCount(
-  table: string,
-  build: (q: ReturnType<typeof supabase.from>) => unknown,
-): Promise<number> {
-  const q = (supabase.from(table as 'events') as ReturnType<typeof supabase.from>).select('*', {
-    count: 'exact',
-    head: true,
-  });
-  const result: { count: number | null; error: { message: string } | null } = await (build(q) as Promise<{
-    count: number | null;
-    error: { message: string } | null;
-  }>);
-  if (result.error) throw new Error(result.error.message);
-  return result.count ?? 0;
-}
-
-async function loadRow(config: ContentTypeConfig): Promise<QualityRow> {
-  const base: QualityRow = {
-    id: config.id,
-    label: config.label.plural,
-    color: config.color,
-    total: 0,
-    published: 0,
-    draft: 0,
-    review: 0,
-    missingRequired: 0,
-    staleDays: STALE_DAYS,
-    staleCount: 0,
-    untranslated: 0,
-    expectedTranslations: 0,
-    error: null,
-  };
-
-  try {
-    base.total = await headCount(config.tableName, (q) => q);
-
-    const { data: meta } = await supabase
-      .from('cms_content_metadata' as 'events')
-      .select('workflow_state')
-      .eq('source_table', config.tableName);
-    if (Array.isArray(meta)) {
-      for (const m of meta as { workflow_state: string }[]) {
-        if (m.workflow_state === 'published') base.published++;
-        else if (m.workflow_state === 'draft') base.draft++;
-        else if (m.workflow_state === 'review') base.review++;
-      }
-    }
-
-    const reqField = firstRequiredTextField(config);
-    if (reqField) {
-      base.missingRequired = await headCount(config.tableName, (q) =>
-        (q as ReturnType<typeof supabase.from>).or(`${reqField}.is.null,${reqField}.eq.`),
-      );
-    }
-
-    const cutoff = new Date(Date.now() - STALE_DAYS * 86400_000).toISOString();
-    base.staleCount = await headCount('cms_content_metadata', (q) =>
-      (q as ReturnType<typeof supabase.from>)
-        .eq('source_table', config.tableName)
-        .eq('workflow_state', 'published')
-        .lt('last_edited_at', cutoff),
-    );
-
-    const translatable = config.translatableFields ?? [];
-    const nonDefaultLocales = SUPPORTED_LOCALES.filter((l) => l !== DEFAULT_LOCALE);
-    if (translatable.length > 0 && base.published > 0) {
-      base.expectedTranslations = base.published * translatable.length * nonDefaultLocales.length;
-      const { count } = await supabase
-        .from('content_translations' as 'events')
-        .select('*', { count: 'exact', head: true })
-        .eq('table_name', config.tableName);
-      const have = count ?? 0;
-      base.untranslated = Math.max(0, base.expectedTranslations - have);
-    }
-  } catch (err) {
-    base.error = err instanceof Error ? err.message : 'Failed to load';
-  }
-
-  return base;
-}
+import {
+  loadDataQualityRow,
+  DATA_QUALITY_STALE_DAYS as STALE_DAYS,
+  type DataQualityRow as QualityRow,
+} from '@/hooks/useDataQualityDashboard';
 
 export function DataQualityDashboard() {
   const [rows, setRows] = useState<QualityRow[]>([]);
@@ -131,7 +24,7 @@ export function DataQualityDashboard() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const results = await Promise.all(configs.map((c) => loadRow(c)));
+    const results = await Promise.all(configs.map((c) => loadDataQualityRow(c)));
     setRows(results.sort((a, b) => b.total - a.total));
     setLoading(false);
   }, [configs]);
@@ -153,53 +46,30 @@ export function DataQualityDashboard() {
   }, [rows]);
 
   return (
-    <Box>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 3,
-          gap: 2,
-          flexWrap: 'wrap',
-        }}
-      >
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-            Data Quality
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+    <div>
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+        <div>
+          <h2 className="text-2xl font-bold mb-1">Data Quality</h2>
+          <p className="text-sm text-muted-foreground">
             Health metrics across all content types — refresh to recompute.
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Button
-          size="small"
-          variant="outlined"
-          startIcon={<RefreshCw size={14} />}
+          size="sm"
+          variant="outline"
           onClick={() => setRefreshKey((k) => k + 1)}
           disabled={loading}
-          sx={{ textTransform: 'none', fontWeight: 600 }}
+          className="font-semibold"
         >
+          <RefreshCw size={14} className="mr-2" />
           Refresh
         </Button>
-      </Box>
+      </div>
 
       {/* Summary tiles */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(5, 1fr)' },
-          gap: 1.5,
-          mb: 3,
-        }}
-      >
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <SummaryTile label="Total items" value={totals.total} icon={FileText} color="#64748b" />
-        <SummaryTile
-          label="Published"
-          value={totals.published}
-          icon={CheckCircle2}
-          color="#10b981"
-        />
+        <SummaryTile label="Published" value={totals.published} icon={CheckCircle2} color="#10b981" />
         <SummaryTile
           label="Missing required"
           value={totals.missingRequired}
@@ -218,62 +88,46 @@ export function DataQualityDashboard() {
           icon={Languages}
           color={totals.untranslated > 0 ? '#8b5cf6' : '#94a3b8'}
         />
-      </Box>
+      </div>
 
       {loading && rows.length === 0 ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress size={32} aria-label="Loading" />
-        </Box>
+        <div className="flex justify-center py-16">
+          <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" aria-label="Loading" />
+        </div>
       ) : (
-        <Box
-          sx={{
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2,
-            overflow: 'hidden',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: '2fr repeat(6, 1fr)',
-              px: 2,
-              py: 1.25,
-              bgcolor: 'grey.50',
-              borderBottom: '1px solid',
-              borderColor: 'divider',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: 'text.secondary',
-            }}
+        <div className="border border-border rounded-lg overflow-hidden bg-background">
+          <div
+            className="grid px-4 py-2.5 bg-muted border-b border-border text-[0.7rem] font-bold uppercase tracking-wider text-muted-foreground"
+            style={{ gridTemplateColumns: '2fr repeat(6, 1fr)' }}
           >
-            <Box>Type</Box>
-            <Box sx={{ textAlign: 'right' }}>Total</Box>
-            <Box sx={{ textAlign: 'right' }}>Published</Box>
-            <Box sx={{ textAlign: 'right' }}>Draft</Box>
-            <Box sx={{ textAlign: 'right' }}>Missing req.</Box>
-            <Box sx={{ textAlign: 'right' }}>Stale</Box>
-            <Box sx={{ textAlign: 'right' }}>Untranslated</Box>
-          </Box>
-          {rows.map((row) => (
-            <QualityRowView key={row.id} row={row} />
-          ))}
-        </Box>
+            <div>Type</div>
+            <div className="text-right">Total</div>
+            <div className="text-right">Published</div>
+            <div className="text-right">Draft</div>
+            <div className="text-right">Missing req.</div>
+            <div className="text-right">Stale</div>
+            <div className="text-right">Untranslated</div>
+          </div>
+          <TooltipProvider>
+            {rows.map((row) => (
+              <QualityRowView key={row.id} row={row} />
+            ))}
+          </TooltipProvider>
+        </div>
       )}
 
       {rows.some((r) => r.error) && (
-        <Alert severity="warning" sx={{ mt: 2 }}>
-          Some types failed to load metrics. Errors:{' '}
-          {rows
-            .filter((r) => r.error)
-            .map((r) => `${r.label} (${r.error})`)
-            .join('; ')}
+        <Alert className="mt-4 border-yellow-500 text-yellow-700 dark:text-yellow-400">
+          <AlertDescription>
+            Some types failed to load metrics. Errors:{' '}
+            {rows
+              .filter((r) => r.error)
+              .map((r) => `${r.label} (${r.error})`)
+              .join('; ')}
+          </AlertDescription>
         </Alert>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -289,84 +143,56 @@ function SummaryTile({
   color: string;
 }) {
   return (
-    <Box
-      sx={{
-        p: 1.5,
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: 2,
-        bgcolor: 'background.paper',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0.5,
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+    <div className="p-3 border border-border rounded-lg bg-background flex flex-col gap-1">
+      <div className="flex items-center gap-1.5">
         <Icon size={14} color={color} />
-        <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
-          {label}
-        </Typography>
-      </Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, color }}>
+        <p className="text-[0.7rem] text-muted-foreground">{label}</p>
+      </div>
+      <p className="text-2xl font-bold" style={{ color }}>
         {value.toLocaleString()}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 }
 
 function QualityRowView({ row }: { row: QualityRow }) {
   const cell = (n: number, warn = false) => (
-    <Box
-      sx={{
-        textAlign: 'right',
-        fontVariantNumeric: 'tabular-nums',
-        color: warn && n > 0 ? 'error.main' : 'text.primary',
+    <div
+      className="text-right tabular-nums"
+      style={{
+        color: warn && n > 0 ? 'hsl(var(--destructive))' : undefined,
         fontWeight: warn && n > 0 ? 600 : 400,
       }}
     >
       {n.toLocaleString()}
-    </Box>
+    </div>
   );
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: '2fr repeat(6, 1fr)',
-        px: 2,
-        py: 1.25,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        '&:last-child': { borderBottom: 'none' },
-        fontSize: '0.85rem',
-        alignItems: 'center',
-        '&:hover': { bgcolor: 'action.hover' },
-      }}
+    <div
+      className="grid px-4 py-2.5 border-b border-border last:border-b-0 text-sm items-center hover:bg-muted/50"
+      style={{ gridTemplateColumns: '2fr repeat(6, 1fr)' }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Box
-          sx={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            bgcolor: row.color,
-            flexShrink: 0,
-          }}
+      <div className="flex items-center gap-2">
+        <div
+          className="w-2 h-2 rounded-full shrink-0"
+          style={{ backgroundColor: row.color }}
         />
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          {row.label}
-        </Typography>
+        <p className="text-sm font-semibold">{row.label}</p>
         {row.error && (
-          <Tooltip title={row.error}>
-            <AlertTriangle size={14} color="#ef4444" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span><AlertTriangle size={14} color="#ef4444" /></span>
+            </TooltipTrigger>
+            <TooltipContent>{row.error}</TooltipContent>
           </Tooltip>
         )}
-      </Box>
+      </div>
       {cell(row.total)}
       {cell(row.published)}
       {cell(row.draft)}
       {cell(row.missingRequired, true)}
       {cell(row.staleCount, true)}
       {cell(row.untranslated, true)}
-    </Box>
+    </div>
   );
 }

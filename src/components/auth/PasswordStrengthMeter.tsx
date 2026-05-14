@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -70,27 +68,25 @@ export function PasswordStrengthMeter({ password, email, onScoreChange }: Props)
   );
 
   return (
-    <Box aria-live="polite" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Box sx={{ display: 'flex', gap: 0.5 }}>
+    <div aria-live="polite" className="flex flex-col gap-1">
+      <div className="flex gap-1">
         {[0, 1, 2, 3, 4].map((i) => (
-          <Box
+          <div
             key={i}
-            sx={{
-              flex: 1,
+            className="flex-1 transition-colors"
+            style={{
               height: 4,
-              borderRadius: 2,
-              bgcolor: password && score >= i ? COLORS[score] : 'action.hover',
-              transition: 'background-color 0.2s',
+              backgroundColor: password && score >= i ? COLORS[score] : 'rgba(0,0,0,0.04)',
             }}
           />
         ))}
-      </Box>
+      </div>
       {password && (
-        <Typography variant="caption" sx={{ color: COLORS[score] }}>
+        <span className="text-xs" style={{ color: COLORS[score] }}>
           {labels[score]}
           {feedback ? ` — ${feedback}` : ''}
-        </Typography>
+        </span>
       )}
-    </Box>
+    </div>
   );
 }

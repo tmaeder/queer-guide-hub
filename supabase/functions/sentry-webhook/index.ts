@@ -4,7 +4,6 @@
  * Only processes 'created' actions (new issues).
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 function jsonResp(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -29,7 +28,7 @@ async function verifySignature(body: string, signature: string | null, secret: s
   return expected === signature
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { status: 200 })
   if (req.method !== 'POST') return jsonResp({ error: 'Method not allowed' }, 405)
 

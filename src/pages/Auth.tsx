@@ -1,20 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { FloatingInput } from '@/components/effects';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import MultiStepSignup from '@/components/auth/MultiStepSignup';
+import Signup from '@/components/auth/Signup';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
@@ -24,7 +23,26 @@ export default function Auth() {
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const [mode, setMode] = useState<Mode>('signin');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMode: Mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
+  const [mode, setMode] = useState<Mode>(initialMode);
+
+  useEffect(() => {
+    const urlMode = searchParams.get('mode');
+    if (mode === 'signup' && urlMode !== 'signup') {
+      setSearchParams((p) => {
+        const next = new URLSearchParams(p);
+        next.set('mode', 'signup');
+        return next;
+      }, { replace: true });
+    } else if (mode !== 'signup' && urlMode === 'signup') {
+      setSearchParams((p) => {
+        const next = new URLSearchParams(p);
+        next.delete('mode');
+        return next;
+      }, { replace: true });
+    }
+  }, [mode, searchParams, setSearchParams]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,27 +99,25 @@ export default function Auth() {
 
   if (mode === 'signup') {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 6 }}>
-        <Container>
-          <MultiStepSignup onBack={() => setMode('signin')} />
-        </Container>
-      </Box>
+      <div className="min-h-screen bg-background py-12">
+        <div className="container mx-auto px-4">
+          <Signup onBack={() => setMode('signin')} />
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Container sx={{ px: 3, py: 6 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 6rem)' }}>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-12">
+        <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 6rem)' }}>
           <Card>
             <CardHeader>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                  <Heart style={{ width: 32, height: 32, fill: 'currentcolor' }} color="var(--mui-palette-primary-main)" />
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    The Queer Guide
-                  </Typography>
-                </Box>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-center gap-2">
+                  <Heart className="w-8 h-8 fill-current text-primary" />
+                  <h5 className="text-xl font-bold">The Queer Guide</h5>
+                </div>
                 <CardTitle>
                   {mode === 'forgot' ? t('auth.resetPassword', 'Reset password') : t('auth.welcomeBack', 'Welcome back')}
                 </CardTitle>
@@ -110,11 +126,11 @@ export default function Auth() {
                     ? t('auth.forgotBlurb', "We'll email you a reset link.")
                     : t('auth.signinBlurb', 'Sign in to continue')}
                 </CardDescription>
-              </Box>
+              </div>
             </CardHeader>
 
             <CardContent>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <div className="flex flex-col gap-6">
                 {error && (
                   <Alert variant="destructive" role="alert">
                     <AlertDescription>{error}</AlertDescription>
@@ -124,18 +140,14 @@ export default function Auth() {
                 {mode === 'signin' && (
                   <>
                     <OAuthButtons onError={setError} />
-                    <Box sx={{ position: 'relative', textAlign: 'center', my: 1 }}>
-                      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{ width: '100%' }} />
-                      </Box>
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ position: 'relative', bgcolor: 'background.paper', px: 1, color: 'text.secondary', textTransform: 'uppercase' }}
-                      >
+                    <div className="relative text-center my-2">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-border" />
+                      </div>
+                      <span className="relative bg-background px-2 text-xs text-muted-foreground uppercase">
                         {t('auth.orWithEmail', 'Or with email')}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                   </>
                 )}
 
@@ -147,24 +159,20 @@ export default function Auth() {
                   </Alert>
                 ) : (
                   <form onSubmit={mode === 'forgot' ? handleForgot : handleLogin}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Label htmlFor="email">{t('auth.fields.email', 'Email')}</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          autoComplete="email"
-                          placeholder={t('auth.placeholders.email', 'you@example.com')}
-                          value={loginData.email}
-                          onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                          disabled={isLoading}
-                          required
-                        />
-                      </Box>
+                    <div className="flex flex-col gap-4">
+                      <FloatingInput
+                        label={t('auth.fields.email', 'Email')}
+                        type="email"
+                        autoComplete="email"
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        disabled={isLoading}
+                        required
+                      />
 
                       {mode === 'signin' && (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
                             <Label htmlFor="password">{t('auth.fields.password', 'Password')}</Label>
                             <Button
                               type="button"
@@ -174,12 +182,11 @@ export default function Auth() {
                                 setMode('forgot');
                                 setError(null);
                               }}
-
                             >
                               {t('auth.forgotPassword', 'Forgot password?')}
                             </Button>
-                          </Box>
-                          <Box sx={{ position: 'relative' }}>
+                          </div>
+                          <div className="relative">
                             <Input
                               id="password"
                               type={showPassword ? 'text' : 'password'}
@@ -193,28 +200,27 @@ export default function Auth() {
                               type="button"
                               variant="ghost"
                               size="sm"
-
                               onClick={() => setShowPassword(!showPassword)}
                               disabled={isLoading}
                               aria-label={showPassword ? t('auth.hidePassword', 'Hide password') : t('auth.showPassword', 'Show password')}
                             >
-                              {showPassword ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </Button>
-                          </Box>
-                        </Box>
+                          </div>
+                        </div>
                       )}
 
                       <Button type="submit" disabled={isLoading}>
-                        {isLoading && <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />}
+                        {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                         {mode === 'forgot' ? t('auth.sendResetLink', 'Send reset link') : t('auth.signIn', 'Sign in')}
                       </Button>
-                    </Box>
+                    </div>
                   </form>
                 )}
 
                 {mode === 'signin' && <PasskeyButton mode="signin" style={{ width: '100%' }} />}
 
-                <Box sx={{ textAlign: 'center', pt: 2 }}>
+                <div className="text-center pt-4">
                   {mode === 'forgot' ? (
                     <Button
                       variant="ghost"
@@ -224,23 +230,23 @@ export default function Auth() {
                         setResetSent(false);
                       }}
                     >
-                      <Typography variant="body2" color="text.secondary">
+                      <span className="text-sm text-muted-foreground">
                         {t('auth.backToSignIn', 'Back to sign in')}
-                      </Typography>
+                      </span>
                     </Button>
                   ) : (
                     <Button variant="ghost" onClick={() => setMode('signup')}>
-                      <Typography variant="body2" color="text.secondary">
+                      <span className="text-sm text-muted-foreground">
                         {t('auth.noAccount', "Don't have an account? Create one")}
-                      </Typography>
+                      </span>
                     </Button>
                   )}
-                </Box>
-              </Box>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }

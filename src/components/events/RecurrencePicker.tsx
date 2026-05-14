@@ -6,21 +6,24 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { Repeat } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 export interface RecurrenceRule {
   freq: 'daily' | 'weekly' | 'biweekly' | 'monthly';
   interval: number;
   byDay?: number[]; // 0=Sun ... 6=Sat
-  until?: string;    // ISO date
+  until?: string; // ISO date
   exceptions?: string[];
 }
 
@@ -38,7 +41,7 @@ const FREQ_OPTIONS = [
   { value: 'monthly', label: 'Monthly' },
 ] as const;
 
-export const RecurrencePicker: React.FC<RecurrencePickerProps> = ({ value, onChange }) => {
+export const RecurrencePicker = ({ value, onChange }: RecurrencePickerProps) => {
   const [enabled, setEnabled] = useState(!!value);
 
   const handleToggle = useCallback(
@@ -61,88 +64,87 @@ export const RecurrencePicker: React.FC<RecurrencePickerProps> = ({ value, onCha
   const toggleDay = (day: number) => {
     if (!value) return;
     const current = value.byDay || [];
-    const next = current.includes(day) ? current.filter((d) => d !== day) : [...current, day].sort();
+    const next = current.includes(day)
+      ? current.filter((d) => d !== day)
+      : [...current, day].sort();
     updateField('byDay', next);
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={enabled}
-            onChange={(_, checked) => handleToggle(checked)}
-            size="small"
-          />
-        }
-        label={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Repeat size={16} />
-            <Typography variant="body2" fontWeight={600}>
-              Recurring event
-            </Typography>
-          </Box>
-        }
-      />
+    <div className="p-3">
+      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- pre-existing from MUI batch migration */}
+      <label className="flex items-center gap-2 cursor-pointer">
+        <Switch checked={enabled} onCheckedChange={handleToggle} />
+        <span className="flex items-center gap-1">
+          <Repeat size={16} />
+          <span className="text-sm font-semibold">Recurring event</span>
+        </span>
+      </label>
 
       {enabled && value && (
-        <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="mt-3 flex flex-col gap-3">
           {/* Frequency */}
-          <TextField
-            select
-            label="Repeats"
-            size="small"
-            value={value.freq}
-            onChange={(e) => updateField('freq', e.target.value as RecurrenceRule['freq'])}
-          >
-            {FREQ_OPTIONS.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </MenuItem>
-            ))}
-          </TextField>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs">Repeats</Label>
+            <Select
+              value={value.freq}
+              onValueChange={(v) => updateField('freq', v as RecurrenceRule['freq'])}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FREQ_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Day selection (for weekly/biweekly) */}
           {(value.freq === 'weekly' || value.freq === 'biweekly') && (
-            <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-                On days
-              </Typography>
-              <ToggleButtonGroup size="small" sx={{ flexWrap: 'wrap' }}>
-                {DAY_LABELS.map((label, idx) => (
-                  <ToggleButton
-                    key={idx}
-                    value={idx}
-                    selected={value.byDay?.includes(idx)}
-                    onClick={() => toggleDay(idx)}
-                    sx={{
-                      px: 1.5,
-                      py: 0.5,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                    }}
-                  >
-                    {label}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
-            </Box>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1 block">On days</p>
+              <div className="flex flex-wrap gap-1">
+                {DAY_LABELS.map((label, idx) => {
+                  const selected = value.byDay?.includes(idx);
+                  return (
+                    <Button
+                      key={idx}
+                      type="button"
+                      variant={selected ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => toggleDay(idx)}
+                      className="px-3 py-1 h-8 text-xs normal-case"
+                    >
+                      {label}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           {/* End date */}
-          <TextField
-            type="date"
-            label="Ends on (optional)"
-            size="small"
-            value={value.until?.slice(0, 10) ?? ''}
-            onChange={(e) =>
-              updateField('until', e.target.value ? new Date(e.target.value).toISOString() : undefined)
-            }
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-        </Box>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs">Ends on (optional)</Label>
+            <Input
+              type="date"
+              value={value.until?.slice(0, 10) ?? ''}
+              onChange={(e) =>
+                updateField(
+                  'until',
+                  e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                )
+              }
+              className="h-9"
+            />
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
@@ -152,7 +154,10 @@ export const RecurrencePicker: React.FC<RecurrencePickerProps> = ({ value, onCha
 // eslint-disable-next-line react-refresh/only-export-components
 export function describeRecurrence(rule: RecurrenceRule | null | undefined): string | null {
   if (!rule) return null;
-  const freq = rule.freq === 'biweekly' ? 'Every 2 weeks' : `${rule.freq.charAt(0).toUpperCase()}${rule.freq.slice(1)}`;
+  const freq =
+    rule.freq === 'biweekly'
+      ? 'Every 2 weeks'
+      : `${rule.freq.charAt(0).toUpperCase()}${rule.freq.slice(1)}`;
   const days = rule.byDay?.map((d) => DAY_LABELS[d]).join(', ');
   const until = rule.until ? ` until ${new Date(rule.until).toLocaleDateString()}` : '';
   return `${freq}${days ? ` on ${days}` : ''}${until}`;

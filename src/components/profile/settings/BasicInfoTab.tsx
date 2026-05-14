@@ -12,9 +12,6 @@ import { FormField } from './fields';
 import { getMinAgeDate, isValidDob } from '@/types/profileForm';
 import type { ProfileFormData } from '@/types/profileForm';
 import type { Profile } from '@/hooks/useProfile';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { stack } from '@/lib/sx';
 import type { User } from '@supabase/supabase-js';
 
 interface BasicInfoTabProps {
@@ -29,14 +26,14 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
   const minAgeDate = getMinAgeDate();
 
   return (
-    <Box sx={stack(3)}>
+    <div className="flex flex-col gap-6">
       {/* Avatar */}
       <Card>
         <CardHeader>
           <CardTitle>Profile Avatar</CardTitle>
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             Choose how you want to appear to other users. Upload your own photo, use our avatar builder, or connect your Gravatar account.
-          </Typography>
+          </p>
         </CardHeader>
         <CardContent>
           <AvatarSettings
@@ -57,37 +54,37 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
           <CardTitle>Basic Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={stack(2)}>
+          <div className="flex flex-col gap-4">
             {/* Name row */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField id="first_name" label="First Name" value={formData.first_name} onChange={(v) => onChange('first_name', v)} placeholder="Your first name" />
               <FormField id="last_name" label="Last Name" value={formData.last_name} onChange={(v) => onChange('last_name', v)} placeholder="Your last name" />
               <FormField id="chosen_name" label="Preferred Name" value={formData.chosen_name} onChange={(v) => onChange('chosen_name', v)} placeholder="If different from legal name" description="Used when your legal name is required" />
-            </Box>
+            </div>
 
             {/* Display name + pronouns + pronunciation */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField id="display_name" label="Display Name" value={formData.display_name} onChange={(v) => onChange('display_name', v)} placeholder="How you appear to others" description="Shown on your profile and in conversations" />
               <FormField id="pronouns" label="Pronouns" value={formData.pronouns} onChange={(v) => onChange('pronouns', v)} placeholder="e.g., they/them, she/her, he/him" />
               <FormField id="name_pronunciation" label="Name Pronunciation" value={formData.name_pronunciation} onChange={(v) => onChange('name_pronunciation', v)} placeholder="e.g., toe-BEE-us" description="Help others pronounce your name" />
-            </Box>
+            </div>
 
             {/* Bio */}
             <FormField id="bio" label="Bio" value={formData.bio} onChange={(v) => onChange('bio', v)} placeholder="Tell us about yourself..." multiline rows={3} />
 
             {/* Location + DOB */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-              <Box sx={stack(0.5)}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
                 <Label htmlFor="location">Location</Label>
                 <LocationAutocomplete
                   value={formData.location}
                   onChange={(value) => onChange('location', value)}
                   placeholder="Search for your city, country"
                 />
-              </Box>
-              <Box sx={stack(0.5)}>
+              </div>
+              <div className="flex flex-col gap-1">
                 <Label htmlFor="date_of_birth">Date of Birth</Label>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <div className="flex gap-2">
                   <Input
                     id="date_of_birth"
                     type="date"
@@ -107,10 +104,10 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">
-                      <Box sx={{ p: 1.5 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>Select Date of Birth</Typography>
-                        <Typography variant="caption" color="text.secondary">You must be at least 18 years old</Typography>
-                      </Box>
+                      <div className="p-3">
+                        <p className="text-sm font-medium">Select Date of Birth</p>
+                        <p className="text-xs text-muted-foreground">You must be at least 18 years old</p>
+                      </div>
                       <Calendar
                         mode="single"
                         captionLayout="dropdown"
@@ -124,35 +121,37 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
                         style={{ padding: 12, pointerEvents: 'auto' }}
                       />
                       {formData.date_of_birth && (
-                        <Box sx={{ p: 1.5 }}>
+                        <div className="p-3">
                           <Button variant="ghost" size="sm" onClick={() => onChange('date_of_birth', '')} style={{ width: '100%' }}>
-                            <Typography variant="body2" color="text.secondary">Clear date</Typography>
+                            <span className="text-sm text-muted-foreground">Clear date</span>
                           </Button>
-                        </Box>
+                        </div>
                       )}
                     </PopoverContent>
                   </Popover>
-                </Box>
-                <Typography variant="caption" color="text.secondary">You must be at least 18 years old</Typography>
-              </Box>
-            </Box>
+                </div>
+                <p className="text-xs text-muted-foreground">You must be at least 18 years old</p>
+              </div>
+            </div>
 
             {/* Occupation + Education */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField id="occupation" label="Occupation" value={formData.occupation} onChange={(v) => onChange('occupation', v)} placeholder="What do you do?" />
               <FormField id="education" label="Education" value={formData.education} onChange={(v) => onChange('education', v)} placeholder="Your education background" />
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Social Links */}
       <SocialLinksManager
         initialSocialLinks={profile?.social_links || {}}
-        onUpdate={(socialLinks) => {
-          console.log('Social links updated:', socialLinks);
+        onUpdate={() => {
+          // TODO: persist updates to profile.social_links via the profile
+          // mutation hook. Component currently emits but the parent doesn't
+          // catch — was a debug-only console.log.
         }}
       />
-    </Box>
+    </div>
   );
 }

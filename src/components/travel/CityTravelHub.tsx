@@ -1,9 +1,7 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
 import { Plane, Hotel, Ticket, ArrowRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TravelDealCard } from './TravelDealCard';
 import { UnifiedBookingCard } from '@/components/booking/UnifiedBookingCard';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
@@ -32,25 +30,25 @@ function SectionHeader({
   moreLink: string;
 }) {
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <div className="flex justify-between items-center mb-3">
+      <div className="flex items-center gap-2">
         <Icon style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>{title}</Typography>
-      </Box>
+        <span className="font-semibold" style={{ fontSize: '0.95rem' }}>{title}</span>
+      </div>
       <LocalizedLink to={moreLink}>
         <Button variant="ghost" size="sm">
           See all <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
         </Button>
       </LocalizedLink>
-    </Box>
+    </div>
   );
 }
 
 function ResultsRow({ children }: { children: React.ReactNode }) {
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {children}
-    </Box>
+    </div>
   );
 }
 
@@ -86,9 +84,9 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <div className="flex flex-col gap-8">
       {/* Flights */}
-      <Box>
+      <div>
         <SectionHeader
           icon={Plane}
           title={originCity ? `Flights from ${originCity}` : 'Flights'}
@@ -103,13 +101,13 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
             ))}
           </ResultsRow>
         ) : (
-          <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+          <div className="text-center py-4 bg-accent rounded">
+            <p className="text-muted-foreground text-sm">
               {originIata ? 'No flight deals available' : 'Enable location to see flight deals'}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Best Time to Fly */}
       {destinationIata && (
@@ -117,34 +115,34 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
       )}
 
       {/* Hotels */}
-      <Box>
+      <div>
         <SectionHeader icon={Hotel} title={`Hotels in ${destinationCity}`} moreLink={`/travel?tab=hotels&city=${encodeURIComponent(destinationCity)}`} />
         {hotelsLoading ? <LoadingRow /> : hotelResults && hotelResults.length > 0 ? (
           <ResultsRow>
             {hotelResults.slice(0, 3).map((hotel) => <UnifiedBookingCard key={hotel.id} result={hotel} />)}
           </ResultsRow>
         ) : (
-          <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>No hotels found in {destinationCity}</Typography>
-          </Box>
+          <div className="text-center py-4 bg-accent rounded">
+            <p className="text-muted-foreground text-sm">No hotels found in {destinationCity}</p>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Activities */}
-      <Box>
+      <div>
         <SectionHeader icon={Ticket} title={`Things to do in ${destinationCity}`} moreLink={`/travel?tab=activities&city=${encodeURIComponent(destinationCity)}`} />
         {activitiesLoading ? <LoadingRow /> : activityResults && activityResults.length > 0 ? (
           <ResultsRow>
             {activityResults.slice(0, 3).map((a) => <UnifiedBookingCard key={a.id} result={a} />)}
           </ResultsRow>
         ) : (
-          <Box sx={{ textAlign: 'center', py: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+          <div className="text-center py-4 bg-accent rounded">
+            <p className="text-muted-foreground text-sm">
               No activities found. Check <LocalizedLink to="/events" style={{ textDecoration: 'underline' }}>events</LocalizedLink> for things happening in {destinationCity}.
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
-      </Box>
+      </div>
 
       {/* Car Rental */}
       <CarRentalSection city={destinationCity} compact />
@@ -156,11 +154,11 @@ export function CityTravelHub({ destinationIata, destinationCity, equalityScore 
       <InsuranceSection compact />
 
       {/* CTA */}
-      <Box sx={{ textAlign: 'center' }}>
+      <div className="text-center">
         <LocalizedLink to="/trips">
           <Button>Plan a trip to {destinationCity}</Button>
         </LocalizedLink>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

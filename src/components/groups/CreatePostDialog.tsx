@@ -19,8 +19,6 @@ import {
 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface GroupMember {
   user_id: string;
@@ -153,36 +151,36 @@ export const CreatePostDialog = ({
           <DialogTitle>Create New Post</DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           <Tabs value={postType} onValueChange={(value: string) => setPostType(value as 'text' | 'announcement' | 'poll')}>
-            <TabsList variant="fullWidth">
+            <TabsList className="w-full">
               <TabsTrigger value="text">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <MessageSquare style={{ height: 16, width: 16 }} />
                   Post
-                </Box>
+                </div>
               </TabsTrigger>
 
               {canCreateAnnouncement && (
                 <TabsTrigger value="announcement">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Megaphone style={{ height: 16, width: 16 }} />
                     Announcement
-                  </Box>
+                  </div>
                 </TabsTrigger>
               )}
 
               <TabsTrigger value="poll">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <BarChart3 style={{ height: 16, width: 16 }} />
                   Poll
-                </Box>
+                </div>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="text">
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="content">What's on your mind?</Label>
                   <Textarea
                     id="content"
@@ -191,13 +189,13 @@ export const CreatePostDialog = ({
                     placeholder="Share your thoughts with the group..."
                     rows={4}
                   />
-                </Box>
-              </Box>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="announcement">
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="announcement-content">Announcement</Label>
                   <Textarea
                     id="announcement-content"
@@ -206,16 +204,16 @@ export const CreatePostDialog = ({
                     placeholder="Make an important announcement to the group..."
                     rows={4}
                   />
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  <p className="text-xs text-muted-foreground">
                     Announcements are highlighted and appear at the top of the group feed.
-                  </Typography>
-                </Box>
-              </Box>
+                  </p>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="poll">
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="poll-question">Poll Question</Label>
                   <Input
                     id="poll-question"
@@ -223,12 +221,12 @@ export const CreatePostDialog = ({
                     onChange={(e) => setPollQuestion(e.target.value)}
                     placeholder="What would you like to ask the group?"
                   />
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <div className="flex flex-col gap-3">
                   <Label>Poll Options</Label>
                   {pollOptions.map((option, index) => (
-                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <div key={index} className="flex items-center gap-2">
                       <Input
                         value={option}
                         onChange={(e) => updatePollOption(index, e.target.value)}
@@ -243,7 +241,7 @@ export const CreatePostDialog = ({
                           <X style={{ height: 16, width: 16 }} />
                         </Button>
                       )}
-                    </Box>
+                    </div>
                   ))}
 
                   {pollOptions.length < 6 && (
@@ -252,15 +250,15 @@ export const CreatePostDialog = ({
                       size="sm"
                       onClick={addPollOption}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center gap-2">
                         <Plus style={{ height: 16, width: 16 }} />
                         Add Option
-                      </Box>
+                      </div>
                     </Button>
                   )}
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center gap-2">
                   <Switch
                     id="multiple-choice"
                     checked={allowMultipleChoice}
@@ -269,14 +267,14 @@ export const CreatePostDialog = ({
                   <Label htmlFor="multiple-choice">
                     Allow multiple selections
                   </Label>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
 
           {/* Mentions Section */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
               <Label>Mentions</Label>
 
               <Popover open={showMentions} onOpenChange={setShowMentions}>
@@ -299,12 +297,12 @@ export const CreatePostDialog = ({
                             value={member.profiles.display_name}
                             onSelect={() => handleMentionSelect(member)}
                           >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: 'primary.main', opacity: 0.1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                                 {member.profiles.display_name.charAt(0)}
-                              </Box>
+                              </div>
                               <span>{member.profiles.display_name}</span>
-                            </Box>
+                            </div>
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -312,13 +310,13 @@ export const CreatePostDialog = ({
                   </Command>
                 </PopoverContent>
               </Popover>
-            </Box>
+            </div>
 
             {mentions.length > 0 && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <div className="flex flex-wrap gap-2">
                 {mentions.map((mention) => (
                   <Badge key={mention.user_id} variant="secondary">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <div className="flex items-center gap-1">
                       @{mention.username}
                       <button
                         onClick={() => removeMention(mention.user_id)}
@@ -326,34 +324,34 @@ export const CreatePostDialog = ({
                       >
                         <X style={{ height: 12, width: 12 }} />
                       </button>
-                    </Box>
+                    </div>
                   </Badge>
                 ))}
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
 
           {/* Post Options */}
           {canPin && (
             <>
               <Separator />
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex items-center gap-2">
                 <Switch
                   id="pin-post"
                   checked={isPinned}
                   onCheckedChange={setIsPinned}
                 />
                 <Label htmlFor="pin-post">
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className="flex items-center gap-2">
                     <Pin style={{ height: 16, width: 16 }} />
                     Pin this post to the top
-                  </Box>
+                  </div>
                 </Label>
-              </Box>
+              </div>
             </>
           )}
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+          <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
@@ -363,8 +361,8 @@ export const CreatePostDialog = ({
             >
               {isCreating ? 'Creating...' : 'Create Post'}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

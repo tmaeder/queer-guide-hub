@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Box, Typography } from "@mui/material";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { listFrom, insertInto, updateRow, deleteRow } from "@/hooks/usePageFetchers";
 import {
   Plus,
   Edit2,
@@ -24,11 +24,11 @@ import {
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { validateNewsSource } from "@/utils/contentValidation";
+import { LEGACY_NEWS_TRIGGER_ENABLED } from "@/lib/featureFlags";
 
 type NewsSource = Tables<'news_sources'>;
 
 export function NewsSourcesManager() {
-  const { toast } = useToast();
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -51,24 +51,17 @@ export function NewsSourcesManager() {
 
   useEffect(() => {
     fetchSources();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
 
   const fetchSources = async () => {
     try {
-      const { data, error } = await supabase
-        .from('news_sources')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSources(data || []);
-    } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch news sources",
-        variant: "destructive",
+      const data = await listFrom<NewsSource>('news_sources', '*', {
+        col: 'created_at',
+        ascending: false,
       });
+      setSources(data);
+    } catch (_error) {
+      toast.error('Error: Failed to fetch news sources');
     } finally {
       setLoading(false);
     }
@@ -87,50 +80,27 @@ export function NewsSourcesManager() {
         fieldErrors[err.field] = err.message;
       });
       setValidationErrors(fieldErrors);
-      toast({
-        title: "Validation Error",
-        description: result.errors[0]?.message || "Please fix the highlighted fields",
-        variant: "destructive",
-      });
+      toast.error(`Validation Error: ${result.errors}`);
       return;
     }
     setValidationErrors({});
 
     try {
       if (editingSource) {
-        const { error } = await supabase
-          .from('news_sources')
-          .update(formData)
-          .eq('id', editingSource.id);
-
+        const { error } = await updateRow('news_sources', editingSource.id, formData);
         if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "News source updated successfully",
-        });
+        toast.success('Success: News source updated successfully');
       } else {
-        const { error } = await supabase
-          .from('news_sources')
-          .insert([formData]);
-
+        const { error } = await insertInto('news_sources', formData);
         if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "News source created successfully",
-        });
+        toast.success('Success: News source created successfully');
       }
 
       setDialogOpen(false);
       resetForm();
       fetchSources();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
+      toast.error(`Error: ${error}`);
     }
   };
 
@@ -167,34 +137,21 @@ export function NewsSourcesManager() {
     if (!confirm("Are you sure you want to delete this news source?")) return;
 
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .delete()
-        .eq('id', sourceId);
+      const { error } = await deleteRow('news_sources', sourceId);
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "News source deleted successfully",
-      });
+      toast.success('Success: News source deleted successfully');
 
       fetchSources();
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete news source",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to delete news source');
     }
   };
 
   const handleToggleActive = async (sourceId: string, isActive: boolean) => {
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .update({ is_active: !isActive })
-        .eq('id', sourceId);
+      const { error } = await updateRow('news_sources', sourceId, { is_active: !isActive });
 
       if (error) throw error;
 
@@ -205,32 +162,25 @@ export function NewsSourcesManager() {
 
       fetchSources();
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to update news source",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to update news source');
     }
   };
 
-  const triggerFetch = async (sourceId: string) => {
+  const triggerFetch = async (_sourceId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('fetch-news', {
-        body: { sourceId }
+      const { error } = await supabase.functions.invoke('pipeline-executor', {
+        body: {
+          action: 'start',
+          pipeline_name: 'news-ingestion',
+          context: { triggered_by: 'admin-news-sources-manual' },
+        },
       });
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "News fetch triggered successfully",
-      });
+      toast.success('Manual ingestion enqueued: Run progress visible at /admin/pipelines?tab=news');
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to trigger news fetch",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to enqueue news ingestion');
     }
   };
 
@@ -255,28 +205,20 @@ export function NewsSourcesManager() {
     if (!editingSource) return;
 
     try {
-      const { error } = await supabase
-        .from('news_sources')
-        .update({ keywords: editingKeywords })
-        .eq('id', editingSource.id);
+      const { error } = await updateRow('news_sources', editingSource.id, {
+        keywords: editingKeywords,
+      });
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Keywords updated successfully",
-      });
+      toast.success('Success: Keywords updated successfully');
 
       setKeywordsDialogOpen(false);
       setEditingSource(null);
       setEditingKeywords([]);
       fetchSources();
     } catch (_error) {
-      toast({
-        title: "Error",
-        description: "Failed to update keywords",
-        variant: "destructive",
-      });
+      toast.error('Error: Failed to update keywords');
     }
   };
 
@@ -295,24 +237,24 @@ export function NewsSourcesManager() {
   const apiSourcesCount = sources.filter(s => s.source_type === 'api').length;
 
   if (loading) {
-    return <Box sx={{ textAlign: 'center', p: 2 }}>Loading news sources...</Box>;
+    return <div className="text-center p-4">Loading news sources...</div>;
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Header with stats */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>News Sources Management</Typography>
-          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h6 className="font-semibold text-lg">News Sources Management</h6>
+          <p className="text-sm text-muted-foreground">
             Manage RSS feeds and API sources for automated news import
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
-              <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Plus className="h-4 w-4 mr-2" />
               Add Source
             </Button>
           </DialogTrigger>
@@ -323,9 +265,9 @@ export function NewsSourcesManager() {
               </DialogTitle>
             </DialogHeader>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label htmlFor="name">Source Name</Label>
                   <Input
                     id="name"
@@ -334,10 +276,10 @@ export function NewsSourcesManager() {
                     required
                     aria-invalid={!!validationErrors.name}
                   />
-                  {validationErrors.name && <Typography sx={{ fontSize: '0.75rem', color: 'error.main', mt: 0.5 }}>{validationErrors.name}</Typography>}
-                </Box>
+                  {validationErrors.name && <p className="text-xs text-destructive mt-1">{validationErrors.name}</p>}
+                </div>
 
-                <Box>
+                <div>
                   <Label htmlFor="source_type">Source Type</Label>
                   <Select
                     value={formData.source_type}
@@ -353,10 +295,10 @@ export function NewsSourcesManager() {
                       <SelectItem value="social">Social Media</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
-              <Box>
+              <div>
                 <Label htmlFor="category">Category</Label>
                 <Input
                   id="category"
@@ -366,10 +308,10 @@ export function NewsSourcesManager() {
                   required
                   aria-invalid={!!validationErrors.category}
                 />
-                {validationErrors.category && <Typography sx={{ fontSize: '0.75rem', color: 'error.main', mt: 0.5 }}>{validationErrors.category}</Typography>}
-              </Box>
+                {validationErrors.category && <p className="text-xs text-destructive mt-1">{validationErrors.category}</p>}
+              </div>
 
-              <Box>
+              <div>
                 <Label htmlFor="url">URL</Label>
                 <Input
                   id="url"
@@ -380,11 +322,11 @@ export function NewsSourcesManager() {
                   required
                   aria-invalid={!!validationErrors.url}
                 />
-                {validationErrors.url && <Typography sx={{ fontSize: '0.75rem', color: 'error.main', mt: 0.5 }}>{validationErrors.url}</Typography>}
-              </Box>
+                {validationErrors.url && <p className="text-xs text-destructive mt-1">{validationErrors.url}</p>}
+              </div>
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <Label htmlFor="fetch_frequency">Fetch Frequency (minutes)</Label>
                   <Input
                     id="fetch_frequency"
@@ -393,70 +335,70 @@ export function NewsSourcesManager() {
                     value={formData.fetch_frequency}
                     onChange={(e) => setFormData({...formData, fetch_frequency: parseInt(e.target.value)})}
                   />
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 3 }}>
+                <div className="flex items-center gap-2 pt-6">
                   <Switch
                     id="is_active"
                     checked={formData.is_active}
                     onCheckedChange={(checked) => setFormData({...formData, is_active: checked})}
                   />
                   <Label htmlFor="is_active">Active</Label>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex items-center gap-2">
                 <Switch
                   id="auto_publish"
                   checked={formData.auto_publish}
                   onCheckedChange={(checked) => setFormData({...formData, auto_publish: checked})}
                 />
                 <Label htmlFor="auto_publish">Auto-publish (skip review queue)</Label>
-                <Typography variant="caption" sx={{ color: 'var(--muted-foreground)', ml: 1 }}>
+                <span className="text-xs text-muted-foreground ml-2">
                   Trusted sources only — new sources are forced through review for the first 24 hours regardless.
-                </Typography>
-              </Box>
+                </span>
+              </div>
 
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+              <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit">
                   {editingSource ? 'Update' : 'Create'}
                 </Button>
-              </Box>
+              </div>
             </form>
           </DialogContent>
         </Dialog>
-      </Box>
+      </div>
 
       {/* Stats */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
+      <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{sources.length}</Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Total Sources</Typography>
+            <div className="text-2xl font-bold">{sources.length}</div>
+            <span className="text-xs text-muted-foreground">Total Sources</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a' }}>{activeSourcesCount}</Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Active</Typography>
+            <div className="text-2xl font-bold" style={{ color: '#16a34a' }}>{activeSourcesCount}</div>
+            <span className="text-xs text-muted-foreground">Active</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{rssSourcesCount}</Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>RSS Feeds</Typography>
+            <div className="text-2xl font-bold">{rssSourcesCount}</div>
+            <span className="text-xs text-muted-foreground">RSS Feeds</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <Box sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{apiSourcesCount}</Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>API Sources</Typography>
+            <div className="text-2xl font-bold">{apiSourcesCount}</div>
+            <span className="text-xs text-muted-foreground">API Sources</span>
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       {/* Sources List */}
       <Card>
@@ -468,32 +410,32 @@ export function NewsSourcesManager() {
         </CardHeader>
         <CardContent>
           {sources.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4, color: 'var(--muted-foreground)' }}>
+            <div className="text-center py-8 text-muted-foreground">
               No news sources configured yet. Add your first source to get started.
-            </Box>
+            </div>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               {sources.map((source) => (
                 <Collapsible key={source.id}>
                   <Card style={{ transition: 'border-color 0.2s', borderColor: source.is_active ? '#bbf7d0' : '#e5e7eb' }}>
                     <CardContent style={{ padding: 16 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             {source.source_type === 'rss' || source.url?.includes('feed') ? (
-                              <Rss style={{ height: 16, width: 16, color: '#f97316' }} />
+                              <Rss className="h-4 w-4" style={{ color: '#f97316' }} />
                             ) : (
-                              <Globe style={{ height: 16, width: 16, color: '#3b82f6' }} />
+                              <Globe className="h-4 w-4" style={{ color: '#3b82f6' }} />
                             )}
-                            <Box component="span" sx={{ fontWeight: 500 }}>{source.name}</Box>
-                          </Box>
+                            <span className="font-medium">{source.name}</span>
+                          </div>
 
                           <Badge variant={source.is_active ? "default" : "secondary"}>
                             {source.is_active ? 'Active' : 'Inactive'}
                           </Badge>
 
                           {(source as NewsSource & { auto_publish?: boolean }).auto_publish && (
-                            <Badge variant="default" style={{ background: '#b60d3d' }}>
+                            <Badge variant="default" style={{ background: 'hsl(var(--foreground))' }}>
                               Auto-publish
                             </Badge>
                           )}
@@ -503,28 +445,30 @@ export function NewsSourcesManager() {
                           </Badge>
 
                           {source.keywords && source.keywords.length > 0 && (
-                            <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
-                              <Tags style={{ height: 12, width: 12, marginRight: 4 }} />
+                            <Badge variant="outline" className="text-xs">
+                              <Tags className="h-3 w-3 mr-1" />
                               {source.keywords.length} keywords
                             </Badge>
                           )}
-                        </Box>
+                        </div>
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <div className="flex items-center gap-2">
                           <Switch
                             checked={source.is_active}
                             onCheckedChange={() => handleToggleActive(source.id, source.is_active)}
                           />
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => triggerFetch(source.id)}
-                            disabled={!source.is_active}
-                            aria-label={`Fetch news from ${source.name}`}
-                          >
-                            <Play style={{ height: 12, width: 12 }} aria-hidden="true" />
-                          </Button>
+                          {LEGACY_NEWS_TRIGGER_ENABLED && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => triggerFetch(source.id)}
+                              disabled={!source.is_active}
+                              aria-label={`Fetch news from ${source.name} (legacy path)`}
+                            >
+                              <Play className="h-3 w-3" aria-hidden="true" />
+                            </Button>
+                          )}
 
                           <Button
                             variant="outline"
@@ -532,7 +476,7 @@ export function NewsSourcesManager() {
                             onClick={() => handleKeywordsEdit(source)}
                             aria-label={`Edit keywords for ${source.name}`}
                           >
-                            <Tags style={{ height: 12, width: 12 }} aria-hidden="true" />
+                            <Tags className="h-3 w-3" aria-hidden="true" />
                           </Button>
 
                           <Button
@@ -541,7 +485,7 @@ export function NewsSourcesManager() {
                             onClick={() => handleEdit(source)}
                             aria-label={`Edit ${source.name}`}
                           >
-                            <Edit2 style={{ height: 12, width: 12 }} aria-hidden="true" />
+                            <Edit2 className="h-3 w-3" aria-hidden="true" />
                           </Button>
 
                           <Button
@@ -550,7 +494,7 @@ export function NewsSourcesManager() {
                             onClick={() => handleDelete(source.id)}
                             aria-label={`Delete ${source.name}`}
                           >
-                            <Trash2 style={{ height: 12, width: 12 }} aria-hidden="true" />
+                            <Trash2 className="h-3 w-3" aria-hidden="true" />
                           </Button>
 
                           <CollapsibleTrigger asChild>
@@ -560,74 +504,74 @@ export function NewsSourcesManager() {
                               onClick={() => toggleSourceExpanded(source.id)}
                             >
                               {expandedSources.has(source.id) ? (
-                                <ChevronUp style={{ height: 16, width: 16 }} />
+                                <ChevronUp className="h-4 w-4" />
                               ) : (
-                                <ChevronDown style={{ height: 16, width: 16 }} />
+                                <ChevronDown className="h-4 w-4" />
                               )}
                             </Button>
                           </CollapsibleTrigger>
-                        </Box>
-                      </Box>
+                        </div>
+                      </div>
 
                       <CollapsibleContent style={{ marginTop: 16 }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2, fontSize: '0.875rem' }}>
-                          <Box>
-                            <Box component="span" sx={{ fontWeight: 500 }}>URL:</Box>
-                            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', wordBreak: 'break-all' }}>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium">URL:</span>
+                            <p className="text-sm text-muted-foreground break-all">
                               {source.url || 'N/A'}
-                            </Typography>
-                          </Box>
+                            </p>
+                          </div>
 
-                          <Box>
-                            <Box component="span" sx={{ fontWeight: 500 }}>Frequency:</Box>
-                            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+                          <div>
+                            <span className="font-medium">Frequency:</span>
+                            <p className="text-sm text-muted-foreground">
                               Every {source.fetch_frequency} minutes
-                            </Typography>
-                          </Box>
+                            </p>
+                          </div>
 
-                          <Box>
-                            <Box component="span" sx={{ fontWeight: 500 }}>Last Fetch:</Box>
-                            <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+                          <div>
+                            <span className="font-medium">Last Fetch:</span>
+                            <p className="text-sm text-muted-foreground">
                               {source.last_fetched_at
                                 ? new Date(source.last_fetched_at).toLocaleString()
                                 : 'Never'
                               }
-                            </Typography>
-                          </Box>
+                            </p>
+                          </div>
 
                           {source.keywords && source.keywords.length > 0 && (
-                            <Box sx={{ gridColumn: { md: 'span 3' } }}>
-                              <Box component="span" sx={{ fontWeight: 500 }}>Keywords:</Box>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                            <div className="md:col-span-3">
+                              <span className="font-medium">Keywords:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
                                 {source.keywords.map((keyword, index) => (
-                                  <Badge key={index} variant="secondary" style={{ fontSize: '0.75rem' }}>
+                                  <Badge key={index} variant="secondary" className="text-xs">
                                     {keyword}
                                   </Badge>
                                 ))}
-                              </Box>
-                            </Box>
+                              </div>
+                            </div>
                           )}
 
                           {source.status && (
-                            <Box sx={{ gridColumn: { md: 'span 3' } }}>
-                              <Box component="span" sx={{ fontWeight: 500 }}>Status:</Box>
-                              <Typography variant="body2" sx={{
+                            <div className="md:col-span-3">
+                              <span className="font-medium">Status:</span>
+                              <p className="text-sm" style={{
                                 color: source.status === 'error' ? '#dc2626' :
                                   source.status === 'processing' ? '#ca8a04' :
                                   '#16a34a'
                               }}>
                                 {source.status}
                                 {source.last_error && ` - ${source.last_error}`}
-                              </Typography>
-                            </Box>
+                              </p>
+                            </div>
                           )}
-                        </Box>
+                        </div>
                       </CollapsibleContent>
                     </CardContent>
                   </Card>
                 </Collapsible>
               ))}
-            </Box>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -639,8 +583,8 @@ export function NewsSourcesManager() {
             <DialogTitle>Manage Keywords for {editingSource?.name}</DialogTitle>
           </DialogHeader>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-2">
               <Input
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
@@ -648,9 +592,9 @@ export function NewsSourcesManager() {
                 onKeyPress={(e) => e.key === 'Enter' && addKeyword()}
               />
               <Button onClick={addKeyword}>Add</Button>
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <div className="flex flex-wrap gap-2">
               {editingKeywords.map((keyword, index) => (
                 <Badge key={index} variant="secondary" style={{ cursor: 'pointer' }}>
                   {keyword}
@@ -662,17 +606,17 @@ export function NewsSourcesManager() {
                   </button>
                 </Badge>
               ))}
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setKeywordsDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={saveKeywords}>Save Keywords</Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }

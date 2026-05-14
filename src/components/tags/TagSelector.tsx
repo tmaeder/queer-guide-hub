@@ -8,8 +8,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs } from '@/components/ui/tabs';
 import { X, Plus, Search, Tag as TagIcon } from 'lucide-react';
 import { useCentralizedTags, CentralizedTag } from '@/hooks/useCentralizedTags';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface TagSelectorProps {
   selectedTags: string[];
@@ -55,20 +53,27 @@ export const TagSelector = ({
   const removeTag = (tagName: string) => {
     onTagsChange(selectedTags.filter(tag => tag !== tagName));
   };
+  // Filter out the placeholder "none"/empty rows that leaked in from
+  // legacy ingestion. They have no semantic value as a filter facet.
+  const dropEmpty = <T extends { name?: string | null }>(tags: T[]): T[] =>
+    tags.filter((t) => t.name && t.name.toLowerCase() !== 'none');
+
   const getTagsToShow = () => {
     if (searchQuery.trim() && searchResults.length > 0) {
-      return searchResults;
+      return dropEmpty(searchResults);
     }
     if (activeCategory === 'all') {
-      return allTags.slice(0, 50); // Limit for performance
+      return dropEmpty(allTags).slice(0, 50);
     }
-    return tagsByCategory.find(cat => cat.category === activeCategory)?.tags || [];
+    return dropEmpty(
+      tagsByCategory.find(cat => cat.category === activeCategory)?.tags || [],
+    );
   };
-  return <Box className={className}>
+  return <div className={className}>
       <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Tags</Label>
 
       {/* Selected Tags */}
-      {selectedTags.length > 0 && <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1, mb: 1.5 }}>
+      {selectedTags.length > 0 && <div className="flex flex-wrap gap-2 mt-2 mb-3">
           {selectedTags.map(tagName => {
         const tag = allTags.find(t => t.name === tagName);
         return <Badge key={tagName} variant="secondary" style={{
@@ -88,69 +93,63 @@ export const TagSelector = ({
                 </Button>
               </Badge>;
       })}
-        </Box>}
+        </div>}
 
       {/* Tag Selector */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" role="combobox" aria-expanded={open} style={{ width: '100%', justifyContent: 'space-between' }} disabled={selectedTags.length >= maxTags}>
-            <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <span className="flex items-center gap-2">
               <Plus style={{ height: 16, width: 16 }} />
               {selectedTags.length >= maxTags ? `Maximum ${maxTags} tags selected` : placeholder}
-            </Box>
+            </span>
           </Button>
         </PopoverTrigger>
 
         <PopoverContent style={{ width: '100%', padding: 0 }} align="start">
-          <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="p-4 flex flex-col gap-4">
             {/* Search */}
-            <Box sx={{ position: 'relative' }}>
+            <div className="relative">
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
               <Input placeholder="Search tags..." value={searchQuery} onChange={e => handleSearch(e.target.value)} style={{ paddingLeft: 36 }} />
-            </Box>
+            </div>
 
             {/* Category Tabs */}
             <Tabs value={activeCategory} onValueChange={setActiveCategory}>
 
 
               <ScrollArea style={{ height: 300, marginTop: 16 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {getTagsToShow().map(tag => <Box key={tag.id} sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    p: 1,
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s',
-                    ...(selectedTags.includes(tag.name)
-                      ? { bgcolor: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)' }
-                      : { '&:hover': { bgcolor: 'var(--muted)' } })
-                  }} onClick={() => addTag(tag.name)}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                        <Box style={{ width: 12, height: 12, backgroundColor: tag.color }} />
-                        <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{tag.name}</Typography>
-                          {tag.description && <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                <div className="flex flex-col gap-2">
+                  {getTagsToShow().map(tag => <div
+                    key={tag.id}
+                    className={`flex items-center justify-between p-2 cursor-pointer transition-colors ${selectedTags.includes(tag.name) ? 'bg-primary/10' : 'hover:bg-muted'}`}
+                    onClick={() => addTag(tag.name)}
+                  >
+                      <div className="flex items-center gap-2 flex-1">
+                        <div style={{ width: 12, height: 12, backgroundColor: tag.color }} />
+                        <div className="flex-1">
+                          <p className="font-medium" style={{ fontSize: '0.875rem' }}>{tag.name}</p>
+                          {tag.description && <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
                               {tag.description}
-                            </Typography>}
-                        </Box>
-                      </Box>
+                            </p>}
+                        </div>
+                      </div>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>
+                      <div className="flex items-center gap-2 text-muted-foreground" style={{ fontSize: '0.75rem' }}>
                         <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
                           {tag.category}
                         </Badge>
                         {tag.usage_count > 0 && <span>({tag.usage_count})</span>}
-                      </Box>
-                    </Box>)}
-                </Box>
+                      </div>
+                    </div>)}
+                </div>
               </ScrollArea>
             </Tabs>
 
             {/* Custom Tag Input (if enabled) */}
-            {allowCustomTags && <Box sx={{ pt: 2 }}>
+            {allowCustomTags && <div className="pt-4">
                 <Label style={{ fontSize: '0.875rem' }}>Create custom tag</Label>
-                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                <div className="flex gap-2 mt-2">
                   <Input placeholder="Tag name..." onKeyPress={e => {
                 if (e.key === 'Enter') {
                   const value = e.currentTarget.value.trim();
@@ -160,15 +159,15 @@ export const TagSelector = ({
                   }
                 }
               }} />
-                </Box>
-              </Box>}
-          </Box>
+                </div>
+              </div>}
+          </div>
         </PopoverContent>
       </Popover>
 
       {/* Tag Count Info */}
-      <Typography sx={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', mt: 1 }}>
+      <p style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', marginTop: 4 }}>
         {selectedTags.length}/{maxTags} tags selected
-      </Typography>
-    </Box>;
+      </p>
+    </div>;
 };

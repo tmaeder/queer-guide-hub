@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { sendEmail } from "../_shared/email.ts";
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
@@ -148,4 +147,4 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-serve(handler);
+Deno.serve(handler);

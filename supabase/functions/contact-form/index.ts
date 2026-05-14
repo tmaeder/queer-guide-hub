@@ -1,8 +1,7 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsResponse, jsonResponse, errorResponse, getServiceClient } from "../_shared/supabase-client.ts";
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return corsResponse(req);
   if (req.method !== "POST") return errorResponse("Method not allowed", 405, req);
 

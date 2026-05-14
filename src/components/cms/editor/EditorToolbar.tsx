@@ -1,7 +1,5 @@
 import type { Editor } from '@tiptap/react';
-import MuiTooltip from '@mui/material/Tooltip';
-import MuiDivider from '@mui/material/Divider';
-import Box from '@mui/material/Box';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Bold,
   Italic,
@@ -21,12 +19,12 @@ import {
   Image,
   Table as TableIcon,
   Minus,
-  Youtube,
   Code,
   Highlighter,
   Paintbrush,
   Code2,
 } from 'lucide-react';
+import { Youtube } from '@/components/icons/brand';
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -50,57 +48,25 @@ interface TBProps {
 
 function ToolbarButton({ icon, label, isActive, disabled, onClick }: TBProps) {
   return (
-    <MuiTooltip
-      title={label}
-      placement="top"
-      enterDelay={300}
-      arrow
-      slotProps={{
-        tooltip: {
-          sx: {
-            bgcolor: '#333',
-            color: '#fff',
-            fontSize: '0.7rem',
-            fontWeight: 500,
-            borderRadius: '6px',
-            px: 1.25,
-            py: 0.5,
-          },
-        },
-        arrow: { sx: { color: '#333' } },
-      }}
-    >
-      <Box
-        component="button"
-        type="button"
-        disabled={disabled}
-        onClick={onClick}
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 32,
-          height: 32,
-          borderRadius: '6px',
-          border: 'none',
-          cursor: disabled ? 'default' : 'pointer',
-          opacity: disabled ? 0.4 : 1,
-          bgcolor: isActive ? 'primary.main' : 'transparent',
-          color: isActive ? 'primary.contrastText' : 'text.secondary',
-          transition: 'all 0.15s ease',
-          '&:hover': {
-            bgcolor: isActive ? 'primary.dark' : 'action.hover',
-          },
-          '& svg': {
-            width: 16,
-            height: 16,
-            flexShrink: 0,
-          },
-        }}
-      >
-        {icon}
-      </Box>
-    </MuiTooltip>
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onClick}
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-md border-0 transition-all duration-150 [&_svg]:w-4 [&_svg]:h-4 [&_svg]:flex-shrink-0 ${
+            disabled ? 'opacity-40 cursor-default' : 'cursor-pointer'
+          } ${
+            isActive
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-transparent text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          {icon}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top">{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -109,13 +75,7 @@ function ToolbarButton({ icon, label, isActive, disabled, onClick }: TBProps) {
 /* ------------------------------------------------------------------ */
 
 function ToolbarDivider() {
-  return (
-    <MuiDivider
-      orientation="vertical"
-      flexItem
-      sx={{ mx: 0.5, my: 0.5, borderColor: 'divider' }}
-    />
-  );
+  return <div className="self-stretch w-px mx-1 my-1 bg-border" />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -166,21 +126,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   /* ---- render ---- */
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 0.25,
-        px: 1,
-        py: 0.75,
-        borderBottom: 1,
-        borderColor: 'divider',
-        bgcolor: 'background.default',
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-      }}
-    >
+    <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-background rounded-t-lg">
       {/* ── Text formatting ──────────────────────────── */}
 
       <ToolbarButton
@@ -357,6 +303,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           editor.chain().focus().setColor(color).run();
         }}
       />
-    </Box>
+    </div>
   );
 }

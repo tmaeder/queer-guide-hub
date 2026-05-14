@@ -85,7 +85,7 @@ export function useStagingItems(
 
       if (error) {
         console.error('Failed to fetch staging page:', error);
-        return { items: [], total: 0, page: 1, per_page: perPage, total_pages: 0 };
+        throw error;
       }
 
       const result = data as unknown as StagingPageResult;
@@ -134,14 +134,24 @@ export function useDuplicatePairs(entityType: string | null) {
 
 // ==================== Entity Lookup ====================
 
+const ENTITY_TABLE_MAP: Record<string, string> = {
+  venue: 'venues',
+  event: 'events',
+  personality: 'personalities',
+  news_article: 'news_articles',
+  city: 'cities',
+  country: 'countries',
+};
+
 export function useEntityById(entityType: string | null, entityId: string | null) {
   return useQuery({
     queryKey: ['entity', entityType, entityId],
     queryFn: async (): Promise<Record<string, unknown> | null> => {
       if (!entityType || !entityId) return null;
+      const table = ENTITY_TABLE_MAP[entityType] || entityType;
 
       const { data, error } = await supabase
-        .from(entityType as 'venues')
+        .from(table as 'venues')
         .select('*')
         .eq('id', entityId)
         .single();

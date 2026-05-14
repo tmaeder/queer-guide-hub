@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
@@ -41,7 +40,7 @@ const BITRATE_LADDER = {
   '360p': { width: 640, height: 360, bitrate: 900 }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) });
   }

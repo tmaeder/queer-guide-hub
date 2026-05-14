@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 type ModerationFlag = Database['public']['Tables']['moderation_flags']['Row'];
 type _ModerationFlagInsert = Database['public']['Tables']['moderation_flags']['Insert'];

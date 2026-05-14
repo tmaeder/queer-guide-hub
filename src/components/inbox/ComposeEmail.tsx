@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -14,7 +12,7 @@ interface ComposeEmailProps {
   onCancel?: () => void;
 }
 
-export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onCancel }) => {
+export const ComposeEmail = ({ replyTo, onSent, onCancel }: ComposeEmailProps) => {
   const { sendEmail, sending } = useMailbox();
   const { fullEmail } = useMailboxAddress();
 
@@ -46,21 +44,17 @@ export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onC
 
   return (
     <Card className="p-4">
-      <Typography variant="h6" fontWeight={700} gutterBottom>
-        {replyTo ? 'Reply' : 'New Email'}
-      </Typography>
+      <h6 className="text-base font-bold mb-2">{replyTo ? 'Reply' : 'New Email'}</h6>
 
       {fullEmail && (
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+        <span className="text-xs text-muted-foreground mb-4 block">
           From: {fullEmail}
-        </Typography>
+        </span>
       )}
 
       <div className="space-y-3">
         <div>
-          <Typography variant="caption" fontWeight={600}>
-            To
-          </Typography>
+          <span className="text-xs font-semibold">To</span>
           <Input
             type="email"
             placeholder="recipient@example.com"
@@ -71,9 +65,7 @@ export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onC
         </div>
 
         <div>
-          <Typography variant="caption" fontWeight={600}>
-            Subject
-          </Typography>
+          <span className="text-xs font-semibold">Subject</span>
           <Input
             placeholder="Email subject"
             value={subject}
@@ -83,9 +75,7 @@ export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onC
         </div>
 
         <div>
-          <Typography variant="caption" fontWeight={600}>
-            Message
-          </Typography>
+          <span className="text-xs font-semibold">Message</span>
           <textarea
             className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             placeholder="Write your message..."
@@ -96,12 +86,10 @@ export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onC
         </div>
 
         {error && (
-          <Typography variant="body2" color="error">
-            {error}
-          </Typography>
+          <p className="text-sm text-destructive">{error}</p>
         )}
 
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+        <div className="flex gap-2 justify-end">
           {onCancel && (
             <Button variant="outline" onClick={onCancel} disabled={sending}>
               Cancel
@@ -115,7 +103,7 @@ export const ComposeEmail: React.FC<ComposeEmailProps> = ({ replyTo, onSent, onC
             )}
             Send
           </Button>
-        </Box>
+        </div>
       </div>
     </Card>
   );

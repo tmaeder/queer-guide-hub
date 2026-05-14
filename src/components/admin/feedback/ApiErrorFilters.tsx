@@ -1,5 +1,3 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Input } from '@/components/ui/input';
 import { Search, X } from 'lucide-react';
 
@@ -43,16 +41,6 @@ const SEVERITY_COLORS: Record<ErrorSeverity, string> = {
   INFO: '#6b7280',
 };
 
-/**
- * Narrow filter strip for the API Errors tab. Deliberately smaller than
- * the Community-side `FeedbackFilters` — errors have fewer useful facets
- * (service/severity, source, resolved) and the kanban status itself
- * answers the "where is this in the pipeline" question.
- *
- * Flat per the project design system: no borders on chips, magenta-only
- * accent for active state, colored dot for severity so the strip reads
- * at a glance even without reading the label.
- */
 export function ApiErrorFilters({ state, update, counts }: Props) {
   const hasActive =
     state.q.length > 0 ||
@@ -65,32 +53,13 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        mb: 2,
-        flexWrap: 'wrap',
-      }}
-    >
-      {/* Search — no border, only a bottom hairline on focus */}
-      <Box
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 0.5,
-          flex: '1 1 220px',
-          minWidth: 180,
-          maxWidth: 320,
-          borderBottom: 1,
-          borderColor: state.q ? 'primary.main' : 'divider',
-          py: 0.25,
-          transition: 'border-color 0.15s',
-          '&:focus-within': { borderColor: 'primary.main' },
-        }}
+    <div className="flex items-center gap-3 mb-4 flex-wrap">
+      {/* Search */}
+      <div
+        className="inline-flex items-center gap-1 flex-[1_1_220px] min-w-[180px] max-w-[320px] py-[1px] border-b transition-colors focus-within:border-primary"
+        style={{ borderColor: state.q ? 'hsl(var(--primary))' : 'hsl(var(--border))' }}
       >
-        <Search style={{ width: 14, height: 14, color: 'var(--muted-foreground)' }} />
+        <Search style={{ width: 14, height: 14 }} className="text-muted-foreground" />
         <Input
           value={state.q}
           onChange={(e) => update({ q: e.target.value })}
@@ -122,17 +91,13 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
             <X style={{ width: 13, height: 13 }} />
           </button>
         )}
-      </Box>
+      </div>
 
       {/* Source chips */}
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: 0.5 }}
-        >
+      <div className="inline-flex items-center gap-[6px]">
+        <span className="text-muted-foreground uppercase" style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}>
           Source
-        </Typography>
+        </span>
         {(Object.keys(SOURCE_LABELS) as ErrorSource[]).map((src) => {
           const active = state.sources.includes(src);
           const n = counts?.bySource[src];
@@ -146,17 +111,13 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
             />
           );
         })}
-      </Box>
+      </div>
 
       {/* Severity chips */}
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: 0.5 }}
-        >
+      <div className="inline-flex items-center gap-[6px]">
+        <span className="text-muted-foreground uppercase" style={{ fontSize: '0.65rem', letterSpacing: 0.5 }}>
           Severity
-        </Typography>
+        </span>
         {(Object.keys(SEVERITY_COLORS) as ErrorSeverity[]).map((sev) => {
           const active = state.severities.includes(sev);
           const n = counts?.bySeverity[sev];
@@ -171,7 +132,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
             />
           );
         })}
-      </Box>
+      </div>
 
       {/* Hide resolved toggle */}
       <FilterChip
@@ -200,7 +161,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
           clear
         </button>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -226,7 +187,7 @@ function FilterChip({
         background: 'transparent',
         padding: '2px 6px',
         cursor: 'pointer',
-        color: active ? 'hsl(var(--accent-warm))' : 'var(--muted-foreground)',
+        color: active ? 'hsl(var(--foreground))' : 'var(--muted-foreground)',
         fontWeight: active ? 700 : 500,
         fontSize: '0.72rem',
         letterSpacing: 0.2,
@@ -238,7 +199,7 @@ function FilterChip({
         borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
       }}
       onMouseEnter={(e) => {
-        if (!active) e.currentTarget.style.color = 'hsl(var(--accent-warm))';
+        if (!active) e.currentTarget.style.color = 'hsl(var(--foreground))';
       }}
       onMouseLeave={(e) => {
         if (!active) e.currentTarget.style.color = 'var(--muted-foreground)';

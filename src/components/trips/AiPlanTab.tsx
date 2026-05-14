@@ -1,10 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
-import { Sparkles, Check, Send, Info } from 'lucide-react';
+import { Sparkles, Check, Send, Info, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +7,8 @@ import { useTripMutations, type TripWithDetails } from '@/hooks/useTrips';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
   useTripConcierge,
   useSendConciergeMessage,
@@ -72,7 +69,7 @@ export function AiPlanTab({ trip }: Props) {
     });
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSend();
@@ -124,45 +121,37 @@ export function AiPlanTab({ trip }: Props) {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 520, md: 640 } }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+    <div className="flex flex-col h-[520px] md:h-[640px]">
+      <div className="flex items-center gap-2 mb-2">
         <Sparkles size={18} style={{ color: 'var(--primary)' }} />
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        <h6 className="font-bold text-lg">
           {t('trips.ai.conciergeTitle', 'AI concierge')}
-        </Typography>
-      </Box>
-      <Typography color="text.secondary" sx={{ fontSize: '0.875rem', mb: 2 }}>
+        </h6>
+      </div>
+      <p className="text-sm mb-4 text-muted-foreground">
         {t(
           'trips.ai.conciergeHint',
           'Ask anything about this trip — the concierge remembers the conversation and can propose places you can apply with one click.',
         )}
-      </Typography>
+      </p>
 
-      <Box
+      <div
         ref={scrollRef}
-        sx={{
-          flex: 1,
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.5,
-          pr: 1,
-          mb: 2,
-        }}
+        className="flex-1 overflow-y-auto flex flex-col gap-3 pr-2 mb-4"
       >
         {isLoading && (
-          <Box sx={{ py: 2, textAlign: 'center', color: 'text.secondary' }}>
-            <CircularProgress size={16} />
-          </Box>
+          <div className="py-4 text-center text-muted-foreground">
+            <Loader2 size={16} className="animate-spin inline" />
+          </div>
         )}
 
         {!isLoading && (!messages || messages.length === 0) && (
-          <Box sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+          <div className="text-sm text-muted-foreground">
             {t(
               'trips.ai.startHint',
               'Try: "5 days of queer Lisbon under €1500, more nightlife than daytime, at least one sober option".',
             )}
-          </Box>
+          </div>
         )}
 
         {(messages ?? []).map((m) => {
@@ -171,121 +160,91 @@ export function AiPlanTab({ trip }: Props) {
           const placeCount =
             draft?.days.reduce((sum, d) => sum + d.places.length, 0) ?? 0;
           return (
-            <Box
+            <div
               key={m.id}
-              sx={{
-                display: 'flex',
-                flexDirection: mine ? 'row-reverse' : 'row',
-              }}
+              className={`flex ${mine ? 'flex-row-reverse' : 'flex-row'}`}
             >
-              <Box
-                sx={{
-                  maxWidth: '85%',
-                  p: 1.25,
-                  bgcolor: mine ? 'primary.main' : 'action.hover',
-                  color: mine ? 'primary.contrastText' : 'text.primary',
-                }}
+              <div
+                className={`max-w-[85%] p-3 ${mine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}`}
               >
-                <Typography sx={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
+                <p className="text-sm whitespace-pre-wrap">
                   {m.content}
-                </Typography>
+                </p>
 
                 {!mine && draft && draft.days.length > 0 && (
-                  <Box sx={{ mt: 1.25, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                  <div className="mt-3 flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold">
                         {t('trips.ai.draftTitle', 'Proposed itinerary')}
-                      </Typography>
-                      <Chip
-                        size="small"
-                        label={t('trips.ai.draftCount', {
+                      </span>
+                      <Badge variant="secondary">
+                        {t('trips.ai.draftCount', {
                           count: placeCount,
                           defaultValue: '{{count}} places',
                         })}
-                      />
-                    </Box>
+                      </Badge>
+                    </div>
                     {draft.days.map((day) => (
-                      <Card key={day.date} variant="outlined">
-                        <CardContent sx={{ p: 1.25, '&:last-child': { pb: 1.25 } }}>
-                          <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                      <Card key={day.date} className="border border-border">
+                        <CardContent className="p-3">
+                          <span className="text-xs font-bold flex items-center gap-2">
                             {day.date}
                             {!tripDayByDate.has(day.date) && (
-                              <Chip
-                                size="small"
-                                label={t('trips.ai.outsideDates', 'out of range')}
-                                sx={{ ml: 1 }}
-                                icon={<Info size={12} />}
-                              />
+                              <Badge variant="secondary" className="ml-1 inline-flex items-center gap-1">
+                                <Info size={12} />
+                                {t('trips.ai.outsideDates', 'out of range')}
+                              </Badge>
                             )}
-                          </Typography>
-                          <Box component="ul" sx={{ pl: 2, m: 0, mt: 0.5 }}>
+                          </span>
+                          <ul className="pl-4 m-0 mt-1 list-disc">
                             {day.places.map((p, i) => (
-                              <Box component="li" key={i} sx={{ fontSize: '0.8125rem' }}>
+                              <li key={i} className="text-[0.8125rem]">
                                 {p.custom_name ?? p.venue_id ?? p.event_id ?? '—'}
                                 {p.notes && (
-                                  <Typography
-                                    component="span"
-                                    sx={{
-                                      color: 'text.secondary',
-                                      ml: 1,
-                                      fontSize: '0.75rem',
-                                    }}
-                                  >
+                                  <span className="text-muted-foreground ml-2 text-xs">
                                     — {p.notes}
-                                  </Typography>
+                                  </span>
                                 )}
-                              </Box>
+                              </li>
                             ))}
-                          </Box>
+                          </ul>
                         </CardContent>
                       </Card>
                     ))}
-                    <Box>
+                    <div>
                       <Button
                         variant="brand"
                         onClick={() => applyDraft(m, draft)}
                         disabled={applyingId === m.id}
                       >
                         {applyingId === m.id ? (
-                          <CircularProgress size={14} sx={{ color: 'currentColor', mr: 1 }} />
+                          <Loader2 size={14} className="animate-spin mr-1.5" />
                         ) : (
                           <Check size={14} style={{ marginRight: 6 }} />
                         )}
                         {t('trips.ai.apply', 'Apply to trip')}
                       </Button>
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           );
         })}
 
         {send.isPending && (
-          <Box sx={{ display: 'flex' }}>
-            <Box
-              sx={{
-                p: 1.25,
-                bgcolor: 'action.hover',
-                color: 'text.secondary',
-                fontSize: '0.875rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-              }}
-            >
-              <CircularProgress size={12} />
+          <div className="flex">
+            <div className="p-3 bg-muted text-muted-foreground text-sm flex items-center gap-2">
+              <Loader2 size={12} className="animate-spin" />
               {t('trips.ai.thinking', 'Concierge is thinking…')}
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
-        <TextField
-          multiline
-          maxRows={5}
-          fullWidth
+      <div className="flex gap-2 items-end">
+        <Textarea
+          rows={1}
           placeholder={t(
             'trips.ai.inputPlaceholder',
             'Ask the concierge anything about this trip…',
@@ -294,7 +253,7 @@ export function AiPlanTab({ trip }: Props) {
           onChange={(e) => setInput(e.target.value.slice(0, 2000))}
           onKeyDown={onKeyDown}
           disabled={send.isPending}
-          size="small"
+          className="flex-1 min-h-[40px] max-h-[120px]"
         />
         <Button
           variant="brand"
@@ -304,7 +263,7 @@ export function AiPlanTab({ trip }: Props) {
         >
           <Send size={14} />
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

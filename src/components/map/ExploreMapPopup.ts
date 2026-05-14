@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import type { MapMarker } from '@/hooks/useExploreMapData';
 
 /**
@@ -14,8 +15,15 @@ export function renderPopupHTML(marker: MapMarker): string {
   const muted = 'hsl(var(--muted-foreground))';
   const badge = 'background:hsl(var(--muted));color:hsl(var(--muted-foreground))';
 
+  const tViewDetails = i18next.t('map.popup.viewDetails', { defaultValue: 'View details' });
+  const tShare = i18next.t('map.popup.share', { defaultValue: 'Share' });
+
   const link = marker.linkTo
-    ? `<a href="${esc(marker.linkTo)}" style="color:#6366f1;text-decoration:none;font-size:11px;">View details →</a>`
+    ? `<a href="${esc(marker.linkTo)}" style="color:#6366f1;text-decoration:none;font-size:11px;">${esc(tViewDetails)} →</a>`
+    : '';
+
+  const share = marker.linkTo
+    ? `<button type="button" data-share-id="${esc(marker.id)}" data-share-name="${esc(marker.name)}" data-share-url="${esc(marker.linkTo ?? '')}" data-share-subtitle="${esc(marker.subtitle ?? '')}" style="margin-left:8px;background:none;border:none;padding:0;color:#6366f1;text-decoration:none;font-size:11px;cursor:pointer;font-family:inherit;">${esc(tShare)}</button>`
     : '';
 
   switch (marker.type) {
@@ -28,6 +36,7 @@ export function renderPopupHTML(marker: MapMarker): string {
           <span style="font-size:12px;color:${muted};">${esc(category)}</span><br/>
           ${city ? `<span style="font-size:11px;color:${muted};">${esc(city)}</span><br/>` : ''}
           ${link}
+          ${share}
         </div>`;
     }
 
@@ -41,6 +50,7 @@ export function renderPopupHTML(marker: MapMarker): string {
           ${venue ? `<span style="font-size:11px;color:${muted};">@ ${esc(venue)}</span><br/>` : ''}
           ${city ? `<span style="font-size:11px;color:${muted};">${esc(city)}</span><br/>` : ''}
           ${link}
+          ${share}
         </div>`;
     }
 
@@ -59,6 +69,7 @@ export function renderPopupHTML(marker: MapMarker): string {
           ${marker.subtitle ? `<span style="font-size:12px;color:${muted};">${esc(marker.subtitle)}</span><br/>` : ''}
           ${pop ? `<span style="font-size:11px;color:${muted};">${pop}</span><br/>` : ''}
           ${link}
+          ${share}
         </div>`;
     }
 
@@ -75,6 +86,7 @@ export function renderPopupHTML(marker: MapMarker): string {
           ${capital ? `<span style="font-size:12px;color:${muted};">Capital: ${esc(capital)}</span><br/>` : ''}
           ${continent ? `<span style="font-size:11px;color:${muted};">${esc(continent)}</span><br/>` : ''}
           ${link}
+          ${share}
         </div>`;
     }
 
@@ -94,6 +106,7 @@ export function renderPopupHTML(marker: MapMarker): string {
           ${city ? `<span style="font-size:12px;color:${muted};">${esc(city)}</span><br/>` : ''}
           ${desc ? `<span style="font-size:11px;color:${muted};">${desc}</span><br/>` : ''}
           ${link}
+          ${share}
         </div>`;
     }
 
@@ -106,6 +119,8 @@ export function renderPopupHTML(marker: MapMarker): string {
           <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
           ${marker.subtitle ? `<span style="font-size:12px;color:${muted};">${esc(marker.subtitle)}</span><br/>` : ''}
           ${badges ? `<span style="font-size:11px;">${badges}</span><br/>` : ''}
+          ${link}
+          ${share}
         </div>`;
     }
 
@@ -115,6 +130,7 @@ export function renderPopupHTML(marker: MapMarker): string {
           <strong style="font-size:14px;">${esc(marker.name)}</strong><br/>
           ${marker.subtitle ? `<span style="font-size:12px;color:${muted};">${esc(marker.subtitle)}</span>` : ''}
           ${link}
+          ${share}
         </div>`;
   }
 }

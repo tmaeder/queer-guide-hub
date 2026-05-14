@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useAdminRoles } from '@/hooks/useAdminRoles';
 import { useSecureRoleManagement } from '@/hooks/useSecureRoleManagement';
-
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import {
   AlertDialog,
@@ -22,12 +22,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { UserModerationActions } from './UserModerationActions';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import MuiDrawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import Divider from '@mui/material/Divider';
-import Skeleton from '@mui/material/Skeleton';
 import {
   X,
   MapPin,
@@ -38,7 +32,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
-import { brandColors } from '@/theme/muiTheme';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -70,7 +63,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: '#ef4444',
   moderator: '#f97316',
   editor: '#3b82f6',
-  contributor: brandColors.main,
+  contributor: 'hsl(var(--foreground))',
 };
 
 const ALL_ROLES: AppRole[] = ['admin', 'moderator', 'editor'];
@@ -99,8 +92,10 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
     if (!user) return;
     setRolesLoading(true);
     try {
-      const { data } = await supabase.from('user_roles').select('role').eq('user_id', user.user_id);
-      setUserRoles((data ?? []).map((r) => r.role));
+      const data = await listFromWhere<{ role: AppRole }>('user_roles', 'role', [
+        { col: 'user_id', val: user.user_id },
+      ]);
+      setUserRoles(data.map((r) => r.role));
     } finally {
       setRolesLoading(false);
     }
@@ -108,12 +103,19 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
 
   const fetchFullProfile = async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('profiles')
-      .select('bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth')
-      .eq('user_id', user.user_id)
-      .single();
-    setFullProfile(data);
+    const rows = await listFromWhere<{
+      bio: string | null;
+      gender_identity: string | null;
+      pronouns: string | null;
+      sexual_orientation: string | null;
+      location: string | null;
+      date_of_birth: string | null;
+    }>(
+      'profiles',
+      'bio, gender_identity, pronouns, sexual_orientation, location, date_of_birth',
+      [{ col: 'user_id', val: user.user_id }],
+    );
+    setFullProfile(rows[0] ?? null);
   };
 
   const handleAssignRole = async (role: AppRole) => {
@@ -158,246 +160,212 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
 
   return (
     <>
-      <MuiDrawer
-        open={open}
-        onClose={() => onOpenChange(false)}
-        anchor="right"
-        PaperProps={{
-          sx: {
-            width: { xs: '100%', sm: 520 },
-            p: 3,
-          },
-        }}
-      >
-        <IconButton
-          aria-label="Close"
-          onClick={() => onOpenChange(false)}
-          sx={{ position: 'absolute', right: 8, top: 8, color: 'text.secondary' }}
-          size="small"
-        >
-          <X style={{ width: 16, height: 16 }} />
-        </IconButton>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-[520px] p-6 overflow-y-auto">
+          <Button
+            variant="ghost"
+            aria-label="Close"
+            onClick={() => onOpenChange(false)}
+            className="absolute right-2 top-2 h-7 w-7 p-0 text-muted-foreground"
+          >
+            <X className="h-4 w-4" />
+          </Button>
 
-        {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, pr: 4 }}>
-          <Avatar style={{ width: 56, height: 56 }}>
-            <AvatarImage src={user.avatar_url ?? undefined} alt={displayName} />
-            <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
-              {displayName}
-            </Typography>
-            {user.pronouns && (
-              <Typography variant="body2" color="text.secondary">
-                {user.pronouns}
-              </Typography>
-            )}
-            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
-              {userRoles.map((role) => (
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-6 pr-8">
+            <Avatar className="h-14 w-14">
+              <AvatarImage src={user.avatar_url ?? undefined} alt={displayName} />
+              <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-semibold leading-tight">{displayName}</h2>
+              {user.pronouns && (
+                <p className="text-sm text-muted-foreground">{user.pronouns}</p>
+              )}
+              <div className="flex gap-1 mt-1 flex-wrap">
+                {userRoles.map((role) => (
+                  <Badge
+                    key={role}
+                    variant="outline"
+                    style={{
+                      borderColor: ROLE_COLORS[role],
+                      color: ROLE_COLORS[role],
+                      fontSize: '0.7rem',
+                    }}
+                  >
+                    {role}
+                  </Badge>
+                ))}
                 <Badge
-                  key={role}
-                  variant="outline"
-                  style={{
-                    borderColor: ROLE_COLORS[role],
-                    color: ROLE_COLORS[role],
-                    fontSize: '0.7rem',
-                  }}
+                  variant={
+                    (user.moderation_status ?? 'approved') === 'approved'
+                      ? 'default'
+                      : (user.moderation_status ?? 'approved') === 'suspended'
+                        ? 'secondary'
+                        : 'destructive'
+                  }
+                  style={{ fontSize: '0.7rem' }}
                 >
-                  {role}
+                  {user.moderation_status ?? 'approved'}
                 </Badge>
-              ))}
-              <Badge
-                variant={
-                  (user.moderation_status ?? 'approved') === 'approved'
-                    ? 'default'
-                    : (user.moderation_status ?? 'approved') === 'suspended'
-                      ? 'secondary'
-                      : 'destructive'
-                }
-                style={{ fontSize: '0.7rem' }}
-              >
-                {user.moderation_status ?? 'approved'}
-              </Badge>
-            </Box>
-          </Box>
-        </Box>
+              </div>
+            </div>
+          </div>
 
-        <Tabs defaultValue="overview">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="roles">Roles</TabsTrigger>
-            <TabsTrigger value="moderation">Moderation</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="overview">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="roles">Roles</TabsTrigger>
+              <TabsTrigger value="moderation">Moderation</TabsTrigger>
+            </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-              {fullProfile?.bio && (
-                <Box>
-                  <Typography variant="caption" color="text.secondary">
-                    Bio
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 0.5 }}>
-                    {fullProfile.bio}
-                  </Typography>
-                </Box>
-              )}
+            {/* Overview Tab */}
+            <TabsContent value="overview">
+              <div className="flex flex-col gap-4 mt-2">
+                {fullProfile?.bio !== undefined && fullProfile?.bio !== null && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">Bio</span>
+                    <p className="text-sm mt-1">{fullProfile.bio as string}</p>
+                  </div>
+                )}
 
-              <Divider />
+                <div className="border-t border-border" />
 
-              <InfoRow icon={MapPin} label="Location" value={user.location} />
-              <InfoRow icon={UserIcon} label="Mode" value={user.user_mode} />
-              <InfoRow
-                icon={UserIcon}
-                label="Gender Identity"
-                value={fullProfile?.gender_identity}
-              />
-              <InfoRow
-                icon={UserIcon}
-                label="Sexual Orientation"
-                value={fullProfile?.sexual_orientation}
-              />
-              <InfoRow
-                icon={Calendar}
-                label="Joined"
-                value={new Date(user.created_at).toLocaleDateString()}
-              />
-              <InfoRow
-                icon={Clock}
-                label="Last Seen"
-                value={user.last_seen_at ? new Date(user.last_seen_at).toLocaleString() : 'Never'}
-              />
-
-              <Divider />
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Profile Completion
-                </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {user.profile_completion_percentage ?? 0}%
-                </Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  height: 6,
-                  bgcolor: 'action.hover',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                }}
-              >
-                <Box
-                  sx={{
-                    height: '100%',
-                    width: `${user.profile_completion_percentage ?? 0}%`,
-                    bgcolor: 'primary.main',
-                    borderRadius: 3,
-                    transition: 'width 0.3s',
-                  }}
+                <InfoRow icon={MapPin} label="Location" value={user.location} />
+                <InfoRow icon={UserIcon} label="Mode" value={user.user_mode} />
+                <InfoRow
+                  icon={UserIcon}
+                  label="Gender Identity"
+                  value={fullProfile?.gender_identity as string | null | undefined}
                 />
-              </Box>
-            </Box>
-          </TabsContent>
+                <InfoRow
+                  icon={UserIcon}
+                  label="Sexual Orientation"
+                  value={fullProfile?.sexual_orientation as string | null | undefined}
+                />
+                <InfoRow
+                  icon={Calendar}
+                  label="Joined"
+                  value={new Date(user.created_at).toLocaleDateString()}
+                />
+                <InfoRow
+                  icon={Clock}
+                  label="Last Seen"
+                  value={user.last_seen_at ? new Date(user.last_seen_at).toLocaleString() : 'Never'}
+                />
 
-          {/* Roles Tab */}
-          <TabsContent value="roles">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-              <Typography variant="body2" color="text.secondary">
-                Current Roles
-              </Typography>
+                <div className="border-t border-border" />
 
-              {rolesLoading ? (
-                <Skeleton width="100%" height={40} />
-              ) : userRoles.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                  Standard user (no special roles)
-                </Typography>
-              ) : (
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {userRoles.map((role) => (
-                    <Badge
-                      key={role}
-                      variant="outline"
-                      style={{
-                        borderColor: ROLE_COLORS[role],
-                        color: ROLE_COLORS[role],
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        padding: '4px 10px',
-                      }}
-                    >
-                      <Shield style={{ height: 12, width: 12 }} />
-                      {role}
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleRemoveRole(role)}
-                          disabled={roleLoading}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: 0,
-                            marginLeft: 4,
-                            display: 'flex',
-                          }}
-                        >
-                          <Trash2 style={{ height: 10, width: 10, opacity: 0.6 }} />
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </Box>
-              )}
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Profile Completion</span>
+                  <span className="text-sm font-semibold">
+                    {user.profile_completion_percentage ?? 0}%
+                  </span>
+                </div>
 
-              {isAdmin && availableRoles.length > 0 && (
-                <>
-                  <Divider />
-                  <Typography variant="body2" color="text.secondary">
-                    Add Role
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {availableRoles.map((role) => (
-                      <Button
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-[width] duration-300"
+                    style={{ width: `${user.profile_completion_percentage ?? 0}%` }}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Roles Tab */}
+            <TabsContent value="roles">
+              <div className="flex flex-col gap-4 mt-2">
+                <span className="text-sm text-muted-foreground">Current Roles</span>
+
+                {rolesLoading ? (
+                  <Skeleton className="w-full h-10" />
+                ) : userRoles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground italic">
+                    Standard user (no special roles)
+                  </p>
+                ) : (
+                  <div className="flex gap-2 flex-wrap">
+                    {userRoles.map((role) => (
+                      <Badge
                         key={role}
                         variant="outline"
-                        size="sm"
-                        onClick={() => handleAssignRole(role)}
-                        disabled={roleLoading}
-                        style={{ textTransform: 'capitalize' }}
+                        style={{
+                          borderColor: ROLE_COLORS[role],
+                          color: ROLE_COLORS[role],
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          padding: '4px 10px',
+                        }}
                       >
-                        + {role}
-                      </Button>
+                        <Shield style={{ height: 12, width: 12 }} />
+                        {role}
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleRemoveRole(role)}
+                            disabled={roleLoading}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                              marginLeft: 4,
+                              display: 'flex',
+                            }}
+                          >
+                            <Trash2 style={{ height: 10, width: 10, opacity: 0.6 }} />
+                          </button>
+                        )}
+                      </Badge>
                     ))}
-                  </Box>
-                </>
-              )}
+                  </div>
+                )}
 
-              {!isAdmin && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                  Only admins can manage roles.
-                </Typography>
-              )}
-            </Box>
-          </TabsContent>
+                {isAdmin && availableRoles.length > 0 && (
+                  <>
+                    <div className="border-t border-border" />
+                    <span className="text-sm text-muted-foreground">Add Role</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {availableRoles.map((role) => (
+                        <Button
+                          key={role}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAssignRole(role)}
+                          disabled={roleLoading}
+                          style={{ textTransform: 'capitalize' }}
+                        >
+                          + {role}
+                        </Button>
+                      ))}
+                    </div>
+                  </>
+                )}
 
-          {/* Moderation Tab */}
-          <TabsContent value="moderation">
-            <Box sx={{ mt: 1 }}>
-              <UserModerationActions
-                userId={user.user_id}
-                currentStatus={
-                  (user.moderation_status as 'approved' | 'suspended' | 'banned') ?? 'approved'
-                }
-                displayName={displayName}
-                onStatusChanged={handleModerationChanged}
-              />
-            </Box>
-          </TabsContent>
-        </Tabs>
-      </MuiDrawer>
+                {!isAdmin && (
+                  <span className="text-xs text-muted-foreground mt-2">
+                    Only admins can manage roles.
+                  </span>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Moderation Tab */}
+            <TabsContent value="moderation">
+              <div className="mt-2">
+                <UserModerationActions
+                  userId={user.user_id}
+                  currentStatus={
+                    (user.moderation_status as 'approved' | 'suspended' | 'banned') ?? 'approved'
+                  }
+                  displayName={displayName}
+                  onStatusChanged={handleModerationChanged}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </SheetContent>
+      </Sheet>
 
       {/* Admin role confirmation dialog */}
       <AlertDialog open={confirmAdminRole} onOpenChange={setConfirmAdminRole}>
@@ -436,14 +404,10 @@ function InfoRow({
   value: string | null | undefined;
 }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-      <Icon style={{ height: 14, width: 14, color: 'var(--muted-foreground)', flexShrink: 0 }} />
-      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 120 }}>
-        {label}
-      </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-        {value || '-'}
-      </Typography>
-    </Box>
+    <div className="flex items-center gap-3">
+      <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+      <span className="text-sm text-muted-foreground min-w-[120px]">{label}</span>
+      <span className="text-sm font-medium">{value || '-'}</span>
+    </div>
   );
 }

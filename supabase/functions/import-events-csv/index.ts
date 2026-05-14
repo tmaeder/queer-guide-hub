@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { enrichEventWithAI } from '../_shared/ai-enrichment.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
@@ -29,7 +28,7 @@ interface EventData {
   ticket_url?: string;
   organizer_name?: string;
   organizer_contact?: string;
-  featured: boolean;
+  is_featured: boolean;
 }
 
 function parseCSV(csvText: string): EventData[] {
@@ -117,7 +116,8 @@ function parseCSV(csvText: string): EventData[] {
           break;
         case 'is_free':
         case 'featured':
-          eventData[header] = value.toLowerCase() === 'true';
+        case 'is_featured':
+          eventData.is_featured = value.toLowerCase() === 'true';
           break;
       }
     });
@@ -152,7 +152,7 @@ function parseCSV(csvText: string): EventData[] {
   return events;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   console.log('Import events CSV function called');
 

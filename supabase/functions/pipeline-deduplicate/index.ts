@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { rpcWithBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Deduplicate (venue / event / hotel / city / country / news)
@@ -21,7 +22,7 @@ interface DedupCandidate {
   time_diff_hours?: number | null
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -379,4 +380,4 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-deduplicate', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

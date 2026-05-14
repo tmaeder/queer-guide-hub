@@ -1,15 +1,21 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '@/components/ui/tooltip';
 import {
   Copy,
   Bot,
   MessageSquare,
-  Github as GithubIcon,
   MoreVertical,
   ArrowRight,
   Check,
@@ -17,6 +23,7 @@ import {
   Loader,
   Circle,
 } from 'lucide-react';
+import { Github as GithubIcon } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
 import type {
   FeedbackHandoff,
@@ -70,10 +77,6 @@ export function HandoffSection({
   isRecording,
 }: Props) {
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
-  const [menuFor, setMenuFor] = useState<{
-    anchor: HTMLElement;
-    id: string;
-  } | null>(null);
   const sorted = [...handoffs].sort((a, b) => (a.at < b.at ? 1 : -1));
 
   async function copyAndRecord(target: HandoffTarget) {
@@ -88,186 +91,140 @@ export function HandoffSection({
   }
 
   return (
-    <Box sx={{ mb: 3 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          mb: 1,
-        }}
-      >
-        <Typography variant="caption" sx={{ fontWeight: 700, flex: 1 }}>
-          Handoff {handoffs.length > 0 && `(${handoffs.length})`}
-        </Typography>
-      </Box>
+    <TooltipProvider>
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-bold flex-1">
+            Handoff {handoffs.length > 0 && `(${handoffs.length})`}
+          </span>
+        </div>
 
-      {/* Copy actions */}
-      <Box sx={{ display: 'flex', gap: 0.75, mb: 1.5, flexWrap: 'wrap' }}>
-        <Button
-          onClick={() => copyAndRecord('claude-code')}
-          disabled={isRecording}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            backgroundColor: 'hsl(var(--accent-warm))',
-            color: '#fff',
-            fontWeight: 600,
-          }}
-        >
-          {copyState === 'copied' ? (
-            <Check style={{ width: 14, height: 14 }} />
-          ) : (
-            <Copy style={{ width: 14, height: 14 }} />
-          )}
-          {copyState === 'copied' ? 'Copied — paste into Claude' : 'Copy prompt for Claude'}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => copyAndRecord('claude-chat')}
-          disabled={isRecording}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem' }}
-          title="Record a handoff targeted at Claude web chat"
-        >
-          <MessageSquare style={{ width: 13, height: 13 }} />
-          Chat
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => copyAndRecord('other')}
-          disabled={isRecording}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem' }}
-          title="Record a handoff with a custom target"
-        >
-          <ArrowRight style={{ width: 13, height: 13 }} />
-          Other
-        </Button>
-      </Box>
+        {/* Copy actions */}
+        <div className="flex gap-1.5 mb-3 flex-wrap">
+          <Button
+            onClick={() => copyAndRecord('claude-code')}
+            disabled={isRecording}
+            className="flex items-center gap-1.5 font-semibold text-white"
+            style={{ backgroundColor: 'hsl(var(--foreground))' }}
+          >
+            {copyState === 'copied' ? (
+              <Check style={{ width: 14, height: 14 }} />
+            ) : (
+              <Copy style={{ width: 14, height: 14 }} />
+            )}
+            {copyState === 'copied' ? 'Copied — paste into Claude' : 'Copy prompt for Claude'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => copyAndRecord('claude-chat')}
+            disabled={isRecording}
+            className="flex items-center gap-1.5 text-xs"
+            title="Record a handoff targeted at Claude web chat"
+          >
+            <MessageSquare style={{ width: 13, height: 13 }} />
+            Chat
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => copyAndRecord('other')}
+            disabled={isRecording}
+            className="flex items-center gap-1.5 text-xs"
+            title="Record a handoff with a custom target"
+          >
+            <ArrowRight style={{ width: 13, height: 13 }} />
+            Other
+          </Button>
+        </div>
 
-      {/* Timeline */}
-      {sorted.length === 0 ? (
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            display: 'block',
-            py: 1,
-            px: 1.25,
-            bgcolor: 'action.hover',
-            borderRadius: 1,
-            fontSize: '0.7rem',
-          }}
-        >
-          No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to Claude Code.
-        </Typography>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {sorted.map((h) => {
-            const statusMeta = STATUS_META[h.status] ?? STATUS_META.sent;
-            const targetMeta = TARGET_META[h.target] ?? TARGET_META.other;
-            const StatusIcon = statusMeta.icon;
-            const TargetIcon = targetMeta.icon;
-            return (
-              <Box
-                key={h.id}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  py: 0.75,
-                  px: 1,
-                  borderLeft: 3,
-                  borderColor: statusMeta.color,
-                  bgcolor: 'action.hover',
-                  borderRadius: '0 4px 4px 0',
-                }}
-              >
-                <TargetIcon
-                  size={14}
-                  style={{ color: 'var(--muted-foreground)', flexShrink: 0 }}
-                />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="caption" sx={{ fontSize: '0.7rem', display: 'block' }}>
-                    <strong>{h.by_name}</strong> → {targetMeta.label}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ fontSize: '0.6rem', display: 'block' }}
-                  >
-                    {timeAgo(h.at)}
-                    {h.status_at && h.status !== 'sent' && (
-                      <>
-                        {' · '}
-                        <span style={{ color: statusMeta.color }}>{statusMeta.label.toLowerCase()} {timeAgo(h.status_at)}</span>
-                      </>
-                    )}
-                  </Typography>
-                  {h.note && (
-                    <Typography
-                      variant="caption"
-                      sx={{ fontSize: '0.65rem', display: 'block', mt: 0.25, fontStyle: 'italic' }}
-                    >
-                      “{h.note}”
-                    </Typography>
-                  )}
-                </Box>
-                <Tooltip title={statusMeta.label}>
-                  <Box
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.25,
-                      px: 0.5,
-                      color: statusMeta.color,
-                      fontSize: '0.6rem',
-                      fontWeight: 700,
-                    }}
-                  >
-                    <StatusIcon size={11} />
-                    {statusMeta.label}
-                  </Box>
-                </Tooltip>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                    setMenuFor({ anchor: e.currentTarget, id: h.id })
-                  }
-                  style={{ padding: 4, minWidth: 0 }}
-                  title="Update status"
+        {/* Timeline */}
+        {sorted.length === 0 ? (
+          <span className="block py-2 px-3 bg-muted rounded text-[0.7rem] text-muted-foreground">
+            No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to Claude Code.
+          </span>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {sorted.map((h) => {
+              const statusMeta = STATUS_META[h.status] ?? STATUS_META.sent;
+              const targetMeta = TARGET_META[h.target] ?? TARGET_META.other;
+              const StatusIcon = statusMeta.icon;
+              const TargetIcon = targetMeta.icon;
+              return (
+                <div
+                  key={h.id}
+                  className="flex items-center gap-2 py-1.5 px-2 bg-muted"
+                  style={{
+                    borderLeft: `3px solid ${statusMeta.color}`,
+                    borderRadius: '0 4px 4px 0',
+                  }}
                 >
-                  <MoreVertical style={{ width: 12, height: 12 }} />
-                </Button>
-              </Box>
-            );
-          })}
-        </Box>
-      )}
-
-      <Menu
-        anchorEl={menuFor?.anchor ?? null}
-        open={!!menuFor}
-        onClose={() => setMenuFor(null)}
-      >
-        {(['sent', 'in_progress', 'resolved', 'failed'] as HandoffStatus[]).map((s) => {
-          const meta = STATUS_META[s];
-          const Icon = meta.icon;
-          return (
-            <MenuItem
-              key={s}
-              onClick={() => {
-                if (menuFor) onUpdateStatus(menuFor.id, s);
-                setMenuFor(null);
-              }}
-            >
-              <Icon size={13} style={{ color: meta.color, marginRight: 8 }} />
-              {meta.label}
-            </MenuItem>
-          );
-        })}
-      </Menu>
-    </Box>
+                  <TargetIcon
+                    size={14}
+                    style={{ color: 'var(--muted-foreground)', flexShrink: 0 }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[0.7rem] block">
+                      <strong>{h.by_name}</strong> → {targetMeta.label}
+                    </span>
+                    <span className="text-[0.6rem] block text-muted-foreground">
+                      {timeAgo(h.at)}
+                      {h.status_at && h.status !== 'sent' && (
+                        <>
+                          {' · '}
+                          <span style={{ color: statusMeta.color }}>{statusMeta.label.toLowerCase()} {timeAgo(h.status_at)}</span>
+                        </>
+                      )}
+                    </span>
+                    {h.note && (
+                      <span className="text-[0.65rem] block mt-0.5 italic">
+                        “{h.note}”
+                      </span>
+                    )}
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        className="inline-flex items-center gap-0.5 px-1 text-[0.6rem] font-bold"
+                        style={{ color: statusMeta.color }}
+                      >
+                        <StatusIcon size={11} />
+                        {statusMeta.label}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{statusMeta.label}</TooltipContent>
+                  </Tooltip>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        title="Update status"
+                      >
+                        <MoreVertical style={{ width: 12, height: 12 }} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {(['sent', 'in_progress', 'resolved', 'failed'] as HandoffStatus[]).map((s) => {
+                        const meta = STATUS_META[s];
+                        const Icon = meta.icon;
+                        return (
+                          <DropdownMenuItem
+                            key={s}
+                            onClick={() => onUpdateStatus(h.id, s)}
+                          >
+                            <Icon size={13} style={{ color: meta.color, marginRight: 8 }} />
+                            {meta.label}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }

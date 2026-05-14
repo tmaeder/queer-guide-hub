@@ -10,6 +10,7 @@ import {
   type Rule,
   type RuleSubmission as Submission,
 } from '../_shared/ingestion-rules.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // pipeline-apply-rules
@@ -21,6 +22,7 @@ import {
 // ============================================================
 
 Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-apply-rules', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('POST only', 405, req)
 
@@ -130,4 +132,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-apply-rules:', err)
     return errorResponse((err as Error).message, 500, req)
   }
-})
+}))

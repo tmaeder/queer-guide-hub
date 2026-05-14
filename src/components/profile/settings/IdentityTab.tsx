@@ -3,9 +3,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SelectField, FormField } from './fields';
 import { Heart } from 'lucide-react';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { stack } from '@/lib/sx';
 
 const GENDER_OPTIONS = [
   { value: 'woman', label: 'Woman' },
@@ -61,54 +58,52 @@ interface IdentityTabProps {
 
 export function IdentityTab({ formData, onChange, onComingOutChange }: IdentityTabProps) {
   return (
-    <Box sx={stack(3)}>
-      {/* Core Identity */}
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle>LGBTQ+ Identity</CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={stack(2)}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="gender_identity" label="Gender Identity" value={formData.gender_identity} onChange={(v) => onChange('gender_identity', v)} options={GENDER_OPTIONS} />
               <SelectField id="sexual_orientation" label="Sexual Orientation" value={formData.sexual_orientation} onChange={(v) => onChange('sexual_orientation', v)} options={ORIENTATION_OPTIONS} />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="chosen_family_status" label="Chosen Family" value={formData.chosen_family_status} onChange={(v) => onChange('chosen_family_status', v)} options={CHOSEN_FAMILY_OPTIONS} />
               <FormField id="disability_status" label="Disability Status" value={formData.disability_status} onChange={(v) => onChange('disability_status', v)} placeholder="Optional" />
-            </Box>
+            </div>
             <FormField id="neurodivergent_status" label="Neurodivergent Status" value={formData.neurodivergent_status} onChange={(v) => onChange('neurodivergent_status', v)} placeholder="Optional — e.g., ADHD, autism, dyslexia" />
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Coming Out Journey */}
       <Card>
         <CardHeader>
           <CardTitle>Coming Out Journey</CardTitle>
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             This information is private by default and only visible to people you choose.
-          </Typography>
+          </p>
         </CardHeader>
         <CardContent>
-          <Box sx={stack(2)}>
+          <div className="flex flex-col gap-4">
             <Alert>
               <Heart style={{ width: 16, height: 16 }} />
               <AlertDescription>
                 Coming out is a deeply personal journey. All fields here are optional and private by default.
               </AlertDescription>
             </Alert>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="coming_out_family" label="Family" value={formData.coming_out_status.family} onChange={(v) => onComingOutChange('family', v)} options={COMING_OUT_OPTIONS} />
               <SelectField id="coming_out_friends" label="Friends" value={formData.coming_out_status.friends} onChange={(v) => onComingOutChange('friends', v)} options={COMING_OUT_OPTIONS} />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SelectField id="coming_out_work" label="Work / School" value={formData.coming_out_status.work} onChange={(v) => onComingOutChange('work', v)} options={COMING_OUT_OPTIONS} />
               <SelectField id="coming_out_public" label="Public" value={formData.coming_out_status.public} onChange={(v) => onComingOutChange('public', v)} options={COMING_OUT_OPTIONS} />
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }

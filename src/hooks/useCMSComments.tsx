@@ -55,11 +55,11 @@ export function useCMSComments(): UseCMSCommentsReturn {
       if (actorIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles' as 'venues')
-          .select('id, display_name, email')
-          .in('id', actorIds);
+          .select('user_id, display_name, email')
+          .in('user_id', actorIds);
 
         profileMap = new Map(
-          (profiles || []).map((p: Record<string, unknown>) => [p.id as string, { display_name: p.display_name as string | undefined, email: p.email as string | undefined }])
+          (profiles || []).map((p: Record<string, unknown>) => [p.user_id as string, { display_name: p.display_name as string | undefined, email: p.email as string | undefined }])
         );
       }
 

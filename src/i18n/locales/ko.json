@@ -196,7 +196,7 @@
       "samples": {
         "berlin": "베를린 프라이드 위크",
         "barcelona": "바르셀로나: 해변과 밤",
-        "bangkok": "방콕 & 푸껫 익스플로러"
+        "bangkok": "Bangkok & Phuket"
       },
       "daysLabel_one": "{{count}}일"
     },
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "도시 검색…",
         "noCityMatch": "일치하는 도시가 없습니다.",
         "addNewPlace": "'{{query}}'을(를) 새 장소로 추가",
-        "datesUnlockHint": "날짜를 추가하면 숙소·항공편·안전 정보 제안이 활성화됩니다.",
+        "datesUnlockHint": "날짜를 추가하면 숙소, 항공편, 안전 제안이 표시됩니다.",
         "defaultTitle": "{{city}} 여행",
         "titleField": "여행 제목",
         "titlePlaceholder": "예: 베를린 프라이드 위크 2026",
@@ -313,7 +313,11 @@
       "fitAll": "전체 보기",
       "fitAllAria": "모든 장소를 화면에 맞추기",
       "filterAll": "모든 날짜",
-      "dayLabel": "{{number}}일차"
+      "dayLabel": "{{number}}일차",
+      "showAttractions": "[KO] Attractions",
+      "showEvents": "[KO] Events",
+      "suggestedVenue": "[KO] Suggested venue",
+      "eventOn": "[KO] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "아직 안전 정보가 없어요",
@@ -435,8 +439,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "짐 목록을 시작하세요",
-      "emptyDescription": "항목을 추가하거나 템플릿으로 시작하세요.",
+      "emptyTitle": "아직 항목이 없습니다.",
+      "emptyDescription": "항목을 추가하거나 템플릿을 사용하세요.",
       "progress": "{{checked}} / {{total}} 완료",
       "addItem": "항목 추가…",
       "removeAria": "항목 삭제",
@@ -708,7 +712,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[KO] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +743,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[KO] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[KO] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -751,14 +758,16 @@
       "create": "Create account",
       "orWithEmail": "Or with email",
       "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional — helps us personalise your guide. Skip if you prefer.",
+      "interestsBlurb": "선택 사항. 건너뛰어도 됩니다.",
       "lookingForTitle": "I'm looking for",
       "interestsTitle": "Interests",
       "steps": {
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[KO] Free, takes a minute.",
+      "haveAccountQ": "[KO] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +809,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[KO] Continue to The Queer Guide",
+      "banner": "[KO] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[KO] Verification email sent. Check your inbox.",
+      "resendShort": "[KO] Resend",
+      "gateTitle": "[KO] Verify your email first",
+      "gateDescription": "[KO] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[KO] Sign in required",
+      "description": "[KO] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1021,9 +1040,9 @@
     "error": "알림 전송에 실패했습니다. 다시 시도해 주세요."
   },
   "home": {
-    "heroLine1": "발견.",
-    "heroLine2": "연결.",
-    "heroLine3": "소속.",
+    "heroLine1": "퀴어 장소,",
+    "heroLine2": "이벤트, 그리고 사람들.",
+    "heroLine3": "전 세계.",
     "subtitle": "안전한 장소, 활기찬 이벤트, 그리고 당신을 이해하는 커뮤니티 — 어디에 있든.",
     "browseVenues": "장소 둘러보기",
     "viewEvents": "이벤트 보기",
@@ -1105,7 +1124,9 @@
       "myGroups": "내 그룹",
       "accessibility": "접근성",
       "bookings": "예약",
-      "tripInbox": "여행 수신함"
+      "tripInbox": "여행 수신함",
+      "extension": "브라우저 확장 프로그램",
+      "footprint": "[KO] Footprint"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -1121,7 +1142,10 @@
       "accessibility": "접근성",
       "legal": "법률",
       "contact": "문의"
-    }
+    },
+    "signUp": "[KO] Sign up",
+    "navigation": "[KO] Navigation",
+    "signIn": "[KO] Sign in"
   },
   "pages": {
     "venues": {
@@ -1133,8 +1157,8 @@
       "gridView": "그리드 보기",
       "mapView": "지도 보기",
       "submit": "제출",
-      "emptyTitle": "아직 당신의 스타일에 맞는 장소가 없어요",
-      "emptyDescription": "검색 범위를 넓히거나 다른 도시를 탐색해 보세요.",
+      "emptyTitle": "필터에 맞는 장소가 없습니다.",
+      "emptyDescription": "검색 범위를 넓히거나 도시를 변경해 보세요.",
       "submitVenue": "장소 등록",
       "clearFilters": "필터 초기화",
       "emptyDataset": {
@@ -1210,8 +1234,8 @@
       "clearFilterPast": "지난 이벤트 필터 지우기",
       "noPastEvents": "지난 이벤트를 찾을 수 없음",
       "noPastEventsDesc": "이 필터에 맞는 지난 이벤트가 없습니다. 토글을 끄면 다가오는 이벤트를 볼 수 있어요.",
-      "emptyTitle": "댄스 플로어가 아직 비어 있어요...",
-      "emptyDescription": "곧 다시 확인하거나 필터를 넓혀 재미있는 이벤트를 찾아보세요.",
+      "emptyTitle": "아직 이벤트가 없습니다.",
+      "emptyDescription": "필터를 넓히거나 나중에 다시 확인하세요.",
       "emptyDataset": {
         "title": "아직 이벤트가 없습니다",
         "body": "아직 이곳에 이벤트를 추가하지 않았습니다. 이벤트를 등록하여 가이드 성장에 도움을 주세요."
@@ -1219,6 +1243,45 @@
       "filteredEmpty": {
         "title": "필터와 일치하는 이벤트가 없습니다",
         "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
+      },
+      "prideSubtype": "[KO] Pride type",
+      "mapView": "[KO] Map view",
+      "preset": {
+        "label": "[KO] Quick filters",
+        "thisWeekend": "[KO] This weekend",
+        "nearMe": "[KO] Near me",
+        "pride": "[KO] Pride season",
+        "thisMonth": "[KO] This month",
+        "free": "[KO] Free",
+        "featured": "[KO] Featured"
+      },
+      "rail": {
+        "featured": "[KO] Featured this week",
+        "featuredSubtitle": "[KO] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[KO] No events match your filters",
+        "body": "[KO] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[KO] Drop \"{{city}}\" filter",
+        "clearDate": "[KO] Drop date filter",
+        "viewAll": "[KO] View all upcoming events",
+        "sameCityHeader": "[KO] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[KO] Try other cities in your date range",
+        "fallbackHeader": "[KO] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[KO] Spotlight",
+        "happeningNow": "[KO] Happening now",
+        "tomorrow": "[KO] Starts tomorrow",
+        "inDays_one": "[KO] Starts in {{count}} day",
+        "inDays_other": "[KO] Starts in {{count}} days",
+        "nearbyCount_one": "[KO] {{count}} event in {{city}}",
+        "nearbyCount_other": "[KO] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[KO] Sort events",
+      "sort": {
+        "dateAsc": "[KO] Soonest first",
+        "dateDesc": "[KO] Latest first"
       }
     },
     "eventDetail": {
@@ -1277,19 +1340,74 @@
       "subtitle": "LGBTQ+ 친화적 여행지의 항공편, 호텔, 활동 찾기",
       "activitiesComingSoon": "활동은 곧 제공됩니다.",
       "browseDestinations": "여행지 둘러보기",
-      "exploreCta": "LGBTQ+ 친화적 여행지 탐색",
-      "exploreDescription": "상세한 안전 정보와 여행 가이드가 있는 도시와 국가를 발견하세요"
+      "exploreCta": "여행지",
+      "exploreDescription": "안전 정보와 여행 가이드가 있는 도시와 국가.",
+      "hotels": {
+        "typeLabel": "[KO] Type",
+        "priceMin": "[KO] Min €",
+        "priceMax": "[KO] Max €",
+        "priceUnavailable": "[KO] Price on request",
+        "clearFilters": "[KO] Clear filters",
+        "noResultsWithFilters": "[KO] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[KO] Any type",
+          "hotel": "[KO] Hotel",
+          "boutique": "[KO] Boutique Hotel",
+          "bnb": "[KO] B&B",
+          "hostel": "[KO] Hostel",
+          "guesthouse": "[KO] Guesthouse",
+          "apartment": "[KO] Apartment",
+          "resort": "[KO] Resort"
+        }
+      },
+      "hero": {
+        "title": "[KO] Plan a trip",
+        "subtitle": "[KO] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[KO] Where to?",
+        "start": "[KO] Start",
+        "end": "[KO] End",
+        "cta": "[KO] Plan this trip",
+        "discover": "[KO] Or",
+        "discoverLink": "[KO] browse public trips",
+        "discoverTail": "[KO] from the community.",
+        "errors": {
+          "city": "[KO] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[KO] Continue planning",
+        "placeCount": "[KO] {{count}} places"
+      },
+      "pride": {
+        "title": "[KO] Pride this season",
+        "window": "[KO] Next 4 months",
+        "empty": "[KO] No upcoming Pride events.",
+        "safety": "[KO] Equality score"
+      },
+      "inspiration": {
+        "villages": "[KO] Queer villages",
+        "publicTrips": "[KO] Public trips",
+        "viewAll": "[KO] View all",
+        "noVillages": "[KO] No villages yet.",
+        "noTrips": "[KO] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[KO] Book now",
+        "subtitle": "[KO] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "마켓플레이스",
       "subtitle": "제품과 서비스를 제공하는 지역 업체를 발견하고 응원하세요",
       "listBusiness": "내 비즈니스 등록",
-      "emptyTitle": "아직 진열대가 비어 있어요",
-      "emptyDescription": "퀴어 운영 비즈니스가 매일 합류하고 있어요.",
+      "emptyTitle": "아직 목록이 없습니다.",
+      "emptyDescription": "매주 더 추가됩니다.",
       "signInRequired": "로그인 필요",
       "signInList": "무료 계정을 만들어 비즈니스를 등록하세요.",
       "signInFavorites": "즐겨찾기를 저장하려면 로그인하세요.",
-      "loadError": "마켓플레이스를 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요."
+      "loadError": "마켓플레이스를 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요.",
+      "emptyFiltersTitle": "[KO] No listings match these filters.",
+      "emptyFiltersDescription": "[KO] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "항목을 찾을 수 없음",
@@ -1325,10 +1443,17 @@
       "filters": "필터",
       "activeFilters": "적용된 필터",
       "clearAll": "모두 지우기",
-      "emptyTitle": "뉴스룸이 조용해요",
-      "emptyDescription": "지금은 기사가 없어요. 곧 다시 확인해 보세요.",
+      "emptyTitle": "아직 기사가 없습니다.",
+      "emptyDescription": "나중에 다시 확인하세요.",
       "previous": "이전",
-      "next": "다음"
+      "next": "다음",
+      "filteredEmptyTitle": "[KO] No news matches your filters.",
+      "filteredEmptyDescription": "[KO] Reset filters or try another topic.",
+      "resetFilters": "[KO] Reset filters",
+      "filterSearch": "[KO] Search",
+      "filterCategory": "[KO] Category",
+      "filterSource": "[KO] Source",
+      "filterFeatured": "[KO] Featured only"
     },
     "newsDetail": {
       "notFound": "기사를 찾을 수 없음",
@@ -1351,7 +1476,6 @@
     },
     "personalities": {
       "title": "인물",
-      "subtitle": "8,000명 이상의 LGBTQ+ 활동가, 예술가, 작가, 운동선수, 역사적 인물을 둘러보세요.",
       "active": "활성:",
       "clearAll": "모두 지우기",
       "emptyTitle": "필터에 맞는 인물이 없습니다",
@@ -1364,8 +1488,8 @@
       "discover": "탐색",
       "myGroups": "내 그룹",
       "popular": "인기",
-      "emptyTitle": "아직 그룹이 없어요",
-      "emptyDescription": "불꽃이 되어 보세요 — 첫 번째 그룹을 만들고 사람들을 모아 보세요.",
+      "emptyTitle": "아직 그룹이 없습니다.",
+      "emptyDescription": "첫 번째 그룹을 만들어 보세요.",
       "createGroup": "그룹 만들기",
       "mostPopular": "가장 인기 있는 그룹",
       "noPopular": "아직 인기 그룹이 없습니다."
@@ -1438,6 +1562,15 @@
       "body": "각 예약 30분 전과 여권 또는 비자 만료일이 다가올 때 브라우저 알림을 받습니다.",
       "turnOn": "켜기",
       "turnOff": "끄기"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "자세히 보기",
+      "share": "공유",
+      "linkCopied": "링크 복사됨",
+      "linkCopiedDescription": "이제 붙여넣을 수 있습니다",
+      "shareFailed": "공유 실패"
     }
   }
 }

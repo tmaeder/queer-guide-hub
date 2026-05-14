@@ -6,14 +6,11 @@
  */
 
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Checkbox from '@mui/material/Checkbox';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Check, X, Eye, AlertTriangle } from 'lucide-react';
 import { SensitivityBadges } from '@/components/ui/ContentWarningBanner';
 
@@ -40,25 +37,22 @@ interface ReviewItemCardProps {
   compact?: boolean;
 }
 
-const STATUS_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default' | 'info'> = {
-  // Tier 1 (Import)
-  pending: 'warning',
-  review: 'info',
-  approved: 'success',
-  rejected: 'error',
-  // Tier 2 (Editorial)
-  draft: 'default',
-  published: 'success',
-  archived: 'default',
-  // Tier 3 (Flags)
-  open: 'warning',
-  OPEN: 'warning',
-  in_review: 'info',
-  IN_REVIEW: 'info',
-  resolved: 'success',
-  RESOLVED: 'success',
-  dismissed: 'default',
-  REJECTED: 'error',
+const STATUS_VARIANTS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  pending: 'secondary',
+  review: 'outline',
+  approved: 'default',
+  rejected: 'destructive',
+  draft: 'outline',
+  published: 'default',
+  archived: 'outline',
+  open: 'secondary',
+  OPEN: 'secondary',
+  in_review: 'outline',
+  IN_REVIEW: 'outline',
+  resolved: 'default',
+  RESOLVED: 'default',
+  dismissed: 'outline',
+  REJECTED: 'destructive',
 };
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
@@ -69,7 +63,7 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
   marketplace_listings: 'Listing',
 };
 
-export const ReviewItemCard: React.FC<ReviewItemCardProps> = ({
+export const ReviewItemCard = ({
   item,
   selected,
   onSelect,
@@ -77,117 +71,99 @@ export const ReviewItemCard: React.FC<ReviewItemCardProps> = ({
   onReject,
   onView,
   compact = false,
-}) => {
+}: ReviewItemCardProps) => {
   return (
     <Card
-      variant="outlined"
-      sx={{
-        mb: 1,
-        borderColor: selected ? 'primary.main' : 'divider',
-        bgcolor: selected ? 'action.selected' : 'background.paper',
-        transition: 'all 150ms',
-      }}
+      className={`mb-2 transition-all ${selected ? 'border-primary bg-accent' : 'border-border bg-background'}`}
     >
-      <CardContent sx={{ py: compact ? 1 : 1.5, px: 2, '&:last-child': { pb: compact ? 1 : 1.5 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+      <CardContent className={`${compact ? 'py-2' : 'py-3'} px-4`}>
+        <div className="flex items-start gap-3">
           {/* Selection checkbox */}
           {onSelect && (
             <Checkbox
               checked={selected}
-              onChange={() => onSelect(item.id)}
-              size="small"
-              sx={{ p: 0, mt: 0.25 }}
+              onCheckedChange={() => onSelect(item.id)}
+              className="mt-0.5"
             />
           )}
 
           {/* Main content */}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <Typography
-                variant="body2"
-                fontWeight={600}
-                noWrap
-                sx={{ flex: 1 }}
-              >
-                {item.title}
-              </Typography>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-sm font-semibold truncate flex-1">{item.title}</p>
 
               {/* Content type chip */}
-              <Chip
-                label={CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
-                size="small"
-                variant="outlined"
-                sx={{ height: 20, fontSize: '0.65rem' }}
-              />
+              <Badge variant="outline" className="h-5 text-[0.65rem]">
+                {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
+              </Badge>
 
               {/* Status chip */}
-              <Chip
-                label={item.status}
-                size="small"
-                color={STATUS_COLORS[item.status] || 'default'}
-                sx={{ height: 20, fontSize: '0.65rem' }}
-              />
-            </Box>
+              <Badge variant={STATUS_VARIANTS[item.status] || 'outline'} className="h-5 text-[0.65rem]">
+                {item.status}
+              </Badge>
+            </div>
 
             {/* Subtitle and meta */}
             {item.subtitle && (
-              <Typography variant="caption" color="text.secondary" noWrap>
-                {item.subtitle}
-              </Typography>
+              <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
             )}
 
             {/* Sensitivity badges + relevance score */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+            <div className="flex items-center gap-2 mt-1">
               <SensitivityBadges
                 sensitivityFlags={item.sensitivity_flags}
                 relevanceScore={item.relevance_score}
               />
 
               {item.reasoning && (
-                <Tooltip title={item.reasoning}>
-                  <AlertTriangle size={14} style={{ color: '#d97706', cursor: 'help' }} />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertTriangle size={14} style={{ color: '#d97706', cursor: 'help' }} />
+                  </TooltipTrigger>
+                  <TooltipContent>{item.reasoning}</TooltipContent>
                 </Tooltip>
               )}
 
-              <Typography variant="caption" color="text.disabled" sx={{ ml: 'auto' }}>
+              <p className="text-xs text-muted-foreground/60 ml-auto">
                 {new Date(item.created_at).toLocaleDateString()}
-              </Typography>
-            </Box>
-          </Box>
+              </p>
+            </div>
+          </div>
 
           {/* Action buttons */}
-          <Box sx={{ display: 'flex', gap: 0.5, ml: 1, flexShrink: 0 }}>
+          <div className="flex gap-1 ml-2 flex-shrink-0">
             {onView && (
-              <Tooltip title="View">
-                <IconButton size="small" onClick={() => onView(item.id)}>
-                  <Eye size={16} />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onView(item.id)}>
+                    <Eye size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>View</TooltipContent>
               </Tooltip>
             )}
             {onApprove && (
-              <Tooltip title="Approve">
-                <IconButton
-                  size="small"
-                  onClick={() => onApprove(item.id)}
-                  sx={{ color: 'success.main' }}
-                >
-                  <Check size={16} />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-green-600" onClick={() => onApprove(item.id)}>
+                    <Check size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Approve</TooltipContent>
               </Tooltip>
             )}
             {onReject && (
-              <Tooltip title="Reject">
-                <IconButton
-                  size="small"
-                  onClick={() => onReject(item.id)}
-                  sx={{ color: 'error.main' }}
-                >
-                  <X size={16} />
-                </IconButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => onReject(item.id)}>
+                    <X size={16} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Reject</TooltipContent>
               </Tooltip>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

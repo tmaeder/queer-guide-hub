@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Geo-validation worker. Reverse-geocodes a small batch of venues via
 // Nominatim and writes to geo_validations. Country mismatch is the primary
@@ -44,7 +45,7 @@ function normalizeCountry(s: string | null | undefined): string {
   return (s || '').trim().toLowerCase()
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-geo-validate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -145,4 +146,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-geo-validate:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

@@ -1,0 +1,83 @@
+import type { DetectedItem, SubmitResponse } from "../types";
+import { API, ANON_KEY, SUPABASE_URL, authHeaders, ensureOk, pgrstHeaders } from "./client";
+
+export async function submitItem(
+  item: DetectedItem,
+  accessToken: string,
+  notes?: string,
+): Promise<SubmitResponse> {
+  const res = await fetch(`${API}/submit`, {
+    method: "POST",
+    headers: authHeaders(accessToken, true),
+    body: JSON.stringify({
+      entity_type: item.entity_type,
+      raw_data: item.raw_data,
+      source_url: item.source_url,
+      client: `extension/${chrome.runtime.getManifest().version}`,
+      notes,
+      field_confidence: item.field_confidence,
+      extraction_method: item.extraction_method,
+    }),
+  });
+  await ensureOk(res, "submit");
+  return (await res.json()) as SubmitResponse;
+}
+
+export async function fetchStatus(
+  id: string | number,
+  accessToken: string,
+): Promise<Record<string, unknown>> {
+  const res = await fetch(`${API}/submissions/${encodeURIComponent(String(id))}`, {
+    headers: authHeaders(accessToken),
+  });
+  await ensureOk(res, "status");
+  return (await res.json()) as Record<string, unknown>;
+}
+
+export interface BulkResult {
+  submissions: Array<{ id: string; status: string }>;
+}
+
+export async function bulkSubmit(items: DetectedItem[], accessToken: string): Promise<BulkResult> {
+  const body = {
+    items: items.map((item) => ({
+      entity_type: item.entity_type,
+      raw_data: item.raw_data,
+      source_url: item.source_url,
+      client: `extension/${chrome.runtime.getManifest().version}`,
+      field_confidence: item.field_confidence,
+      extraction_method: item.extraction_method,
+    })),
+  };
+  const res = await fetch(`${API}/bulk-submit`, {
+    method: "POST",
+    headers: authHeaders(accessToken, true),
+    body: JSON.stringify(body),
+  });
+  await ensureOk(res, "bulk-submit");
+  return (await res.json()) as BulkResult;
+}
+
+export interface SubmissionRow {
+  id: string;
+  content_type: string;
+  status: string;
+  feedback_status: string;
+  source_url: string | null;
+  submitted_at: string;
+  data: Record<string, unknown>;
+  promoted_to_table: string | null;
+}
+
+/**
+ * Recent submissions for the signed-in user. RLS on community_submissions
+ * scopes the result to `submitted_by = auth.uid()` so we don't need the
+ * worker — PostgREST + the user's access token is enough.
+ */
+export async function fetchMySubmissions(accessToken: string, limit = 10): Promise<SubmissionRow[]> {
+  void ANON_KEY; // pgrstHeaders covers it
+  const url = `${SUPABASE_URL}/rest/v1/community_submissions?select=id,content_type,status,feedback_status,source_url,submitted_at,data,promoted_to_table&order=submitted_at.desc&limit=${limit}`;
+  const res = await fetch(url, { headers: pgrstHeaders(accessToken) });
+  await ensureOk(res, "history");
+  return (await res.json()) as SubmissionRow[];
+}

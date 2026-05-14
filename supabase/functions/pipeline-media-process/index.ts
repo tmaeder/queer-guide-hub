@@ -6,6 +6,7 @@ import {
 } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline node: Media Process
@@ -93,7 +94,7 @@ async function runVision(imageUrl: string): Promise<VisionResult> {
   }
   const data = await res.json()
   const content = data?.result?.response ?? data?.choices?.[0]?.message?.content ?? ''
-  const cleaned = String(content).trim().replace(/^```json\s*|```$/g, '')
+  const cleaned = String(content).trim().replace(/^```(?:json)?\s*|\s*```$/g, '')
   const parsed = JSON.parse(cleaned)
   return {
     ocr_text: String(parsed.ocr_text ?? '').slice(0, 8000),
@@ -167,7 +168,7 @@ async function processRow(row: RowMedia, supabase: ReturnType<typeof getServiceC
   return { status }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-media-process', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -268,4 +269,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-media-process:', err)
     return errorResponse((err as Error).message, 500, req)
   }
-})
+}))

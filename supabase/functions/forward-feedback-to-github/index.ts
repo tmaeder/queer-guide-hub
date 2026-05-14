@@ -4,7 +4,6 @@
  * and an @claude mention so Claude's GitHub App can pick it up.
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 // ── Inlined helpers (shared patterns from _shared/supabase-client.ts) ─────
@@ -153,7 +152,7 @@ function formatIssueBody(data: FeedbackData, submissionId: string): string {
   return lines.join('\n');
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
   if (req.method !== 'POST') return errorResponse('Method not allowed', 405, req);
 

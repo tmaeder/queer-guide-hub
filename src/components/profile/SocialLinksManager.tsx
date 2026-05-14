@@ -5,12 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Globe, Save, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { updateRowsBy } from '@/hooks/usePageFetchers';
 import { SocialLinksList } from './social/SocialLinksList';
 import { PlatformSelector } from './social/PlatformSelector';
 import { PLATFORM_CONFIGS } from './social/platformConfigs';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface SocialLink {
   platform: string;
@@ -129,10 +127,11 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
         ...Object.fromEntries(customLinks.map((link) => [link.platform, link.url])),
       };
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({ social_links: allSocialLinks })
-        .eq('user_id', user.id);
+      const { error } = await updateRowsBy(
+        'profiles',
+        { col: 'user_id', val: user.id },
+        { social_links: allSocialLinks },
+      );
 
       if (error) throw error;
 
@@ -157,57 +156,49 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
   return (
     <Card>
       <CardHeader>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Globe style={{ width: 20, height: 20 }} />
-            <Typography variant="h6">Social Media Profiles</Typography>
-          </Box>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Globe className="w-5 h-5" />
+            <h6 className="text-base font-semibold">Social Media Profiles</h6>
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowPlatformSelector(!showPlatformSelector)}
           >
-            <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
+            <Plus className="w-4 h-4 mr-2" />
             Add Platform
           </Button>
-        </Box>
+        </div>
       </CardHeader>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {/* Quick Add URL Input */}
-          <Box
-            sx={{
-              p: 2,
-              bgcolor: 'background.paper',
-            }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                Add Social Profile
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex flex-col gap-6">
+          <div className="p-4 bg-background">
+            <div className="flex flex-col gap-3">
+              <h6 className="text-base font-medium">Add Social Profile</h6>
+              <div className="flex gap-2">
                 <Input
                   placeholder="Paste any social media URL (e.g., https://twitter.com/username)"
                   value={quickAddUrl}
                   onChange={(e) => setQuickAddUrl(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleQuickAdd()}
-                  style={{ flex: 1 }}
+                  className="flex-1"
                 />
                 <Button onClick={handleQuickAdd} disabled={!quickAddUrl.trim()}>
-                  <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Plus className="w-4 h-4 mr-2" />
                   Add
                 </Button>
-              </Box>
+              </div>
               {detectedPlatform && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Globe style={{ width: 16, height: 16 }} />
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  <p className="text-sm text-muted-foreground">
                     Detected: {detectedPlatform}
-                  </Typography>
-                </Box>
+                  </p>
+                </div>
               )}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           {showPlatformSelector && <PlatformSelector onPlatformSelect={handlePlatformAdd} />}
 
@@ -217,13 +208,13 @@ export function SocialLinksManager({ initialSocialLinks = {}, onUpdate }: Social
             onRemoveCustomLink={removeCustomLink}
           />
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
+          <div className="flex justify-end pt-4">
             <Button onClick={saveSocialLinks} disabled={isSaving}>
-              <Save style={{ width: 16, height: 16, marginRight: 8 }} />
+              <Save className="w-4 h-4 mr-2" />
               {isSaving ? 'Saving...' : 'Save Social Links'}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

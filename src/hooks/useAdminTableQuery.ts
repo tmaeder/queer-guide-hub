@@ -43,6 +43,14 @@ function applyFilters(
       q = q.in(key, value);
     } else if (typeof value === 'boolean') {
       q = q.eq(key, value);
+    } else if (typeof value === 'object') {
+      const range = value as { from?: string; to?: string };
+      if (range.from) q = q.gte(key, range.from);
+      if (range.to) q = q.lte(key, range.to);
+    } else if (value === 'is.null') {
+      q = q.is(key, null);
+    } else if (value === 'not.is.null') {
+      q = q.not(key, 'is', null);
     } else {
       q = q.eq(key, value as string);
     }

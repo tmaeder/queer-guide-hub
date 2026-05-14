@@ -7,8 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Box from '@mui/material/Box';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom } from '@/hooks/usePageFetchers';
 import { useCurrency } from '@/hooks/useCurrency';
 
 interface CurrencyRow {
@@ -21,14 +20,8 @@ export function CurrencySelector() {
 
   const { data: currencies = [] } = useQuery({
     queryKey: ['currencies-list'],
-    queryFn: async (): Promise<CurrencyRow[]> => {
-      const { data, error } = await supabase
-        .from('currencies')
-        .select('code, symbol')
-        .order('code');
-      if (error) return [];
-      return data || [];
-    },
+    queryFn: () =>
+      listFrom<CurrencyRow>('currencies', 'code, symbol', { col: 'code' }).catch(() => []),
     staleTime: Infinity,
   });
 
@@ -54,11 +47,10 @@ export function CurrencySelector() {
       <SelectContent>
         {currencies.map((c) => (
           <SelectItem key={c.code} value={c.code}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <span style={{ fontSize: '0.8125rem' }}>
-                {c.code} {c.symbol ? `(${c.symbol})` : ''}
-              </span>
-            </Box>
+            <span className="text-[0.8125rem]">
+              {c.code}
+              {c.symbol && c.symbol !== c.code ? ` (${c.symbol})` : ''}
+            </span>
           </SelectItem>
         ))}
       </SelectContent>

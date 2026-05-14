@@ -1,14 +1,31 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { queryWithRetry } from '@/utils/fetchWithRetry';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listings']['Insert'];
 
+export const PAGE_SIZE = 24;
+
+export type MarketplaceSort = 'newest' | 'oldest' | 'az' | 'za' | 'price_asc' | 'price_desc' | 'most_viewed';
+
+export interface MarketplaceFiltersInput {
+  category?: string;
+  subcategory?: string;
+  location?: string;
+  priceRange?: { min: number; max: number };
+  tags?: string[];
+  search?: string;
+  businessType?: string;
+  categoryId?: string;
+  merchantDomain?: string;
+}
+
 export function useMarketplace() {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
 
@@ -21,15 +38,11 @@ export function useMarketplace() {
     return () => clearTimeout(timer);
   }, [loading]);
 
-  const fetchListings = async (filters?: {
-    category?: string;
-    subcategory?: string;
-    location?: string;
-    priceRange?: { min: number; max: number };
-    tags?: string[];
-    search?: string;
-    businessType?: string;
-  }) => {
+  const fetchListings = async (
+    filters?: MarketplaceFiltersInput,
+    page = 0,
+    sort: MarketplaceSort = 'newest',
+  ) => {
     try {
       setLoading(true);
       setLoadingTimedOut(false);
@@ -43,10 +56,35 @@ export function useMarketplace() {
           marketplace_favorites(id),
           venues(name, address, city)
         `,
+          { count: 'exact' },
         )
         .eq('status', 'active')
-        .order('featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('featured', { ascending: false });
+
+      switch (sort) {
+        case 'oldest':
+          query = query.order('created_at', { ascending: true });
+          break;
+        case 'az':
+          query = query.order('title', { ascending: true });
+          break;
+        case 'za':
+          query = query.order('title', { ascending: false });
+          break;
+        case 'price_asc':
+          query = query.order('price_usd', { ascending: true, nullsFirst: false });
+          break;
+        case 'price_desc':
+          query = query.order('price_usd', { ascending: false, nullsFirst: false });
+          break;
+        case 'most_viewed':
+          query = query.order('views_count', { ascending: false, nullsFirst: false });
+          break;
+        case 'newest':
+        default:
+          query = query.order('created_at', { ascending: false });
+          break;
+      }
 
       if (filters?.category) {
         query = query.eq('category', filters.category);
@@ -64,6 +102,14 @@ export function useMarketplace() {
         query = query.eq('business_type', filters.businessType);
       }
 
+      if (filters?.categoryId) {
+        query = query.eq('category_id', filters.categoryId);
+      }
+
+      if (filters?.merchantDomain) {
+        query = query.eq('merchant_domain', filters.merchantDomain);
+      }
+
       if (filters?.priceRange) {
         query = query.gte('price', filters.priceRange.min).lte('price', filters.priceRange.max);
       }
@@ -78,11 +124,10 @@ export function useMarketplace() {
         );
       }
 
-      query = query.limit(100);
+      query = query.range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
-      // Fetch listings and broken IDs in parallel
       const [listingsResult, brokenResult] = await Promise.all([
-        queryWithRetry(() => query) as Promise<{ data: unknown[]; error: Error | null }>,
+        queryWithRetry(() => query) as Promise<{ data: unknown[]; count: number | null; error: Error | null }>,
         supabase.rpc('get_broken_marketplace_ids'),
       ]);
 
@@ -90,11 +135,12 @@ export function useMarketplace() {
 
       const brokenIds = new Set<string>((brokenResult.data ?? []).map((id: string) => id));
 
-      // Filter out listings with broken website links
-      const filtered = (listingsResult.data || []).filter(
+      const rawData = (listingsResult.data || []) as MarketplaceListing[];
+      const filtered = rawData.filter(
         (l: MarketplaceListing) => !brokenIds.has(l.id),
       );
       setListings(filtered);
+      setTotal(listingsResult.count ?? filtered.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch listings');
     } finally {
@@ -133,7 +179,6 @@ export function useMarketplace() {
         .single();
 
       if (existing) {
-        // Remove favorite
         const { error } = await supabase
           .from('marketplace_favorites')
           .delete()
@@ -142,7 +187,6 @@ export function useMarketplace() {
         if (error) throw error;
         return { favorited: false, error: null };
       } else {
-        // Add favorite
         const { error } = await supabase
           .from('marketplace_favorites')
           .insert({ listing_id: listingId, user_id: user.id });
@@ -168,12 +212,10 @@ export function useMarketplace() {
     }
   };
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
-
   return {
     listings,
+    total,
+    pageSize: PAGE_SIZE,
     loading,
     loadingTimedOut,
     error,

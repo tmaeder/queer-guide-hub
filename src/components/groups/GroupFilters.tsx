@@ -2,10 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Search, Users, Lock, Globe, X } from "lucide-react";
 import { TagSelector } from "@/components/tags/TagSelector";
-import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
 
 interface GroupFiltersProps {
   searchQuery: string;
@@ -25,6 +24,22 @@ const filterOptions = [
   { id: "medium", label: "Medium (50-200)", icon: Users },
   { id: "large", label: "Large (200+)", icon: Users },
 ];
+
+function FilterChip({ label, onDelete }: { label: string; onDelete: () => void }) {
+  return (
+    <Badge variant="secondary" className="gap-1 pr-1">
+      {label}
+      <button
+        type="button"
+        onClick={onDelete}
+        className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
+        aria-label="Remove filter"
+      >
+        <X style={{ width: 10, height: 10 }} />
+      </button>
+    </Badge>
+  );
+}
 
 export const GroupFilters = ({
   searchQuery,
@@ -55,9 +70,9 @@ export const GroupFilters = ({
 
   return (
     <Card>
-      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ position: 'relative', flex: 1 }}>
+      <div className="p-4 flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
             <Search
               style={{
                 position: 'absolute',
@@ -75,22 +90,22 @@ export const GroupFilters = ({
               onChange={(e) => onSearchChange(e.target.value)}
               style={{ paddingLeft: 40 }}
             />
-          </Box>
+          </div>
           {hasActiveFilters && (
             <Button
               variant="outline"
               size="sm"
               onClick={clearAllFilters}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <span className="flex items-center gap-1">
                 <X style={{ width: 12, height: 12 }} />
                 Clear
-              </Box>
+              </span>
             </Button>
           )}
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={showMyGroups ? "default" : "outline"}
             size="sm"
@@ -110,16 +125,16 @@ export const GroupFilters = ({
                 size="sm"
                 onClick={() => toggleFilter(option.id)}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <span className="flex items-center gap-1">
                   <Icon style={{ width: 12, height: 12 }} />
                   {option.label}
-                </Box>
+                </span>
               </Button>
             );
           })}
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div className="flex flex-col gap-2">
           <Label htmlFor="tags">Filter by Tags</Label>
           <TagSelector
             selectedTags={selectedTags}
@@ -128,46 +143,42 @@ export const GroupFilters = ({
             maxTags={3}
             allowCustomTags={false}
           />
-        </Box>
+        </div>
 
         {hasActiveFilters && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          <div className="flex flex-wrap gap-1">
             {searchQuery && (
-              <Chip
+              <FilterChip
                 label={`Search: "${searchQuery}"`}
-                size="small"
                 onDelete={() => onSearchChange("")}
               />
             )}
             {showMyGroups && (
-              <Chip
+              <FilterChip
                 label="My Groups"
-                size="small"
                 onDelete={() => onShowMyGroupsChange(false)}
               />
             )}
             {selectedTags.map((tag) => (
-              <Chip
+              <FilterChip
                 key={tag}
                 label={`Tag: ${tag}`}
-                size="small"
                 onDelete={() => onTagsChange(selectedTags.filter(t => t !== tag))}
               />
             ))}
             {activeFilters.map((filter) => {
               const option = filterOptions.find(opt => opt.id === filter);
               return (
-                <Chip
+                <FilterChip
                   key={filter}
-                  label={option?.label}
-                  size="small"
+                  label={option?.label || filter}
                   onDelete={() => toggleFilter(filter)}
                 />
               );
             })}
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
     </Card>
   );
 };

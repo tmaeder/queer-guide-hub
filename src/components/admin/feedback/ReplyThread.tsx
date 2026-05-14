@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send, Mail, MailX, AlertTriangle, Github } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Send, Mail, MailX, AlertTriangle } from 'lucide-react';
+import { Github } from '@/components/icons/brand';
 import { timeAgo } from '@/utils/timezone';
 import type { FeedbackReply } from './types';
 
@@ -30,36 +28,31 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
   };
 
   return (
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', mb: 0.75 }}>
+    <div className="mb-6">
+      <p className="text-xs font-semibold block mb-1">
         Conversation {replies.length > 0 && `(${replies.length})`}
-      </Typography>
+      </p>
 
       {replies.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 1.5 }}>
+        <div className="flex flex-col gap-2 mb-3">
           {replies.map((r, i) => {
             const isGithub = r.by_name.startsWith('GH:');
             return (
-              <Box
+              <div
                 key={`${r.at}-${i}`}
-                sx={{
-                  p: 1,
-                  borderLeft: 3,
-                  borderColor: isGithub ? '#6366f1' : '#b60d3d',
-                  bgcolor: 'action.hover',
-                  borderRadius: 1,
-                }}
+                className="p-2 border-l-[3px] bg-muted rounded"
+                style={{ borderColor: isGithub ? '#6366f1' : 'hsl(var(--foreground))' }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                  <Avatar sx={{ width: 18, height: 18, fontSize: '0.6rem' }}>
-                    {isGithub ? <Github size={10} /> : r.by_name.slice(0, 1).toUpperCase()}
+                <div className="flex items-center gap-1 mb-1">
+                  <Avatar className="w-[18px] h-[18px]">
+                    <AvatarFallback className="text-[0.6rem]">
+                      {isGithub ? <Github size={10} /> : r.by_name.slice(0, 1).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
-                  <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.7rem' }}>
+                  <span className="text-[0.7rem] font-semibold">
                     {isGithub ? r.by_name.slice(3) : r.by_name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
-                    {timeAgo(r.at)}
-                  </Typography>
+                  </span>
+                  <span className="text-[0.6rem] text-muted-foreground">{timeAgo(r.at)}</span>
                   {r.emailed && (
                     <span
                       title={
@@ -83,7 +76,15 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                                 ? '#3b82f6'
                                 : '#9ca3af',
                         }}
-                        aria-label={r.bounced_at ? 'bounced' : r.opened_at ? 'opened' : r.delivered_at ? 'delivered' : 'sent'}
+                        aria-label={
+                          r.bounced_at
+                            ? 'bounced'
+                            : r.opened_at
+                              ? 'opened'
+                              : r.delivered_at
+                                ? 'delivered'
+                                : 'sent'
+                        }
                       />
                     </span>
                   )}
@@ -103,17 +104,12 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                       <Github size={11} />
                     </a>
                   )}
-                </Box>
-                <Typography
-                  variant="body2"
-                  sx={{ whiteSpace: 'pre-wrap', fontSize: '0.8rem', lineHeight: 1.4 }}
-                >
-                  {r.body}
-                </Typography>
-              </Box>
+                </div>
+                <p className="whitespace-pre-wrap text-[0.8rem] leading-snug">{r.body}</p>
+              </div>
             );
           })}
-        </Box>
+        </div>
       )}
 
       <Textarea
@@ -122,30 +118,19 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
         placeholder={canEmail ? `Reply to ${contactEmail}…` : 'Add an internal comment…'}
         style={{ minHeight: 80 }}
       />
-      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 1 }}>
+      <div className="flex items-center mt-2 gap-2">
         {canEmail ? (
-          <FormControlLabel
-            control={
-              <Switch
-                size="small"
-                checked={notify}
-                onChange={(e) => setNotify(e.target.checked)}
-              />
-            }
-            label={`Email submitter (${contactEmail})`}
-            sx={{ '& .MuiTypography-root': { fontSize: '0.7rem' } }}
-          />
+          <label className="flex items-center gap-2 text-[0.7rem] cursor-pointer">
+            <Switch checked={notify} onCheckedChange={setNotify} />
+            <span>Email submitter ({contactEmail})</span>
+          </label>
         ) : (
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-          >
+          <span className="text-xs text-muted-foreground inline-flex items-center gap-0.5">
             <MailX size={12} />
             No contact email — comment stays internal
-          </Typography>
+          </span>
         )}
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
         <Button
           onClick={handleSend}
           disabled={!body.trim() || isSending}
@@ -154,7 +139,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
           <Send style={{ width: 14, height: 14 }} />
           {isSending ? 'Sending…' : canEmail && notify ? 'Reply' : 'Save comment'}
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

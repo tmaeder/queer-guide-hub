@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Check, Loader2, AlertCircle } from 'lucide-react';
 import { useMailboxAddress } from '@/hooks/useMailboxAddress';
 
-export const MailboxSettings: React.FC = () => {
+export const MailboxSettings = () => {
   const { currentAddress, fullEmail, checkAvailability, claimAddress } = useMailboxAddress();
 
   const [handle, setHandle] = useState('');
@@ -20,7 +18,6 @@ export const MailboxSettings: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Debounced availability check
   useEffect(() => {
     if (!handle || handle.length < 3) {
       setAvailability(null);
@@ -58,32 +55,26 @@ export const MailboxSettings: React.FC = () => {
   if (currentAddress || success) {
     return (
       <Card className="p-6">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <Check className="h-5 w-5 text-green-600" />
-          <Typography variant="h6" fontWeight={700}>
-            Your Email Address
-          </Typography>
-        </Box>
-        <Typography variant="body1" fontWeight={600}>
-          {fullEmail || `${handle}@queer.guide`}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+        <div className="flex items-center gap-2 mb-4">
+          <Check className="h-5 w-5 text-foreground" />
+          <h6 className="text-base font-bold">Your Email Address</h6>
+        </div>
+        <p className="text-base font-semibold">{fullEmail || `${handle}@queer.guide`}</p>
+        <p className="text-sm text-muted-foreground mt-2">
           People can send you emails at this address. Incoming messages will appear in your inbox.
-        </Typography>
+        </p>
       </Card>
     );
   }
 
   return (
     <Card className="p-6">
-      <Typography variant="h6" fontWeight={700} gutterBottom>
-        Claim Your Email Address
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      <h6 className="text-base font-bold mb-2">Claim Your Email Address</h6>
+      <p className="text-sm text-muted-foreground mb-6">
         Choose a unique handle for your @queer.guide email address. This cannot be changed later.
-      </Typography>
+      </p>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      <div className="flex items-center gap-2 mb-2">
         <Input
           placeholder="yourname"
           value={handle}
@@ -94,50 +85,43 @@ export const MailboxSettings: React.FC = () => {
           disabled={claiming}
           className="flex-1"
         />
-        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
           @queer.guide
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
-      {/* Availability indicator */}
       {checking && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
+        <div className="flex items-center gap-1 mt-2">
           <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-          <Typography variant="caption" color="text.secondary">
-            Checking availability...
-          </Typography>
-        </Box>
+          <span className="text-xs text-muted-foreground">Checking availability...</span>
+        </div>
       )}
       {!checking && availability && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
+        <div className="flex items-center gap-1 mt-2">
           {availability.available ? (
             <>
-              <Check className="h-3 w-3 text-green-600" />
-              <Typography variant="caption" color="success.main">
+              <Check className="h-3 w-3 text-foreground" />
+              <span className="text-xs text-foreground">
                 {handle}@queer.guide is available
-              </Typography>
+              </span>
             </>
           ) : (
             <>
-              <AlertCircle className="h-3 w-3 text-red-500" />
-              <Typography variant="caption" color="error">
-                {availability.reason}
-              </Typography>
+              <AlertCircle className="h-3 w-3 text-destructive" />
+              <span className="text-xs text-destructive">{availability.reason}</span>
             </>
           )}
-        </Box>
+        </div>
       )}
 
       {error && (
-        <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-          {error}
-        </Typography>
+        <p className="text-sm text-destructive mt-2">{error}</p>
       )}
 
-      <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+      <span className="text-xs text-muted-foreground mt-4 block">
         3-30 characters. Letters, numbers, dots, and hyphens only. Must start and end with a letter
         or number.
-      </Typography>
+      </span>
 
       <Button
         onClick={handleClaim}

@@ -1,0 +1,25 @@
+name: bundle-shape
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'vite.config.*'
+      - 'tsconfig*'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/check-bundle-shape.mjs'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144

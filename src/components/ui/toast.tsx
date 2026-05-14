@@ -55,15 +55,15 @@ const getToastStyle = (variant: ToastVariant = 'default'): React.CSSProperties =
   if (variant === 'destructive') {
     return {
       ...base,
-      backgroundColor: '#dc2626',
-      color: '#ffffff',
-      borderColor: '#dc2626',
+      backgroundColor: 'hsl(var(--destructive))',
+      color: 'hsl(var(--destructive-foreground))',
+      borderColor: 'hsl(var(--destructive))',
     };
   }
 
   return {
     ...base,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'hsl(var(--background))',
     color: 'inherit',
   };
 };
@@ -89,7 +89,7 @@ const toastActionStyle: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: 8,
-  backgroundColor: '#f5f5f5',
+  backgroundColor: 'hsl(var(--accent))',
   padding: '0 12px',
   fontSize: '0.875rem',
   fontWeight: 500,
@@ -115,7 +115,7 @@ const toastCloseStyle: React.CSSProperties = {
   top: 8,
   borderRadius: 8,
   padding: 4,
-  color: 'rgba(0, 0, 0, 0.5)',
+  color: 'hsl(var(--muted-foreground))',
   opacity: 0.7,
   cursor: 'pointer',
   border: 'none',

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import MuiButton from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { ArrowRight } from 'lucide-react';
 import type { ContentLink } from '@/hooks/useContentLinks';
 
@@ -63,60 +65,66 @@ export function EditLinkDialog({ open, link, onClose, onSave }: EditLinkDialogPr
 
   if (!link) return null;
 
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Edit Link URL</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', gap: 1, mb: 2, mt: 1 }}>
-          <Chip size="small" label={link.content_type} variant="outlined" />
-          <Chip size="small" label={link.field_name} variant="outlined" />
-          <Chip size="small" label={link.status} color={link.status === 'BROKEN' ? 'error' : link.status === 'REDIRECT' ? 'warning' : 'default'} />
-        </Box>
+  const statusVariant: 'destructive' | 'secondary' | 'outline' =
+    link.status === 'BROKEN' ? 'destructive' : link.status === 'REDIRECT' ? 'secondary' : 'outline';
 
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-          Current URL
-        </Typography>
-        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem', wordBreak: 'break-all', mb: 2, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Link URL</DialogTitle>
+        </DialogHeader>
+
+        <div className="flex gap-2 mb-4 mt-1 flex-wrap">
+          <Badge variant="outline">{link.content_type}</Badge>
+          <Badge variant="outline">{link.field_name}</Badge>
+          <Badge variant={statusVariant}>{link.status}</Badge>
+        </div>
+
+        <p className="text-xs text-muted-foreground mb-1">Current URL</p>
+        <p className="font-mono text-xs break-all mb-4 p-2 bg-muted rounded">
           {link.original_url}
-        </Typography>
+        </p>
 
         {link.final_url && link.final_url !== link.original_url && (
           <>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
               <ArrowRight style={{ width: 14, height: 14 }} /> Redirects to
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem', wordBreak: 'break-all', flex: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
+            </p>
+            <div className="flex items-center gap-2 mb-4">
+              <p className="font-mono text-xs break-all flex-1 p-2 bg-muted rounded">
                 {link.final_url}
-              </Typography>
-              <MuiButton size="small" variant="outlined" onClick={useRedirect} sx={{ whiteSpace: 'nowrap' }}>
+              </p>
+              <Button size="sm" variant="outline" onClick={useRedirect} className="whitespace-nowrap">
                 Use this
-              </MuiButton>
-            </Box>
+              </Button>
+            </div>
           </>
         )}
 
-        <TextField
-          fullWidth
-          label="New URL"
-          value={newUrl}
-          onChange={e => { setNewUrl(e.target.value); setUrlError(''); }}
-          error={!!urlError}
-          helperText={urlError || 'The source content URL will be updated to this value'}
-          size="small"
-          sx={{ mt: 1 }}
-        />
+        <div className="flex flex-col gap-2 mt-2">
+          <Label htmlFor="edit-link-url">New URL</Label>
+          <Input
+            id="edit-link-url"
+            value={newUrl}
+            onChange={e => { setNewUrl(e.target.value); setUrlError(''); }}
+            className={urlError ? 'border-destructive' : ''}
+          />
+          <p className={`text-xs ${urlError ? 'text-destructive' : 'text-muted-foreground'}`}>
+            {urlError || 'The source content URL will be updated to this value'}
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button
+            onClick={handleSave}
+            disabled={saving || !newUrl || newUrl === link.original_url}
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <MuiButton onClick={onClose}>Cancel</MuiButton>
-        <MuiButton
-          variant="contained"
-          onClick={handleSave}
-          disabled={saving || !newUrl || newUrl === link.original_url}
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </MuiButton>
-      </DialogActions>
     </Dialog>
   );
 }

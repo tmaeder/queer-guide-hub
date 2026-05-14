@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
 import { MessageCircle, Send, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   usePostTripComment,
   useDeleteTripComment,
@@ -72,7 +70,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
   };
 
   return (
-    <Box sx={{ mt: 0.5 }}>
+    <div className="mt-1">
       <Button
         variant="ghost"
         size="sm"
@@ -88,95 +86,80 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
       </Button>
 
       {open && (
-        <Box
-          sx={{ mt: 0.75, pl: 1 }}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="mt-1 pl-2" onClick={(e) => e.stopPropagation()}>
           {comments && comments.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mb: 1 }}>
+            <div className="flex flex-col gap-1 mb-2">
               {comments.map((c) => (
-                <Box
+                <div
                   key={c.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 0.75,
-                    p: 0.75,
-                    bgcolor: 'action.hover',
-                    borderRadius: 1,
-                  }}
+                  className="flex items-start gap-1 p-1 bg-muted rounded"
                 >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.25 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                        {c.display_name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 mb-0.5">
+                      <span className="text-xs font-bold">{c.display_name}</span>
+                      <span className="text-[10px] text-muted-foreground">
                         {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>
-                      {c.body}
-                    </Typography>
-                  </Box>
+                      </span>
+                    </div>
+                    <p className="text-[13px] whitespace-pre-wrap">{c.body}</p>
+                  </div>
                   {canDelete(c) && (
-                    <IconButton
-                      size="small"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       aria-label="delete comment"
                       disabled={del.isPending}
                       onClick={() => del.mutate({ id: c.id, tripId })}
-                      sx={{ p: 0.25 }}
+                      className="h-6 w-6 p-0"
                     >
                       <Trash2 size={12} />
-                    </IconButton>
+                    </Button>
                   )}
-                </Box>
+                </div>
               ))}
-            </Box>
+            </div>
           )}
 
           {!disabled && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <div className="flex flex-col gap-1">
               {!user && (
-                <TextField
-                  size="small"
+                <Input
                   placeholder="Your name"
                   value={name}
                   onChange={(e) => setName(e.target.value.slice(0, 60))}
-                  inputProps={{ maxLength: 60 }}
-                  sx={{ '& .MuiInputBase-input': { fontSize: 13, py: 0.5 } }}
+                  maxLength={60}
+                  className="h-8 text-[13px]"
                 />
               )}
-              <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-end' }}>
-                <TextField
-                  size="small"
-                  multiline
-                  maxRows={3}
+              <div className="flex gap-1 items-end">
+                <Textarea
                   placeholder="Add a comment…"
                   value={body}
                   onChange={(e) => setBody(e.target.value.slice(0, 600))}
-                  inputProps={{ maxLength: 600 }}
-                  sx={{ flex: 1, '& .MuiInputBase-input': { fontSize: 13 } }}
+                  maxLength={600}
+                  rows={1}
+                  className="flex-1 text-[13px] min-h-8 max-h-24"
                 />
-                <IconButton
-                  size="small"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleSubmit}
                   disabled={!body.trim() || (!user && !name.trim()) || post.isPending}
                   aria-label="Post comment"
-                  sx={{ mb: 0.25 }}
+                  className="h-7 w-7 p-0 mb-0.5"
                 >
                   <Send size={14} />
-                </IconButton>
-              </Box>
+                </Button>
+              </div>
               {post.isError && (
-                <Typography variant="caption" color="error.main" sx={{ fontSize: 11 }}>
+                <span className="text-[11px] text-destructive">
                   Could not post comment.
-                </Typography>
+                </span>
               )}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

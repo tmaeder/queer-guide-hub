@@ -10,7 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface Grant {
   id: string;
@@ -37,7 +37,6 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
   const [email, setEmail] = useState('');
   const [perm, setPerm] = useState<'view' | 'edit' | 'run'>('view');
   const qc = useQueryClient();
-  const { toast } = useToast();
 
   const { data: grants = [], isLoading } = useQuery({
     queryKey: ['pipeline-permissions', pipelineId],
@@ -76,11 +75,11 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Access granted' });
+      toast.success('Access granted');
       qc.invalidateQueries({ queryKey: ['pipeline-permissions', pipelineId] });
       setEmail('');
     },
-    onError: (e: Error) => toast({ title: 'Grant failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Grant failed: ${e.message}`),
   });
 
   const revoke = useMutation({
@@ -91,7 +90,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pipeline-permissions', pipelineId] });
     },
-    onError: (e: Error) => toast({ title: 'Revoke failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Revoke failed: ${e.message}`),
   });
 
   return (
@@ -163,14 +162,14 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
                   const PIcon = pc.icon;
                   return (
                     <div key={g.id} className="p-2.5 flex items-center gap-2 hover:bg-muted/30 transition-colors">
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 gap-1 ${pc.className}`}>
+                      <Badge variant="outline" className={`text-2xs px-1.5 py-0 gap-1 ${pc.className}`}>
                         <PIcon className="h-2.5 w-2.5" />
                         {pc.label}
                       </Badge>
-                      <code className="text-[11px] font-mono flex-1 truncate" title={g.user_id}>
+                      <code className="text-xs2 font-mono flex-1 truncate" title={g.user_id}>
                         {g.user_id.slice(0, 16)}
                       </code>
-                      <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                      <span className="text-xs2 text-muted-foreground whitespace-nowrap">
                         {formatDistanceToNow(new Date(g.granted_at), { addSuffix: true })}
                       </span>
                       <Button

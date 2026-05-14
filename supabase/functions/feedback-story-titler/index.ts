@@ -6,7 +6,6 @@
 // be invoked on-demand with { suggestion_ids: [...] }.
 
 import 'https://deno.land/x/xhr@0.1.0/mod.ts';
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { getCorsHeaders, errorResponse, getServiceClient, jsonResponse } from '../_shared/supabase-client.ts';
 
 const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
@@ -72,7 +71,7 @@ async function draftTitle(token: string, titles: string[]): Promise<string | nul
   return words.slice(0, 6).join(' ');
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) });
   }

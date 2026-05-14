@@ -9,6 +9,7 @@
 // ============================================================
 
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 interface WikidataHit {
   id: string
@@ -71,7 +72,7 @@ async function imageOk(url: string | null): Promise<boolean> {
   } catch { return false }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-enrich-personality', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -164,7 +165,7 @@ Deno.serve(async (req) => {
     console.error('pipeline-enrich-personality:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))
 
 function formatDate(v: string | null): string | null {
   if (!v) return null

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { autoLayout } from '../utils/autoLayout';
 import type { Node, Edge } from '@xyflow/react';
 import type { PipelineNodeType } from '../hooks/usePipelineBuilder';
@@ -45,11 +45,10 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
   const [description, setDescription] = useState('');
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleGenerate = async () => {
     if (description.trim().length < 10) {
-      toast({ title: 'Describe what the pipeline should do', description: 'At least 10 characters', variant: 'destructive' });
+      toast.error('Describe what the pipeline should do: At least 10 characters');
       return;
     }
     setLoading(true);
@@ -61,8 +60,8 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'no suggestion returned');
       setSuggestion(data.suggestion as Suggestion);
-    } catch (e) {
-      toast({ title: 'Suggestion failed', description: (e as Error).message, variant: 'destructive' });
+    } catch (_e) {
+      toast.error('Suggestion failed');
     } finally {
       setLoading(false);
     }
@@ -146,7 +145,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
               <button
                 key={ex}
                 onClick={() => setDescription(ex)}
-                className="text-[10px] px-2 py-0.5 rounded border border-border bg-background hover:bg-accent transition-colors"
+                className="text-2xs px-2 py-0.5 rounded border border-border bg-background hover:bg-accent transition-colors"
               >
                 {ex.slice(0, 40)}…
               </button>
@@ -169,13 +168,13 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
             <div className="space-y-1">
               {suggestion.nodes.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 text-xs">
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">{n.id}</Badge>
-                  <span className="font-mono text-[11px] text-muted-foreground">{n.slug}</span>
+                  <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{n.id}</Badge>
+                  <span className="font-mono text-xs2 text-muted-foreground">{n.slug}</span>
                   <span className="truncate">{n.label}</span>
                 </div>
               ))}
             </div>
-            <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/40">
+            <div className="text-2xs text-muted-foreground pt-2 border-t border-border/40">
               Edges: {suggestion.edges.map(e => `${e.source}→${e.target}`).join(', ')}
             </div>
           </div>

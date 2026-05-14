@@ -1,0 +1,87 @@
+name: Release extension
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "extension/manifest.json"
+      - ".github/workflows/release-extension.yml"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional override tag (default: extension-v<manifest version>)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.plan.outputs.tag }}
+      version: ${{ steps.plan.outputs.version }}
+      skip: ${{ steps.plan.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Plan release
+        id: plan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OVERRIDE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          v="$(jq -r .version extension/manifest.json)"
+          tag="${OVERRIDE_TAG:-extension-v${v}}"
+          echo "version=${v}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}"   >> "$GITHUB_OUTPUT"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "skip=true"  >> "$GITHUB_OUTPUT"
+            echo "Release $tag already exists — skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    needs: gate
+    if: needs.gate.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: extension/package-lock.json
+
+      - name: Build & zip
+        working-directory: extension
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+          cd dist
+          zip -rq "$GITHUB_WORKSPACE/queer-guide-extension.zip" .
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.gate.outputs.tag }}
+          VERSION: ${{ needs.gate.outputs.version }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          notes_file="$(mktemp)"
+          cat > "$notes_file" <<EOF
+          # Extension v${VERSION}
+
+          Built from commit ${SHA}.
+
+          Install: download queer-guide-extension.zip, unzip, then chrome://extensions → Developer mode → Load unpacked. Or open https://queer.guide/extension and click Connect.
+          EOF
+          gh release create "$TAG" "queer-guide-extension.zip" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Extension v${VERSION}" \
+            --notes-file "$notes_file" \
+            --latest

@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Slider from '@mui/material/Slider';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 import {
   Select,
   SelectContent,
@@ -14,7 +12,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Shield, DollarSign, Compass, Home, Users, Accessibility, Plane, MapPin } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchProfileTravelPreferences,
+  fetchTravelPrefsHomeCity,
+  saveProfileTravelPreferences,
+} from '@/hooks/useTravelPreferencesEditor';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -92,13 +94,9 @@ export function TravelPreferencesEditor() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('travel_preferences')
-        .eq('user_id', user.id)
-        .single();
-      if (data?.travel_preferences) {
-        setPrefs({ ...DEFAULT_PREFS, ...(data.travel_preferences as Partial<TravelPreferences>) });
+      const stored = await fetchProfileTravelPreferences(user.id);
+      if (stored) {
+        setPrefs({ ...DEFAULT_PREFS, ...stored });
       }
       setLoaded(true);
     })();
@@ -110,25 +108,8 @@ export function TravelPreferencesEditor() {
     setPreferredTransport(travelPrefs.preferred_transport ?? []);
     if (travelPrefs.home_city_id && !homeCity) {
       (async () => {
-        const { data } = await supabase
-          .from('cities')
-          .select('id, name, timezone, country:country_id(id, name, code)')
-          .eq('id', travelPrefs.home_city_id!)
-          .maybeSingle();
-        if (data) {
-          const row = data as Record<string, unknown>;
-          const country = row.country as { id: string; name: string; code: string | null } | null;
-          if (country) {
-            setHomeCity({
-              cityId: row.id as string,
-              cityName: row.name as string,
-              countryId: country.id,
-              countryName: country.name,
-              countryCode: country.code ?? null,
-              timezone: (row.timezone as string | null) ?? null,
-            });
-          }
-        }
+        const city = await fetchTravelPrefsHomeCity(travelPrefs.home_city_id!);
+        if (city) setHomeCity(city);
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,11 +125,7 @@ export function TravelPreferencesEditor() {
     if (!user) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ travel_preferences: prefs })
-        .eq('user_id', user.id);
-      if (error) throw error;
+      await saveProfileTravelPreferences(user.id, prefs);
 
       await updateTravelPrefs.mutateAsync({
         budget_tier: BUDGET_TO_TIER[prefs.budget_level] ?? null,
@@ -178,15 +155,15 @@ export function TravelPreferencesEditor() {
   if (!loaded) return null;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Budget */}
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <DollarSign style={{ width: 18, height: 18 }} />
               Budget Level
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -200,9 +177,9 @@ export function TravelPreferencesEditor() {
               <SelectItem value="luxury">Luxury</SelectItem>
             </SelectContent>
           </Select>
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+          <p className="text-xs text-muted-foreground mt-2 block">
             Used to rank hotel and activity recommendations by price
-          </Typography>
+          </p>
         </CardContent>
       </Card>
 
@@ -210,33 +187,32 @@ export function TravelPreferencesEditor() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Shield style={{ width: 18, height: 18 }} />
               Safety Threshold
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Typography variant="body2" sx={{ mb: 2 }}>
+          <p className="text-sm mb-4">
             Minimum LGBTQ+ equality score for recommended destinations
-          </Typography>
+          </p>
           <Slider
-            value={prefs.safety_threshold}
-            onChange={(_, v) => setPrefs((p) => ({ ...p, safety_threshold: v as number }))}
+            value={[prefs.safety_threshold]}
+            onValueChange={([v]) => setPrefs((p) => ({ ...p, safety_threshold: v }))}
             min={0}
             max={100}
             step={5}
-            valueLabelDisplay="on"
-            marks={[
-              { value: 0, label: 'Any' },
-              { value: 40, label: 'Caution' },
-              { value: 70, label: 'Safe' },
-              { value: 100, label: 'Very Safe' },
-            ]}
           />
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Destinations below this score will be deprioritized in recommendations (not hidden)
-          </Typography>
+          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <span>Any (0)</span>
+            <span>Caution (40)</span>
+            <span>Safe (70)</span>
+            <span>Very Safe (100)</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 block">
+            Current: {prefs.safety_threshold}. Destinations below this score will be deprioritized in recommendations (not hidden)
+          </p>
         </CardContent>
       </Card>
 
@@ -244,14 +220,14 @@ export function TravelPreferencesEditor() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Compass style={{ width: 18, height: 18 }} />
               Travel Interests
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className="flex flex-wrap gap-2">
             {INTERESTS.map((interest) => (
               <Badge
                 key={interest}
@@ -262,7 +238,7 @@ export function TravelPreferencesEditor() {
                 {interest}
               </Badge>
             ))}
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
@@ -270,14 +246,14 @@ export function TravelPreferencesEditor() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Home style={{ width: 18, height: 18 }} />
               Preferred Accommodation
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className="flex flex-wrap gap-2">
             {ACCOMMODATION_TYPES.map(({ value, label }) => (
               <Badge
                 key={value}
@@ -288,7 +264,7 @@ export function TravelPreferencesEditor() {
                 {label}
               </Badge>
             ))}
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
@@ -296,10 +272,10 @@ export function TravelPreferencesEditor() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Users style={{ width: 18, height: 18 }} />
               Travel Style
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -321,14 +297,14 @@ export function TravelPreferencesEditor() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Accessibility style={{ width: 18, height: 18 }} />
               Accessibility Needs
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className="flex flex-wrap gap-2">
             {ACCESSIBILITY_OPTIONS.map((need) => (
               <Badge
                 key={need}
@@ -339,10 +315,10 @@ export function TravelPreferencesEditor() {
                 {need}
               </Badge>
             ))}
-          </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 block">
             We'll prioritize accessible venues and hotels in your recommendations
-          </Typography>
+          </p>
         </CardContent>
       </Card>
 
@@ -350,14 +326,14 @@ export function TravelPreferencesEditor() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <Plane style={{ width: 18, height: 18 }} />
               Preferred Transport
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <div className="flex flex-wrap gap-2">
             {TRANSPORT_OPTIONS.map(({ value, label }) => (
               <Badge
                 key={value}
@@ -367,10 +343,10 @@ export function TravelPreferencesEditor() {
                 {label}
               </Badge>
             ))}
-          </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2 block">
             Trip transport suggestions prioritize your preferred modes
-          </Typography>
+          </p>
         </CardContent>
       </Card>
 
@@ -378,10 +354,10 @@ export function TravelPreferencesEditor() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <MapPin style={{ width: 18, height: 18 }} />
               Home City
-            </Box>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -391,9 +367,9 @@ export function TravelPreferencesEditor() {
             label="Home city"
             id="travel-prefs-home-city"
           />
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+          <p className="text-xs text-muted-foreground mt-2 block">
             Used as the default origin for flight, rail and bus deep-links
-          </Typography>
+          </p>
         </CardContent>
       </Card>
 
@@ -401,6 +377,6 @@ export function TravelPreferencesEditor() {
       <Button onClick={save} disabled={saving}>
         {saving ? 'Saving...' : 'Save Travel Preferences'}
       </Button>
-    </Box>
+    </div>
   );
 }

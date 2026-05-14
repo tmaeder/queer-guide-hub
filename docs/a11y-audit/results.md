@@ -124,3 +124,30 @@ Final closing fixes:
   authenticated admin runs.
 - New `e2e/a11y-dialogs.spec.ts`: covers mobile drawer, search palette,
   dialog leak guard, consent banner.
+
+## Closeout — 2026-05-01
+
+Two leftover follow-ups from the 2026-04-26 closeout addressed:
+
+1. **Admin a11y coverage end-to-end.** New `e2e/auth.setup.ts` Playwright
+   setup project signs in via `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` and
+   writes `playwright/.auth/admin.json`. `playwright.config.ts` consumes it
+   as a `dependencies: ['setup']` for the chromium project when those env
+   vars are present. CI workflow `.github/workflows/a11y.yml` passes the
+   same secrets through to the existing `axe-playwright` job. Effect: when
+   secrets are configured, the 8 admin axe specs that previously
+   `test.skip`'d against `/auth` redirect now run for real. When secrets
+   are absent (forks, local dev) the specs skip cleanly as before.
+2. **Lint warnings to zero, `no-explicit-any` promoted.** Bulk type-tightening
+   pass across `workers/search-proxy/`, `workers/ingest/`, `client-sdk/`,
+   and `src/pages/TagDetail.tsx`. Replaced 75 `any` warnings with concrete
+   types or `unknown` + narrowing (new exported `RankableHit`, `SearchHit`,
+   `SearchFilters`, `RewrittenQuery`, `UserSignal`, `TableRow`, `MeiliDoc`).
+   Two `react-hooks/exhaustive-deps` warnings on intentional field-by-field
+   memo deps in `client-sdk/useQGSearch.ts` got targeted disables with a
+   reason. `eslint.config.js`: `@typescript-eslint/no-explicit-any` promoted
+   from `warn` to `error`. `npm run lint`: 0 errors / 0 warnings.
+
+Carousel autoplay reduced-motion wiring is still **N/A** — only
+`embla-carousel-react` is in `package.json`; no autoplay plugin adopted.
+Wire it at the call site if/when the plugin is introduced.

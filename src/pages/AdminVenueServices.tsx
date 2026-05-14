@@ -1,6 +1,4 @@
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,8 +19,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
-import { AdminDataTable } from '@/components/admin/data-table';
+import { useTaxonomyCRUD } from '@/hooks/useTaxonomyCRUD';
+import { AdminEntityTable } from '@/components/admin/data-table';
 import type { AdminTableConfig, AdminColumnMeta } from '@/components/admin/data-table/types';
 import { createColumnHelper } from '@tanstack/react-table';
 import { useQueryClient } from '@tanstack/react-query';
@@ -68,6 +66,7 @@ const emptyForm = {
 
 export default function AdminVenueServices() {
   const queryClient = useQueryClient();
+  const crud = useTaxonomyCRUD('venue_services');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -102,11 +101,11 @@ export default function AdminVenueServices() {
     }
     try {
       if (editingId) {
-        const { error } = await supabase.from('venue_services').update(form).eq('id', editingId);
+        const { error } = await crud.upsert(form, editingId);
         if (error) throw error;
         toast.success('Service updated');
       } else {
-        const { error } = await supabase.from('venue_services').insert([form]);
+        const { error } = await crud.upsert(form, null);
         if (error) throw error;
         toast.success('Service created');
       }
@@ -120,7 +119,7 @@ export default function AdminVenueServices() {
   const handleDelete = async (row: ServiceRow) => {
     if (!confirm(`Delete "${row.name}"?`)) return;
     try {
-      const { error } = await supabase.from('venue_services').delete().eq('id', row.id);
+      const { error } = await crud.remove(row.id);
       if (error) throw error;
       toast.success('Service deleted');
       invalidateTable();
@@ -145,12 +144,12 @@ export default function AdminVenueServices() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (info) => (
-          <Box>
+          <div>
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
-            <Typography variant="caption" display="block" color="text.secondary">
+            <span className="block text-xs text-muted-foreground">
               {info.row.original.slug}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ),
         meta: { serverSortable: true, hideable: false } satisfies AdminColumnMeta,
       }),
@@ -240,112 +239,106 @@ export default function AdminVenueServices() {
   );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          Venue Services
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Manage venue services and offerings
-        </Typography>
-      </Box>
-
-      <AdminDataTable config={tableConfig} />
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent style={{ maxWidth: 560 }}>
-          <DialogHeader>
-            <DialogTitle>{editingId ? 'Edit Service' : 'Create Service'}</DialogTitle>
-          </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Box>
-                <Label>Name *</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                />
-              </Box>
-              <Box>
-                <Label>Slug</Label>
-                <Box sx={{ display: 'flex', gap: 1 }}>
+    <AdminEntityTable
+      title="Venue Services"
+      subtitle="Manage venue services and offerings"
+      config={tableConfig}
+      afterTable={
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent style={{ maxWidth: 560 }}>
+            <DialogHeader>
+              <DialogTitle>{editingId ? 'Edit Service' : 'Create Service'}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 pt-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Name *</Label>
                   <Input
-                    value={form.slug}
-                    onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={generateSlug}
-                    style={{ flexShrink: 0, height: 40 }}
+                </div>
+                <div>
+                  <Label>Slug</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={form.slug}
+                      onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={generateSlug}
+                      style={{ flexShrink: 0, height: 40 }}
+                    >
+                      Gen
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={2}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Icon</Label>
+                  <Input
+                    value={form.icon}
+                    onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+                    placeholder="Lucide name"
+                  />
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
                   >
-                    Gen
-                  </Button>
-                </Box>
-              </Box>
-            </Box>
-            <Box>
-              <Label>Description</Label>
-              <Textarea
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={2}
-              />
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-              <Box>
-                <Label>Icon</Label>
-                <Input
-                  value={form.icon}
-                  onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-                  placeholder="Lucide name"
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {serviceCategories.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c.charAt(0).toUpperCase() + c.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Sort Order</Label>
+                  <Input
+                    type="number"
+                    value={form.sort_order}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
+                    }
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={form.is_active}
+                  onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
                 />
-              </Box>
-              <Box>
-                <Label>Category</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {serviceCategories.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c.charAt(0).toUpperCase() + c.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Box>
-              <Box>
-                <Label>Sort Order</Label>
-                <Input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))
-                  }
-                />
-              </Box>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Switch
-                checked={form.is_active}
-                onCheckedChange={(c) => setForm((f) => ({ ...f, is_active: c }))}
-              />
-              <Label>Active</Label>
-            </Box>
-          </Box>
-          <DialogFooter style={{ marginTop: 16 }}>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Box>
+                <Label>Active</Label>
+              </div>
+            </div>
+            <DialogFooter style={{ marginTop: 16 }}>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>{editingId ? 'Update' : 'Create'}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      }
+    />
   );
 }

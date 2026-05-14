@@ -4,11 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tag, CheckCircle, XCircle, AlertTriangle, Bot, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,50 +12,23 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-
-interface TagSuggestionRow {
-  id: string;
-  entity_id: string;
-  entity_type: string;
-  tag_id: string | null;
-  suggested_tag_name: string;
-  confidence: number;
-  source: string;
-  status: string;
-  ai_model: string | null;
-  batch_id: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string;
-}
+import {
+  usePendingTagSuggestions,
+  fetchAllPendingTagSuggestionIds,
+  rejectTagSuggestions,
+} from '@/hooks/useTagSuggestionsQueue';
 
 const SOURCE_LABELS: Record<string, { label: string; icon: typeof Bot }> = {
   auto_tag: { label: 'AI Auto-Tag', icon: Sparkles },
   duplicate_warning: { label: 'Near Duplicate', icon: AlertTriangle },
 };
 
-async function fetchPendingSuggestions(): Promise<{ items: TagSuggestionRow[]; total: number }> {
-  const { data, count, error } = await supabase
-    .from('tag_suggestions' as const)
-    .select('*', { count: 'exact' })
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) throw error;
-  return { items: (data || []) as TagSuggestionRow[], total: count ?? 0 };
-}
-
 export function TagSuggestionsQueue() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['tag-suggestions-pending'],
-    queryFn: fetchPendingSuggestions,
-    staleTime: 30_000,
-  });
+  const { data, isLoading } = usePendingTagSuggestions();
 
   const items = data?.items || [];
   const total = data?.total || 0;
@@ -84,18 +53,7 @@ export function TagSuggestionsQueue() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: async (ids: string[]) => {
-      const { error } = await supabase
-        .from('tag_suggestions' as const)
-        .update({
-          status: 'rejected',
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-        })
-        .in('id', ids);
-      if (error) throw error;
-      return ids.length;
-    },
+    mutationFn: (ids: string[]) => rejectTagSuggestions(ids, user?.id),
     onSuccess: (count) => {
       toast.success(`${count} suggestion${count !== 1 ? 's' : ''} rejected`);
       queryClient.invalidateQueries({ queryKey: ['tag-suggestions-pending'] });
@@ -118,81 +76,56 @@ export function TagSuggestionsQueue() {
     if (selectedIds.size > 0) {
       setSelectedIds(new Set());
     } else {
-      // Fetch ALL pending suggestion IDs (not just the loaded batch)
-      const { data } = await supabase
-        .from('tag_suggestions' as const)
-        .select('id')
-        .eq('status', 'pending')
-        .limit(5000);
-      setSelectedIds(new Set((data || []).map((i: { id: string }) => i.id)));
+      const ids = await fetchAllPendingTagSuggestionIds();
+      setSelectedIds(new Set(ids));
     }
   };
 
   const isPending = approveMutation.isPending || rejectMutation.isPending;
 
-  if (isLoading) return <LinearProgress />;
+  if (isLoading) {
+    return (
+      <div className="w-full h-1 bg-muted rounded overflow-hidden">
+        <div className="h-full bg-primary animate-pulse" style={{ width: '40%' }} />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 8 }}>
-        <Box
-          sx={{
-            mx: 'auto',
-            width: 80,
-            height: 80,
-            bgcolor: 'success.main',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mb: 2,
-            opacity: 0.9,
-          }}
-        >
+      <div className="text-center py-16">
+        <div className="mx-auto w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mb-4 opacity-90">
           <Tag style={{ width: 40, height: 40, color: '#fff' }} />
-        </Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-          No pending suggestions
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320, mx: 'auto' }}>
-          Tag suggestions from auto-tagging and near-duplicate detection will appear here for
-          review.
-        </Typography>
-      </Box>
+        </div>
+        <h3 className="text-lg font-semibold mb-1">No pending suggestions</h3>
+        <p className="text-sm text-muted-foreground max-w-[320px] mx-auto">
+          Tag suggestions from auto-tagging and near-duplicate detection will appear here for review.
+        </p>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {/* Bulk actions */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={selectedIds.size > 0 && selectedIds.size >= total}
             onChange={toggleSelectAll}
             style={{ width: 16, height: 16, cursor: 'pointer' }}
           />
-          <Typography variant="body2" color="text.secondary">
+          <p className="text-sm text-muted-foreground">
             {selectedIds.size > 0
               ? `${selectedIds.size} selected (all)`
               : `${total} pending suggestion${total !== 1 ? 's' : ''}`}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          </p>
+        </div>
+        <div className="flex gap-2 items-center">
           {selectedIds.size > 0 && (
             <>
-              <Typography variant="body2" color="text.secondary">
-                {selectedIds.size} selected
-              </Typography>
+              <p className="text-sm text-muted-foreground">{selectedIds.size} selected</p>
               <Button
                 size="sm"
                 disabled={isPending}
@@ -220,8 +153,8 @@ export function TagSuggestionsQueue() {
           >
             <CheckCircle style={{ height: 14, width: 14 }} /> Approve All ({items.length})
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Items */}
       {items.map((item) => {
@@ -233,58 +166,35 @@ export function TagSuggestionsQueue() {
         return (
           <Card key={item.id}>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <div className="flex items-center gap-4">
                 <input
                   type="checkbox"
                   checked={selectedIds.has(item.id)}
                   onChange={() => toggleSelect(item.id)}
                   style={{ width: 16, height: 16, cursor: 'pointer' }}
                 />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      mb: 0.5,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
-                      {item.suggested_tag_name}
-                    </Typography>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <p className="font-semibold text-[0.9rem]">{item.suggested_tag_name}</p>
                     <Badge variant="outline">{item.entity_type}</Badge>
-                    <Chip
-                      icon={<SourceIcon style={{ width: 12, height: 12 }} />}
-                      label={sourceInfo.label}
-                      size="small"
-                      variant="outlined"
-                      sx={{ fontSize: '0.7rem' }}
-                    />
-                    <Box
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 0.5,
-                        px: 0.75,
-                        py: 0.15,
-                        borderRadius: 0.5,
-                        bgcolor: `${confidenceColor}15`,
-                        color: confidenceColor,
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                      }}
+                    <Badge variant="outline" className="text-[0.7rem] gap-1">
+                      <SourceIcon style={{ width: 12, height: 12 }} />
+                      {sourceInfo.label}
+                    </Badge>
+                    <span
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.7rem] font-semibold"
+                      style={{ backgroundColor: `${confidenceColor}15`, color: confidenceColor }}
                     >
                       {(item.confidence * 100).toFixed(0)}%
-                    </Box>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    Entity: {item.entity_id.slice(0, 8)}... |{' '}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Entity: {item.entity_id?.slice(0, 8) ?? '—'}... |{' '}
                     {new Date(item.created_at).toLocaleDateString()}
                     {item.ai_model && ` | Model: ${item.ai_model}`}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                  </p>
+                </div>
+                <div className="flex gap-1 shrink-0">
                   <Button
                     size="sm"
                     disabled={isPending}
@@ -302,13 +212,13 @@ export function TagSuggestionsQueue() {
                   >
                     <XCircle style={{ height: 14, width: 14 }} />
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </CardContent>
           </Card>
         );
       })}
-    </Box>
+    </div>
   );
 }
 

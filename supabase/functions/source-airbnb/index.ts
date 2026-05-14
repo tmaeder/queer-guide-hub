@@ -2,6 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: Airbnb (LGBTQ+ friendly stays via sitemap discovery)
@@ -99,7 +100,7 @@ async function discoverSubSitemaps(supabase: ReturnType<typeof getServiceClient>
   })
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-airbnb', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -119,4 +120,4 @@ Deno.serve(async (req) => {
       note: 'Sitemap discovery only. Detail enrichment requires Playwright + proxy rotation.',
     }, 200, req)
   } catch (e) { return errorResponse((e as Error).message, 500, req) }
-})
+}))

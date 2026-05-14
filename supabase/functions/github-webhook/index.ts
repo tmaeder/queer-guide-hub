@@ -12,7 +12,6 @@
  *   - workflow_run: completed (api_error row create/resolve)
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import {
   applyCommentAction,
@@ -91,7 +90,7 @@ interface GhPayload {
   sender?: { login: string };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   const secret = Deno.env.get('GITHUB_WEBHOOK_SECRET');

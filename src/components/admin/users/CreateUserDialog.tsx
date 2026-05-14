@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import Box from '@mui/material/Box';
 import { Shuffle } from 'lucide-react';
 
 interface CreateUserDialogProps {
@@ -42,7 +41,6 @@ function generatePassword(): string {
 
 export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     email: '',
@@ -70,11 +68,11 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
 
   const handleSubmit = async () => {
     if (!form.email.trim()) {
-      toast({ title: 'Email is required', variant: 'destructive' });
+      toast.error('Email is required');
       return;
     }
     if (form.password.length < 8) {
-      toast({ title: 'Password must be at least 8 characters', variant: 'destructive' });
+      toast.error('Password must be at least 8 characters');
       return;
     }
 
@@ -104,11 +102,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       reset();
       onOpenChange(false);
     } catch (err: unknown) {
-      toast({
-        title: 'Failed to create user',
-        description: err instanceof Error ? err.message : 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error(`Failed to create user: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -121,7 +115,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
           <AlertDialogTitle>Create User</AlertDialogTitle>
         </AlertDialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+        <div className="flex flex-col gap-4 mt-2">
           <Field
             label="Email *"
             value={form.email}
@@ -129,27 +123,25 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
             type="email"
           />
 
-          <Box>
-            <Label style={{ fontSize: '0.875rem', marginBottom: 4, display: 'block' }}>
-              Password *
-            </Label>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+          <div>
+            <Label className="text-sm mb-1 block">Password *</Label>
+            <div className="flex gap-2">
               <Input
                 value={form.password}
                 onChange={(e) => set('password', e.target.value)}
-                style={{ flex: 1, fontFamily: 'monospace' }}
+                className="flex-1 font-mono"
               />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => set('password', generatePassword())}
                 title="Generate random password"
-                style={{ flexShrink: 0 }}
+                className="shrink-0"
               >
-                <Shuffle style={{ height: 14, width: 14 }} />
+                <Shuffle className="h-3.5 w-3.5" />
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           <Field
             label="Display Name"
@@ -158,37 +150,37 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
             placeholder="Defaults to email"
           />
 
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Box sx={{ flex: 1 }}>
+          <div className="flex gap-3">
+            <div className="flex-1">
               <Field
                 label="First Name"
                 value={form.first_name}
                 onChange={(v) => set('first_name', v)}
               />
-            </Box>
-            <Box sx={{ flex: 1 }}>
+            </div>
+            <div className="flex-1">
               <Field
                 label="Last Name"
                 value={form.last_name}
                 onChange={(v) => set('last_name', v)}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Box sx={{ flex: 1 }}>
+          <div className="flex gap-3">
+            <div className="flex-1">
               <Field
                 label="Pronouns"
                 value={form.pronouns}
                 onChange={(v) => set('pronouns', v)}
                 placeholder="e.g. they/them"
               />
-            </Box>
-            <Box sx={{ flex: 1 }}>
+            </div>
+            <div className="flex-1">
               <Field label="Location" value={form.location} onChange={(v) => set('location', v)} />
-            </Box>
-          </Box>
-        </Box>
+            </div>
+          </div>
+        </div>
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
@@ -215,14 +207,14 @@ function Field({
   placeholder?: string;
 }) {
   return (
-    <Box>
-      <Label style={{ fontSize: '0.875rem', marginBottom: 4, display: 'block' }}>{label}</Label>
+    <div>
+      <Label className="text-sm mb-1 block">{label}</Label>
       <Input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
       />
-    </Box>
+    </div>
   );
 }

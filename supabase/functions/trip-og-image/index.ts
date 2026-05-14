@@ -11,8 +11,7 @@
  * for Facebook, Twitter, LinkedIn, Slack previews.
  */
 
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 import { Resvg, initWasm } from 'https://esm.sh/@resvg/resvg-wasm@2.6.2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -145,7 +144,7 @@ async function loadTrip(admin: any, params: URLSearchParams) {
   return { trip, countries };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'GET') {
     return new Response('method not allowed', { status: 405, headers: cors });

@@ -1,60 +1,80 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* ── Self-hosted fonts (no external CDN) ────────────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
 
-/* Plus Jakarta Sans — variable weight 200-800, latin */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-wght-normal.woff2') format('woff2');
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+@theme {
+  /* ── Font families ─────────────────────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── Custom font sizes ─────────────────────────────────────────── */
+  --text-3xs: 0.5625rem;
+  --text-3xs--line-height: 0.75rem;
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.875rem;
+  --text-xs2: 0.6875rem;
+  --text-xs2--line-height: 1rem;
+
+  /* ── Border radius — editorial flat (all zero) ─────────────────── */
+  --radius-none: 0;
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+  --radius-full: 9999px;
+
+  /* ── Colors — CSS-variable-based monochrome ────────────────────── */
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* ── Box shadow — flat, hairline divider only ──────────────────── */
+  --shadow-none: none;
+  --shadow-hairline: 0 1px 0 hsl(var(--border));
 }
 
-/* Plus Jakarta Sans — variable weight 200-800, latin-ext */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-ext-wght-normal.woff2') format('woff2');
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
-    U+A720-A7FF;
-}
+/* ── Self-hosted fonts (Inter only) ───────────────────────────────────
+   Plus Jakarta Sans was removed during the strict-monochrome overhaul
+   (refactor/bw-design-system). Inter ships in 4 woff2 files (latin/ext
+   × upright/italic), variable weight 100–900. */
 
-/* Plus Jakarta Sans — variable weight 200-800, italic, latin */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-wght-italic.woff2') format('woff2');
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
-    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-/* Plus Jakarta Sans — variable weight 200-800, italic, latin-ext */
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: italic;
-  font-weight: 200 800;
-  font-display: swap;
-  src: url('/fonts/plus-jakarta-sans/plus-jakarta-sans-latin-ext-wght-italic.woff2') format('woff2');
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
-    U+A720-A7FF;
-}
-
-/* Inter — variable weight 100-900, latin */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -66,7 +86,6 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Inter — variable weight 100-900, latin-ext */
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -79,7 +98,6 @@
     U+A720-A7FF;
 }
 
-/* Inter — variable weight 100-900, italic, latin */
 @font-face {
   font-family: 'Inter';
   font-style: italic;
@@ -91,7 +109,6 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Inter — variable weight 100-900, italic, latin-ext */
 @font-face {
   font-family: 'Inter';
   font-style: italic;
@@ -104,13 +121,17 @@
     U+A720-A7FF;
 }
 
-/* ── CSS Variables — Strict Monochrome + Accent ───────────────────── */
+/* ── CSS Variables — Strict Monochrome (Black & White only) ──────────
+   Only neutrals + a single semantic destructive red. The --cat-* family
+   are aliased to --foreground as documented placeholders for any future
+   admin chromatic palette (see CLAUDE.md). New code MUST use
+   --foreground or --primary directly. */
 
 :root {
   --background: 0 0% 100%;
   --foreground: 0 0% 4%;
 
-  --card: 0 0% 96%;
+  --card: 0 0% 100%;
   --card-foreground: 0 0% 4%;
 
   --popover: 0 0% 100%;
@@ -119,146 +140,138 @@
   --primary: 0 0% 4%;
   --primary-foreground: 0 0% 100%;
 
-  --brand: 346 87% 38%;
-  --brand-foreground: 0 0% 100%;
-
-  --accent-warm: 346 87% 38%;
-  --accent-warm-foreground: 0 0% 100%;
-
-  --secondary: 0 0% 40%;
+  --secondary: 0 0% 4%;
   --secondary-foreground: 0 0% 100%;
 
-  --muted: 0 0% 94%;
-  /* WCAG 1.4.3 — was 40% (#666 ≈ 5.74:1 on white but ~3.9:1 on muted/action.hover).
-     Bumped to 35% so muted body text retains ≥4.5:1 over light tinted surfaces. */
+  --muted: 0 0% 96%;
   --muted-foreground: 0 0% 35%;
 
-  --accent: 0 0% 94%;
+  --accent: 0 0% 96%;
   --accent-foreground: 0 0% 4%;
 
-  --destructive: 346 87% 38%;
+  /* Sole permitted hue: error semantics. */
+  --destructive: 0 70% 38%;
   --destructive-foreground: 0 0% 100%;
-
-  --warning: 346 87% 38%;
+  --warning: 0 70% 38%;
   --warning-foreground: 0 0% 100%;
 
+  /* Success / info collapse to neutral foreground — differentiated by icon + label, not color. */
   --success: 0 0% 4%;
   --success-foreground: 0 0% 100%;
 
-  --border: 0 0% 0% / 0;
-  --input: 0 0% 0% / 0;
-  --input-bg: 0 0% 96%;
-  --ring: 346 87% 38%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --input-bg: 0 0% 100%;
+  --ring: 0 0% 4%;
 
-  --sidebar-background: 0 0% 97%;
+  --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 0 0% 4%;
   --sidebar-primary: 0 0% 4%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 94%;
+  --sidebar-accent: 0 0% 96%;
   --sidebar-accent-foreground: 0 0% 4%;
-  --sidebar-border: 0 0% 0% / 0;
-  --sidebar-ring: 346 87% 38%;
+  --sidebar-border: 0 0% 88%;
+  --sidebar-ring: 0 0% 4%;
 
-  --transition-smooth: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  --radius: 0;
+  --transition-smooth: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* ── Surface container hierarchy (flat tonal layering) ── */
+  /* Surface tonal layering (light) — five neutral steps. */
   --surface: 0 0% 100%;
   --surface-container-lowest: 0 0% 100%;
-  --surface-container-low: 0 0% 97%;
-  --surface-container: 0 0% 94%;
-  --surface-container-high: 0 0% 90%;
-  --surface-container-highest: 0 0% 86%;
-  --surface-dim: 0 0% 83%;
+  --surface-container-low: 0 0% 98%;
+  --surface-container: 0 0% 96%;
+  --surface-container-high: 0 0% 93%;
+  --surface-container-highest: 0 0% 90%;
+  --surface-dim: 0 0% 88%;
   --inverse-surface: 0 0% 4%;
 
-  /* ── Category colors — all mapped to brand accent ── */
-  --cat-venues:      346 87% 38%;
-  --cat-events:      346 87% 38%;
-  --cat-marketplace: 346 87% 38%;
-  --cat-places:      346 87% 38%;
-  --cat-hotels:      346 87% 38%;
-  --cat-travel:      346 87% 38%;
-  --cat-news:        346 87% 38%;
-  --cat-community:   346 87% 38%;
+  /* Category accents — all aliased to neutral foreground (no chromatic tint). */
+  --cat-venues:      var(--foreground);
+  --cat-events:      var(--foreground);
+  --cat-marketplace: var(--foreground);
+  --cat-places:      var(--foreground);
+  --cat-hotels:      var(--foreground);
+  --cat-travel:      var(--foreground);
+  --cat-news:        var(--foreground);
+  --cat-community:   var(--foreground);
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-toast: 1100;
+  --z-modal: 1200;
+  --z-skip-link: 2000;
+  --sidebar-width: 260px;
+  --admin-content-min-h: calc(100vh - 100px);
 }
 
 .dark {
   --background: 0 0% 4%;
-  --foreground: 0 0% 95%;
+  --foreground: 0 0% 96%;
 
-  --card: 0 0% 7%;
-  --card-foreground: 0 0% 95%;
+  --card: 0 0% 4%;
+  --card-foreground: 0 0% 96%;
 
   --popover: 0 0% 7%;
-  --popover-foreground: 0 0% 95%;
+  --popover-foreground: 0 0% 96%;
 
-  --primary: 0 0% 100%;
+  --primary: 0 0% 96%;
   --primary-foreground: 0 0% 4%;
 
-  --brand: 346 100% 65%;
-  --brand-foreground: 0 0% 4%;
-
-  --accent-warm: 346 100% 65%;
-  --accent-warm-foreground: 0 0% 4%;
-
-  --secondary: 0 0% 60%;
-  --secondary-foreground: 0 0% 95%;
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 4%;
 
   --muted: 0 0% 12%;
-  /* WCAG 1.4.3 — was 60% (#999 ≈ 4.98:1 on #0a0a0a borderline AA, fails on muted bg). */
   --muted-foreground: 0 0% 68%;
 
   --accent: 0 0% 12%;
-  --accent-foreground: 0 0% 95%;
+  --accent-foreground: 0 0% 96%;
 
-  --destructive: 346 100% 65%;
+  --destructive: 0 84% 62%;
   --destructive-foreground: 0 0% 100%;
-
-  --warning: 346 100% 65%;
+  --warning: 0 84% 62%;
   --warning-foreground: 0 0% 100%;
 
-  --success: 0 0% 100%;
+  --success: 0 0% 96%;
   --success-foreground: 0 0% 4%;
 
-  --border: 0 0% 0% / 0;
-  --input: 0 0% 0% / 0;
-  --input-bg: 0 0% 10%;
-  --ring: 346 100% 65%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --input-bg: 0 0% 7%;
+  --ring: 0 0% 96%;
 
-  --sidebar-background: 0 0% 7%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-primary: 0 0% 100%;
+  --sidebar-background: 0 0% 4%;
+  --sidebar-foreground: 0 0% 96%;
+  --sidebar-primary: 0 0% 96%;
   --sidebar-primary-foreground: 0 0% 4%;
   --sidebar-accent: 0 0% 12%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-border: 0 0% 0% / 0;
-  --sidebar-ring: 346 100% 65%;
+  --sidebar-accent-foreground: 0 0% 96%;
+  --sidebar-border: 0 0% 18%;
+  --sidebar-ring: 0 0% 96%;
 
-  /* ── Surface container hierarchy (dark flat tonal layering) ── */
   --surface: 0 0% 4%;
   --surface-container-lowest: 0 0% 2%;
-  --surface-container-low: 0 0% 7%;
-  --surface-container: 0 0% 10%;
-  --surface-container-high: 0 0% 13%;
+  --surface-container-low: 0 0% 6%;
+  --surface-container: 0 0% 9%;
+  --surface-container-high: 0 0% 12%;
   --surface-container-highest: 0 0% 16%;
   --surface-dim: 0 0% 8%;
-  --inverse-surface: 0 0% 90%;
+  --inverse-surface: 0 0% 96%;
 
-  /* ── Category colors — all mapped to brand accent (dark) ── */
-  --cat-venues:      346 100% 65%;
-  --cat-events:      346 100% 65%;
-  --cat-marketplace: 346 100% 65%;
-  --cat-places:      346 100% 65%;
-  --cat-hotels:      346 100% 65%;
-  --cat-travel:      346 100% 65%;
-  --cat-news:        346 100% 65%;
-  --cat-community:   346 100% 65%;
+  --cat-venues:      var(--foreground);
+  --cat-events:      var(--foreground);
+  --cat-marketplace: var(--foreground);
+  --cat-places:      var(--foreground);
+  --cat-hotels:      var(--foreground);
+  --cat-travel:      var(--foreground);
+  --cat-news:        var(--foreground);
+  --cat-community:   var(--foreground);
 }
 
-/* ── MapLibre popup theme adaptation ───────────────────────────────── */
+/* ── MapLibre popup theme (flat, monochrome) ───────────────────────── */
 .maplibregl-popup-content {
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -298,78 +311,112 @@
   border-color: hsl(var(--border));
 }
 
+html {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
   margin: 0;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-feature-settings: 'rlig' 1, 'calt' 1;
-  animation: fade-in 0.5s ease-out;
+  font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+  font-family: inherit;
 }
 
-/* ── Link defaults — color only, never underlined ────────────────── */
+/* ── Links — inherit body color, opacity on hover (editorial default) ──
+   :where() zeroes the specificity of the `:link` / `:visited` selectors so
+   Tailwind text-* utilities (e.g. `text-background` on a dark button) can
+   actually apply. Without this, .text-background loses to a:link in the
+   cascade and links inside primary buttons render foreground-on-foreground
+   (zero contrast). */
 
-a,
-a:link,
-a:visited {
-  color: hsl(var(--brand));
+:where(a, a:link, a:visited) {
+  color: inherit;
   text-decoration: none;
-  transition: opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.15s ease;
 }
 
-a:hover {
+:where(a):hover {
   opacity: 0.7;
 }
 
-/* ── Focus-visible (global accessibility, WCAG 2.4.7) ──────────────
-   Solid brand outline on any interactive element that receives
-   keyboard focus. The `.Mui-focusVisible` selector is required
-   because MUI's ButtonBase sets `outline: 0` on `.MuiButtonBase-root`
-   with higher specificity than the `*:focus-visible` rule. */
+/* ── Focus-visible — WCAG 2.4.7, 2px solid foreground ──────────────── */
 
 *:focus-visible,
-.Mui-focusVisible,
 [role="button"]:focus-visible,
 [role="tab"]:focus-visible,
 [role="option"]:focus-visible,
 [role="menuitem"]:focus-visible {
-  outline: 2px solid hsl(var(--brand)) !important;
+  outline: 2px solid hsl(var(--foreground)) !important;
   outline-offset: 2px !important;
   border-radius: 0;
 }
 
-/* Never remove focus without providing a replacement. */
 :focus:not(:focus-visible) {
   outline: none;
 }
 
-/* ── Touch target minimum ─────────────────────────────────────────── */
+/* ── Touch target minimum (WCAG 2.5.5) ─────────────────────────────── */
 
 a, button, [role="button"], input, select, textarea {
   min-height: 44px;
 }
 
-/* Inline links inside paragraphs should not enforce min-height */
+/* Inline links inside body text are underlined. In a strict B&W system,
+   links share the foreground color with surrounding text, so the underline
+   is the only signal distinguishing them (axe `link-in-text-block`,
+   WCAG 1.4.1 Use of Color). Standalone links — nav, buttons, cards — stay
+   un-underlined. Documented exception to the editorial flat rule. */
 p a, li a, td a, span a, label a {
   min-height: unset;
   display: inline;
+  text-decoration: none;
+  position: relative;
 }
+p a::after, li a::after, td a::after, span a::after, label a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(1);
+  transform-origin: center;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+p a:hover::after, li a:hover::after, td a:hover::after, span a:hover::after, label a:hover::after {
+  transform: scaleX(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  p a::after, li a::after, td a::after, span a::after, label a::after {
+    transition: none;
+  }
+}
+
+/* ── Typography defaults — bold, tight, editorial ──────────────────── */
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
-/* ── Gradient text utility ─────────────────────────────────────────── */
+/* ── Legacy gradient utilities — now flat solid ────────────────────── */
 .gradient-text {
   color: hsl(var(--foreground));
   -webkit-text-fill-color: hsl(var(--foreground));
+  background: none;
 }
 
 .bg-gradient-primary {
   background: hsl(var(--primary));
 }
 
-/* ── Animation Keyframes ───────────────────────────────────────────── */
+/* ── Animation Keyframes (functional only) ─────────────────────────── */
 
 @keyframes fade-in {
   from { opacity: 0; }
@@ -397,13 +444,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
 }
 
 @keyframes slide-up-in {
@@ -420,27 +462,32 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-fade-in { animation: fade-in 0.2s ease-out; }
 .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.scale-in { animation: scale-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.content-enter { animation: content-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.scale-in { animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.content-enter { animation: content-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* Skeleton shimmer — neutral grayscale only. */
 .shimmer {
-  background: linear-gradient(90deg, transparent 0%, hsl(var(--brand) / 0.06) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, hsl(var(--muted) / 0.6) 50%, transparent 100%);
   background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 /* ── Hover Utilities ───────────────────────────────────────────────── */
 
 .hover-minimal {
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 .hover-minimal:hover {
   background-color: hsl(var(--accent));
 }
 
-/* Link hover — opacity shift only */
 .story-link {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.15s ease;
 }
 .story-link:hover {
   opacity: 0.7;
@@ -449,36 +496,32 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Reveal & Enter Animations ─────────────────────────────────────── */
 
 .reveal-up {
-  animation: reveal-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.reveal-delay-1 { animation-delay: 0.12s; }
-.reveal-delay-2 { animation-delay: 0.24s; }
-.reveal-delay-3 { animation-delay: 0.36s; }
-.reveal-delay-4 { animation-delay: 0.48s; }
-.reveal-delay-5 { animation-delay: 0.6s; }
-
-/* ── Content crossfade (skeleton → content) ───────────────────────── */
+.reveal-delay-1 { animation-delay: 0.08s; }
+.reveal-delay-2 { animation-delay: 0.16s; }
+.reveal-delay-3 { animation-delay: 0.24s; }
+.reveal-delay-4 { animation-delay: 0.32s; }
+.reveal-delay-5 { animation-delay: 0.4s; }
 
 .content-crossfade-enter {
-  animation: fade-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* ── Extra Micro-Interaction Keyframes ────────────────────────────── */
-
-.slide-up-in { animation: slide-up-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.slide-down-in { animation: slide-down-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-up-in { animation: slide-up-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slide-down-in { animation: slide-down-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 /* ── Image lazy-load fade ─────────────────────────────────────────── */
 
 .img-lazy-fade {
   opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .img-lazy-fade.loaded {
   opacity: 1;
 }
 
-/* ── Accessibility Classes ─────────────────────────────────────────── */
+/* ── Accessibility classes ─────────────────────────────────────────── */
 
 .font-size-small { font-size: 0.875rem; }
 .font-size-medium { font-size: 1rem; }
@@ -507,11 +550,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .enhanced-focus *:focus {
-  outline: 3px solid hsl(var(--primary)) !important;
+  outline: 3px solid hsl(var(--foreground)) !important;
   outline-offset: 2px !important;
 }
-
-.screen-reader-optimized { /* Enhanced for screen readers */ }
 
 .screen-reader-optimized .sr-only {
   position: absolute;
@@ -523,4 +564,35 @@ h1, h2, h3, h4, h5, h6 {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Mobile FeedbackButton lift above map chrome (bug #23). */
+@media (max-width: 767px) {
+  button[aria-label="Share feedback"] {
+    bottom: 96px !important;
+  }
+}
+
+/* WCAG 2.2 AA 2.5.8 — MapLibre attribution links must hit ≥24×24 tactile target.
+   Pad the anchor without altering its visible text size or the map layout. */
+.maplibregl-ctrl-attrib a {
+  display: inline-block;
+  min-height: 24px;
+  padding-block: 6px;
+}
+
+/* WCAG 2.5.5 AAA — icon-only header / map controls expand to 44×44 on touch
+   (coarse pointer) and narrow viewports. Desktop sizing is untouched. */
+@media (pointer: coarse), (max-width: 640px) {
+  header [aria-label="Search filters"],
+  header [aria-label="Open user menu"],
+  header [aria-label="Open navigation menu"],
+  header [aria-label="Open menu"],
+  .maplibregl-ctrl button,
+  /* SheetContent's built-in close button — single Close in the mobile
+     nav drawer now (Header's redundant one was removed). */
+  [role="dialog"] > button[aria-label="Close"] {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }

@@ -12,6 +12,7 @@ import {
   parseSafetyRelevance,
 } from '../_shared/prompts/safety-relevance.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline node: Safety + Relevance
@@ -25,8 +26,9 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 
 const MIN_CONFIDENCE_DEFAULT = 0.6
 const BATCH_SIZE_DEFAULT = 20
+const WALL_CLOCK_LIMIT_MS = 45_000
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-safety-relevance', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -61,8 +63,10 @@ Deno.serve(async (req) => {
     let ok = 0
     let failed = 0
     const flagged: string[] = []
+    const deadline = Date.now() + WALL_CLOCK_LIMIT_MS
 
     for (const row of rows) {
+      if (Date.now() > deadline) break
       try {
         const userPrompt = buildSafetyRelevanceUserPrompt({
           raw_text: row.raw_text,
@@ -153,4 +157,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-safety-relevance:', err)
     return errorResponse((err as Error).message, 500, req)
   }
-})
+}))

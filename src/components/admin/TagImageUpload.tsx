@@ -1,12 +1,10 @@
 import { useState } from "react";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, X, Image } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/uploadErrors";
 
 interface TagImageUploadProps {
@@ -22,7 +20,6 @@ export const TagImageUpload = ({
 }: TagImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
-  const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,11 +27,7 @@ export const TagImageUpload = ({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file",
-        variant: "destructive"
-      });
+      toast.error('Invalid file type: Please select an image file');
       return;
     }
 
@@ -73,18 +66,11 @@ export const TagImageUpload = ({
       setPreviewUrl(imageUrl);
       onImageChange(imageUrl);
 
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully"
-      });
+      toast.success('Success: Image uploaded successfully');
 
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
-        variant: "destructive"
-      });
+      toast.error('Upload failed: Failed to upload image. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -109,65 +95,51 @@ export const TagImageUpload = ({
     setPreviewUrl(null);
     onImageChange(null);
 
-    toast({
-      title: "Success",
-      description: "Image deleted successfully"
-    });
+    toast.success('Success: Image deleted successfully');
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       <Label>Tag Image</Label>
 
       {previewUrl ? (
-        <Box sx={{ position: 'relative' }}>
-          <Box sx={{ width: '100%', height: 128, borderRadius: 2, overflow: 'hidden', bgcolor: 'grey.100' }}>
+        <div className="relative">
+          <div className="w-full overflow-hidden bg-muted" style={{ height: 128 }}>
             <img
               src={previewUrl}
               alt={tagName || "Tag image"}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
-          </Box>
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-
-            onClick={handleDeleteImage}
-          >
+          </div>
+          <Button type="button" variant="destructive" size="sm" onClick={handleDeleteImage}>
             <X style={{ width: 16, height: 16 }} />
           </Button>
-        </Box>
+        </div>
       ) : (
-        <Box sx={{ width: '100%' }}>
-          <Box sx={{ borderRadius: 2, p: 3, textAlign: 'center', bgcolor: 'action.hover' }}>
+        <div className="w-full">
+          <div className="p-6 text-center bg-muted">
             <Image style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="body2" color="text.secondary">
-                Upload an image for this tag
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                PNG, JPG, WebP up to 20MB
-              </Typography>
-            </Box>
-          </Box>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-muted-foreground">Upload an image for this tag</p>
+              <span className="text-xs text-muted-foreground">PNG, JPG, WebP up to 20MB</span>
+            </div>
+          </div>
 
           <Input
             type="file"
             accept="image/*"
             onChange={handleFileUpload}
             disabled={uploading}
-
           />
-        </Box>
+        </div>
       )}
 
       {uploading && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Upload style={{ width: 16, height: 16, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
-          <Typography variant="body2" color="text.secondary">Uploading image...</Typography>
-        </Box>
+        <div className="flex items-center gap-2">
+          <Upload className="animate-pulse" style={{ width: 16, height: 16 }} />
+          <p className="text-sm text-muted-foreground">Uploading image...</p>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
