@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ArrowLeft, Plus, Trash2, Pencil, Link2 } from 'lucide-react';
 
 interface Rule {
@@ -78,6 +77,21 @@ export default function AdminIngestionRules() {
   const upsertMut = useMutation({
     mutationFn: async (rule: Partial<Rule>) => {
       if (rule.id) {
+        const { error } = await supabase
+          .from('ingestion_rules')
+          .update({
+            name: rule.name ?? '',
+            description: rule.description,
+            enabled: rule.enabled,
+            priority: rule.priority,
+            match: rule.match as never,
+            actions: rule.actions as never,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', rule.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('ingestion_rules').insert({
         const { error } = await updateRow('ingestion_rules', rule.id, {
           name: rule.name ?? '',
           description: rule.description,
@@ -94,6 +108,8 @@ export default function AdminIngestionRules() {
           description: rule.description,
           enabled: rule.enabled ?? true,
           priority: rule.priority ?? 100,
+          match: (rule.match ?? {}) as never,
+          actions: (rule.actions ?? {}) as never,
           match: rule.match ?? {},
           actions: rule.actions ?? {},
         });
@@ -111,6 +127,7 @@ export default function AdminIngestionRules() {
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
+      const { error } = await supabase.from('ingestion_rules').delete().eq('id', id);
       const { error } = await deleteRow('ingestion_rules', id);
       if (error) throw error;
     },
