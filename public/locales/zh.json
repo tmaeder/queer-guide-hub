@@ -1,0 +1,1798 @@
+{
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
+  "directory": {
+    "title": "地理目录",
+    "loading": "正在加载目录...",
+    "error": "错误：{{message}}",
+    "back": "返回",
+    "breadcrumb": "目录",
+    "countries": "国家",
+    "cities": "主要城市",
+    "countriesByContinent": "按大洲分类的国家",
+    "citiesByContinent": "按大洲和国家分类的城市",
+    "citiesIn": "{{country}}的城市",
+    "searchResults": "搜索结果",
+    "noResults": "未找到结果。请尝试不同的搜索词。",
+    "capital": "首都",
+    "majorCity": "主要城市",
+    "population": "人口",
+    "region": "地区",
+    "timezone": "时区",
+    "coordinates": "坐标"
+  },
+  "search": {
+    "placeholder": "搜索国家和城市...",
+    "nearMe": "附近",
+    "filters": "筛选",
+    "continent": "大洲",
+    "all": "全部",
+    "populationRange": "人口范围",
+    "sortBy": "排序方式",
+    "name": "名称",
+    "ascending": "升序",
+    "descending": "降序",
+    "placeholders": {
+      "venues": "搜索场所…",
+      "events": "查找活动…",
+      "marketplace": "浏览市场…",
+      "people": "发现用户…",
+      "news": "阅读新闻…",
+      "resources": "探索资源…",
+      "personalities": "认识人物…"
+    }
+  },
+  "common": {
+    "contentInLanguage": "语言：{{lang}}",
+    "loading": "Loading…",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "编辑",
+    "view": "查看",
+    "close": "关闭",
+    "search": "Search",
+    "filter": "筛选",
+    "sort": "排序",
+    "language": "语言",
+    "next": "Next",
+    "back": "Back",
+    "loadMore": "加载更多",
+    "tryAgain": "重试",
+    "allEvents": "所有活动",
+    "browseAll": "查看全部",
+    "allStories": "所有文章",
+    "create": "Create",
+    "skip": "Skip",
+    "done": "Done",
+    "unknown": "Unknown",
+    "somethingWentWrong": "Something went wrong.",
+    "clear": "Clear"
+  },
+  "navigation": {
+    "home": "首页",
+    "venues": "场所",
+    "events": "活动",
+    "marketplace": "市场",
+    "directory": "目录",
+    "about": "关于",
+    "contact": "联系",
+    "login": "登录",
+    "logout": "登出",
+    "profile": "个人资料"
+  },
+  "footer": {
+    "madeWith": "制作工具",
+    "backToTop": "返回顶部",
+    "newsletter": "新闻通讯",
+    "newsletterDescription": "获取最新新闻和活动信息",
+    "subscribe": "订阅",
+    "social": "关注我们",
+    "community": "社区",
+    "resources": "资源",
+    "legal": "法律",
+    "copyright": "© {{year}} 版权所有。",
+    "about": "关于",
+    "legalLink": "法律",
+    "privacy": "隐私",
+    "terms": "条款",
+    "contact": "联系",
+    "supportUs": "支持我们"
+  },
+  "trips": {
+    "title": "我的行程",
+    "subtitle": "安全地规划、组织和旅行。",
+    "create": "创建行程",
+    "error": {
+      "invalid-id": {
+        "title": "行程链接无效",
+        "description": "此链接未指向有效的行程。请返回你的行程继续。"
+      },
+      "not-found": {
+        "title": "未找到行程",
+        "description": "该行程可能已被删除，或链接已失效。"
+      },
+      "permission-denied": {
+        "title": "你无权访问此行程",
+        "description": "请让行程所有者邀请你，或返回你自己的行程。"
+      },
+      "load-error": {
+        "title": "无法加载该行程",
+        "description": "加载行程时出错。请重试。"
+      }
+    },
+    "empty": {
+      "title": "规划你的第一次行程",
+      "description": "创建行程表，查看每个目的地的 LGBTQ+ 安全信息，把一切都集中在一处。",
+      "cta": "创建第一次行程",
+      "hero": {
+        "title": "[ZH] Plan a trip you'll feel safe on.",
+        "subtitle": "[ZH] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[ZH] Start from scratch",
+          "description": "[ZH] Empty itinerary, your destinations, your pace.",
+          "cta": "[ZH] Create trip"
+        },
+        "template": {
+          "title": "[ZH] Use a template",
+          "description": "[ZH] Pre-built itineraries you can fork and edit.",
+          "cta": "[ZH] Browse templates"
+        },
+        "discover": {
+          "title": "[ZH] Fork a public trip",
+          "description": "[ZH] Real itineraries from other QG travelers.",
+          "cta": "[ZH] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[ZH] From real travelers",
+      "discoverTitle": "[ZH] Recent public trips",
+      "discoverCta": "[ZH] Open Discover"
+    },
+    "filteredEmpty": {
+      "title": "没有匹配的行程",
+      "description": "请尝试调整搜索或筛选。",
+      "cta": "清除筛选"
+    },
+    "status": {
+      "planning": "规划中",
+      "active": "进行中",
+      "completed": "已完成",
+      "archived": "已归档"
+    },
+    "toolbar": {
+      "searchPlaceholder": "搜索行程…",
+      "searchAria": "搜索行程",
+      "statusAria": "按状态筛选行程",
+      "sortAria": "行程排序",
+      "status": {
+        "all": "全部",
+        "planning": "规划中",
+        "active": "进行中",
+        "completed": "已完成",
+        "archived": "已归档",
+        "saved": "[ZH] Saved"
+      },
+      "sort": {
+        "recent": "最近更新",
+        "start_date": "出发日期",
+        "alphabetical": "字母顺序"
+      }
+    },
+    "signedOut": {
+      "badge": "行程规划器",
+      "title": "规划保护你的旅行。",
+      "subtitle": "创建对 queer 友好的行程，查看每个目的地的 LGBTQ+ 安全信息，和同行伙伴一起规划。",
+      "primaryCta": "登录以规划行程",
+      "secondaryCta": "了解其工作原理",
+      "safeLabel": "安全",
+      "daysLabel_other": "{{count}} 天",
+      "bullets": {
+        "safety": {
+          "title": "安全简报",
+          "body": "你行程中每个国家的 LGBTQ+ 法律状况和本地背景。"
+        },
+        "itinerary": {
+          "title": "拖拽式行程",
+          "body": "直观地安排每日行程，几秒钟重新排序停靠点。"
+        },
+        "collaborate": {
+          "title": "一起旅行",
+          "body": "与同行伙伴共享备注、聊天和分摊预算。"
+        }
+      },
+      "samples": {
+        "berlin": "柏林骄傲周",
+        "barcelona": "巴塞罗那：海滩与夜生活",
+        "bangkok": "Bangkok & Phuket"
+      },
+      "daysLabel_one": "{{count}} 天"
+    },
+    "card": {
+      "fromDate": "从 {{date}} 开始",
+      "noDates": "未设日期",
+      "placeCount_other": "{{count}} 个地点",
+      "dayCount_other": "{{count}} 天",
+      "memberCount_other": "{{count}} 位成员",
+      "ariaLabel": "打开行程 {{title}}",
+      "menuAria": "行程选项",
+      "edit": "编辑",
+      "delete": "删除",
+      "deleting": "正在删除…",
+      "cancel": "取消",
+      "deleteTitle": "删除行程",
+      "deleteConfirm": "确定要删除「{{title}}」吗？此操作不可撤销。",
+      "safety": {
+        "safe": "安全目的地",
+        "caution": "请了解当地情况",
+        "danger": "此行程包含高风险目的地"
+      },
+      "placeCount_one": "{{count}} 个地点",
+      "dayCount_one": "{{count}} 天",
+      "memberCount_one": "{{count}} 位成员",
+      "activeToday": "进行中 · 今天"
+    },
+    "toast": {
+      "created": "行程已创建",
+      "createdDescription": "开始添加目的地。",
+      "deleted": "行程已删除",
+      "deletedDescription": "「{{title}}」已被移除。",
+      "error": "出现问题"
+    },
+    "dialog": {
+      "create": {
+        "title": "创建行程",
+        "description": "你要去哪里？目的地和安全信息可以之后再添加。",
+        "cityCountryLabel": "城市和国家",
+        "cityCountryPlaceholder": "搜索城市…",
+        "noCityMatch": "未找到匹配的城市。",
+        "addNewPlace": "将「{{query}}」添加为新地点",
+        "datesUnlockHint": "添加日期以获取住宿、航班和安全建议。",
+        "defaultTitle": "前往{{city}}的行程",
+        "titleField": "行程标题",
+        "titlePlaceholder": "例如：柏林骄傲周 2026",
+        "descriptionField": "描述",
+        "descriptionPlaceholder": "这次行程的主题是什么？",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "currency": "货币",
+        "submit": "创建行程",
+        "cancel": "取消",
+        "endBeforeStart": "结束日期必须晚于开始日期。",
+        "failed": "无法创建行程，请重试。"
+      }
+    },
+    "backToTrips": "返回行程",
+    "planner": {
+      "loadFailed": "无法加载该行程。",
+      "notFound": "未找到行程。",
+      "progressTooltip": "行程规划进度",
+      "days_other": "{{count}} 天",
+      "placesCount_other": "{{count}} 个地点",
+      "daysPlanned_other": "已规划 {{count}} 天",
+      "days_one": "{{count}} 天",
+      "placesCount_one": "{{count}} 个地点",
+      "daysPlanned_one": "{{count}} 天已规划"
+    },
+    "share": {
+      "title": "分享此行程",
+      "description": "创建任何人都能打开的链接，无需账号。",
+      "activeLinks_other": "{{count}} 个活跃链接",
+      "createNew": "创建新的分享链接",
+      "previewLabel": "收到链接的人将看到：",
+      "itineraryAlways": "行程（始终共享）",
+      "expiresLabel": "过期日期（可选）",
+      "createButton": "创建链接",
+      "close": "关闭",
+      "created": "链接已创建",
+      "createFailed": "无法创建链接",
+      "deleted": "链接已删除",
+      "deleteFailed": "无法删除链接",
+      "copied": "链接已复制",
+      "copyAria": "复制链接",
+      "deleteAria": "删除链接",
+      "deleteTitle": "删除分享链接",
+      "deleteConfirm": "持有该链接的人将失去访问权限。此操作不可撤销。",
+      "expired": "已过期",
+      "expiresOn": "于 {{date}} 过期",
+      "activeLinks_one": "{{count}} 个活跃链接"
+    },
+    "itinerary": {
+      "add": "添加",
+      "addPlace": "添加地点",
+      "unassigned": "未分配",
+      "unassignedHint": "把它们拖到某一天来安排日程。",
+      "emptyTitle": "你的行程还是空的",
+      "emptyDescription": "添加第一个地点开始规划。",
+      "dayShort": "天",
+      "dropHere": "将地点拖到这里或点击添加",
+      "dayTitlePlaceholder": "当日标题…",
+      "editDayTitle": "编辑当日标题",
+      "saveDayTitle": "保存标题",
+      "reordered": "地点已重新排序",
+      "moved": "地点已移动",
+      "removed": "地点已移除",
+      "dayUpdated": "当日已更新",
+      "dragHandleAria": "拖动以重新排序"
+    },
+    "map": {
+      "emptyNoPlaces": "添加地点以在地图上查看",
+      "emptyNoCoords": "你的地点都还没有坐标",
+      "fitAll": "查看全部",
+      "fitAllAria": "将所有地点框入视图",
+      "filterAll": "所有天数",
+      "dayLabel": "第 {{number}} 天",
+      "showAttractions": "[ZH] Attractions",
+      "showEvents": "[ZH] Events",
+      "suggestedVenue": "[ZH] Suggested venue",
+      "eventOn": "[ZH] Event · {{date}}"
+    },
+    "safety": {
+      "emptyTitle": "还没有安全信息",
+      "emptyDescription": "将目的地添加到行程中，我们会为每个国家展示 LGBTQ+ 法律状态和本地背景。",
+      "crossBorderHeading": "跨境提醒",
+      "countriesHeading": "行程中的国家",
+      "crossBorderTitle": "从 {{from}} 到 {{to}} 大幅下降",
+      "crossBorderBody": "平等指数下降 {{drop}} 分。跨境前请查阅当地法律和风险。",
+      "dataSource": "数据来自 ILGA World 数据库，每年更新。分数仅供参考，请在出行前查看最新资讯。",
+      "basedOn_other": "基于行程中 {{count}} 个国家的 LGBTQ+ 数据。",
+      "worstCountry": "最低分：{{country}}（{{score}}/100）。",
+      "stops_other": "{{count}} 个停留点",
+      "warningCount_other": "{{count}} 条警告",
+      "toggleDetails": "切换 {{country}} 的详细信息",
+      "viewOnIlga": "在 ILGA 数据库查看",
+      "risk": {
+        "low": "低风险",
+        "moderate": "中等风险",
+        "high": "高风险",
+        "critical": "严重风险"
+      },
+      "headline": {
+        "low": "你的行程看起来安全。",
+        "moderate": "需要保持一定警惕。",
+        "high": "路线存在高风险。",
+        "critical": "路线存在严重风险。"
+      },
+      "flags": {
+        "deathPenalty": "同性关系可能判处死刑",
+        "criminalized": "同性关系被定为刑事犯罪"
+      },
+      "scoreLabel": {
+        "veryHigh": "非常高",
+        "high": "较高",
+        "moderate": "中等",
+        "low": "较低",
+        "veryLow": "非常低",
+        "noData": "暂无数据"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "法律状态",
+          "value": "同性关系在当地属违法"
+        },
+        "deathPenalty": {
+          "label": "最高刑罚",
+          "value": "可能适用死刑"
+        },
+        "ssu": "同性结合",
+        "employment": "就业保护"
+      },
+      "tip": {
+        "safe": "LGBTQ+ 接受度较高。与在其他地方一样，对公开示爱保持基本判断力。",
+        "caution": "注意公开示爱。请详细研究该城市并阅读近期游记。",
+        "danger": "请认真对待风险。避免公开示爱和使用约会应用，保持低调。"
+      },
+      "basedOn_one": "基于行程中 {{count}} 个国家的 LGBTQ+ 平等数据。",
+      "stops_one": "{{count}} 个停留点",
+      "warningCount_one": "{{count}} 条警告"
+    },
+    "budget": {
+      "emptyTitle": "暂无支出",
+      "emptyDescription": "追踪花费，与小组分摊费用。",
+      "addExpense": "Add Expense",
+      "totalSpend": "总支出",
+      "spendingByCategory": "按类别支出",
+      "settlements": "结算",
+      "unknownMember": "未知",
+      "paidBy": "Paid by",
+      "splitWays_other": "按 {{count}} 人分摊",
+      "itemsCount_other": "已记录 {{count}} 笔",
+      "membersCount_other": "{{count}} 位成员",
+      "deleted": "已删除支出",
+      "deleteFailed": "无法删除支出",
+      "deleteAria": "删除支出",
+      "deleteTitle": "删除支出",
+      "deleteConfirm": "确定要删除这笔支出吗？此操作无法撤销。",
+      "category": "Category",
+      "splitWays_one": "按 {{count}} 人分摊",
+      "itemsCount_one": "已记录 {{count}} 笔",
+      "membersCount_one": "{{count}} 位成员",
+      "expenseAdded": "Expense added",
+      "addFailed": "Failed to add expense",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Dinner at Rainbow Cafe",
+      "amount": "Amount",
+      "currency": "Currency",
+      "categories": {
+        "food": "Food",
+        "transport": "Transport",
+        "accommodation": "Accommodation",
+        "activities": "Activities",
+        "shopping": "Shopping",
+        "other": "Other"
+      },
+      "date": "Date",
+      "splitAmong": "Split among"
+    },
+    "reservations": {
+      "emptyTitle": "暂无预订",
+      "emptyDescription": "添加航班、酒店和活动，让一切井然有序。",
+      "add": "添加预订",
+      "nextUp": "下一项",
+      "deleted": "已删除预订",
+      "deleteFailed": "无法删除预订",
+      "deleteTitle": "删除预订",
+      "deleteConfirm": "确定要删除这条预订吗？此操作无法撤销。",
+      "type": {
+        "flight": "航班",
+        "hotel": "酒店",
+        "activity": "活动",
+        "transport": "交通",
+        "other": "其他"
+      },
+      "status": {
+        "confirmed": "已确认",
+        "cancelled": "已取消",
+        "pending": "待确认"
+      }
+    },
+    "packing": {
+      "emptyTitle": "暂无物品。",
+      "emptyDescription": "添加物品或使用模板。",
+      "progress": "已打包 {{checked}} / {{total}}",
+      "addItem": "添加物品…",
+      "removeAria": "移除物品",
+      "added": "已添加物品",
+      "addFailed": "无法添加物品",
+      "removed": "已移除物品",
+      "removeFailed": "无法移除物品",
+      "templateAdded": "已添加模板",
+      "templateFailed": "无法添加模板",
+      "templates": {
+        "essentials": "必备物品",
+        "lgbtq-safety": "LGBTQ+ 安全套装",
+        "beach": "海滩套装"
+      },
+      "category": {
+        "clothing": "衣物",
+        "toiletries": "洗漱用品",
+        "electronics": "电子产品",
+        "documents": "证件",
+        "safety": "安全用品",
+        "lgbtq-specific": "LGBTQ+ 专用",
+        "other": "其他"
+      }
+    },
+    "collaborate": {
+      "chat": "聊天",
+      "notes": "笔记",
+      "polls": "投票"
+    },
+    "shared": {
+      "badge": "分享的行程",
+      "metaDescription": "Queer Guide 上的行程 — LGBTQ+ 旅行规划工具。",
+      "notFoundTitle": "行程未找到",
+      "notFoundDescription": "此分享链接可能已过期或被删除。",
+      "safetyNotice": "安全提示",
+      "safetyCountry": "{{country}} 的平等指数较低 ({{score}})。出行前请了解当地情况。",
+      "tabs": {
+        "itinerary": "行程",
+        "budget": "预算",
+        "notes": "笔记",
+        "packing": "行李"
+      },
+      "dayLabel": "第 {{number}} 天",
+      "noPlaces": "未安排地点",
+      "unknownPlace": "未知",
+      "unassigned": "未分配",
+      "untitled": "无标题",
+      "packed": "已打包 {{checked}}/{{total}}",
+      "ctaTitle": "规划你自己的 queer-friendly 行程",
+      "ctaSubtitle": "免费行程、LGBTQ+ 安全信息,以及与旅伴共享规划。",
+      "ctaPrimary": "开始规划",
+      "ctaSecondary": "登录",
+      "footer": "通过 queer.guide 分享"
+    },
+    "tabs": {
+      "itinerary": "行程",
+      "map": "地图",
+      "safety": "安全",
+      "budget": "预算",
+      "reservations": "预订",
+      "packing": "行李",
+      "collaborate": "协作"
+    },
+    "today": {
+      "offlineBanner": "您处于离线状态 — 显示上次保存的行程。",
+      "pushPrompt": "每次预订前 30 分钟收到提醒。",
+      "pushEnable": "启用"
+    },
+    "bookingAssistant": {
+      "tabs": {
+        "suggestions": "建议",
+        "book": "预订"
+      },
+      "addedToast": "已添加到行程",
+      "addFailedToast": "添加失败",
+      "emptyHint": "添加地点以查看建议和预订选项",
+      "lowerEquality": "的平等评分较低",
+      "suggestedFor": "为 {{city}} 推荐",
+      "unknownCity": "未知",
+      "add": "添加",
+      "stillNeed": "仍需要",
+      "flights": "航班",
+      "search": "搜索",
+      "flightsBooked": "航班已预订",
+      "hotel": "酒店",
+      "hotelIn": "{{city}} 的酒店",
+      "hotelBooked": "酒店已预订",
+      "hotelsIn": "{{city}} 的酒店",
+      "noHotelsFound": "未找到酒店"
+    },
+    "contextBar": {
+      "openTrip": "打开行程",
+      "ariaLabel": "当前行程",
+      "dismissAria": "关闭当前行程横幅"
+    },
+    "phase": {
+      "label": {
+        "seed": "起步",
+        "plan": "计划",
+        "countdown": "倒计时",
+        "live": "进行中",
+        "memory": "回忆"
+      },
+      "status": {
+        "datesNotSet": "未设置日期",
+        "inDays": "{{count}} 天后",
+        "tomorrow": "明天",
+        "soon": "即将",
+        "dayOf": "今天",
+        "daysAgo": "{{count}} 天前",
+        "yesterday": "昨天"
+      }
+    },
+    "discover": {
+      "title": "发现地点",
+      "button": "浏览市场",
+      "eyebrow": "[ZH] Real travelers",
+      "subtitle": "[ZH] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[ZH] Filter by city…",
+      "aria": "[ZH] Discover public trips",
+      "sortAria": "[ZH] Sort trips",
+      "viewAria": "[ZH] View mode",
+      "filterAria": "[ZH] Filter trips",
+      "filtersAria": "[ZH] Open filters",
+      "filters": {
+        "title": "[ZH] undefined",
+        "travelerType": "[ZH] undefined",
+        "duration": "[ZH] undefined",
+        "minEquality": "[ZH] undefined",
+        "minEqualityAria": "[ZH] undefined",
+        "minEqualityHint": "[ZH] undefined",
+        "noMin": "[ZH] undefined",
+        "quality": "[ZH] undefined",
+        "hasCover": "[ZH] undefined",
+        "hasOwnerProfile": "[ZH] undefined",
+        "clear": "[ZH] undefined"
+      },
+      "activeCountAria": "[ZH] {{count}} active",
+      "view": {
+        "list": "[ZH] List view",
+        "map": "[ZH] Map view"
+      },
+      "sort": {
+        "recent": "[ZH] Most recent",
+        "trending": "[ZH] Trending",
+        "most_places": "[ZH] Most places",
+        "longest": "[ZH] Longest",
+        "safest": "[ZH] Safest"
+      },
+      "filter": {
+        "dated": "[ZH] Has dates",
+        "multiday": "[ZH] Multi-day",
+        "safe": "[ZH] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[ZH] Any",
+        "solo": "[ZH] Solo",
+        "couple": "[ZH] Couple",
+        "group": "[ZH] Group",
+        "family": "[ZH] Family"
+      },
+      "duration": {
+        "any": "[ZH] Any length",
+        "weekend": "[ZH] Weekend (1–3 days)",
+        "week": "[ZH] Week (4–9 days)",
+        "long": "[ZH] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[ZH] Europe",
+        "north_america": "[ZH] North America",
+        "latin_america": "[ZH] Latin America",
+        "asia": "[ZH] Asia",
+        "oceania": "[ZH] Oceania",
+        "africa": "[ZH] Africa",
+        "middle_east": "[ZH] Middle East",
+        "other": "[ZH] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[ZH] Staff picks",
+        "title": "[ZH] Trips worth copying"
+      },
+      "all": "[ZH] All public trips",
+      "moreInspiration": "[ZH] More inspiration",
+      "moreInspirationDescription": "[ZH] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[ZH] No public trips yet",
+      "emptyFiltered": "[ZH] No public trips match that city. Try a different one.",
+      "emptyDescription": "[ZH] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[ZH] A QG traveler",
+      "placeCount": "[ZH] {{count}} places",
+      "fork": "[ZH] Fork into my trips",
+      "forkAria": "[ZH] Fork this trip",
+      "forking": "[ZH] Forking…",
+      "forked": "[ZH] Trip forked",
+      "forkedDescription": "[ZH] Your copy is ready — edit days and places freely.",
+      "forkError": "[ZH] Could not create trip",
+      "inspiredTitle": "[ZH] Inspired by: {{title}}",
+      "signalsAria": "[ZH] Trip activity",
+      "forkCount": "[ZH] {{count}} forks",
+      "saveCount": "[ZH] {{count}} saves",
+      "filtersButton": "[ZH] Filters"
+    },
+    "polls": {
+      "createdToast": "Poll created",
+      "createFailedToast": "Failed to create poll",
+      "voteFailedToast": "Failed to vote",
+      "poll": "poll",
+      "polls": "polls",
+      "create": "Create Poll",
+      "noPolls": "No polls yet",
+      "noPollsHint": "Create one to help your group make decisions",
+      "closed": "Closed",
+      "multiple": "Multiple",
+      "totalVote": "total vote",
+      "totalVotes": "total votes",
+      "closePoll": "Close Poll",
+      "questionPlaceholder": "What would you like to ask?",
+      "options": "Options",
+      "optionPlaceholder": "Option {{n}}",
+      "addOption": "+ Add Option",
+      "allowMultiple": "Allow multiple choices",
+      "deadline": "Deadline (optional)"
+    },
+    "bundledCheckout": {
+      "stayIn": "Stay in {{city}}",
+      "compareHotels": "Compare hotels for your dates",
+      "thingsToDoIn": "Things to do in {{city}}",
+      "toursTicketsDayTrips": "Tours, tickets, day trips",
+      "title": "Bundle your bookings",
+      "description": "Step through hotels and activities for each city on your trip.",
+      "emptyHint": "Add places to your trip first — we'll generate bookable links per city.",
+      "openedOf": "{{booked}} of {{total}} opened",
+      "allSkipped": "All steps skipped",
+      "revisitHint": "You can revisit this anytime from the Budget tab.",
+      "stepOf": "Step {{current}} of {{total}} · {{booked}} opened",
+      "via": "via",
+      "openAndMarkBooked": "Open & mark booked"
+    },
+    "addPlace": {
+      "addedToast": "Place added to trip",
+      "addFailedToast": "Failed to add place",
+      "title": "Add Place",
+      "assignToDay": "Assign to Day",
+      "unassigned": "Unassigned",
+      "searchTab": "Search queer.guide",
+      "customTab": "Custom Place",
+      "searchPlaceholder": "Search venues, events, hotels...",
+      "recent": "Recent",
+      "filter": {
+        "all": "All",
+        "venue": "Venue",
+        "event": "Event",
+        "hotel": "Hotel"
+      },
+      "noResults": "No results found. Try a different search or add a custom place.",
+      "placeName": "Place Name",
+      "placeNamePlaceholder": "e.g. Rainbow Cafe",
+      "address": "Address",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "category": "Category",
+      "customCategories": {
+        "restaurant": "Restaurant",
+        "bar": "Bar",
+        "club": "Club",
+        "cafe": "Cafe",
+        "museum": "Museum",
+        "park": "Park",
+        "beach": "Beach",
+        "shopping": "Shopping",
+        "accommodation": "Accommodation",
+        "transport": "Transport",
+        "other": "Other"
+      }
+    },
+    "addTo": {
+      "tripFallback": "trip",
+      "addedTitle": "Added to {{trip}}",
+      "addedDesc": "{{name}} has been added to your trip.",
+      "failedToAdd": "Failed to add",
+      "addedNewDesc": "{{name}} has been added to your new trip.",
+      "failedToCreate": "Failed to create trip.",
+      "title": "Add to Trip",
+      "signInPrompt": "Sign in to plan trips",
+      "signInDesc": "Create an account to save places to your travel plans.",
+      "adding": "Adding",
+      "assignToDay": "Assign to Day (optional)",
+      "createNewTrip": "Create New Trip",
+      "backToTrips": "Back to trips",
+      "firstTripHint": "Create your first trip to start planning.",
+      "tripTitle": "Trip Title",
+      "tripTitlePlaceholder": "e.g. Pride Week Berlin 2026",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "createAndAdd": "Create & Add"
+    },
+    "notes": {
+      "updatedToast": "Note updated",
+      "saveFailedToast": "Failed to save note",
+      "createdToast": "Note created",
+      "createFailedToast": "Failed to create note",
+      "deletedToast": "Note deleted",
+      "deleteFailedToast": "Failed to delete note",
+      "note": "note",
+      "notes": "notes",
+      "newNote": "New Note",
+      "noNotes": "No notes yet",
+      "noNotesHint": "Create one to share information with your group",
+      "untitled": "Untitled",
+      "category": {
+        "general": "General",
+        "logistics": "Logistics",
+        "safety": "Safety",
+        "ideas": "Ideas"
+      },
+      "editNote": "Edit Note",
+      "titlePlaceholder": "Note title",
+      "contentPlaceholder": "Write your note...",
+      "categoryLabel": "Category",
+      "unpin": "Unpin",
+      "pin": "Pin",
+      "deleteTitle": "Delete Note",
+      "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "next": {
+      "live": "[ZH] Active now",
+      "countdown": "[ZH] Coming up",
+      "upcoming": "[ZH] Upcoming",
+      "open": "[ZH] Open trip",
+      "openLive": "[ZH] Open today's plan",
+      "today": "[ZH] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[ZH] Inspired by your trips",
+      "title": "[ZH] Public trips you might like",
+      "cta": "[ZH] See all"
+    },
+    "save": {
+      "save": "[ZH] Save",
+      "saved": "[ZH] Saved",
+      "saveAria": "[ZH] Save trip",
+      "unsaveAria": "[ZH] Unsave trip",
+      "error": "[ZH] Could not update save"
+    }
+  },
+  "auth": {
+    "welcome": "Welcome!",
+    "welcomeBack": "Welcome back",
+    "signUp": "Create account",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "sendResetLink": "Send reset link",
+    "resetSent": "Check your email for a password reset link.",
+    "forgotBlurb": "We'll email you a reset link.",
+    "signinBlurb": "Sign in to continue",
+    "orWithEmail": "Or with email",
+    "noAccount": "Don't have an account? Create one",
+    "backToSignIn": "Back to sign in",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "displayName": "Display name",
+      "pronouns": "Pronouns",
+      "country": "Country",
+      "language": "Preferred language"
+    },
+    "placeholders": {
+      "email": "you@example.com",
+      "password": "At least 10 characters",
+      "displayName": "How should we call you?",
+      "pronouns": "Select your pronouns",
+      "country": "Optional",
+      "language": "Select language",
+      "passwordMin8": "[ZH] At least 8 characters"
+    },
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordTooShort": "Password must be at least 10 characters",
+      "passwordTooWeak": "Please choose a stronger password",
+      "consentRequired": "Please accept the terms, privacy policy, and confirm you are 18+",
+      "displayNameRequired": "Display name is required",
+      "fillAllFields": "Please fill in all fields",
+      "invalidCredentials": "Invalid email or password.",
+      "emailNotConfirmed": "Please confirm your email before signing in.",
+      "alreadyRegistered": "An account with this email already exists. Try signing in.",
+      "oauthFailed": "Sign-in failed. Please try again.",
+      "unexpected": "An unexpected error occurred. Please try again."
+    },
+    "passwordStrength": {
+      "veryWeak": "Very weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "good": "Good",
+      "strong": "Strong"
+    },
+    "consent": {
+      "terms": "I agree to the <1>Terms of Service</1>",
+      "privacy": "I agree to the <1>Privacy Policy</1>",
+      "age": "I confirm I am 18 years or older",
+      "termsAria": "Accept terms of service",
+      "privacyAria": "Accept privacy policy",
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[ZH] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[ZH] Accept terms, privacy and confirm 18 or older"
+    },
+    "oauth": {
+      "google": "Continue with Google",
+      "apple": "Continue with Apple"
+    },
+    "signup": {
+      "title": "Create your account",
+      "stepIndicator": "Step {{current}} of {{total}}",
+      "haveAccount": "Sign in",
+      "create": "Create account",
+      "orWithEmail": "Or with email",
+      "profileBlurb": "Tell us a bit about you. You can change everything later.",
+      "interestsBlurb": "可选。跳过也可以。",
+      "lookingForTitle": "I'm looking for",
+      "interestsTitle": "Interests",
+      "steps": {
+        "account": "Account",
+        "profile": "Profile",
+        "interests": "Interests"
+      },
+      "blurb": "[ZH] Free, takes a minute.",
+      "haveAccountQ": "[ZH] Already have an account? Sign in"
+    },
+    "pronouns": {
+      "she/her": "she/her",
+      "he/him": "he/him",
+      "they/them": "they/them",
+      "she/they": "she/they",
+      "he/they": "he/they",
+      "xe/xem": "xe/xem",
+      "prefer-not-to-say": "Prefer not to say"
+    },
+    "lookingFor": {
+      "friends": "New friends",
+      "dating": "Dating",
+      "community": "Community",
+      "events": "Events",
+      "travel-tips": "Travel tips",
+      "safe-spaces": "Safe spaces",
+      "activism": "Activism",
+      "mentorship": "Mentorship"
+    },
+    "interests": {
+      "arts-culture": "Arts & Culture",
+      "music": "Music",
+      "nightlife": "Nightlife",
+      "fitness": "Fitness",
+      "food": "Food",
+      "travel": "Travel",
+      "film": "Film",
+      "literature": "Literature",
+      "tech": "Tech",
+      "activism": "Activism",
+      "wellness": "Wellness",
+      "fashion": "Fashion"
+    },
+    "verifyEmail": {
+      "title": "Check your email",
+      "description": "We sent a verification link to",
+      "instructions": "Click the link in the email to activate your account. The link expires in 24 hours.",
+      "resend": "Resend verification email",
+      "resendIn": "Resend in {{seconds}}s",
+      "resent": "Verification email sent. Please check your inbox.",
+      "backToLogin": "Back to sign in",
+      "continue": "[ZH] Continue to The Queer Guide",
+      "banner": "[ZH] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[ZH] Verification email sent. Check your inbox.",
+      "resendShort": "[ZH] Resend",
+      "gateTitle": "[ZH] Verify your email first",
+      "gateDescription": "[ZH] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[ZH] Sign in required",
+      "description": "[ZH] Please sign in to continue."
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to The Queer Guide",
+    "welcomeBlurb": "You're in. A few quick optional steps to make it yours.",
+    "passkeyTitle": "Set up a passkey",
+    "passkeyBlurb": "Sign in faster and more securely with your device. No passwords to remember.",
+    "passkeyEnable": "Enable passkey",
+    "passkeyAlreadyEnrolled": "Passkey already enabled",
+    "passkeyEnrolled": "Passkey enabled",
+    "continue": "Continue to The Queer Guide",
+    "skip": "Skip for now"
+  },
+  "events": {
+    "title": "活动",
+    "upcoming": "即将举办的活动",
+    "past": "往期活动",
+    "create": "创建活动",
+    "rsvp": "回复出席",
+    "attending": "将参加",
+    "interested": "感兴趣",
+    "share": "分享",
+    "details": "活动详情",
+    "location": "地点",
+    "organizer": "主办方",
+    "free": "免费",
+    "ticketsRequired": "需要购票",
+    "soldOut": "已售罄",
+    "cancelled": "已取消"
+  },
+  "venues": {
+    "title": "场所",
+    "safeSpace": "安全空间",
+    "queerOwned": "Queer 经营",
+    "queerFriendly": "Queer 友好",
+    "accessibility": "无障碍",
+    "verified": "已认证",
+    "hours": "营业时间",
+    "contact": "联系",
+    "directions": "导航",
+    "checkin": "签到",
+    "review": "撰写评价",
+    "photos": "照片",
+    "amenities": "设施",
+    "services": "服务"
+  },
+  "marketplace": {
+    "title": "市场",
+    "queerOwned": "Queer 经营",
+    "supportLocal": "支持本地",
+    "handmade": "手工制作",
+    "sustainable": "可持续",
+    "addToCart": "加入购物车",
+    "soldOut": "已售罄",
+    "onSale": "促销中",
+    "newArrival": "新品",
+    "featured": "精选",
+    "reviews": "评价"
+  },
+  "profile": {
+    "editProfile": "编辑资料",
+    "pronouns": "代词",
+    "location": "地点",
+    "bio": "关于我",
+    "interests": "兴趣",
+    "lookingFor": "在寻找",
+    "photos": "照片",
+    "settings": "设置",
+    "privacy": "隐私",
+    "notifications": "通知",
+    "blockedUsers": "已屏蔽用户",
+    "reportUser": "举报用户",
+    "sendMessage": "发送消息"
+  },
+  "groups": {
+    "title": "群组",
+    "join": "加入群组",
+    "leave": "退出群组",
+    "create": "创建群组",
+    "members": "成员",
+    "admins": "管理员",
+    "posts": "帖子",
+    "events": "活动",
+    "rules": "群组规则",
+    "private": "私密",
+    "public": "公开",
+    "invite": "邀请"
+  },
+  "messaging": {
+    "messages": "消息",
+    "newMessage": "新消息",
+    "sendMessage": "发送",
+    "typing": "正在输入…",
+    "online": "在线",
+    "lastSeen": "最后在线",
+    "delivered": "已送达",
+    "read": "已读",
+    "block": "屏蔽用户",
+    "report": "举报对话"
+  },
+  "notifications": {
+    "title": "通知",
+    "markRead": "标记为已读",
+    "markAllRead": "全部标记为已读",
+    "newMessage": "新消息",
+    "newFollow": "新关注者",
+    "eventInvite": "活动邀请",
+    "groupInvite": "群组邀请",
+    "mentionedYou": "提到了你",
+    "likedPost": "赞了你的帖子",
+    "commentedOn": "评论了你的帖子"
+  },
+  "general": {
+    "yes": "是",
+    "no": "否",
+    "maybe": "也许",
+    "thanks": "谢谢！",
+    "sorry": "抱歉！",
+    "congrats": "恭喜！",
+    "welcome": "欢迎！",
+    "goodbye": "再见！",
+    "loading": "加载中…",
+    "error": "出现了问题",
+    "success": "成功！",
+    "tryAgain": "重试",
+    "comingSoon": "即将推出",
+    "underConstruction": "开发中"
+  },
+  "donate": {
+    "title": "支持 queer.guide",
+    "subtitle": "queer.guide 是一个免费平台，为全球 LGBTQ+ 社群提供安全空间、活动和资源。你的捐赠帮助我们持续运营，让每个人都能使用。",
+    "tipJar": "快速选择金额",
+    "customAmount": "自定义金额",
+    "frequency": "频率",
+    "one_time": "一次性",
+    "month": "每月",
+    "year": "每年",
+    "email": "电子邮箱",
+    "name": "姓名（可选）",
+    "namePlaceholder": "你希望在捐赠墙上显示的名字",
+    "message": "留言（可选）",
+    "messagePlaceholder": "留下一句支持的话",
+    "anonymous": "匿名捐赠",
+    "cta": "捐赠 {{amount}}",
+    "ctaDisabled": "请输入金额",
+    "error": "出现了问题，请重试。",
+    "donorWall": "近期支持者",
+    "loadingDonors": "正在加载捐赠者…",
+    "noDonorsYet": "成为第一位支持 queer.guide 的人！",
+    "anonymousDonor": "一位支持者",
+    "recurring": "定期",
+    "thankYou": "谢谢！",
+    "successMessage": "你的捐赠帮助 queer.guide 保持免费，为全球 LGBTQ+ 社群提供服务。",
+    "backHome": "返回首页"
+  },
+  "help": {
+    "title": "帮助与危机热线",
+    "subtitle": "你不是一个人。在这里找到即时支持。",
+    "meta_description": "全球免费、匿名的 LGBTQIA+ 危机热线和咨询服务。你不是一个人。",
+    "emergency_title": "处于紧急危险中？",
+    "emergency_body": "请立即拨打急救电话：112（欧盟）或 911（美国/加拿大）。分秒必争。",
+    "filter_country": "国家",
+    "filter_country_all": "所有国家",
+    "filter_topic": "主题",
+    "filter_topic_all": "所有主题",
+    "call_now": "立即拨打",
+    "call_aria": "拨打 {{name}} {{phone}}",
+    "hours": "服务时间",
+    "languages": "语言",
+    "disclaimer": "Queer Guide 不能替代专业帮助。",
+    "no_results": "没有匹配的热线。试试所有国家或查看国际目录。",
+    "no_results_title": "未找到热线",
+    "search_placeholder": "搜索热线…",
+    "saved_hotlines": "你保存的热线",
+    "quick_call": "快速拨打",
+    "badge_24_7": "24小时",
+    "badge_free": "免费",
+    "badge_anonymous": "匿名",
+    "save": "保存热线",
+    "unsave": "从已保存中移除",
+    "reset_filters": "重置筛选",
+    "related_resources": "相关资源",
+    "browse_resources": "浏览所有资源",
+    "breadcrumb_resources": "资源",
+    "breadcrumb_support": "支持与新闻",
+    "breadcrumb_hotlines": "危机热线",
+    "error_title": "帮助页面不可用",
+    "error_body": "如遇紧急危险，请拨打当地急救电话：112（欧盟）或 911（美国/加拿大）。",
+    "topic": {
+      "general": "综合",
+      "crisis": "危机",
+      "suicide": "预防自杀",
+      "lgbtq": "LGBTQIA+",
+      "youth": "青少年",
+      "trans": "跨性别",
+      "coming-out": "出柜",
+      "violence": "暴力",
+      "discrimination": "歧视",
+      "health": "健康",
+      "hiv": "HIV",
+      "legal": "法律",
+      "relationships": "关系",
+      "women": "女性"
+    },
+    "quick_exit": "[ZH] Quick exit",
+    "quick_exit_aria": "[ZH] Leave this page immediately (ESC)",
+    "hide_screen": "[ZH] Hide screen",
+    "reveal_aria": "[ZH] Click anywhere to show the page again",
+    "hidden_hint": "[ZH] Page hidden. Click anywhere to show again.",
+    "hero_label": "[ZH] Recommended right now",
+    "expect_title": "[ZH] What happens when you call",
+    "expect_short": "[ZH] What to expect",
+    "expect_1": "[ZH] You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "[ZH] You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "[ZH] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "[ZH] If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "[ZH] While you wait",
+    "self_help_title": "[ZH] Steady yourself",
+    "self_help_desc": "[ZH] Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "[ZH] 4-7-8 breathing",
+    "breathing_1": "[ZH] Breathe in through your nose for 4 seconds.",
+    "breathing_2": "[ZH] Hold your breath for 7 seconds.",
+    "breathing_3": "[ZH] Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "[ZH] Repeat 4 times.",
+    "grounding_title": "[ZH] 5-4-3-2-1 grounding",
+    "grounding_intro": "[ZH] Name, out loud or in your head:",
+    "grounding_5": "[ZH] 5 things you can see",
+    "grounding_4": "[ZH] 4 things you can touch",
+    "grounding_3": "[ZH] 3 things you can hear",
+    "grounding_2": "[ZH] 2 things you can smell",
+    "grounding_1": "[ZH] 1 thing you can taste",
+    "safety_plan_title": "[ZH] Safety plan",
+    "safety_plan_desc": "[ZH] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "[ZH] Open template (Stanley-Brown)",
+    "report": "[ZH] Report",
+    "report_aria": "[ZH] Report a problem with this hotline",
+    "report_title": "[ZH] Report this hotline",
+    "report_desc": "[ZH] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "[ZH] Reason",
+    "report_detail": "[ZH] Details (optional)",
+    "report_submit": "[ZH] Submit report",
+    "report_thanks": "[ZH] Thank you. We'll review it.",
+    "filter_intersection": "[ZH] Population",
+    "filter_intersection_all": "[ZH] All",
+    "badge_reports_police": "[ZH] May report to police",
+    "operator": "[ZH] Operated by",
+    "verified_on": "[ZH] Verified",
+    "affiliation": {
+      "religious": "[ZH] religious",
+      "state": "[ZH] state",
+      "ngo": "[ZH] NGO",
+      "secular": "[ZH] secular"
+    },
+    "channel": {
+      "phone": "[ZH] Call",
+      "sms": "[ZH] Text",
+      "whatsapp": "[ZH] WhatsApp",
+      "chat": "[ZH] Chat",
+      "email": "[ZH] Email"
+    },
+    "intersection": {
+      "trans-youth": "[ZH] Trans youth",
+      "asylum": "[ZH] Asylum seekers",
+      "sex-work": "[ZH] Sex workers",
+      "hiv": "[ZH] HIV+",
+      "elders": "[ZH] Elders",
+      "deaf": "[ZH] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[ZH] Number disconnected / no answer",
+      "wrong_number": "[ZH] Wrong number",
+      "closed": "[ZH] Service has shut down",
+      "unsafe": "[ZH] Unsafe / harmful experience",
+      "other": "[ZH] Other"
+    }
+  },
+  "sos": {
+    "button": "SOS",
+    "confirmTitle": "发送紧急求助？",
+    "confirmBody": "这将立即通知你的 {{count}} 位朋友。如果可用，你的当前位置将被共享。",
+    "send": "发送 SOS",
+    "sending": "正在发送…",
+    "sent": "紧急求助已发送给 {{count}} 位朋友",
+    "cooldown": "请稍等再发送下一条求助",
+    "noFriends": "添加朋友以使用 SOS",
+    "notificationTitle": "来自 {{name}} 的 SOS",
+    "notificationBody": "{{name}} 需要帮助！请联系确认。",
+    "notificationBodyWithLocation": "{{name}} 需要帮助！位置已共享。",
+    "error": "发送求助失败，请重试。"
+  },
+  "home": {
+    "heroLine1": "酷儿场所、",
+    "heroLine2": "活动和人物。",
+    "heroLine3": "遍布全球。",
+    "subtitle": "安全的场所、丰富的活动和懂你的社群——无论你在哪里。",
+    "browseVenues": "浏览场所",
+    "viewEvents": "查看活动",
+    "explore": "探索",
+    "stats": {
+      "venues": "场所",
+      "members": "成员",
+      "cities": "城市",
+      "events": "活动"
+    },
+    "features": {
+      "venues": "场所",
+      "venuesDesc": "经认证的 queer 友好空间，让你做自己",
+      "events": "活动",
+      "eventsDesc": "你所在地区的线下和线上聚会",
+      "marketplace": "市场",
+      "marketplaceDesc": "支持 queer 经营的商家和创作者",
+      "places": "目的地",
+      "placesDesc": "探索 queer 友好的城市和国家",
+      "hotels": "酒店",
+      "hotelsDesc": "全球友好住宿",
+      "community": "社群",
+      "communityDesc": "认识朋友，加入群组",
+      "resources": "资源",
+      "resourcesDesc": "权利、文化与社群支持"
+    },
+    "weekly": {
+      "title": "本周",
+      "titleNear": "本周您附近的活动"
+    },
+    "upcoming": {
+      "title": "即将举行的活动",
+      "titleNear": "您附近即将举行的活动",
+      "next14": "未来14天"
+    },
+    "news": {
+      "title": "最新资讯"
+    }
+  },
+  "header": {
+    "signInSignUp": "登录 / 注册",
+    "signOut": "登出",
+    "adminConsole": "管理后台",
+    "closeMenu": "关闭菜单",
+    "openMenu": "打开菜单",
+    "openNavigation": "打开导航菜单",
+    "openUserMenu": "打开用户菜单",
+    "selectMode": "选择模式",
+    "contribute": "贡献",
+    "submitEvent": "提交活动",
+    "submitVenue": "提交场所",
+    "submitProduct": "提交商品",
+    "submitHotel": "提交酒店",
+    "nav": {
+      "discover": "发现",
+      "connect": "连接",
+      "more": "更多",
+      "venues": "场所",
+      "events": "活动",
+      "places": "目的地",
+      "map": "地图",
+      "feed": "动态",
+      "groups": "群组",
+      "members": "成员",
+      "marketplace": "市场",
+      "resources": "资源",
+      "news": "新闻",
+      "travel": "旅行",
+      "personalities": "名人",
+      "hotels": "酒店",
+      "help": "帮助"
+    },
+    "userMenu": {
+      "myTrips": "我的行程",
+      "favorites": "收藏",
+      "settings": "设置",
+      "inbox": "收件箱",
+      "friends": "朋友",
+      "myGroups": "我的群组",
+      "accessibility": "无障碍",
+      "bookings": "预订",
+      "tripInbox": "旅行收件箱",
+      "extension": "浏览器扩展",
+      "footprint": "[ZH] Footprint"
+    },
+    "modes": {
+      "dating": "寻找爱情",
+      "friends": "结交朋友",
+      "exploration": "探索场景",
+      "fun": "纯粹玩乐",
+      "networking": "职业社交",
+      "community": "建设社群"
+    },
+    "legal": {
+      "about": "关于",
+      "help": "帮助",
+      "accessibility": "无障碍",
+      "legal": "法律",
+      "contact": "联系"
+    },
+    "signUp": "[ZH] Sign up",
+    "navigation": "[ZH] Navigation",
+    "signIn": "[ZH] Sign in"
+  },
+  "pages": {
+    "venues": {
+      "sortFeatured": "精选",
+      "sortName": "名称",
+      "sortCategory": "分类",
+      "sortCity": "城市",
+      "sortNewest": "最新",
+      "gridView": "网格视图",
+      "mapView": "地图视图",
+      "submit": "提交",
+      "emptyTitle": "没有匹配筛选条件的场所。",
+      "emptyDescription": "扩大搜索范围或切换城市。",
+      "submitVenue": "提交场所",
+      "clearFilters": "清除筛选",
+      "emptyDataset": {
+        "title": "暂无场地",
+        "body": "我们还没有在这里添加场地。欢迎提交一个,帮助我们丰富指南。"
+      },
+      "filteredEmpty": {
+        "title": "没有匹配筛选条件的场地",
+        "body": "尝试调整筛选条件或搜索以查看更多结果。"
+      }
+    },
+    "venueDetail": {
+      "loadFailed": "无法加载场所详情。",
+      "failedToLoad": "加载失败",
+      "failedDescription": "无法加载场所详情。请检查网络连接后重试。",
+      "backToVenues": "返回场所列表",
+      "notFound": "未找到场所",
+      "notFoundDescription": "你寻找的场所不存在。",
+      "verified": "已验证",
+      "addToTrip": "添加到行程",
+      "call": "拨打电话",
+      "website": "网站",
+      "about": "关于",
+      "amenities": "设施",
+      "contact": "联系方式",
+      "directions": "路线",
+      "hoursNotAvailable": "暂无营业时间",
+      "hours": "营业时间",
+      "tags": "标签",
+      "overview": "概览",
+      "photos": "照片",
+      "noPhotos": "暂无照片",
+      "noEvents": "该场所暂无即将举办的活动",
+      "noReviews": "还没有评价。成为第一个评价的人吧！"
+    },
+    "events": {
+      "title": "活动",
+      "subtitle": "发现并参加你所在地区的社区活动",
+      "submitEvent": "提交活动",
+      "gridView": "网格视图",
+      "calendarView": "日历视图",
+      "city": "城市",
+      "eventType": "活动类型",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "applyFilters": "应用筛选",
+      "clearAll": "全部清除",
+      "activeFilters": "已选筛选条件：",
+      "loadMore": "加载更多活动",
+      "submitAnEvent": "提交活动",
+      "clearFiltersLabel": "清除筛选",
+      "signInRequired": "需要登录",
+      "signInRsvp": "请登录以回复活动邀请。",
+      "rsvpUpdated": "回复已更新",
+      "locationFound": "已找到位置",
+      "nearLocationDesc": "显示你附近的活动",
+      "locationError": "位置错误",
+      "locationErrorDesc": "无法获取你的位置。请允许位置访问。",
+      "showPastEvents": "显示过去的活动",
+      "pastEvents": "过去的活动",
+      "filterSearch": "搜索：{{value}}",
+      "filterCity": "城市：{{value}}",
+      "filterNearYou": "您附近：{{value}}",
+      "filterFrom": "从：{{value}}",
+      "filterTo": "至：{{value}}",
+      "filterNearMe": "附近",
+      "clearFilterSearch": "清除搜索",
+      "clearFilterCity": "清除城市筛选",
+      "clearFilterEventType": "清除活动类型筛选",
+      "clearFilterStartDate": "清除开始日期筛选",
+      "clearFilterEndDate": "清除结束日期筛选",
+      "clearFilterNearMe": "清除附近筛选",
+      "clearFilterPast": "清除过去活动筛选",
+      "noPastEvents": "未找到过去的活动",
+      "noPastEventsDesc": "没有过去的活动符合这些筛选条件。关闭切换以查看即将举办的活动。",
+      "emptyTitle": "暂无活动。",
+      "emptyDescription": "扩大筛选范围或稍后再来。",
+      "emptyDataset": {
+        "title": "暂无活动",
+        "body": "我们还没有在这里添加活动。欢迎提交一个,帮助我们丰富指南。"
+      },
+      "filteredEmpty": {
+        "title": "没有匹配筛选条件的活动",
+        "body": "尝试调整筛选条件或搜索以查看更多结果。"
+      },
+      "prideSubtype": "[ZH] Pride type",
+      "mapView": "[ZH] Map view",
+      "preset": {
+        "label": "[ZH] Quick filters",
+        "thisWeekend": "[ZH] This weekend",
+        "nearMe": "[ZH] Near me",
+        "pride": "[ZH] Pride season",
+        "thisMonth": "[ZH] This month",
+        "free": "[ZH] Free",
+        "featured": "[ZH] Featured"
+      },
+      "rail": {
+        "featured": "[ZH] Featured this week",
+        "featuredSubtitle": "[ZH] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[ZH] No events match your filters",
+        "body": "[ZH] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[ZH] Drop \"{{city}}\" filter",
+        "clearDate": "[ZH] Drop date filter",
+        "viewAll": "[ZH] View all upcoming events",
+        "sameCityHeader": "[ZH] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[ZH] Try other cities in your date range",
+        "fallbackHeader": "[ZH] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[ZH] Spotlight",
+        "happeningNow": "[ZH] Happening now",
+        "tomorrow": "[ZH] Starts tomorrow",
+        "inDays_one": "[ZH] Starts in {{count}} day",
+        "inDays_other": "[ZH] Starts in {{count}} days",
+        "nearbyCount_one": "[ZH] {{count}} event in {{city}}",
+        "nearbyCount_other": "[ZH] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[ZH] Sort events",
+      "sort": {
+        "dateAsc": "[ZH] Soonest first",
+        "dateDesc": "[ZH] Latest first"
+      }
+    },
+    "eventDetail": {
+      "loadFailed": "无法加载活动详情。",
+      "failedToLoad": "加载失败",
+      "failedDescription": "无法加载活动详情。请检查网络连接后重试。",
+      "notFound": "未找到活动",
+      "notFoundDescription": "你寻找的活动不存在。",
+      "backToEvents": "返回活动列表",
+      "addToTrip": "添加到行程",
+      "pastEvent": "此活动已结束。",
+      "authRequired": "需要身份验证",
+      "signInAttendance": "请登录以更新你的出席状态",
+      "attendanceUpdated": "出席状态已更新",
+      "attendanceFailed": "更新出席状态失败",
+      "exportFailed": "导出失败",
+      "exportFailedDesc": "无法将活动导出到日历",
+      "exportSuccess": "日历导出成功",
+      "exportSuccessDesc": "活动已导出到你的日历",
+      "linkCopied": "链接已复制",
+      "linkCopiedDesc": "活动链接已复制到剪贴板"
+    },
+    "hotels": {
+      "title": "酒店与民宿",
+      "subtitle": "全球LGBTQ+友好住宿",
+      "submitHotel": "提交酒店",
+      "noResults": "未找到酒店",
+      "noResultsHint": "尝试调整筛选条件或稍后再来。",
+      "resetFilters": "重置筛选",
+      "emptyDataset": {
+        "title": "暂无酒店",
+        "body": "我们还没有在这里添加酒店。欢迎提交一家,帮助我们丰富指南。"
+      },
+      "filteredEmpty": {
+        "title": "没有匹配筛选条件的酒店",
+        "body": "尝试调整筛选条件或搜索以查看更多结果。"
+      }
+    },
+    "hotelDetail": {
+      "loadFailed": "无法加载酒店详情。",
+      "notFound": "未找到酒店",
+      "backToHotels": "返回酒店列表",
+      "addToTrip": "添加到行程",
+      "bookNow": "立即预订",
+      "website": "网站",
+      "about": "关于",
+      "safetyNotes": "安全须知",
+      "amenities": "设施",
+      "contact": "联系方式",
+      "tags": "标签",
+      "overview": "概览",
+      "lgbtqFriendly": "LGBTQ+友好"
+    },
+    "travel": {
+      "title": "预订旅行",
+      "subtitle": "查找LGBTQ+友好目的地的航班、酒店和活动",
+      "activitiesComingSoon": "活动即将推出。",
+      "browseDestinations": "浏览目的地",
+      "exploreCta": "目的地",
+      "exploreDescription": "附带安全信息和旅行指南的城市和国家。",
+      "hotels": {
+        "typeLabel": "[ZH] Type",
+        "priceMin": "[ZH] Min €",
+        "priceMax": "[ZH] Max €",
+        "priceUnavailable": "[ZH] Price on request",
+        "clearFilters": "[ZH] Clear filters",
+        "noResultsWithFilters": "[ZH] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[ZH] Any type",
+          "hotel": "[ZH] Hotel",
+          "boutique": "[ZH] Boutique Hotel",
+          "bnb": "[ZH] B&B",
+          "hostel": "[ZH] Hostel",
+          "guesthouse": "[ZH] Guesthouse",
+          "apartment": "[ZH] Apartment",
+          "resort": "[ZH] Resort"
+        }
+      },
+      "hero": {
+        "title": "[ZH] Plan a trip",
+        "subtitle": "[ZH] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[ZH] Where to?",
+        "start": "[ZH] Start",
+        "end": "[ZH] End",
+        "cta": "[ZH] Plan this trip",
+        "discover": "[ZH] Or",
+        "discoverLink": "[ZH] browse public trips",
+        "discoverTail": "[ZH] from the community.",
+        "errors": {
+          "city": "[ZH] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[ZH] Continue planning",
+        "placeCount": "[ZH] {{count}} places"
+      },
+      "pride": {
+        "title": "[ZH] Pride this season",
+        "window": "[ZH] Next 4 months",
+        "empty": "[ZH] No upcoming Pride events.",
+        "safety": "[ZH] Equality score"
+      },
+      "inspiration": {
+        "villages": "[ZH] Queer villages",
+        "publicTrips": "[ZH] Public trips",
+        "viewAll": "[ZH] View all",
+        "noVillages": "[ZH] No villages yet.",
+        "noTrips": "[ZH] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[ZH] Book now",
+        "subtitle": "[ZH] Search flights, hotels, and activities directly — no trip required."
+      }
+    },
+    "marketplace": {
+      "title": "市集",
+      "subtitle": "发现并支持提供产品和服务的本地商家",
+      "listBusiness": "登记你的商家",
+      "emptyTitle": "暂无列表。",
+      "emptyDescription": "每周都有新增。",
+      "signInRequired": "需要登录",
+      "signInList": "创建免费账户以登记你的商家。",
+      "signInFavorites": "请登录以保存收藏。",
+      "loadError": "加载市集时出错。请重试。",
+      "emptyFiltersTitle": "[ZH] No listings match these filters.",
+      "emptyFiltersDescription": "[ZH] Try clearing filters or broadening your search."
+    },
+    "marketplaceDetail": {
+      "notFound": "未找到商品",
+      "notFoundDesc": "你寻找的市集商品不存在。",
+      "backToMarketplace": "返回市集",
+      "loadFailed": "无法加载商品详情。",
+      "authRequired": "需要身份验证",
+      "photos": "照片",
+      "description": "描述",
+      "shippingInfo": "配送信息",
+      "noReviews": "还没有评价",
+      "verifiedPurchase": "已验证购买",
+      "priceContact": "价格与联系方式",
+      "sendEmail": "发送邮件",
+      "visitWebsite": "访问网站",
+      "shippingAvailable": "可配送",
+      "businessDetails": "商家详情",
+      "businessType": "商家类型",
+      "location": "位置",
+      "listed": "已登记",
+      "socialMedia": "社交媒体",
+      "favorited": "已收藏",
+      "favorite": "收藏",
+      "share": "分享",
+      "linkCopied": "链接已复制",
+      "linkCopiedDesc": "商品链接已复制到剪贴板"
+    },
+    "news": {
+      "title": "新闻",
+      "subtitle": "关注全球LGBTQ+社区的最新新闻和故事",
+      "featuredStories": "精选故事",
+      "searchPlaceholder": "快速搜索文章...",
+      "filters": "筛选",
+      "activeFilters": "已选筛选条件",
+      "clearAll": "全部清除",
+      "emptyTitle": "暂无文章。",
+      "emptyDescription": "稍后再来。",
+      "previous": "上一页",
+      "next": "下一页",
+      "filteredEmptyTitle": "[ZH] No news matches your filters.",
+      "filteredEmptyDescription": "[ZH] Reset filters or try another topic.",
+      "resetFilters": "[ZH] Reset filters",
+      "filterSearch": "[ZH] Search",
+      "filterCategory": "[ZH] Category",
+      "filterSource": "[ZH] Source",
+      "filterFeatured": "[ZH] Featured only",
+      "trendingTags": "[ZH] Trending",
+      "minRead": "[ZH] min read",
+      "share": "[ZH] Share",
+      "linkCopied": "[ZH] Link copied",
+      "density": "[ZH] Density",
+      "comfortable": "[ZH] Comfortable",
+      "compact": "[ZH] Compact"
+    },
+    "newsDetail": {
+      "notFound": "未找到文章",
+      "notFoundDesc": "你寻找的文章不存在。",
+      "backToNews": "返回新闻",
+      "share": "分享",
+      "readFull": "阅读全文",
+      "article": "文章",
+      "readFullHint": "要阅读全文，请点击上方的\"阅读全文\"。",
+      "readFullTitle": "阅读完整文章",
+      "openArticle": "打开文章",
+      "relatedArticles": "相关文章",
+      "articleInfo": "文章信息",
+      "published": "发布于",
+      "author": "作者",
+      "source": "来源",
+      "views": "浏览量",
+      "links": "链接",
+      "originalArticle": "原始文章"
+    },
+    "personalities": {
+      "title": "人物",
+      "active": "已选：",
+      "clearAll": "全部清除",
+      "emptyTitle": "没有符合你筛选条件的人物",
+      "emptyDescription": "尝试清除筛选条件或搜索其他名字。",
+      "loadingMore": "加载更多中…",
+      "view": {
+        "grid": "[ZH] Grid",
+        "timeline": "[ZH] Timeline",
+        "map": "[ZH] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[ZH] Born this week",
+        "diedThisWeek": "[ZH] Remembered this week",
+        "browseByEra": "[ZH] Browse by era",
+        "browseByField": "[ZH] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[ZH] In the news",
+        "relatedEvents": "[ZH] Related events"
+      }
+    },
+    "groups": {
+      "title": "社区小组",
+      "subtitle": "与志同道合的人交流，分享经历，在安全包容的空间中建立有意义的关系。",
+      "discover": "发现",
+      "myGroups": "我的小组",
+      "popular": "热门",
+      "emptyTitle": "暂无小组。",
+      "emptyDescription": "创建第一个。",
+      "createGroup": "创建小组",
+      "mostPopular": "最热门小组",
+      "noPopular": "暂无热门小组。"
+    },
+    "groupDetail": {
+      "signInRequired": "请登录以查看小组详情。"
+    },
+    "myGroups": {
+      "title": "我的小组",
+      "subtitle": "管理和探索你的社区小组",
+      "discoverGroups": "发现小组",
+      "totalGroups": "小组总数",
+      "owned": "已创建",
+      "memberOf": "已加入",
+      "private": "私密",
+      "searchPlaceholder": "搜索你的小组...",
+      "mostRecent": "最近",
+      "nameAZ": "名称 A–Z",
+      "mostMembers": "成员最多",
+      "emptyTitle": "你还没有加入任何小组",
+      "emptyDescription": "先加入现有小组或创建自己的小组吧！",
+      "browseGroups": "浏览小组"
+    },
+    "feed": {
+      "activePosts": "活跃帖子",
+      "totalLikes": "总点赞数",
+      "comments": "评论",
+      "createPostPlaceholder": "有什么想分享的？和社区聊聊吧...",
+      "searchPlaceholder": "搜索帖子或用户...",
+      "recent": "最新",
+      "popular": "热门",
+      "emptyTitle": "你的动态还是空的",
+      "emptyDescription": "关注人物和小组，在这里查看他们的帖子。",
+      "createFirstPost": "创建第一篇帖子"
+    },
+    "notFound": {
+      "title": "页面未找到",
+      "description": "你寻找的页面不存在或已被移动。",
+      "goBack": "返回",
+      "returnHome": "返回首页"
+    },
+    "bookings": {
+      "signIn": "登录以查看预订",
+      "signInDescription": "你的航班、酒店和活动预订将显示在这里。",
+      "title": "我的预订",
+      "subtitle": "在一个地方管理你的航班、酒店和活动。",
+      "noBookings": "暂无预订",
+      "noBookingsHint": "搜索航班和酒店开始预订。",
+      "browseTravel": "浏览旅行"
+    },
+    "messages": {
+      "title": "消息",
+      "signInDesc": "请登录以访问你的消息。",
+      "subtitle": "与你的社区保持联系"
+    },
+    "submit": {
+      "title": "贡献到 Queer Guide",
+      "subtitle": "帮助构建全球最全面的LGBTQ+目录。所有提交内容在发布前都会经过审核。",
+      "scanFlyer": "扫描传单",
+      "scanFlyerDescription": "拍一张活动传单或场所名片的照片，我们将自动提取详情。",
+      "getStarted": "开始"
+    },
+    "sitemap": {
+      "searchPlaceholder": "搜索站点地图..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "旅行提醒",
+      "body": "在每次预订前 30 分钟收到浏览器通知，以及护照或签证即将到期时再次提醒。",
+      "turnOn": "开启",
+      "turnOff": "关闭"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "查看详情",
+      "share": "分享",
+      "linkCopied": "已复制链接",
+      "linkCopiedDescription": "现在可以粘贴",
+      "shareFailed": "分享失败"
+    }
+  }
+}

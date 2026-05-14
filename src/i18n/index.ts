@@ -1,31 +1,15 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import HttpBackend from 'i18next-http-backend';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, isSupportedLocale } from './languages';
+// English bundles inline so the most common visitor never blocks on a
+// locale fetch. All other locales lazy-load from /locales/<lang>.json
+// (served from public/, copied at build time, cached by CF Pages).
 import en from './locales/en.json';
-import es from './locales/es.json';
-import fr from './locales/fr.json';
-import de from './locales/de.json';
-import pt from './locales/pt.json';
-import it from './locales/it.json';
-import ru from './locales/ru.json';
-import zh from './locales/zh.json';
-import ja from './locales/ja.json';
-import ko from './locales/ko.json';
-import ar from './locales/ar.json';
 
 const resources = {
   en: { translation: en },
-  es: { translation: es },
-  fr: { translation: fr },
-  de: { translation: de },
-  pt: { translation: pt },
-  it: { translation: it },
-  ru: { translation: ru },
-  zh: { translation: zh },
-  ja: { translation: ja },
-  ko: { translation: ko },
-  ar: { translation: ar },
 };
 
 // Custom detector: read locale from the first URL path segment
@@ -42,18 +26,30 @@ const languageDetector = new LanguageDetector();
 languageDetector.addDetector(pathDetector);
 
 i18n
+  .use(HttpBackend)
   .use(languageDetector)
   .use(initReactI18next)
   .init({
+    // English is bundled inline; other locales come from the http backend.
     resources,
+    // Tell i18next that `resources` is only a partial bundle (just en) —
+    // missing languages should still go through the backend. Without this,
+    // i18next assumes resources covers everything and never calls backend.
+    partialBundledLanguages: true,
     supportedLngs: [...SUPPORTED_LOCALES],
     fallbackLng: DEFAULT_LOCALE,
+    load: 'languageOnly', // 'fr-FR' → load 'fr'
     debug: process.env.NODE_ENV === 'development',
 
-    // Resources are bundled synchronously above, so init can run sync too.
-    // Default `initImmediate: true` defers init via setTimeout, leaving a
-    // microtask window where `t()` returns raw keys — which showed up as
-    // flashes in dialogs that mounted during that window.
+    backend: {
+      // CF Pages serves these from /public at long-cache TTLs.
+      loadPath: '/locales/{{lng}}.json',
+    },
+
+    // English bundles inline so the common case still inits synchronously
+    // and avoids the t()-returns-key flash. Non-English locales arrive
+    // via the backend; main.tsx awaits loadLanguages() before render so
+    // those visitors don't see English content briefly.
     initImmediate: false,
 
     interpolation: {
@@ -66,12 +62,11 @@ i18n
       caches: ['localStorage'],
     },
 
-    // Keep `useTranslation().ready` authoritative without requiring every
-    // caller to sit inside a Suspense boundary.
     react: {
       useSuspense: false,
     },
   });
+
 
 // WCAG 3.1.1 / 3.1.2 — keep <html lang> + dir in sync with the active locale
 // so screen readers pronounce content correctly and Arabic switches to RTL.
