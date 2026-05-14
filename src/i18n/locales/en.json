@@ -1321,9 +1321,44 @@
       "title": "Book Travel",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
       "activitiesComingSoon": "Activities coming soon.",
-      "browseDestinations": "Browse Destinations",
-      "exploreCta": "Destinations",
-      "exploreDescription": "Cities and countries with safety info and travel guides.",
+      "browseDestinations": "Browse destinations",
+      "exploreCta": "Explore LGBTQ+ friendly destinations",
+      "exploreDescription": "Browse cities and countries with detailed safety information and travel guides.",
+      "hero": {
+        "title": "Plan a trip",
+        "subtitle": "Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "Where to?",
+        "start": "Start",
+        "end": "End",
+        "cta": "Plan this trip",
+        "discover": "Or",
+        "discoverLink": "browse public trips",
+        "discoverTail": "from the community.",
+        "errors": {
+          "city": "Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "Continue planning",
+        "placeCount": "{{count}} places"
+      },
+      "pride": {
+        "title": "Pride this season",
+        "window": "Next 4 months",
+        "empty": "No upcoming Pride events.",
+        "safety": "Equality score"
+      },
+      "inspiration": {
+        "villages": "Queer villages",
+        "publicTrips": "Public trips",
+        "viewAll": "View all",
+        "noVillages": "No villages yet.",
+        "noTrips": "No public trips yet."
+      },
+      "bookNow": {
+        "title": "Book now",
+        "subtitle": "Search flights, hotels, and activities directly — no trip required."
+      },
       "hotels": {
         "typeLabel": "Type",
         "priceMin": "Min €",

@@ -1359,6 +1359,41 @@
           "apartment": "[DE] Apartment",
           "resort": "[DE] Resort"
         }
+      },
+      "hero": {
+        "title": "[DE] Plan a trip",
+        "subtitle": "[DE] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[DE] Where to?",
+        "start": "[DE] Start",
+        "end": "[DE] End",
+        "cta": "[DE] Plan this trip",
+        "discover": "[DE] Or",
+        "discoverLink": "[DE] browse public trips",
+        "discoverTail": "[DE] from the community.",
+        "errors": {
+          "city": "[DE] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[DE] Continue planning",
+        "placeCount": "[DE] {{count}} places"
+      },
+      "pride": {
+        "title": "[DE] Pride this season",
+        "window": "[DE] Next 4 months",
+        "empty": "[DE] No upcoming Pride events.",
+        "safety": "[DE] Equality score"
+      },
+      "inspiration": {
+        "villages": "[DE] Queer villages",
+        "publicTrips": "[DE] Public trips",
+        "viewAll": "[DE] View all",
+        "noVillages": "[DE] No villages yet.",
+        "noTrips": "[DE] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[DE] Book now",
+        "subtitle": "[DE] Search flights, hotels, and activities directly — no trip required."
       }
     },
     "marketplace": {

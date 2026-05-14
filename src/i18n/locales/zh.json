@@ -1359,6 +1359,41 @@
           "apartment": "[ZH] Apartment",
           "resort": "[ZH] Resort"
         }
+      },
+      "hero": {
+        "title": "[ZH] Plan a trip",
+        "subtitle": "[ZH] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[ZH] Where to?",
+        "start": "[ZH] Start",
+        "end": "[ZH] End",
+        "cta": "[ZH] Plan this trip",
+        "discover": "[ZH] Or",
+        "discoverLink": "[ZH] browse public trips",
+        "discoverTail": "[ZH] from the community.",
+        "errors": {
+          "city": "[ZH] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[ZH] Continue planning",
+        "placeCount": "[ZH] {{count}} places"
+      },
+      "pride": {
+        "title": "[ZH] Pride this season",
+        "window": "[ZH] Next 4 months",
+        "empty": "[ZH] No upcoming Pride events.",
+        "safety": "[ZH] Equality score"
+      },
+      "inspiration": {
+        "villages": "[ZH] Queer villages",
+        "publicTrips": "[ZH] Public trips",
+        "viewAll": "[ZH] View all",
+        "noVillages": "[ZH] No villages yet.",
+        "noTrips": "[ZH] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[ZH] Book now",
+        "subtitle": "[ZH] Search flights, hotels, and activities directly — no trip required."
       }
     },
     "marketplace": {
