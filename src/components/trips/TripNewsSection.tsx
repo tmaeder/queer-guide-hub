@@ -121,8 +121,8 @@ function SectionHeading({ flaggedCount = 0 }: { flaggedCount?: number }) {
         <div
           className="inline-flex items-center gap-1 px-2 py-0.5 font-bold"
           style={{
-            backgroundColor: 'rgba(244,67,54,0.1)',
-            color: 'var(--destructive)',
+            backgroundColor: 'hsl(var(--destructive) / 0.1)',
+            color: 'hsl(var(--destructive))',
             fontSize: 11,
           }}
         >
