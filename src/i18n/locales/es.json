@@ -1058,13 +1058,7 @@
     "report_aria": "[ES] Report a problem with this hotline",
     "report_title": "[ES] Report this hotline",
     "report_desc": "[ES] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
-    "report_reason": {
-      "disconnected": "[ES] undefined",
-      "wrong_number": "[ES] undefined",
-      "closed": "[ES] undefined",
-      "unsafe": "[ES] undefined",
-      "other": "[ES] undefined"
-    },
+    "report_reason": "[ES] Reason",
     "report_detail": "[ES] Details (optional)",
     "report_submit": "[ES] Submit report",
     "report_thanks": "[ES] Thank you. We'll review it.",
@@ -1093,6 +1087,13 @@
       "hiv": "[ES] HIV+",
       "elders": "[ES] Elders",
       "deaf": "[ES] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[ES] Number disconnected / no answer",
+      "wrong_number": "[ES] Wrong number",
+      "closed": "[ES] Service has shut down",
+      "unsafe": "[ES] Unsafe / harmful experience",
+      "other": "[ES] Other"
     }
   },
   "sos": {

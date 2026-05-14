@@ -1086,13 +1086,7 @@
     "report_aria": "[RU] Report a problem with this hotline",
     "report_title": "[RU] Report this hotline",
     "report_desc": "[RU] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
-    "report_reason": {
-      "disconnected": "[RU] undefined",
-      "wrong_number": "[RU] undefined",
-      "closed": "[RU] undefined",
-      "unsafe": "[RU] undefined",
-      "other": "[RU] undefined"
-    },
+    "report_reason": "[RU] Reason",
     "report_detail": "[RU] Details (optional)",
     "report_submit": "[RU] Submit report",
     "report_thanks": "[RU] Thank you. We'll review it.",
@@ -1121,6 +1115,13 @@
       "hiv": "[RU] HIV+",
       "elders": "[RU] Elders",
       "deaf": "[RU] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[RU] Number disconnected / no answer",
+      "wrong_number": "[RU] Wrong number",
+      "closed": "[RU] Service has shut down",
+      "unsafe": "[RU] Unsafe / harmful experience",
+      "other": "[RU] Other"
     }
   },
   "sos": {

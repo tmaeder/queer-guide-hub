@@ -25,32 +25,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
+import { useReportHotline } from '@/hooks/useReportHotline';
 
 type Reason = 'disconnected' | 'wrong_number' | 'closed' | 'unsafe' | 'other';
 
 export function ReportHotline({ hotlineId }: { hotlineId: string }) {
   const { t } = useTranslation();
+  const { submit: submitReport, submitting, error } = useReportHotline();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<Reason>('disconnected');
   const [detail, setDetail] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const submit = async () => {
-    setSubmitting(true);
-    setError(null);
-    const { error: e } = await supabase.from('hotline_reports').insert({
-      hotline_id: hotlineId,
-      reason,
-      detail: detail.trim() || null,
-    });
-    setSubmitting(false);
-    if (e) {
-      setError(e.message);
-      return;
-    }
+    const ok = await submitReport({ hotlineId, reason, detail });
+    if (!ok) return;
     setDone(true);
     setTimeout(() => {
       setOpen(false);
@@ -98,19 +87,19 @@ export function ReportHotline({ hotlineId }: { hotlineId: string }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="disconnected">
-                    {t('help.report_reason.disconnected', 'Number disconnected / no answer')}
+                    {t('help.report_options.disconnected', 'Number disconnected / no answer')}
                   </SelectItem>
                   <SelectItem value="wrong_number">
-                    {t('help.report_reason.wrong_number', 'Wrong number')}
+                    {t('help.report_options.wrong_number', 'Wrong number')}
                   </SelectItem>
                   <SelectItem value="closed">
-                    {t('help.report_reason.closed', 'Service has shut down')}
+                    {t('help.report_options.closed', 'Service has shut down')}
                   </SelectItem>
                   <SelectItem value="unsafe">
-                    {t('help.report_reason.unsafe', 'Unsafe / harmful experience')}
+                    {t('help.report_options.unsafe', 'Unsafe / harmful experience')}
                   </SelectItem>
                   <SelectItem value="other">
-                    {t('help.report_reason.other', 'Other')}
+                    {t('help.report_options.other', 'Other')}
                   </SelectItem>
                 </SelectContent>
               </Select>

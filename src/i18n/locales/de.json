@@ -749,11 +749,13 @@
     "report_title": "Diese Hotline melden",
     "report_desc": "Danke, dass du hilfst, die Liste aktuell zu halten. Meldungen werden von unserem Team geprüft.",
     "report_reason": "Grund",
-    "report_reason.disconnected": "Nummer abgeschaltet / keine Antwort",
-    "report_reason.wrong_number": "Falsche Nummer",
-    "report_reason.closed": "Dienst eingestellt",
-    "report_reason.unsafe": "Unsichere / schädliche Erfahrung",
-    "report_reason.other": "Sonstiges",
+    "report_options": {
+      "disconnected": "Nummer abgeschaltet / keine Antwort",
+      "wrong_number": "Falsche Nummer",
+      "closed": "Dienst eingestellt",
+      "unsafe": "Unsichere / schädliche Erfahrung",
+      "other": "Sonstiges"
+    },
     "report_detail": "Details (optional)",
     "report_submit": "Meldung absenden",
     "report_thanks": "Danke. Wir prüfen das.",

@@ -1025,11 +1025,13 @@
     "report_title": "Report this hotline",
     "report_desc": "Thanks for helping keep this list accurate. Reports are reviewed by our team.",
     "report_reason": "Reason",
-    "report_reason.disconnected": "Number disconnected / no answer",
-    "report_reason.wrong_number": "Wrong number",
-    "report_reason.closed": "Service has shut down",
-    "report_reason.unsafe": "Unsafe / harmful experience",
-    "report_reason.other": "Other",
+    "report_options": {
+      "disconnected": "Number disconnected / no answer",
+      "wrong_number": "Wrong number",
+      "closed": "Service has shut down",
+      "unsafe": "Unsafe / harmful experience",
+      "other": "Other"
+    },
     "report_detail": "Details (optional)",
     "report_submit": "Submit report",
     "report_thanks": "Thank you. We'll review it.",

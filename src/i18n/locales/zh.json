@@ -1058,13 +1058,7 @@
     "report_aria": "[ZH] Report a problem with this hotline",
     "report_title": "[ZH] Report this hotline",
     "report_desc": "[ZH] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
-    "report_reason": {
-      "disconnected": "[ZH] undefined",
-      "wrong_number": "[ZH] undefined",
-      "closed": "[ZH] undefined",
-      "unsafe": "[ZH] undefined",
-      "other": "[ZH] undefined"
-    },
+    "report_reason": "[ZH] Reason",
     "report_detail": "[ZH] Details (optional)",
     "report_submit": "[ZH] Submit report",
     "report_thanks": "[ZH] Thank you. We'll review it.",
@@ -1093,6 +1087,13 @@
       "hiv": "[ZH] HIV+",
       "elders": "[ZH] Elders",
       "deaf": "[ZH] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[ZH] Number disconnected / no answer",
+      "wrong_number": "[ZH] Wrong number",
+      "closed": "[ZH] Service has shut down",
+      "unsafe": "[ZH] Unsafe / harmful experience",
+      "other": "[ZH] Other"
     }
   },
   "sos": {
