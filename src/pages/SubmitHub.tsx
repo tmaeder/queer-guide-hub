@@ -63,8 +63,6 @@ const SubmitHub = () => {
           <CardContent>
             <div className="flex items-center gap-4">
               <div
-                                className="flex items-center justify-center flex-shrink-0 bg-muted"
-                                style={{ width: 44, height: 44 }}
                 className="flex items-center justify-center flex-shrink-0 bg-muted"
                 style={{ width: 44, height: 44 }}
               >

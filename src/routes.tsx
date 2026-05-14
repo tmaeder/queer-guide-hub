@@ -67,6 +67,9 @@ const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
+const AdminQuests = lazy(() => import('./pages/AdminQuests'));
+const Quests = lazyRetry(() => import('./pages/Quests'));
+const QuestDetail = lazyRetry(() => import('./pages/QuestDetail'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
@@ -305,6 +308,7 @@ export const AppRoutes = () => {
                 <Route path="cities" element={<Navigate to="/admin/content/cities" replace />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
+                <Route path="quests" element={<AdminQuests />} />
                 <Route path="marketplace" element={<AdminMarketplace />} />
                 <Route path="groups" element={<AdminGroups />} />
                 <Route path="news-sources" element={<AdminNewsSources />} />
@@ -387,6 +391,8 @@ export const AppRoutes = () => {
                 <Route path="users" element={<UserDirectory />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                <Route path="quests" element={<Quests />} />
+                <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="resources" element={<Resources />} />
                 <Route path="resources/topic/:slug" element={<ResourceTopic />} />
                 <Route path="resources/c/:categorySlug" element={<Resources />} />
