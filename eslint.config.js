@@ -29,6 +29,9 @@ export default tseslint.config(
       // Legacy worker duplicates (superseded by workers/*/)
       "worker/**",
       "worker-ingest/**",
+      // Parallel agent worktrees — files there belong to other branches and
+      // race with concurrent edits, causing ENOENT during pre-push lint.
+      ".claude/**",
     ],
   },
   {
