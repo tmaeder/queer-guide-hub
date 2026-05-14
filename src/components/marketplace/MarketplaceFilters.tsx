@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
+import { useMarketplaceFacets } from '@/hooks/useMarketplaceQueries';
 
 interface MarketplaceFiltersProps {
   initialSearch?: string;
@@ -108,6 +109,14 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
     setSubcategory('');
   };
 
+  const { data: facets } = useMarketplaceFacets({
+    category: category && category !== 'all' ? category : undefined,
+    subcategory: subcategory && subcategory !== 'all' ? subcategory : undefined,
+    businessType: businessType && businessType !== 'all' ? businessType : undefined,
+  });
+  const fmtCount = (n: number | undefined) =>
+    n != null && n > 0 ? ` (${n})` : '';
+
   return (
     <div className="flex flex-col gap-4 p-4 bg-background">
       <div className="flex gap-2">
@@ -145,10 +154,11 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories{fmtCount(facets.total)}</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      {fmtCount(facets.category.get(cat))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -166,6 +176,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
                   {category && subcategories[category]?.map((subcat) => (
                     <SelectItem key={subcat} value={subcat}>
                       {subcat.charAt(0).toUpperCase() + subcat.slice(1)}
+                      {fmtCount(facets.subcategory.get(subcat))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -183,6 +194,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
                   {businessTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type.charAt(0).toUpperCase() + type.slice(1)}
+                      {fmtCount(facets.business_type.get(type))}
                     </SelectItem>
                   ))}
                 </SelectContent>

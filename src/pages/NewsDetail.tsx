@@ -2,6 +2,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
@@ -631,6 +632,7 @@ export default function NewsDetail() {
         </div>
       </div>
       <SimilarItems entity={{ type: 'news', id: article.id }} className="mt-8" title="Related news" />
+      <MarketplaceRelated className="mt-10" />
     </div>
   );
 }

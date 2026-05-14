@@ -1244,7 +1244,45 @@
         "title": "没有匹配筛选条件的活动",
         "body": "尝试调整筛选条件或搜索以查看更多结果。"
       },
-      "prideSubtype": "[ZH] Pride type"
+      "prideSubtype": "[ZH] Pride type",
+      "mapView": "[ZH] Map view",
+      "preset": {
+        "label": "[ZH] Quick filters",
+        "thisWeekend": "[ZH] This weekend",
+        "nearMe": "[ZH] Near me",
+        "pride": "[ZH] Pride season",
+        "thisMonth": "[ZH] This month",
+        "free": "[ZH] Free",
+        "featured": "[ZH] Featured"
+      },
+      "rail": {
+        "featured": "[ZH] Featured this week",
+        "featuredSubtitle": "[ZH] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[ZH] No events match your filters",
+        "body": "[ZH] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[ZH] Drop \"{{city}}\" filter",
+        "clearDate": "[ZH] Drop date filter",
+        "viewAll": "[ZH] View all upcoming events",
+        "sameCityHeader": "[ZH] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[ZH] Try other cities in your date range",
+        "fallbackHeader": "[ZH] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[ZH] Spotlight",
+        "happeningNow": "[ZH] Happening now",
+        "tomorrow": "[ZH] Starts tomorrow",
+        "inDays_one": "[ZH] Starts in {{count}} day",
+        "inDays_other": "[ZH] Starts in {{count}} days",
+        "nearbyCount_one": "[ZH] {{count}} event in {{city}}",
+        "nearbyCount_other": "[ZH] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[ZH] Sort events",
+      "sort": {
+        "dateAsc": "[ZH] Soonest first",
+        "dateDesc": "[ZH] Latest first"
+      }
     },
     "eventDetail": {
       "loadFailed": "无法加载活动详情。",
@@ -1332,7 +1370,9 @@
       "signInRequired": "需要登录",
       "signInList": "创建免费账户以登记你的商家。",
       "signInFavorites": "请登录以保存收藏。",
-      "loadError": "加载市集时出错。请重试。"
+      "loadError": "加载市集时出错。请重试。",
+      "emptyFiltersTitle": "[ZH] No listings match these filters.",
+      "emptyFiltersDescription": "[ZH] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "未找到商品",

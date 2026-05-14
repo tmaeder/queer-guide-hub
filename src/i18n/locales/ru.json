@@ -1272,7 +1272,45 @@
         "title": "Нет событий, подходящих под фильтры",
         "body": "Попробуй изменить фильтры или поиск, чтобы увидеть больше результатов."
       },
-      "prideSubtype": "[RU] Pride type"
+      "prideSubtype": "[RU] Pride type",
+      "mapView": "[RU] Map view",
+      "preset": {
+        "label": "[RU] Quick filters",
+        "thisWeekend": "[RU] This weekend",
+        "nearMe": "[RU] Near me",
+        "pride": "[RU] Pride season",
+        "thisMonth": "[RU] This month",
+        "free": "[RU] Free",
+        "featured": "[RU] Featured"
+      },
+      "rail": {
+        "featured": "[RU] Featured this week",
+        "featuredSubtitle": "[RU] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[RU] No events match your filters",
+        "body": "[RU] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[RU] Drop \"{{city}}\" filter",
+        "clearDate": "[RU] Drop date filter",
+        "viewAll": "[RU] View all upcoming events",
+        "sameCityHeader": "[RU] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[RU] Try other cities in your date range",
+        "fallbackHeader": "[RU] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[RU] Spotlight",
+        "happeningNow": "[RU] Happening now",
+        "tomorrow": "[RU] Starts tomorrow",
+        "inDays_one": "[RU] Starts in {{count}} day",
+        "inDays_other": "[RU] Starts in {{count}} days",
+        "nearbyCount_one": "[RU] {{count}} event in {{city}}",
+        "nearbyCount_other": "[RU] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[RU] Sort events",
+      "sort": {
+        "dateAsc": "[RU] Soonest first",
+        "dateDesc": "[RU] Latest first"
+      }
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",
@@ -1360,7 +1398,9 @@
       "signInRequired": "Требуется вход",
       "signInList": "Создай бесплатный аккаунт, чтобы разместить свой бизнес.",
       "signInFavorites": "Войди, чтобы сохранять избранное.",
-      "loadError": "При загрузке маркетплейса произошла ошибка. Попробуй ещё раз."
+      "loadError": "При загрузке маркетплейса произошла ошибка. Попробуй ещё раз.",
+      "emptyFiltersTitle": "[RU] No listings match these filters.",
+      "emptyFiltersDescription": "[RU] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Товар не найден",
