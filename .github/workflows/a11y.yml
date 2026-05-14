@@ -234,7 +234,8 @@ jobs:
           until lighthouse "${BASE_URL}${ROUTE}" \
             --only-categories=accessibility \
             --output=json --output-path="lh/${slug}.json" \
-            --chrome-flags="--headless --no-sandbox --disable-gpu --disable-dev-shm-usage" \
+            --chrome-flags="--no-sandbox --disable-gpu --disable-dev-shm-usage --disable-software-rasterizer --headless=new --window-size=1350,940" \
+            --preset=desktop \
             --max-wait-for-load=90000 \
             --quiet; do
             if [ "$attempt" -ge 3 ]; then
