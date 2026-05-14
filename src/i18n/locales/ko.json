@@ -1370,7 +1370,9 @@
       "signInRequired": "로그인 필요",
       "signInList": "무료 계정을 만들어 비즈니스를 등록하세요.",
       "signInFavorites": "즐겨찾기를 저장하려면 로그인하세요.",
-      "loadError": "마켓플레이스를 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요."
+      "loadError": "마켓플레이스를 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요.",
+      "emptyFiltersTitle": "[KO] No listings match these filters.",
+      "emptyFiltersDescription": "[KO] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "항목을 찾을 수 없음",
