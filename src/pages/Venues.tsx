@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useVenues } from '@/hooks/useVenues';
+import { useRecentVenues } from '@/hooks/useRecentVenues';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { VenueCard } from '@/components/venues/VenueCard';
@@ -114,6 +115,10 @@ const Venues = () => {
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [autoLoadedCount, setAutoLoadedCount] = useState(0);
+
+  // "Recently added" rail — only fetched when the user hasn't applied filters.
+  const hasAnyFilters = Object.keys(currentFilters).length > 0;
+  const { venues: recentVenues } = useRecentVenues(8, !hasAnyFilters);
 
   // Mutate URL params, preserving keys we don't own.
   const updateParams = useCallback(
@@ -483,6 +488,33 @@ const Venues = () => {
                 );
               })()
             )}
+
+            {/* Recently added rail — only when no filters and we have at
+                least 4 recent venues to show. Horizontal scroll on all
+                breakpoints; deduped against the main grid by ID. */}
+            {!loading && !hasAnyFilters && recentVenues.length >= 4 && (() => {
+              const mainIds = new Set(venues.slice(0, 24).map((v) => v.id));
+              const rail = recentVenues.filter((v) => !mainIds.has(v.id)).slice(0, 8);
+              if (rail.length < 4) return null;
+              return (
+                <section aria-label="Recently added venues" className="-mt-1">
+                  <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('pages.venues.recentlyAdded', 'Recently added')}
+                  </h2>
+                  <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">
+                    {rail.map((venue) => (
+                      <div key={venue.id} className="w-64 flex-shrink-0">
+                        <VenueCard
+                          venue={venue}
+                          events={events}
+                          onViewDetails={handleViewDetails}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
 
             {!loading && venues.length > 0 && (
               <StaggerGrid className={gridClass}>
