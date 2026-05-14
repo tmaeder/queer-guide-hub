@@ -258,6 +258,7 @@ export function applyAdvancedFilters<
     min_equality_score: number | null;
     cover_image_url: string | null;
     owner: { display_name: string | null } | null;
+    traveler_type: 'solo' | 'couple' | 'group' | 'family' | null;
   },
 >(trips: T[], f: DiscoverFilterState): T[] {
   return trips.filter((t) => {
@@ -272,9 +273,9 @@ export function applyAdvancedFilters<
     }
     if (f.hasCover && !t.cover_image_url) return false;
     if (f.hasOwnerProfile && !t.owner?.display_name) return false;
-    // travelerType is a soft signal — public trips don't carry traveler_type
-    // metadata yet. Field is kept in state for UI continuity; filter is a
-    // no-op until the column lands.
+    if (f.travelerType !== 'any' && t.traveler_type !== f.travelerType) {
+      return false;
+    }
     return true;
   });
 }

@@ -3,6 +3,7 @@ import { Plus, Map, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTrips } from '@/hooks/useTrips';
+import { useMyTripSaves } from '@/hooks/useTripSaves';
 import { useAuth } from '@/hooks/useAuth';
 import { TripCard } from '@/components/trips/TripCard';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
@@ -31,16 +32,20 @@ export default function TripsPage() {
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const { data: trips, isLoading, error, refetch } = useTrips();
+  const { data: savedIds } = useMyTripSaves();
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<TripStatusFilter>('all');
   const [sortKey, setSortKey] = useState<TripSortKey>('recent');
 
-  const counts = useMemo(() => countTripsByStatus(trips ?? []), [trips]);
+  const counts = useMemo(
+    () => countTripsByStatus(trips ?? [], savedIds),
+    [trips, savedIds],
+  );
 
   const visibleTrips = useMemo(
-    () => filterAndSortTrips(trips ?? [], search, statusFilter, sortKey),
-    [trips, search, statusFilter, sortKey],
+    () => filterAndSortTrips(trips ?? [], search, statusFilter, sortKey, savedIds),
+    [trips, search, statusFilter, sortKey, savedIds],
   );
 
   if (!user) {

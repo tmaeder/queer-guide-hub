@@ -25,15 +25,34 @@ import {
   filtersAreEmpty,
   type DiscoverFilterState,
 } from '@/components/trips/DiscoverFilters';
+import {
+  regionFromCountry,
+  regionLabel,
+  REGION_ORDER,
+  type DiscoverRegion,
+} from '@/components/trips/regions';
 
 const DiscoverMap = lazy(() =>
   import('@/components/trips/DiscoverMap').then((m) => ({ default: m.DiscoverMap })),
 );
 
-type SortKey = 'recent' | 'most_places' | 'longest' | 'safest';
+type SortKey = 'recent' | 'trending' | 'most_places' | 'longest' | 'safest';
 type QuickFilter = 'dated' | 'multiday' | 'safe';
 
-const SORT_KEYS: SortKey[] = ['recent', 'most_places', 'longest', 'safest'];
+const SORT_KEYS: SortKey[] = ['recent', 'trending', 'most_places', 'longest', 'safest'];
+
+function trendingScore(t: DiscoverableTrip): number {
+  // Time-decay: a save/fork in the last 7d is worth more than older activity.
+  // Without per-event timestamps we approximate via trip created_at as a proxy
+  // for "recently active in Discover". Saves weighted higher than forks since
+  // forks are higher-friction.
+  const ageMs = Date.now() - new Date(t.created_at).getTime();
+  const ageDays = Math.max(1, ageMs / (24 * 60 * 60 * 1000));
+  const decay = 1 / Math.log2(ageDays + 2);
+  const social = t.save_count * 2 + t.fork_count * 3;
+  const staffBoost = t.is_staff_pick ? 5 : 0;
+  return (social + staffBoost) * decay;
+}
 const QUICK_FILTERS: QuickFilter[] = ['dated', 'multiday', 'safe'];
 
 function matchesFilter(trip: DiscoverableTrip, filter: QuickFilter): boolean {
@@ -58,6 +77,8 @@ function durationDays(t: DiscoverableTrip): number {
 function sortTrips(trips: DiscoverableTrip[], key: SortKey): DiscoverableTrip[] {
   const copy = [...trips];
   switch (key) {
+    case 'trending':
+      return copy.sort((a, b) => trendingScore(b) - trendingScore(a));
     case 'most_places':
       return copy.sort((a, b) => b.place_count - a.place_count);
     case 'longest':
@@ -130,6 +151,22 @@ export default function TripsDiscoverPage() {
     !query &&
     filtersAreEmpty(advancedFilters) &&
     viewMode === 'list';
+
+  const showRegionRails =
+    showStaffPicks && sorted.length >= 12 && sortKey === 'recent';
+
+  const regionGroups = useMemo(() => {
+    if (!showRegionRails) return null;
+    const map = new Map<DiscoverRegion, DiscoverableTrip[]>();
+    for (const trip of sorted) {
+      const r = regionFromCountry(trip.primary_country_code);
+      if (!map.has(r)) map.set(r, []);
+      map.get(r)!.push(trip);
+    }
+    return REGION_ORDER
+      .map((r) => ({ region: r, trips: map.get(r) ?? [] }))
+      .filter((g) => g.trips.length >= 2);
+  }, [sorted, showRegionRails]);
 
   return (
     <div className="container mx-auto max-w-screen-lg px-4 py-6 md:py-10">
@@ -312,17 +349,43 @@ export default function TripsDiscoverPage() {
             </section>
           )}
 
-          {showStaffPicks && (
-            <h2 className="text-lg font-bold tracking-tight mb-4">
-              {t('trips.discover.all', 'All public trips')}
-            </h2>
+          {regionGroups && regionGroups.length >= 2 && (
+            <>
+              {regionGroups.map(({ region, trips: regTrips }) => (
+                <section key={region} className="mb-10">
+                  <h3 className="text-base font-bold tracking-tight mb-3">
+                    {t(`trips.discover.region.${region}`, regionLabel(region))}
+                    <span
+                      className="ml-2 text-muted-foreground font-medium"
+                      style={{ fontSize: '0.75em', fontVariantNumeric: 'tabular-nums' }}
+                    >
+                      · {regTrips.length}
+                    </span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {regTrips.slice(0, 6).map((trip) => (
+                      <PublicTripCard key={`reg-${region}-${trip.id}`} trip={trip} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {sorted.map((trip) => (
-              <PublicTripCard key={trip.id} trip={trip} />
-            ))}
-          </div>
+          {(!regionGroups || regionGroups.length < 2) && (
+            <>
+              {showStaffPicks && (
+                <h2 className="text-lg font-bold tracking-tight mb-4">
+                  {t('trips.discover.all', 'All public trips')}
+                </h2>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {sorted.map((trip) => (
+                  <PublicTripCard key={trip.id} trip={trip} />
+                ))}
+              </div>
+            </>
+          )}
           {sparse && (
             <div className="mt-12 pt-10 border-t border-border">
               <h2 className="text-lg font-bold tracking-tight mb-1">
@@ -347,6 +410,8 @@ function sortLabel(key: SortKey): string {
   switch (key) {
     case 'recent':
       return 'Most recent';
+    case 'trending':
+      return 'Trending';
     case 'most_places':
       return 'Most places';
     case 'longest':

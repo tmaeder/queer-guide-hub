@@ -20,9 +20,12 @@ export interface DiscoverableTrip {
   is_staff_pick: boolean;
   fork_count: number;
   save_count: number;
+  traveler_type: 'solo' | 'couple' | 'group' | 'family' | null;
+  vibe_tags: string[];
   primary_city_name: string | null;
   primary_city_lat: number | null;
   primary_city_lng: number | null;
+  primary_country_code: string | null;
   duration_days: number;
   owner: {
     display_name: string | null;
@@ -44,11 +47,14 @@ interface RawTrip {
   is_staff_pick?: boolean | null;
   fork_count?: number | null;
   save_count?: number | null;
+  traveler_type?: string | null;
+  vibe_tags?: string[] | null;
   primary_city?: {
     name: string;
     latitude: number | null;
     longitude: number | null;
   } | null;
+  primary_country?: { code: string | null } | null;
   trip_places: Array<{
     cities: { name: string } | null;
     countries: { name: string; equality_score: number | null } | null;
@@ -76,9 +82,10 @@ export function useDiscoverableTrips(cityFilter?: string) {
       // (is_staff_pick / fork_count / save_count) hasn't been applied yet.
       const BASE_COLS =
         'id, title, description, start_date, end_date, cover_image_url, owner_id, created_at, primary_city_id, primary_country_id';
-      const SIGNAL_COLS = 'is_staff_pick, fork_count, save_count';
+      const SIGNAL_COLS =
+        'is_staff_pick, fork_count, save_count, traveler_type, vibe_tags';
       const NESTED =
-        'trip_places(cities:city_id(name), countries:country_id(name, equality_score)), primary_city:cities!primary_city_id(name, latitude, longitude)';
+        'trip_places(cities:city_id(name), countries:country_id(name, equality_score)), primary_city:cities!primary_city_id(name, latitude, longitude), primary_country:countries!primary_country_id(code)';
 
       const runQuery = (cols: string) =>
         supabase
@@ -154,9 +161,18 @@ export function useDiscoverableTrips(cityFilter?: string) {
             is_staff_pick: !!t.is_staff_pick,
             fork_count: t.fork_count ?? 0,
             save_count: t.save_count ?? 0,
+            traveler_type:
+              t.traveler_type === 'solo' ||
+              t.traveler_type === 'couple' ||
+              t.traveler_type === 'group' ||
+              t.traveler_type === 'family'
+                ? t.traveler_type
+                : null,
+            vibe_tags: Array.isArray(t.vibe_tags) ? t.vibe_tags : [],
             primary_city_name: t.primary_city?.name ?? null,
             primary_city_lat: t.primary_city?.latitude ?? null,
             primary_city_lng: t.primary_city?.longitude ?? null,
+            primary_country_code: t.primary_country?.code ?? null,
             duration_days: duration,
             owner: t.owner,
           };

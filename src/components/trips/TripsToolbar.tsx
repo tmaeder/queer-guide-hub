@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export type TripStatusFilter = 'all' | Trip['status'];
+export type TripStatusFilter = 'all' | Trip['status'] | 'saved';
 export type TripSortKey = 'recent' | 'start_date' | 'alphabetical';
 
 interface Props {
@@ -28,6 +28,7 @@ const STATUSES: TripStatusFilter[] = [
   'active',
   'completed',
   'archived',
+  'saved',
 ];
 
 const SORT_KEYS: TripSortKey[] = ['recent', 'start_date', 'alphabetical'];
