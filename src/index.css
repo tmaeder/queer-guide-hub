@@ -625,7 +625,10 @@ h1, h2, h3, h4, h5, h6 {
   header [aria-label="Open user menu"],
   header [aria-label="Open navigation menu"],
   header [aria-label="Open menu"],
-  .maplibregl-ctrl button {
+  .maplibregl-ctrl button,
+  /* SheetContent's built-in close button — single Close in the mobile
+     nav drawer now (Header's redundant one was removed). */
+  [role="dialog"] > button[aria-label="Close"] {
     min-width: 44px;
     min-height: 44px;
   }
