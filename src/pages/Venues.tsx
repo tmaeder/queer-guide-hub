@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next';
 
 type Venue = Database['public']['Tables']['venues']['Row'];
 
-const VALID_SORTS = new Set(['featured', 'name', 'category', 'city', 'created_at']);
+const VALID_SORTS = new Set(['featured', 'nearest', 'name', 'category', 'city', 'created_at']);
 const VALID_VIEWS = new Set(['grid', 'map']);
 
 const Venues = () => {
@@ -63,10 +63,40 @@ const Venues = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlSearch = searchParams.get('q') ?? '';
   const urlCategory = searchParams.get('category') ?? '';
+  const urlCity = searchParams.get('city') ?? '';
+  const parseList = (key: string): string[] => {
+    const raw = searchParams.get(key);
+    if (!raw) return [];
+    return raw.split(',').map((s) => s.trim()).filter(Boolean);
+  };
+  const urlTags = parseList('tags');
+  const urlAmenities = parseList('amenities');
+  const urlServices = parseList('services');
+  const urlAccessibility = parseList('accessibility');
+  const urlTargetGroups = parseList('groups');
+  const urlTagsKey = urlTags.join(',');
+  const urlAmenitiesKey = urlAmenities.join(',');
+  const urlServicesKey = urlServices.join(',');
+  const urlAccessibilityKey = urlAccessibility.join(',');
+  const urlTargetGroupsKey = urlTargetGroups.join(',');
   const rawSort = searchParams.get('sort') ?? 'featured';
   const sortBy = VALID_SORTS.has(rawSort) ? rawSort : 'featured';
   const rawView = searchParams.get('view') ?? 'grid';
   const viewMode: 'grid' | 'map' = VALID_VIEWS.has(rawView) ? (rawView as 'grid' | 'map') : 'grid';
+
+  const buildFiltersFromUrl = useCallback((): Record<string, unknown> => {
+    const f: Record<string, unknown> = {};
+    if (urlSearch) f.search = urlSearch;
+    if (urlCategory) f.category = urlCategory;
+    if (urlCity) f.city = urlCity;
+    if (urlTags.length) f.tags = urlTags;
+    if (urlAmenities.length) f.amenities = urlAmenities;
+    if (urlServices.length) f.services = urlServices;
+    if (urlAccessibility.length) f.accessibilityAttributes = urlAccessibility;
+    if (urlTargetGroups.length) f.targetGroups = urlTargetGroups;
+    return f;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSearch, urlCategory, urlCity, urlTagsKey, urlAmenitiesKey, urlServicesKey, urlAccessibilityKey, urlTargetGroupsKey]);
 
   const mapFilters = useMemo(() => {
     const f: Record<string, string> = {};
@@ -75,14 +105,11 @@ const Venues = () => {
     return f;
   }, [urlSearch, urlCategory]);
 
-  // Filters (full record) live in component state — facets like tags /
-  // amenities aren't (yet) URL-encoded. URL drives `search` + `category`.
-  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(() => {
-    const f: Record<string, unknown> = {};
-    if (urlSearch) f.search = urlSearch;
-    if (urlCategory) f.category = urlCategory;
-    return f;
-  });
+  // URL is the canonical source for all filters now (search, category, city,
+  // tags, amenities, services, accessibility, target groups). nearMe is the
+  // only filter still kept in component state — it requires runtime
+  // geolocation permission and shouldn't auto-trigger from a shared link.
+  const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(buildFiltersFromUrl);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 24;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -119,10 +146,18 @@ const Venues = () => {
     setCurrentFilters(filters);
     setPage(1);
     setAutoLoadedCount(0);
+    const list = (v: unknown) =>
+      Array.isArray(v) && v.length > 0 ? (v as string[]).join(',') : undefined;
     updateParams(
       {
         q: typeof filters.search === 'string' ? filters.search : undefined,
         category: typeof filters.category === 'string' ? filters.category : undefined,
+        city: typeof filters.city === 'string' && filters.city ? filters.city : undefined,
+        tags: list(filters.tags),
+        amenities: list(filters.amenities),
+        services: list(filters.services),
+        accessibility: list(filters.accessibilityAttributes),
+        groups: list(filters.targetGroups),
       },
       { replace: true },
     );
@@ -135,18 +170,65 @@ const Venues = () => {
 
   // Refetch when URL-driven filters change (initial mount, back/forward,
   // shared link). Reseeds page + currentFilters so internal state matches.
+  // When sort=nearest, request geolocation lazily and pass it through as
+  // nearMe + userLocation — useVenues post-sorts by distance.
   useEffect(() => {
-    const next: Record<string, unknown> = { ...currentFilters };
-    if (urlSearch) next.search = urlSearch;
-    else delete next.search;
-    if (urlCategory) next.category = urlCategory;
-    else delete next.category;
-    setCurrentFilters(next);
+    const preserved: Record<string, unknown> = {};
+    if (currentFilters.nearMe) preserved.nearMe = currentFilters.nearMe;
+    if (currentFilters.userLocation) preserved.userLocation = currentFilters.userLocation;
+    const baseNext = { ...buildFiltersFromUrl(), ...preserved };
+
+    if (sortBy === 'nearest' && !baseNext.userLocation && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const next = {
+            ...baseNext,
+            nearMe: true,
+            userLocation: { latitude: pos.coords.latitude, longitude: pos.coords.longitude },
+          };
+          setCurrentFilters(next);
+          setPage(1);
+          setAutoLoadedCount(0);
+          fetchVenues(next, { page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy });
+        },
+        () => {
+          // Permission denied / unavailable — fall back to featured silently.
+          setCurrentFilters(baseNext);
+          setPage(1);
+          setAutoLoadedCount(0);
+          fetchVenues(baseNext, { page: 1, pageSize: PAGE_SIZE, append: false, sort: 'featured' });
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 300_000 },
+      );
+      return;
+    }
+    setCurrentFilters(baseNext);
     setPage(1);
     setAutoLoadedCount(0);
-    fetchVenues(next, { page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy });
+    fetchVenues(baseNext, { page: 1, pageSize: PAGE_SIZE, append: false, sort: sortBy });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlSearch, urlCategory, sortBy]);
+  }, [urlSearch, urlCategory, urlCity, urlTagsKey, urlAmenitiesKey, urlServicesKey, urlAccessibilityKey, urlTargetGroupsKey, sortBy]);
+
+  // LCP-friendly preload of the first 4 venue images on first render so the
+  // browser starts fetching before React commits the grid. Cleans up to avoid
+  // leaking <link> nodes across navigations.
+  useEffect(() => {
+    if (loading || venues.length === 0) return;
+    const links: HTMLLinkElement[] = [];
+    for (const v of venues.slice(0, 4)) {
+      const src = v.images?.[0] ?? v.logo_url;
+      if (!src) continue;
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = src;
+      document.head.appendChild(link);
+      links.push(link);
+    }
+    return () => {
+      for (const l of links) l.remove();
+    };
+  }, [loading, venues]);
 
   // Infinite scroll
   useEffect(() => {
@@ -182,11 +264,19 @@ const Venues = () => {
     <div className="min-h-screen overflow-x-hidden">
       <div className="mx-auto w-full max-w-screen-xl px-4 py-6 md:py-10 min-w-0">
         <VenueFilters
-          // Re-mount on URL-driven filter changes (e.g. back button) so the
-          // search input and chip selection re-hydrate from URL.
+          // Re-mount on URL-driven changes for search + category so the
+          // search input and chip selection re-hydrate. Array filters are not
+          // in the key to avoid closing popovers on every toggle — they sync
+          // via the effect in VenueFilters when initial* props change.
           key={`${urlSearch}|${urlCategory}`}
           initialSearch={urlSearch}
           initialCategory={urlCategory}
+          initialCity={urlCity}
+          initialTags={urlTags}
+          initialAmenities={urlAmenities}
+          initialServices={urlServices}
+          initialAccessibilityAttributes={urlAccessibility}
+          initialTargetGroups={urlTargetGroups}
           onFiltersChange={handleFiltersChange}
         />
 
@@ -196,9 +286,32 @@ const Venues = () => {
             {!loading && venues.length > 0 && (() => {
               const hasActiveFilters = Object.keys(currentFilters).length > 0;
               const shown = filteredTotal ?? venues.length;
+              const parts: string[] = [];
+              if (typeof currentFilters.city === 'string' && currentFilters.city)
+                parts.push(currentFilters.city);
+              if (typeof currentFilters.category === 'string' && currentFilters.category)
+                parts.push(currentFilters.category.replace(/[_-]/g, ' '));
+              const arrCount = (k: string) =>
+                Array.isArray(currentFilters[k]) ? (currentFilters[k] as string[]).length : 0;
+              const tagCount = arrCount('tags');
+              const amenityCount = arrCount('amenities');
+              const serviceCount = arrCount('services');
+              const accessCount = arrCount('accessibilityAttributes');
+              const groupCount = arrCount('targetGroups');
+              if (tagCount) parts.push(`${tagCount} tag${tagCount > 1 ? 's' : ''}`);
+              if (amenityCount)
+                parts.push(`${amenityCount} amenit${amenityCount > 1 ? 'ies' : 'y'}`);
+              if (serviceCount) parts.push(`${serviceCount} service${serviceCount > 1 ? 's' : ''}`);
+              if (accessCount) parts.push(`accessibility`);
+              if (groupCount) parts.push(`${groupCount} group${groupCount > 1 ? 's' : ''}`);
               return (
                 <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
                   {shown.toLocaleString()} venue{shown !== 1 ? 's' : ''}
+                  {parts.length > 0 && (
+                    <span className="ml-1 text-xs">
+                      · {parts.join(' · ')}
+                    </span>
+                  )}
                   {!hasActiveFilters && datasetTotal !== null && datasetTotal !== shown && (
                     <span className="ml-1 text-xs">
                       of {datasetTotal.toLocaleString()}
@@ -221,14 +334,17 @@ const Venues = () => {
                 <SelectItem value="featured">
                   {t('pages.venues.sortFeatured', 'Featured')}
                 </SelectItem>
+                <SelectItem value="nearest">
+                  {t('pages.venues.sortNearest', 'Nearest')}
+                </SelectItem>
+                <SelectItem value="created_at">
+                  {t('pages.venues.sortNewest', 'Newest')}
+                </SelectItem>
                 <SelectItem value="name">{t('pages.venues.sortName', 'Name')}</SelectItem>
                 <SelectItem value="category">
                   {t('pages.venues.sortCategory', 'Category')}
                 </SelectItem>
                 <SelectItem value="city">{t('pages.venues.sortCity', 'City')}</SelectItem>
-                <SelectItem value="created_at">
-                  {t('pages.venues.sortNewest', 'Newest')}
-                </SelectItem>
               </SelectContent>
             </Select>
 
@@ -300,30 +416,72 @@ const Venues = () => {
                     onClick: () => navigate('/submit/venue'),
                   }}
                 />
-              ) : (
-                <EmptyState
-                  icon={MapPin}
-                  variant="filtered"
-                  title={t('pages.venues.filteredEmpty.title', 'No venues match your filters')}
-                  description={t(
-                    'pages.venues.filteredEmpty.body',
-                    'Try adjusting your filters or search to see more results.',
-                  )}
-                  primaryAction={{
-                    label: t('pages.venues.submitVenue', 'Submit a Venue'),
-                    onClick: () => navigate('/submit/venue'),
-                  }}
-                  secondaryAction={
-                    Object.keys(currentFilters).length > 0
-                      ? {
-                          label: t('pages.venues.clearFilters', 'Clear Filters'),
-                          onClick: () => handleFiltersChange({}),
-                          variant: 'outline',
-                        }
-                      : undefined
+              ) : (() => {
+                // Suggest dropping the most restrictive single filter. Order
+                // walks narrow → broad so the most specific gets named first.
+                const narrowest: Array<{ key: string; label: string }> = [
+                  { key: 'accessibilityAttributes', label: 'accessibility filters' },
+                  { key: 'services', label: 'service filters' },
+                  { key: 'amenities', label: 'amenity filters' },
+                  { key: 'tags', label: 'tag filters' },
+                  { key: 'targetGroups', label: 'target groups' },
+                ];
+                let suggestion: { key: string; label: string } | null = null;
+                for (const f of narrowest) {
+                  const v = currentFilters[f.key];
+                  if (Array.isArray(v) && v.length > 0) {
+                    suggestion = f;
+                    break;
                   }
-                />
-              )
+                }
+                const dropSuggestion = () => {
+                  if (!suggestion) return;
+                  const next = { ...currentFilters };
+                  delete next[suggestion.key];
+                  handleFiltersChange(next);
+                };
+                return (
+                  <EmptyState
+                    icon={MapPin}
+                    variant="filtered"
+                    title={t('pages.venues.filteredEmpty.title', 'No venues match your filters')}
+                    description={
+                      suggestion
+                        ? t(
+                            'pages.venues.filteredEmpty.suggest',
+                            `Try removing the ${suggestion.label}, or clear all filters to broaden your search.`,
+                          )
+                        : t(
+                            'pages.venues.filteredEmpty.body',
+                            'Try adjusting your filters or search to see more results.',
+                          )
+                    }
+                    primaryAction={
+                      suggestion
+                        ? {
+                            label: t(
+                              'pages.venues.dropFilter',
+                              `Remove ${suggestion.label}`,
+                            ),
+                            onClick: dropSuggestion,
+                          }
+                        : {
+                            label: t('pages.venues.submitVenue', 'Submit a Venue'),
+                            onClick: () => navigate('/submit/venue'),
+                          }
+                    }
+                    secondaryAction={
+                      Object.keys(currentFilters).length > 0
+                        ? {
+                            label: t('pages.venues.clearFilters', 'Clear Filters'),
+                            onClick: () => handleFiltersChange({}),
+                            variant: 'outline',
+                          }
+                        : undefined
+                    }
+                  />
+                );
+              })()
             )}
 
             {!loading && venues.length > 0 && (
@@ -368,7 +526,7 @@ const Venues = () => {
         ) : (
           <motion.div
             key="map"
-            className="relative h-[700px] w-full overflow-hidden rounded-lg"
+            className="relative h-[calc(100dvh-12rem)] sm:h-[700px] w-full overflow-hidden rounded-lg"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
