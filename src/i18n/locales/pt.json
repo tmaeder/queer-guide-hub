@@ -313,7 +313,11 @@
       "fitAll": "Ver tudo",
       "fitAllAria": "Enquadrar todos os locais",
       "filterAll": "Todos os dias",
-      "dayLabel": "Dia {{number}}"
+      "dayLabel": "Dia {{number}}",
+      "showAttractions": "[PT] Attractions",
+      "showEvents": "[PT] Events",
+      "suggestedVenue": "[PT] Suggested venue",
+      "eventOn": "[PT] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Ainda sem informações de segurança",
@@ -708,7 +712,8 @@
       "displayName": "Como devemos te chamar?",
       "pronouns": "Selecione seus pronomes",
       "country": "Opcional",
-      "language": "Selecione o idioma"
+      "language": "Selecione o idioma",
+      "passwordMin8": "[PT] At least 8 characters"
     },
     "errors": {
       "emailRequired": "O e-mail é obrigatório",
@@ -738,7 +743,9 @@
       "age": "Confirmo que tenho 18 anos ou mais",
       "termsAria": "Aceitar termos de serviço",
       "privacyAria": "Aceitar política de privacidade",
-      "ageAria": "Confirmar 18 anos ou mais"
+      "ageAria": "Confirmar 18 anos ou mais",
+      "combined": "[PT] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[PT] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continuar com Google",
@@ -758,7 +765,9 @@
         "account": "Conta",
         "profile": "Perfil",
         "interests": "Interesses"
-      }
+      },
+      "blurb": "[PT] Free, takes a minute.",
+      "haveAccountQ": "[PT] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "ela/dela",
@@ -800,7 +809,17 @@
       "resend": "Reenviar e-mail de verificação",
       "resendIn": "Reenviar em {{seconds}}s",
       "resent": "E-mail de verificação enviado. Confira sua caixa de entrada.",
-      "backToLogin": "Voltar para login"
+      "backToLogin": "Voltar para login",
+      "continue": "[PT] Continue to The Queer Guide",
+      "banner": "[PT] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[PT] Verification email sent. Check your inbox.",
+      "resendShort": "[PT] Resend",
+      "gateTitle": "[PT] Verify your email first",
+      "gateDescription": "[PT] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[PT] Sign in required",
+      "description": "[PT] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1106,7 +1125,8 @@
       "accessibility": "Acessibilidade",
       "bookings": "Reservas",
       "tripInbox": "Caixa de viagens",
-      "extension": "Extensão do Navegador"
+      "extension": "Extensão do Navegador",
+      "footprint": "[PT] Footprint"
     },
     "modes": {
       "dating": "Procurando Amor",
@@ -1122,7 +1142,10 @@
       "accessibility": "Acessibilidade",
       "legal": "Legal",
       "contact": "Contato"
-    }
+    },
+    "signUp": "[PT] Sign up",
+    "navigation": "[PT] Navigation",
+    "signIn": "[PT] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,6 +1243,45 @@
       "filteredEmpty": {
         "title": "Nenhum evento corresponde aos seus filtros",
         "body": "Tente ajustar seus filtros ou busca para ver mais resultados."
+      },
+      "prideSubtype": "[PT] Pride type",
+      "mapView": "[PT] Map view",
+      "preset": {
+        "label": "[PT] Quick filters",
+        "thisWeekend": "[PT] This weekend",
+        "nearMe": "[PT] Near me",
+        "pride": "[PT] Pride season",
+        "thisMonth": "[PT] This month",
+        "free": "[PT] Free",
+        "featured": "[PT] Featured"
+      },
+      "rail": {
+        "featured": "[PT] Featured this week",
+        "featuredSubtitle": "[PT] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[PT] No events match your filters",
+        "body": "[PT] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[PT] Drop \"{{city}}\" filter",
+        "clearDate": "[PT] Drop date filter",
+        "viewAll": "[PT] View all upcoming events",
+        "sameCityHeader": "[PT] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[PT] Try other cities in your date range",
+        "fallbackHeader": "[PT] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[PT] Spotlight",
+        "happeningNow": "[PT] Happening now",
+        "tomorrow": "[PT] Starts tomorrow",
+        "inDays_one": "[PT] Starts in {{count}} day",
+        "inDays_other": "[PT] Starts in {{count}} days",
+        "nearbyCount_one": "[PT] {{count}} event in {{city}}",
+        "nearbyCount_other": "[PT] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[PT] Sort events",
+      "sort": {
+        "dateAsc": "[PT] Soonest first",
+        "dateDesc": "[PT] Latest first"
       }
     },
     "eventDetail": {
@@ -1279,7 +1341,60 @@
       "activitiesComingSoon": "Atividades em breve.",
       "browseDestinations": "Explorar destinos",
       "exploreCta": "Destinos",
-      "exploreDescription": "Cidades e países com informações de segurança e guias de viagem."
+      "exploreDescription": "Cidades e países com informações de segurança e guias de viagem.",
+      "hotels": {
+        "typeLabel": "[PT] Type",
+        "priceMin": "[PT] Min €",
+        "priceMax": "[PT] Max €",
+        "priceUnavailable": "[PT] Price on request",
+        "clearFilters": "[PT] Clear filters",
+        "noResultsWithFilters": "[PT] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[PT] Any type",
+          "hotel": "[PT] Hotel",
+          "boutique": "[PT] Boutique Hotel",
+          "bnb": "[PT] B&B",
+          "hostel": "[PT] Hostel",
+          "guesthouse": "[PT] Guesthouse",
+          "apartment": "[PT] Apartment",
+          "resort": "[PT] Resort"
+        }
+      },
+      "hero": {
+        "title": "[PT] Plan a trip",
+        "subtitle": "[PT] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[PT] Where to?",
+        "start": "[PT] Start",
+        "end": "[PT] End",
+        "cta": "[PT] Plan this trip",
+        "discover": "[PT] Or",
+        "discoverLink": "[PT] browse public trips",
+        "discoverTail": "[PT] from the community.",
+        "errors": {
+          "city": "[PT] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[PT] Continue planning",
+        "placeCount": "[PT] {{count}} places"
+      },
+      "pride": {
+        "title": "[PT] Pride this season",
+        "window": "[PT] Next 4 months",
+        "empty": "[PT] No upcoming Pride events.",
+        "safety": "[PT] Equality score"
+      },
+      "inspiration": {
+        "villages": "[PT] Queer villages",
+        "publicTrips": "[PT] Public trips",
+        "viewAll": "[PT] View all",
+        "noVillages": "[PT] No villages yet.",
+        "noTrips": "[PT] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[PT] Book now",
+        "subtitle": "[PT] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "Marketplace",
@@ -1290,7 +1405,9 @@
       "signInRequired": "Login necessário",
       "signInList": "Crie uma conta gratuita para cadastrar seu negócio.",
       "signInFavorites": "Faça login para salvar favoritos.",
-      "loadError": "Algo deu errado ao carregar o marketplace. Tente novamente."
+      "loadError": "Algo deu errado ao carregar o marketplace. Tente novamente.",
+      "emptyFiltersTitle": "[PT] No listings match these filters.",
+      "emptyFiltersDescription": "[PT] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Item não encontrado",
@@ -1329,7 +1446,14 @@
       "emptyTitle": "Nenhum artigo ainda.",
       "emptyDescription": "Volte mais tarde.",
       "previous": "Anterior",
-      "next": "Próximo"
+      "next": "Próximo",
+      "filteredEmptyTitle": "[PT] No news matches your filters.",
+      "filteredEmptyDescription": "[PT] Reset filters or try another topic.",
+      "resetFilters": "[PT] Reset filters",
+      "filterSearch": "[PT] Search",
+      "filterCategory": "[PT] Category",
+      "filterSource": "[PT] Source",
+      "filterFeatured": "[PT] Featured only"
     },
     "newsDetail": {
       "notFound": "Artigo não encontrado",

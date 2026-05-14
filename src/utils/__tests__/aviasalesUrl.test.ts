@@ -103,7 +103,7 @@ describe('aviasalesUrl', () => {
       const result = buildAviasalesUrl({
         origin: 'ZRH',
         destination: 'BCN',
-        departDate: '2027-05-09',
+        departDate: '2026-05-09',
       });
       expect(result.valid).toBe(true);
       expect(result.url).toBe('https://www.aviasales.com/?params=ZRH0905BCN1&marker=452012');
@@ -114,8 +114,8 @@ describe('aviasalesUrl', () => {
       const result = buildAviasalesUrl({
         origin: 'ZRH',
         destination: 'BCN',
-        departDate: '2027-05-09',
-        returnDate: '2027-05-15',
+        departDate: '2026-05-09',
+        returnDate: '2026-05-15',
       });
       expect(result.valid).toBe(true);
       // Format: ?params={ORIGIN}{DDMM_DEPART}{DEST}{DDMM_RETURN}{ADULTS}&marker=...
@@ -135,7 +135,7 @@ describe('aviasalesUrl', () => {
       const result = buildAviasalesUrl({
         origin: 'zrh',
         destination: 'bcn',
-        departDate: '2027-05-09',
+        departDate: '2026-05-09',
       });
       expect(result.valid).toBe(true);
       expect(result.url).toBe('https://www.aviasales.com/?params=ZRH0905BCN1&marker=452012');
@@ -264,7 +264,7 @@ describe('aviasalesUrl', () => {
   // ── getAffiliateUrl ──
   describe('getAffiliateUrl', () => {
     it('returns valid URL for valid input', () => {
-      const url = getAffiliateUrl({ origin: 'ZRH', destination: 'BCN', departDate: '2027-05-09' });
+      const url = getAffiliateUrl({ origin: 'ZRH', destination: 'BCN', departDate: '2026-05-09' });
       expect(url).toBe('https://www.aviasales.com/?params=ZRH0905BCN1&marker=452012');
     });
 

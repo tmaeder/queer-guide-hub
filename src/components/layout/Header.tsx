@@ -132,6 +132,7 @@ const legalItems = [
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [authSignupOpen, setAuthSignupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
@@ -231,8 +232,10 @@ export function Header() {
               <div className="px-4 py-3">
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar style={{ height: 40, width: 40 }}>
-                    {/* WCAG 1.1.1 — adjacent display_name + email already identify the user. */}
-                    <AvatarImage src={avatarSrc} alt="" />
+                    <AvatarImage
+                      src={avatarSrc}
+                      alt={(profile?.display_name || 'Account') as string}
+                    />
                     <AvatarFallback>
                       {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -273,12 +276,23 @@ export function Header() {
             </>
           )}
 
-          {/* Login CTA (logged out) */}
+          {/* Sign in / sign up CTAs (logged out) */}
           {!user && (
             <>
-              <div className="px-4 py-4">
+              <div className="px-4 py-4 flex flex-col gap-2">
                 <Button
                   variant="default"
+                  size="sm"
+                  style={{ width: '100%', fontWeight: 600, height: 44 }}
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    setAuthSignupOpen(true);
+                  }}
+                >
+                  {t('header.signUp', 'Sign Up')}
+                </Button>
+                <Button
+                  variant="outline"
                   size="sm"
                   style={{ width: '100%', fontWeight: 600, height: 44 }}
                   onClick={() => {
@@ -287,7 +301,7 @@ export function Header() {
                   }}
                 >
                   <User style={{ width: 16, height: 16, marginRight: 8 }} />
-                  {t('header.signInSignUp', 'Sign In / Sign Up')}
+                  {t('header.signIn', 'Sign In')}
                 </Button>
               </div>
               <div className="my-2" />
@@ -425,7 +439,7 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border/60 supports-[backdrop-filter]:bg-background/70"
+      className="bg-background sticky top-0"
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">
@@ -551,8 +565,10 @@ export function Header() {
                       aria-label={t('header.openUserMenu', 'Open user menu')}
                     >
                       <Avatar style={{ height: 36, width: 36 }}>
-                        {/* WCAG 1.1.1 — empty alt: parent button carries aria-label; never leak email/PII into alt. */}
-                        <AvatarImage src={avatarSrc} alt="" />
+                        <AvatarImage
+                          src={avatarSrc}
+                          alt={(profile?.display_name || 'Account menu') as string}
+                        />
                         <AvatarFallback>
                           {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -652,9 +668,23 @@ export function Header() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button onClick={() => setAuthDialogOpen(true)} size="icon" aria-label={t('header.signIn', 'Sign in')}>
-                  <User style={{ width: 16, height: 16 }} />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAuthDialogOpen(true)}
+                    aria-label={t('header.signIn', 'Sign in')}
+                  >
+                    {t('header.signIn', 'Sign in')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setAuthSignupOpen(true)}
+                    aria-label={t('header.signUp', 'Sign up')}
+                  >
+                    {t('header.signUp', 'Sign up')}
+                  </Button>
+                </div>
               )}
 
               {/* Navigation dropdown (desktop) */}
@@ -737,15 +767,18 @@ export function Header() {
                 <Link
                   key={item.to}
                   to={item.to}
-                  data-active={active ? 'true' : 'false'}
-                  className="group/nav relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-foreground/75 transition-[color,opacity] duration-200 hover:text-foreground data-[active=true]:font-bold data-[active=true]:text-foreground"
-                  style={{ textDecoration: 'none' }}
+                  style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    padding: '6px 10px',
+                    fontSize: '0.875rem',
+                    fontWeight: active ? 700 : 500,
+                    opacity: active ? 1 : 0.75,
+                    borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
+                    transition: 'opacity 0.2s',
+                  }}
                 >
                   {t(item.labelKey)}
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-3 right-3 -bottom-px h-0.5 origin-center rounded-full bg-foreground transition-transform duration-300 ease-out scale-x-0 group-hover/nav:scale-x-100 group-data-[active=true]/nav:scale-x-100"
-                  />
                 </Link>
               );
             })}
@@ -757,6 +790,7 @@ export function Header() {
       {isMobile && mobileDrawer}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+      <AuthDialog open={authSignupOpen} onOpenChange={setAuthSignupOpen} defaultMode="signup" />
     </header>
   );
 }

@@ -47,7 +47,7 @@ export function TripsToolbar({
   return (
     <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-6">
       {/* Search */}
-      <div className="flex items-center gap-2 rounded-full border border-border bg-background/70 backdrop-blur-sm shadow-sm px-4 h-11 min-w-full md:min-w-[280px] md:flex-none transition-[border-color,box-shadow] duration-200 focus-within:border-foreground/40 focus-within:shadow-md">
+      <div className="flex items-center gap-2 bg-muted rounded-md px-3 h-10 min-w-full md:min-w-[260px] md:flex-none transition-colors focus-within:bg-accent">
         <Search
           style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }}
           aria-hidden="true"
@@ -65,7 +65,7 @@ export function TripsToolbar({
       {/* Status filter (scrollable chip row on mobile) */}
       <div className="flex-1 min-w-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
         <div
-          className="inline-flex p-1 border border-border rounded-full bg-muted/50 backdrop-blur-sm gap-0.5"
+          className="inline-flex border border-border rounded-md"
           role="group"
           aria-label={t('trips.toolbar.statusAria')}
         >
@@ -78,10 +78,10 @@ export function TripsToolbar({
                 onClick={() => onStatusFilterChange(status)}
                 aria-label={status}
                 aria-pressed={selected}
-                className={`normal-case font-semibold text-[0.8125rem] px-3 py-1 rounded-full whitespace-nowrap transition-[background,color,box-shadow] duration-200 ${
+                className={`normal-case font-semibold text-[0.8125rem] px-3 py-1.5 whitespace-nowrap border-r border-border last:border-r-0 transition-colors ${
                   selected
-                    ? 'bg-foreground text-background shadow-sm'
-                    : 'text-muted-foreground hover:bg-background hover:text-foreground'
+                    ? 'bg-[hsl(var(--foreground))] text-[hsl(var(--background))] hover:bg-[hsl(var(--foreground))]/90'
+                    : 'text-muted-foreground hover:bg-muted'
                 }`}
               >
                 {t(`trips.toolbar.status.${status}`)}

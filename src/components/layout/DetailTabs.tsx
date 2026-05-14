@@ -18,8 +18,8 @@ export function DetailTabs({ tabs, defaultValue, children }: DetailTabsProps) {
   const initial = defaultValue || tabs[0]?.value || '';
   return (
     <Tabs defaultValue={initial}>
-      <div className="sticky top-16 z-10 -mx-4 px-4 py-2 backdrop-blur-md bg-background/80 supports-[backdrop-filter]:bg-background/70 border-b border-border/60 sm:-mx-6 sm:px-6">
-        <TabsList className="w-full overflow-x-auto">
+      <div className="sticky top-16 z-10 bg-background py-2">
+        <TabsList>
           {tabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               <span className="flex items-center gap-1.5">

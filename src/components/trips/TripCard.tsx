@@ -244,7 +244,7 @@ export function TripCard({ trip }: Props) {
 
         <CardContent>
           <h3
-            className="text-lg font-bold mb-2 overflow-hidden tracking-tight"
+            className="font-bold mb-2 overflow-hidden"
             style={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
@@ -277,10 +277,19 @@ export function TripCard({ trip }: Props) {
                   e.stopPropagation();
                   navigate(`/trips/${trip.id}/today`);
                 }}
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-foreground text-background text-[0.6875rem] font-bold uppercase tracking-wider shadow-sm hover:shadow-md transition-shadow border-none cursor-pointer"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.6875rem] font-bold uppercase border-none cursor-pointer"
+                style={{
+                  background: 'hsl(var(--foreground))',
+                  color: 'hsl(var(--background))',
+                  letterSpacing: '0.04em',
+                  fontFamily: 'inherit',
+                }}
                 aria-label={t('trips.card.viewToday', 'View today')}
               >
-                <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-background animate-pulse" />
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: 'currentColor', opacity: 0.9 }}
+                />
                 {t('trips.card.activeToday', 'Active · Today')}
               </button>
             )}

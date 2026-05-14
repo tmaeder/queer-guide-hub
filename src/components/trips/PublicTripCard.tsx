@@ -154,7 +154,6 @@ export function PublicTripCard({ trip }: Props) {
 
   return (
     <Card
-      hoverable
       onClick={onOpen}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -164,7 +163,7 @@ export function PublicTripCard({ trip }: Props) {
       }}
       role="button"
       tabIndex={0}
-      className="group/ptc"
+      className="cursor-pointer transition-[transform,opacity] duration-150 hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand focus-visible:outline-offset-2"
     >
       {trip.cover_image_url && (
         <CardImage src={trip.cover_image_url} alt={title} height={160}>
@@ -195,7 +194,7 @@ export function PublicTripCard({ trip }: Props) {
         </CardImage>
       )}
       <CardContent>
-        <h6 className="text-lg font-bold tracking-tight mb-1 truncate">{title}</h6>
+        <h6 className="font-bold mb-0.5 truncate text-lg">{title}</h6>
 
         {trip.description && (
           <p

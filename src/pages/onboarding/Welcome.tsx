@@ -8,8 +8,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSignupFunnel } from '@/hooks/useSignupFunnel';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { BackgroundDots } from '@/components/effects/BackgroundDots';
-import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 
 export default function Welcome() {
   const navigate = useLocalizedNavigate();
@@ -55,18 +53,15 @@ export default function Welcome() {
   }
 
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden">
-      <BackgroundDots className="absolute inset-0 z-0 pointer-events-none" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-mesh opacity-80" />
-      <div className="relative z-10 container mx-auto py-16 px-4 max-w-xl">
-        <SpotlightEffect className="w-full">
-        <Card className="rounded-3xl border-border/80 shadow-xl backdrop-blur-sm bg-background/95">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-12 px-4">
+        <Card>
           <CardHeader>
             <div className="flex justify-center mb-4">
-              <Heart size={48} className="text-foreground" style={{ fill: 'currentcolor' }} />
+              <Heart size={48} color="hsl(var(--primary))" style={{ fill: 'currentcolor' }} />
             </div>
-            <CardTitle className="text-3xl font-bold tracking-tight text-center text-balance">{t('onboarding.welcome', 'Welcome to The Queer Guide')}</CardTitle>
-            <CardDescription className="text-center text-base mt-2">
+            <CardTitle>{t('onboarding.welcome', 'Welcome to The Queer Guide')}</CardTitle>
+            <CardDescription>
               {t('onboarding.welcomeBlurb', "You're in. A few quick optional steps to make it yours.")}
             </CardDescription>
           </CardHeader>
@@ -116,7 +111,6 @@ export default function Welcome() {
             </div>
           </CardContent>
         </Card>
-        </SpotlightEffect>
       </div>
     </div>
   );

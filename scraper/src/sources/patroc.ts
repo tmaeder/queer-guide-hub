@@ -128,16 +128,9 @@ export class PatrocConnector extends BaseConnector {
       const dateMatch = text.match(/(\d{1,2}[\s./]+\w+[\s./]+\d{4}|\w+\s+\d{1,2},?\s+\d{4})/);
       if (!dateMatch) return;
 
-      const prevHeading = $el.prevAll('h2, h3, h4, h5, strong, b').first();
+      const prevHeading = $el.prevAll('h1, h2, h3, h4, h5, strong, b').first();
       const eventName = cleanText(prevHeading.text());
       if (!eventName || eventName.length < 3) return;
-
-      // Skip generic page/section headings — these are not real event names.
-      // Without this guard the parser falls back to the page H1
-      // ("Upcoming Events in <City>") whenever no proper event heading
-      // precedes the dated paragraph, producing one fake event per city.
-      if (/^(Upcoming Events|Events in|Gay|Hotels|Bars|Clubs|Restaurants|Cafes|Saunas|Cruising|Shopping|Map)/i.test(eventName)) return;
-      if (eventName.toLowerCase() === cityName.toLowerCase()) return;
 
       const startDate = parseDate(dateMatch[1]);
       if (!startDate) return;

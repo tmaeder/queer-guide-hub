@@ -174,9 +174,9 @@ export default function UserProfile() {
               <div className="flex-1 flex flex-col gap-4">
                 <div>
                   <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
-                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                    <h4 className="text-2xl font-bold">
                       {profile.display_name || 'Anonymous User'}
-                    </h1>
+                    </h4>
                     {(profile as unknown as Record<string, unknown>)?.user_mode && (
                       <UserModeBadge
                         mode={(profile as unknown as Record<string, unknown>).user_mode}

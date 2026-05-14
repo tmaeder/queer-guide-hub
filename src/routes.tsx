@@ -17,9 +17,13 @@ const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
 const Marketplace = lazyRetry(() => import('./pages/Marketplace'));
 const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDetail'));
+const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
+const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
+const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 
 const Places = lazyRetry(() => import('./pages/Places'));
 const Resources = lazyRetry(() => import('./pages/Ressources'));
+const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
 const UserDirectory = lazyRetry(() => import('./pages/UserDirectory'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -66,6 +70,9 @@ const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
+const AdminQuests = lazy(() => import('./pages/AdminQuests'));
+const Quests = lazyRetry(() => import('./pages/Quests'));
+const QuestDetail = lazyRetry(() => import('./pages/QuestDetail'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
@@ -304,6 +311,7 @@ export const AppRoutes = () => {
                 <Route path="cities" element={<Navigate to="/admin/content/cities" replace />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
+                <Route path="quests" element={<AdminQuests />} />
                 <Route path="marketplace" element={<AdminMarketplace />} />
                 <Route path="groups" element={<AdminGroups />} />
                 <Route path="news-sources" element={<AdminNewsSources />} />
@@ -361,6 +369,9 @@ export const AppRoutes = () => {
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
                 <Route path="marketplace" element={<Marketplace />} />
+                <Route path="marketplace/share" element={<MarketplaceShare />} />
+                <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
+                <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
                 <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
                 <Route path="hotels" element={<Hotels />} />
                 <Route path="hotels/:slug" element={<HotelDetail />} />
@@ -386,7 +397,10 @@ export const AppRoutes = () => {
                 <Route path="users" element={<UserDirectory />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                <Route path="quests" element={<Quests />} />
+                <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="resources" element={<Resources />} />
+                <Route path="resources/topic/:slug" element={<ResourceTopic />} />
                 <Route path="resources/c/:categorySlug" element={<Resources />} />
                 <Route path="resources/:tagName" element={<Resources />} />
                 <Route path="professions/:professionName" element={<ProfessionDetail />} />

@@ -5,33 +5,30 @@ import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/btn relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold uppercase tracking-wide ring-offset-background transition-[transform,background,color,box-shadow,opacity] duration-200 ease-out will-change-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 hover:-translate-y-px active:translate-y-0 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none text-sm font-semibold uppercase tracking-wide ring-offset-background transition-[background,color,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        // Solid editorial CTA — subtle inset gradient on the foreground.
-        default: "bg-foreground text-background bg-[linear-gradient(180deg,hsl(var(--foreground))_0%,hsl(var(--foreground)/0.92)_100%)] shadow-sm hover:shadow-md",
-        // 1px hairline, transparent fill, fills on hover.
-        outline: "border border-foreground/80 bg-transparent text-foreground hover:bg-foreground hover:text-background",
+        // Solid black / white-on-dark — the default editorial CTA.
+        default: "bg-foreground text-background hover:opacity-85 active:opacity-70",
+        // 1px hairline, transparent fill.
+        outline: "border border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-background",
         // No chrome until hover.
         ghost: "bg-transparent text-foreground hover:bg-muted",
         // Inline link styling — underline always for anchor affordance.
-        link: "bg-transparent text-foreground underline underline-offset-4 hover:opacity-70 hover:translate-y-0",
+        link: "bg-transparent text-foreground underline underline-offset-4 hover:opacity-70",
         // Single chromatic exception: irreversible / destructive actions.
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:shadow-md hover:opacity-90 active:opacity-80",
-        // Soft surface variant — for secondary CTAs.
-        soft: "bg-muted text-foreground border border-border hover:bg-accent",
-        // Legacy aliases — collapse to default. Retained for compat.
-        secondary: "bg-foreground text-background shadow-sm hover:shadow-md",
-        brand: "bg-foreground text-background shadow-sm hover:shadow-md",
+        destructive: "bg-destructive text-destructive-foreground hover:opacity-85 active:opacity-70",
+        // Legacy aliases — both collapse to default. Retained for compat
+        // while callsites are migrated.
+        secondary: "bg-foreground text-background hover:opacity-85",
+        brand: "bg-foreground text-background hover:opacity-85",
       },
       size: {
         default: "h-10 px-5",
-        sm: "h-9 px-4 text-xs rounded-md",
-        lg: "h-12 px-7 text-sm rounded-lg",
-        xl: "h-14 px-8 text-sm rounded-lg",
-        icon: "h-10 w-10 rounded-md",
-        pill: "h-10 px-5 rounded-full",
+        sm: "h-9 px-4 text-xs",
+        lg: "h-12 px-7 text-sm",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

@@ -329,7 +329,11 @@
       "fitAll": "Показать всё",
       "fitAllAria": "Показать все места на карте",
       "filterAll": "Все дни",
-      "dayLabel": "День {{number}}"
+      "dayLabel": "День {{number}}",
+      "showAttractions": "[RU] Attractions",
+      "showEvents": "[RU] Events",
+      "suggestedVenue": "[RU] Suggested venue",
+      "eventOn": "[RU] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Нет информации о безопасности",
@@ -736,7 +740,8 @@
       "displayName": "Как к вам обращаться?",
       "pronouns": "Выберите местоимения",
       "country": "Необязательно",
-      "language": "Выберите язык"
+      "language": "Выберите язык",
+      "passwordMin8": "[RU] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Укажите email",
@@ -766,7 +771,9 @@
       "age": "Мне исполнилось 18 лет",
       "termsAria": "Принять условия использования",
       "privacyAria": "Принять политику конфиденциальности",
-      "ageAria": "Подтвердить возраст 18+"
+      "ageAria": "Подтвердить возраст 18+",
+      "combined": "[RU] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[RU] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Продолжить через Google",
@@ -786,7 +793,9 @@
         "account": "Аккаунт",
         "profile": "Профиль",
         "interests": "Интересы"
-      }
+      },
+      "blurb": "[RU] Free, takes a minute.",
+      "haveAccountQ": "[RU] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "она/её",
@@ -828,7 +837,17 @@
       "resend": "Отправить письмо повторно",
       "resendIn": "Повторная отправка через {{seconds}} с",
       "resent": "Письмо отправлено. Проверьте входящие.",
-      "backToLogin": "Назад ко входу"
+      "backToLogin": "Назад ко входу",
+      "continue": "[RU] Continue to The Queer Guide",
+      "banner": "[RU] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[RU] Verification email sent. Check your inbox.",
+      "resendShort": "[RU] Resend",
+      "gateTitle": "[RU] Verify your email first",
+      "gateDescription": "[RU] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[RU] Sign in required",
+      "description": "[RU] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1134,7 +1153,8 @@
       "accessibility": "Доступность",
       "bookings": "Бронирования",
       "tripInbox": "Входящие поездок",
-      "extension": "Расширение браузера"
+      "extension": "Расширение браузера",
+      "footprint": "[RU] Footprint"
     },
     "modes": {
       "dating": "Ищу отношения",
@@ -1150,7 +1170,10 @@
       "accessibility": "Доступность",
       "legal": "Правовая информация",
       "contact": "Контакты"
-    }
+    },
+    "signUp": "[RU] Sign up",
+    "navigation": "[RU] Navigation",
+    "signIn": "[RU] Sign in"
   },
   "pages": {
     "venues": {
@@ -1248,6 +1271,45 @@
       "filteredEmpty": {
         "title": "Нет событий, подходящих под фильтры",
         "body": "Попробуй изменить фильтры или поиск, чтобы увидеть больше результатов."
+      },
+      "prideSubtype": "[RU] Pride type",
+      "mapView": "[RU] Map view",
+      "preset": {
+        "label": "[RU] Quick filters",
+        "thisWeekend": "[RU] This weekend",
+        "nearMe": "[RU] Near me",
+        "pride": "[RU] Pride season",
+        "thisMonth": "[RU] This month",
+        "free": "[RU] Free",
+        "featured": "[RU] Featured"
+      },
+      "rail": {
+        "featured": "[RU] Featured this week",
+        "featuredSubtitle": "[RU] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[RU] No events match your filters",
+        "body": "[RU] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[RU] Drop \"{{city}}\" filter",
+        "clearDate": "[RU] Drop date filter",
+        "viewAll": "[RU] View all upcoming events",
+        "sameCityHeader": "[RU] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[RU] Try other cities in your date range",
+        "fallbackHeader": "[RU] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[RU] Spotlight",
+        "happeningNow": "[RU] Happening now",
+        "tomorrow": "[RU] Starts tomorrow",
+        "inDays_one": "[RU] Starts in {{count}} day",
+        "inDays_other": "[RU] Starts in {{count}} days",
+        "nearbyCount_one": "[RU] {{count}} event in {{city}}",
+        "nearbyCount_other": "[RU] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[RU] Sort events",
+      "sort": {
+        "dateAsc": "[RU] Soonest first",
+        "dateDesc": "[RU] Latest first"
       }
     },
     "eventDetail": {
@@ -1307,7 +1369,60 @@
       "activitiesComingSoon": "Активности скоро появятся.",
       "browseDestinations": "Просмотреть направления",
       "exploreCta": "Направления",
-      "exploreDescription": "Города и страны с информацией о безопасности и путеводителями."
+      "exploreDescription": "Города и страны с информацией о безопасности и путеводителями.",
+      "hotels": {
+        "typeLabel": "[RU] Type",
+        "priceMin": "[RU] Min €",
+        "priceMax": "[RU] Max €",
+        "priceUnavailable": "[RU] Price on request",
+        "clearFilters": "[RU] Clear filters",
+        "noResultsWithFilters": "[RU] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[RU] Any type",
+          "hotel": "[RU] Hotel",
+          "boutique": "[RU] Boutique Hotel",
+          "bnb": "[RU] B&B",
+          "hostel": "[RU] Hostel",
+          "guesthouse": "[RU] Guesthouse",
+          "apartment": "[RU] Apartment",
+          "resort": "[RU] Resort"
+        }
+      },
+      "hero": {
+        "title": "[RU] Plan a trip",
+        "subtitle": "[RU] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[RU] Where to?",
+        "start": "[RU] Start",
+        "end": "[RU] End",
+        "cta": "[RU] Plan this trip",
+        "discover": "[RU] Or",
+        "discoverLink": "[RU] browse public trips",
+        "discoverTail": "[RU] from the community.",
+        "errors": {
+          "city": "[RU] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[RU] Continue planning",
+        "placeCount": "[RU] {{count}} places"
+      },
+      "pride": {
+        "title": "[RU] Pride this season",
+        "window": "[RU] Next 4 months",
+        "empty": "[RU] No upcoming Pride events.",
+        "safety": "[RU] Equality score"
+      },
+      "inspiration": {
+        "villages": "[RU] Queer villages",
+        "publicTrips": "[RU] Public trips",
+        "viewAll": "[RU] View all",
+        "noVillages": "[RU] No villages yet.",
+        "noTrips": "[RU] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[RU] Book now",
+        "subtitle": "[RU] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "Маркетплейс",
@@ -1318,7 +1433,9 @@
       "signInRequired": "Требуется вход",
       "signInList": "Создай бесплатный аккаунт, чтобы разместить свой бизнес.",
       "signInFavorites": "Войди, чтобы сохранять избранное.",
-      "loadError": "При загрузке маркетплейса произошла ошибка. Попробуй ещё раз."
+      "loadError": "При загрузке маркетплейса произошла ошибка. Попробуй ещё раз.",
+      "emptyFiltersTitle": "[RU] No listings match these filters.",
+      "emptyFiltersDescription": "[RU] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Товар не найден",
@@ -1357,7 +1474,14 @@
       "emptyTitle": "Пока нет статей.",
       "emptyDescription": "Загляни позже.",
       "previous": "Назад",
-      "next": "Далее"
+      "next": "Далее",
+      "filteredEmptyTitle": "[RU] No news matches your filters.",
+      "filteredEmptyDescription": "[RU] Reset filters or try another topic.",
+      "resetFilters": "[RU] Reset filters",
+      "filterSearch": "[RU] Search",
+      "filterCategory": "[RU] Category",
+      "filterSource": "[RU] Source",
+      "filterFeatured": "[RU] Featured only"
     },
     "newsDetail": {
       "notFound": "Статья не найдена",

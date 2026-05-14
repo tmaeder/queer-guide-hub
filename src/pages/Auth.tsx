@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,11 +11,9 @@ import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import MultiStepSignup from '@/components/auth/MultiStepSignup';
+import Signup from '@/components/auth/Signup';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
-import { BackgroundDots } from '@/components/effects/BackgroundDots';
-import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
@@ -24,7 +23,26 @@ export default function Auth() {
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const [mode, setMode] = useState<Mode>('signin');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMode: Mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
+  const [mode, setMode] = useState<Mode>(initialMode);
+
+  useEffect(() => {
+    const urlMode = searchParams.get('mode');
+    if (mode === 'signup' && urlMode !== 'signup') {
+      setSearchParams((p) => {
+        const next = new URLSearchParams(p);
+        next.set('mode', 'signup');
+        return next;
+      }, { replace: true });
+    } else if (mode !== 'signup' && urlMode === 'signup') {
+      setSearchParams((p) => {
+        const next = new URLSearchParams(p);
+        next.delete('mode');
+        return next;
+      }, { replace: true });
+    }
+  }, [mode, searchParams, setSearchParams]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,38 +101,35 @@ export default function Auth() {
     return (
       <div className="min-h-screen bg-background py-12">
         <div className="container mx-auto px-4">
-          <MultiStepSignup onBack={() => setMode('signin')} />
+          <Signup onBack={() => setMode('signin')} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden">
-      <BackgroundDots className="absolute inset-0 z-0 pointer-events-none" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-mesh opacity-80" />
-      <div className="relative z-10 container mx-auto px-6 py-12">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-12">
         <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 6rem)' }}>
-          <SpotlightEffect className="w-full max-w-md">
-            <Card className="rounded-3xl border-border/80 shadow-xl backdrop-blur-sm bg-background/95">
-              <CardHeader>
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <Heart className="w-8 h-8 fill-current text-foreground" />
-                    <h5 className="text-xl font-bold tracking-tight">The Queer Guide</h5>
-                  </div>
-                  <CardTitle className="text-3xl font-bold tracking-tight text-center text-balance">
-                    {mode === 'forgot' ? t('auth.resetPassword', 'Reset password') : t('auth.welcomeBack', 'Welcome back')}
-                  </CardTitle>
-                  <CardDescription className="text-center text-base">
-                    {mode === 'forgot'
-                      ? t('auth.forgotBlurb', "We'll email you a reset link.")
-                      : t('auth.signinBlurb', 'Sign in to continue')}
-                  </CardDescription>
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-center gap-2">
+                  <Heart className="w-8 h-8 fill-current text-primary" />
+                  <h5 className="text-xl font-bold">The Queer Guide</h5>
                 </div>
-              </CardHeader>
+                <CardTitle>
+                  {mode === 'forgot' ? t('auth.resetPassword', 'Reset password') : t('auth.welcomeBack', 'Welcome back')}
+                </CardTitle>
+                <CardDescription>
+                  {mode === 'forgot'
+                    ? t('auth.forgotBlurb', "We'll email you a reset link.")
+                    : t('auth.signinBlurb', 'Sign in to continue')}
+                </CardDescription>
+              </div>
+            </CardHeader>
 
-            <CardContent className="pb-7">
+            <CardContent>
               <div className="flex flex-col gap-6">
                 {error && (
                   <Alert variant="destructive" role="alert">
@@ -230,7 +245,6 @@ export default function Auth() {
               </div>
             </CardContent>
           </Card>
-          </SpotlightEffect>
         </div>
       </div>
     </div>
