@@ -141,13 +141,12 @@ export function TripsSignedOutHero() {
                         >
                           {template.title}
                         </h6>
-                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                        <span className="text-xs text-white/85">
                           {template.cities}
                         </span>
                       </div>
                       <div
-                        className="inline-flex items-center gap-1 self-start text-white px-2 py-0.5 rounded text-[0.7rem] font-semibold"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                        className="inline-flex items-center gap-1 self-start text-white bg-white/20 px-2 py-0.5 rounded text-[0.7rem] font-semibold"
                       >
                         <ShieldCheck style={{ width: 11, height: 11 }} />
                         {t('trips.signedOut.safeLabel')}
