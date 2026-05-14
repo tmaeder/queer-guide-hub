@@ -40,12 +40,18 @@ export type PersonalitySort = 'featured' | 'az' | 'za' | 'popular' | 'newest';
 export interface PersonalityFilters {
   search?: string;
   fields?: string[];
+  /** Filter to personalities whose `tags` array contains this tag slug. */
+  tag?: string;
   profession?: string;
   verification_status?: string;
   is_living?: boolean;
   featured_only?: boolean;
   exclude_adult?: boolean;
   name_starts_with?: string;
+  /** Inclusive lower bound on birth year (UI: era chips). */
+  birth_year_min?: number;
+  /** Inclusive upper bound on birth year (UI: era chips). */
+  birth_year_max?: number;
   sortBy?: PersonalitySort;
 }
 
@@ -92,6 +98,10 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
     query = query.contains('fields', filters.fields);
   }
 
+  if (filters.tag) {
+    query = query.contains('tags', [filters.tag]);
+  }
+
   if (filters.verification_status) {
     query = query.eq('verification_status', filters.verification_status);
   }
@@ -106,6 +116,14 @@ function applyFilters(query: ReturnType<typeof supabase.from>, filters?: Persona
 
   if (filters.exclude_adult !== false) {
     query = query.eq('is_adult', false);
+  }
+
+  if (typeof filters.birth_year_min === 'number') {
+    query = query.gte('birth_date', `${filters.birth_year_min}-01-01`);
+  }
+
+  if (typeof filters.birth_year_max === 'number') {
+    query = query.lte('birth_date', `${filters.birth_year_max}-12-31`);
   }
 
   if (filters.name_starts_with) {

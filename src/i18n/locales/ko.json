@@ -1687,7 +1687,22 @@
       "clearAll": "모두 지우기",
       "emptyTitle": "필터에 맞는 인물이 없습니다",
       "emptyDescription": "필터를 해제하거나 다른 이름으로 검색해 보세요.",
-      "loadingMore": "더 불러오는 중…"
+      "loadingMore": "더 불러오는 중…",
+      "view": {
+        "grid": "[KO] Grid",
+        "timeline": "[KO] Timeline",
+        "map": "[KO] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[KO] Born this week",
+        "diedThisWeek": "[KO] Remembered this week",
+        "browseByEra": "[KO] Browse by era",
+        "browseByField": "[KO] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[KO] In the news",
+        "relatedEvents": "[KO] Related events"
+      }
     },
     "groups": {
       "title": "커뮤니티 그룹",

@@ -1687,7 +1687,22 @@
       "clearAll": "Alle löschen",
       "emptyTitle": "Keine Persönlichkeiten passen zu deinen Filtern",
       "emptyDescription": "Versuche einen Filter zu entfernen oder nach einem anderen Namen zu suchen.",
-      "loadingMore": "Mehr wird geladen…"
+      "loadingMore": "Mehr wird geladen…",
+      "view": {
+        "grid": "[DE] Grid",
+        "timeline": "[DE] Timeline",
+        "map": "[DE] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[DE] Born this week",
+        "diedThisWeek": "[DE] Remembered this week",
+        "browseByEra": "[DE] Browse by era",
+        "browseByField": "[DE] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[DE] In the news",
+        "relatedEvents": "[DE] Related events"
+      }
     },
     "groups": {
       "title": "Community-Gruppen",

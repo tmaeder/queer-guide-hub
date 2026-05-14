@@ -1691,7 +1691,22 @@
       "clearAll": "Tout effacer",
       "emptyTitle": "Aucune personnalité ne correspond à tes filtres",
       "emptyDescription": "Essaie de supprimer un filtre ou de chercher un autre nom.",
-      "loadingMore": "Chargement en cours…"
+      "loadingMore": "Chargement en cours…",
+      "view": {
+        "grid": "[FR] Grid",
+        "timeline": "[FR] Timeline",
+        "map": "[FR] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[FR] Born this week",
+        "diedThisWeek": "[FR] Remembered this week",
+        "browseByEra": "[FR] Browse by era",
+        "browseByField": "[FR] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[FR] In the news",
+        "relatedEvents": "[FR] Related events"
+      }
     },
     "groups": {
       "title": "Groupes communautaires",
