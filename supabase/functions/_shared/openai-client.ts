@@ -281,16 +281,32 @@ export async function chatCompletion(
   if (response_format) body.response_format = response_format
 
   let lastError: Error | null = null
+  const PER_CALL_TIMEOUT_MS = 25_000
 
   for (let attempt = 0; attempt < 3; attempt++) {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
+    const ac = new AbortController()
+    const timer = setTimeout(() => ac.abort(), PER_CALL_TIMEOUT_MS)
+    let response: Response
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: ac.signal,
+      })
+    } catch (e) {
+      clearTimeout(timer)
+      const msg = (e as Error).name === 'AbortError'
+        ? `OpenAI request timed out after ${PER_CALL_TIMEOUT_MS}ms`
+        : (e as Error).message
+      lastError = new Error(msg)
+      if (attempt < 2) { await new Promise(r => setTimeout(r, 500 * (attempt + 1))); continue }
+      throw lastError
+    }
+    clearTimeout(timer)
 
     if (response.ok) {
       const data = await response.json()
@@ -308,6 +324,15 @@ export async function chatCompletion(
       console.warn(`OpenAI rate limited, waiting ${waitMs}ms (attempt ${attempt + 1}/3)`)
       await new Promise(r => setTimeout(r, waitMs))
       lastError = new Error(`Rate limited (429)`)
+      continue
+    }
+
+    // Upstream gateway / transient (502/503/504) — retry with backoff
+    if (response.status >= 502 && response.status <= 504) {
+      const waitMs = 1000 * (attempt + 1)
+      console.warn(`OpenAI ${response.status}, retrying in ${waitMs}ms (attempt ${attempt + 1}/3)`)
+      await new Promise(r => setTimeout(r, waitMs))
+      lastError = new Error(`Upstream ${response.status}`)
       continue
     }
 
