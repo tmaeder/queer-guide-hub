@@ -19,6 +19,7 @@ export default tseslint.config(
       "functions/_middleware.ts",
       "functions/sitemap-places.xml.ts",
       "scripts/seo-check.mjs",
+      "supabase/functions/pipeline-review-gate/index.ts",
       // Absorbed repos — not linted here
       "Dev/**",
       "client-sdk/**",
