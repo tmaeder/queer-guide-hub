@@ -4,6 +4,7 @@ import { Plus, Map, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useTrips } from '@/hooks/useTrips';
+import { useMyTripSaves } from '@/hooks/useTripSaves';
 import { useAuth } from '@/hooks/useAuth';
 import { TripCard } from '@/components/trips/TripCard';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
@@ -11,6 +12,9 @@ import type { GeoSelection } from '@/components/trips/create/CityCountryAutocomp
 import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { TripsInboxSection } from '@/components/trips/TripsInboxSection';
+import { EmptyTripsHero } from '@/components/trips/EmptyTripsHero';
+import { NextTripStrip } from '@/components/trips/NextTripStrip';
+import { InspiredByYourTrips } from '@/components/trips/InspiredByYourTrips';
 import {
   TripsToolbar,
   type TripSortKey,
@@ -29,6 +33,7 @@ export default function TripsPage() {
   const { user } = useAuth();
   const navigate = useLocalizedNavigate();
   const { data: trips, isLoading, error, refetch } = useTrips();
+  const { data: savedIds } = useMyTripSaves();
   const [createOpen, setCreateOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
@@ -61,11 +66,14 @@ export default function TripsPage() {
   const [statusFilter, setStatusFilter] = useState<TripStatusFilter>('all');
   const [sortKey, setSortKey] = useState<TripSortKey>('recent');
 
-  const counts = useMemo(() => countTripsByStatus(trips ?? []), [trips]);
+  const counts = useMemo(
+    () => countTripsByStatus(trips ?? [], savedIds),
+    [trips, savedIds],
+  );
 
   const visibleTrips = useMemo(
-    () => filterAndSortTrips(trips ?? [], search, statusFilter, sortKey),
-    [trips, search, statusFilter, sortKey],
+    () => filterAndSortTrips(trips ?? [], search, statusFilter, sortKey, savedIds),
+    [trips, search, statusFilter, sortKey, savedIds],
   );
 
   if (!user) {
@@ -116,6 +124,8 @@ export default function TripsPage() {
         </div>
       </div>
 
+      {hasAnyTrips && !isFiltered && <NextTripStrip trips={trips ?? []} />}
+
       {/* Travel inbox */}
       <TripsInboxSection />
 
@@ -149,20 +159,7 @@ export default function TripsPage() {
       )}
 
       {!isLoading && !error && !hasAnyTrips && (
-        <div className="mt-4">
-          <EmptyState
-            icon={Map}
-            title={t('trips.empty.title')}
-            description={t('trips.empty.description')}
-            mood="encouraging"
-            primaryAction={{
-              label: t('trips.empty.cta'),
-              onClick: () => setCreateOpen(true),
-              variant: 'brand',
-            }}
-          />
-          <TripTemplates />
-        </div>
+        <EmptyTripsHero onCreate={() => setCreateOpen(true)} />
       )}
 
       {!isLoading &&
@@ -193,9 +190,12 @@ export default function TripsPage() {
       )}
 
       {!isLoading && !error && hasAnyTrips && !isFiltered && (
-        <div className="mt-12 pt-10 border-t border-border">
-          <TripTemplates />
-        </div>
+        <>
+          <InspiredByYourTrips ownTrips={trips ?? []} />
+          <div className="mt-12 pt-10 border-t border-border">
+            <TripTemplates />
+          </div>
+        </>
       )}
 
       <CreateTripDialog

@@ -140,7 +140,31 @@
     "empty": {
       "title": "Planifica tu primer viaje",
       "description": "Crea un itinerario, consulta información LGTBI+ de cada destino y mantenlo todo en un solo lugar.",
-      "cta": "Crear mi primer viaje"
+      "cta": "Crear mi primer viaje",
+      "hero": {
+        "title": "[ES] Plan a trip you'll feel safe on.",
+        "subtitle": "[ES] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[ES] Start from scratch",
+          "description": "[ES] Empty itinerary, your destinations, your pace.",
+          "cta": "[ES] Create trip"
+        },
+        "template": {
+          "title": "[ES] Use a template",
+          "description": "[ES] Pre-built itineraries you can fork and edit.",
+          "cta": "[ES] Browse templates"
+        },
+        "discover": {
+          "title": "[ES] Fork a public trip",
+          "description": "[ES] Real itineraries from other QG travelers.",
+          "cta": "[ES] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[ES] From real travelers",
+      "discoverTitle": "[ES] Recent public trips",
+      "discoverCta": "[ES] Open Discover"
     },
     "filteredEmpty": {
       "title": "Ningún viaje coincide",
@@ -163,7 +187,8 @@
         "planning": "Planificando",
         "active": "Activos",
         "completed": "Completados",
-        "archived": "Archivados"
+        "archived": "Archivados",
+        "saved": "[ES] Saved"
       },
       "sort": {
         "recent": "Actualizados recientemente",
@@ -556,7 +581,91 @@
     },
     "discover": {
       "title": "Descubrir lugares",
-      "button": "Explorar mercado"
+      "button": "Explorar mercado",
+      "eyebrow": "[ES] Real travelers",
+      "subtitle": "[ES] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[ES] Filter by city…",
+      "aria": "[ES] Discover public trips",
+      "sortAria": "[ES] Sort trips",
+      "viewAria": "[ES] View mode",
+      "filterAria": "[ES] Filter trips",
+      "filtersAria": "[ES] Open filters",
+      "filters": {
+        "title": "[ES] undefined",
+        "travelerType": "[ES] undefined",
+        "duration": "[ES] undefined",
+        "minEquality": "[ES] undefined",
+        "minEqualityAria": "[ES] undefined",
+        "minEqualityHint": "[ES] undefined",
+        "noMin": "[ES] undefined",
+        "quality": "[ES] undefined",
+        "hasCover": "[ES] undefined",
+        "hasOwnerProfile": "[ES] undefined",
+        "clear": "[ES] undefined"
+      },
+      "activeCountAria": "[ES] {{count}} active",
+      "view": {
+        "list": "[ES] List view",
+        "map": "[ES] Map view"
+      },
+      "sort": {
+        "recent": "[ES] Most recent",
+        "trending": "[ES] Trending",
+        "most_places": "[ES] Most places",
+        "longest": "[ES] Longest",
+        "safest": "[ES] Safest"
+      },
+      "filter": {
+        "dated": "[ES] Has dates",
+        "multiday": "[ES] Multi-day",
+        "safe": "[ES] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[ES] Any",
+        "solo": "[ES] Solo",
+        "couple": "[ES] Couple",
+        "group": "[ES] Group",
+        "family": "[ES] Family"
+      },
+      "duration": {
+        "any": "[ES] Any length",
+        "weekend": "[ES] Weekend (1–3 days)",
+        "week": "[ES] Week (4–9 days)",
+        "long": "[ES] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[ES] Europe",
+        "north_america": "[ES] North America",
+        "latin_america": "[ES] Latin America",
+        "asia": "[ES] Asia",
+        "oceania": "[ES] Oceania",
+        "africa": "[ES] Africa",
+        "middle_east": "[ES] Middle East",
+        "other": "[ES] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[ES] Staff picks",
+        "title": "[ES] Trips worth copying"
+      },
+      "all": "[ES] All public trips",
+      "moreInspiration": "[ES] More inspiration",
+      "moreInspirationDescription": "[ES] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[ES] No public trips yet",
+      "emptyFiltered": "[ES] No public trips match that city. Try a different one.",
+      "emptyDescription": "[ES] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[ES] A QG traveler",
+      "placeCount": "[ES] {{count}} places",
+      "fork": "[ES] Fork into my trips",
+      "forkAria": "[ES] Fork this trip",
+      "forking": "[ES] Forking…",
+      "forked": "[ES] Trip forked",
+      "forkedDescription": "[ES] Your copy is ready — edit days and places freely.",
+      "forkError": "[ES] Could not create trip",
+      "inspiredTitle": "[ES] Inspired by: {{title}}",
+      "signalsAria": "[ES] Trip activity",
+      "forkCount": "[ES] {{count}} forks",
+      "saveCount": "[ES] {{count}} saves",
+      "filtersButton": "[ES] Filters"
     },
     "polls": {
       "createdToast": "Encuesta creada",
@@ -679,6 +788,26 @@
       "pin": "Fijar",
       "deleteTitle": "Eliminar nota",
       "deleteConfirm": "¿Estás seguro de que quieres eliminar esta nota? Esto no se puede deshacer."
+    },
+    "next": {
+      "live": "[ES] Active now",
+      "countdown": "[ES] Coming up",
+      "upcoming": "[ES] Upcoming",
+      "open": "[ES] Open trip",
+      "openLive": "[ES] Open today's plan",
+      "today": "[ES] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[ES] Inspired by your trips",
+      "title": "[ES] Public trips you might like",
+      "cta": "[ES] See all"
+    },
+    "save": {
+      "save": "[ES] Save",
+      "saved": "[ES] Saved",
+      "saveAria": "[ES] Save trip",
+      "unsaveAria": "[ES] Unsave trip",
+      "error": "[ES] Could not update save"
     }
   },
   "auth": {
@@ -1524,7 +1653,14 @@
       "filterSearch": "[ES] Search",
       "filterCategory": "[ES] Category",
       "filterSource": "[ES] Source",
-      "filterFeatured": "[ES] Featured only"
+      "filterFeatured": "[ES] Featured only",
+      "trendingTags": "[ES] Trending",
+      "minRead": "[ES] min read",
+      "share": "[ES] Share",
+      "linkCopied": "[ES] Link copied",
+      "density": "[ES] Density",
+      "comfortable": "[ES] Comfortable",
+      "compact": "[ES] Compact"
     },
     "newsDetail": {
       "notFound": "Artículo no encontrado",

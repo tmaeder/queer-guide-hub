@@ -140,7 +140,31 @@
     "empty": {
       "title": "첫 여행을 계획하세요",
       "description": "일정을 만들고, 각 목적지의 LGBTQ+ 안전 정보를 확인하고, 모든 것을 한곳에 모으세요.",
-      "cta": "첫 여행 만들기"
+      "cta": "첫 여행 만들기",
+      "hero": {
+        "title": "[KO] Plan a trip you'll feel safe on.",
+        "subtitle": "[KO] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[KO] Start from scratch",
+          "description": "[KO] Empty itinerary, your destinations, your pace.",
+          "cta": "[KO] Create trip"
+        },
+        "template": {
+          "title": "[KO] Use a template",
+          "description": "[KO] Pre-built itineraries you can fork and edit.",
+          "cta": "[KO] Browse templates"
+        },
+        "discover": {
+          "title": "[KO] Fork a public trip",
+          "description": "[KO] Real itineraries from other QG travelers.",
+          "cta": "[KO] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[KO] From real travelers",
+      "discoverTitle": "[KO] Recent public trips",
+      "discoverCta": "[KO] Open Discover"
     },
     "filteredEmpty": {
       "title": "일치하는 여행이 없습니다",
@@ -163,7 +187,8 @@
         "planning": "계획 중",
         "active": "진행 중",
         "completed": "완료",
-        "archived": "보관됨"
+        "archived": "보관됨",
+        "saved": "[KO] Saved"
       },
       "sort": {
         "recent": "최근 업데이트",
@@ -556,7 +581,91 @@
     },
     "discover": {
       "title": "장소 탐색",
-      "button": "마켓 둘러보기"
+      "button": "마켓 둘러보기",
+      "eyebrow": "[KO] Real travelers",
+      "subtitle": "[KO] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[KO] Filter by city…",
+      "aria": "[KO] Discover public trips",
+      "sortAria": "[KO] Sort trips",
+      "viewAria": "[KO] View mode",
+      "filterAria": "[KO] Filter trips",
+      "filtersAria": "[KO] Open filters",
+      "filters": {
+        "title": "[KO] undefined",
+        "travelerType": "[KO] undefined",
+        "duration": "[KO] undefined",
+        "minEquality": "[KO] undefined",
+        "minEqualityAria": "[KO] undefined",
+        "minEqualityHint": "[KO] undefined",
+        "noMin": "[KO] undefined",
+        "quality": "[KO] undefined",
+        "hasCover": "[KO] undefined",
+        "hasOwnerProfile": "[KO] undefined",
+        "clear": "[KO] undefined"
+      },
+      "activeCountAria": "[KO] {{count}} active",
+      "view": {
+        "list": "[KO] List view",
+        "map": "[KO] Map view"
+      },
+      "sort": {
+        "recent": "[KO] Most recent",
+        "trending": "[KO] Trending",
+        "most_places": "[KO] Most places",
+        "longest": "[KO] Longest",
+        "safest": "[KO] Safest"
+      },
+      "filter": {
+        "dated": "[KO] Has dates",
+        "multiday": "[KO] Multi-day",
+        "safe": "[KO] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[KO] Any",
+        "solo": "[KO] Solo",
+        "couple": "[KO] Couple",
+        "group": "[KO] Group",
+        "family": "[KO] Family"
+      },
+      "duration": {
+        "any": "[KO] Any length",
+        "weekend": "[KO] Weekend (1–3 days)",
+        "week": "[KO] Week (4–9 days)",
+        "long": "[KO] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[KO] Europe",
+        "north_america": "[KO] North America",
+        "latin_america": "[KO] Latin America",
+        "asia": "[KO] Asia",
+        "oceania": "[KO] Oceania",
+        "africa": "[KO] Africa",
+        "middle_east": "[KO] Middle East",
+        "other": "[KO] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[KO] Staff picks",
+        "title": "[KO] Trips worth copying"
+      },
+      "all": "[KO] All public trips",
+      "moreInspiration": "[KO] More inspiration",
+      "moreInspirationDescription": "[KO] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[KO] No public trips yet",
+      "emptyFiltered": "[KO] No public trips match that city. Try a different one.",
+      "emptyDescription": "[KO] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[KO] A QG traveler",
+      "placeCount": "[KO] {{count}} places",
+      "fork": "[KO] Fork into my trips",
+      "forkAria": "[KO] Fork this trip",
+      "forking": "[KO] Forking…",
+      "forked": "[KO] Trip forked",
+      "forkedDescription": "[KO] Your copy is ready — edit days and places freely.",
+      "forkError": "[KO] Could not create trip",
+      "inspiredTitle": "[KO] Inspired by: {{title}}",
+      "signalsAria": "[KO] Trip activity",
+      "forkCount": "[KO] {{count}} forks",
+      "saveCount": "[KO] {{count}} saves",
+      "filtersButton": "[KO] Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -679,6 +788,26 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "next": {
+      "live": "[KO] Active now",
+      "countdown": "[KO] Coming up",
+      "upcoming": "[KO] Upcoming",
+      "open": "[KO] Open trip",
+      "openLive": "[KO] Open today's plan",
+      "today": "[KO] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[KO] Inspired by your trips",
+      "title": "[KO] Public trips you might like",
+      "cta": "[KO] See all"
+    },
+    "save": {
+      "save": "[KO] Save",
+      "saved": "[KO] Saved",
+      "saveAria": "[KO] Save trip",
+      "unsaveAria": "[KO] Unsave trip",
+      "error": "[KO] Could not update save"
     }
   },
   "auth": {
@@ -1524,7 +1653,14 @@
       "filterSearch": "[KO] Search",
       "filterCategory": "[KO] Category",
       "filterSource": "[KO] Source",
-      "filterFeatured": "[KO] Featured only"
+      "filterFeatured": "[KO] Featured only",
+      "trendingTags": "[KO] Trending",
+      "minRead": "[KO] min read",
+      "share": "[KO] Share",
+      "linkCopied": "[KO] Link copied",
+      "density": "[KO] Density",
+      "comfortable": "[KO] Comfortable",
+      "compact": "[KO] Compact"
     },
     "newsDetail": {
       "notFound": "기사를 찾을 수 없음",

@@ -13,6 +13,20 @@ export interface DiscoverableTrip {
   cities: string[];
   countries: string[];
   place_count: number;
+  primary_city_id: string | null;
+  primary_country_id: string | null;
+  /** Minimum equality score across countries on the trip (null if unknown). */
+  min_equality_score: number | null;
+  is_staff_pick: boolean;
+  fork_count: number;
+  save_count: number;
+  traveler_type: 'solo' | 'couple' | 'group' | 'family' | null;
+  vibe_tags: string[];
+  primary_city_name: string | null;
+  primary_city_lat: number | null;
+  primary_city_lng: number | null;
+  primary_country_code: string | null;
+  duration_days: number;
   owner: {
     display_name: string | null;
     avatar_url: string | null;
@@ -28,9 +42,22 @@ interface RawTrip {
   cover_image_url: string | null;
   owner_id: string;
   created_at: string;
+  primary_city_id: string | null;
+  primary_country_id: string | null;
+  is_staff_pick?: boolean | null;
+  fork_count?: number | null;
+  save_count?: number | null;
+  traveler_type?: string | null;
+  vibe_tags?: string[] | null;
+  primary_city?: {
+    name: string;
+    latitude: number | null;
+    longitude: number | null;
+  } | null;
+  primary_country?: { code: string | null } | null;
   trip_places: Array<{
     cities: { name: string } | null;
-    countries: { name: string } | null;
+    countries: { name: string; equality_score: number | null } | null;
   }>;
   owner: { display_name: string | null; avatar_url: string | null } | null;
 }
@@ -50,37 +77,46 @@ export function useDiscoverableTrips(cityFilter?: string) {
     queryKey: ['discoverable-trips', trimmed.toLowerCase()],
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<DiscoverableTrip[]> => {
-      const withOwner = await supabase
-        .from('trips')
-        .select(
-          `id, title, description, start_date, end_date, cover_image_url, owner_id, created_at,
-           trip_places(cities:city_id(name), countries:country_id(name)),
-           owner:profiles!owner_id(display_name, avatar_url)`,
-        )
-        .eq('is_public', true)
-        .order('created_at', { ascending: false })
-        .limit(60);
+      // Three-tier query: full → no-owner → no-discover-signals.
+      // Tier 3 handles the case where the discover-signals migration
+      // (is_staff_pick / fork_count / save_count) hasn't been applied yet.
+      const BASE_COLS =
+        'id, title, description, start_date, end_date, cover_image_url, owner_id, created_at, primary_city_id, primary_country_id';
+      const SIGNAL_COLS =
+        'is_staff_pick, fork_count, save_count, traveler_type, vibe_tags';
+      const NESTED =
+        'trip_places(cities:city_id(name), countries:country_id(name, equality_score)), primary_city:cities!primary_city_id(name, latitude, longitude), primary_country:countries!primary_country_id(code)';
 
-      // Fallback if the `owner:profiles!owner_id(...)` embed fails (e.g. FK
-      // cache not reloaded after migration). Retry once without the join and
-      // degrade to owner: null so /trips/discover still renders.
-      let data = withOwner.data;
-      if (withOwner.error) {
-        console.warn(
-          '[useDiscoverableTrips] owner embed failed, retrying without',
-          withOwner.error,
-        );
-        const bare = await supabase
+      const runQuery = (cols: string) =>
+        supabase
           .from('trips')
-          .select(
-            `id, title, description, start_date, end_date, cover_image_url, owner_id, created_at,
-             trip_places(cities:city_id(name), countries:country_id(name))`,
-          )
+          .select(cols)
           .eq('is_public', true)
           .order('created_at', { ascending: false })
           .limit(60);
-        if (bare.error) throw bare.error;
-        data = (bare.data ?? []).map((t) => ({ ...t, owner: null }));
+
+      const withOwner = await runQuery(
+        `${BASE_COLS}, ${SIGNAL_COLS}, ${NESTED}, owner:profiles!owner_id(display_name, avatar_url)`,
+      );
+
+      let data = withOwner.data;
+      if (withOwner.error) {
+        console.warn(
+          '[useDiscoverableTrips] full query failed, retrying without owner embed',
+          withOwner.error,
+        );
+        const noOwner = await runQuery(`${BASE_COLS}, ${SIGNAL_COLS}, ${NESTED}`);
+        if (noOwner.error) {
+          console.warn(
+            '[useDiscoverableTrips] retrying without discover-signal columns',
+            noOwner.error,
+          );
+          const minimal = await runQuery(`${BASE_COLS}, ${NESTED}`);
+          if (minimal.error) throw minimal.error;
+          data = (minimal.data ?? []).map((t) => ({ ...t, owner: null }));
+        } else {
+          data = (noOwner.data ?? []).map((t) => ({ ...t, owner: null }));
+        }
       }
 
       const lowered = trimmed.toLowerCase();
@@ -88,10 +124,25 @@ export function useDiscoverableTrips(cityFilter?: string) {
         .map((t): DiscoverableTrip => {
           const cities = new Set<string>();
           const countries = new Set<string>();
+          const scores: number[] = [];
           for (const p of t.trip_places ?? []) {
             if (p.cities?.name) cities.add(p.cities.name);
             if (p.countries?.name) countries.add(p.countries.name);
+            if (typeof p.countries?.equality_score === 'number') {
+              scores.push(p.countries.equality_score);
+            }
           }
+          const duration =
+            t.start_date && t.end_date
+              ? Math.max(
+                  0,
+                  Math.round(
+                    (new Date(t.end_date).getTime() -
+                      new Date(t.start_date).getTime()) /
+                      (24 * 60 * 60 * 1000),
+                  ) + 1,
+                )
+              : 0;
           return {
             id: t.id,
             title: t.title,
@@ -104,6 +155,25 @@ export function useDiscoverableTrips(cityFilter?: string) {
             cities: [...cities],
             countries: [...countries],
             place_count: (t.trip_places ?? []).length,
+            primary_city_id: t.primary_city_id,
+            primary_country_id: t.primary_country_id,
+            min_equality_score: scores.length ? Math.min(...scores) : null,
+            is_staff_pick: !!t.is_staff_pick,
+            fork_count: t.fork_count ?? 0,
+            save_count: t.save_count ?? 0,
+            traveler_type:
+              t.traveler_type === 'solo' ||
+              t.traveler_type === 'couple' ||
+              t.traveler_type === 'group' ||
+              t.traveler_type === 'family'
+                ? t.traveler_type
+                : null,
+            vibe_tags: Array.isArray(t.vibe_tags) ? t.vibe_tags : [],
+            primary_city_name: t.primary_city?.name ?? null,
+            primary_city_lat: t.primary_city?.latitude ?? null,
+            primary_city_lng: t.primary_city?.longitude ?? null,
+            primary_country_code: t.primary_country?.code ?? null,
+            duration_days: duration,
             owner: t.owner,
           };
         })

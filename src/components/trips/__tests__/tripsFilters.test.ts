@@ -63,6 +63,7 @@ describe('countTripsByStatus', () => {
       active: 1,
       completed: 1,
       archived: 1,
+      saved: 0,
     });
   });
 
@@ -73,7 +74,13 @@ describe('countTripsByStatus', () => {
       active: 0,
       completed: 0,
       archived: 0,
+      saved: 0,
     });
+  });
+
+  it('counts saved trips when a savedIds set is provided', () => {
+    const ids = new Set([trips[0].id, trips[2].id]);
+    expect(countTripsByStatus(trips, ids).saved).toBe(2);
   });
 });
 

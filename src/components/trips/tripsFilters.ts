@@ -10,10 +10,15 @@ export function filterAndSortTrips(
   search: string,
   statusFilter: TripStatusFilter,
   sortKey: TripSortKey,
+  savedIds?: ReadonlySet<string>,
 ): TripListItem[] {
   const q = search.trim().toLowerCase();
   const filtered = trips.filter((trip) => {
-    if (statusFilter !== 'all' && trip.status !== statusFilter) return false;
+    if (statusFilter === 'saved') {
+      if (!savedIds?.has(trip.id)) return false;
+    } else if (statusFilter !== 'all' && trip.status !== statusFilter) {
+      return false;
+    }
     if (!q) return true;
     return (
       trip.title.toLowerCase().includes(q) ||
@@ -40,6 +45,7 @@ export function filterAndSortTrips(
  */
 export function countTripsByStatus(
   trips: TripListItem[],
+  savedIds?: ReadonlySet<string>,
 ): Record<TripStatusFilter, number> {
   const base: Record<TripStatusFilter, number> = {
     all: trips.length,
@@ -47,7 +53,11 @@ export function countTripsByStatus(
     active: 0,
     completed: 0,
     archived: 0,
+    saved: 0,
   };
-  for (const trip of trips) base[trip.status] += 1;
+  for (const trip of trips) {
+    base[trip.status] += 1;
+    if (savedIds?.has(trip.id)) base.saved += 1;
+  }
   return base;
 }
