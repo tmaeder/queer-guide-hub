@@ -23,6 +23,17 @@ import { ReportButton } from '@/components/moderation/ReportButton';
 import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import type { Database } from '@/integrations/supabase/types';
 import { formatCurrency } from '@/lib/currency';
+import {
+  formatListingPrice,
+  getOutboundLink,
+  linkHealthState,
+  sourceProvenanceLine,
+  trustPillsFor,
+} from '@/components/marketplace/marketplaceHelpers';
+import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
+import { MarketplacePriceHistory } from '@/components/marketplace/MarketplacePriceHistory';
+import { MarketplaceSimilarItems } from '@/components/marketplace/MarketplaceSimilarItems';
+import { LocalizedLink } from '@/components/routing/LocalizedLink';
 
 export type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 export type MarketplaceReview = Database['public']['Tables']['marketplace_reviews']['Row'] & {
@@ -238,6 +249,8 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
         </Card>
       )}
 
+      <MarketplaceSimilarItems listing={listing} />
+
       {listing.shipping_available && listing.shipping_info && (
         <Card>
           <CardHeader>
@@ -326,6 +339,12 @@ interface SidebarProps {
 }
 
 export function MarketplaceSidebar({ listing, t }: SidebarProps) {
+  const price = formatListingPrice(listing);
+  const outbound = getOutboundLink(listing);
+  const pills = trustPillsFor(listing);
+  const provenance = sourceProvenanceLine(listing);
+  const linkState = linkHealthState(listing);
+
   return (
     <ScrollReveal direction="up">
     <div className="flex flex-col gap-6">
@@ -334,18 +353,57 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
           <CardTitle>{t('pages.marketplaceDetail.priceContact', 'Price & Contact')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center">
-            <h4 className="text-2xl font-bold mb-2 text-primary">{formatPrice(listing)}</h4>
-            {listing.currency && listing.currency !== 'USD' && (
-              <p className="text-sm text-muted-foreground">Currency: {listing.currency}</p>
+          <div>
+            <div className="flex items-baseline gap-2">
+              {price.modifier && (
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
+              )}
+              <h4 className="text-3xl font-bold">{price.primary}</h4>
+            </div>
+            {price.secondary && (
+              <p className="text-sm text-muted-foreground mt-1">{price.secondary}</p>
+            )}
+            {provenance && (
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 mt-1">{provenance}</p>
             )}
           </div>
+
+          {pills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {pills.map((p) => (
+                <span
+                  key={p.key}
+                  title={p.title}
+                  className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                >
+                  {p.label}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {linkState === 'broken' && (
+            <div className="mt-3 rounded border border-border bg-muted p-2 text-xs text-muted-foreground">
+              This merchant link appears to be broken. Try contact options below.
+            </div>
+          )}
+          {linkState === 'stale' && (
+            <div className="mt-3 text-xs text-muted-foreground">Last verified some time ago — link may have changed.</div>
+          )}
 
           <Separator />
 
           <div className="flex flex-col gap-3">
-            {listing.contact_email && (
+            {outbound && (
               <Button style={{ width: '100%' }} asChild>
+                <a href={outbound.url} target="_blank" rel={outbound.rel} data-affiliate={outbound.isAffiliate ? 'true' : undefined}>
+                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                  {outbound.label}
+                </a>
+              </Button>
+            )}
+            {listing.contact_email && (
+              <Button variant="outline" style={{ width: '100%' }} asChild>
                 <a href={`mailto:${listing.contact_email}`}>
                   <Mail style={{ width: 16, height: 16, marginRight: 8 }} />
                   Send Email
@@ -360,10 +418,10 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
                 </a>
               </Button>
             )}
-            {listing.website && (
+            {!outbound && listing.website && (
               <Button variant="outline" style={{ width: '100%' }} asChild>
                 <a href={listing.website} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
                   Visit Website
                 </a>
               </Button>
@@ -371,13 +429,41 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
           </div>
 
           {listing.shipping_available && (
-            <div className="flex items-center gap-2 bg-muted rounded p-2 text-sm">
-              <Truck style={{ width: 16, height: 16 }} />
+            <div className="flex items-center gap-2 bg-muted rounded p-2 text-sm mt-3">
+              <Truck style={{ width: 16, height: 16 }} aria-hidden="true" />
               Shipping available
+            </div>
+          )}
+
+          {outbound?.isAffiliate && (
+            <div className="mt-3">
+              <AffiliateDisclosure compact />
             </div>
           )}
         </CardContent>
       </Card>
+
+      <MarketplacePriceHistory listingId={listing.id} />
+
+      {listing.merchant_domain && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Merchant</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-3">
+              See more listings from this merchant.
+            </p>
+            <LocalizedLink
+              to={`/marketplace/merchants/${listing.merchant_domain}`}
+              className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
+            >
+              <Globe style={{ width: 14, height: 14 }} aria-hidden="true" />
+              {listing.merchant_domain}
+            </LocalizedLink>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

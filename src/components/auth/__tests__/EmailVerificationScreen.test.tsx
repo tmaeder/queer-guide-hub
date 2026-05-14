@@ -16,6 +16,10 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useLocalizedNavigate', () => ({
+  useLocalizedNavigate: () => vi.fn(),
+}));
+
 import { EmailVerificationScreen } from '../EmailVerificationScreen';
 
 describe('EmailVerificationScreen', () => {

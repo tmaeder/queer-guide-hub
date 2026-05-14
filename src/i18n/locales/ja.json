@@ -1244,7 +1244,45 @@
         "title": "フィルターに一致するイベントがありません",
         "body": "フィルターや検索を調整して、より多くの結果を表示してください。"
       },
-      "prideSubtype": "[JA] Pride type"
+      "prideSubtype": "[JA] Pride type",
+      "mapView": "[JA] Map view",
+      "preset": {
+        "label": "[JA] Quick filters",
+        "thisWeekend": "[JA] This weekend",
+        "nearMe": "[JA] Near me",
+        "pride": "[JA] Pride season",
+        "thisMonth": "[JA] This month",
+        "free": "[JA] Free",
+        "featured": "[JA] Featured"
+      },
+      "rail": {
+        "featured": "[JA] Featured this week",
+        "featuredSubtitle": "[JA] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[JA] No events match your filters",
+        "body": "[JA] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[JA] Drop \"{{city}}\" filter",
+        "clearDate": "[JA] Drop date filter",
+        "viewAll": "[JA] View all upcoming events",
+        "sameCityHeader": "[JA] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[JA] Try other cities in your date range",
+        "fallbackHeader": "[JA] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[JA] Spotlight",
+        "happeningNow": "[JA] Happening now",
+        "tomorrow": "[JA] Starts tomorrow",
+        "inDays_one": "[JA] Starts in {{count}} day",
+        "inDays_other": "[JA] Starts in {{count}} days",
+        "nearbyCount_one": "[JA] {{count}} event in {{city}}",
+        "nearbyCount_other": "[JA] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[JA] Sort events",
+      "sort": {
+        "dateAsc": "[JA] Soonest first",
+        "dateDesc": "[JA] Latest first"
+      }
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",
@@ -1332,7 +1370,9 @@
       "signInRequired": "ログインが必要です",
       "signInList": "無料アカウントを作成してビジネスを掲載しましょう。",
       "signInFavorites": "お気に入りを保存するにはログインしてください。",
-      "loadError": "マーケットプレイスの読み込み中にエラーが発生しました。もう一度お試しください。"
+      "loadError": "マーケットプレイスの読み込み中にエラーが発生しました。もう一度お試しください。",
+      "emptyFiltersTitle": "[JA] No listings match these filters.",
+      "emptyFiltersDescription": "[JA] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "アイテムが見つかりません",

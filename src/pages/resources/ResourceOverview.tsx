@@ -8,7 +8,7 @@ import { useSafeMode } from '@/providers/SafeModeProvider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Briefcase, Zap, ChevronRight, Phone } from 'lucide-react';
+import { Briefcase, Zap } from 'lucide-react';
 import { hoverCardCls } from './resourceHelpers';
 
 interface ResourceOverviewProps {
@@ -58,7 +58,7 @@ export function ResourceOverview({
       )}
 
       <div>
-        <h2 className="text-base font-semibold mb-4">Browse by category</h2>
+        <h2 className="text-base font-semibold mb-4">Browse all topics</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {orderedParents.map((cat) => {
             const Icon = getCategoryIcon(cat.name);
@@ -123,25 +123,6 @@ export function ResourceOverview({
               Browse LGBTQ+ personalities by profession
             </span>
           </button>
-          {/* Crisis help card */}
-          <LocalizedLink
-            to="/help"
-            className={`${hoverCardCls} flex-col items-stretch gap-1.5 no-underline text-inherit border-l-[3px] border-destructive`}
-            style={{ minHeight: 96 }}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Phone style={{ width: 18, height: 18, opacity: 0.75 }} />
-                <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
-                  Crisis Hotlines
-                </span>
-              </div>
-              <ChevronRight style={{ width: 16, height: 16, opacity: 0.4 }} />
-            </div>
-            <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem', lineHeight: 1.4 }}>
-              Free, anonymous LGBTQIA+ crisis support worldwide
-            </span>
-          </LocalizedLink>
         </div>
       </div>
     </div>

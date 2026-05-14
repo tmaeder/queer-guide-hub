@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { TrendingByType } from '@/components/discovery/TrendingByType';
+import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
+import { FeaturedEventsRail } from '@/components/events/FeaturedEventsRail';
+import { SmartEmptyState } from '@/components/events/SmartEmptyState';
+import { PresetChips, getPresetDateRange, type EventPresetId } from '@/components/events/PresetChips';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
+import { EventsMapView } from '@/components/events/EventsMapView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -107,7 +111,7 @@ const Events = () => {
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'map'>('grid');
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -119,6 +123,10 @@ const Events = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [nearMe, setNearMe] = useState(false);
   const [showPast, setShowPast] = useState(false);
+  const [isFree, setIsFree] = useState(false);
+  const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [activePreset, setActivePreset] = useState<EventPresetId | null>(null);
+  const [sort, setSort] = useState<'date-asc' | 'date-desc' | 'popularity'>('date-asc');
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -151,6 +159,9 @@ const Events = () => {
       dateRange,
       nearMe: nearMe ? userLocation : undefined,
       includePast: showPast || undefined,
+      featured: featuredOnly || undefined,
+      isFree: isFree || undefined,
+      sort,
     };
     setPage(1);
     setAutoLoadedCount(0);
@@ -160,6 +171,54 @@ const Events = () => {
       append: false,
     });
   };
+  const handlePresetSelect = async (preset: EventPresetId | null) => {
+    // Clear any previously applied preset-specific state
+    setIsFree(false);
+    setFeaturedOnly(false);
+    if (preset === null || preset === activePreset) {
+      setActivePreset(null);
+      setStartDate(undefined);
+      setEndDate(undefined);
+      if (preset === 'near-me' || activePreset === 'near-me') {
+        setNearMe(false);
+        setUserLocation(null);
+      }
+      return;
+    }
+    setActivePreset(preset);
+    const range = getPresetDateRange(preset);
+    if (range) {
+      setStartDate(range.start);
+      setEndDate(range.end);
+    } else {
+      setStartDate(undefined);
+      setEndDate(undefined);
+    }
+    if (preset === 'pride') setEventType('pride');
+    if (preset === 'free') setIsFree(true);
+    if (preset === 'featured') setFeaturedOnly(true);
+    if (preset === 'near-me') {
+      await handleNearMe();
+      return;
+    }
+    setPage(1);
+    setAutoLoadedCount(0);
+    await fetchEvents(
+      {
+        search: search || undefined,
+        city: city || undefined,
+        eventType: preset === 'pride' ? 'pride' : eventType && eventType !== 'all' ? eventType : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        dateRange: range ? { start: range.start.toISOString(), end: range.end.toISOString() } : undefined,
+        featured: preset === 'featured' || undefined,
+        isFree: preset === 'free' || undefined,
+        includePast: showPast || undefined,
+        sort,
+      },
+      { page: 1, pageSize: PAGE_SIZE, append: false },
+    );
+  };
+
   const handleNearMe = async () => {
     if (!nearMe) {
       setLocationLoading(true);
@@ -215,6 +274,10 @@ const Events = () => {
     setNearMe(false);
     setUserLocation(null);
     setShowPast(false);
+    setIsFree(false);
+    setFeaturedOnly(false);
+    setActivePreset(null);
+    setSort('date-asc');
     setPage(1);
     setAutoLoadedCount(0);
     await fetchEvents(
@@ -264,7 +327,7 @@ const Events = () => {
     setSelectedEvent(event);
   };
   const hasActiveFilters =
-    search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe || showPast;
+    search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe || showPast || isFree || featuredOnly || activePreset;
   const autoInitDone = useRef(false);
   useEffect(() => {
     if (autoInitDone.current) return;
@@ -305,6 +368,17 @@ const Events = () => {
     handleFiltersChange();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city]);
+
+  // Re-fetch when sort changes
+  const sortMounted = useRef(false);
+  useEffect(() => {
+    if (!sortMounted.current) {
+      sortMounted.current = true;
+      return;
+    }
+    handleFiltersChange();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort]);
 
   // Debounced search — apply ~300ms after the user stops typing so the
   // list filters live. Enter still flushes immediately via onKeyDown.
@@ -371,19 +445,46 @@ const Events = () => {
                 >
                   <CalendarIcon size={16} />
                 </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="icon"
+                  aria-label={t('pages.events.mapView', 'Map view')}
+                  onClick={() => setViewMode('map')}
+                >
+                  <MapPin size={16} />
+                </Button>
               </div>
               {/* P4-3 — Submit CTA consolidated to header. */}
             </>
           }
         />
 
+        {/* Spotlight — next featured / pride / festival event */}
+        {!hasActiveFilters && (
+          <div className="mt-4 mb-6">
+            <EventsHeroSpotlight />
+          </div>
+        )}
+
         <TrendingByType type="event" className="mt-4 mb-6" />
+
+        {/* Featured rail — editor-picked spotlight */}
+        {!hasActiveFilters && (
+          <div className="mb-10">
+            <FeaturedEventsRail city={visitorLocation?.city ?? null} />
+          </div>
+        )}
+
+        {/* Smart entry chips — preset filter combos */}
+        <div className="mb-6">
+          <PresetChips active={activePreset} onSelect={handlePresetSelect} />
+        </div>
 
         {/* Filters */}
         <div className="flex flex-col gap-4 p-4 bg-card rounded-lg mb-8">
           {/* Search Bar */}
-          <div className="flex gap-2 flex-nowrap">
-            <div className="flex-1 min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">
               <Search className="w-4 h-4 text-muted-foreground shrink-0" />
               <SearchInputTyped
                 aria-label={t('pages.events.searchLabel', 'Search events')}
@@ -443,9 +544,22 @@ const Events = () => {
               size="sm"
               onClick={() => setShowPast(!showPast)}
               aria-pressed={showPast}
+              className="hidden sm:inline-flex"
             >
               {t('pages.events.showPastEvents', 'Past events')}
             </Button>
+            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+              <SelectTrigger
+                className="hidden sm:flex w-[140px]"
+                aria-label={t('pages.events.sortLabel', 'Sort events')}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
+                <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Extended Filters */}
@@ -643,6 +757,20 @@ const Events = () => {
                 />
               </div>
 
+              {/* Sort — mobile-only access (desktop has inline sort in filter row) */}
+              <div className="flex flex-col gap-2 sm:hidden">
+                <Label htmlFor="sort-mobile">{t('pages.events.sortLabel', 'Sort events')}</Label>
+                <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+                  <SelectTrigger id="sort-mobile">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
+                    <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Action Buttons */}
               <div className="flex gap-2 pt-2">
                 <Button onClick={handleFiltersChange}>{t('pages.events.applyFilters', 'Apply Filters')}</Button>
@@ -807,50 +935,49 @@ const Events = () => {
               )}
               primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
             />
-          ) : (
+          ) : showPast ? (
             <EmptyState
               icon={Calendar}
               variant="filtered"
-              title={showPast ? t('pages.events.noPastEvents', 'No past events found') : t('pages.events.filteredEmpty.title', 'No events match your filters')}
-              description={
-                showPast
-                  ? t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')
-                  : t('pages.events.filteredEmpty.body', 'Try adjusting your filters or search to see more results.')
-              }
+              title={t('pages.events.noPastEvents', 'No past events found')}
+              description={t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')}
               primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
               secondaryAction={hasActiveFilters ? { label: t('pages.events.clearFiltersLabel', 'Clear Filters'), onClick: clearFilters, variant: 'outline' } : undefined}
+            />
+          ) : (
+            <SmartEmptyState
+              city={city || undefined}
+              dateRange={startDate && endDate ? { start: startDate.toISOString(), end: endDate.toISOString() } : undefined}
+              hasActiveFilters={!!hasActiveFilters}
+              onClearFilters={clearFilters}
+              onClearCity={city ? () => { setCity(''); setAutoLocationLabel(null); } : undefined}
+              onClearDate={startDate || endDate ? () => { setStartDate(undefined); setEndDate(undefined); handleFiltersChange(); } : undefined}
             />
           )
         )}
 
         {/* Event Content */}
-        {!loading && events.length > 0 && (
-          <AnimatePresence mode="wait" initial={false}>
-            {viewMode === 'grid' ? (
-              <motion.div key="grid" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                <StaggerGrid
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {events.map((event) => (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      onViewDetails={handleViewDetails}
-                      onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
-                    />
-                  ))}
-                </StaggerGrid>
-              </motion.div>
-            ) : (
-              <motion.div key="calendar" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                <EventsCalendarView
-                  events={events}
-                  onEventSelect={handleViewDetails}
-                  onAttendanceUpdate={handleAttendanceUpdate}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {!loading && events.length > 0 && viewMode === 'grid' && (
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onViewDetails={handleViewDetails}
+                onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
+              />
+            ))}
+          </StaggerGrid>
+        )}
+        {!loading && events.length > 0 && viewMode === 'calendar' && (
+          <EventsCalendarView
+            events={events}
+            onEventSelect={handleViewDetails}
+            onAttendanceUpdate={handleAttendanceUpdate}
+          />
+        )}
+        {!loading && events.length > 0 && viewMode === 'map' && (
+          <EventsMapView events={events} height={640} />
         )}
 
         {/* Load More */}
