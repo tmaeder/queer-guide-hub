@@ -22,6 +22,9 @@ vi.mock('react-i18next', () => ({
 vi.mock('@/components/routing/LocalizedLink', () => ({
   // eslint-disable-next-line jsx-a11y/anchor-is-valid
   LocalizedLink: ({ children }: { children: React.ReactNode }) => <a href="#">{children}</a>,
+  LocalizedLink: ({ to, children }: { to?: string; children: React.ReactNode }) => (
+    <a href={typeof to === 'string' && to.length > 0 ? to : '/'}>{children}</a>
+  ),
 }));
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({

@@ -53,12 +53,52 @@ export default function MarketplaceItemDetail() {
   const listing = data?.listing ?? null;
   const reviews = data?.reviews ?? [];
 
+  const productJsonLd = listing
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: listing.title,
+        description: listing.description ?? undefined,
+        image: listing.images && listing.images.length > 0 ? listing.images : undefined,
+        sku: listing.id,
+        brand: listing.business_name
+          ? { '@type': 'Brand', name: listing.business_name }
+          : undefined,
+        ...(reviews.length > 0
+          ? {
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: (
+                  reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+                ).toFixed(1),
+                reviewCount: reviews.length,
+              },
+            }
+          : {}),
+        ...(listing.price
+          ? {
+              offers: {
+                '@type': 'Offer',
+                price: listing.price,
+                priceCurrency: (listing.currency ?? 'USD').toUpperCase(),
+                availability:
+                  listing.in_stock === false
+                    ? 'https://schema.org/OutOfStock'
+                    : 'https://schema.org/InStock',
+                url: listing.affiliate_url ?? listing.external_url ?? listing.website ?? undefined,
+              },
+            }
+          : {}),
+      }
+    : undefined;
+
   useMeta({
     title: listing?.title,
     description: listing?.description?.slice(0, 160),
     ogTitle: listing?.title,
     ogImage: listing?.images?.[0],
     canonicalPath: listing?.slug ? `/marketplace/${listing.slug}` : undefined,
+    jsonLd: productJsonLd,
   });
 
   useEffect(() => {

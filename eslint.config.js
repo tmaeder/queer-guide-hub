@@ -132,6 +132,7 @@ export default tseslint.config(
       "src/components/user-directory/UserDirectoryGrid.tsx",
       // Map style + security dashboards = data-viz, hardcoded by design.
       "src/components/map/**",
+      "src/components/events/EventsMapView.tsx",
       "src/components/security/**",
       // Submission scan results — confidence traffic-light + flyer overlays.
       "src/components/submission/**",
