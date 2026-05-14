@@ -14,8 +14,6 @@ import { useTranslation } from 'react-i18next';
 import Signup from '@/components/auth/Signup';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
-import { BackgroundDots } from '@/components/effects/BackgroundDots';
-import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 
 type Mode = 'signin' | 'signup' | 'forgot';
 
@@ -110,31 +108,28 @@ export default function Auth() {
   }
 
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden">
-      <BackgroundDots className="absolute inset-0 z-0 pointer-events-none" />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-mesh opacity-80" />
-      <div className="relative z-10 container mx-auto px-6 py-12">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-12">
         <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 6rem)' }}>
-          <SpotlightEffect className="w-full max-w-md">
-            <Card className="rounded-3xl border-border/80 shadow-xl backdrop-blur-sm bg-background/95">
-              <CardHeader>
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <Heart className="w-8 h-8 fill-current text-foreground" />
-                    <h5 className="text-xl font-bold tracking-tight">The Queer Guide</h5>
-                  </div>
-                  <CardTitle className="text-3xl font-bold tracking-tight text-center text-balance">
-                    {mode === 'forgot' ? t('auth.resetPassword', 'Reset password') : t('auth.welcomeBack', 'Welcome back')}
-                  </CardTitle>
-                  <CardDescription className="text-center text-base">
-                    {mode === 'forgot'
-                      ? t('auth.forgotBlurb', "We'll email you a reset link.")
-                      : t('auth.signinBlurb', 'Sign in to continue')}
-                  </CardDescription>
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-center gap-2">
+                  <Heart className="w-8 h-8 fill-current text-primary" />
+                  <h5 className="text-xl font-bold">The Queer Guide</h5>
                 </div>
-              </CardHeader>
+                <CardTitle>
+                  {mode === 'forgot' ? t('auth.resetPassword', 'Reset password') : t('auth.welcomeBack', 'Welcome back')}
+                </CardTitle>
+                <CardDescription>
+                  {mode === 'forgot'
+                    ? t('auth.forgotBlurb', "We'll email you a reset link.")
+                    : t('auth.signinBlurb', 'Sign in to continue')}
+                </CardDescription>
+              </div>
+            </CardHeader>
 
-            <CardContent className="pb-7">
+            <CardContent>
               <div className="flex flex-col gap-6">
                 {error && (
                   <Alert variant="destructive" role="alert">
@@ -250,7 +245,6 @@ export default function Auth() {
               </div>
             </CardContent>
           </Card>
-          </SpotlightEffect>
         </div>
       </div>
     </div>

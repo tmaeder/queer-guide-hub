@@ -159,19 +159,19 @@ export const NotificationList = () => {
         return (
           <div
             key={item.key}
-            className={`group/notif p-3 rounded-xl cursor-pointer transition-colors ${!n.read ? 'bg-muted/60 hover:bg-muted' : 'hover:bg-muted/50'}`}
+            className={`p-3 cursor-pointer hover:bg-muted transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
             onClick={() => handleNotificationClick(n)}
           >
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+              <div className="p-1 rounded">
                 {getNotificationIcon(n.type as string)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between">
                   <p className={`text-sm truncate ${!n.read ? 'font-semibold' : 'font-medium'}`}>
                     {n.title}
                   </p>
-                  {!n.read && <span aria-hidden="true" className="mt-1.5 h-2 w-2 rounded-full bg-foreground flex-shrink-0" />}
+                  {!n.read && <div className="bg-primary" style={{ width: 8, height: 8 }} />}
                 </div>
                 {n.content && (
                   <p

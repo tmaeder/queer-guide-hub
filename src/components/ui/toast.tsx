@@ -45,12 +45,11 @@ const getToastStyle = (variant: ToastVariant = 'default'): React.CSSProperties =
     justifyContent: 'space-between',
     gap: 16,
     overflow: 'hidden',
-    borderRadius: 16,
-    padding: '16px 20px',
+    borderRadius: 0,
+    padding: 24,
     paddingRight: 32,
-    boxShadow: '0 12px 32px -6px hsl(0 0% 0% / 0.18), 0 4px 8px -2px hsl(0 0% 0% / 0.08)',
-    border: '1px solid hsl(var(--border))',
-    backdropFilter: 'blur(8px)',
+    boxShadow: 'none',
+    border: 'none',
   };
 
   if (variant === 'destructive') {
@@ -64,7 +63,7 @@ const getToastStyle = (variant: ToastVariant = 'default'): React.CSSProperties =
 
   return {
     ...base,
-    backgroundColor: 'hsl(var(--background) / 0.95)',
+    backgroundColor: 'hsl(var(--background))',
     color: 'inherit',
   };
 };

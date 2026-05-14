@@ -122,7 +122,7 @@ export function VenueHero({
   return (
     <>
       {/* Hero Image */}
-      <ParallaxHero className="relative w-full h-64 md:h-96 rounded-3xl mb-6 border border-border shadow-md overflow-hidden">
+      <ParallaxHero className="w-full h-40 md:h-48 rounded-2xl mb-6">
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={venue.name}
@@ -131,7 +131,6 @@ export function VenueHero({
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-scrim opacity-40" />
       </ParallaxHero>
 
       {/* Safety Alert Banner */}
@@ -158,27 +157,21 @@ export function VenueHero({
       )}
 
       {/* Title Row */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
-          {venue.category && (
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground" />
-              {venue.category.replace(/[-_]/g, ' ')}
-            </div>
-          )}
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
+          <div className="flex items-center gap-3 mb-1 flex-wrap">
             {venue.logo_url && (
               <img
                 src={venue.logo_url}
                 alt=""
-                className="object-contain flex-shrink-0 rounded-xl border border-border bg-background shadow-sm"
-                style={{ width: 56, height: 56, padding: '6px' }}
+                className="object-contain flex-shrink-0"
+                style={{ width: 40, height: 40, borderRadius: '10px', padding: '3px' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             )}
-            <h1 className="text-4xl md:text-5xl font-bold leading-[1.05] tracking-tight text-balance">{venue.name}</h1>
+            <h1 className="text-2xl font-bold">{venue.name}</h1>
             {venue.verified && (
               <Badge variant="secondary">{t('pages.venueDetail.verified', 'Verified')}</Badge>
             )}
