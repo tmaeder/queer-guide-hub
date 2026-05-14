@@ -140,7 +140,31 @@
     "empty": {
       "title": "Planifiez votre premier voyage",
       "description": "Construisez un itinéraire, consultez les informations LGBTQ+ pour chaque destination et gardez tout au même endroit.",
-      "cta": "Créer mon premier voyage"
+      "cta": "Créer mon premier voyage",
+      "hero": {
+        "title": "[FR] Plan a trip you'll feel safe on.",
+        "subtitle": "[FR] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[FR] Start from scratch",
+          "description": "[FR] Empty itinerary, your destinations, your pace.",
+          "cta": "[FR] Create trip"
+        },
+        "template": {
+          "title": "[FR] Use a template",
+          "description": "[FR] Pre-built itineraries you can fork and edit.",
+          "cta": "[FR] Browse templates"
+        },
+        "discover": {
+          "title": "[FR] Fork a public trip",
+          "description": "[FR] Real itineraries from other QG travelers.",
+          "cta": "[FR] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[FR] From real travelers",
+      "discoverTitle": "[FR] Recent public trips",
+      "discoverCta": "[FR] Open Discover"
     },
     "filteredEmpty": {
       "title": "Aucun voyage ne correspond",
@@ -163,7 +187,8 @@
         "planning": "En préparation",
         "active": "En cours",
         "completed": "Terminés",
-        "archived": "Archivés"
+        "archived": "Archivés",
+        "saved": "[FR] Saved"
       },
       "sort": {
         "recent": "Récemment modifiés",
@@ -560,7 +585,91 @@
     },
     "discover": {
       "title": "Découvrir des lieux",
-      "button": "Parcourir le marché"
+      "button": "Parcourir le marché",
+      "eyebrow": "[FR] Real travelers",
+      "subtitle": "[FR] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[FR] Filter by city…",
+      "aria": "[FR] Discover public trips",
+      "sortAria": "[FR] Sort trips",
+      "viewAria": "[FR] View mode",
+      "filterAria": "[FR] Filter trips",
+      "filtersAria": "[FR] Open filters",
+      "filters": {
+        "title": "[FR] undefined",
+        "travelerType": "[FR] undefined",
+        "duration": "[FR] undefined",
+        "minEquality": "[FR] undefined",
+        "minEqualityAria": "[FR] undefined",
+        "minEqualityHint": "[FR] undefined",
+        "noMin": "[FR] undefined",
+        "quality": "[FR] undefined",
+        "hasCover": "[FR] undefined",
+        "hasOwnerProfile": "[FR] undefined",
+        "clear": "[FR] undefined"
+      },
+      "activeCountAria": "[FR] {{count}} active",
+      "view": {
+        "list": "[FR] List view",
+        "map": "[FR] Map view"
+      },
+      "sort": {
+        "recent": "[FR] Most recent",
+        "trending": "[FR] Trending",
+        "most_places": "[FR] Most places",
+        "longest": "[FR] Longest",
+        "safest": "[FR] Safest"
+      },
+      "filter": {
+        "dated": "[FR] Has dates",
+        "multiday": "[FR] Multi-day",
+        "safe": "[FR] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[FR] Any",
+        "solo": "[FR] Solo",
+        "couple": "[FR] Couple",
+        "group": "[FR] Group",
+        "family": "[FR] Family"
+      },
+      "duration": {
+        "any": "[FR] Any length",
+        "weekend": "[FR] Weekend (1–3 days)",
+        "week": "[FR] Week (4–9 days)",
+        "long": "[FR] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[FR] Europe",
+        "north_america": "[FR] North America",
+        "latin_america": "[FR] Latin America",
+        "asia": "[FR] Asia",
+        "oceania": "[FR] Oceania",
+        "africa": "[FR] Africa",
+        "middle_east": "[FR] Middle East",
+        "other": "[FR] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[FR] Staff picks",
+        "title": "[FR] Trips worth copying"
+      },
+      "all": "[FR] All public trips",
+      "moreInspiration": "[FR] More inspiration",
+      "moreInspirationDescription": "[FR] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[FR] No public trips yet",
+      "emptyFiltered": "[FR] No public trips match that city. Try a different one.",
+      "emptyDescription": "[FR] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[FR] A QG traveler",
+      "placeCount": "[FR] {{count}} places",
+      "fork": "[FR] Fork into my trips",
+      "forkAria": "[FR] Fork this trip",
+      "forking": "[FR] Forking…",
+      "forked": "[FR] Trip forked",
+      "forkedDescription": "[FR] Your copy is ready — edit days and places freely.",
+      "forkError": "[FR] Could not create trip",
+      "inspiredTitle": "[FR] Inspired by: {{title}}",
+      "signalsAria": "[FR] Trip activity",
+      "forkCount": "[FR] {{count}} forks",
+      "saveCount": "[FR] {{count}} saves",
+      "filtersButton": "[FR] Filters"
     },
     "polls": {
       "createdToast": "Sondage créé",
@@ -683,6 +792,26 @@
       "pin": "Épingler",
       "deleteTitle": "Supprimer la note",
       "deleteConfirm": "Es-tu sûr de vouloir supprimer cette note ? Cela ne peut pas être annulé."
+    },
+    "next": {
+      "live": "[FR] Active now",
+      "countdown": "[FR] Coming up",
+      "upcoming": "[FR] Upcoming",
+      "open": "[FR] Open trip",
+      "openLive": "[FR] Open today's plan",
+      "today": "[FR] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[FR] Inspired by your trips",
+      "title": "[FR] Public trips you might like",
+      "cta": "[FR] See all"
+    },
+    "save": {
+      "save": "[FR] Save",
+      "saved": "[FR] Saved",
+      "saveAria": "[FR] Save trip",
+      "unsaveAria": "[FR] Unsave trip",
+      "error": "[FR] Could not update save"
     }
   },
   "auth": {
@@ -1528,7 +1657,14 @@
       "filterSearch": "[FR] Search",
       "filterCategory": "[FR] Category",
       "filterSource": "[FR] Source",
-      "filterFeatured": "[FR] Featured only"
+      "filterFeatured": "[FR] Featured only",
+      "trendingTags": "[FR] Trending",
+      "minRead": "[FR] min read",
+      "share": "[FR] Share",
+      "linkCopied": "[FR] Link copied",
+      "density": "[FR] Density",
+      "comfortable": "[FR] Comfortable",
+      "compact": "[FR] Compact"
     },
     "newsDetail": {
       "notFound": "Article introuvable",

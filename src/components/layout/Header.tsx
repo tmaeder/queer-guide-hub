@@ -132,7 +132,6 @@ const legalItems = [
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [authSignupOpen, setAuthSignupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
@@ -286,7 +285,7 @@ export function Header() {
                   style={{ width: '100%', fontWeight: 600, height: 44 }}
                   onClick={() => {
                     setDrawerOpen(false);
-                    setAuthSignupOpen(true);
+                    navigate('/auth?mode=signup');
                   }}
                 >
                   {t('header.signUp', 'Sign Up')}
@@ -679,7 +678,7 @@ export function Header() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => setAuthSignupOpen(true)}
+                    onClick={() => navigate('/auth?mode=signup')}
                     aria-label={t('header.signUp', 'Sign up')}
                   >
                     {t('header.signUp', 'Sign up')}
@@ -790,7 +789,6 @@ export function Header() {
       {isMobile && mobileDrawer}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
-      <AuthDialog open={authSignupOpen} onOpenChange={setAuthSignupOpen} defaultMode="signup" />
     </header>
   );
 }
