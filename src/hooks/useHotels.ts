@@ -13,9 +13,11 @@ export interface HotelFilters {
   price_range?: number;
   lgbtq_friendly?: boolean;
   featured?: boolean;
+  tagSlug?: string;
 }
 
 const PAGE_SIZE = 24;
+const MAP_CAP = 500;
 
 export function useHotels(autoFetch = true) {
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -40,14 +42,36 @@ export function useHotels(autoFetch = true) {
 
   const fetchHotels = useCallback(async (
     filters?: HotelFilters,
-    options?: { page?: number; pageSize?: number; append?: boolean },
+    options?: { page?: number; pageSize?: number; append?: boolean; mapMode?: boolean },
   ) => {
     const page = options?.page ?? 1;
-    const pageSize = options?.pageSize ?? PAGE_SIZE;
+    const pageSize = options?.mapMode ? MAP_CAP : (options?.pageSize ?? PAGE_SIZE);
+    const mapMode = options?.mapMode === true;
 
     try {
       setLoading(true);
       setError(null);
+
+      // Tag filter: resolve hotel IDs from unified_tag_assignments first,
+      // then constrain the main query. Cheap enough at our scale and avoids
+      // adding a Postgres view.
+      let tagFilteredIds: string[] | null = null;
+      if (filters?.tagSlug) {
+        const { data: tagRows } = await supabase
+          .from('unified_tag_assignments')
+          .select('entity_id, unified_tags!inner(slug)')
+          .eq('entity_type', 'hotel')
+          .eq('unified_tags.slug', filters.tagSlug)
+          .limit(2000);
+        tagFilteredIds = (tagRows ?? []).map((r) => r.entity_id as string);
+        if (tagFilteredIds.length === 0) {
+          if (!options?.append) setHotels([]);
+          setTotalCount(0);
+          setHasMore(false);
+          setLoading(false);
+          return;
+        }
+      }
 
       // When the user has typed a free-text search and no column-scoped
       // filters, prefer the ranked search_hotels RPC (pg_trgm-backed) so
@@ -62,7 +86,9 @@ export function useHotels(autoFetch = true) {
         !filters?.hotel_type &&
         !filters?.price_range &&
         filters?.lgbtq_friendly === undefined &&
-        !filters?.featured;
+        !filters?.featured &&
+        !filters?.tagSlug &&
+        !mapMode;
       if (onlySearch && filters?.search) {
         const from = (page - 1) * pageSize;
         const limit = from + pageSize;
@@ -147,8 +173,11 @@ export function useHotels(autoFetch = true) {
       if (filters?.featured) {
         query = query.eq('featured', true);
       }
+      if (tagFilteredIds) {
+        query = query.in('id', tagFilteredIds);
+      }
 
-      const from = (page - 1) * pageSize;
+      const from = mapMode ? 0 : (page - 1) * pageSize;
       const to = from + pageSize - 1;
       query = query.range(from, to);
 

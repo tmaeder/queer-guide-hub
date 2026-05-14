@@ -1715,7 +1715,22 @@
       "clearAll": "Очистить всё",
       "emptyTitle": "Ни одна личность не соответствует твоим фильтрам",
       "emptyDescription": "Попробуй убрать фильтр или поискать другое имя.",
-      "loadingMore": "Загрузка…"
+      "loadingMore": "Загрузка…",
+      "view": {
+        "grid": "[RU] Grid",
+        "timeline": "[RU] Timeline",
+        "map": "[RU] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[RU] Born this week",
+        "diedThisWeek": "[RU] Remembered this week",
+        "browseByEra": "[RU] Browse by era",
+        "browseByField": "[RU] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[RU] In the news",
+        "relatedEvents": "[RU] Related events"
+      }
     },
     "groups": {
       "title": "Группы сообщества",

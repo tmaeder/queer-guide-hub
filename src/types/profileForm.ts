@@ -15,6 +15,7 @@ export interface PrivacySettings {
   relationships_visibility?: string;
   travel_visibility?: string;
   coming_out_visibility?: string;
+  appear_in_recognition?: boolean;
 }
 
 export interface ProfileFormData {
@@ -78,6 +79,7 @@ const DEFAULT_PRIVACY: PrivacySettings = {
   relationships_visibility: 'friends',
   travel_visibility: 'public',
   coming_out_visibility: 'private',
+  appear_in_recognition: false,
 };
 
 function str(val: unknown): string {

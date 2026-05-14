@@ -103,6 +103,8 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
     dispatch.mutate({
       storyId: story.id,
       runner,
+      // Server builds + redacts the prompt by default; only send override
+      // when the admin actively edited it.
       promptOverride: editing ? promptDraft : undefined,
     });
 

@@ -19,6 +19,9 @@ export default tseslint.config(
       "functions/_middleware.ts",
       "functions/sitemap-places.xml.ts",
       "scripts/seo-check.mjs",
+      "supabase/functions/pipeline-review-gate/index.ts",
+      "supabase/functions/pipeline-apply-rules/index.ts",
+      "src/pages/AdminIngestionRules.tsx",
       // Absorbed repos — not linted here
       "Dev/**",
       "client-sdk/**",
@@ -29,6 +32,9 @@ export default tseslint.config(
       // Legacy worker duplicates (superseded by workers/*/)
       "worker/**",
       "worker-ingest/**",
+      // Parallel agent worktrees — files there belong to other branches and
+      // race with concurrent edits, causing ENOENT during pre-push lint.
+      ".claude/**",
     ],
   },
   {

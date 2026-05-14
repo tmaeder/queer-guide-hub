@@ -14,10 +14,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { listFrom, insertInto, updateRow, deleteRow } from '@/hooks/usePageFetchers';
 import { ArrowLeft, Plus, Trash2, Pencil, Link2 } from 'lucide-react';
 
 interface Rule {
@@ -72,14 +70,6 @@ export default function AdminIngestionRules() {
 
   const { data: rules = [], isLoading } = useQuery<Rule[]>({
     queryKey: ['ingestion_rules'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ingestion_rules')
-        .select('*')
-        .order('priority', { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as unknown as Rule[];
-    },
     queryFn: () =>
       listFrom<Rule>('ingestion_rules', '*', { col: 'priority', ascending: true }),
   });
