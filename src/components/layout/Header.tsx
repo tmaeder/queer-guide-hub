@@ -15,7 +15,6 @@ import {
   Heart,
   Menu,
   User,
-  X,
   MapPin,
   Calendar,
   Store,
@@ -213,15 +212,9 @@ export function Header() {
               Queer Guide
             </span>
           </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setDrawerOpen(false)}
-            aria-label={t('header.closeMenu', 'Close menu')}
-            className="h-11 w-11 p-0"
-          >
-            <X style={{ width: 20, height: 20 }} />
-          </Button>
+          {/* Close button is provided by SheetContent (top-right). Rendering a
+              second one here previously sat under it and tripped axe's
+              `target-size` rule (4×44 visible area). */}
         </div>
 
         {/* Scrollable content */}
