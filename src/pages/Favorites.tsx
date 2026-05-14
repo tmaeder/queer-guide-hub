@@ -537,6 +537,32 @@ export default function Favorites() {
 
               {Object.entries(favorites).map(([type, items]) => (
                 <TabsContent key={type} value={type}>
+                  {type === 'marketplace' && items.length > 0 && (
+                    <div className="mb-4 flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          const ids = items.map((i) => i.id).join(',');
+                          const params = new URLSearchParams({ ids, title: 'My favorites' });
+                          const url = `${window.location.origin}/marketplace/share?${params.toString()}`;
+                          try {
+                            if (navigator.share) {
+                              await navigator.share({ title: 'My marketplace favorites', url });
+                            } else {
+                              await navigator.clipboard.writeText(url);
+                              toast({ title: 'Link copied', description: 'Share link copied to clipboard.' });
+                            }
+                          } catch {
+                            /* user cancelled */
+                          }
+                        }}
+                      >
+                        <LinkIcon style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
+                        Share list
+                      </Button>
+                    </div>
+                  )}
                   <div className={gridClass}>{items.map(renderFavoriteCard)}</div>
                 </TabsContent>
               ))}
