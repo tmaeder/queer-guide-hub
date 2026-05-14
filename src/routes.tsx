@@ -128,6 +128,7 @@ const CloudflareDashboard = lazy(() =>
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
 const News = lazyRetry(() => import('./pages/News'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
+const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
 const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
@@ -423,6 +424,7 @@ export const AppRoutes = () => {
                 <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
                 <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
                 <Route path="news" element={<News />} />
+                <Route path="news/story/:slug" element={<NewsStoryDetail />} />
                 <Route path="news/:slug" element={<NewsDetail />} />
                 <Route path="search" element={<SearchResults />} />
                 <Route path="groups" element={<Groups />} />

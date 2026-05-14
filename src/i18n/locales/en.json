@@ -1435,7 +1435,14 @@
       "filterSource": "Source",
       "filterFeatured": "Featured only",
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "trendingTags": "Trending",
+      "minRead": "min read",
+      "share": "Share",
+      "linkCopied": "Link copied",
+      "density": "Density",
+      "comfortable": "Comfortable",
+      "compact": "Compact"
     },
     "newsDetail": {
       "notFound": "Article Not Found",
