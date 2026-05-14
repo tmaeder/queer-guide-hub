@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TripContextBar } from '@/components/trips/TripContextBar';
+import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 import { GrainOverlay } from '@/components/effects/GrainOverlay';
 
@@ -52,6 +53,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       <AnalyticsTracker />
       <div className="relative z-10">
         <Header />
+        <EmailVerifyBanner />
         <TripContextBar />
       </div>
       {children}
