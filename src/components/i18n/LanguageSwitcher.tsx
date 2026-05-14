@@ -39,6 +39,11 @@ export function LanguageSwitcher() {
         ? pathWithoutLocale
         : `/${newLocale}${pathWithoutLocale}`;
 
+    // WCAG 3.1.1, 3.1.2 — update <html lang> before paint so assistive tech
+    // picks up the new language immediately, ahead of LocaleRouter's effect.
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = newLocale;
+    }
     i18n.changeLanguage(newLocale);
     navigate(newPath + location.search, { replace: true });
   };
