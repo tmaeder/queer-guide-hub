@@ -140,7 +140,31 @@
     "empty": {
       "title": "Plane deine erste Reise",
       "description": "Erstelle eine Reiseroute, prüfe LGBTQ+-Sicherheitsinfos für jedes Ziel und behalte alles an einem Ort.",
-      "cta": "Erste Reise erstellen"
+      "cta": "Erste Reise erstellen",
+      "hero": {
+        "title": "[DE] Plan a trip you'll feel safe on.",
+        "subtitle": "[DE] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[DE] Start from scratch",
+          "description": "[DE] Empty itinerary, your destinations, your pace.",
+          "cta": "[DE] Create trip"
+        },
+        "template": {
+          "title": "[DE] Use a template",
+          "description": "[DE] Pre-built itineraries you can fork and edit.",
+          "cta": "[DE] Browse templates"
+        },
+        "discover": {
+          "title": "[DE] Fork a public trip",
+          "description": "[DE] Real itineraries from other QG travelers.",
+          "cta": "[DE] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[DE] From real travelers",
+      "discoverTitle": "[DE] Recent public trips",
+      "discoverCta": "[DE] Open Discover"
     },
     "filteredEmpty": {
       "title": "Keine Reisen gefunden",
@@ -163,7 +187,8 @@
         "planning": "In Planung",
         "active": "Laufend",
         "completed": "Abgeschlossen",
-        "archived": "Archiviert"
+        "archived": "Archiviert",
+        "saved": "[DE] Saved"
       },
       "sort": {
         "recent": "Zuletzt aktualisiert",
@@ -556,7 +581,91 @@
     },
     "discover": {
       "title": "Orte entdecken",
-      "button": "Marktplatz durchsuchen"
+      "button": "Marktplatz durchsuchen",
+      "eyebrow": "[DE] Real travelers",
+      "subtitle": "[DE] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[DE] Filter by city…",
+      "aria": "[DE] Discover public trips",
+      "sortAria": "[DE] Sort trips",
+      "viewAria": "[DE] View mode",
+      "filterAria": "[DE] Filter trips",
+      "filtersAria": "[DE] Open filters",
+      "filters": {
+        "title": "[DE] undefined",
+        "travelerType": "[DE] undefined",
+        "duration": "[DE] undefined",
+        "minEquality": "[DE] undefined",
+        "minEqualityAria": "[DE] undefined",
+        "minEqualityHint": "[DE] undefined",
+        "noMin": "[DE] undefined",
+        "quality": "[DE] undefined",
+        "hasCover": "[DE] undefined",
+        "hasOwnerProfile": "[DE] undefined",
+        "clear": "[DE] undefined"
+      },
+      "activeCountAria": "[DE] {{count}} active",
+      "view": {
+        "list": "[DE] List view",
+        "map": "[DE] Map view"
+      },
+      "sort": {
+        "recent": "[DE] Most recent",
+        "trending": "[DE] Trending",
+        "most_places": "[DE] Most places",
+        "longest": "[DE] Longest",
+        "safest": "[DE] Safest"
+      },
+      "filter": {
+        "dated": "[DE] Has dates",
+        "multiday": "[DE] Multi-day",
+        "safe": "[DE] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[DE] Any",
+        "solo": "[DE] Solo",
+        "couple": "[DE] Couple",
+        "group": "[DE] Group",
+        "family": "[DE] Family"
+      },
+      "duration": {
+        "any": "[DE] Any length",
+        "weekend": "[DE] Weekend (1–3 days)",
+        "week": "[DE] Week (4–9 days)",
+        "long": "[DE] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[DE] Europe",
+        "north_america": "[DE] North America",
+        "latin_america": "[DE] Latin America",
+        "asia": "[DE] Asia",
+        "oceania": "[DE] Oceania",
+        "africa": "[DE] Africa",
+        "middle_east": "[DE] Middle East",
+        "other": "[DE] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[DE] Staff picks",
+        "title": "[DE] Trips worth copying"
+      },
+      "all": "[DE] All public trips",
+      "moreInspiration": "[DE] More inspiration",
+      "moreInspirationDescription": "[DE] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[DE] No public trips yet",
+      "emptyFiltered": "[DE] No public trips match that city. Try a different one.",
+      "emptyDescription": "[DE] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[DE] A QG traveler",
+      "placeCount": "[DE] {{count}} places",
+      "fork": "[DE] Fork into my trips",
+      "forkAria": "[DE] Fork this trip",
+      "forking": "[DE] Forking…",
+      "forked": "[DE] Trip forked",
+      "forkedDescription": "[DE] Your copy is ready — edit days and places freely.",
+      "forkError": "[DE] Could not create trip",
+      "inspiredTitle": "[DE] Inspired by: {{title}}",
+      "signalsAria": "[DE] Trip activity",
+      "forkCount": "[DE] {{count}} forks",
+      "saveCount": "[DE] {{count}} saves",
+      "filtersButton": "[DE] Filters"
     },
     "polls": {
       "createdToast": "Umfrage erstellt",
@@ -679,6 +788,26 @@
       "pin": "Anheften",
       "deleteTitle": "Notiz löschen",
       "deleteConfirm": "Bist du sicher, dass du diese Notiz löschen möchtest? Dies kann nicht rückgängig gemacht werden."
+    },
+    "next": {
+      "live": "[DE] Active now",
+      "countdown": "[DE] Coming up",
+      "upcoming": "[DE] Upcoming",
+      "open": "[DE] Open trip",
+      "openLive": "[DE] Open today's plan",
+      "today": "[DE] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[DE] Inspired by your trips",
+      "title": "[DE] Public trips you might like",
+      "cta": "[DE] See all"
+    },
+    "save": {
+      "save": "[DE] Save",
+      "saved": "[DE] Saved",
+      "saveAria": "[DE] Save trip",
+      "unsaveAria": "[DE] Unsave trip",
+      "error": "[DE] Could not update save"
     }
   },
   "help": {

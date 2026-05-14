@@ -95,7 +95,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
           aria-label={t('trips.discover.filtersAria', 'Open filters')}
         >
           <SlidersHorizontal style={{ width: 14, height: 14, marginRight: 6 }} />
-          {t('trips.discover.filters', 'Filters')}
+          {t('trips.discover.filtersButton', 'Filters')}
           {activeCount > 0 && (
             <span
               className="ml-2 inline-flex items-center justify-center rounded-full bg-background text-foreground text-[0.6875rem] font-bold h-5 min-w-5 px-1"
