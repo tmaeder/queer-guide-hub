@@ -133,6 +133,9 @@ const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
+const IntimateOnboard = lazyRetry(() => import('./pages/intimate/IntimateOnboard'));
+const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDiscovery'));
+const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
 const Footprint = lazyRetry(() => import('./pages/profile/Footprint'));
 const UserProfile = lazyRetry(() => import('./pages/UserProfile'));
@@ -443,6 +446,9 @@ export const AppRoutes = () => {
                 <Route path="feed" element={<Feed />} />
                 <Route path="community" element={<Navigate to="/feed" replace />} />
                 <Route path="profile/settings" element={<ProfileSettings />} />
+                <Route path="intimate" element={<IntimateDiscovery />} />
+                <Route path="intimate/onboard" element={<IntimateOnboard />} />
+                <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<ProfileTiers />} />
                 <Route path="profile/footprint" element={<Footprint />} />
                 <Route path="user/:userId" element={<UserProfile />} />

@@ -33,6 +33,7 @@ import { BasicInfoTab } from '@/components/profile/settings/BasicInfoTab';
 import { IdentityTab } from '@/components/profile/settings/IdentityTab';
 import { RelationshipsTab } from '@/components/profile/settings/RelationshipsTab';
 import { PrivacyTab } from '@/components/profile/settings/PrivacyTab';
+import { IntimateTab } from '@/components/profile/IntimateTab';
 import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
@@ -262,6 +263,9 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
             <TabsTrigger value="privacy">
               <span className="flex items-center gap-2"><Lock style={{ width: 16, height: 16 }} /> Privacy</span>
             </TabsTrigger>
+            <TabsTrigger value="intimate">
+              <span className="flex items-center gap-2">Intimate</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic">
@@ -287,6 +291,10 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
 
           <TabsContent value="privacy">
             <PrivacyTab formData={formData} hasPasskey={hasPasskey} onPrivacyChange={handlePrivacyChange} />
+          </TabsContent>
+
+          <TabsContent value="intimate">
+            <IntimateTab />
           </TabsContent>
         </Tabs>
 
