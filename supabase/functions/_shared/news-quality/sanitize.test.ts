@@ -103,6 +103,42 @@ Deno.test('sanitizeArticle full pass', () => {
   assert(r.criticalPaywall)
 })
 
+Deno.test('decodeHtmlEntities: numeric refs (decimal + hex) and ampersand', async () => {
+  const { decodeHtmlEntities } = await import('./sanitize.ts')
+  assertEquals(decodeHtmlEntities('Luke &#038; Harvey'), 'Luke & Harvey')
+  assertEquals(decodeHtmlEntities('My Dearest Se&#241;orita'), 'My Dearest Señorita')
+  assertEquals(decodeHtmlEntities('hex: &#x4D2;'), 'hex: \u04D2')
+  assertEquals(decodeHtmlEntities('&amp; &lt; &gt;'), '& < >')
+})
+
+Deno.test('decodeHtmlEntities preserves unknown named entities', async () => {
+  const { decodeHtmlEntities } = await import('./sanitize.ts')
+  assertEquals(decodeHtmlEntities('&blarg;'), '&blarg;')
+})
+
+Deno.test('cleanTitle decodes HTML entities (regression: real production sample)', () => {
+  // Real title pulled from prod news_articles — ampersand encoded as &#038;
+  const decoded = cleanTitle("Luke Evan's bulging jock, Harvey Guill&#233;n's corset &#038; all the fits")
+  assert(decoded.includes('Guillén'))
+  assert(decoded.includes('&'))
+  assert(!decoded.includes('&#'))
+})
+
+Deno.test('hasCriticalPaywall catches multilingual variants', () => {
+  assert(hasCriticalPaywall('Cet article est réservé aux abonnés.'))
+  assert(hasCriticalPaywall('Nur für Abonnenten verfügbar'))
+  assert(hasCriticalPaywall('Solo para suscriptores'))
+})
+
+Deno.test('stripJunkPhrases removes German + French paywall snippets', () => {
+  const de = stripJunkPhrases('Echter Inhalt.\n\nNur für Abonnenten\n\nMehr Inhalt.')
+  assert(!de.text.toLowerCase().includes('nur für abonnenten'))
+  assert(de.removed.some((r) => r.toLowerCase().includes('abonnenten')))
+
+  const fr = stripJunkPhrases('Le contenu réel.\n\nRéservé aux abonnés\n\nLa suite.')
+  assert(!fr.text.toLowerCase().includes('réservé aux abonnés'))
+})
+
 Deno.test('sanitizeArticle is idempotent (clean input)', () => {
   const input = {
     title: 'Berlin pride draws record crowds',

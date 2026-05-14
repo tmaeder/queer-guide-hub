@@ -366,6 +366,9 @@ async function renderRecapImage(
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
+  // Canvas2D requires literal color strings — CSS vars can't be used here.
+  // Share image is rendered monochrome to match the brand palette.
+  /* eslint-disable no-restricted-syntax */
   ctx.fillStyle = '#0a0a0a';
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#ffffff';
@@ -394,6 +397,7 @@ async function renderRecapImage(
   ctx.font = '400 22px Inter, system-ui, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.6)';
   ctx.fillText('queer.guide/profile/footprint', 64, H - 56);
+  /* eslint-enable no-restricted-syntax */
 
   return new Promise((resolve) => canvas.toBlob((b) => resolve(b), 'image/png'));
 }

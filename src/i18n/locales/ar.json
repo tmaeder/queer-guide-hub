@@ -140,7 +140,31 @@
     "empty": {
       "title": "خطّط لأول رحلة لك",
       "description": "أنشئ مسارًا، وتحقق من معلومات الأمان لمجتمع الميم لكل وجهة، واحتفظ بكل شيء في مكان واحد.",
-      "cta": "إنشاء أول رحلة"
+      "cta": "إنشاء أول رحلة",
+      "hero": {
+        "title": "[AR] Plan a trip you'll feel safe on.",
+        "subtitle": "[AR] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[AR] Start from scratch",
+          "description": "[AR] Empty itinerary, your destinations, your pace.",
+          "cta": "[AR] Create trip"
+        },
+        "template": {
+          "title": "[AR] Use a template",
+          "description": "[AR] Pre-built itineraries you can fork and edit.",
+          "cta": "[AR] Browse templates"
+        },
+        "discover": {
+          "title": "[AR] Fork a public trip",
+          "description": "[AR] Real itineraries from other QG travelers.",
+          "cta": "[AR] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[AR] From real travelers",
+      "discoverTitle": "[AR] Recent public trips",
+      "discoverCta": "[AR] Open Discover"
     },
     "filteredEmpty": {
       "title": "لا توجد رحلات مطابقة",
@@ -163,7 +187,8 @@
         "planning": "قيد التخطيط",
         "active": "نشطة",
         "completed": "مكتملة",
-        "archived": "مؤرشفة"
+        "archived": "مؤرشفة",
+        "saved": "[AR] Saved"
       },
       "sort": {
         "recent": "آخر التحديثات",
@@ -556,7 +581,91 @@
     },
     "discover": {
       "title": "اكتشاف أماكن",
-      "button": "تصفح السوق"
+      "button": "تصفح السوق",
+      "eyebrow": "[AR] Real travelers",
+      "subtitle": "[AR] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[AR] Filter by city…",
+      "aria": "[AR] Discover public trips",
+      "sortAria": "[AR] Sort trips",
+      "viewAria": "[AR] View mode",
+      "filterAria": "[AR] Filter trips",
+      "filtersAria": "[AR] Open filters",
+      "filters": {
+        "title": "[AR] undefined",
+        "travelerType": "[AR] undefined",
+        "duration": "[AR] undefined",
+        "minEquality": "[AR] undefined",
+        "minEqualityAria": "[AR] undefined",
+        "minEqualityHint": "[AR] undefined",
+        "noMin": "[AR] undefined",
+        "quality": "[AR] undefined",
+        "hasCover": "[AR] undefined",
+        "hasOwnerProfile": "[AR] undefined",
+        "clear": "[AR] undefined"
+      },
+      "activeCountAria": "[AR] {{count}} active",
+      "view": {
+        "list": "[AR] List view",
+        "map": "[AR] Map view"
+      },
+      "sort": {
+        "recent": "[AR] Most recent",
+        "trending": "[AR] Trending",
+        "most_places": "[AR] Most places",
+        "longest": "[AR] Longest",
+        "safest": "[AR] Safest"
+      },
+      "filter": {
+        "dated": "[AR] Has dates",
+        "multiday": "[AR] Multi-day",
+        "safe": "[AR] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[AR] Any",
+        "solo": "[AR] Solo",
+        "couple": "[AR] Couple",
+        "group": "[AR] Group",
+        "family": "[AR] Family"
+      },
+      "duration": {
+        "any": "[AR] Any length",
+        "weekend": "[AR] Weekend (1–3 days)",
+        "week": "[AR] Week (4–9 days)",
+        "long": "[AR] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[AR] Europe",
+        "north_america": "[AR] North America",
+        "latin_america": "[AR] Latin America",
+        "asia": "[AR] Asia",
+        "oceania": "[AR] Oceania",
+        "africa": "[AR] Africa",
+        "middle_east": "[AR] Middle East",
+        "other": "[AR] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[AR] Staff picks",
+        "title": "[AR] Trips worth copying"
+      },
+      "all": "[AR] All public trips",
+      "moreInspiration": "[AR] More inspiration",
+      "moreInspirationDescription": "[AR] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[AR] No public trips yet",
+      "emptyFiltered": "[AR] No public trips match that city. Try a different one.",
+      "emptyDescription": "[AR] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[AR] A QG traveler",
+      "placeCount": "[AR] {{count}} places",
+      "fork": "[AR] Fork into my trips",
+      "forkAria": "[AR] Fork this trip",
+      "forking": "[AR] Forking…",
+      "forked": "[AR] Trip forked",
+      "forkedDescription": "[AR] Your copy is ready — edit days and places freely.",
+      "forkError": "[AR] Could not create trip",
+      "inspiredTitle": "[AR] Inspired by: {{title}}",
+      "signalsAria": "[AR] Trip activity",
+      "forkCount": "[AR] {{count}} forks",
+      "saveCount": "[AR] {{count}} saves",
+      "filtersButton": "[AR] Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -679,6 +788,26 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "next": {
+      "live": "[AR] Active now",
+      "countdown": "[AR] Coming up",
+      "upcoming": "[AR] Upcoming",
+      "open": "[AR] Open trip",
+      "openLive": "[AR] Open today's plan",
+      "today": "[AR] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[AR] Inspired by your trips",
+      "title": "[AR] Public trips you might like",
+      "cta": "[AR] See all"
+    },
+    "save": {
+      "save": "[AR] Save",
+      "saved": "[AR] Saved",
+      "saveAria": "[AR] Save trip",
+      "unsaveAria": "[AR] Unsave trip",
+      "error": "[AR] Could not update save"
     }
   },
   "auth": {
@@ -1524,7 +1653,14 @@
       "filterSearch": "[AR] Search",
       "filterCategory": "[AR] Category",
       "filterSource": "[AR] Source",
-      "filterFeatured": "[AR] Featured only"
+      "filterFeatured": "[AR] Featured only",
+      "trendingTags": "[AR] Trending",
+      "minRead": "[AR] min read",
+      "share": "[AR] Share",
+      "linkCopied": "[AR] Link copied",
+      "density": "[AR] Density",
+      "comfortable": "[AR] Comfortable",
+      "compact": "[AR] Compact"
     },
     "newsDetail": {
       "notFound": "المقال غير موجود",

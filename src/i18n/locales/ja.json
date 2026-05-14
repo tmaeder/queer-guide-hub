@@ -140,7 +140,31 @@
     "empty": {
       "title": "最初の旅を計画しよう",
       "description": "旅程を作り、各目的地の LGBTQ+ 安全情報を確認し、すべてを一つの場所にまとめよう。",
-      "cta": "最初の旅を作成"
+      "cta": "最初の旅を作成",
+      "hero": {
+        "title": "[JA] Plan a trip you'll feel safe on.",
+        "subtitle": "[JA] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[JA] Start from scratch",
+          "description": "[JA] Empty itinerary, your destinations, your pace.",
+          "cta": "[JA] Create trip"
+        },
+        "template": {
+          "title": "[JA] Use a template",
+          "description": "[JA] Pre-built itineraries you can fork and edit.",
+          "cta": "[JA] Browse templates"
+        },
+        "discover": {
+          "title": "[JA] Fork a public trip",
+          "description": "[JA] Real itineraries from other QG travelers.",
+          "cta": "[JA] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[JA] From real travelers",
+      "discoverTitle": "[JA] Recent public trips",
+      "discoverCta": "[JA] Open Discover"
     },
     "filteredEmpty": {
       "title": "該当する旅がありません",
@@ -163,7 +187,8 @@
         "planning": "計画中",
         "active": "進行中",
         "completed": "完了",
-        "archived": "アーカイブ済み"
+        "archived": "アーカイブ済み",
+        "saved": "[JA] Saved"
       },
       "sort": {
         "recent": "最近更新",
@@ -556,7 +581,91 @@
     },
     "discover": {
       "title": "場所を探す",
-      "button": "マーケットを見る"
+      "button": "マーケットを見る",
+      "eyebrow": "[JA] Real travelers",
+      "subtitle": "[JA] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[JA] Filter by city…",
+      "aria": "[JA] Discover public trips",
+      "sortAria": "[JA] Sort trips",
+      "viewAria": "[JA] View mode",
+      "filterAria": "[JA] Filter trips",
+      "filtersAria": "[JA] Open filters",
+      "filters": {
+        "title": "[JA] undefined",
+        "travelerType": "[JA] undefined",
+        "duration": "[JA] undefined",
+        "minEquality": "[JA] undefined",
+        "minEqualityAria": "[JA] undefined",
+        "minEqualityHint": "[JA] undefined",
+        "noMin": "[JA] undefined",
+        "quality": "[JA] undefined",
+        "hasCover": "[JA] undefined",
+        "hasOwnerProfile": "[JA] undefined",
+        "clear": "[JA] undefined"
+      },
+      "activeCountAria": "[JA] {{count}} active",
+      "view": {
+        "list": "[JA] List view",
+        "map": "[JA] Map view"
+      },
+      "sort": {
+        "recent": "[JA] Most recent",
+        "trending": "[JA] Trending",
+        "most_places": "[JA] Most places",
+        "longest": "[JA] Longest",
+        "safest": "[JA] Safest"
+      },
+      "filter": {
+        "dated": "[JA] Has dates",
+        "multiday": "[JA] Multi-day",
+        "safe": "[JA] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[JA] Any",
+        "solo": "[JA] Solo",
+        "couple": "[JA] Couple",
+        "group": "[JA] Group",
+        "family": "[JA] Family"
+      },
+      "duration": {
+        "any": "[JA] Any length",
+        "weekend": "[JA] Weekend (1–3 days)",
+        "week": "[JA] Week (4–9 days)",
+        "long": "[JA] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[JA] Europe",
+        "north_america": "[JA] North America",
+        "latin_america": "[JA] Latin America",
+        "asia": "[JA] Asia",
+        "oceania": "[JA] Oceania",
+        "africa": "[JA] Africa",
+        "middle_east": "[JA] Middle East",
+        "other": "[JA] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[JA] Staff picks",
+        "title": "[JA] Trips worth copying"
+      },
+      "all": "[JA] All public trips",
+      "moreInspiration": "[JA] More inspiration",
+      "moreInspirationDescription": "[JA] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[JA] No public trips yet",
+      "emptyFiltered": "[JA] No public trips match that city. Try a different one.",
+      "emptyDescription": "[JA] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[JA] A QG traveler",
+      "placeCount": "[JA] {{count}} places",
+      "fork": "[JA] Fork into my trips",
+      "forkAria": "[JA] Fork this trip",
+      "forking": "[JA] Forking…",
+      "forked": "[JA] Trip forked",
+      "forkedDescription": "[JA] Your copy is ready — edit days and places freely.",
+      "forkError": "[JA] Could not create trip",
+      "inspiredTitle": "[JA] Inspired by: {{title}}",
+      "signalsAria": "[JA] Trip activity",
+      "forkCount": "[JA] {{count}} forks",
+      "saveCount": "[JA] {{count}} saves",
+      "filtersButton": "[JA] Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -679,6 +788,26 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "next": {
+      "live": "[JA] Active now",
+      "countdown": "[JA] Coming up",
+      "upcoming": "[JA] Upcoming",
+      "open": "[JA] Open trip",
+      "openLive": "[JA] Open today's plan",
+      "today": "[JA] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[JA] Inspired by your trips",
+      "title": "[JA] Public trips you might like",
+      "cta": "[JA] See all"
+    },
+    "save": {
+      "save": "[JA] Save",
+      "saved": "[JA] Saved",
+      "saveAria": "[JA] Save trip",
+      "unsaveAria": "[JA] Unsave trip",
+      "error": "[JA] Could not update save"
     }
   },
   "auth": {
@@ -1524,7 +1653,14 @@
       "filterSearch": "[JA] Search",
       "filterCategory": "[JA] Category",
       "filterSource": "[JA] Source",
-      "filterFeatured": "[JA] Featured only"
+      "filterFeatured": "[JA] Featured only",
+      "trendingTags": "[JA] Trending",
+      "minRead": "[JA] min read",
+      "share": "[JA] Share",
+      "linkCopied": "[JA] Link copied",
+      "density": "[JA] Density",
+      "comfortable": "[JA] Comfortable",
+      "compact": "[JA] Compact"
     },
     "newsDetail": {
       "notFound": "記事が見つかりません",
