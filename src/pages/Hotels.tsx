@@ -11,7 +11,6 @@ import { useHotelFilterMeta } from '@/hooks/useHotelFilterMeta';
 import { useDebounce } from '@/hooks/useDebounce';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/layout/PageHeader';
 
 export default function Hotels() {
   const { t } = useTranslation();
@@ -109,18 +108,21 @@ export default function Hotels() {
   };
 
   return (
-    <div className="container mx-auto py-8 md:py-12 px-4">
-      <PageHeader
-        eyebrow={t('pages.hotels.eyebrow', 'Where to stay')}
-        title={t('pages.hotels.title', 'Stays')}
-        subtitle={t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
-        actions={
-          <Button onClick={() => navigate('/submit/hotel')} variant="outline" size="sm">
-            <Plus size={16} />
-            {t('pages.hotels.submitHotel', 'Submit Hotel')}
-          </Button>
-        }
-      />
+    <div className="container mx-auto py-12 md:py-20 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h4 className="text-2xl font-bold">
+            {t('pages.hotels.title', 'Stays')}
+          </h4>
+          <p className="text-muted-foreground mt-1">
+            {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
+          </p>
+        </div>
+        <Button onClick={() => navigate('/submit/hotel')} variant="outline" size="sm">
+          <Plus size={16} />
+          {t('pages.hotels.submitHotel', 'Submit Hotel')}
+        </Button>
+      </div>
 
       <HotelFilters
         search={search}

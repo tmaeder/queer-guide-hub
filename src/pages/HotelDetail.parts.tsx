@@ -55,28 +55,22 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
   const showWebsite = Boolean(hotel.website) && hotel.website !== hotel.booking_url;
   return (
     <>
-      <ParallaxHero className="relative w-full h-64 md:h-96 mb-6 rounded-3xl border border-border shadow-md overflow-hidden">
+      <ParallaxHero className="w-full h-[300px] mb-6">
           <img
             loading="lazy"
             src={heroImage || getRandomFallbackImage()}
             alt={hotel.name}
             className="w-full h-full object-cover"
           />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-scrim opacity-40" />
       </ParallaxHero>
-      <div className="flex justify-between items-start flex-wrap gap-4 mb-5">
-        <div className="min-w-0">
-          {hotel.hotel_type && (
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground" />
-              {TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type}
-            </div>
-          )}
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <h1 className="text-4xl md:text-5xl font-bold leading-[1.05] tracking-tight text-balance">{hotel.name}</h1>
+      <div className="flex justify-between items-start flex-wrap gap-4 mb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="text-2xl font-bold">{hotel.name}</h4>
             {hotel.verified && <Shield className="w-5 h-5" />}
           </div>
-          <p className="text-base text-muted-foreground">
+          <p className="text-muted-foreground">
+            {hotel.hotel_type && <>{TYPE_LABELS[hotel.hotel_type] || hotel.hotel_type} &middot; </>}
             {cityName && countryName ? `${cityName}, ${countryName}` : cityName || countryName || ''}
           </p>
         </div>

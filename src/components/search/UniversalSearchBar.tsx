@@ -171,7 +171,7 @@ export const UniversalSearchBar = () => {
             animate={isOpen ? { scale: 1.02, backdropFilter: 'blur(8px)' } : { scale: 1, backdropFilter: 'blur(0px)' }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           >
-            <div role="search" aria-label="Site search" className="flex items-center cursor-text rounded-full border border-border bg-background/70 backdrop-blur-sm shadow-sm transition-[border-color,box-shadow,background] duration-200 ease-out hover:bg-background hover:border-border focus-within:border-foreground/40 focus-within:bg-background focus-within:shadow-md"
+            <div role="search" aria-label="Site search" className="flex items-center cursor-text bg-background transition-all"
               onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}>
               <span aria-hidden="true" className="inline-flex items-center justify-center"
                 style={{ height: isMobile ? 48 : 40, paddingLeft: isMobile ? 16 : 12, paddingRight: isMobile ? 16 : 12, color: 'hsl(var(--muted-foreground))', pointerEvents: 'none', flexShrink: 0 }}>

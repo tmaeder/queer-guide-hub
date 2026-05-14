@@ -5,7 +5,6 @@ import { Footer } from '@/components/layout/Footer';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
-import { GrainOverlay } from '@/components/effects/GrainOverlay';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
 // above-the-fold or interaction-critical on first paint, so defer their
@@ -46,10 +45,11 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         Skip to main content
       </a>
 
-      {/* Background — solid + subtle mesh wash + film grain texture (B&W). */}
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-background" />
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none bg-mesh opacity-50" />
-      <GrainOverlay />
+      {/* Background — solid color, no decorative effects */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 z-0 pointer-events-none bg-background"
+      />
       <AnalyticsTracker />
       <div className="relative z-10">
         <Header />

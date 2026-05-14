@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { List, ChevronDown, ChevronUp } from 'lucide-react';
-import { PageHeader } from '@/components/layout/PageHeader';
 
 interface Section {
   id: string;
@@ -47,16 +46,20 @@ export const LegalPageLayout = ({
 
   return (
     <div className="container mx-auto py-8 px-4" style={{ maxWidth: 1100 }}>
-      <PageHeader
-        eyebrow={lastUpdated ? `Last updated ${lastUpdated}` : 'Legal'}
-        title={title}
-        subtitle={subtitle}
-      />
+      <h3 className="text-3xl font-bold mb-1">{title}</h3>
+      {subtitle && (
+        <p className="text-base text-muted-foreground mb-2 max-w-xl">{subtitle}</p>
+      )}
+      {lastUpdated && (
+        <span className="text-xs mb-8 block" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
+          Last updated {lastUpdated}
+        </span>
+      )}
 
-      <div className="flex flex-col md:flex-row md:gap-8 items-start">
+      <div className="flex flex-col md:flex-row md:gap-8 items-start mt-6">
         {/* Sidebar TOC — desktop */}
-        <div className="hidden md:block sticky flex-shrink-0" style={{ top: 96, minWidth: 220, maxWidth: 260 }}>
-          <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 shadow-sm">
+        <div className="hidden md:block sticky flex-shrink-0" style={{ top: 80, minWidth: 200, maxWidth: 240 }}>
+          <div className="bg-background p-3">
             <span className="text-xs font-semibold mb-2 px-2 block uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
               On this page
             </span>

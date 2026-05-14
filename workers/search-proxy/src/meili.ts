@@ -35,10 +35,6 @@ export const INDEX_MAP: Record<string, string> = {
 	queer_villages: "queer_villages",
 	group: "groups",
 	groups: "groups",
-	hotel: "hotels",
-	hotels: "hotels",
-	festival: "festivals",
-	festivals: "festivals",
 };
 
 export const ALL_INDEXES = [
@@ -51,8 +47,6 @@ export const ALL_INDEXES = [
 	"personalities",
 	"tags",
 	"queer_villages",
-	"hotels",
-	"festivals",
 ];
 
 export const INDEX_FACETS: Record<string, string[]> = {
@@ -65,8 +59,6 @@ export const INDEX_FACETS: Record<string, string[]> = {
 	personalities: ["type", "profession", "nationality"],
 	tags: ["type", "category"],
 	queer_villages: ["type", "city", "country", "featured"],
-	hotels: ["type", "city", "country", "hotel_type", "featured", "lgbtq_friendly"],
-	festivals: ["type", "city", "country", "festival_type", "featured"],
 };
 
 /** Drops AND-joined filter clauses that reference attributes not filterable on the given index. */
@@ -283,8 +275,6 @@ function indexTypeOf(indexUid: string): string {
 			personalities: "personality",
 			tags: "tag",
 			queer_villages: "queer_village",
-			hotels: "hotel",
-			festivals: "festival",
 		}[indexUid] || indexUid
 	);
 }

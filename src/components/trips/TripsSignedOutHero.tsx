@@ -4,6 +4,7 @@ import { ShieldCheck, Map as MapIcon, Users, Luggage, ArrowRight } from 'lucide-
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { useTripTemplates } from '@/hooks/useTripTemplates';
 
@@ -41,33 +42,34 @@ export function TripsSignedOutHero() {
 
   return (
     <div className="container mx-auto py-8 md:py-16 px-4">
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 md:px-12 py-12 md:py-20 shadow-sm">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-mesh opacity-70" />
-        <div aria-hidden="true" className="pointer-events-none absolute -inset-x-12 -top-32 h-72 bg-spotlight" />
-        <div className="relative grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-10 md:gap-12 items-center">
+      <div className="hero-gradient overflow-hidden px-6 md:px-12 py-10 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-10 md:gap-12 items-center">
           {/* Copy column */}
           <div>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
-              <Luggage style={{ width: 12, height: 12 }} />
-              {t('trips.signedOut.badge')}
-            </div>
+            <Badge variant="outline">
+              <span className="inline-flex items-center gap-1">
+                <Luggage style={{ width: 12, height: 12 }} />
+                {t('trips.signedOut.badge')}
+              </span>
+            </Badge>
 
-            <h1 className="text-[2.25rem] sm:text-[3rem] md:text-[3.5rem] font-extrabold leading-[1.02] tracking-tight text-balance mb-5 text-gradient-fg">
+            <h2 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] leading-[1.1] mb-4">
               {t('trips.signedOut.title')}
-            </h1>
+            </h2>
 
-            <p className="mb-8 max-w-[520px] text-base md:text-[1.0625rem] text-muted-foreground leading-relaxed">
+            <p className="mb-8 max-w-[480px] md:text-[1.0625rem] text-muted-foreground">
               {t('trips.signedOut.subtitle')}
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-10">
+            <div className="flex flex-wrap gap-3 mb-8">
               <Button
                 size="lg"
                 variant="brand"
                 onClick={() => setAuthOpen(true)}
+                style={{ paddingLeft: 28, paddingRight: 28 }}
               >
                 {t('trips.signedOut.primaryCta')}
-                <ArrowRight style={{ width: 16, height: 16, marginLeft: 6 }} />
+                <ArrowRight style={{ width: 16, height: 16, marginLeft: 8 }} />
               </Button>
               <Button
                 size="lg"
@@ -80,17 +82,20 @@ export function TripsSignedOutHero() {
               </Button>
             </div>
 
-            <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {bullets.map(({ icon: Icon, titleKey, bodyKey }) => (
                 <li key={titleKey} className="flex gap-3 items-start">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl border border-border bg-background shadow-sm flex items-center justify-center">
+                  <div
+                    className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: `${brand}12` }}
+                  >
                     <Icon style={{ width: 18, height: 18, color: brand }} />
                   </div>
                   <div className="min-w-0">
                     <h6 className="font-bold mb-0.5 text-sm">
                       {t(titleKey)}
                     </h6>
-                    <span className="text-xs text-muted-foreground leading-relaxed">
+                    <span className="text-xs text-muted-foreground">
                       {t(bodyKey)}
                     </span>
                   </div>

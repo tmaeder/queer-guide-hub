@@ -22,7 +22,7 @@ meili() {
 }
 
 echo "=== Creating indexes ==="
-for idx in venues events cities countries news marketplace personalities tags queer_villages hotels festivals; do
+for idx in venues events cities countries news marketplace personalities tags queer_villages; do
   meili POST "/indexes" "{\"uid\":\"${idx}\",\"primaryKey\":\"id\"}"
 done
 
@@ -128,29 +128,6 @@ meili PUT "/indexes/queer_villages/settings" '{
   "filterableAttributes": ["city", "country", "featured", "type", "_geo"],
   "sortableAttributes": ["title", "_geo"],
   "displayedAttributes": ["*"]
-}'
-
-echo "=== Configuring hotels ==="
-meili PUT "/indexes/hotels/settings" '{
-  "searchableAttributes": ["title", "description", "address", "city", "country", "hotel_type", "tags"],
-  "filterableAttributes": ["city", "city_id", "country", "hotel_type", "featured", "lgbtq_friendly", "price_range", "tags", "type", "_geo"],
-  "sortableAttributes": ["title", "star_rating", "price_range", "_geo"],
-  "displayedAttributes": ["*"],
-  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
-  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
-}'
-
-echo "=== Configuring festivals ==="
-# start_date:asc as final ranking rule so upcoming festivals rank before
-# distant future ones — same rationale as events.
-meili PUT "/indexes/festivals/settings" '{
-  "searchableAttributes": ["title", "description", "city", "country", "festival_type"],
-  "filterableAttributes": ["city", "city_id", "country", "festival_type", "featured", "start_date", "tags", "type", "_geo"],
-  "sortableAttributes": ["start_date", "title", "_geo"],
-  "displayedAttributes": ["*"],
-  "rankingRules": ["words", "typo", "exactness", "proximity", "attribute", "sort", "start_date:asc"],
-  "stopWords": ["gay", "queer", "trans", "lgbt", "lgbtq", "lgbtq+", "lgbti"],
-  "typoTolerance": {"enabled": true, "minWordSizeForTypos": {"oneTypo": 8, "twoTypos": 12}}
 }'
 
 echo "=== Creating search-only API key ==="

@@ -6,7 +6,6 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/layout/PageHeader';
 import {
   useUserDirectoryQuery,
   defaultUserFilters,
@@ -107,23 +106,25 @@ const UserDirectory = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 flex flex-col gap-8">
-      <PageHeader
-        center
-        eyebrow="Community"
-        title="Members"
-        subtitle="Discover amazing people, build meaningful connections, and grow your network within our inclusive LGBTQ+ community."
-      >
+      <div className="border border-border p-6 md:p-8 text-center flex flex-col gap-4 bg-background">
+        <h3 className="text-3xl md:text-4xl font-bold text-foreground">Members</h3>
+        <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Discover amazing people, build meaningful connections, and grow your network within our
+          inclusive LGBTQ+ community.
+        </p>
         <div className="flex flex-wrap justify-center gap-3 text-sm">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
             <Users className="h-3.5 w-3.5" />
-            <span className="text-sm font-medium">{profiles?.length || 0} Members</span>
+            <span className="text-sm font-medium">
+              {profiles?.length || 0} Members
+            </span>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
             <Sparkles className="h-3.5 w-3.5" />
             <span className="text-sm font-medium">Active Community</span>
           </div>
         </div>
-      </PageHeader>
+      </div>
 
       {!user && (
         <Card>

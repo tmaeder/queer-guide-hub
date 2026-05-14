@@ -29,19 +29,7 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
   ) => {
     const [inputValue, setInputValue] = useState(value || '');
     const [isFocused, setIsFocused] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
-    // WCAG 2.2.2, 3.2.1 — respect prefers-reduced-motion: render a single static placeholder.
-    const [reducedMotion, setReducedMotion] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-      if (typeof window === 'undefined' || !window.matchMedia) return;
-      const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-      setReducedMotion(mq.matches);
-      const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-      mq.addEventListener?.('change', onChange);
-      return () => mq.removeEventListener?.('change', onChange);
-    }, []);
 
     // Sync internal state when external value prop changes
     useEffect(() => {
@@ -84,17 +72,8 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
     const showTypedPlaceholder =
       !inputValue && !isFocused && safePlaceholders.length > 0;
 
-    // WCAG 2.2.2, 3.2.1 — under prefers-reduced-motion, fall back to a single static
-    // placeholder; otherwise pause the cycle while the input is focused or hovered.
-    const staticPlaceholder = safePlaceholders[0] ?? 'Search venues, events, cities…';
-    const useStatic = reducedMotion || isFocused || isHovered;
-
     return (
-      <div
-        style={{ position: 'relative' }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+      <div style={{ position: 'relative' }}>
         <Input
           ref={inputRef}
           style={{
@@ -107,17 +86,11 @@ const SearchInputTyped = React.forwardRef<HTMLInputElement, SearchInputTypedProp
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          placeholder={
-            showTypedPlaceholder && useStatic
-              ? staticPlaceholder
-              : showTypedPlaceholder
-              ? ''
-              : props.placeholder || 'Search...'
-          }
+          placeholder={showTypedPlaceholder ? '' : props.placeholder || 'Search...'}
           {...props}
         />
 
-        {showTypedPlaceholder && !useStatic && (
+        {showTypedPlaceholder && (
           <div
             style={{
               position: 'absolute',

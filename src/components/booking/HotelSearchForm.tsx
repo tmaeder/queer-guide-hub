@@ -44,6 +44,7 @@ export interface HotelSearchParams {
   hotelType?: HotelTypeOption;
   priceMin?: number;
   priceMax?: number;
+  lgbtqFriendlyOnly?: boolean;
 }
 
 interface HotelSearchFormProps {
@@ -54,6 +55,7 @@ interface HotelSearchFormProps {
   initialHotelType?: HotelTypeOption;
   initialPriceMin?: number;
   initialPriceMax?: number;
+  initialLgbtqFriendlyOnly?: boolean;
   onSearch: (params: HotelSearchParams) => void;
 }
 
@@ -72,6 +74,7 @@ export function HotelSearchForm({
   initialHotelType,
   initialPriceMin,
   initialPriceMax,
+  initialLgbtqFriendlyOnly,
   onSearch,
 }: HotelSearchFormProps) {
   const [city, setCity] = useState(initialCity || '');
@@ -85,6 +88,9 @@ export function HotelSearchForm({
   const [priceMax, setPriceMax] = useState<string>(
     initialPriceMax !== undefined ? String(initialPriceMax) : '',
   );
+  const [lgbtqFriendlyOnly, setLgbtqFriendlyOnly] = useState<boolean>(
+    initialLgbtqFriendlyOnly ?? false,
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +103,7 @@ export function HotelSearchForm({
       hotelType: hotelType === 'all' ? undefined : hotelType,
       priceMin: parseBound(priceMin),
       priceMax: parseBound(priceMax),
+      lgbtqFriendlyOnly: lgbtqFriendlyOnly || undefined,
     });
   };
 
@@ -181,6 +188,16 @@ export function HotelSearchForm({
           className="h-9"
         />
       </div>
+      <label className="flex items-center gap-2 text-xs cursor-pointer select-none" style={{ flex: '0 0 auto' }}>
+        <input
+          type="checkbox"
+          checked={lgbtqFriendlyOnly}
+          onChange={(e) => setLgbtqFriendlyOnly(e.target.checked)}
+          aria-label="LGBTQ+ friendly only"
+          className="h-4 w-4"
+        />
+        LGBTQ+ friendly only
+      </label>
       <Button type="submit" size="sm">
         <Search style={{ height: 16, width: 16, marginRight: 6 }} />
         Search Hotels
