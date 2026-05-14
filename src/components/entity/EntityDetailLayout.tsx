@@ -111,7 +111,7 @@ export function EntityDetailLayout({
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav
           aria-label="Breadcrumb"
-          className="inline-flex items-center gap-1 mb-6 px-3 py-1.5 rounded-full border border-border bg-background/80 backdrop-blur-sm flex-wrap"
+          className="flex items-center gap-1 mb-4 flex-wrap"
         >
           {breadcrumbs.map((crumb, i) => {
             const isLast = i === breadcrumbs.length - 1;
@@ -143,13 +143,13 @@ export function EntityDetailLayout({
         </nav>
       )}
 
-      <div className="mb-8">{hero}</div>
+      <div className="mb-6">{hero}</div>
 
-      <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-8`}>
+      <div className={`grid grid-cols-1 ${sidebar ? 'md:grid-cols-[2fr_1fr]' : ''} gap-6`}>
         <div>
           {tabs.length > 0 && (
             <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="sticky top-16 z-10 backdrop-blur-md bg-background/80 supports-[backdrop-filter]:bg-background/70">
+              <TabsList>
                 {tabs.map((tab) => (
                   <TabsTrigger key={tab.id} value={tab.id}>
                     {tab.label}

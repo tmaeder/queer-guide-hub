@@ -86,13 +86,6 @@ export interface CloudflarePerformanceSettings {
   }
 }
 
-export class CloudflareNotConfiguredError extends Error {
-  constructor(message = 'Cloudflare API not configured') {
-    super(message)
-    this.name = 'CloudflareNotConfiguredError'
-  }
-}
-
 export class CloudflareAPI {
   private async makeRequest(action: string, params?: Record<string, string>) {
     try {
@@ -102,17 +95,6 @@ export class CloudflareAPI {
       })
 
       if (error) {
-        const ctx = (error as { context?: Response }).context
-        if (ctx && typeof ctx.text === 'function') {
-          try {
-            const bodyText = await ctx.clone().text()
-            if (ctx.status === 503 || /not configured/i.test(bodyText)) {
-              throw new CloudflareNotConfiguredError()
-            }
-          } catch (e) {
-            if (e instanceof CloudflareNotConfiguredError) throw e
-          }
-        }
         console.error(`Cloudflare API error for ${action}:`, error)
         throw new Error(error.message || `Failed to fetch ${action}`)
       }
