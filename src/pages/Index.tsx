@@ -68,7 +68,8 @@ const Index = React.memo(() => {
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-mesh opacity-70" />
         {/* Text panel */}
         <SpotlightEffect className="md:flex-[0_0_38%] flex flex-col justify-center px-6 sm:px-10 md:px-12 py-14 sm:py-20 md:py-0 relative z-[1]">
-          <div className="reveal-up mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+          {/* WCAG 1.4.4 — eyebrow bumped from 11px → 12px for comfortable reading. */}
+          <div className="reveal-up mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
             <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground animate-pulse" />
             {t('home.eyebrow', 'LGBTQ+ Travel & Community')}
           </div>

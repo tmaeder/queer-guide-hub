@@ -232,10 +232,8 @@ export function Header() {
               <div className="px-4 py-3">
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar style={{ height: 40, width: 40 }}>
-                    <AvatarImage
-                      src={avatarSrc}
-                      alt={(profile?.display_name || 'Account') as string}
-                    />
+                    {/* WCAG 1.1.1 — adjacent display_name + email already identify the user. */}
+                    <AvatarImage src={avatarSrc} alt="" />
                     <AvatarFallback>
                       {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -554,10 +552,8 @@ export function Header() {
                       aria-label={t('header.openUserMenu', 'Open user menu')}
                     >
                       <Avatar style={{ height: 36, width: 36 }}>
-                        <AvatarImage
-                          src={avatarSrc}
-                          alt={(profile?.display_name || 'Account menu') as string}
-                        />
+                        {/* WCAG 1.1.1 — empty alt: parent button carries aria-label; never leak email/PII into alt. */}
+                        <AvatarImage src={avatarSrc} alt="" />
                         <AvatarFallback>
                           {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
                         </AvatarFallback>

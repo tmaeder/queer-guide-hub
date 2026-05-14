@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderWithProviders, screen } from '@/test/test-utils';
 import AdminSearchIntelligence from '../AdminSearchIntelligence';
 
@@ -11,16 +11,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 describe('AdminSearchIntelligence', () => {
-  beforeEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('renders the feature-flag placeholder when flag is unset', () => {
-    vi.stubEnv('VITE_FEATURE_SEARCH_INTELLIGENCE', '');
+  it('renders tabs', () => {
     renderWithProviders(<AdminSearchIntelligence />);
-    expect(screen.getByText(/Search Intelligence/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/feature flag/i, { selector: 'p, span, div, code, em' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /setup/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /synonyms/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /audit/i })).toBeInTheDocument();
   });
 });
