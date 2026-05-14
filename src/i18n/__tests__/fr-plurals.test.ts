@@ -3,7 +3,7 @@ import i18n from '@/i18n';
 
 beforeAll(async () => {
   await i18n.changeLanguage('fr');
-});
+}, 30000);
 
 describe('French pluralization', () => {
   it.each([

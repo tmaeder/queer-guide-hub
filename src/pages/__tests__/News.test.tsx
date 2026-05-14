@@ -37,13 +37,31 @@ vi.mock('@/hooks/useNews', () => ({
   }),
 }));
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: () => ({
-      select: () => ({ in: () => ({ data: [], error: null }) }),
-    }),
-  },
-}));
+vi.mock('@/integrations/supabase/client', () => {
+  const emptyResult = { data: [], error: null };
+  const thenable = {
+    ...emptyResult,
+    then: (resolve: (v: typeof emptyResult) => unknown) => Promise.resolve(emptyResult).then(resolve),
+  };
+  const chain: Record<string, unknown> = {
+    select: () => chain,
+    in: () => chain,
+    eq: () => chain,
+    gte: () => chain,
+    lte: () => chain,
+    order: () => chain,
+    limit: () => chain,
+    maybeSingle: () => Promise.resolve({ data: null, error: null }),
+    then: thenable.then,
+    data: [],
+    error: null,
+  };
+  return {
+    supabase: {
+      from: () => chain,
+    },
+  };
+});
 
 vi.mock('@/components/news/NewsCard', () => ({
   NewsCard: ({ loading }: { loading?: boolean }) =>
