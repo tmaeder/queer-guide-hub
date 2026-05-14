@@ -1653,7 +1653,14 @@
       "filterSearch": "[ZH] Search",
       "filterCategory": "[ZH] Category",
       "filterSource": "[ZH] Source",
-      "filterFeatured": "[ZH] Featured only"
+      "filterFeatured": "[ZH] Featured only",
+      "trendingTags": "[ZH] Trending",
+      "minRead": "[ZH] min read",
+      "share": "[ZH] Share",
+      "linkCopied": "[ZH] Link copied",
+      "density": "[ZH] Density",
+      "comfortable": "[ZH] Comfortable",
+      "compact": "[ZH] Compact"
     },
     "newsDetail": {
       "notFound": "未找到文章",

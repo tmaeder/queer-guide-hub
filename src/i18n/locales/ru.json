@@ -1681,7 +1681,14 @@
       "filterSearch": "[RU] Search",
       "filterCategory": "[RU] Category",
       "filterSource": "[RU] Source",
-      "filterFeatured": "[RU] Featured only"
+      "filterFeatured": "[RU] Featured only",
+      "trendingTags": "[RU] Trending",
+      "minRead": "[RU] min read",
+      "share": "[RU] Share",
+      "linkCopied": "[RU] Link copied",
+      "density": "[RU] Density",
+      "comfortable": "[RU] Comfortable",
+      "compact": "[RU] Compact"
     },
     "newsDetail": {
       "notFound": "Статья не найдена",

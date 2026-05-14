@@ -1657,7 +1657,14 @@
       "filterSearch": "[FR] Search",
       "filterCategory": "[FR] Category",
       "filterSource": "[FR] Source",
-      "filterFeatured": "[FR] Featured only"
+      "filterFeatured": "[FR] Featured only",
+      "trendingTags": "[FR] Trending",
+      "minRead": "[FR] min read",
+      "share": "[FR] Share",
+      "linkCopied": "[FR] Link copied",
+      "density": "[FR] Density",
+      "comfortable": "[FR] Comfortable",
+      "compact": "[FR] Compact"
     },
     "newsDetail": {
       "notFound": "Article introuvable",

@@ -1653,7 +1653,14 @@
       "filterSearch": "[DE] Search",
       "filterCategory": "[DE] Category",
       "filterSource": "[DE] Source",
-      "filterFeatured": "[DE] Featured only"
+      "filterFeatured": "[DE] Featured only",
+      "trendingTags": "[DE] Trending",
+      "minRead": "[DE] min read",
+      "share": "[DE] Share",
+      "linkCopied": "[DE] Link copied",
+      "density": "[DE] Density",
+      "comfortable": "[DE] Comfortable",
+      "compact": "[DE] Compact"
     },
     "newsDetail": {
       "notFound": "Artikel nicht gefunden",

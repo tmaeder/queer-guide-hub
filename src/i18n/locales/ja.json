@@ -1653,7 +1653,14 @@
       "filterSearch": "[JA] Search",
       "filterCategory": "[JA] Category",
       "filterSource": "[JA] Source",
-      "filterFeatured": "[JA] Featured only"
+      "filterFeatured": "[JA] Featured only",
+      "trendingTags": "[JA] Trending",
+      "minRead": "[JA] min read",
+      "share": "[JA] Share",
+      "linkCopied": "[JA] Link copied",
+      "density": "[JA] Density",
+      "comfortable": "[JA] Comfortable",
+      "compact": "[JA] Compact"
     },
     "newsDetail": {
       "notFound": "記事が見つかりません",

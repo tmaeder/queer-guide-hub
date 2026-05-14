@@ -1653,7 +1653,14 @@
       "filterSearch": "[KO] Search",
       "filterCategory": "[KO] Category",
       "filterSource": "[KO] Source",
-      "filterFeatured": "[KO] Featured only"
+      "filterFeatured": "[KO] Featured only",
+      "trendingTags": "[KO] Trending",
+      "minRead": "[KO] min read",
+      "share": "[KO] Share",
+      "linkCopied": "[KO] Link copied",
+      "density": "[KO] Density",
+      "comfortable": "[KO] Comfortable",
+      "compact": "[KO] Compact"
     },
     "newsDetail": {
       "notFound": "기사를 찾을 수 없음",

@@ -1653,7 +1653,14 @@
       "filterSearch": "[AR] Search",
       "filterCategory": "[AR] Category",
       "filterSource": "[AR] Source",
-      "filterFeatured": "[AR] Featured only"
+      "filterFeatured": "[AR] Featured only",
+      "trendingTags": "[AR] Trending",
+      "minRead": "[AR] min read",
+      "share": "[AR] Share",
+      "linkCopied": "[AR] Link copied",
+      "density": "[AR] Density",
+      "comfortable": "[AR] Comfortable",
+      "compact": "[AR] Compact"
     },
     "newsDetail": {
       "notFound": "المقال غير موجود",
