@@ -135,6 +135,7 @@
     "placeholders": {
       "email": "you@example.com",
       "password": "At least 10 characters",
+      "passwordMin8": "At least 8 characters",
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
@@ -168,7 +169,13 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "Accept terms, privacy and confirm 18 or older"
+    },
+    "required": {
+      "title": "Sign in required",
+      "description": "Please sign in to continue."
     },
     "oauth": {
       "google": "Continue with Google",
@@ -176,19 +183,11 @@
     },
     "signup": {
       "title": "Create your account",
-      "stepIndicator": "Step {{current}} of {{total}}",
+      "blurb": "Free, takes a minute.",
       "haveAccount": "Sign in",
+      "haveAccountQ": "Already have an account? Sign in",
       "create": "Create account",
-      "orWithEmail": "Or with email",
-      "profileBlurb": "Tell us a bit about you. You can change everything later.",
-      "interestsBlurb": "Optional. Skip if you prefer.",
-      "lookingForTitle": "I'm looking for",
-      "interestsTitle": "Interests",
-      "steps": {
-        "account": "Account",
-        "profile": "Profile",
-        "interests": "Interests"
-      }
+      "orWithEmail": "Or with email"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -230,7 +229,13 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "Continue to The Queer Guide",
+      "banner": "Verify your email to unlock contributions and messaging.",
+      "bannerSent": "Verification email sent. Check your inbox.",
+      "resendShort": "Resend",
+      "gateTitle": "Verify your email first",
+      "gateDescription": "Confirm your email to contribute or message other members."
     }
   },
   "onboarding": {
@@ -1061,6 +1066,7 @@
   },
   "header": {
     "signInSignUp": "Sign In / Sign Up",
+    "signUp": "Sign up",
     "signOut": "Sign Out",
     "adminConsole": "Admin Console",
     "closeMenu": "Close menu",
@@ -1176,6 +1182,7 @@
       "submitEvent": "Submit Event",
       "gridView": "Grid view",
       "calendarView": "Calendar view",
+      "mapView": "Map view",
       "city": "City",
       "eventType": "Event Type",
       "prideSubtype": "Pride type",
@@ -1220,6 +1227,43 @@
       "filteredEmpty": {
         "title": "No events match your filters",
         "body": "Try adjusting your filters or search to see more results."
+      },
+      "preset": {
+        "label": "Quick filters",
+        "thisWeekend": "This weekend",
+        "nearMe": "Near me",
+        "pride": "Pride season",
+        "thisMonth": "This month",
+        "free": "Free",
+        "featured": "Featured"
+      },
+      "rail": {
+        "featured": "Featured this week",
+        "featuredSubtitle": "Editor picks"
+      },
+      "smartEmpty": {
+        "title": "No events match your filters",
+        "body": "Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "Drop \"{{city}}\" filter",
+        "clearDate": "Drop date filter",
+        "viewAll": "View all upcoming events",
+        "sameCityHeader": "Try in {{city}} on other dates",
+        "otherCitiesHeader": "Try other cities in your date range",
+        "fallbackHeader": "Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "Spotlight",
+        "happeningNow": "Happening now",
+        "tomorrow": "Starts tomorrow",
+        "inDays_one": "Starts in {{count}} day",
+        "inDays_other": "Starts in {{count}} days",
+        "nearbyCount_one": "{{count}} event in {{city}}",
+        "nearbyCount_other": "{{count}} events in {{city}}"
+      },
+      "sortLabel": "Sort events",
+      "sort": {
+        "dateAsc": "Soonest first",
+        "dateDesc": "Latest first"
       }
     },
     "eventDetail": {
@@ -1301,10 +1345,12 @@
     },
     "marketplace": {
       "title": "Marketplace",
-      "subtitle": "Queer-owned businesses, products, and services.",
+      "subtitle": "Queer-friendly products and services.",
       "listBusiness": "List Your Business",
       "emptyTitle": "No listings yet.",
-      "emptyDescription": "More are added every week.",
+      "emptyDescription": "Check back soon or list your business.",
+      "emptyFiltersTitle": "No listings match these filters.",
+      "emptyFiltersDescription": "Try clearing filters or broadening your search.",
       "signInRequired": "Sign in required",
       "signInList": "Create a free account to list your business.",
       "signInFavorites": "Please sign in to save favorites.",

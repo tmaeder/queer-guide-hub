@@ -313,7 +313,11 @@
       "fitAll": "전체 보기",
       "fitAllAria": "모든 장소를 화면에 맞추기",
       "filterAll": "모든 날짜",
-      "dayLabel": "{{number}}일차"
+      "dayLabel": "{{number}}일차",
+      "showAttractions": "[KO] Attractions",
+      "showEvents": "[KO] Events",
+      "suggestedVenue": "[KO] Suggested venue",
+      "eventOn": "[KO] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "아직 안전 정보가 없어요",
@@ -708,7 +712,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[KO] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +743,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[KO] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[KO] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -758,7 +765,9 @@
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[KO] Free, takes a minute.",
+      "haveAccountQ": "[KO] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +809,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[KO] Continue to The Queer Guide",
+      "banner": "[KO] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[KO] Verification email sent. Check your inbox.",
+      "resendShort": "[KO] Resend",
+      "gateTitle": "[KO] Verify your email first",
+      "gateDescription": "[KO] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[KO] Sign in required",
+      "description": "[KO] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1106,7 +1125,8 @@
       "accessibility": "접근성",
       "bookings": "예약",
       "tripInbox": "여행 수신함",
-      "extension": "브라우저 확장 프로그램"
+      "extension": "브라우저 확장 프로그램",
+      "footprint": "[KO] Footprint"
     },
     "modes": {
       "dating": "사랑을 찾아서",
@@ -1122,7 +1142,10 @@
       "accessibility": "접근성",
       "legal": "법률",
       "contact": "문의"
-    }
+    },
+    "signUp": "[KO] Sign up",
+    "navigation": "[KO] Navigation",
+    "signIn": "[KO] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,6 +1243,45 @@
       "filteredEmpty": {
         "title": "필터와 일치하는 이벤트가 없습니다",
         "body": "더 많은 결과를 보려면 필터나 검색을 조정해 보세요."
+      },
+      "prideSubtype": "[KO] Pride type",
+      "mapView": "[KO] Map view",
+      "preset": {
+        "label": "[KO] Quick filters",
+        "thisWeekend": "[KO] This weekend",
+        "nearMe": "[KO] Near me",
+        "pride": "[KO] Pride season",
+        "thisMonth": "[KO] This month",
+        "free": "[KO] Free",
+        "featured": "[KO] Featured"
+      },
+      "rail": {
+        "featured": "[KO] Featured this week",
+        "featuredSubtitle": "[KO] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[KO] No events match your filters",
+        "body": "[KO] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[KO] Drop \"{{city}}\" filter",
+        "clearDate": "[KO] Drop date filter",
+        "viewAll": "[KO] View all upcoming events",
+        "sameCityHeader": "[KO] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[KO] Try other cities in your date range",
+        "fallbackHeader": "[KO] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[KO] Spotlight",
+        "happeningNow": "[KO] Happening now",
+        "tomorrow": "[KO] Starts tomorrow",
+        "inDays_one": "[KO] Starts in {{count}} day",
+        "inDays_other": "[KO] Starts in {{count}} days",
+        "nearbyCount_one": "[KO] {{count}} event in {{city}}",
+        "nearbyCount_other": "[KO] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[KO] Sort events",
+      "sort": {
+        "dateAsc": "[KO] Soonest first",
+        "dateDesc": "[KO] Latest first"
       }
     },
     "eventDetail": {
@@ -1279,7 +1341,25 @@
       "activitiesComingSoon": "활동은 곧 제공됩니다.",
       "browseDestinations": "여행지 둘러보기",
       "exploreCta": "여행지",
-      "exploreDescription": "안전 정보와 여행 가이드가 있는 도시와 국가."
+      "exploreDescription": "안전 정보와 여행 가이드가 있는 도시와 국가.",
+      "hotels": {
+        "typeLabel": "[KO] Type",
+        "priceMin": "[KO] Min €",
+        "priceMax": "[KO] Max €",
+        "priceUnavailable": "[KO] Price on request",
+        "clearFilters": "[KO] Clear filters",
+        "noResultsWithFilters": "[KO] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[KO] Any type",
+          "hotel": "[KO] Hotel",
+          "boutique": "[KO] Boutique Hotel",
+          "bnb": "[KO] B&B",
+          "hostel": "[KO] Hostel",
+          "guesthouse": "[KO] Guesthouse",
+          "apartment": "[KO] Apartment",
+          "resort": "[KO] Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "마켓플레이스",
@@ -1290,7 +1370,9 @@
       "signInRequired": "로그인 필요",
       "signInList": "무료 계정을 만들어 비즈니스를 등록하세요.",
       "signInFavorites": "즐겨찾기를 저장하려면 로그인하세요.",
-      "loadError": "마켓플레이스를 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요."
+      "loadError": "마켓플레이스를 불러오는 중 문제가 발생했습니다. 다시 시도해 주세요.",
+      "emptyFiltersTitle": "[KO] No listings match these filters.",
+      "emptyFiltersDescription": "[KO] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "항목을 찾을 수 없음",
@@ -1329,7 +1411,14 @@
       "emptyTitle": "아직 기사가 없습니다.",
       "emptyDescription": "나중에 다시 확인하세요.",
       "previous": "이전",
-      "next": "다음"
+      "next": "다음",
+      "filteredEmptyTitle": "[KO] No news matches your filters.",
+      "filteredEmptyDescription": "[KO] Reset filters or try another topic.",
+      "resetFilters": "[KO] Reset filters",
+      "filterSearch": "[KO] Search",
+      "filterCategory": "[KO] Category",
+      "filterSource": "[KO] Source",
+      "filterFeatured": "[KO] Featured only"
     },
     "newsDetail": {
       "notFound": "기사를 찾을 수 없음",

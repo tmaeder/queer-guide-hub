@@ -124,9 +124,12 @@ export default tseslint.config(
       // Deterministic avatar gradient palette (12 distinct hues by user id).
       "src/lib/avatar.ts",
       "src/components/profile/UserModeBadge.tsx",
+      // OG/recap PNG generated via canvas — hex literals are required by the canvas API.
+      "src/pages/profile/Footprint.tsx",
       "src/components/user-directory/UserDirectoryGrid.tsx",
       // Map style + security dashboards = data-viz, hardcoded by design.
       "src/components/map/**",
+      "src/components/events/EventsMapView.tsx",
       "src/components/security/**",
       // Submission scan results — confidence traffic-light + flyer overlays.
       "src/components/submission/**",

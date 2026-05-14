@@ -132,6 +132,7 @@ const legalItems = [
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [authSignupOpen, setAuthSignupOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
@@ -273,12 +274,23 @@ export function Header() {
             </>
           )}
 
-          {/* Login CTA (logged out) */}
+          {/* Sign in / sign up CTAs (logged out) */}
           {!user && (
             <>
-              <div className="px-4 py-4">
+              <div className="px-4 py-4 flex flex-col gap-2">
                 <Button
                   variant="default"
+                  size="sm"
+                  style={{ width: '100%', fontWeight: 600, height: 44 }}
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    setAuthSignupOpen(true);
+                  }}
+                >
+                  {t('header.signUp', 'Sign Up')}
+                </Button>
+                <Button
+                  variant="outline"
                   size="sm"
                   style={{ width: '100%', fontWeight: 600, height: 44 }}
                   onClick={() => {
@@ -287,7 +299,7 @@ export function Header() {
                   }}
                 >
                   <User style={{ width: 16, height: 16, marginRight: 8 }} />
-                  {t('header.signInSignUp', 'Sign In / Sign Up')}
+                  {t('header.signIn', 'Sign In')}
                 </Button>
               </div>
               <div className="my-2" />
@@ -652,9 +664,23 @@ export function Header() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button onClick={() => setAuthDialogOpen(true)} size="icon" aria-label={t('header.signIn', 'Sign in')}>
-                  <User style={{ width: 16, height: 16 }} />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAuthDialogOpen(true)}
+                    aria-label={t('header.signIn', 'Sign in')}
+                  >
+                    {t('header.signIn', 'Sign in')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setAuthSignupOpen(true)}
+                    aria-label={t('header.signUp', 'Sign up')}
+                  >
+                    {t('header.signUp', 'Sign up')}
+                  </Button>
+                </div>
               )}
 
               {/* Navigation dropdown (desktop) */}
@@ -757,6 +783,7 @@ export function Header() {
       {isMobile && mobileDrawer}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+      <AuthDialog open={authSignupOpen} onOpenChange={setAuthSignupOpen} defaultMode="signup" />
     </header>
   );
 }

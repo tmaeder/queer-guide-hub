@@ -762,7 +762,8 @@
       "displayName": "Wie sollen wir dich nennen?",
       "pronouns": "Pronomen wählen",
       "country": "Optional",
-      "language": "Sprache wählen"
+      "language": "Sprache wählen",
+      "passwordMin8": "[DE] At least 8 characters"
     },
     "errors": {
       "emailRequired": "E-Mail ist erforderlich",
@@ -792,7 +793,9 @@
       "age": "Ich bestätige, dass ich mindestens 18 Jahre alt bin",
       "termsAria": "Nutzungsbedingungen akzeptieren",
       "privacyAria": "Datenschutzrichtlinie akzeptieren",
-      "ageAria": "Bestätigen, dass du mindestens 18 bist"
+      "ageAria": "Bestätigen, dass du mindestens 18 bist",
+      "combined": "[DE] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[DE] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Weiter mit Google",
@@ -812,7 +815,9 @@
         "account": "Konto",
         "profile": "Profil",
         "interests": "Interessen"
-      }
+      },
+      "blurb": "[DE] Free, takes a minute.",
+      "haveAccountQ": "[DE] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "sie/ihr",
@@ -854,7 +859,17 @@
       "resend": "Bestätigungsmail erneut senden",
       "resendIn": "Erneut senden in {{seconds}}s",
       "resent": "Bestätigungsmail gesendet. Prüfe deinen Posteingang.",
-      "backToLogin": "Zurück zur Anmeldung"
+      "backToLogin": "Zurück zur Anmeldung",
+      "continue": "[DE] Continue to The Queer Guide",
+      "banner": "[DE] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[DE] Verification email sent. Check your inbox.",
+      "resendShort": "[DE] Resend",
+      "gateTitle": "[DE] Verify your email first",
+      "gateDescription": "[DE] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[DE] Sign in required",
+      "description": "[DE] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1110,7 +1125,8 @@
       "accessibility": "Barrierefreiheit",
       "bookings": "Buchungen",
       "tripInbox": "Reise-Posteingang",
-      "extension": "Browser-Erweiterung"
+      "extension": "Browser-Erweiterung",
+      "footprint": "[DE] Footprint"
     },
     "modes": {
       "dating": "Auf der Suche nach Liebe",
@@ -1126,7 +1142,10 @@
       "accessibility": "Barrierefreiheit",
       "legal": "Rechtliches",
       "contact": "Kontakt"
-    }
+    },
+    "signUp": "[DE] Sign up",
+    "navigation": "[DE] Navigation",
+    "signIn": "[DE] Sign in"
   },
   "pages": {
     "venues": {
@@ -1225,6 +1244,44 @@
       "filteredEmpty": {
         "title": "Keine Events passen zu deinen Filtern",
         "body": "Passe deine Filter oder Suche an, um mehr Ergebnisse zu sehen."
+      },
+      "mapView": "[DE] Map view",
+      "preset": {
+        "label": "[DE] Quick filters",
+        "thisWeekend": "[DE] This weekend",
+        "nearMe": "[DE] Near me",
+        "pride": "[DE] Pride season",
+        "thisMonth": "[DE] This month",
+        "free": "[DE] Free",
+        "featured": "[DE] Featured"
+      },
+      "rail": {
+        "featured": "[DE] Featured this week",
+        "featuredSubtitle": "[DE] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[DE] No events match your filters",
+        "body": "[DE] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[DE] Drop \"{{city}}\" filter",
+        "clearDate": "[DE] Drop date filter",
+        "viewAll": "[DE] View all upcoming events",
+        "sameCityHeader": "[DE] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[DE] Try other cities in your date range",
+        "fallbackHeader": "[DE] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[DE] Spotlight",
+        "happeningNow": "[DE] Happening now",
+        "tomorrow": "[DE] Starts tomorrow",
+        "inDays_one": "[DE] Starts in {{count}} day",
+        "inDays_other": "[DE] Starts in {{count}} days",
+        "nearbyCount_one": "[DE] {{count}} event in {{city}}",
+        "nearbyCount_other": "[DE] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[DE] Sort events",
+      "sort": {
+        "dateAsc": "[DE] Soonest first",
+        "dateDesc": "[DE] Latest first"
       }
     },
     "eventDetail": {
@@ -1284,7 +1341,25 @@
       "activitiesComingSoon": "Aktivitäten kommen bald.",
       "browseDestinations": "Reiseziele entdecken",
       "exploreCta": "Reiseziele",
-      "exploreDescription": "Städte und Länder mit Sicherheitsinfos und Reiseführern."
+      "exploreDescription": "Städte und Länder mit Sicherheitsinfos und Reiseführern.",
+      "hotels": {
+        "typeLabel": "[DE] Type",
+        "priceMin": "[DE] Min €",
+        "priceMax": "[DE] Max €",
+        "priceUnavailable": "[DE] Price on request",
+        "clearFilters": "[DE] Clear filters",
+        "noResultsWithFilters": "[DE] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[DE] Any type",
+          "hotel": "[DE] Hotel",
+          "boutique": "[DE] Boutique Hotel",
+          "bnb": "[DE] B&B",
+          "hostel": "[DE] Hostel",
+          "guesthouse": "[DE] Guesthouse",
+          "apartment": "[DE] Apartment",
+          "resort": "[DE] Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "Marktplatz",
@@ -1295,7 +1370,9 @@
       "signInRequired": "Anmeldung erforderlich",
       "signInList": "Erstelle ein kostenloses Konto, um dein Unternehmen einzutragen.",
       "signInFavorites": "Bitte melde dich an, um Favoriten zu speichern.",
-      "loadError": "Beim Laden des Marktplatzes ist etwas schiefgelaufen. Bitte versuche es erneut."
+      "loadError": "Beim Laden des Marktplatzes ist etwas schiefgelaufen. Bitte versuche es erneut.",
+      "emptyFiltersTitle": "[DE] No listings match these filters.",
+      "emptyFiltersDescription": "[DE] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Eintrag nicht gefunden",
@@ -1334,7 +1411,14 @@
       "emptyTitle": "Noch keine Artikel.",
       "emptyDescription": "Später vorbeischauen.",
       "previous": "Zurück",
-      "next": "Weiter"
+      "next": "Weiter",
+      "filteredEmptyTitle": "[DE] No news matches your filters.",
+      "filteredEmptyDescription": "[DE] Reset filters or try another topic.",
+      "resetFilters": "[DE] Reset filters",
+      "filterSearch": "[DE] Search",
+      "filterCategory": "[DE] Category",
+      "filterSource": "[DE] Source",
+      "filterFeatured": "[DE] Featured only"
     },
     "newsDetail": {
       "notFound": "Artikel nicht gefunden",
