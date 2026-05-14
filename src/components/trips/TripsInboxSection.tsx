@@ -1,11 +1,4 @@
 import { useMemo, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Skeleton from '@mui/material/Skeleton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Divider from '@mui/material/Divider';
 import {
   Inbox as InboxIcon,
   Plane,
@@ -32,6 +25,15 @@ import { suggestTripGroupings, type TripSuggestion } from '@/utils/tripGrouping'
 import { useEmailForwardingAddress } from '@/hooks/useEmailForwardingAddress';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
 
 const TYPE_ICONS: Record<Reservation['type'], typeof Plane> = {
@@ -44,12 +46,12 @@ const TYPE_ICONS: Record<Reservation['type'], typeof Plane> = {
   other: InboxIcon,
 };
 
-const STATUS_COLORS: Record<Reservation['status'], 'default' | 'success' | 'warning' | 'error'> = {
-  pending: 'warning',
-  confirmed: 'success',
-  completed: 'default',
-  cancelled: 'error',
-  failed: 'error',
+const STATUS_CLASS: Record<Reservation['status'], string> = {
+  pending: 'bg-muted text-muted-foreground border-border',
+  confirmed: 'bg-foreground/5 text-foreground border-foreground/20',
+  completed: 'bg-muted text-muted-foreground',
+  cancelled: 'bg-destructive/15 text-destructive border-destructive/30',
+  failed: 'bg-destructive/15 text-destructive border-destructive/30',
 };
 
 const formatRange = (start: string | null, end: string | null): string | null => {
@@ -106,51 +108,45 @@ export function TripsInboxSection() {
   if (!hasContent) return null;
 
   return (
-    <Box sx={{ mb: 4 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-4">
         <InboxIcon style={{ width: 20, height: 20, color: 'var(--primary)' }} />
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        <h2 className="text-base font-bold">
           {t('pages.inbox.title', 'Travel inbox')}
           {orphanReservations.length > 0 && (
-            <Box
-              component="span"
-              sx={{
-                ml: 1,
-                color: 'text.secondary',
-                fontSize: '0.75em',
-                fontWeight: 500,
-                fontVariantNumeric: 'tabular-nums',
-              }}
+            <span
+              className="ml-2 text-muted-foreground font-medium"
+              style={{ fontSize: '0.75em', fontVariantNumeric: 'tabular-nums' }}
             >
               · {orphanReservations.length}
-            </Box>
+            </span>
           )}
-        </Typography>
-      </Box>
+        </h2>
+      </div>
 
       {isLoading && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col gap-3">
           {[1, 2].map((i) => (
-            <Skeleton key={i} variant="rounded" height={96} />
+            <Skeleton key={i} className="h-24 rounded-md" />
           ))}
-        </Box>
+        </div>
       )}
 
       {error && !isLoading && (
-        <Typography color="error" sx={{ py: 2 }}>
+        <p className="text-destructive py-4">
           {t('pages.inbox.error', "Couldn't load your reservations. Please retry.")}
-        </Typography>
+        </p>
       )}
 
       {suggestions.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
             <Sparkles style={{ width: 16, height: 16, color: 'var(--primary)' }} />
-            <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem' }}>
+            <p className="font-bold text-[0.9375rem]">
               {t('pages.inbox.suggestions.title', 'Suggested trips')}
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
             {suggestions.map((s) => (
               <SuggestionCard
                 key={s.id}
@@ -172,16 +168,16 @@ export function TripsInboxSection() {
                 pending={createTrip.isPending}
               />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {standaloneOrphans.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.9375rem', mb: 1.5 }}>
+        <div className="mb-6">
+          <p className="font-bold text-[0.9375rem] mb-3">
             {t('pages.inbox.orphans.title', 'Unattached reservations')}
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          </p>
+          <div className="flex flex-col gap-2">
             {standaloneOrphans.map((r) => (
               <OrphanRow
                 key={r.key}
@@ -193,12 +189,12 @@ export function TripsInboxSection() {
                 canAttach={true}
               />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       <ForwardingAddressCard />
-    </Box>
+    </div>
   );
 }
 
@@ -221,40 +217,27 @@ function SuggestionCard({
   }, [dateRange, t]);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-        bgcolor: 'action.hover',
-        display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { sm: 'center' },
-        justifyContent: 'space-between',
-        gap: 1.5,
-      }}
-    >
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 700 }}>
+    <div className="p-4 bg-muted flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex-1 min-w-0">
+        <p className="font-bold">
           {t('pages.inbox.suggestions.headline', {
             count: suggestion.reservations.length,
             defaultValue: `{{count}} reservations look like the same trip`,
           })}
-        </Typography>
-        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+        </p>
+        <p className="text-sm text-muted-foreground">
           {dateRange}
           {formatAmount(suggestion.total_amount, suggestion.currency) &&
             ` · ${formatAmount(suggestion.total_amount, suggestion.currency)}`}
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
+        </p>
+        <div className="flex flex-wrap gap-1 mt-2">
           {suggestion.reservations.map((r) => (
-            <Chip
-              key={r.key}
-              label={`${r.type} · ${r.provider ?? 'manual'}`}
-              size="small"
-              sx={{ textTransform: 'capitalize' }}
-            />
+            <Badge key={r.key} variant="secondary" className="capitalize">
+              {`${r.type} · ${r.provider ?? 'manual'}`}
+            </Badge>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
       <Button
         variant="brand"
         onClick={() => void onCreate(titleSuggestion)}
@@ -263,7 +246,7 @@ function SuggestionCard({
         <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
         {t('pages.inbox.suggestions.createCta', 'Create trip')}
       </Button>
-    </Box>
+    </div>
   );
 }
 
@@ -281,89 +264,77 @@ function OrphanRow({
   canAttach: boolean;
 }) {
   const { t } = useTranslation();
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const Icon = TYPE_ICONS[reservation.type] ?? InboxIcon;
   const range = formatRange(reservation.start_at, reservation.end_at);
   const amount = formatAmount(reservation.total_amount, reservation.currency);
 
   return (
-    <Box
-      sx={{
-        p: 2,
-        bgcolor: 'background.paper',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 2,
-      }}
-    >
-      <Box sx={{ p: 1, bgcolor: 'action.hover' }}>
+    <div className="p-4 bg-background flex items-start gap-4 border border-border rounded-md">
+      <div className="p-2 bg-muted rounded">
         <Icon style={{ width: 22, height: 22, color: 'var(--primary)' }} />
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-          <Typography sx={{ fontWeight: 700 }}>{reservation.title}</Typography>
-          <Chip
-            label={reservation.status}
-            size="small"
-            color={STATUS_COLORS[reservation.status]}
-            sx={{ textTransform: 'capitalize' }}
-          />
-        </Box>
-        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-start gap-2">
+          <p className="font-bold">{reservation.title}</p>
+          <Badge variant="outline" className={`capitalize ${STATUS_CLASS[reservation.status]}`}>
+            {reservation.status}
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">
           {[reservation.provider, reservation.type].filter(Boolean).join(' · ')}
-        </Typography>
+        </p>
         {range && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+          <div className="flex items-center gap-1 mt-1">
             <Calendar style={{ width: 13, height: 13, color: 'var(--muted-foreground)' }} />
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{range}</Typography>
-          </Box>
+            <span className="text-xs text-muted-foreground">{range}</span>
+          </div>
         )}
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
         {amount && (
-          <Typography sx={{ fontWeight: 700, color: 'primary.main', whiteSpace: 'nowrap' }}>
-            {amount}
-          </Typography>
+          <span className="font-bold text-primary whitespace-nowrap">{amount}</span>
         )}
         {canAttach && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => setAnchor(e.currentTarget)}
-              disabled={trips.length === 0}
-              aria-label={t('pages.inbox.orphans.attach', 'Attach to trip')}
-            >
-              <Link2 style={{ width: 16, height: 16, marginRight: 4 }} />
-              {t('pages.inbox.orphans.attach', 'Attach')}
-            </Button>
-            <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={trips.length === 0}
+                aria-label={t('pages.inbox.orphans.attach', 'Attach to trip')}
+              >
+                <Link2 style={{ width: 16, height: 16, marginRight: 4 }} />
+                {t('pages.inbox.orphans.attach', 'Attach')}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
               {trips.length === 0 && (
-                <MenuItem disabled>
+                <DropdownMenuItem disabled>
                   {t('pages.inbox.orphans.noTrips', 'No trips yet')}
-                </MenuItem>
+                </DropdownMenuItem>
               )}
               {trips.map((trip) => (
-                <MenuItem
+                <DropdownMenuItem
                   key={trip.id}
                   onClick={async () => {
-                    setAnchor(null);
                     await onAttach(trip.id);
                   }}
                 >
                   {resolveTripTitle(trip, t)}
-                </MenuItem>
+                </DropdownMenuItem>
               ))}
-              {trips.length > 0 && <Divider />}
-              <MenuItem component={LocalizedLink} to="/trips" onClick={() => setAnchor(null)}>
-                <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
-                {t('pages.inbox.orphans.newTrip', 'Create new trip')}
-              </MenuItem>
-            </Menu>
-          </>
+              {trips.length > 0 && <DropdownMenuSeparator />}
+              <DropdownMenuItem asChild>
+                <LocalizedLink to="/trips">
+                  <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
+                  {t('pages.inbox.orphans.newTrip', 'Create new trip')}
+                </LocalizedLink>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -387,32 +358,21 @@ function ForwardingAddressCard() {
   };
 
   return (
-    <Box sx={{ mt: 2, p: 3, bgcolor: 'action.hover' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+    <div className="mt-4 p-6 bg-muted">
+      <div className="flex items-center gap-2 mb-2">
         <Mail style={{ width: 18, height: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 700 }}>
+        <p className="font-bold">
           {t('pages.inbox.forwarding.title', 'Forward bookings here')}
-        </Typography>
-      </Box>
-      <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+        </p>
+      </div>
+      <p className="text-muted-foreground text-sm mb-4">
         {t(
           'pages.inbox.forwarding.description',
           'Forward any confirmation email to this address and it will appear in your Inbox. Booking.com, Airbnb, and Lufthansa are recognized today.',
         )}
-      </Typography>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          p: 1.5,
-          bgcolor: 'background.paper',
-          fontFamily: 'monospace',
-          fontSize: '0.95rem',
-          wordBreak: 'break-all',
-        }}
-      >
-        <Box sx={{ flex: 1, minWidth: 0 }}>{data.address}</Box>
+      </p>
+      <div className="flex items-center gap-2 p-3 bg-background font-mono text-[0.95rem] break-all">
+        <div className="flex-1 min-w-0">{data.address}</div>
         <Button
           variant="ghost"
           size="sm"
@@ -425,7 +385,7 @@ function ForwardingAddressCard() {
             <Copy style={{ width: 16, height: 16 }} />
           )}
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

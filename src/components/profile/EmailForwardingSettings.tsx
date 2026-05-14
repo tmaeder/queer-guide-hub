@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Mail, Copy, Check, RefreshCw, Inbox as InboxIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -19,13 +17,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-/**
- * Settings panel for the trip-email forwarding address.
- *
- * Lets the user view their unique address, copy it, and rotate it
- * (revoke + mint a new one) if it leaks. Rotation is destructive —
- * confirmation dialog gates it.
- */
 export function EmailForwardingSettings() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -42,7 +33,7 @@ export function EmailForwardingSettings() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard blocked — chip stays visible so user can copy manually.
+      // Clipboard blocked
     }
   };
 
@@ -68,40 +59,26 @@ export function EmailForwardingSettings() {
   };
 
   return (
-    <Box sx={{ mt: 4, p: 3, bgcolor: 'action.hover' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+    <div className="mt-8 p-6 bg-muted">
+      <div className="flex items-center gap-2 mb-2">
         <Mail style={{ width: 18, height: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 700 }}>
-          {t('settings.email.title', 'Trip-email forwarding')}
-        </Typography>
-      </Box>
-      <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+        <p className="font-bold">{t('settings.email.title', 'Trip-email forwarding')}</p>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
         {t(
           'settings.email.description',
           'Forward any booking confirmation to your personal address and it lands in your trips inbox. Booking.com, Airbnb, and Lufthansa are recognized today.',
         )}
-      </Typography>
+      </p>
 
       {isLoading || !data ? (
-        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+        <p className="text-sm text-muted-foreground">
           {t('settings.email.loading', 'Loading address…')}
-        </Typography>
+        </p>
       ) : (
         <>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              p: 1.5,
-              bgcolor: 'background.paper',
-              fontFamily: 'monospace',
-              fontSize: '0.95rem',
-              wordBreak: 'break-all',
-              mb: 1.5,
-            }}
-          >
-            <Box sx={{ flex: 1, minWidth: 0 }}>{data.address}</Box>
+          <div className="flex items-center gap-2 p-3 bg-background font-mono text-base mb-3" style={{ wordBreak: 'break-all' }}>
+            <div className="flex-1 min-w-0">{data.address}</div>
             <Button
               variant="ghost"
               size="sm"
@@ -110,9 +87,9 @@ export function EmailForwardingSettings() {
             >
               {copied ? <Check style={{ width: 16, height: 16 }} /> : <Copy style={{ width: 16, height: 16 }} />}
             </Button>
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <div className="flex gap-2 flex-wrap">
             <LocalizedLink to="/trips">
               <Button variant="outline" size="sm">
                 <InboxIcon style={{ width: 14, height: 14, marginRight: 6 }} />
@@ -128,7 +105,7 @@ export function EmailForwardingSettings() {
               <RefreshCw style={{ width: 14, height: 14, marginRight: 6 }} />
               {t('settings.email.rotate', 'Rotate address')}
             </Button>
-          </Box>
+          </div>
         </>
       )}
 
@@ -155,6 +132,6 @@ export function EmailForwardingSettings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }

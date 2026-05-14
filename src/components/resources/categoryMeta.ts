@@ -151,6 +151,30 @@ export const parentOrder: string[] = [
   'Support & News',
 ];
 
+/**
+ * P2-1 — single source of truth for the adult-content category list.
+ * Both the parent "Sexuality & Kink" and every leaf under it are gated
+ * behind the age affirmation modal + Safe mode in SafeModeProvider.
+ *
+ * When the schema migration in
+ * `supabase/migrations/drafts/2026XXXX_unified_tags_is_adult.sql`
+ * lands, this set will be derived from `unified_tags.is_adult` instead
+ * of string matching.
+ */
+export const ADULT_CATEGORY_NAMES: ReadonlySet<string> = new Set([
+  'Sexuality & Kink',
+  'Sexual Roles',
+  'BDSM & Power Exchange',
+  'Fetishes & Interests',
+  'Practices & Play',
+  'Gear & Aesthetics',
+  'Body Types & Archetypes',
+]);
+
+export function isAdultCategoryName(name: string | null | undefined): boolean {
+  return !!name && ADULT_CATEGORY_NAMES.has(name);
+}
+
 export function getCategoryIcon(category: string): LucideIcon {
   return categoryMeta[category]?.icon || Tag;
 }

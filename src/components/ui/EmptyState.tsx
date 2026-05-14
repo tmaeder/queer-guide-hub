@@ -1,11 +1,9 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
-import { LucideIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { LucideIcon, X } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface EmptyStateAction {
   label: string;
@@ -39,7 +37,7 @@ interface EmptyStateProps {
   children?: React.ReactNode;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export const EmptyState = ({
   icon: Icon,
   title,
   description,
@@ -51,90 +49,93 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onResetFilters,
   resetFiltersLabel = 'Reset filters',
   children,
-}) => {
-  const theme = useTheme();
-  const brandColor = theme.palette.brand?.main || '#DB2777';
-
+}: EmptyStateProps) => {
   const iconOpacity = mood === 'playful' ? 0.7 : mood === 'encouraging' ? 0.55 : 0.4;
-  const bgOpacity = mood === 'playful' ? '18' : mood === 'encouraging' ? '12' : '0a';
+  const bgOpacity = mood === 'playful' ? 0.09 : mood === 'encouraging' ? 0.07 : 0.04;
 
   return (
     <Card>
       <CardContent>
-        <Box
-          sx={{
-            width: 72,
-            height: 72,
-            borderRadius: '50%',
-            bgcolor: `${brandColor}${bgOpacity}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mx: 'auto',
-            mb: 2.5,
-          }}
+        <motion.div
+          className="w-[72px] h-[72px] rounded-full flex items-center justify-center mx-auto mb-5"
+          style={{ backgroundColor: `hsl(var(--foreground) / ${bgOpacity})` }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         >
           <Icon
             style={{
               width: 32,
               height: 32,
-              color: brandColor,
+              color: 'hsl(var(--foreground))',
               opacity: iconOpacity,
             }}
           />
-        </Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+        </motion.div>
+        <motion.h6
+          className="text-lg font-semibold mb-2"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
+        >
           {title}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mb: 3, maxWidth: '28rem', mx: 'auto' }}
+        </motion.h6>
+        <motion.p
+          className="text-sm text-muted-foreground mb-6 max-w-md mx-auto"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
         >
           {description}
-        </Typography>
+        </motion.p>
         {variant === 'filtered' && activeFilters && activeFilters.length > 0 && (
-          <Box
-            sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mb: 3 }}
+          <div
+            className="flex flex-wrap gap-2 justify-center mb-6"
             data-testid="empty-state-active-filters"
           >
             {activeFilters.map((chip, i) => (
-              <Chip
+              <Badge
                 key={`${chip.label}-${i}`}
-                label={chip.label}
-                size="small"
-                variant="outlined"
-                onDelete={chip.onRemove}
-              />
+                variant="outline"
+                className="gap-1 pr-1"
+              >
+                {chip.label}
+                <button
+                  type="button"
+                  onClick={chip.onRemove}
+                  aria-label={`Remove ${chip.label}`}
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
             ))}
-          </Box>
+          </div>
         )}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+        <div className="flex justify-center gap-3 flex-wrap">
           {primaryAction && (
             <Button
               variant={primaryAction.variant || 'default'}
               onClick={primaryAction.onClick}
-              style={{ paddingLeft: 24, paddingRight: 24 }}
+              className="px-6"
             >
               {primaryAction.label}
             </Button>
           )}
           {secondaryAction ? (
-            <Button
-              variant={secondaryAction.variant || 'outline'}
-              onClick={secondaryAction.onClick}
-            >
+            <Button variant={secondaryAction.variant || 'outline'} onClick={secondaryAction.onClick}>
               {secondaryAction.label}
             </Button>
           ) : (
-            variant === 'filtered' && onResetFilters && (
+            variant === 'filtered' &&
+            onResetFilters && (
               <Button variant="outline" onClick={onResetFilters}>
                 {resetFiltersLabel}
               </Button>
             )
           )}
           {children}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );
@@ -148,16 +149,14 @@ interface LoadingTimeoutProps {
   onRetry: () => void;
 }
 
-export const LoadingTimeout: React.FC<LoadingTimeoutProps> = ({
+export const LoadingTimeout = ({
   message = 'This is taking longer than expected. Please check your connection or try again.',
   onRetry,
-}) => {
+}: LoadingTimeoutProps) => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          {message}
-        </Typography>
+        <p className="text-base text-muted-foreground mb-4">{message}</p>
         <Button variant="outline" onClick={onRetry}>
           Try Again
         </Button>
@@ -185,7 +184,7 @@ interface ErrorStateProps {
   secondaryAction?: ErrorStateAction;
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({
+export const ErrorState = ({
   message,
   title,
   description,
@@ -193,27 +192,26 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   retryLabel = 'Retry',
   primaryAction,
   secondaryAction,
-}) => {
+}: ErrorStateProps) => {
   const headline =
     title ?? message ?? 'Something went wrong while loading data. Please try again.';
   return (
     <Card>
       <CardContent>
-        <Box role="alert" aria-live="polite">
-          <Typography variant="h6" component="h2" color="error.main" sx={{ fontWeight: 600, mb: description ? 1 : 2 }}>
+        <div role="alert" aria-live="polite">
+          <h2
+            className={`text-lg font-semibold text-destructive ${
+              description ? 'mb-2' : 'mb-4'
+            }`}
+          >
             {headline}
-          </Typography>
+          </h2>
           {description && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: '28rem' }}>
-              {description}
-            </Typography>
+            <p className="text-sm text-muted-foreground mb-4 max-w-md">{description}</p>
           )}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+          <div className="flex flex-wrap gap-3">
             {primaryAction && (
-              <Button
-                variant={primaryAction.variant ?? 'default'}
-                onClick={primaryAction.onClick}
-              >
+              <Button variant={primaryAction.variant ?? 'default'} onClick={primaryAction.onClick}>
                 {primaryAction.label}
               </Button>
             )}
@@ -230,8 +228,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
                 {retryLabel}
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

@@ -9,6 +9,13 @@ import {
 } from '../_shared/hotel-pipeline-utils.ts'
 import { validateMarketplaceNormalized } from '../_shared/marketplace-pipeline-utils.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import {
+  classifyEntity,
+  expectedKindForTargetTable,
+  isEntityTypeMismatch,
+  type ClassifyInput,
+} from '../_shared/entity-classifier.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Validate
@@ -16,7 +23,7 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 // Rejects hard errors, flags multi-warning items for review.
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-validate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -101,6 +108,9 @@ Deno.serve(async (req) => {
           ?? (meta.published_at as string | undefined)
 
         if (title.length < 6) errors.push('E_TITLE_TOO_SHORT')
+        else if (title.length < 15 && !/\s/.test(title)) errors.push('E_TITLE_NOT_INFORMATIVE')
+        else if (/^(unnamed|untitled|test|no title|undefined|null)\b/i.test(title)) errors.push('E_TITLE_PLACEHOLDER')
+        else if (/^[\p{Emoji}\p{Emoji_Component}\p{So}\s·༻༺𐫱]+$/u.test(title)) errors.push('E_TITLE_EMOJI_ONLY')
         if (title.length > 500) warnings.push('W_TITLE_TRUNCATED')
         if (!sourceId) errors.push('E_MISSING_SOURCE')
         if (!url) errors.push('E_MISSING_URL')
@@ -255,6 +265,22 @@ Deno.serve(async (req) => {
         quality = Math.max(0, 100 - warnings.length * 5 - errors.length * 50)
       }
 
+      // Per-row entity-type cross-check (issue #113). A CSV upload's
+      // target_table is a job-level constant, but each row can be a different
+      // kind of thing — we've seen real persons, venues, glossary terms, and
+      // postcodes all routed into `personalities`. Classify the normalized
+      // row and reject when the classification disagrees with the target.
+      // Low-confidence and 'unknown' results fall through (warning instead).
+      let classification: ReturnType<typeof classifyEntity> | null = null
+      if (expectedKindForTargetTable(item.target_table)) {
+        classification = classifyEntity(n as ClassifyInput)
+        if (isEntityTypeMismatch(classification, item.target_table)) {
+          errors.push('E_ENTITY_TYPE_MISMATCH')
+        } else if (classification.classified_as === 'unknown' && classification.confidence === 0) {
+          warnings.push('W_ENTITY_TYPE_UNCLEAR')
+        }
+      }
+
       let status: 'approved' | 'rejected' | 'needs_review'
       let confidence: number
 
@@ -278,7 +304,9 @@ Deno.serve(async (req) => {
         const update: Record<string, unknown> = {
           ai_validation_status: status,
           ai_confidence_score:  confidence,
-          ai_validation_result: { errors, warnings, quality },
+          ai_validation_result: classification
+            ? { errors, warnings, quality, classification }
+            : { errors, warnings, quality },
           ai_validated_at:      new Date().toISOString(),
           disposition:          status === 'rejected' ? 'rejected' : 'pending',
           review_status:        status === 'needs_review' ? 'pending_review' : 'auto',
@@ -354,4 +382,4 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-validate', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

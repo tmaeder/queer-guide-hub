@@ -1,16 +1,14 @@
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
 import { Clock, ArrowRight } from 'lucide-react';
 import { addMonths, startOfDay, addDays, format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations } from '@/hooks/useTrips';
-import { supabase } from '@/integrations/supabase/client';
+import { insertRows } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { useTripTemplates, type TripTemplate } from '@/hooks/useTripTemplates';
 
@@ -34,8 +32,6 @@ export function TripTemplates() {
       },
       {
         onSuccess: async (trip) => {
-          // Best-effort pre-population with the template's cities so the
-          // newly created trip already has anchor places on the map.
           if (template.cityIds.length && user) {
             const rows = template.cityIds.map((cityId, idx) => ({
               trip_id: trip.id,
@@ -43,7 +39,7 @@ export function TripTemplates() {
               sort_order: idx,
               created_by: user.id,
             }));
-            const { error } = await supabase.from('trip_places').insert(rows);
+            const { error } = await insertRows('trip_places', rows);
             if (error) {
               console.warn('[TripTemplates] trip_places seed failed', error);
             }
@@ -59,35 +55,25 @@ export function TripTemplates() {
   };
 
   return (
-    <Box sx={{ mt: 6 }}>
+    <div className="mt-12">
       <ScrollReveal direction="up">
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+        <div className="mb-6">
+          <h5 className="font-bold text-2xl">
             Trip Templates
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          </h5>
+          <p className="text-sm text-muted-foreground mt-1">
             Get inspired with curated LGBTQ+ travel itineraries
-          </Typography>
-        </Box>
+          </p>
+        </div>
       </ScrollReveal>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, 1fr)',
-            md: 'repeat(3, 1fr)',
-          },
-          gap: 2.5,
-        }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
         {isLoading && !templates
           ? Array.from({ length: 3 }).map((_, i) => (
               <Skeleton
                 key={i}
                 variant="rectangular"
-                sx={{ height: 220, borderRadius: 0 }}
+                style={{ height: 220, borderRadius: 0 }}
               />
             ))
           : (templates ?? []).map((template) => (
@@ -97,59 +83,46 @@ export function TripTemplates() {
                   onClick={() => handleUseTemplate(template)}
                   style={{ overflow: 'hidden' }}
                 >
-                  <Box
-                    sx={{
-                      // Dark overlay over photo for text legibility, photo
-                      // over gradient fallback for missing/failed loads.
+                  <div
+                    className="relative flex flex-col justify-between"
+                    style={{
                       backgroundImage: template.coverImageUrl
                         ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}"), ${template.gradient}`
                         : template.gradient,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      px: 3,
-                      pt: 3,
-                      pb: 2.5,
-                      position: 'relative',
+                      paddingLeft: 24,
+                      paddingRight: 24,
+                      paddingTop: 24,
+                      paddingBottom: 20,
                       minHeight: 140,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
                     }}
                   >
-                    <Box>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          fontWeight: 700,
-                          color: 'common.white',
+                    <div>
+                      <p
+                        className="font-bold text-white mb-1"
+                        style={{
                           lineHeight: 1.3,
-                          mb: 0.5,
                           textShadow: template.coverImageUrl
                             ? '0 1px 2px rgba(0,0,0,0.5)'
                             : 'none',
                         }}
                       >
                         {template.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: 'rgba(255,255,255,0.85)' }}
-                      >
+                      </p>
+                      <p className="text-sm text-white/85">
                         {template.cities}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ mt: 1.5 }}>
+                      </p>
+                    </div>
+                    <div className="mt-3">
                       <Badge variant="secondary">
-                        <Box
-                          component="span"
-                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-                        >
+                        <span className="inline-flex items-center gap-1">
                           <Clock style={{ width: 12, height: 12 }} />
                           {template.days} days
-                        </Box>
+                        </span>
                       </Badge>
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
 
                   <CardContent>
                     <Button
@@ -169,7 +142,7 @@ export function TripTemplates() {
                 </Card>
               </ScrollReveal>
             ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

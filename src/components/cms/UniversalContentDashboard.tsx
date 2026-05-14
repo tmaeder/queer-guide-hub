@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
 import { useUniversalCMS, type ContentFilters } from '@/hooks/useUniversalCMS';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,21 +119,15 @@ export function UniversalContentDashboard() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className="flex flex-col gap-6">
         <Skeleton />
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-          }}
-        >
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} />
           ))}
-        </Box>
+        </div>
         <Skeleton />
-      </Box>
+      </div>
     );
   }
 
@@ -145,7 +138,7 @@ export function UniversalContentDashboard() {
           <CardTitle>Error</CardTitle>
         </CardHeader>
         <CardContent>
-          <Typography>{error}</Typography>
+          <p>{error}</p>
           <Button onClick={handleRefresh}>
             <RefreshCw />
             Retry
@@ -156,17 +149,17 @@ export function UniversalContentDashboard() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-2xl font-bold">
             Universal Content Management
-          </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
+          </h3>
+          <p className="text-muted-foreground">
             Manage all content across the platform
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+          </p>
+        </div>
+        <div className="flex gap-2">
           <Button onClick={() => setIsCreatorOpen(true)}>
             <Plus />
             Create Content
@@ -175,8 +168,8 @@ export function UniversalContentDashboard() {
             <RefreshCw />
             Refresh
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -191,13 +184,7 @@ export function UniversalContentDashboard() {
         </TabsList>
 
         <TabsContent value="overview">
-          <Box
-            sx={{
-              display: 'grid',
-              gap: 2,
-              gridTemplateColumns: { md: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
-            }}
-          >
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {contentStats.map((stat) => (
               <Card
                 key={stat.content_type}
@@ -207,16 +194,16 @@ export function UniversalContentDashboard() {
                   <CardTitle>{stat.content_type.replace('_', ' ')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  <p className="text-3xl font-bold">
                     {stat.count.toLocaleString()}
-                  </Typography>
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     Click to view all
-                  </Typography>
+                  </p>
                 </CardContent>
               </Card>
             ))}
-          </Box>
+          </div>
         </TabsContent>
 
         <TabsContent value="content-list">
@@ -228,17 +215,17 @@ export function UniversalContentDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                <Box sx={{ flex: 1, position: 'relative' }}>
+              <div className="flex gap-4 items-center">
+                <div className="flex-1 relative">
                   <Search />
                   <Input
                     placeholder="Search content..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                   />
-                </Box>
+                </div>
 
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <div className="flex gap-2">
                   <Select
                     value={filters.contentType}
                     onValueChange={(value) => handleFilterChange('contentType', value)}
@@ -276,8 +263,8 @@ export function UniversalContentDashboard() {
                       <SelectItem value="published">Published</SelectItem>
                     </SelectContent>
                   </Select>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -287,9 +274,9 @@ export function UniversalContentDashboard() {
             </CardHeader>
             <CardContent>
               {allContent.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+                <div className="text-center py-8 text-muted-foreground">
                   No content found matching your criteria.
-                </Box>
+                </div>
               ) : (
                 <Table>
                   <TableHeader>
@@ -305,22 +292,14 @@ export function UniversalContentDashboard() {
                     {allContent.map((content) => (
                       <TableRow key={`${content.content_type}-${content.id}`}>
                         <TableCell>
-                          <Box>
-                            <Typography sx={{ fontWeight: 'medium' }}>{content.title}</Typography>
+                          <div>
+                            <p className="font-medium">{content.title}</p>
                             {content.description && (
-                              <Typography
-                                sx={{
-                                  fontSize: 14,
-                                  color: 'text.secondary',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  maxWidth: 300,
-                                }}
-                              >
+                              <p className="text-sm text-muted-foreground overflow-hidden text-ellipsis" style={{ maxWidth: 300 }}>
                                 {content.description}
-                              </Typography>
+                              </p>
                             )}
-                          </Box>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{content.content_type.replace('_', ' ')}</Badge>
@@ -332,7 +311,7 @@ export function UniversalContentDashboard() {
                           {formatDistanceToNow(new Date(content.updated_at), { addSuffix: true })}
                         </TableCell>
                         <TableCell>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
+                          <div className="flex gap-2">
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
@@ -348,77 +327,53 @@ export function UniversalContentDashboard() {
                                   <DialogTitle>{content.title}</DialogTitle>
                                 </DialogHeader>
                                 <ScrollArea>
-                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Box
-                                      sx={{
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(2, 1fr)',
-                                        gap: 2,
-                                      }}
-                                    >
-                                      <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                  <div className="flex flex-col gap-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <h4 className="font-semibold">
                                           Content Type
-                                        </Typography>
-                                        <Typography sx={{ textTransform: 'capitalize' }}>
+                                        </h4>
+                                        <p className="capitalize">
                                           {content.content_type.replace('_', ' ')}
-                                        </Typography>
-                                      </Box>
-                                      <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <h4 className="font-semibold">
                                           Status
-                                        </Typography>
+                                        </h4>
                                         <Badge>{content.status || 'unknown'}</Badge>
-                                      </Box>
-                                    </Box>
+                                      </div>
+                                    </div>
 
                                     {content.description && (
-                                      <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                      <div>
+                                        <h4 className="font-semibold">
                                           Description
-                                        </Typography>
-                                        <Typography>{content.description}</Typography>
-                                      </Box>
+                                        </h4>
+                                        <p>{content.description}</p>
+                                      </div>
                                     )}
 
                                     {content.metadata && (
-                                      <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                      <div>
+                                        <h4 className="font-semibold">
                                           Metadata
-                                        </Typography>
-                                        <Box
-                                          component="pre"
-                                          sx={{
-                                            bgcolor: 'background.paper',
-                                            p: 2,
-                                            borderRadius: 1,
-                                            fontSize: 14,
-                                            overflow: 'auto',
-                                          }}
-                                        >
+                                        </h4>
+                                        <pre className="bg-background p-4 rounded text-sm overflow-auto">
                                           {JSON.stringify(content.metadata, null, 2)}
-                                        </Box>
-                                      </Box>
+                                        </pre>
+                                      </div>
                                     )}
 
-                                    <Box>
-                                      <Typography variant="h4" sx={{ fontWeight: 'semibold' }}>
+                                    <div>
+                                      <h4 className="font-semibold">
                                         Raw Data
-                                      </Typography>
-                                      <Box
-                                        component="pre"
-                                        sx={{
-                                          bgcolor: 'background.paper',
-                                          p: 2,
-                                          borderRadius: 1,
-                                          fontSize: 14,
-                                          overflow: 'auto',
-                                        }}
-                                      >
+                                      </h4>
+                                      <pre className="bg-background p-4 rounded text-sm overflow-auto">
                                         {JSON.stringify(content.raw_data, null, 2)}
-                                      </Box>
-                                    </Box>
-                                  </Box>
+                                      </pre>
+                                    </div>
+                                  </div>
                                 </ScrollArea>
                               </DialogContent>
                             </Dialog>
@@ -444,7 +399,7 @@ export function UniversalContentDashboard() {
                                 <Trash2 />
                               </Button>
                             )}
-                          </Box>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -454,7 +409,7 @@ export function UniversalContentDashboard() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                <div className="mt-6 flex justify-center">
                   <Pagination>
                     <PaginationContent>
                       {currentPage > 1 && (
@@ -502,15 +457,15 @@ export function UniversalContentDashboard() {
                       )}
                     </PaginationContent>
                   </Pagination>
-                </Box>
+                </div>
               )}
 
               {/* Results info */}
-              <Box sx={{ mt: 2, fontSize: 14, color: 'text.secondary', textAlign: 'center' }}>
+              <div className="mt-4 text-sm text-muted-foreground text-center">
                 Showing {allContent.length} of {totalCount} results
                 {filters.contentType !== 'all' && ` in ${filters.contentType}`}
                 {filters.search && ` matching "${filters.search}"`}
-              </Box>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -518,70 +473,32 @@ export function UniversalContentDashboard() {
 
       {/* Simple modals - removing for now to fix build errors */}
       {isCreatorOpen && (
-        <Box
-          sx={{
-            position: 'fixed',
-            inset: 0,
-            bgcolor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 50,
-          }}
-        >
-          <Box
-            sx={{
-              bgcolor: 'background.paper',
-              p: 3,
-              borderRadius: 2,
-              maxWidth: 448,
-              width: '100%',
-              mx: 2,
-            }}
-          >
-            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background p-6 rounded-md max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">
               Create Content
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+            </h3>
+            <p className="text-muted-foreground mb-4">
               Content creation will be implemented in the next iteration.
-            </Typography>
+            </p>
             <Button onClick={() => setIsCreatorOpen(false)}>Close</Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {isEditorOpen && (
-        <Box
-          sx={{
-            position: 'fixed',
-            inset: 0,
-            bgcolor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 50,
-          }}
-        >
-          <Box
-            sx={{
-              bgcolor: 'background.paper',
-              p: 3,
-              borderRadius: 2,
-              maxWidth: 448,
-              width: '100%',
-              mx: 2,
-            }}
-          >
-            <Typography variant="h3" sx={{ fontWeight: 'semibold', mb: 2 }}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background p-6 rounded-md max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">
               Edit Content
-            </Typography>
-            <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+            </h3>
+            <p className="text-muted-foreground mb-4">
               Content editing will be implemented in the next iteration.
-            </Typography>
+            </p>
             <Button onClick={() => setIsEditorOpen(false)}>Close</Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

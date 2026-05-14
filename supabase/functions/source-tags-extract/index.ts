@@ -1,10 +1,11 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Source: Tags Extract — extracts unique tags from venues/events/personalities
 // and upserts directly into unified_tags (skips ingestion_staging).
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-tags-extract', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -85,4 +86,4 @@ Deno.serve(async (req) => {
     }
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

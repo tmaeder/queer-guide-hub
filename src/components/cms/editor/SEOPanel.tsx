@@ -5,11 +5,9 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Divider from '@mui/material/Divider';
 import { Globe, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import type { CMSContentMetadata } from '@/types/cms';
 import { cn } from '@/lib/utils';
 
@@ -48,176 +46,142 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
   );
 
   // Character count styling
-  const titleCountColor = metaTitle.length > META_TITLE_MAX ? 'error.main' : 'text.secondary';
-  const descCountColor = metaDescription.length > META_DESCRIPTION_MAX ? 'error.main' : 'text.secondary';
+  const titleOver = metaTitle.length > META_TITLE_MAX;
+  const descOver = metaDescription.length > META_DESCRIPTION_MAX;
 
   // Google preview values
   const previewTitle = metaTitle || 'Page Title';
   const previewUrl = canonicalUrl || 'https://queer.guide/...';
-  const previewDescription = metaDescription || 'Add a meta description to see a preview of how this page will appear in search results.';
+  const previewDescription =
+    metaDescription ||
+    'Add a meta description to see a preview of how this page will appear in search results.';
 
   // Truncate for preview
   const truncatedTitle = useMemo(
-    () => previewTitle.length > 60 ? previewTitle.slice(0, 57) + '...' : previewTitle,
+    () => (previewTitle.length > 60 ? previewTitle.slice(0, 57) + '...' : previewTitle),
     [previewTitle],
   );
   const truncatedDescription = useMemo(
-    () => previewDescription.length > 160 ? previewDescription.slice(0, 157) + '...' : previewDescription,
+    () =>
+      previewDescription.length > 160
+        ? previewDescription.slice(0, 157) + '...'
+        : previewDescription,
     [previewDescription],
   );
 
   const isDisabled = !metadata;
 
   return (
-    <Box className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       {/* Meta Title */}
-      <Box>
-        <Box className="flex items-center justify-between mb-1">
-          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            Meta Title
-          </Typography>
-          <Typography variant="caption" sx={{ color: titleCountColor, fontSize: '0.7rem' }}>
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-semibold text-foreground">Meta Title</span>
+          <span
+            className={cn(
+              'text-[0.7rem]',
+              titleOver ? 'text-destructive' : 'text-muted-foreground',
+            )}
+          >
             {metaTitle.length}/{META_TITLE_MAX}
-          </Typography>
-        </Box>
-        <TextField
+          </span>
+        </div>
+        <Input
           value={metaTitle}
           onChange={handleMetaTitleChange}
           placeholder="Enter SEO title..."
-          size="small"
-          fullWidth
           disabled={isDisabled}
-          inputProps={{ maxLength: 70 }}
-          sx={{
-            '& .MuiOutlinedInput-root': { fontSize: '0.875rem' },
-          }}
+          maxLength={70}
+          className="text-sm"
         />
-      </Box>
+      </div>
 
       {/* Meta Description */}
-      <Box>
-        <Box className="flex items-center justify-between mb-1">
-          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            Meta Description
-          </Typography>
-          <Typography variant="caption" sx={{ color: descCountColor, fontSize: '0.7rem' }}>
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-semibold text-foreground">Meta Description</span>
+          <span
+            className={cn(
+              'text-[0.7rem]',
+              descOver ? 'text-destructive' : 'text-muted-foreground',
+            )}
+          >
             {metaDescription.length}/{META_DESCRIPTION_MAX}
-          </Typography>
-        </Box>
-        <TextField
+          </span>
+        </div>
+        <Textarea
           value={metaDescription}
           onChange={handleMetaDescriptionChange}
           placeholder="Enter SEO description..."
-          size="small"
-          fullWidth
-          multiline
-          minRows={3}
-          maxRows={5}
           disabled={isDisabled}
-          inputProps={{ maxLength: 200 }}
-          sx={{
-            '& .MuiOutlinedInput-root': { fontSize: '0.875rem' },
-          }}
+          maxLength={200}
+          rows={3}
+          className="text-sm"
         />
-      </Box>
+      </div>
 
       {/* Canonical URL */}
-      <Box>
-        <Box className="flex items-center gap-1 mb-1">
-          <Globe style={{ width: 12, height: 12, color: '#6b7280' }} />
-          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            Canonical URL
-          </Typography>
-        </Box>
-        <TextField
+      <div>
+        <div className="flex items-center gap-1 mb-1">
+          <Globe style={{ width: 12, height: 12 }} className="text-muted-foreground" />
+          <span className="text-xs font-semibold text-foreground">Canonical URL</span>
+        </div>
+        <Input
           value={canonicalUrl}
           onChange={handleCanonicalUrlChange}
           placeholder="https://queer.guide/..."
-          size="small"
-          fullWidth
           disabled={isDisabled}
           type="url"
-          sx={{
-            '& .MuiOutlinedInput-root': { fontSize: '0.875rem' },
-          }}
+          className="text-sm"
         />
-      </Box>
+      </div>
 
-      <Divider />
+      <hr className="border-border" />
 
       {/* Google SERP Preview */}
-      <Box>
-        <Box className="flex items-center gap-1.5 mb-2">
-          <Search style={{ width: 14, height: 14, color: '#6b7280' }} />
-          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-            Google Preview
-          </Typography>
-        </Box>
-        <Box
-          className={cn(
-            'rounded-lg border border-gray-200 p-3',
-            'bg-white',
-          )}
-        >
+      <div>
+        <div className="flex items-center gap-1.5 mb-2">
+          <Search style={{ width: 14, height: 14 }} className="text-muted-foreground" />
+          <span className="text-xs font-semibold text-muted-foreground">Google Preview</span>
+        </div>
+        <div className={cn('rounded-lg border border-gray-200 p-3 bg-white')}>
           {/* Title line */}
-          <Typography
-            variant="body2"
-            sx={{
-              color: '#1a0dab',
-              fontWeight: 500,
-              fontSize: '1rem',
-              lineHeight: 1.3,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontFamily: 'Arial, sans-serif',
-            }}
+          <p
+            className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap"
+            style={{ color: '#1a0dab', fontFamily: 'Arial, sans-serif' }}
           >
             {truncatedTitle}
-          </Typography>
+          </p>
 
           {/* URL line */}
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#006621',
-              display: 'block',
-              mt: 0.25,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontSize: '0.8rem',
-              fontFamily: 'Arial, sans-serif',
-            }}
+          <span
+            className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-[0.8rem]"
+            style={{ color: '#006621', fontFamily: 'Arial, sans-serif' }}
           >
             {previewUrl}
-          </Typography>
+          </span>
 
           {/* Description */}
-          <Typography
-            variant="caption"
-            sx={{
+          <span
+            className="mt-1 overflow-hidden text-[0.8rem] leading-snug"
+            style={{
               color: '#545454',
-              mt: 0.5,
-              lineHeight: 1.4,
-              fontSize: '0.8rem',
               fontFamily: 'Arial, sans-serif',
-              overflow: 'hidden',
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
             }}
           >
             {truncatedDescription}
-          </Typography>
-        </Box>
+          </span>
+        </div>
 
         {!metadata && (
-          <Typography variant="caption" color="text.secondary" className="mt-2 block">
+          <p className="text-xs text-muted-foreground mt-2 block">
             Save the item first to edit SEO metadata.
-          </Typography>
+          </p>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

@@ -1,0 +1,366 @@
+{
+  "@axe-core/playwright": {
+    "current": "4.11.2",
+    "wanted": "4.11.3",
+    "latest": "4.11.3",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@axe-core/playwright"
+  },
+  "@eslint/js": {
+    "current": "9.39.3",
+    "wanted": "9.39.4",
+    "latest": "10.0.1",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@eslint/js"
+  },
+  "@playwright/test": {
+    "current": "1.58.2",
+    "wanted": "1.60.0",
+    "latest": "1.60.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@playwright/test"
+  },
+  "@protomaps/basemaps": {
+    "current": "5.7.1",
+    "wanted": "5.7.2",
+    "latest": "5.7.2",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@protomaps/basemaps"
+  },
+  "@sentry/react": {
+    "current": "10.47.0",
+    "wanted": "10.53.1",
+    "latest": "10.53.1",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@sentry/react"
+  },
+  "@sentry/vite-plugin": {
+    "current": "5.1.1",
+    "wanted": "5.3.0",
+    "latest": "5.3.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@sentry/vite-plugin"
+  },
+  "@supabase/supabase-js": {
+    "current": "2.98.0",
+    "wanted": "2.105.4",
+    "latest": "2.105.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@supabase/supabase-js"
+  },
+  "@tanstack/react-query": {
+    "current": "5.90.21",
+    "wanted": "5.100.10",
+    "latest": "5.100.10",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tanstack/react-query"
+  },
+  "@tiptap/extension-code-block-lowlight": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-code-block-lowlight"
+  },
+  "@tiptap/extension-color": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-color"
+  },
+  "@tiptap/extension-highlight": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-highlight"
+  },
+  "@tiptap/extension-image": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-image"
+  },
+  "@tiptap/extension-link": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-link"
+  },
+  "@tiptap/extension-placeholder": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-placeholder"
+  },
+  "@tiptap/extension-table": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-table"
+  },
+  "@tiptap/extension-table-cell": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-table-cell"
+  },
+  "@tiptap/extension-table-header": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-table-header"
+  },
+  "@tiptap/extension-table-row": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-table-row"
+  },
+  "@tiptap/extension-text-align": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-text-align"
+  },
+  "@tiptap/extension-text-style": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-text-style"
+  },
+  "@tiptap/extension-underline": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-underline"
+  },
+  "@tiptap/extension-youtube": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/extension-youtube"
+  },
+  "@tiptap/react": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/react"
+  },
+  "@tiptap/starter-kit": {
+    "current": "3.20.0",
+    "wanted": "3.23.4",
+    "latest": "3.23.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@tiptap/starter-kit"
+  },
+  "@types/node": {
+    "current": "22.19.13",
+    "wanted": "22.19.19",
+    "latest": "25.7.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@types/node"
+  },
+  "@vitejs/plugin-react-swc": {
+    "current": "4.2.3",
+    "wanted": "4.3.0",
+    "latest": "4.3.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/@vitejs/plugin-react-swc"
+  },
+  "dompurify": {
+    "current": "3.4.0",
+    "wanted": "3.4.3",
+    "latest": "3.4.3",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/dompurify"
+  },
+  "eslint": {
+    "current": "9.39.3",
+    "wanted": "9.39.4",
+    "latest": "10.3.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/eslint"
+  },
+  "eslint-plugin-react-hooks": {
+    "current": "5.2.0",
+    "wanted": "5.2.0",
+    "latest": "7.1.1",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/eslint-plugin-react-hooks"
+  },
+  "globals": {
+    "current": "17.4.0",
+    "wanted": "17.6.0",
+    "latest": "17.6.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/globals"
+  },
+  "hls.js": {
+    "current": "1.6.15",
+    "wanted": "1.6.16",
+    "latest": "1.6.16",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/hls.js"
+  },
+  "i18next": {
+    "current": "25.8.13",
+    "wanted": "25.10.10",
+    "latest": "26.1.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/i18next"
+  },
+  "jsdom": {
+    "current": "28.1.0",
+    "wanted": "28.1.0",
+    "latest": "29.1.1",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/jsdom"
+  },
+  "lint-staged": {
+    "current": "16.3.2",
+    "wanted": "16.4.0",
+    "latest": "17.0.4",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/lint-staged"
+  },
+  "lucide-react": {
+    "current": "1.14.0",
+    "wanted": "1.16.0",
+    "latest": "1.16.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/lucide-react"
+  },
+  "mammoth": {
+    "current": "1.11.0",
+    "wanted": "1.12.0",
+    "latest": "1.12.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/mammoth"
+  },
+  "maplibre-gl": {
+    "current": "5.19.0",
+    "wanted": "5.24.0",
+    "latest": "5.24.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/maplibre-gl"
+  },
+  "pdfjs-dist": {
+    "current": "5.5.207",
+    "wanted": "5.7.284",
+    "latest": "5.7.284",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/pdfjs-dist"
+  },
+  "postcss": {
+    "current": "8.5.13",
+    "wanted": "8.5.14",
+    "latest": "8.5.14",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/postcss"
+  },
+  "prettier": {
+    "current": "3.8.1",
+    "wanted": "3.8.3",
+    "latest": "3.8.3",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/prettier"
+  },
+  "react": {
+    "current": "19.2.4",
+    "wanted": "19.2.6",
+    "latest": "19.2.6",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/react"
+  },
+  "react-dom": {
+    "current": "19.2.4",
+    "wanted": "19.2.6",
+    "latest": "19.2.6",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/react-dom"
+  },
+  "react-hook-form": {
+    "current": "7.71.2",
+    "wanted": "7.75.0",
+    "latest": "7.75.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/react-hook-form"
+  },
+  "react-is": {
+    "current": "19.2.5",
+    "wanted": "19.2.6",
+    "latest": "19.2.6",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/react-is"
+  },
+  "react-resizable-panels": {
+    "current": "4.11.0",
+    "wanted": "4.11.1",
+    "latest": "4.11.1",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/react-resizable-panels"
+  },
+  "react-router": {
+    "current": "7.13.1",
+    "wanted": "7.15.0",
+    "latest": "7.15.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/react-router"
+  },
+  "recharts": {
+    "current": "3.7.0",
+    "wanted": "3.8.1",
+    "latest": "3.8.1",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/recharts"
+  },
+  "tailwind-merge": {
+    "current": "3.5.0",
+    "wanted": "3.6.0",
+    "latest": "3.6.0",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/tailwind-merge"
+  },
+  "typescript": {
+    "current": "5.8.3",
+    "wanted": "5.8.3",
+    "latest": "6.0.3",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/typescript"
+  },
+  "typescript-eslint": {
+    "current": "8.56.1",
+    "wanted": "8.59.3",
+    "latest": "8.59.3",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/typescript-eslint"
+  },
+  "vite": {
+    "current": "6.4.2",
+    "wanted": "6.4.2",
+    "latest": "8.0.13",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/vite"
+  },
+  "vitest": {
+    "current": "4.0.18",
+    "wanted": "4.1.6",
+    "latest": "4.1.6",
+    "dependent": "recursing-johnson-bd96eb",
+    "location": "/Users/tobiasmaeder/QG/.claude/worktrees/recursing-johnson-bd96eb/node_modules/vitest"
+  }
+}

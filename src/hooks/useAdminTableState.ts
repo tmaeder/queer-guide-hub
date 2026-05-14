@@ -5,15 +5,16 @@ interface UseAdminTableStateOptions {
   defaultSort?: { column: string; direction: 'asc' | 'desc' } | null;
   defaultPageSize?: number;
   defaultColumnVisibility?: Record<string, boolean>;
+  defaultFilters?: Record<string, unknown>;
 }
 
 export function useAdminTableState(options: UseAdminTableStateOptions = {}) {
-  const { defaultSort = null, defaultPageSize = 25, defaultColumnVisibility = {} } = options;
+  const { defaultSort = null, defaultPageSize = 25, defaultColumnVisibility = {}, defaultFilters = {} } = options;
 
   const [state, setState] = useState<AdminTableState>({
     search: '',
     debouncedSearch: '',
-    filters: {},
+    filters: defaultFilters,
     sorting: defaultSort,
     pagination: { page: 1, pageSize: defaultPageSize },
     selectedIds: new Set(),

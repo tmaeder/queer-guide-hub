@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Languages, Loader2, Check, Sparkles } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  listFromWhere,
+  updateRow,
+  insertInto,
+  updateRowsByIds,
+} from '@/hooks/usePageFetchers';
 import { useToast } from '@/hooks/use-toast';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, LANGUAGE_NAMES } from '@/i18n/languages';
 import type { SupportedLocale } from '@/i18n/languages';
@@ -67,24 +71,22 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
 
   async function loadTranslations() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('content_translations')
-      .select('*')
-      .eq('table_name', tableName)
-      .eq('record_id', recordId)
-      .eq('language', selectedLang);
-
-    if (!error && data) {
+    try {
+      const data = await listFromWhere<TranslationRow>('content_translations', '*', [
+        { op: 'eq', col: 'table_name', val: tableName },
+        { op: 'eq', col: 'record_id', val: recordId },
+        { op: 'eq', col: 'language', val: selectedLang },
+      ]);
       const map: Record<string, TranslationRow> = {};
-      for (const row of data as TranslationRow[]) {
-        map[row.field_name] = row;
-      }
-      setTranslations(map);
       const d: Record<string, string> = {};
-      for (const row of data as TranslationRow[]) {
+      for (const row of data) {
+        map[row.field_name] = row;
         d[row.field_name] = row.value;
       }
+      setTranslations(map);
       setDrafts(d);
+    } catch {
+      // ignore — leave empty state
     }
     setLoading(false);
   }
@@ -97,12 +99,13 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
 
       const existing = translations[field];
       if (existing) {
-        await supabase
-          .from('content_translations')
-          .update({ value, status: 'human_reviewed', machine_source: null })
-          .eq('id', existing.id);
+        await updateRow('content_translations', existing.id, {
+          value,
+          status: 'human_reviewed',
+          machine_source: null,
+        });
       } else {
-        await supabase.from('content_translations').insert({
+        await insertInto('content_translations', {
           table_name: tableName,
           record_id: recordId,
           field_name: field,
@@ -122,12 +125,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
       .filter((t) => t.status !== 'published')
       .map((t) => t.id);
     if (ids.length === 0) return;
-
-    await supabase
-      .from('content_translations')
-      .update({ status: 'published' })
-      .in('id', ids);
-
+    await updateRowsByIds('content_translations', ids, { status: 'published' });
     toast({ title: 'Translations published' });
     await loadTranslations();
   }
@@ -188,9 +186,9 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
         </Select>
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <Loader2 style={{ width: 20, height: 20, animation: 'spin 1s linear infinite' }} />
-          </Box>
+          <div className="flex justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
         ) : (
           <>
             {translatableFields.map((field) => {
@@ -199,8 +197,8 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
               const existing = translations[field];
 
               return (
-                <Box key={field} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div key={field} className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
                     <Label style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
                       {field.replace('_', ' ')}
                     </Label>
@@ -212,14 +210,14 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                         {existing.status}
                       </Badge>
                     )}
-                  </Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.disabled', fontSize: '0.7rem', lineHeight: 1.3 }}
+                  </div>
+                  <span
+                    className="text-xs text-muted-foreground"
+                    style={{ fontSize: '0.7rem', lineHeight: 1.3, opacity: 0.7 }}
                   >
                     {original.slice(0, 120)}
                     {original.length > 120 ? '...' : ''}
-                  </Typography>
+                  </span>
                   {isLong ? (
                     <Textarea
                       value={drafts[field] || ''}
@@ -233,14 +231,14 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                       style={{ fontSize: '0.8125rem' }}
                     />
                   )}
-                </Box>
+                </div>
               );
             })}
 
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <div className="flex gap-2 flex-wrap">
               <Button size="sm" onClick={handleAutoTranslate} disabled={autoTranslating} variant="outline">
                 {autoTranslating ? (
-                  <Loader2 style={{ width: 14, height: 14, marginRight: 6, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 ) : (
                   <Sparkles style={{ width: 14, height: 14, marginRight: 6 }} />
                 )}
@@ -248,7 +246,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
               </Button>
               <Button size="sm" onClick={handleSave} disabled={saving}>
                 {saving ? (
-                  <Loader2 style={{ width: 14, height: 14, marginRight: 6, animation: 'spin 1s linear infinite' }} />
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 ) : (
                   <Check style={{ width: 14, height: 14, marginRight: 6 }} />
                 )}
@@ -259,7 +257,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                   Publish all
                 </Button>
               )}
-            </Box>
+            </div>
           </>
         )}
       </CardContent>

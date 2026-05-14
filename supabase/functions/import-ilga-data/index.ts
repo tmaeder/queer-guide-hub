@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts';
 
 const ILGA_GRAPHQL = 'https://database.ilga.org/graphql';
@@ -352,7 +351,7 @@ function calculateEqualityScore(row: Record<string, unknown>): number {
 
 // ── Main handler ──────────────────────────────────────────────────
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === 'OPTIONS') {

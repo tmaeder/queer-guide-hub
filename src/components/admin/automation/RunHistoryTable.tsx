@@ -3,15 +3,15 @@
  */
 
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Chip from '@mui/material/Chip';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
 import type { AutomationRunLog, AutomationModule } from '@/hooks/useAutomation';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -36,105 +36,89 @@ export function RunHistoryTable({ runs, modules }: Props) {
 
   if (runs.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
+      <div className="text-center py-12">
         <Clock size={48} style={{ color: '#94a3b8', margin: '0 auto 16px' }} />
-        <Typography variant="h6" color="text.secondary">
+        <h3 className="text-lg text-muted-foreground">
           No run history yet
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </h3>
+        <p className="text-sm text-muted-foreground">
           Run a module to see execution logs here.
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
   return (
-    <TableContainer>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Module</TableCell>
-            <TableCell>Time</TableCell>
-            <TableCell align="right">Scanned</TableCell>
-            <TableCell align="right">Proposed</TableCell>
-            <TableCell align="right">Auto-Approved</TableCell>
-            <TableCell align="right">Pending</TableCell>
-            <TableCell align="right">Errors</TableCell>
-            <TableCell align="right">Duration</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {runs.map((run) => {
-            const mod = moduleMap.get(run.module_id);
-            const hasErrors = run.errors > 0;
-            return (
-              <TableRow key={run.id} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
-                    {mod?.display_name ?? run.module_id.slice(0, 8)}
-                  </Typography>
-                  {run.content_type && (
-                    <Chip
-                      label={run.content_type}
-                      size="small"
-                      variant="outlined"
-                      sx={{ height: 18, fontSize: '0.65rem', mt: 0.25 }}
-                    />
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="caption" title={format(new Date(run.created_at), 'PPpp')}>
-                    {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">{run.items_scanned}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2" fontWeight={run.changes_proposed > 0 ? 600 : 400}>
-                    {run.changes_proposed}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    variant="body2"
-                    color={run.changes_auto_approved > 0 ? 'success.main' : 'text.secondary'}
-                  >
-                    {run.changes_auto_approved}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    variant="body2"
-                    color={run.changes_pending_review > 0 ? 'warning.main' : 'text.secondary'}
-                  >
-                    {run.changes_pending_review}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  {hasErrors ? (
-                    <Chip
-                      label={run.errors}
-                      size="small"
-                      color="error"
-                      sx={{ height: 20, fontSize: '0.7rem' }}
-                    />
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      0
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="caption" fontFamily="monospace">
-                    {formatDuration(run.duration_ms)}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Module</TableHead>
+          <TableHead>Time</TableHead>
+          <TableHead className="text-right">Scanned</TableHead>
+          <TableHead className="text-right">Proposed</TableHead>
+          <TableHead className="text-right">Auto-Approved</TableHead>
+          <TableHead className="text-right">Pending</TableHead>
+          <TableHead className="text-right">Errors</TableHead>
+          <TableHead className="text-right">Duration</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {runs.map((run) => {
+          const mod = moduleMap.get(run.module_id);
+          const hasErrors = run.errors > 0;
+          return (
+            <TableRow key={run.id}>
+              <TableCell>
+                <p className="text-sm font-semibold">
+                  {mod?.display_name ?? run.module_id.slice(0, 8)}
+                </p>
+                {run.content_type && (
+                  <Badge variant="outline" className="h-[18px] text-[0.65rem] mt-0.5">
+                    {run.content_type}
+                  </Badge>
+                )}
+              </TableCell>
+              <TableCell>
+                <span className="text-xs" title={format(new Date(run.created_at), 'PPpp')}>
+                  {formatDistanceToNow(new Date(run.created_at), { addSuffix: true })}
+                </span>
+              </TableCell>
+              <TableCell className="text-right">
+                <p className="text-sm">{run.items_scanned}</p>
+              </TableCell>
+              <TableCell className="text-right">
+                <p className={`text-sm ${run.changes_proposed > 0 ? 'font-semibold' : ''}`}>
+                  {run.changes_proposed}
+                </p>
+              </TableCell>
+              <TableCell className="text-right">
+                <p className={`text-sm ${run.changes_auto_approved > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                  {run.changes_auto_approved}
+                </p>
+              </TableCell>
+              <TableCell className="text-right">
+                <p className={`text-sm ${run.changes_pending_review > 0 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                  {run.changes_pending_review}
+                </p>
+              </TableCell>
+              <TableCell className="text-right">
+                {hasErrors ? (
+                  <Badge variant="destructive" className="h-5 text-[0.7rem]">
+                    {run.errors}
+                  </Badge>
+                ) : (
+                  <p className="text-sm text-muted-foreground">0</p>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                <span className="text-xs font-mono">
+                  {formatDuration(run.duration_ms)}
+                </span>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 }

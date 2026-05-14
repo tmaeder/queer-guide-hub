@@ -1,16 +1,15 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import AvatarGroup from '@mui/material/AvatarGroup';
-import Checkbox from '@mui/material/Checkbox';
-import Tooltip from '@mui/material/Tooltip';
-import { ChevronUp, Clock, Github, Camera, AlertTriangle, Layers } from 'lucide-react';
+import { Clock, AlertTriangle, Layers } from 'lucide-react';
+import { Github } from '@/components/icons/brand';
 import { feedbackCategoryMap } from '@/config/feedbackCategories';
 import { timeAgo } from '@/utils/timezone';
 import { priorityFor } from './constants';
 import { latestHandoff } from '@/hooks/useFeedbackHandoff';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import type { AdminProfile, FeedbackSubmission, SubmissionStoryRef } from './types';
 
 const HANDOFF_CHIP: Record<string, { label: string; color: string; bg: string }> = {
@@ -41,10 +40,10 @@ interface Props {
  */
 export function FeedbackCard({
   item,
-  voteCount,
+  voteCount: _voteCount,
   selected,
   focused,
-  watchers,
+  watchers: _watchers,
   assignee,
   story,
   onStoryClick,
@@ -61,7 +60,7 @@ export function FeedbackCard({
   const isForwarded = !!item.github_issue_url;
   const withClaude = isForwarded && item.feedback_status !== 'done';
   const errorCount = item.data.context?.errors?.length ?? 0;
-  const hasScreenshot = !!item.data.screenshot_url;
+  const _hasScreenshot = !!item.data.screenshot_url;
   // Handoff chip beats GitHub chip when both are set — handoffs are the
   // primary signal for "this has been passed to someone".
   const handoff = latestHandoff(item);
@@ -92,333 +91,410 @@ export function FeedbackCard({
     opacity: isDragging ? 0.4 : 1,
   };
 
+  const cardStyle: React.CSSProperties = {
+    paddingTop: 5,
+    paddingBottom: 5,
+    paddingLeft: stripeWidth ? 8 : 7,
+    paddingRight: 6,
+  };
+
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Box
+      <div
         onClick={onClick}
-        sx={{
-          position: 'relative',
-          py: 0.625,
-          pl: stripeWidth ? 1 : 0.875,
-          pr: 0.75,
-          borderRadius: 1,
-          border: 1,
-          borderColor: focused
-            ? 'primary.main'
+        style={cardStyle}
+        className={cn(
+          'group relative rounded border cursor-pointer transition-all',
+          focused
+            ? 'border-primary shadow-md'
             : selected
-              ? 'primary.light'
-              : 'divider',
-          bgcolor: selected ? 'action.selected' : 'background.paper',
-          cursor: 'pointer',
-          transition: 'all 0.15s',
-          boxShadow: focused ? 2 : 0,
-          '&:hover': {
-            borderColor: 'primary.main',
-            '& .hover-checkbox': { opacity: 1 },
-          },
-          ...(stripeWidth && {
-            '&::before': {
-              content: '""',
+              ? 'border-primary/50'
+              : 'border-border',
+          selected ? 'bg-muted' : 'bg-background',
+          'hover:border-primary',
+        )}
+      >
+        {stripeWidth > 0 && (
+          <span
+            aria-hidden
+            style={{
               position: 'absolute',
               left: 0,
               top: 0,
               bottom: 0,
               width: stripeWidth,
-              bgcolor: prio.color,
+              background: prio.color,
               borderTopLeftRadius: 'inherit',
               borderBottomLeftRadius: 'inherit',
-            },
-          }),
-          ...(isNew && {
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              top: 4,
-              right: 4,
+            }}
+          />
+        )}
+        {isNew && (
+          <span
+            aria-hidden
+            className="absolute top-1 right-1 rounded-full"
+            style={{
               width: 7,
               height: 7,
-              borderRadius: '50%',
-              bgcolor: 'hsl(var(--accent-warm))',
+              background: 'hsl(var(--foreground))',
               animation: 'feedback-pulse 1.8s infinite',
-            },
-            '@keyframes feedback-pulse': {
-              '0%': { boxShadow: '0 0 0 0 hsl(var(--accent-warm) / 0.6)' },
-              '70%': { boxShadow: '0 0 0 6px hsl(var(--accent-warm) / 0)' },
-              '100%': { boxShadow: '0 0 0 0 hsl(var(--accent-warm) / 0)' },
-            },
-          }),
-        }}
-      >
+            }}
+          />
+        )}
+        {isNew && (
+          <style>{`@keyframes feedback-pulse {
+            0% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0.6); }
+            70% { box-shadow: 0 0 0 6px hsl(var(--foreground) / 0); }
+            100% { box-shadow: 0 0 0 0 hsl(var(--foreground) / 0); }
+          }`}</style>
+        )}
+
         {/* Title row — category icon inline, urgent P0/P1 tag, hover checkbox */}
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.625, mb: 0.375 }}>
-          <Tooltip title={cat.label}>
-            <CatIcon
-              style={{
-                width: 12,
-                height: 12,
-                color: cat.color,
-                flexShrink: 0,
-                marginTop: 2,
-              }}
-            />
+        <div className="flex items-start gap-1.5 mb-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <CatIcon
+                style={{
+                  width: 12,
+                  height: 12,
+                  color: cat.color,
+                  flexShrink: 0,
+                  marginTop: 2,
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent>{cat.label}</TooltipContent>
           </Tooltip>
 
-          <Typography
-            variant="body2"
-            sx={{
-              flex: 1,
-              fontWeight: 600,
+          <p
+            className="flex-1 font-semibold min-w-0 break-words overflow-hidden"
+            style={{
               fontSize: '0.78rem',
               lineHeight: 1.3,
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              wordBreak: 'break-word',
-              minWidth: 0,
             }}
           >
             {isUrgent && (
-              <Tooltip title={prio.label}>
-                <Box
-                  component="span"
-                  sx={{
-                    display: 'inline-block',
-                    mr: 0.5,
-                    px: 0.375,
-                    borderRadius: 0.375,
-                    bgcolor: prio.color,
-                    color: '#fff',
-                    fontSize: '0.55rem',
-                    fontWeight: 700,
-                    letterSpacing: 0.3,
-                    verticalAlign: '2px',
-                  }}
-                >
-                  {prio.short}
-                </Box>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      marginRight: 4,
+                      paddingLeft: 3,
+                      paddingRight: 3,
+                      borderRadius: 3,
+                      background: prio.color,
+                      color: '#fff',
+                      fontSize: '0.55rem',
+                      fontWeight: 700,
+                      letterSpacing: 0.3,
+                      verticalAlign: '2px',
+                    }}
+                  >
+                    {prio.short}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{prio.label}</TooltipContent>
               </Tooltip>
             )}
             {item.data.title}
-          </Typography>
+          </p>
 
-          <Checkbox
-            className="hover-checkbox"
-            size="small"
-            checked={selected}
+          <div
             onClick={onToggleSelect}
             onPointerDown={(e) => e.stopPropagation()}
-            sx={{
-              p: 0,
-              mt: '1px',
-              opacity: selected ? 1 : 0,
-              transition: 'opacity 0.15s',
-              flexShrink: 0,
-              '& svg': { width: 14, height: 14 },
-            }}
-          />
-        </Box>
-
-        {/* Footer — single row, icons only, everything tooltipped */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.625,
-            color: 'text.secondary',
-            fontSize: '0.6rem',
-          }}
-        >
-          <Tooltip
-            title={
-              slaColor
-                ? `Open ${Math.floor(ageDays)}d — auto-escalates nightly`
-                : `Submitted ${timeAgo(item.submitted_at)}`
-            }
+            className={cn(
+              'flex-shrink-0 transition-opacity',
+              selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+            )}
+            style={{ marginTop: 1 }}
           >
-            <Typography
-              variant="caption"
-              sx={{
-                fontSize: '0.6rem',
-                color: slaColor ?? 'inherit',
-                fontWeight: slaColor ? 700 : 400,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.25,
-                flexShrink: 0,
-              }}
-            >
-              {slaColor && <Clock style={{ width: 10, height: 10 }} />}
-              {timeAgo(item.submitted_at)}
-            </Typography>
+            <Checkbox
+              checked={selected}
+              className="h-3.5 w-3.5"
+            />
+          </div>
+        </div>
+
+        {/* Footer row 1 — time/SLA + assignee */}
+        <div
+          className="flex items-center gap-1.5 text-muted-foreground"
+          style={{ fontSize: '0.65rem' }}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex items-center flex-shrink-0"
+                style={{
+                  color: slaColor ?? 'inherit',
+                  fontWeight: slaColor ? 700 : 400,
+                  gap: 2,
+                }}
+              >
+                {slaColor && <Clock style={{ width: 10, height: 10 }} />}
+                {timeAgo(item.submitted_at)}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {slaColor
+                ? `Open ${Math.floor(ageDays)}d — auto-escalates nightly`
+                : `Submitted ${timeAgo(item.submitted_at)}`}
+            </TooltipContent>
           </Tooltip>
 
           {handoffChip ? (
-            <Tooltip
-              title={
-                handoff
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: handoffChip.bg,
+                    flexShrink: 0,
+                  }}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {handoff
                   ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}`
-                  : ''
-              }
-            >
-              <Box
-                component="span"
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  bgcolor: handoffChip.bg,
-                  flexShrink: 0,
-                }}
-              />
+                  : ''}
+              </TooltipContent>
             </Tooltip>
           ) : (
             isForwarded && (
-              <Tooltip title={`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}>
-                <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
+                </TooltipContent>
               </Tooltip>
             )
           )}
 
           {hasScreenshot && (
-            <Tooltip title="Screenshot attached">
-              <Camera style={{ width: 10, height: 10, flexShrink: 0 }} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Camera style={{ width: 10, height: 10, flexShrink: 0 }} />
+              </TooltipTrigger>
+              <TooltipContent>Screenshot attached</TooltipContent>
             </Tooltip>
           )}
 
           {errorCount > 0 && (
-            <Tooltip title={`${errorCount} console error${errorCount === 1 ? '' : 's'}`}>
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.125,
-                  color: '#ef4444',
-                  flexShrink: 0,
-                }}
-              >
-                <AlertTriangle style={{ width: 10, height: 10 }} />
-                {errorCount}
-              </Box>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex items-center flex-shrink-0"
+                  style={{ gap: 1, color: '#ef4444' }}
+                >
+                  <AlertTriangle style={{ width: 10, height: 10 }} />
+                  {errorCount}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {`${errorCount} console error${errorCount === 1 ? '' : 's'}`}
+              </TooltipContent>
             </Tooltip>
           )}
 
           {story && (
-            <Tooltip title={`Part of story: ${story.title}`}>
-              <Box
-                component="span"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStoryClick?.(story.story_id);
-                }}
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.25,
-                  px: 0.5,
-                  py: 0.125,
-                  fontSize: '0.55rem',
-                  bgcolor:
-                    story.status === 'resolved'
-                      ? 'action.selected'
-                      : 'hsl(var(--accent-warm) / 0.15)',
-                  color:
-                    story.status === 'resolved'
-                      ? 'text.secondary'
-                      : 'hsl(var(--accent-warm))',
-                  borderRadius: 0.5,
-                  flexShrink: 0,
-                  maxWidth: 90,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  cursor: onStoryClick ? 'pointer' : 'default',
-                  '&:hover': onStoryClick ? { opacity: 0.8 } : undefined,
-                }}
-              >
-                <Layers style={{ width: 9, height: 9 }} />
-                {story.title}
-              </Box>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStoryClick?.(story.story_id);
+                  }}
+                  className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
+                  style={{
+                    gap: 2,
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                    paddingTop: 1,
+                    paddingBottom: 1,
+                    fontSize: '0.55rem',
+                    background:
+                      story.status === 'resolved'
+                        ? 'hsl(var(--muted))'
+                        : 'hsl(var(--foreground) / 0.15)',
+                    color:
+                      story.status === 'resolved'
+                        ? 'hsl(var(--muted-foreground))'
+                        : 'hsl(var(--foreground))',
+                    borderRadius: 4,
+                    maxWidth: 90,
+                    textOverflow: 'ellipsis',
+                    cursor: onStoryClick ? 'pointer' : 'default',
+                  }}
+                >
+                  <Layers style={{ width: 9, height: 9 }} />
+                  {story.title}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{`Part of story: ${story.title}`}</TooltipContent>
             </Tooltip>
           )}
 
           {(item.labels?.length ?? 0) > 0 && (
-            <Tooltip title={(item.labels ?? []).join(', ')}>
-              <Box
-                component="span"
-                sx={{
-                  px: 0.5,
-                  py: 0.125,
-                  fontSize: '0.55rem',
-                  bgcolor: 'action.hover',
-                  color: 'text.secondary',
-                  borderRadius: 0.5,
-                  flexShrink: 0,
-                  maxWidth: 60,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {item.labels!.length === 1 ? item.labels![0] : `${item.labels!.length}`}
-              </Box>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="bg-muted text-muted-foreground flex-shrink-0 overflow-hidden whitespace-nowrap"
+                  style={{
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                    paddingTop: 1,
+                    paddingBottom: 1,
+                    fontSize: '0.55rem',
+                    borderRadius: 4,
+                    maxWidth: 60,
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {item.labels!.length === 1 ? item.labels![0] : `${item.labels!.length}`}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{(item.labels ?? []).join(', ')}</TooltipContent>
             </Tooltip>
           )}
 
           {voteCount > 0 && (
-            <Tooltip title={`${voteCount} vote${voteCount === 1 ? '' : 's'}`}>
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.125,
-                  flexShrink: 0,
-                }}
-              >
-                <ChevronUp style={{ width: 10, height: 10 }} />
-                {voteCount}
-              </Box>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex items-center flex-shrink-0"
+                  style={{ gap: 1 }}
+                >
+                  <ChevronUp style={{ width: 10, height: 10 }} />
+                  {voteCount}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {`${voteCount} vote${voteCount === 1 ? '' : 's'}`}
+              </TooltipContent>
             </Tooltip>
           )}
 
-          <Box sx={{ flex: 1 }} />
-
-          {watchers.length > 0 && (
-            <Tooltip
-              title={`Viewing: ${watchers.map((w) => w.display_name || w.user_id).join(', ')}`}
-            >
-              <AvatarGroup
-                max={2}
-                sx={{
-                  '& .MuiAvatar-root': {
-                    width: 14,
-                    height: 14,
-                    fontSize: '0.5rem',
-                    border: '1px solid var(--background)',
-                  },
-                }}
-              >
-                {watchers.map((w) => (
-                  <Avatar key={w.user_id} src={w.avatar_url || undefined}>
-                    {(w.display_name || '?').slice(0, 1).toUpperCase()}
-                  </Avatar>
-                ))}
-              </AvatarGroup>
-            </Tooltip>
-          )}
+          <div className="flex-1" />
 
           {assignee && (
-            <Tooltip title={`Assigned to ${assignee.display_name || 'admin'}`}>
-              <Avatar
-                src={assignee.avatar_url || undefined}
-                sx={{ width: 16, height: 16, fontSize: '0.55rem' }}
-              >
-                {(assignee.display_name || '?').slice(0, 1).toUpperCase()}
-              </Avatar>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Avatar style={{ width: 16, height: 16 }}>
+                  {assignee.avatar_url && <AvatarImage src={assignee.avatar_url} />}
+                  <AvatarFallback style={{ fontSize: '0.55rem' }}>
+                    {(assignee.display_name || '?').slice(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent>
+                {`Assigned to ${assignee.display_name || 'admin'}`}
+              </TooltipContent>
             </Tooltip>
           )}
-        </Box>
-      </Box>
+        </div>
+
+        {/* Footer row 2 — story, handoff/github, errors (conditional) */}
+        {(story || handoffChip || isForwarded || errorCount > 0) && (
+          <div
+            className="flex items-center gap-1.5 text-muted-foreground mt-1"
+            style={{ fontSize: '0.65rem' }}
+          >
+            {story && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStoryClick?.(story.story_id);
+                    }}
+                    className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
+                    style={{
+                      gap: 2,
+                      paddingLeft: 4,
+                      paddingRight: 4,
+                      paddingTop: 1,
+                      paddingBottom: 1,
+                      fontSize: '0.55rem',
+                      background:
+                        story.status === 'resolved'
+                          ? 'hsl(var(--muted))'
+                          : 'hsl(var(--accent-warm) / 0.15)',
+                      color:
+                        story.status === 'resolved'
+                          ? 'hsl(var(--muted-foreground))'
+                          : 'hsl(var(--accent-warm))',
+                      borderRadius: 4,
+                      maxWidth: 90,
+                      textOverflow: 'ellipsis',
+                      cursor: onStoryClick ? 'pointer' : 'default',
+                    }}
+                  >
+                    <Layers style={{ width: 9, height: 9 }} />
+                    {story.title}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{`Part of story: ${story.title}`}</TooltipContent>
+              </Tooltip>
+            )}
+
+            {handoffChip ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: handoffChip.bg,
+                      flexShrink: 0,
+                    }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  {handoff
+                    ? `${handoffChip.label} — ${handoff.target} ${timeAgo(handoff.at)}`
+                    : ''}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              isForwarded && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
+                  </TooltipContent>
+                </Tooltip>
+              )
+            )}
+
+            {errorCount > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="inline-flex items-center flex-shrink-0"
+                    style={{ gap: 1, color: '#ef4444' }}
+                  >
+                    <AlertTriangle style={{ width: 10, height: 10 }} />
+                    {errorCount}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {`${errorCount} console error${errorCount === 1 ? '' : 's'}`}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

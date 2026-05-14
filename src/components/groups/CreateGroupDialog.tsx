@@ -8,8 +8,6 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Users } from "lucide-react";
 import { GroupImageUpload } from "./GroupImageUpload";
 import { TagSelector } from "@/components/tags/TagSelector";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface CreateGroupDialogProps {
   onCreateGroup: (data: {
@@ -70,79 +68,79 @@ export const CreateGroupDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <span className="flex items-center gap-2">
               <Users style={{ height: 20, width: 20 }} />
               Create New Group
-            </Box>
+            </span>
           </DialogTitle>
         </DialogHeader>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             <Label htmlFor="name">Group Name *</Label>
             <Input id="name" value={formData.name} onChange={e => setFormData(prev => ({
             ...prev,
             name: e.target.value
           }))} placeholder="Enter group name" required />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="description">Description</Label>
             <Textarea id="description" value={formData.description} onChange={e => setFormData(prev => ({
             ...prev,
             description: e.target.value
           }))} placeholder="What's this group about?" rows={3} />
-          </Box>
+          </div>
 
           <GroupImageUpload currentImages={groupImages} onImagesChange={setGroupImages} maxImages={1} />
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="imageUrl">Or Image URL</Label>
             <Input id="imageUrl" value={formData.imageUrl} onChange={e => setFormData(prev => ({
             ...prev,
             imageUrl: e.target.value
           }))} placeholder="https://example.com/image.jpg" type="url" />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="rules">Group Rules</Label>
             <Textarea id="rules" value={formData.rules} onChange={e => setFormData(prev => ({
             ...prev,
             rules: e.target.value
           }))} placeholder="Guidelines for group members" rows={3} />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="tags">Tags</Label>
             <TagSelector selectedTags={formData.tags} onTagsChange={tags => setFormData(prev => ({
             ...prev,
             tags
           }))} placeholder="Add tags to help others discover your group..." maxTags={5} allowCustomTags={true} />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5 }}>
-            <Box>
+          <div className="flex items-center justify-between p-3">
+            <div>
               <Label htmlFor="private">
                 Private Group
               </Label>
-              <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+              <span className="text-xs text-muted-foreground block">
                 Only invited members can see and join
-              </Typography>
-            </Box>
+              </span>
+            </div>
             <Switch id="private" checked={formData.isPrivate} onCheckedChange={checked => setFormData(prev => ({
             ...prev,
             isPrivate: checked
           }))} />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 1.5, pt: 2 }}>
+          <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={!formData.name.trim() || isCreating}>
               {isCreating ? "Creating..." : "Create Group"}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>;
 };

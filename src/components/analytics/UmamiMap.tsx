@@ -3,8 +3,6 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { mapStyle } from '@/config/mapStyle';
 
 interface CountryData {
@@ -202,17 +200,17 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <MapPin style={{ height: 16, width: 16 }} />
+            <span className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
               Geographic Distribution
-            </Box>
+            </span>
           </CardTitle>
           <CardDescription>Visitor locations worldwide</CardDescription>
         </CardHeader>
         <CardContent>
-          <Box sx={{ height: 384, bgcolor: 'action.hover', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' , animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-            <Typography color="text.secondary">Loading map...</Typography>
-          </Box>
+          <div className="h-96 bg-muted rounded-md flex items-center justify-center animate-pulse">
+            <p className="text-muted-foreground">Loading map...</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -222,30 +220,30 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
     <Card>
       <CardHeader>
         <CardTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <MapPin style={{ height: 16, width: 16 }} />
+          <span className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
             Geographic Distribution
-          </Box>
+          </span>
         </CardTitle>
         <CardDescription>
           Visitor locations worldwide - Hover over markers for details
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Box ref={mapContainer} sx={{ height: 384, borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider' }} />
-        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', color: 'text.secondary' }}>
-          <Typography variant="body2" color="text.secondary">Showing top {countryData.length} countries</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'primary.main', opacity: 0.6 }} />
-              <Typography variant="body2" color="text.secondary">Low traffic</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: 'primary.main' }} />
-              <Typography variant="body2" color="text.secondary">High traffic</Typography>
-            </Box>
-          </Box>
-        </Box>
+        <div ref={mapContainer} className="h-96 rounded-md overflow-hidden border border-border" />
+        <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">Showing top {countryData.length} countries</p>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-primary opacity-60" />
+              <p className="text-sm text-muted-foreground">Low traffic</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded-full bg-primary" />
+              <p className="text-sm text-muted-foreground">High traffic</p>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

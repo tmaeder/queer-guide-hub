@@ -10,6 +10,8 @@ interface MetaOptions {
   ogType?: string;
   canonicalPath?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** When true, sets `<meta name="robots" content="noindex,nofollow">`. Cleared on unmount. */
+  noIndex?: boolean;
 }
 
 const BASE_URL = 'https://queer.guide';
@@ -70,6 +72,7 @@ export function useMeta(options: MetaOptions = {}): void {
       ogType = 'website',
       canonicalPath,
       jsonLd,
+      noIndex,
     } = options;
 
     const fullTitle = title ? `${title} | ${DEFAULT_TITLE}` : DEFAULT_TITLE;
@@ -95,6 +98,14 @@ export function useMeta(options: MetaOptions = {}): void {
       setJsonLd(jsonLd);
     }
 
+    // Robots noindex for gated / non-indexable pages (P0-3 age gate, etc.).
+    if (noIndex) {
+      setMetaTag('name', 'robots', 'noindex,nofollow');
+    } else {
+      // Make sure no stale noindex carries over from a previous page.
+      document.querySelector('meta[name="robots"]')?.remove();
+    }
+
     // Cleanup on unmount — reset to defaults so stale tags don't persist
     return () => {
       document.title = DEFAULT_TITLE;
@@ -107,8 +118,9 @@ export function useMeta(options: MetaOptions = {}): void {
       setMetaTag('name', 'twitter:title', DEFAULT_TITLE);
       setMetaTag('name', 'twitter:description', DEFAULT_DESCRIPTION);
       setMetaTag('name', 'twitter:image', DEFAULT_OG_IMAGE);
+      document.querySelector('meta[name="robots"]')?.remove();
       document.querySelectorAll('script[data-meta-jsonld]').forEach((el) => el.remove());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, options.title, options.description, options.canonicalPath]);
+  }, [pathname, options.title, options.description, options.canonicalPath, options.noIndex]);
 }

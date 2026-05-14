@@ -1,7 +1,5 @@
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -27,49 +25,42 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
     <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
       <CardImage src={v.image_url} alt={v.name} fallbackIcon={MapPin} height={160}>
         {v.foursquare_rating && (
-          <Box
-            sx={{
-              position: 'absolute',
+          <div
+            className="absolute flex items-center gap-1 text-white rounded-md px-1.5 py-0.5"
+            style={{
               top: 8,
               right: 8,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              bgcolor: 'rgba(0,0,0,0.65)',
-              color: '#fff',
-              borderRadius: 1.5,
-              px: 0.75,
-              py: 0.25,
+              backgroundColor: 'rgba(0,0,0,0.65)',
               backdropFilter: 'blur(4px)',
             }}
           >
             <Star style={{ width: 12, height: 12, fill: '#f59e0b', color: '#f59e0b' }} />
-            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, lineHeight: 1 }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, lineHeight: 1 }}>
               {(v.foursquare_rating / 10).toFixed(1)}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         )}
       </CardImage>
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-base font-semibold leading-tight">
             {v.name}
-          </Typography>
+          </p>
           {v.category && (
             <Badge variant="secondary">
               {v.category}
             </Badge>
           )}
-        </Box>
+        </div>
         {(v.city || v.country) && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'text.secondary', mt: 1 }}>
+          <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
             <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
-            <Typography variant="body2">
+            <p className="text-sm">
               {[v.city, v.country].filter(Boolean).join(', ')}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
-      </Box>
+      </div>
     </Card>
   );
 }
@@ -85,56 +76,40 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
     <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
       <CardImage src={e.image_url} alt={e.title} fallbackIcon={Calendar} height={140}>
         {e.event_type && (
-          <Box
-            sx={{
-              position: 'absolute',
+          <div
+            className="absolute text-white rounded-md px-2 py-0.5 capitalize"
+            style={{
               top: 8,
               left: 8,
-              bgcolor: 'rgba(0,0,0,0.65)',
-              color: '#fff',
-              borderRadius: 1.5,
-              px: 1,
-              py: 0.25,
+              backgroundColor: 'rgba(0,0,0,0.65)',
               fontSize: '0.7rem',
               fontWeight: 600,
               backdropFilter: 'blur(4px)',
-              textTransform: 'capitalize',
             }}
           >
             {e.event_type}
-          </Box>
+          </div>
         )}
       </CardImage>
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+      <div className="p-4">
+        <div className="flex items-start gap-3">
           {date && (
-            <Box
-              sx={{
-                width: 48,
-                borderRadius: 1.5,
-                bgcolor: 'action.hover',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: 0.75,
-                flexShrink: 0,
-              }}
+            <div
+              className="rounded-md bg-muted flex flex-col items-center justify-center py-1.5 flex-shrink-0"
+              style={{ width: 48 }}
             >
-              <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'primary.main', lineHeight: 1 }}>
+              <span className="uppercase" style={{ fontSize: '0.6rem', fontWeight: 700, color: 'hsl(var(--primary))', lineHeight: 1 }}>
                 {month}
-              </Typography>
-              <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.2 }}>
+              </span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.2 }}>
                 {day}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           )}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: 600,
-                lineHeight: 1.2,
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-base font-semibold leading-tight"
+              style={{
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
@@ -142,15 +117,15 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
               }}
             >
               {e.title}
-            </Typography>
+            </p>
             {(e.city || e.venue_name) && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {[e.venue_name, e.city].filter(Boolean).join(' \u00b7 ')}
-              </Typography>
+              <p className="text-sm text-muted-foreground mt-1">
+                {[e.venue_name, e.city].filter(Boolean).join(' · ')}
+              </p>
             )}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </Card>
   );
 }
@@ -161,11 +136,10 @@ function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick
   return (
     <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
       <CardImage src={n.image_url} alt={n.title} fallbackIcon={Newspaper} height={140} />
-      <Box sx={{ p: 2 }}>
-        <Typography
-          variant="subtitle1"
-          sx={{
-            fontWeight: 600,
+      <div className="p-4">
+        <p
+          className="text-base font-semibold"
+          style={{
             lineHeight: 1.3,
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -174,13 +148,11 @@ function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick
           }}
         >
           {n.title}
-        </Typography>
+        </p>
         {n.excerpt && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              mt: 0.75,
+          <p
+            className="text-sm text-muted-foreground mt-1.5"
+            style={{
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -189,17 +161,17 @@ function NewsCard({ n, onClick }: { n: TagContentResult['news'][number]; onClick
             }}
           >
             {n.excerpt}
-          </Typography>
+          </p>
         )}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1.5 }}>
-          <Typography variant="caption" color="text.secondary">
+        <div className="flex items-center justify-between mt-3">
+          <span className="text-xs text-muted-foreground">
             {n.news_sources?.name}
-            {n.news_sources?.name && n.published_at && ' \u00b7 '}
+            {n.news_sources?.name && n.published_at && ' · '}
             {n.published_at && formatDistanceToNow(new Date(n.published_at), { addSuffix: true })}
-          </Typography>
+          </span>
           {n.url && <ExternalLink style={{ width: 14, height: 14, opacity: 0.3, flexShrink: 0 }} />}
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Card>
   );
 }
@@ -216,21 +188,16 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
 
   return (
     <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
-      <Box
-        sx={{
-          position: 'relative',
-          pt: '133.33%',
-          bgcolor: 'action.hover',
-          overflow: 'hidden',
-        }}
+      <div
+        className="relative bg-muted overflow-hidden"
+        style={{ paddingTop: '133.33%' }}
       >
         {p.image_url ? (
-          <Box
-            component="img"
+          <img
             src={p.image_url}
             alt={p.name}
             loading="lazy"
-            sx={{
+            style={{
               position: 'absolute',
               inset: 0,
               width: '100%',
@@ -243,53 +210,36 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
             }}
           />
         ) : (
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
               background: 'linear-gradient(135deg, rgba(219,39,119,0.18) 0%, rgba(245,158,11,0.18) 100%)',
             }}
           >
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                borderRadius: '50%',
-                bgcolor: 'background.paper',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+            <div
+              className="rounded-full bg-background flex items-center justify-center"
+              style={{ width: 64, height: 64 }}
             >
-              <Typography sx={{ fontWeight: 700, fontSize: '1.25rem', color: 'text.secondary' }}>
+              <span className="text-muted-foreground" style={{ fontWeight: 700, fontSize: '1.25rem' }}>
                 {initials}
-              </Typography>
-            </Box>
-          </Box>
+              </span>
+            </div>
+          </div>
         )}
-      </Box>
-      <Box sx={{ p: 1.5 }}>
-        <Typography
-          sx={{
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            lineHeight: 1.3,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+      </div>
+      <div className="p-3">
+        <p
+          className="font-semibold truncate"
+          style={{ fontSize: '0.9rem', lineHeight: 1.3 }}
         >
           {p.name}
-        </Typography>
+        </p>
         {p.profession && (
-          <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p className="text-sm text-muted-foreground truncate">
             {p.profession}
-          </Typography>
+          </p>
         )}
-      </Box>
+      </div>
     </Card>
   );
 }
@@ -299,44 +249,35 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
 function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onClick: () => void }) {
   return (
     <Card hoverable style={{ overflow: 'hidden' }} onClick={onClick}>
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <div className="p-4 flex items-center gap-4">
         {g.avatar_url ? (
-          <Box
-            component="img"
+          <img
             src={g.avatar_url}
             alt={g.name}
-            sx={{ width: 48, height: 48, borderRadius: 2, objectFit: 'cover', flexShrink: 0 }}
+            style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         ) : (
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 2,
-              bgcolor: 'action.hover',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
+          <div
+            className="bg-muted flex items-center justify-center flex-shrink-0"
+            style={{ width: 48, height: 48, borderRadius: 8 }}
           >
             <UsersIcon style={{ width: 20, height: 20, opacity: 0.3 }} />
-          </Box>
+          </div>
         )}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold truncate" style={{ fontSize: '0.95rem' }}>
             {g.name}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+          </p>
+          <p className="text-sm text-muted-foreground">
             {g.member_count != null && `${g.member_count} members`}
-            {g.member_count != null && g.privacy && ' \u00b7 '}
+            {g.member_count != null && g.privacy && ' · '}
             {g.privacy}
-          </Typography>
-        </Box>
-      </Box>
+          </p>
+        </div>
+      </div>
     </Card>
   );
 }
@@ -345,35 +286,35 @@ function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onCl
 
 function Section({ title, count, children }: { title: string; count: number; children: React.ReactNode }) {
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+    <div>
+      <div className="flex items-baseline gap-2 mb-4">
+        <h2 className="font-bold" style={{ fontSize: '1.1rem' }}>
           {title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </h2>
+        <p className="text-sm text-muted-foreground">
           {count}
-        </Typography>
-      </Box>
+        </p>
+      </div>
       {children}
-    </Box>
+    </div>
   );
 }
 
 // ── Loading skeleton ────────────────────────────────────────────────
 
 function CardSkeleton({ height = 260 }: { height?: number }) {
-  return <Skeleton variant="rounded" height={height} sx={{ borderRadius: 3 }} />;
+  return <Skeleton style={{ height, borderRadius: 12 }} />;
 }
 
 function SectionSkeleton() {
   return (
-    <Box>
-      <Skeleton variant="text" width={120} height={28} sx={{ mb: 2 }} />
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+    <div>
+      <Skeleton style={{ width: 120, height: 28, marginBottom: 16 }} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CardSkeleton />
         <CardSkeleton />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -381,64 +322,88 @@ function SectionSkeleton() {
 
 const MAX_NEWS = 6;
 
+/**
+ * P2-8 — rank news by relevance to the tag. Articles whose title or excerpt
+ * mention the tag name sort first; others are demoted. This is a lightweight
+ * client-side heuristic until the ingestion pipeline gets a confidence score.
+ */
+function rankNewsByRelevance(
+  articles: TagContentResult['news'],
+  tagName: string,
+): TagContentResult['news'] {
+  if (articles.length === 0) return articles;
+  const terms = tagName.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+  if (terms.length === 0) return articles;
+
+  return [...articles].sort((a, b) => {
+    const textA = `${a.title ?? ''} ${a.excerpt ?? ''}`.toLowerCase();
+    const textB = `${b.title ?? ''} ${b.excerpt ?? ''}`.toLowerCase();
+    const scoreA = terms.filter((t) => textA.includes(t)).length;
+    const scoreB = terms.filter((t) => textB.includes(t)).length;
+    // Higher mention count first; preserve original order (by published_at) within same score
+    return scoreB - scoreA;
+  });
+}
+
 export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
   const navigate = useLocalizedNavigate();
   const { data, isLoading } = useTagContent(tagId, tagName);
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div className="flex flex-col gap-10">
         <SectionSkeleton />
         <SectionSkeleton />
-      </Box>
+      </div>
     );
   }
 
   if (!data) return null;
 
-  const { venues, news, events, personalities, groups } = data;
+  const { venues, events, personalities, groups } = data;
+  const news = rankNewsByRelevance(data.news, tagName);
   const hasAny = venues.length > 0 || news.length > 0 || events.length > 0 || personalities.length > 0 || groups.length > 0;
   if (!hasAny) return null;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
+    <div className="flex flex-col gap-10 min-w-0">
       {/* Venues */}
       {venues.length > 0 && (
         <Section title="Venues" count={venues.length}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {venues.map((v) => (
               <VenueCard key={v.id} v={v} onClick={() => navigate(`/venues/${v.slug || v.id}`)} />
             ))}
-          </Box>
+          </div>
         </Section>
       )}
 
       {/* Events */}
       {events.length > 0 && (
         <Section title="Events" count={events.length}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {events.map((e) => (
               <EventCard key={e.id} e={e} onClick={() => navigate(`/events/${e.slug || e.id}`)} />
             ))}
-          </Box>
+          </div>
         </Section>
       )}
 
       {/* Personalities */}
       {personalities.length > 0 && (
         <Section title="Personalities" count={personalities.length}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {personalities.map((p) => (
               <PersonalityCard key={p.id} p={p} onClick={() => navigate(`/personalities/${p.slug || p.id}`)} />
             ))}
-          </Box>
+          </div>
         </Section>
       )}
 
       {/* News */}
       {news.length > 0 && (
         <Section title="News" count={news.length}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {news.slice(0, MAX_NEWS).map((n) => (
               <NewsCard
                 key={n.id}
@@ -446,11 +411,11 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
                 onClick={() => { if (n.url) window.open(n.url, '_blank', 'noopener'); }}
               />
             ))}
-          </Box>
+          </div>
           {news.length > MAX_NEWS && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5, textAlign: 'center' }}>
+            <p className="text-sm text-muted-foreground mt-3 text-center">
               +{news.length - MAX_NEWS} more articles
-            </Typography>
+            </p>
           )}
         </Section>
       )}
@@ -458,13 +423,13 @@ export function TagLinkedContent({ tagId, tagName }: TagLinkedContentProps) {
       {/* Groups */}
       {groups.length > 0 && (
         <Section title="Communities" count={groups.length}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <div className="flex flex-col gap-3">
             {groups.map((g) => (
               <GroupCard key={g.id} g={g} onClick={() => navigate(`/groups/${g.id}`)} />
             ))}
-          </Box>
+          </div>
         </Section>
       )}
-    </Box>
+    </div>
   );
 }

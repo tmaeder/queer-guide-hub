@@ -5,38 +5,36 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Lock, Globe, UserPlus, UserMinus, Settings, ExternalLink } from 'lucide-react';
 import { Group } from '@/hooks/useGroups';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 
 const GroupCardFixture = () => (
   <Card>
     <CardHeader>
-      <Box sx={{ pb: 1.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+      <div className="pb-3">
+        <div className="flex items-start gap-3">
           <Avatar><AvatarFallback>S</AvatarFallback></Avatar>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Sample Group</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <div className="flex-1">
+            <p className="font-semibold">Sample Group</p>
+            <div className="flex items-center gap-1">
               <Users style={{ width: 12, height: 12 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>42</Typography>
-              <Typography variant="body2" color="text.secondary">members</Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+              <p className="text-sm font-medium">42</p>
+              <p className="text-sm text-muted-foreground">members</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </CardHeader>
     <CardContent>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>A sample group description.</Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-        <Badge variant="outline"><Typography variant="caption">Tag 1</Typography></Badge>
-        <Badge variant="outline"><Typography variant="caption">Tag 2</Typography></Badge>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <p className="text-sm text-muted-foreground mb-4">A sample group description.</p>
+      <div className="flex flex-wrap gap-1 mb-4">
+        <Badge variant="outline"><span className="text-xs">Tag 1</span></Badge>
+        <Badge variant="outline"><span className="text-xs">Tag 2</span></Badge>
+      </div>
+      <div className="flex gap-2">
         <Button variant="ghost" size="sm">View</Button>
         <Button size="sm">Join</Button>
-      </Box>
+      </div>
     </CardContent>
   </Card>
 );
@@ -77,75 +75,56 @@ export const GroupCard = ({
   return (
     <Card>
       <CardHeader>
-        <Box sx={{ pb: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <div className="pb-3">
+          <div className="flex items-start gap-3">
             <Avatar>
               <AvatarImage src={group.image_url || undefined} />
               <AvatarFallback>{group.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
 
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
                 <LocalizedLink to={`/groups/${group.id}`} style={{ flex: 1 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      fontWeight: 600,
-                      overflow: 'hidden',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 1,
-                      WebkitBoxOrient: 'vertical',
-                      '&:hover': { textDecoration: 'underline' },
-                    }}
+                  <p
+                    className="font-semibold overflow-hidden hover:underline"
+                    style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}
                   >
                     {group.name}
-                  </Typography>
+                  </p>
                 </LocalizedLink>
                 {group.is_private ? (
                   <Lock style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
                 ) : (
                   <Globe style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
                 )}
-              </Box>
+              </div>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
                   <Users style={{ width: 12, height: 12 }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {group.member_count}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    members
-                  </Typography>
-                </Box>
+                  <p className="text-sm font-medium">{group.member_count}</p>
+                  <p className="text-sm text-muted-foreground">members</p>
+                </div>
                 {group.member_count > 0 && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        bgcolor: 'success.main',
-                        borderRadius: '50%',
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                      }}
-                    />
-                    <Typography variant="caption" color="text.secondary">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--success, #16a34a)' }} />
+                    <p className="text-xs text-muted-foreground">
                       {Math.floor(group.member_count * 0.3)} active
-                    </Typography>
-                  </Box>
+                    </p>
+                  </div>
                 )}
                 {group.user_role && (
                   <Badge variant="secondary">
-                    <Typography variant="caption">{group.user_role}</Typography>
+                    <span className="text-xs">{group.user_role}</span>
                   </Badge>
                 )}
                 {!group.is_member && group.has_pending_request && (
                   <Badge variant="outline">
-                    <Typography variant="caption">Pending</Typography>
+                    <span className="text-xs">Pending</span>
                   </Badge>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
 
             {canManage && onManage && (
               <Button
@@ -153,54 +132,46 @@ export const GroupCard = ({
                 size="sm"
                 onClick={() => onManage(group)}
                 aria-label="Manage group settings"
-
               >
                 <Settings style={{ width: 16, height: 16 }} />
               </Button>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardHeader>
 
       <CardContent>
         {group.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              mb: 2,
-            }}
+          <p
+            className="text-sm text-muted-foreground overflow-hidden mb-4"
+            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
             {group.description}
-          </Typography>
+          </p>
         )}
 
         {group.tags && group.tags.length > 0 && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+          <div className="flex flex-wrap gap-1 mb-4">
             {group.tags.slice(0, 3).map((tag) => (
               <Badge key={tag} variant="outline">
-                <Typography variant="caption">{tag}</Typography>
+                <span className="text-xs">{tag}</span>
               </Badge>
             ))}
             {group.tags.length > 3 && (
               <Badge variant="outline">
-                <Typography variant="caption">+{group.tags.length - 3} more</Typography>
+                <span className="text-xs">+{group.tags.length - 3} more</span>
               </Badge>
             )}
-          </Box>
+          </div>
         )}
 
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <div className="flex gap-2">
           <Button asChild variant="ghost" size="sm">
             <LocalizedLink to={`/groups/${group.id}`}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <span className="flex items-center">
                 <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
                 View Group
-              </Box>
+              </span>
             </LocalizedLink>
           </Button>
 
@@ -237,13 +208,12 @@ export const GroupCard = ({
               disabled={isLeaving}
               variant="outline"
               size="sm"
-
             >
               <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
               {isLeaving ? 'Leaving...' : 'Leave'}
             </Button>
           )}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

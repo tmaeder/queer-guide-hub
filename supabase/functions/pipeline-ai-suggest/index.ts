@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { anthropicMessages } from '../_shared/anthropic-shim.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // pipeline-ai-suggest
@@ -15,7 +16,7 @@ interface NodeTypeDescriptor {
   category: string
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-ai-suggest', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('POST required', 405, req)
 
@@ -112,4 +113,4 @@ Rules:
     console.error('pipeline-ai-suggest error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

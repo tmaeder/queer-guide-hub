@@ -161,7 +161,7 @@ export function ImageUpload({
         <Label htmlFor={id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ImageIcon style={{ height: 16, width: 16 }} />
           {label}
-          {required && <span style={{ color: '#dc2626' }}>*</span>}
+          {required && <span style={{ color: 'hsl(var(--destructive))' }}>*</span>}
         </Label>
       )}
 
@@ -199,7 +199,7 @@ export function ImageUpload({
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  backgroundColor: 'hsl(var(--foreground) / 0.5)',
                   opacity: 0,
                   transition: 'opacity 0.2s',
                   borderRadius: 6,

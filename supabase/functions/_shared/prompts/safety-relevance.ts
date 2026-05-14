@@ -111,7 +111,7 @@ const FLAG_SEVERITIES = new Set(['low', 'medium', 'high']);
  * route to human review on parse error.
  */
 export function parseSafetyRelevance(raw: string): SafetyRelevanceResult {
-  const cleaned = raw.trim().replace(/^```json\s*|```$/g, '');
+  const cleaned = raw.trim().replace(/^```(?:json)?\s*|\s*```$/g, '');
   const parsed = JSON.parse(cleaned);
   if (typeof parsed !== 'object' || parsed === null) {
     throw new Error('expected object');

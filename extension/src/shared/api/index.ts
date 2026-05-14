@@ -1,0 +1,12 @@
+export { submitItem, fetchStatus, bulkSubmit, fetchMySubmissions } from "./submit";
+export type { BulkResult, SubmissionRow } from "./submit";
+export { findSimilarItems, findExisting } from "./discovery";
+export type { SimilarHit, ExistingMatch } from "./discovery";
+export { renderUrl, scanSitemap } from "./render";
+export type { SitemapEntry } from "./render";
+export { listWatched, addWatched, removeWatched } from "./watch";
+export type { WatchedRow } from "./watch";
+export { enrichItem } from "./enrich";
+export type { EnrichResponse } from "./enrich";
+export { uploadCapture } from "./upload";
+export { API, SUPABASE_URL, ANON_KEY, authHeaders, pgrstHeaders, jwtSub, ensureOk } from "./client";

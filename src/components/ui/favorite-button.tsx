@@ -63,7 +63,7 @@ export const FavoriteButton = ({
       onClick={handleClick}
       style={{
         ...sizeStyles[size],
-        color: favorited ? '#ef4444' : 'hsl(var(--muted-foreground))',
+        color: favorited ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
         transition: 'color 0.2s',
       }}
       aria-label={favorited ? "Remove from favorites" : "Add to favorites"}

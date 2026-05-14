@@ -1,16 +1,25 @@
 import { useState } from 'react';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import { CheckCheck, Github, Tag, UserPlus, Zap, X, Layers } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { CheckCheck, Tag, UserPlus, Zap, X, Layers } from 'lucide-react';
+import { Github } from '@/components/icons/brand';
 import { kanbanColumns, priorities, type KanbanStatus } from './constants';
 import type { AdminProfile, StoryWithCounts } from './types';
 
@@ -52,10 +61,6 @@ export function FeedbackBulkBar({
   admins,
   loading,
 }: Props) {
-  const [statusAnchor, setStatusAnchor] = useState<HTMLElement | null>(null);
-  const [prioAnchor, setPrioAnchor] = useState<HTMLElement | null>(null);
-  const [assignAnchor, setAssignAnchor] = useState<HTMLElement | null>(null);
-  const [storyAnchor, setStoryAnchor] = useState<HTMLElement | null>(null);
   const [labelOpen, setLabelOpen] = useState(false);
   const [labelInput, setLabelInput] = useState('');
   const [storyOpen, setStoryOpen] = useState(false);
@@ -85,239 +90,187 @@ export function FeedbackBulkBar({
 
   return (
     <>
-      <Paper
-        elevation={8}
-        sx={{
-          position: 'sticky',
-          bottom: 16,
-          mx: 'auto',
-          px: 2,
-          py: 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          borderRadius: 2,
-          zIndex: 50,
-          flexWrap: 'wrap',
-          maxWidth: 1200,
-        }}
+      <div
+        className="sticky bottom-4 mx-auto px-4 py-2 flex items-center gap-2 rounded-lg z-50 flex-wrap max-w-[1200px] bg-background border border-border shadow-lg"
       >
-        <Chip
-          label={`${selectedCount} selected`}
-          color="primary"
-          size="small"
-        />
+        <Badge>{selectedCount} selected</Badge>
         {selectedCount < totalCount && (
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<CheckCheck size={14} />}
-            onClick={onSelectAll}
-            sx={{ textTransform: 'none' }}
-          >
+          <Button size="sm" variant="ghost" onClick={onSelectAll}>
+            <CheckCheck size={14} />
             Select all ({totalCount})
           </Button>
         )}
-        <Button size="small" variant="text" onClick={onClear} sx={{ textTransform: 'none' }}>
+        <Button size="sm" variant="ghost" onClick={onClear}>
           Clear
         </Button>
 
-        <Box sx={{ flex: 1 }} />
+        <div className="flex-1" />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline" disabled={loading}>
+              Status
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {kanbanColumns.map((c) => (
+              <DropdownMenuItem key={c.id} onClick={() => onSetStatus(c.id)}>
+                <span
+                  className="w-2 h-2 rounded-full mr-2 inline-block"
+                  style={{ background: c.color }}
+                />
+                {c.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline" disabled={loading}>
+              <Zap size={14} />
+              Priority
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {priorities.map((p) => (
+              <DropdownMenuItem key={p.value} onClick={() => onSetPriority(p.value)}>
+                <span
+                  className="w-2 h-2 rounded-full mr-2 inline-block"
+                  style={{ background: p.color }}
+                />
+                {p.short} · {p.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline" disabled={loading}>
+              <UserPlus size={14} />
+              Assign
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => onAssign(null)}>
+              <X size={14} className="mr-2" />
+              Unassign
+            </DropdownMenuItem>
+            {admins.map((a) => (
+              <DropdownMenuItem key={a.user_id} onClick={() => onAssign(a.user_id)}>
+                {a.display_name || a.user_id.slice(0, 8)}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Button
-          size="small"
-          variant="outlined"
-          onClick={(e) => setStatusAnchor(e.currentTarget)}
-          disabled={loading}
-        >
-          Status
-        </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<Zap size={14} />}
-          onClick={(e) => setPrioAnchor(e.currentTarget)}
-          disabled={loading}
-        >
-          Priority
-        </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<UserPlus size={14} />}
-          onClick={(e) => setAssignAnchor(e.currentTarget)}
-          disabled={loading}
-        >
-          Assign
-        </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<Tag size={14} />}
+          size="sm"
+          variant="outline"
           onClick={() => setLabelOpen(true)}
           disabled={loading}
         >
+          <Tag size={14} />
           Label
         </Button>
+
         {(onCreateStory || onAddToStory) && (
-          <Button
-            size="small"
-            variant="outlined"
-            startIcon={<Layers size={14} />}
-            onClick={(e) => setStoryAnchor(e.currentTarget)}
-            disabled={loading}
-          >
-            Story
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" disabled={loading}>
+                <Layers size={14} />
+                Story
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {onCreateStory && (
+                <DropdownMenuItem onClick={() => void openCreateStoryDialog()}>
+                  Create story from selection…
+                </DropdownMenuItem>
+              )}
+              {onAddToStory && openStories.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Add to story…</DropdownMenuLabel>
+                  {openStories.map((s) => (
+                    <DropdownMenuItem key={s.id} onClick={() => onAddToStory(s.id)}>
+                      {s.title} ({s.member_count})
+                    </DropdownMenuItem>
+                  ))}
+                </>
+              )}
+              {onAddToStory && openStories.length === 0 && (
+                <DropdownMenuItem disabled>No open stories yet</DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
+
         <Button
-          size="small"
-          variant="contained"
-          startIcon={<Github size={14} />}
+          size="sm"
           onClick={onForward}
           disabled={loading}
-          sx={{ bgcolor: 'hsl(var(--accent-warm))', '&:hover': { bgcolor: 'hsl(var(--accent-warm))' } }}
+          style={{ background: 'hsl(var(--foreground))' }}
+          className="text-white hover:opacity-90"
         >
+          <Github size={14} />
           Forward
         </Button>
-      </Paper>
+      </div>
 
-      <Menu
-        anchorEl={storyAnchor}
-        open={!!storyAnchor}
-        onClose={() => setStoryAnchor(null)}
-      >
-        {onCreateStory && (
-          <MenuItem
-            onClick={() => {
-              setStoryAnchor(null);
-              void openCreateStoryDialog();
-            }}
-          >
-            Create story from selection…
-          </MenuItem>
-        )}
-        {onAddToStory && openStories.length > 0 && [
-          <MenuItem key="__header" disabled>
-            Add to story…
-          </MenuItem>,
-          ...openStories.map((s) => (
-            <MenuItem
-              key={s.id}
+      <Dialog open={storyOpen} onOpenChange={setStoryOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Create story from {selectedCount} selected</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              autoFocus
+              placeholder={
+                storyTitleLoading ? 'Suggesting a title…' : 'Short title for this story'
+              }
+              value={storyTitle}
+              onChange={(e) => setStoryTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && storyTitle.trim() && onCreateStory) {
+                  onCreateStory(storyTitle.trim());
+                  setStoryOpen(false);
+                }
+              }}
+            />
+            <Label className="text-xs text-muted-foreground font-normal">
+              {storyTitleLoading
+                ? 'Cloudflare Llama is summarising the selection'
+                : 'Edit the auto-suggested title or write your own'}
+            </Label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStoryOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!storyTitle.trim()}
               onClick={() => {
-                onAddToStory(s.id);
-                setStoryAnchor(null);
+                if (onCreateStory) onCreateStory(storyTitle.trim());
+                setStoryOpen(false);
               }}
             >
-              {s.title} ({s.member_count})
-            </MenuItem>
-          )),
-        ]}
-        {onAddToStory && openStories.length === 0 && (
-          <MenuItem disabled>No open stories yet</MenuItem>
-        )}
-      </Menu>
-
-      <Dialog open={storyOpen} onClose={() => setStoryOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Create story from {selectedCount} selected</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            placeholder={
-              storyTitleLoading ? 'Suggesting a title…' : 'Short title for this story'
-            }
-            helperText={
-              storyTitleLoading
-                ? 'Cloudflare Llama is summarising the selection'
-                : 'Edit the auto-suggested title or write your own'
-            }
-            value={storyTitle}
-            onChange={(e) => setStoryTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && storyTitle.trim() && onCreateStory) {
-                onCreateStory(storyTitle.trim());
-                setStoryOpen(false);
-              }
-            }}
-          />
+              Create
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setStoryOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            disabled={!storyTitle.trim()}
-            onClick={() => {
-              if (onCreateStory) onCreateStory(storyTitle.trim());
-              setStoryOpen(false);
-            }}
-          >
-            Create
-          </Button>
-        </DialogActions>
       </Dialog>
 
-      <Menu anchorEl={statusAnchor} open={!!statusAnchor} onClose={() => setStatusAnchor(null)}>
-        {kanbanColumns.map((c) => (
-          <MenuItem
-            key={c.id}
-            onClick={() => {
-              onSetStatus(c.id);
-              setStatusAnchor(null);
-            }}
-          >
-            <Box sx={{ width: 8, height: 8, bgcolor: c.color, borderRadius: '50%', mr: 1 }} />
-            {c.label}
-          </MenuItem>
-        ))}
-      </Menu>
-
-      <Menu anchorEl={prioAnchor} open={!!prioAnchor} onClose={() => setPrioAnchor(null)}>
-        {priorities.map((p) => (
-          <MenuItem
-            key={p.value}
-            onClick={() => {
-              onSetPriority(p.value);
-              setPrioAnchor(null);
-            }}
-          >
-            <Box sx={{ width: 8, height: 8, bgcolor: p.color, borderRadius: '50%', mr: 1 }} />
-            {p.short} · {p.label}
-          </MenuItem>
-        ))}
-      </Menu>
-
-      <Menu anchorEl={assignAnchor} open={!!assignAnchor} onClose={() => setAssignAnchor(null)}>
-        <MenuItem
-          onClick={() => {
-            onAssign(null);
-            setAssignAnchor(null);
-          }}
-        >
-          <X size={14} style={{ marginRight: 8 }} />
-          Unassign
-        </MenuItem>
-        {admins.map((a) => (
-          <MenuItem
-            key={a.user_id}
-            onClick={() => {
-              onAssign(a.user_id);
-              setAssignAnchor(null);
-            }}
-          >
-            {a.display_name || a.user_id.slice(0, 8)}
-          </MenuItem>
-        ))}
-      </Menu>
-
-      <Dialog open={labelOpen} onClose={() => setLabelOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Add label to {selectedCount} item{selectedCount === 1 ? '' : 's'}</DialogTitle>
-        <DialogContent>
-          <TextField
+      <Dialog open={labelOpen} onOpenChange={setLabelOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle>
+              Add label to {selectedCount} item{selectedCount === 1 ? '' : 's'}
+            </DialogTitle>
+          </DialogHeader>
+          <Input
             autoFocus
-            fullWidth
-            size="small"
             placeholder="e.g. regression, ux, a11y"
             value={labelInput}
             onChange={(e) => setLabelInput(e.target.value)}
@@ -329,21 +282,22 @@ export function FeedbackBulkBar({
               }
             }}
           />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLabelOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!labelInput.trim()}
+              onClick={() => {
+                onAddLabel(labelInput.trim());
+                setLabelInput('');
+                setLabelOpen(false);
+              }}
+            >
+              Add
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setLabelOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            disabled={!labelInput.trim()}
-            onClick={() => {
-              onAddLabel(labelInput.trim());
-              setLabelInput('');
-              setLabelOpen(false);
-            }}
-          >
-            Add
-          </Button>
-        </DialogActions>
       </Dialog>
     </>
   );

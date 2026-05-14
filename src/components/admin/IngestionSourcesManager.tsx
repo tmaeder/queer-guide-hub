@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +9,6 @@ import {
   Play, RefreshCw, AlertTriangle, CheckCircle, Clock,
   Database, Globe, Rss, FileText, Zap, Key
 } from 'lucide-react';
-import { brandColors } from '@/theme/muiTheme';
 
 const SOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
   api: <Database style={{ height: 16, width: 16 }} />,
@@ -72,59 +69,59 @@ export const IngestionSourcesManager = () => {
   const errorCount = sources.filter(s => s.last_error).length;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Summary Row */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
+            <div className="flex items-center justify-center gap-2 mb-1">
               <Zap style={{ height: 20, width: 20, color: '#2563eb' }} />
-              <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{sources.length}</Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Total Sources</Typography>
+              <span className="text-2xl font-bold">{sources.length}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Total Sources</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
+            <div className="flex items-center justify-center gap-2 mb-1">
               <CheckCircle style={{ height: 20, width: 20, color: '#16a34a' }} />
-              <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{enabledCount}</Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Enabled</Typography>
+              <span className="text-2xl font-bold">{enabledCount}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Enabled</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
+            <div className="flex items-center justify-center gap-2 mb-1">
               <AlertTriangle style={{ height: 20, width: 20, color: '#dc2626' }} />
-              <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{errorCount}</Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Errors</Typography>
+              <span className="text-2xl font-bold">{errorCount}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Errors</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
-              <Database style={{ height: 20, width: 20, color: brandColors.main }} />
-              <Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Database style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
+              <span className="text-2xl font-bold">
                 {sources.reduce((sum, s) => sum + (s.total_items_fetched || 0), 0).toLocaleString()}
-              </Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>Total Items Fetched</Typography>
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Total Items Fetched</p>
           </CardContent>
         </Card>
-      </Box>
+      </div>
 
       {/* Refresh */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={loadSources} disabled={loading} style={{ display: 'flex', gap: 8 }}>
           <RefreshCw style={{ height: 16, width: 16, ...(loading ? { animation: 'spin 1s linear infinite' } : {}) }} />
           Refresh
         </Button>
-      </Box>
+      </div>
 
       {/* Source Cards */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-4">
         {sources.map((source) => {
           const hasError = !!source.last_error;
           const isTriggering = triggeringId === source.id;
@@ -135,37 +132,37 @@ export const IngestionSourcesManager = () => {
               borderLeft: `4px solid ${hasError ? '#dc2626' : source.is_enabled ? '#16a34a' : '#6b7280'}`,
             }}>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
-                    <Box sx={{ p: 1, bgcolor: 'var(--muted)', borderRadius: 1 }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="p-2 bg-muted rounded">
                       {SOURCE_TYPE_ICONS[source.source_type] || <Database style={{ height: 16, width: 16 }} />}
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-                        <Typography sx={{ fontWeight: 600 }}>{source.name}</Typography>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <p className="font-semibold">{source.name}</p>
                         <Badge variant={source.is_enabled ? 'default' : 'outline'}>
                           {source.is_enabled ? 'Enabled' : 'Disabled'}
                         </Badge>
                         <Badge variant="secondary">{source.source_type}</Badge>
                         <Badge variant="outline">{source.target_table}</Badge>
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 3, fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      </div>
+                      <div className="flex gap-6 text-muted-foreground" style={{ fontSize: '0.8rem' }}>
+                        <div className="flex items-center gap-1">
                           <Clock style={{ height: 12, width: 12 }} />
                           Last run: {formatRelativeTime(source.last_run_at)}
-                        </Box>
+                        </div>
                         {source.schedule && (
                           <span>Schedule: {source.schedule}</span>
                         )}
                         <span>Fetched: {(source.total_items_fetched || 0).toLocaleString()}</span>
                         <span>Approved: {(source.total_items_approved || 0).toLocaleString()}</span>
                         {source.requires_api_key && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#ca8a04' }}>
+                          <div className="flex items-center gap-1" style={{ color: '#ca8a04' }}>
                             <Key style={{ height: 12, width: 12 }} />
                             {source.requires_api_key}
-                          </Box>
+                          </div>
                         )}
-                      </Box>
+                      </div>
 
                       {hasError && (
                         <Alert style={{ marginTop: 8, padding: '4px 8px' }}>
@@ -175,10 +172,10 @@ export const IngestionSourcesManager = () => {
                           </AlertDescription>
                         </Alert>
                       )}
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <div className="flex items-center gap-4">
                     <Switch
                       checked={source.is_enabled}
                       onCheckedChange={() => handleToggle(source)}
@@ -197,13 +194,13 @@ export const IngestionSourcesManager = () => {
                       )}
                       Run Now
                     </Button>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };

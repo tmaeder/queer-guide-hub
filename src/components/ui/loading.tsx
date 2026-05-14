@@ -29,7 +29,7 @@ export function Loading({ size = "md", text }: LoadingProps) {
         ))}
       </div>
       {text && (
-        <p style={{ fontSize: '0.875rem', color: '#666666', margin: 0 }}>
+        <p style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', margin: 0 }}>
           {text}
         </p>
       )}
@@ -51,7 +51,7 @@ export function LoadingSpinner({ size = "md" }: LoadingSpinnerProps) {
         width: s,
         height: s,
         borderRadius: '50%',
-        border: '2px solid #e5e5e5',
+        border: '2px solid hsl(var(--border))',
         borderTopColor: 'currentColor',
         animation: 'spin 1s linear infinite',
       }}
@@ -90,7 +90,7 @@ export function PageLoading({ text = "Loading..." }: PageLoadingProps) {
           <h2 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>{text}</h2>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <LoadingSpinner size="sm" />
-            <span style={{ fontSize: '0.875rem', color: '#666666', marginLeft: 8 }}>Please wait</span>
+            <span style={{ fontSize: '0.875rem', color: 'hsl(var(--muted-foreground))', marginLeft: 8 }}>Please wait</span>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@ export function InlineLoading({ text = "Loading...", size = "md" }: InlineLoadin
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '32px 0' }}>
       <LoadingSpinner size={size} />
       <span style={{
-        color: '#666666',
+        color: 'hsl(var(--muted-foreground))',
         fontSize: size === "sm" ? '0.875rem' : '1rem',
       }}>
         {text}

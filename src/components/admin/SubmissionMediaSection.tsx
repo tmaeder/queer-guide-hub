@@ -1,4 +1,4 @@
-import { Box, Typography, Chip, Stack } from '@mui/material';
+import { Badge } from '@/components/ui/badge';
 
 interface SafetyFlag {
   type: string;
@@ -19,17 +19,17 @@ interface Props {
   safetyFlags?: SafetyFlag[] | null;
 }
 
-const SEVERITY_COLOR: Record<string, 'default' | 'warning' | 'error'> = {
+const SEVERITY_VARIANT: Record<string, 'default' | 'secondary' | 'destructive'> = {
   low: 'default',
-  medium: 'warning',
-  high: 'error',
+  medium: 'secondary',
+  high: 'destructive',
 };
 
-function ScoreChip({ label, value }: { label: string; value: number | null | undefined }) {
+function ScoreBadge({ label, value }: { label: string; value: number | null | undefined }) {
   if (typeof value !== 'number') return null;
   const pct = Math.round(value * 100);
-  const color = pct >= 70 ? 'success' : pct >= 40 ? 'warning' : 'error';
-  return <Chip size="small" label={`${label}: ${pct}%`} color={color} />;
+  const variant = pct >= 70 ? 'default' : pct >= 40 ? 'secondary' : 'destructive';
+  return <Badge variant={variant}>{`${label}: ${pct}%`}</Badge>;
 }
 
 export function SubmissionMediaSection({
@@ -44,8 +44,6 @@ export function SubmissionMediaSection({
   confidenceScore,
   safetyFlags,
 }: Props) {
-  // Render nothing if there's no media/AI signal — keeps the dialog clean for
-  // legacy submissions that pre-date the social pipeline.
   const hasContent =
     platform ||
     mediaProcessingStatus ||
@@ -60,109 +58,82 @@ export function SubmissionMediaSection({
   if (!hasContent) return null;
 
   return (
-    <Box sx={{ mb: 3, borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        Source &amp; AI Signal
-      </Typography>
+    <div className="mb-6 pt-4 border-t border-border">
+      <p className="text-sm font-medium mb-2">Source &amp; AI Signal</p>
 
-      <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1.5, gap: 0.75 }}>
-        {platform && <Chip size="small" label={`platform: ${platform}`} />}
+      <div className="flex flex-row flex-wrap gap-1.5 mb-3">
+        {platform && <Badge variant="outline">{`platform: ${platform}`}</Badge>}
         {mediaProcessingStatus && (
-          <Chip size="small" label={`media: ${mediaProcessingStatus}`} />
+          <Badge variant="outline">{`media: ${mediaProcessingStatus}`}</Badge>
         )}
-        <ScoreChip label="relevance" value={queerRelevanceScore} />
-        <ScoreChip label="confidence" value={confidenceScore} />
-      </Stack>
+        <ScoreBadge label="relevance" value={queerRelevanceScore} />
+        <ScoreBadge label="confidence" value={confidenceScore} />
+      </div>
 
       {safetyFlags?.length ? (
-        <Box sx={{ mb: 1.5 }}>
-          <Typography variant="caption" color="text.secondary">
-            Safety flags
-          </Typography>
-          <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ mt: 0.5, gap: 0.5 }}>
+        <div className="mb-3">
+          <span className="text-xs text-muted-foreground">Safety flags</span>
+          <div className="flex flex-row flex-wrap gap-1 mt-1">
             {safetyFlags.map((f, i) => (
-              <Chip
+              <Badge
                 key={i}
-                size="small"
-                label={`${f.type} · ${f.severity}`}
-                color={SEVERITY_COLOR[f.severity] ?? 'default'}
+                variant={SEVERITY_VARIANT[f.severity] ?? 'default'}
                 title={f.reason ?? ''}
-              />
+              >
+                {`${f.type} · ${f.severity}`}
+              </Badge>
             ))}
-          </Stack>
-        </Box>
+          </div>
+        </div>
       ) : null}
 
       {mediaUrls?.length ? (
-        <Box sx={{ mb: 1.5 }}>
-          <Typography variant="caption" color="text.secondary">
-            Media ({mediaUrls.length})
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
+        <div className="mb-3">
+          <span className="text-xs text-muted-foreground">Media ({mediaUrls.length})</span>
+          <div className="flex gap-2 flex-wrap mt-1">
             {mediaUrls.slice(0, 6).map((u, i) =>
               /\.(mp4|mov|webm)$/i.test(u) ? (
-                <Box
+                <div
                   key={i}
-                  sx={{
-                    width: 96,
-                    height: 96,
-                    bgcolor: 'action.hover',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 11,
-                  }}
+                  className="bg-muted flex items-center justify-center"
+                  style={{ width: 96, height: 96, fontSize: 11 }}
                 >
                   video
-                </Box>
+                </div>
               ) : (
-                <Box
+                <img
                   key={i}
-                  component="img"
                   src={u}
                   alt={`media ${i + 1}`}
-                  sx={{ width: 96, height: 96, objectFit: 'cover' }}
+                  style={{ width: 96, height: 96, objectFit: 'cover' }}
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.display = 'none';
                   }}
                 />
               ),
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       ) : null}
 
-      {rawText ? (
-        <TextBlock label="Raw text" body={rawText} />
-      ) : null}
+      {rawText ? <TextBlock label="Raw text" body={rawText} /> : null}
       {ocrText ? <TextBlock label="OCR text" body={ocrText} /> : null}
       {visionSummary ? <TextBlock label="Vision summary" body={visionSummary} /> : null}
       {transcriptText ? <TextBlock label="Transcript" body={transcriptText} /> : null}
-    </Box>
+    </div>
   );
 }
 
 function TextBlock({ label, body }: { label: string; body: string }) {
   return (
-    <Box sx={{ mb: 1 }}>
-      <Typography variant="caption" color="text.secondary">
-        {label}
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          whiteSpace: 'pre-wrap',
-          fontFamily: 'monospace',
-          fontSize: 12,
-          maxHeight: 200,
-          overflowY: 'auto',
-          bgcolor: 'action.hover',
-          p: 1,
-          mt: 0.5,
-        }}
+    <div className="mb-2">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <p
+        className="font-mono whitespace-pre-wrap mt-1 p-2 bg-muted overflow-y-auto"
+        style={{ fontSize: 12, maxHeight: 200 }}
       >
         {body}
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 }

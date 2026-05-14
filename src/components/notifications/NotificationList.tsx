@@ -17,10 +17,8 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useGroupNotifications } from '@/hooks/useGroupNotifications';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchUserPostInteractions } from '@/hooks/usePageFetchers';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
@@ -71,71 +69,12 @@ export const NotificationList = () => {
       try {
         setLikesLoading(true);
         setCommentsLoading(true);
-        // Fetch user's post IDs
-        const { data: posts, error: postsErr } = await supabase
-          .from('community_posts')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(200);
-        if (postsErr) throw postsErr;
-        const postIds = (posts || []).map((p) => p.id);
-        if (postIds.length === 0) {
-          if (isMounted) {
-            setLikes([]);
-            setComments([]);
-          }
-          return;
+        const { likes, comments } = await fetchUserPostInteractions<LikeItem, CommentItem>(user.id);
+        if (isMounted) {
+          setLikes(likes);
+          setComments(comments);
         }
-        // Fetch recent likes on user's posts
-        const { data: likesData } = await supabase
-          .from('post_likes')
-          .select('id, post_id, user_id, created_at')
-          .in('post_id', postIds)
-          .order('created_at', { ascending: false })
-          .limit(20);
-        let likesEnriched: LikeItem[] = [];
-        if (likesData?.length) {
-          const likerIds = [...new Set(likesData.map((l) => l.user_id))];
-          const { data: likerProfiles } = await supabase
-            .from('profiles')
-            .select('user_id, display_name, avatar_url')
-            .in('user_id', likerIds);
-          likesEnriched = (likesData || []).map((l) => {
-            const p = likerProfiles?.find((x) => x.user_id === l.user_id);
-            return {
-              id: l.id,
-              post_id: l.post_id,
-              user_id: l.user_id,
-              created_at: l.created_at as string,
-              user_display_name: p?.display_name || 'Someone',
-              user_avatar_url: p?.avatar_url || null,
-            };
-          });
-        }
-        if (isMounted) setLikes(likesEnriched);
-
-        // Fetch recent comments on user's posts (with profile join)
-        const { data: commentsData, error: commentsErr } = await supabase
-          .from('post_comments')
-          .select(
-            `id, post_id, user_id, content, created_at, profiles ( display_name, avatar_url, user_id )`,
-          )
-          .in('post_id', postIds)
-          .order('created_at', { ascending: false })
-          .limit(20);
-        if (commentsErr) throw commentsErr;
-        const commentsEnriched: CommentItem[] = (commentsData || []).map((c: Record<string, unknown> & { profiles?: { display_name?: string; avatar_url?: string } }) => ({
-          id: c.id,
-          post_id: c.post_id,
-          user_id: c.user_id,
-          content: c.content,
-          created_at: c.created_at,
-          user_display_name: c.profiles?.display_name || 'Someone',
-          user_avatar_url: c.profiles?.avatar_url || null,
-        }));
-        if (isMounted) setComments(commentsEnriched);
       } catch (e) {
-        // Fail silently in dropdown context
         console.error('Failed to fetch likes/comments', e);
       } finally {
         if (isMounted) {
@@ -165,7 +104,7 @@ export const NotificationList = () => {
   }, [conversations]);
 
   const Empty = ({ label }: { label: string }) => (
-    <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>{label}</Box>
+    <div className="p-4 text-center text-muted-foreground">{label}</div>
   );
 
   const isLoadingAll =
@@ -174,7 +113,6 @@ export const NotificationList = () => {
   const combinedItems = useMemo(() => {
     const items: Array<{ type: string; createdAt: Date; data: Record<string, unknown>; key: string }> = [];
 
-    // App notifications
     notifications.forEach((n: Record<string, unknown>) => {
       items.push({
         type: 'notification',
@@ -184,13 +122,11 @@ export const NotificationList = () => {
       });
     });
 
-    // Direct messages (use last_message_at or updated_at)
     directMessages.forEach((c: Record<string, unknown>) => {
       const ts = c.last_message_at || c.updated_at || c.created_at || new Date().toISOString();
       items.push({ type: 'dm', createdAt: new Date(ts), data: c, key: `dm-${c.id}` });
     });
 
-    // Group notifications
     groupNotifs.forEach((g: Record<string, unknown>) => {
       items.push({
         type: 'group',
@@ -200,12 +136,10 @@ export const NotificationList = () => {
       });
     });
 
-    // Likes on my posts
     likes.forEach((l) => {
       items.push({ type: 'like', createdAt: new Date(l.created_at), data: l, key: `like-${l.id}` });
     });
 
-    // Comments on my posts
     comments.forEach((c) => {
       items.push({
         type: 'comment',
@@ -223,83 +157,36 @@ export const NotificationList = () => {
       case 'notification': {
         const n = item.data;
         return (
-          <Box
+          <div
             key={item.key}
-            sx={{
-              p: 1.5,
-              cursor: 'pointer',
-              '&:hover': { bgcolor: 'action.hover' },
-              transition: 'background-color 0.2s',
-              ...(!n.read && { bgcolor: 'rgba(var(--mui-palette-primary-mainChannel) / 0.05)' }),
-            }}
+            className={`p-3 cursor-pointer hover:bg-muted transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
             onClick={() => handleNotificationClick(n)}
           >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-              <Box
-                sx={{
-                  p: 0.5,
-                  borderRadius: 1,
-                  ...(n.type === 'message' && {
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                    opacity: 0.1,
-                  }),
-                  ...(n.type === 'event' && {
-                    bgcolor: 'secondary.main',
-                    color: 'secondary.contrastText',
-                    opacity: 0.1,
-                  }),
-                  ...(n.type === 'system' && { bgcolor: 'grey.200' }),
-                }}
-              >
-                {getNotificationIcon(n.type)}
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: !n.read ? 600 : 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+            <div className="flex items-start gap-3">
+              <div className="p-1 rounded">
+                {getNotificationIcon(n.type as string)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <p className={`text-sm truncate ${!n.read ? 'font-semibold' : 'font-medium'}`}>
                     {n.title}
-                  </Typography>
-                  {!n.read && <Box sx={{ width: 8, height: 8, bgcolor: 'primary.main' }} />}
-                </Box>
+                  </p>
+                  {!n.read && <div className="bg-primary" style={{ width: 8, height: 8 }} />}
+                </div>
                 {n.content && (
-                  <Typography
-                    component="p"
-                    sx={{
-                      fontSize: '0.75rem',
-                      color: 'text.secondary',
-                      mt: 0.5,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
+                  <p
+                    className="text-xs text-muted-foreground mt-1"
+                    style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                   >
                     {n.content}
-                  </Typography>
+                  </p>
                 )}
-                <Typography
-                  component="p"
-                  sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}
-                >
+                <p className="text-xs text-muted-foreground mt-1">
                   {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+                </p>
+              </div>
+            </div>
+          </div>
         );
       }
       case 'dm': {
@@ -309,240 +196,134 @@ export const NotificationList = () => {
           c.title || others.map((o: { profile?: { display_name?: string } }) => o.profile?.display_name || 'User').join(', ');
         const avatar = others[0]?.profile?.avatar_url || '';
         return (
-          <Box
+          <div
             key={item.key}
-            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            className="p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/messages')}
           >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <div className="flex items-start gap-3">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={avatar} />
                 <AvatarFallback>{(title || 'U').charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Typography
-                    component="h4"
-                    sx={{
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
                     <MessageCircle style={{ height: 16, width: 16 }} /> {title || 'Conversation'}
-                  </Typography>
-                  <Typography
-                    component="span"
-                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
-                  >
+                  </h4>
+                  <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </Typography>
-                </Box>
-                <Typography
-                  component="p"
-                  sx={{
-                    fontSize: '0.75rem',
-                    color: 'text.secondary',
-                    mt: 0.5,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 truncate">
                   Tap to open chat
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+                </p>
+              </div>
+            </div>
+          </div>
         );
       }
       case 'group': {
         const n = item.data;
         return (
-          <Box
+          <div
             key={item.key}
-            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            className="p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/groups')}
           >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <div className="flex items-start gap-3">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={n.triggered_by_profile?.avatar_url || ''} />
                 <AvatarFallback>
                   {(n.triggered_by_profile?.display_name || 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Typography
-                    component="h4"
-                    sx={{
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
                     <Users style={{ height: 16, width: 16 }} />{' '}
                     {n.community_groups?.name || 'Group'}
-                  </Typography>
-                  <Typography
-                    component="span"
-                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
-                  >
+                  </h4>
+                  <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </Typography>
-                </Box>
-                <Typography
-                  component="p"
-                  sx={{
-                    fontSize: '0.75rem',
-                    color: 'text.secondary',
-                    mt: 0.5,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 truncate">
                   {String(n.notification_type).replace('_', ' ')} • by{' '}
                   {n.triggered_by_profile?.display_name || 'Someone'}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+                </p>
+              </div>
+            </div>
+          </div>
         );
       }
       case 'like': {
         const l = item.data as unknown as LikeItem;
         return (
-          <Box
+          <div
             key={item.key}
-            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            className="p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/feed')}
           >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <div className="flex items-start gap-3">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={l.user_avatar_url || ''} />
                 <AvatarFallback>
                   {(l.user_display_name || 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Typography
-                    component="h4"
-                    sx={{
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
                     <Heart style={{ height: 16, width: 16 }} /> {l.user_display_name} liked your
                     post
-                  </Typography>
-                  <Typography
-                    component="span"
-                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
-                  >
+                  </h4>
+                  <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </Typography>
-                </Box>
-                <Typography
-                  component="p"
-                  sx={{
-                    fontSize: '0.75rem',
-                    color: 'text.secondary',
-                    mt: 0.5,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 truncate">
                   Tap to view in feed
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+                </p>
+              </div>
+            </div>
+          </div>
         );
       }
       case 'comment': {
         const c = item.data as unknown as CommentItem;
         return (
-          <Box
+          <div
             key={item.key}
-            sx={{ p: 1.5, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            className="p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/feed')}
           >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <div className="flex items-start gap-3">
               <Avatar style={{ height: 32, width: 32 }}>
                 <AvatarImage src={c.user_avatar_url || ''} />
                 <AvatarFallback>
                   {(c.user_display_name || 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-                >
-                  <Typography
-                    component="h4"
-                    sx={{
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium truncate flex items-center gap-2">
                     <MessageSquare style={{ height: 16, width: 16 }} /> {c.user_display_name}{' '}
                     commented
-                  </Typography>
-                  <Typography
-                    component="span"
-                    sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}
-                  >
+                  </h4>
+                  <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
-                  </Typography>
-                </Box>
-                <Typography
-                  component="p"
-                  sx={{
-                    fontSize: '0.75rem',
-                    color: 'text.secondary',
-                    mt: 0.5,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
+                  </span>
+                </div>
+                <p
+                  className="text-xs text-muted-foreground mt-1"
+                  style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                 >
                   {c.content}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+                </p>
+              </div>
+            </div>
+          </div>
         );
       }
       default:
@@ -551,27 +332,27 @@ export const NotificationList = () => {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1 }}>
-        <Typography component="span" sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+    <div className="w-full">
+      <div className="flex items-center justify-between p-2">
+        <span className="text-sm font-medium">
           Recent
-        </Typography>
+        </span>
         <Button variant="ghost" size="sm" onClick={markAllAsRead}>
           <CheckCheck style={{ height: 12, width: 12, marginRight: 4 }} />
           Mark all read
         </Button>
-      </Box>
+      </div>
       {isLoadingAll ? (
         <Empty label="Loading..." />
       ) : combinedItems.length === 0 ? (
         <Empty label="Nothing new yet" />
       ) : (
         <ScrollArea style={{ height: 384 }}>
-          <Box sx={{ '> *:not(:first-of-type)': { borderTop: 1, borderColor: 'divider' } }}>
+          <div className="[&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:border-border">
             {combinedItems.map(renderItem)}
-          </Box>
+          </div>
         </ScrollArea>
       )}
-    </Box>
+    </div>
   );
 };

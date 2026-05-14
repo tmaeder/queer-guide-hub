@@ -138,25 +138,17 @@ export function captureContext(): FeedbackContext {
   };
 }
 
-/**
- * Capture a screenshot of the current viewport using html2canvas.
- * Lazy-imports to avoid loading the library upfront.
- * Returns a JPEG blob at 0.7 quality, or null on failure.
- */
 export async function captureScreenshot(): Promise<Blob | null> {
   try {
-    const { default: html2canvas } = await import('html2canvas');
-    const canvas = await html2canvas(document.body, {
-      logging: false,
-      useCORS: true,
-      allowTaint: false,
-      scale: Math.min(window.devicePixelRatio || 1, 2),
-      windowWidth: Math.min(window.innerWidth, 1280),
-      windowHeight: window.innerHeight,
+    const { toJpeg } = await import('html-to-image');
+    const dataUrl = await toJpeg(document.body, {
+      quality: 0.7,
+      pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+      width: Math.min(window.innerWidth, 1280),
+      height: window.innerHeight,
     });
-    return await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
-    });
+    const res = await fetch(dataUrl);
+    return await res.blob();
   } catch {
     return null;
   }

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ReportDialog } from './ReportDialog';
-import Tooltip from '@mui/material/Tooltip';
 
 interface ReportButtonProps {
   contentType: string;
@@ -16,16 +16,21 @@ export function ReportButton({ contentType, contentId, contentName, size = 'sm' 
 
   return (
     <>
-      <Tooltip title="Report issue">
-        <Button
-          variant="outline"
-          size={size}
-          onClick={() => setOpen(true)}
-          aria-label="Report issue"
-        >
-          <Flag style={{ width: 16, height: 16 }} />
-        </Button>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size={size}
+              onClick={() => setOpen(true)}
+              aria-label="Report issue"
+            >
+              <Flag style={{ width: 16, height: 16 }} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Report issue</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <ReportDialog
         open={open}
         onOpenChange={setOpen}

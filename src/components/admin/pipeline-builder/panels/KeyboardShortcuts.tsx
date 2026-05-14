@@ -47,7 +47,7 @@ const SHORTCUTS: { category: string; items: { keys: string[]; desc: string }[] }
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-flex items-center justify-center h-6 min-w-[24px] px-1.5 rounded border border-border bg-muted text-[11px] font-mono font-medium">
+    <kbd className="inline-flex items-center justify-center h-6 min-w-[24px] px-1.5 rounded border border-border bg-muted text-xs2 font-mono font-medium">
       {children}
     </kbd>
   );

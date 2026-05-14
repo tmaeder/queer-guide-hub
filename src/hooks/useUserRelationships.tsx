@@ -70,15 +70,15 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error sending friend request:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to send friend request",
+        description: message || "Failed to send friend request",
         variant: "destructive",
       });
-      return { error: error.message };
+      return { error: message };
     }
   };
 
@@ -105,15 +105,15 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error blocking user:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to block user",
+        description: message || "Failed to block user",
         variant: "destructive",
       });
-      return { error: error.message };
+      return { error: message };
     }
   };
 
@@ -134,15 +134,15 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error accepting friend request:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to accept friend request",
+        description: message || "Failed to accept friend request",
         variant: "destructive",
       });
-      return { error: error.message };
+      return { error: message };
     }
   };
 
@@ -163,15 +163,15 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error rejecting friend request:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to reject friend request",
+        description: message || "Failed to reject friend request",
         variant: "destructive",
       });
-      return { error: error.message };
+      return { error: message };
     }
   };
 
@@ -195,15 +195,15 @@ export function useUserRelationships() {
 
       await fetchRelationships();
       return { error: null };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error('Error removing relationship:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to remove relationship",
+        description: message || "Failed to remove relationship",
         variant: "destructive",
       });
-      return { error: error.message };
+      return { error: message };
     }
   };
 

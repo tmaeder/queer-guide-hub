@@ -1,0 +1,16 @@
+[Unit]
+Description=Plane nightly backup to Cloudflare R2
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=plane
+Group=plane
+WorkingDirectory=/opt/plane/infra/plane
+ExecStart=/opt/plane/infra/plane/backup/backup.sh
+StandardOutput=journal
+StandardError=journal
+# Fail loudly — journalctl -u plane-backup will show history.
+Nice=10
+IOSchedulingClass=idle

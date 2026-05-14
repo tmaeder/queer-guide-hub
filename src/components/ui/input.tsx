@@ -1,52 +1,23 @@
 import * as React from 'react';
-import InputBase from '@mui/material/InputBase';
+import { cn } from '@/lib/utils';
 
 export type InputProps = React.ComponentProps<'input'>;
 
-const ARIA_INPUT_KEYS = ['aria-label', 'aria-labelledby', 'aria-describedby', 'role'] as const;
-
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, style, ...props }, ref) => {
-    const rest: Record<string, unknown> = { ...(props as Record<string, unknown>) };
-    const inputProps: Record<string, unknown> = {};
-    for (const key of ARIA_INPUT_KEYS) {
-      if (rest[key] != null) {
-        inputProps[key] = rest[key];
-        delete rest[key];
-      }
-    }
-    return (
-      <InputBase
-        type={type}
-        inputRef={ref}
-        className={className}
-        style={style}
-        fullWidth
-        size="small"
-        inputProps={inputProps}
-        sx={{
-          height: 40,
-          px: 1.5,
-          py: 0.5,
-          fontSize: { xs: '1rem', md: '0.875rem' },
-          bgcolor: 'action.hover',
-          borderRadius: 0,
-          '&:focus-within': {
-            bgcolor: 'action.selected',
-          },
-          '& input::placeholder': {
-            color: 'text.secondary',
-            opacity: 1,
-          },
-          '&.Mui-disabled': {
-            cursor: 'not-allowed',
-            opacity: 0.5,
-          },
-        }}
-        {...rest}
-      />
-    );
-  },
+  ({ className, type, ...props }, ref) => (
+    <input
+      type={type}
+      ref={ref}
+      className={cn(
+        'flex h-10 w-full rounded-none border border-input bg-background px-3 py-2 text-base md:text-sm text-foreground',
+        'placeholder:text-muted-foreground',
+        'focus:outline-none focus:border-foreground focus:ring-0',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  ),
 );
 Input.displayName = 'Input';
 

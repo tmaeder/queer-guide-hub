@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -159,7 +157,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
           </DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div className="flex flex-col gap-6">
           {/* Job Overview */}
           <Card>
             <CardHeader>
@@ -167,102 +165,102 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
               <CardDescription>Basic information about this import job</CardDescription>
             </CardHeader>
             <CardContent>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
-                <Box>
-                  <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Status</Label>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <div className="flex items-center gap-2 mt-1">
                     {getStatusIcon(job.status)}
                     <Badge variant={job.status === 'completed' ? 'default' : job.status === 'failed' ? 'destructive' : 'secondary'}>
                       {job.status}
                     </Badge>
-                  </Box>
-                </Box>
-                <Box>
-                  <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Type</Label>
-                  <Typography sx={{ fontWeight: 500 }}>{job.type}</Typography>
-                </Box>
-                <Box>
-                  <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Source</Label>
-                  <Typography sx={{ fontWeight: 500 }}>{job.source_type}</Typography>
-                </Box>
-                <Box>
-                  <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Strategy</Label>
-                  <Typography sx={{ fontWeight: 500 }}>{job.duplicate_strategy}</Typography>
-                </Box>
+                  </div>
+                </div>
+                <div>
+                  <Label>Type</Label>
+                  <p className="font-medium">{job.type}</p>
+                </div>
+                <div>
+                  <Label>Source</Label>
+                  <p className="font-medium">{job.source_type}</p>
+                </div>
+                <div>
+                  <Label>Strategy</Label>
+                  <p className="font-medium">{job.duplicate_strategy}</p>
+                </div>
                 {job.file_name && (
-                  <Box>
-                    <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>File</Label>
-                    <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{job.file_name}</Typography>
-                  </Box>
+                  <div>
+                    <Label>File</Label>
+                    <p className="font-medium text-sm">{job.file_name}</p>
+                  </div>
                 )}
-                <Box>
-                  <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Created</Label>
-                  <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{new Date(job.created_at).toLocaleString()}</Typography>
-                </Box>
+                <div>
+                  <Label>Created</Label>
+                  <p className="font-medium text-sm">{new Date(job.created_at).toLocaleString()}</p>
+                </div>
                 {job.completed_at && (
-                  <Box>
-                    <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Completed</Label>
-                    <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>{new Date(job.completed_at).toLocaleString()}</Typography>
-                  </Box>
+                  <div>
+                    <Label>Completed</Label>
+                    <p className="font-medium text-sm">{new Date(job.completed_at).toLocaleString()}</p>
+                  </div>
                 )}
-                <Box>
-                  <Label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--muted-foreground)' }}>Progress</Label>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                <div>
+                  <Label>Progress</Label>
+                  <div className="flex items-center gap-2 mt-1">
                     <Progress value={job.progress_percentage} style={{ flex: 1, height: 8 }} />
-                    <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>{job.progress_percentage}%</Typography>
-                  </Box>
-                </Box>
-              </Box>
+                    <span className="text-sm font-medium">{job.progress_percentage}%</span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           {/* Statistics */}
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: 'repeat(3, 1fr)' } }}>
+          <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' }}>
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' }}>
                     <TrendingUp style={{ height: 16, width: 16, color: 'var(--success)' }} />
-                  </Box>
-                  <Box>
-                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Success Rate</Typography>
-                    <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{successRate.toFixed(1)}%</Typography>
-                    <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>{job.successful_records} / {job.total_records}</Typography>
-                  </Box>
-                </Box>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Success Rate</p>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{successRate.toFixed(1)}%</p>
+                    <span className="text-xs text-muted-foreground">{job.successful_records} / {job.total_records}</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.1)' }}>
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.1)' }}>
                     <TrendingDown style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
-                  </Box>
-                  <Box>
-                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Error Rate</Typography>
-                    <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--destructive)' }}>{errorRate.toFixed(1)}%</Typography>
-                    <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>{job.failed_records} failed</Typography>
-                  </Box>
-                </Box>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Error Rate</p>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--destructive)' }}>{errorRate.toFixed(1)}%</p>
+                    <span className="text-xs text-muted-foreground">{job.failed_records} failed</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.1)' }}>
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.1)' }}>
                     <AlertTriangle style={{ height: 16, width: 16, color: 'var(--warning)' }} />
-                  </Box>
-                  <Box>
-                    <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Duplicates</Typography>
-                    <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--warning)' }}>{duplicateRate.toFixed(1)}%</Typography>
-                    <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>{job.duplicate_records} duplicates</Typography>
-                  </Box>
-                </Box>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Duplicates</p>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--warning)' }}>{duplicateRate.toFixed(1)}%</p>
+                    <span className="text-xs text-muted-foreground">{job.duplicate_records} duplicates</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          </Box>
+          </div>
 
           {/* Detailed Reports */}
           <Tabs defaultValue="summary" style={{ width: '100%' }}>
@@ -280,35 +278,35 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                   <CardDescription>Overview of the import process results</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
-                      <Box sx={{ textAlign: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 2 }}>
-                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700 }}>{job.total_records}</Typography>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Total Records</Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
-                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>{job.successful_records}</Typography>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Successful</Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
-                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.failed_records}</Typography>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Failed</Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'center', p: 2, border: 1, borderColor: 'divider', borderRadius: 2, bgcolor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.05)' }}>
-                        <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--warning)' }}>{job.duplicate_records}</Typography>
-                        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Duplicates</Typography>
-                      </Box>
-                    </Box>
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 border border-border rounded-lg">
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{job.total_records}</p>
+                        <p className="text-sm text-muted-foreground">Total Records</p>
+                      </div>
+                      <div className="text-center p-4 border border-border rounded-lg" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>{job.successful_records}</p>
+                        <p className="text-sm text-muted-foreground">Successful</p>
+                      </div>
+                      <div className="text-center p-4 border border-border rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.failed_records}</p>
+                        <p className="text-sm text-muted-foreground">Failed</p>
+                      </div>
+                      <div className="text-center p-4 border border-border rounded-lg" style={{ backgroundColor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.05)' }}>
+                        <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--warning)' }}>{job.duplicate_records}</p>
+                        <p className="text-sm text-muted-foreground">Duplicates</p>
+                      </div>
+                    </div>
 
                     {job.import_summary && Object.keys(job.import_summary).length > 0 && (
-                      <Box>
-                        <Typography sx={{ fontWeight: 500, mb: 1 }}>Import Details</Typography>
-                        <Box component="pre" sx={{ fontSize: '0.875rem', bgcolor: 'var(--muted)', p: 1.5, borderRadius: 2, overflow: 'auto' }}>
+                      <div>
+                        <p className="font-medium mb-2">Import Details</p>
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
                           {JSON.stringify(job.import_summary, null, 2)}
-                        </Box>
-                      </Box>
+                        </pre>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -321,36 +319,36 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <Box sx={{ textAlign: 'center', py: 4 }}>
-                      <Box sx={{ animation: 'spin 1s linear infinite', borderRadius: 2, height: 32, width: 32, bgcolor: 'primary.main', mx: 'auto', mb: 2 }} />
-                      <Typography>Loading validation results...</Typography>
-                    </Box>
+                    <div className="text-center py-8">
+                      <div className="rounded-lg bg-primary mx-auto mb-4" style={{ animation: 'spin 1s linear infinite', height: 32, width: 32 }} />
+                      <p>Loading validation results...</p>
+                    </div>
                   ) : (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
-                        <Box sx={{ textAlign: 'center', p: 2, borderRadius: 2, bgcolor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
-                          <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{job.valid_records}</Typography>
-                          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Valid Records</Typography>
-                        </Box>
-                        <Box sx={{ textAlign: 'center', p: 2, borderRadius: 2, bgcolor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
-                          <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.invalid_records}</Typography>
-                          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Invalid Records</Typography>
-                        </Box>
-                        <Box sx={{ textAlign: 'center', p: 2, borderRadius: 2 }}>
-                          <Typography sx={{ fontSize: '1.25rem', fontWeight: 700 }}>{validationResults.length}</Typography>
-                          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>Validation Details</Typography>
-                        </Box>
-                      </Box>
+                    <div className="flex flex-col gap-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
+                          <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{job.valid_records}</p>
+                          <p className="text-sm text-muted-foreground">Valid Records</p>
+                        </div>
+                        <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
+                          <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.invalid_records}</p>
+                          <p className="text-sm text-muted-foreground">Invalid Records</p>
+                        </div>
+                        <div className="text-center p-4 rounded-lg">
+                          <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{validationResults.length}</p>
+                          <p className="text-sm text-muted-foreground">Validation Details</p>
+                        </div>
+                      </div>
 
                       {job.validation_report && Object.keys(job.validation_report).length > 0 && (
-                        <Box>
-                          <Typography sx={{ fontWeight: 500, mb: 1 }}>Validation Summary</Typography>
-                          <Box component="pre" sx={{ fontSize: '0.875rem', bgcolor: 'var(--muted)', p: 1.5, borderRadius: 2, overflow: 'auto', maxHeight: 160 }}>
+                        <div>
+                          <p className="font-medium mb-2">Validation Summary</p>
+                          <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto" style={{ maxHeight: 160 }}>
                             {JSON.stringify(job.validation_report, null, 2)}
-                          </Box>
-                        </Box>
+                          </pre>
+                        </div>
                       )}
-                    </Box>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -359,18 +357,18 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
             <TabsContent value="errors" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <Card>
                 <CardHeader>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box>
+                  <div className="flex items-center justify-between">
+                    <div>
                       <CardTitle>Error Details</CardTitle>
                       <CardDescription>Detailed error information for failed records</CardDescription>
-                    </Box>
+                    </div>
                     {validationResults.some(r => !r.is_valid) && (
-                      <Button variant="outline" onClick={exportErrorsCSV} style={{ display: 'flex', gap: 8 }}>
+                      <Button variant="outline" onClick={exportErrorsCSV} className="flex gap-2">
                         <Download style={{ height: 16, width: 16 }} />
                         Export Errors CSV
                       </Button>
                     )}
-                  </Box>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {validationResults.filter(r => !r.is_valid).length === 0 ? (
@@ -381,61 +379,61 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                       </AlertDescription>
                     </Alert>
                   ) : (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 384, overflowY: 'auto' }}>
+                    <div className="flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: 384 }}>
                       {validationResults
                         .filter(r => !r.is_valid)
-                        .slice(0, 20) // Show first 20 errors
+                        .slice(0, 20)
                         .map((result, index) => (
-                          <Box key={index} sx={{ borderRadius: 2, p: 1.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                          <div key={index} className="rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
                               <Badge variant="destructive">Record {result.record_index}</Badge>
-                              <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+                              <p className="text-sm text-muted-foreground">
                                 {result.validation_errors.length} error(s), {result.validation_warnings.length} warning(s)
-                              </Typography>
-                            </Box>
+                              </p>
+                            </div>
 
                             {result.validation_errors.length > 0 && (
-                              <Box sx={{ mb: 1 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'var(--destructive)', mb: 0.5 }}>Errors:</Typography>
-                                <Box component="ul" sx={{ fontSize: '0.875rem', color: 'var(--destructive)', listStyle: 'disc', listStylePosition: 'inside' }}>
+                              <div className="mb-2">
+                                <p className="text-sm font-medium mb-1" style={{ color: 'var(--destructive)' }}>Errors:</p>
+                                <ul className="text-sm" style={{ color: 'var(--destructive)', listStyle: 'disc', listStylePosition: 'inside' }}>
                                   {result.validation_errors.map((error, idx) => (
                                     <li key={idx}>{error}</li>
                                   ))}
-                                </Box>
-                              </Box>
+                                </ul>
+                              </div>
                             )}
 
                             {result.validation_warnings.length > 0 && (
-                              <Box sx={{ mb: 1 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 500, color: 'var(--warning)', mb: 0.5 }}>Warnings:</Typography>
-                                <Box component="ul" sx={{ fontSize: '0.875rem', color: 'var(--warning)', listStyle: 'disc', listStylePosition: 'inside' }}>
+                              <div className="mb-2">
+                                <p className="text-sm font-medium mb-1" style={{ color: 'var(--warning)' }}>Warnings:</p>
+                                <ul className="text-sm" style={{ color: 'var(--warning)', listStyle: 'disc', listStylePosition: 'inside' }}>
                                   {result.validation_warnings.map((warning, idx) => (
                                     <li key={idx}>{warning}</li>
                                   ))}
-                                </Box>
-                              </Box>
+                                </ul>
+                              </div>
                             )}
 
                             <details style={{ marginTop: 8 }}>
                               <summary style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', cursor: 'pointer' }}>View record data</summary>
-                              <Box component="pre" sx={{ fontSize: '0.75rem', bgcolor: 'var(--muted)', p: 1, mt: 0.5, borderRadius: 2, overflowX: 'auto' }}>
+                              <pre className="text-xs bg-muted p-2 mt-1 rounded-lg overflow-x-auto">
                                 {JSON.stringify(result.record_data, null, 2)}
-                              </Box>
+                              </pre>
                             </details>
-                          </Box>
+                          </div>
                         ))}
-                    </Box>
+                    </div>
                   )}
 
                   {job.error_report && Object.keys(job.error_report).length > 0 && (
-                    <Box sx={{ mt: 3 }}>
-                      <Typography sx={{ fontWeight: 500, mb: 1 }}>Error Summary</Typography>
-                      <Box sx={{ bgcolor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)', p: 1.5, borderRadius: 2 }}>
-                        <Box component="pre" sx={{ fontSize: '0.875rem', bgcolor: 'var(--muted)', p: 1.5, borderRadius: 2, overflow: 'auto' }}>
+                    <div className="mt-6">
+                      <p className="font-medium mb-2">Error Summary</p>
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
                           {JSON.stringify(job.error_report, null, 2)}
-                        </Box>
-                      </Box>
-                    </Box>
+                        </pre>
+                      </div>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -448,46 +446,46 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                   <CardDescription>Import settings and validation rules</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div className="flex flex-col gap-4">
                     {job.validation_rules && Object.keys(job.validation_rules).length > 0 && (
-                      <Box>
-                        <Typography sx={{ fontWeight: 500, mb: 1 }}>Validation Rules</Typography>
-                        <Box component="pre" sx={{ fontSize: '0.875rem', bgcolor: 'var(--muted)', p: 1.5, borderRadius: 2, overflow: 'auto' }}>
+                      <div>
+                        <p className="font-medium mb-2">Validation Rules</p>
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
                           {JSON.stringify(job.validation_rules, null, 2)}
-                        </Box>
-                      </Box>
+                        </pre>
+                      </div>
                     )}
 
                     {job.filters && Object.keys(job.filters).length > 0 && (
-                      <Box>
-                        <Typography sx={{ fontWeight: 500, mb: 1 }}>Applied Filters</Typography>
-                        <Box component="pre" sx={{ fontSize: '0.875rem', bgcolor: 'var(--muted)', p: 1.5, borderRadius: 2, overflow: 'auto' }}>
+                      <div>
+                        <p className="font-medium mb-2">Applied Filters</p>
+                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
                           {JSON.stringify(job.filters, null, 2)}
-                        </Box>
-                      </Box>
+                        </pre>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
 
           {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 1.5, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-            <Button onClick={exportReport} variant="outline" style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-3 pt-4 border-t border-border">
+            <Button onClick={exportReport} variant="outline" className="flex gap-2">
               <Download style={{ height: 16, width: 16 }} />
               Export Full Report
             </Button>
             <Button onClick={onClose} style={{ flex: 1 }}>
               Close
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
 };
 
-const Label = ({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) => (
-  <label style={{ fontSize: '0.875rem', fontWeight: 500, ...style }}>{children}</label>
+const Label = ({ children }: { children: React.ReactNode }) => (
+  <label className="text-sm font-medium text-muted-foreground">{children}</label>
 );

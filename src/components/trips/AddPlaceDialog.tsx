@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import CircularProgress from '@mui/material/CircularProgress';
-import InputAdornment from '@mui/material/InputAdornment';
-import { Search, MapPin, Star, Clock, X } from 'lucide-react';
+import { Search, MapPin, Star, Clock, X, Loader2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
@@ -22,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listFromWhere } from '@/hooks/usePageFetchers';
 import { useTripMutations, type TripDay } from '@/hooks/useTrips';
 import { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import { SocialSignalBadges } from './SocialSignalBadges';
@@ -126,37 +125,43 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
     try {
       setSearchQuery(query);
-      const [venuesRes, eventsRes, hotelsRes] = await Promise.all([
-        supabase
-          .from('venues')
-          .select('id, name, category, city_id, country_id, latitude, longitude, address, foursquare_rating')
-          .ilike('name', `%${query}%`)
-          .limit(10),
-        supabase
-          .from('events')
-          .select('id, title, event_type, city_id, country_id, latitude, longitude')
-          .ilike('title', `%${query}%`)
-          .limit(10),
-        supabase
-          .from('hotels')
-          .select('id, name, star_rating, city_id, country_id, latitude, longitude, address')
-          .ilike('name', `%${query}%`)
-          .limit(10),
+      type VenueRow = { id: string; name: string; category?: string; city_id?: string; country_id?: string; latitude?: number; longitude?: number; address?: string; foursquare_rating?: number };
+      type EventRow = { id: string; title: string; event_type?: string; city_id?: string; country_id?: string; latitude?: number; longitude?: number };
+      type HotelRow = { id: string; name: string; star_rating?: number; city_id?: string; country_id?: string; latitude?: number; longitude?: number; address?: string };
+      const [venues, events, hotels] = await Promise.all([
+        listFromWhere<VenueRow>(
+          'venues',
+          'id, name, category, city_id, country_id, latitude, longitude, address, foursquare_rating',
+          [{ op: 'ilike', col: 'name', val: `%${query}%` }],
+          { limit: 10 },
+        ),
+        listFromWhere<EventRow>(
+          'events',
+          'id, title, event_type, city_id, country_id, latitude, longitude',
+          [{ op: 'ilike', col: 'title', val: `%${query}%` }],
+          { limit: 10 },
+        ),
+        listFromWhere<HotelRow>(
+          'hotels',
+          'id, name, star_rating, city_id, country_id, latitude, longitude, address',
+          [{ op: 'ilike', col: 'name', val: `%${query}%` }],
+          { limit: 10 },
+        ),
       ]);
 
       const mapped: SearchResult[] = [
-        ...(venuesRes.data || []).map((v) => ({
+        ...venues.map((v) => ({
           id: v.id, name: v.name, type: 'venue' as const,
           rating: v.foursquare_rating ?? undefined, address: v.address ?? undefined,
           latitude: v.latitude ?? undefined, longitude: v.longitude ?? undefined,
           country_id: v.country_id ?? undefined, city_id: v.city_id ?? undefined,
         })),
-        ...(eventsRes.data || []).map((e) => ({
+        ...events.map((e) => ({
           id: e.id, name: e.title, type: 'event' as const,
           latitude: e.latitude ?? undefined, longitude: e.longitude ?? undefined,
           country_id: e.country_id ?? undefined, city_id: e.city_id ?? undefined,
         })),
-        ...(hotelsRes.data || []).map((h) => ({
+        ...hotels.map((h) => ({
           id: h.id, name: h.name, type: 'hotel' as const,
           rating: h.star_rating ?? undefined, address: h.address ?? undefined,
           latitude: h.latitude ?? undefined, longitude: h.longitude ?? undefined,
@@ -229,29 +234,32 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
-      <DialogContent>
+      <DialogContent className="rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{t('trips.addPlace.title', 'Add Place')}</DialogTitle>
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+            {t('trips.addPlace.eyebrow', 'New place')}
+          </span>
+          <DialogTitle className="text-2xl font-bold tracking-tight">{t('trips.addPlace.title', 'Add Place')}</DialogTitle>
         </DialogHeader>
 
-        <Box sx={{ mt: 1, mb: 1 }}>
-          <TextField
-            label={t('trips.addPlace.assignToDay', 'Assign to Day')}
-            select
-            fullWidth
-            size="small"
-            value={dayId}
-            onChange={(e) => setDayId(e.target.value)}
-          >
-            <MenuItem value="">{t('trips.addPlace.unassigned', 'Unassigned')}</MenuItem>
-            {days.map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {new Date(d.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                {d.title ? ` -- ${d.title}` : ''}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Box>
+        <div className="mt-3 mb-1 flex flex-col gap-1.5">
+          <Label htmlFor="add-place-day" className="text-xs uppercase tracking-wider text-muted-foreground">{t('trips.addPlace.assignToDay', 'Assign to Day')}</Label>
+          <Select value={dayId || '__none__'} onValueChange={(v) => setDayId(v === '__none__' ? '' : v)}>
+            <SelectTrigger id="add-place-day">
+              <SelectValue placeholder={t('trips.addPlace.unassigned', 'Unassigned')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">{t('trips.addPlace.unassigned', 'Unassigned')}</SelectItem>
+              {days.map((d) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {new Date(d.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                  {d.title ? ` -- ${d.title}` : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <Tabs value={mode} onValueChange={setMode}>
           <TabsList>
@@ -260,107 +268,102 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
           </TabsList>
 
           <TabsContent value="search">
-            <TextField
-              placeholder={t('trips.addPlace.searchPlaceholder', 'Search venues, events, hotels...')}
-              fullWidth
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search size={16} />
-                  </InputAdornment>
-                ),
-                endAdornment: searching ? (
-                  <InputAdornment position="end">
-                    <CircularProgress size={18} aria-label="Loading" />
-                  </InputAdornment>
-                ) : null,
-              }}
-            />
-            <Button variant="ghost" size="sm" onClick={handleSearch} disabled={!searchQuery.trim()} className="mt-1">
-              {t('common.search', 'Search')}
-            </Button>
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t('trips.addPlace.searchPlaceholder', 'Search venues, events, hotels...')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                className="pl-10 pr-10 h-11 rounded-xl"
+              />
+              {searching && (
+                <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" aria-label="Loading" />
+              )}
+            </div>
 
             {results.length === 0 && !searching && recentSearches.length > 0 && (
-              <Box sx={{ mt: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.75 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                     <Clock size={12} /> {t('trips.addPlace.recent', 'Recent')}
-                  </Typography>
+                  </span>
                   <Button variant="ghost" size="sm" onClick={clearRecent} className="h-6 px-2 text-xs">
                     {t('common.clear', 'Clear')}
                   </Button>
-                </Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {recentSearches.map((q) => (
-                    <Chip
+                    <Badge
                       key={q}
-                      label={q}
-                      size="small"
-                      variant="outlined"
+                      variant="outline"
+                      className="cursor-pointer inline-flex items-center gap-1 rounded-full hover:bg-muted transition-colors"
                       onClick={() => runSearch(q)}
-                      onDelete={() => {
-                        const next = recentSearches.filter((s) => s !== q);
-                        setRecentSearches(next);
-                        try {
-                          localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
-                        } catch {
-                          // ignore
-                        }
-                      }}
-                      deleteIcon={<X size={12} />}
-                      sx={{ cursor: 'pointer' }}
-                    />
+                    >
+                      {q}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const next = recentSearches.filter((s) => s !== q);
+                          setRecentSearches(next);
+                          try {
+                            localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next));
+                          } catch {
+                            // ignore
+                          }
+                        }}
+                        aria-label="Remove"
+                        className="inline-flex"
+                      >
+                        <X size={12} />
+                      </button>
+                    </Badge>
                   ))}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
 
             {results.length > 0 && (
-              <Box sx={{ mt: 1.5, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+              <div className="mt-3 flex flex-wrap gap-1.5">
                 {(['all', 'venue', 'event', 'hotel'] as TypeFilter[]).map((tf) => {
                   const count = countFor(tf);
                   if (tf !== 'all' && count === 0) return null;
                   const labelFallback = tf === 'all' ? 'All' : tf.charAt(0).toUpperCase() + tf.slice(1);
+                  const active = typeFilter === tf;
                   return (
-                    <Chip
+                    <Badge
                       key={tf}
-                      label={`${t(`trips.addPlace.filter.${tf}`, labelFallback)} (${count})`}
-                      size="small"
-                      color={typeFilter === tf ? 'primary' : 'default'}
-                      variant={typeFilter === tf ? 'filled' : 'outlined'}
+                      variant={active ? 'default' : 'outline'}
+                      className="cursor-pointer rounded-full px-3 py-1 transition-all hover:shadow-sm"
                       onClick={() => setTypeFilter(tf)}
-                      sx={{ cursor: 'pointer' }}
-                    />
+                    >
+                      {`${t(`trips.addPlace.filter.${tf}`, labelFallback)} (${count})`}
+                    </Badge>
                   );
                 })}
-              </Box>
+              </div>
             )}
 
             {filteredResults.length > 0 && (
-              <List dense sx={{ mt: 1, maxHeight: 280, overflow: 'auto' }}>
-                {filteredResults.map((r) => (
-                  <ListItemButton
-                    key={`${r.type}-${r.id}`}
-                    selected={selected?.id === r.id && selected?.type === r.type}
-                    onClick={() => setSelected(r)}
-                    sx={{ minHeight: 44 }}
-                  >
-                    <ListItemText
-                      primary={
-                        <Box className="flex items-center gap-1.5 flex-wrap">
-                          <span>{r.name}</span>
-                          <Badge variant="outline">{r.type}</Badge>
+              <ul className="mt-3 max-h-[280px] overflow-auto flex flex-col gap-1 -mx-1 px-1">
+                {filteredResults.map((r) => {
+                  const isSelected = selected?.id === r.id && selected?.type === r.type;
+                  return (
+                    <li key={`${r.type}-${r.id}`}>
+                      <button
+                        type="button"
+                        onClick={() => setSelected(r)}
+                        className={`w-full text-left min-h-[52px] px-3 py-2.5 rounded-xl border transition-all ${isSelected ? 'bg-muted border-foreground/40 shadow-sm' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
+                      >
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium">{r.name}</span>
+                          <Badge variant="outline" className="rounded-full text-[10px] uppercase tracking-wider">{r.type}</Badge>
                           {r.type === 'venue' && (
                             <SocialSignalBadges signal={socialSignals?.get(r.id)} />
                           )}
-                        </Box>
-                      }
-                      secondary={
-                        <Box className="flex items-center gap-2 text-xs">
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                           {r.address && (
                             <span className="flex items-center gap-0.5">
                               <MapPin size={10} /> {r.address}
@@ -371,81 +374,86 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                               <Star size={10} /> {r.rating}
                             </span>
                           )}
-                        </Box>
-                      }
-                    />
-                  </ListItemButton>
-                ))}
-              </List>
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
 
             {!searching && results.length === 0 && searchQuery.trim() && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
+              <p className="text-sm text-muted-foreground mt-4 text-center">
                 {t('trips.addPlace.noResults', 'No results found. Try a different search or add a custom place.')}
-              </Typography>
+              </p>
             )}
           </TabsContent>
 
           <TabsContent value="custom">
-            <Box className="flex flex-col gap-3">
-              <TextField
-                label={t('trips.addPlace.placeName', 'Place Name')}
-                required
-                fullWidth
-                size="small"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                placeholder={t('trips.addPlace.placeNamePlaceholder', 'e.g. Rainbow Cafe')}
-              />
-              <TextField
-                label={t('trips.addPlace.address', 'Address')}
-                fullWidth
-                size="small"
-                value={customAddress}
-                onChange={(e) => setCustomAddress(e.target.value)}
-              />
-              <Box className="grid grid-cols-2 gap-3">
-                <TextField
-                  label={t('trips.addPlace.latitude', 'Latitude')}
-                  type="number"
-                  fullWidth
-                  size="small"
-                  value={customLat}
-                  onChange={(e) => setCustomLat(e.target.value)}
-                  inputProps={{ step: 'any' }}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="custom-name">{t('trips.addPlace.placeName', 'Place Name')} *</Label>
+                <Input
+                  id="custom-name"
+                  required
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  placeholder={t('trips.addPlace.placeNamePlaceholder', 'e.g. Rainbow Cafe')}
                 />
-                <TextField
-                  label={t('trips.addPlace.longitude', 'Longitude')}
-                  type="number"
-                  fullWidth
-                  size="small"
-                  value={customLng}
-                  onChange={(e) => setCustomLng(e.target.value)}
-                  inputProps={{ step: 'any' }}
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="custom-address">{t('trips.addPlace.address', 'Address')}</Label>
+                <Input
+                  id="custom-address"
+                  value={customAddress}
+                  onChange={(e) => setCustomAddress(e.target.value)}
                 />
-              </Box>
-              <TextField
-                label={t('trips.addPlace.category', 'Category')}
-                select
-                fullWidth
-                size="small"
-                value={customCategory}
-                onChange={(e) => setCustomCategory(e.target.value)}
-              >
-                {customCategories.map((c) => (
-                  <MenuItem key={c} value={c}>
-                    {t(`trips.addPlace.customCategories.${c}`, c.charAt(0).toUpperCase() + c.slice(1))}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Box>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="custom-lat">{t('trips.addPlace.latitude', 'Latitude')}</Label>
+                  <Input
+                    id="custom-lat"
+                    type="number"
+                    step="any"
+                    value={customLat}
+                    onChange={(e) => setCustomLat(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="custom-lng">{t('trips.addPlace.longitude', 'Longitude')}</Label>
+                  <Input
+                    id="custom-lng"
+                    type="number"
+                    step="any"
+                    value={customLng}
+                    onChange={(e) => setCustomLng(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="custom-cat">{t('trips.addPlace.category', 'Category')}</Label>
+                <Select value={customCategory} onValueChange={setCustomCategory}>
+                  <SelectTrigger id="custom-cat">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customCategories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {t(`trips.addPlace.customCategories.${c}`, c.charAt(0).toUpperCase() + c.slice(1))}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 
         <DialogFooter className="mt-3">
           <Button variant="outline" onClick={resetAndClose}>{t('common.cancel', 'Cancel')}</Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || addPlace.isPending}>
-            {addPlace.isPending && <CircularProgress size={16} sx={{ mr: 1 }} aria-label="Loading" />}
+            {addPlace.isPending && <Loader2 size={16} className="mr-1 animate-spin" aria-label="Loading" />}
             {t('trips.addPlace.title', 'Add Place')}
           </Button>
         </DialogFooter>

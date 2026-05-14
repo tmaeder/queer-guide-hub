@@ -5,18 +5,18 @@
  */
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { ThumbsUp, ThumbsDown, Flag, ShieldAlert, Inbox, MessageSquare } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, ThumbsUp, ThumbsDown, Flag, ShieldAlert, Inbox, MessageSquare, X } from 'lucide-react';
+import { listFromWhere, updateRow } from '@/hooks/usePageFetchers';
 import { CommentThread } from './CommentThread';
 
 interface ModerationItem {
@@ -67,21 +67,24 @@ export function ModerationQueue() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    let q = supabase
-      .from('community_submissions')
-      .select(
-        'id, content_type, status, feedback_status, is_spam, priority, data, submitted_at, submitted_by, ip_address',
-      )
-      .order('submitted_at', { ascending: false })
-      .limit(100);
+    const filters: Array<{ col: string; val: unknown; op?: 'eq' | 'in' }> = [];
     if (filter === 'pending') {
-      q = q.in('feedback_status', ['new', 'under_review']).eq('is_spam', false);
+      filters.push({ col: 'feedback_status', val: ['new', 'under_review'], op: 'in' });
+      filters.push({ col: 'is_spam', val: false });
     } else if (filter === 'spam') {
-      q = q.eq('is_spam', true);
+      filters.push({ col: 'is_spam', val: true });
     }
-    const { data, error: err } = await q;
-    if (err) setError(err.message);
-    setItems((data ?? []) as unknown as ModerationItem[]);
+    try {
+      const data = await listFromWhere<ModerationItem>(
+        'community_submissions',
+        'id, content_type, status, feedback_status, is_spam, priority, data, submitted_at, submitted_by, ip_address',
+        filters,
+        { order: { col: 'submitted_at', ascending: false }, limit: 100 },
+      );
+      setItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load');
+    }
     setLoading(false);
   }, [filter]);
 
@@ -104,13 +107,13 @@ export function ModerationQueue() {
       patch: Partial<Pick<ModerationItem, 'feedback_status' | 'is_spam' | 'status'>>,
     ) => {
       setActionId(id);
-      const { error: err } = await supabase
-        .from('community_submissions')
-        .update({ ...patch, reviewed_at: new Date().toISOString() })
-        .eq('id', id);
+      const { error: err } = await updateRow('community_submissions', id, {
+        ...patch,
+        reviewed_at: new Date().toISOString(),
+      });
       setActionId(null);
       if (err) {
-        setError(err.message);
+        setError((err as { message: string }).message);
       } else {
         setItems((prev) => prev.filter((i) => i.id !== id));
       }
@@ -119,223 +122,161 @@ export function ModerationQueue() {
   );
 
   return (
-    <Box>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 3,
-          gap: 2,
-          flexWrap: 'wrap',
-        }}
-      >
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-            Moderation Queue
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+    <div>
+      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+        <div>
+          <h2 className="text-xl font-bold mb-1">Moderation Queue</h2>
+          <p className="text-sm text-muted-foreground">
             {counts.pending} pending · {counts.spam} flagged as spam
-          </Typography>
-        </Box>
-        <FormControl size="small" sx={{ minWidth: 160 }}>
-          <InputLabel id="moderation-filter-label">Filter</InputLabel>
-          <Select
-            labelId="moderation-filter-label"
-            value={filter}
-            label="Filter"
-            onChange={(e) => setFilter(e.target.value as FilterKind)}
-          >
-            <MenuItem value="pending">Pending</MenuItem>
-            <MenuItem value="spam">Spam</MenuItem>
-            <MenuItem value="all">All</MenuItem>
+          </p>
+        </div>
+        <div className="min-w-40">
+          <Select value={filter} onValueChange={(v) => setFilter(v as FilterKind)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="spam">Spam</SelectItem>
+              <SelectItem value="all">All</SelectItem>
+            </SelectContent>
           </Select>
-        </FormControl>
-      </Box>
+        </div>
+      </div>
 
       {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
+        <Alert variant="destructive" className="mb-4 relative">
+          <AlertDescription>{error}</AlertDescription>
+          <Button
+            variant="ghost"
+            onClick={() => setError(null)}
+            className="absolute right-2 top-2 h-6 w-6 p-0"
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </Button>
         </Alert>
       )}
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress size={32} aria-label="Loading" />
-        </Box>
+        <div className="flex justify-center py-16">
+          <Loader2 className="animate-spin" size={32} aria-label="Loading" />
+        </div>
       ) : items.length === 0 ? (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            py: 8,
-            color: 'text.secondary',
-          }}
-        >
+        <div className="flex flex-col items-center py-16 text-muted-foreground">
           <Inbox size={36} style={{ opacity: 0.3, marginBottom: 8 }} />
-          <Typography variant="body2">Nothing to moderate.</Typography>
-        </Box>
+          <p className="text-sm">Nothing to moderate.</p>
+        </div>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div className="flex flex-col gap-2">
           {items.map((item) => {
             const busy = actionId === item.id;
             const expanded = expandedId === item.id;
             return (
-              <Box
+              <div
                 key={item.id}
-                sx={{
-                  border: '1px solid',
-                  borderColor: item.is_spam ? 'error.light' : 'divider',
-                  borderRadius: 2,
-                  bgcolor: 'background.paper',
-                  overflow: 'hidden',
-                }}
+                className={`border rounded-lg bg-background overflow-hidden ${
+                  item.is_spam ? 'border-destructive/50' : 'border-border'
+                }`}
               >
-                <Box
-                  sx={{
-                    p: 2,
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: 'action.hover' },
-                  }}
+                <div
+                  className="p-4 cursor-pointer hover:bg-muted"
                   onClick={() => setExpandedId(expanded ? null : item.id)}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Chip
-                      label={item.content_type}
-                      size="small"
-                      sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
-                    />
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="secondary" className="h-[22px] text-[0.7rem] font-semibold">
+                      {item.content_type}
+                    </Badge>
                     {item.is_spam && (
-                      <Chip
-                        icon={<Flag size={12} />}
-                        label="Spam"
-                        size="small"
-                        color="error"
-                        sx={{ height: 22, fontSize: '0.7rem' }}
-                      />
+                      <Badge variant="destructive" className="h-[22px] text-[0.7rem] gap-1">
+                        <Flag size={12} />
+                        Spam
+                      </Badge>
                     )}
                     {item.priority > 0 && (
-                      <Chip
-                        icon={<ShieldAlert size={12} />}
-                        label={`Priority ${item.priority}`}
-                        size="small"
-                        color="warning"
-                        sx={{ height: 22, fontSize: '0.7rem' }}
-                      />
+                      <Badge className="h-[22px] text-[0.7rem] gap-1 bg-yellow-500 text-white hover:bg-yellow-600">
+                        <ShieldAlert size={12} />
+                        Priority {item.priority}
+                      </Badge>
                     )}
-                    <Box sx={{ flex: 1 }} />
-                    <Typography variant="caption" color="text.secondary">
+                    <div className="flex-1" />
+                    <span className="text-xs text-muted-foreground">
                       {relativeTime(item.submitted_at)}
-                    </Typography>
-                  </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    {previewTitle(item)}
-                  </Typography>
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold mb-1">{previewTitle(item)}</p>
                   {item.submitted_by && (
-                    <Typography variant="caption" color="text.secondary">
+                    <span className="text-xs text-muted-foreground">
                       by {item.submitted_by.slice(0, 8)}…
-                    </Typography>
+                    </span>
                   )}
-                </Box>
+                </div>
 
-                <Box
-                  sx={{
-                    px: 2,
-                    py: 1,
-                    borderTop: '1px solid',
-                    borderColor: 'divider',
-                    display: 'flex',
-                    gap: 1,
-                    flexWrap: 'wrap',
-                  }}
+                <div
+                  className="px-4 py-2 border-t border-border flex gap-2 flex-wrap"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Button
-                    size="small"
-                    variant="contained"
-                    color="success"
+                    size="sm"
                     disabled={busy}
                     onClick={() => transition(item.id, { feedback_status: 'approved', status: 'approved' })}
-                    startIcon={<ThumbsUp size={14} />}
-                    sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+                    className="font-semibold text-xs bg-green-600 hover:bg-green-700 text-white"
                   >
+                    <ThumbsUp size={14} />
                     Approve
                   </Button>
                   <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
+                    size="sm"
+                    variant="outline"
                     disabled={busy}
                     onClick={() => transition(item.id, { feedback_status: 'rejected', status: 'rejected' })}
-                    startIcon={<ThumbsDown size={14} />}
-                    sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+                    className="font-semibold text-xs text-destructive border-destructive/50 hover:bg-destructive/10"
                   >
+                    <ThumbsDown size={14} />
                     Reject
                   </Button>
                   {!item.is_spam && (
                     <Button
-                      size="small"
-                      variant="text"
-                      color="warning"
+                      size="sm"
+                      variant="ghost"
                       disabled={busy}
                       onClick={() => transition(item.id, { is_spam: true })}
-                      startIcon={<Flag size={14} />}
-                      sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.8rem' }}
+                      className="font-medium text-xs text-yellow-600 hover:text-yellow-700"
                     >
+                      <Flag size={14} />
                       Mark spam
                     </Button>
                   )}
-                  <Box sx={{ flex: 1 }} />
+                  <div className="flex-1" />
                   <Button
-                    size="small"
-                    variant="text"
+                    size="sm"
+                    variant="ghost"
                     onClick={() => setExpandedId(expanded ? null : item.id)}
-                    startIcon={<MessageSquare size={14} />}
-                    sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.8rem', color: 'text.secondary' }}
+                    className="font-medium text-xs text-muted-foreground"
                   >
+                    <MessageSquare size={14} />
                     {expanded ? 'Hide' : 'Discuss'}
                   </Button>
-                </Box>
+                </div>
 
                 {expanded && (
-                  <Box
-                    sx={{
-                      borderTop: '1px solid',
-                      borderColor: 'divider',
-                      p: 2,
-                      bgcolor: 'grey.50',
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                  <div className="border-t border-border p-4 bg-muted/40">
+                    <span className="text-xs text-muted-foreground block mb-2">
                       Submission data
-                    </Typography>
-                    <Box
-                      component="pre"
-                      sx={{
-                        m: 0,
-                        p: 1.5,
-                        bgcolor: 'background.paper',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                        fontSize: '0.75rem',
-                        overflow: 'auto',
-                        maxHeight: 200,
-                      }}
-                    >
+                    </span>
+                    <pre className="m-0 p-3 bg-background border border-border rounded text-xs overflow-auto max-h-52">
                       {JSON.stringify(item.data, null, 2)}
-                    </Box>
-                    <Box sx={{ mt: 2 }}>
+                    </pre>
+                    <div className="mt-4">
                       <CommentThread sourceTable="community_submissions" sourceId={item.id} />
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
                 )}
-              </Box>
+              </div>
             );
           })}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

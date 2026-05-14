@@ -197,7 +197,7 @@
       "samples": {
         "berlin": "Pride Week Berlino",
         "barcelona": "Barcellona: mare e nightlife",
-        "bangkok": "Bangkok e Phuket Explorer"
+        "bangkok": "Bangkok & Phuket"
       }
     },
     "card": {
@@ -239,7 +239,7 @@
         "cityCountryPlaceholder": "Cerca una città…",
         "noCityMatch": "Nessuna città corrispondente.",
         "addNewPlace": "Aggiungi «{{query}}» come nuovo luogo",
-        "datesUnlockHint": "Aggiungere date sblocca i suggerimenti di alloggio, volo e sicurezza.",
+        "datesUnlockHint": "Aggiungi date per suggerimenti su alloggio, voli e sicurezza.",
         "defaultTitle": "Viaggio a {{city}}",
         "titleField": "Titolo del viaggio",
         "titlePlaceholder": "Es. Pride Week Berlino 2026",
@@ -313,7 +313,11 @@
       "fitAll": "Mostra tutto",
       "fitAllAria": "Inquadra tutti i luoghi",
       "filterAll": "Tutti i giorni",
-      "dayLabel": "Giorno {{number}}"
+      "dayLabel": "Giorno {{number}}",
+      "showAttractions": "[IT] Attractions",
+      "showEvents": "[IT] Events",
+      "suggestedVenue": "[IT] Suggested venue",
+      "eventOn": "[IT] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Nessuna informazione di sicurezza",
@@ -435,8 +439,8 @@
       }
     },
     "packing": {
-      "emptyTitle": "Inizia la tua lista",
-      "emptyDescription": "Aggiungi articoli o usa un modello per iniziare.",
+      "emptyTitle": "Nessun articolo ancora.",
+      "emptyDescription": "Aggiungi articoli o usa un modello.",
       "progress": "{{checked}} di {{total}} in valigia",
       "addItem": "Aggiungi articolo…",
       "removeAria": "Rimuovi articolo",
@@ -708,7 +712,8 @@
       "displayName": "Come vuoi essere chiamato/a?",
       "pronouns": "Scegli i tuoi pronomi",
       "country": "Opzionale",
-      "language": "Scegli la lingua"
+      "language": "Scegli la lingua",
+      "passwordMin8": "[IT] At least 8 characters"
     },
     "errors": {
       "emailRequired": "L'email è obbligatoria",
@@ -738,7 +743,9 @@
       "age": "Confermo di avere almeno 18 anni",
       "termsAria": "Accetta i termini di servizio",
       "privacyAria": "Accetta la privacy policy",
-      "ageAria": "Conferma di avere almeno 18 anni"
+      "ageAria": "Conferma di avere almeno 18 anni",
+      "combined": "[IT] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[IT] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continua con Google",
@@ -751,14 +758,16 @@
       "create": "Crea account",
       "orWithEmail": "Oppure con email",
       "profileBlurb": "Dicci qualcosa di te. Puoi cambiare tutto in seguito.",
-      "interestsBlurb": "Opzionale — ci aiuta a personalizzare la tua guida. Salta se preferisci.",
+      "interestsBlurb": "Opzionale. Salta se preferisci.",
       "lookingForTitle": "Cerco",
       "interestsTitle": "Interessi",
       "steps": {
         "account": "Account",
         "profile": "Profilo",
         "interests": "Interessi"
-      }
+      },
+      "blurb": "[IT] Free, takes a minute.",
+      "haveAccountQ": "[IT] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "lei",
@@ -800,7 +809,17 @@
       "resend": "Reinvia email di verifica",
       "resendIn": "Reinvia tra {{seconds}}s",
       "resent": "Email di verifica inviata. Controlla la posta in arrivo.",
-      "backToLogin": "Torna all'accesso"
+      "backToLogin": "Torna all'accesso",
+      "continue": "[IT] Continue to The Queer Guide",
+      "banner": "[IT] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[IT] Verification email sent. Check your inbox.",
+      "resendShort": "[IT] Resend",
+      "gateTitle": "[IT] Verify your email first",
+      "gateDescription": "[IT] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[IT] Sign in required",
+      "description": "[IT] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1021,9 +1040,9 @@
     "error": "Impossibile inviare l'allarme. Riprova."
   },
   "home": {
-    "heroLine1": "Scopri.",
-    "heroLine2": "Connettiti.",
-    "heroLine3": "Fai parte.",
+    "heroLine1": "Locali queer,",
+    "heroLine2": "eventi e persone.",
+    "heroLine3": "In tutto il mondo.",
     "subtitle": "Spazi sicuri, eventi coinvolgenti e comunità che ti capiscono — ovunque tu sia.",
     "browseVenues": "Esplora i luoghi",
     "viewEvents": "Vedi gli eventi",
@@ -1105,7 +1124,9 @@
       "myGroups": "I miei gruppi",
       "accessibility": "Accessibilità",
       "bookings": "Prenotazioni",
-      "tripInbox": "Posta viaggi"
+      "tripInbox": "Posta viaggi",
+      "extension": "Estensione Browser",
+      "footprint": "[IT] Footprint"
     },
     "modes": {
       "dating": "In cerca d'amore",
@@ -1121,7 +1142,10 @@
       "accessibility": "Accessibilità",
       "legal": "Note legali",
       "contact": "Contatti"
-    }
+    },
+    "signUp": "[IT] Sign up",
+    "navigation": "[IT] Navigation",
+    "signIn": "[IT] Sign in"
   },
   "pages": {
     "venues": {
@@ -1133,8 +1157,8 @@
       "gridView": "Vista a griglia",
       "mapView": "Vista mappa",
       "submit": "Invia",
-      "emptyTitle": "Nessun locale corrisponde ancora al tuo stile",
-      "emptyDescription": "Prova ad ampliare la ricerca o esplora un'altra città.",
+      "emptyTitle": "Nessun locale corrisponde ai filtri.",
+      "emptyDescription": "Prova ad ampliare la ricerca o cambia città.",
       "submitVenue": "Proponi un locale",
       "clearFilters": "Cancella filtri",
       "emptyDataset": {
@@ -1210,8 +1234,8 @@
       "clearFilterPast": "Cancella filtro eventi passati",
       "noPastEvents": "Nessun evento passato trovato",
       "noPastEventsDesc": "Nessun evento passato corrisponde a questi filtri. Disattiva il filtro per vedere i prossimi eventi.",
-      "emptyTitle": "La pista da ballo è vuota... per ora",
-      "emptyDescription": "Torna presto o amplia i filtri per trovare qualcosa di divertente.",
+      "emptyTitle": "Nessun evento ancora.",
+      "emptyDescription": "Amplia i filtri o torna più tardi.",
       "emptyDataset": {
         "title": "Ancora nessun evento",
         "body": "Non abbiamo ancora aggiunto eventi qui. Aiutaci a far crescere la guida proponendone uno."
@@ -1219,6 +1243,45 @@
       "filteredEmpty": {
         "title": "Nessun evento corrisponde ai tuoi filtri",
         "body": "Prova a modificare i filtri o la ricerca per vedere più risultati."
+      },
+      "prideSubtype": "[IT] Pride type",
+      "mapView": "[IT] Map view",
+      "preset": {
+        "label": "[IT] Quick filters",
+        "thisWeekend": "[IT] This weekend",
+        "nearMe": "[IT] Near me",
+        "pride": "[IT] Pride season",
+        "thisMonth": "[IT] This month",
+        "free": "[IT] Free",
+        "featured": "[IT] Featured"
+      },
+      "rail": {
+        "featured": "[IT] Featured this week",
+        "featuredSubtitle": "[IT] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[IT] No events match your filters",
+        "body": "[IT] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[IT] Drop \"{{city}}\" filter",
+        "clearDate": "[IT] Drop date filter",
+        "viewAll": "[IT] View all upcoming events",
+        "sameCityHeader": "[IT] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[IT] Try other cities in your date range",
+        "fallbackHeader": "[IT] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[IT] Spotlight",
+        "happeningNow": "[IT] Happening now",
+        "tomorrow": "[IT] Starts tomorrow",
+        "inDays_one": "[IT] Starts in {{count}} day",
+        "inDays_other": "[IT] Starts in {{count}} days",
+        "nearbyCount_one": "[IT] {{count}} event in {{city}}",
+        "nearbyCount_other": "[IT] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[IT] Sort events",
+      "sort": {
+        "dateAsc": "[IT] Soonest first",
+        "dateDesc": "[IT] Latest first"
       }
     },
     "eventDetail": {
@@ -1277,19 +1340,74 @@
       "subtitle": "Trova voli, hotel e attività per destinazioni LGBTQ+ friendly",
       "activitiesComingSoon": "Attività in arrivo.",
       "browseDestinations": "Esplora destinazioni",
-      "exploreCta": "Esplora destinazioni LGBTQ+ friendly",
-      "exploreDescription": "Scopri città e paesi con informazioni dettagliate sulla sicurezza e guide di viaggio"
+      "exploreCta": "Destinazioni",
+      "exploreDescription": "Città e paesi con info sulla sicurezza e guide di viaggio.",
+      "hotels": {
+        "typeLabel": "[IT] Type",
+        "priceMin": "[IT] Min €",
+        "priceMax": "[IT] Max €",
+        "priceUnavailable": "[IT] Price on request",
+        "clearFilters": "[IT] Clear filters",
+        "noResultsWithFilters": "[IT] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[IT] Any type",
+          "hotel": "[IT] Hotel",
+          "boutique": "[IT] Boutique Hotel",
+          "bnb": "[IT] B&B",
+          "hostel": "[IT] Hostel",
+          "guesthouse": "[IT] Guesthouse",
+          "apartment": "[IT] Apartment",
+          "resort": "[IT] Resort"
+        }
+      },
+      "hero": {
+        "title": "[IT] Plan a trip",
+        "subtitle": "[IT] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[IT] Where to?",
+        "start": "[IT] Start",
+        "end": "[IT] End",
+        "cta": "[IT] Plan this trip",
+        "discover": "[IT] Or",
+        "discoverLink": "[IT] browse public trips",
+        "discoverTail": "[IT] from the community.",
+        "errors": {
+          "city": "[IT] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[IT] Continue planning",
+        "placeCount": "[IT] {{count}} places"
+      },
+      "pride": {
+        "title": "[IT] Pride this season",
+        "window": "[IT] Next 4 months",
+        "empty": "[IT] No upcoming Pride events.",
+        "safety": "[IT] Equality score"
+      },
+      "inspiration": {
+        "villages": "[IT] Queer villages",
+        "publicTrips": "[IT] Public trips",
+        "viewAll": "[IT] View all",
+        "noVillages": "[IT] No villages yet.",
+        "noTrips": "[IT] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[IT] Book now",
+        "subtitle": "[IT] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "Mercato",
       "subtitle": "Scopri e sostieni attività locali che offrono prodotti e servizi",
       "listBusiness": "Registra la tua attività",
-      "emptyTitle": "Ancora niente sugli scaffali",
-      "emptyDescription": "Attività queer si uniscono ogni giorno.",
+      "emptyTitle": "Nessuna inserzione ancora.",
+      "emptyDescription": "Nuove aggiunte ogni settimana.",
       "signInRequired": "Accesso richiesto",
       "signInList": "Crea un account gratuito per registrare la tua attività.",
       "signInFavorites": "Accedi per salvare i preferiti.",
-      "loadError": "Qualcosa è andato storto durante il caricamento del mercato. Riprova."
+      "loadError": "Qualcosa è andato storto durante il caricamento del mercato. Riprova.",
+      "emptyFiltersTitle": "[IT] No listings match these filters.",
+      "emptyFiltersDescription": "[IT] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Articolo non trovato",
@@ -1325,10 +1443,17 @@
       "filters": "Filtri",
       "activeFilters": "Filtri attivi",
       "clearAll": "Cancella tutto",
-      "emptyTitle": "La redazione è in silenzio",
-      "emptyDescription": "Nessuna storia al momento — torna presto.",
+      "emptyTitle": "Nessun articolo ancora.",
+      "emptyDescription": "Torna più tardi.",
       "previous": "Precedente",
-      "next": "Successivo"
+      "next": "Successivo",
+      "filteredEmptyTitle": "[IT] No news matches your filters.",
+      "filteredEmptyDescription": "[IT] Reset filters or try another topic.",
+      "resetFilters": "[IT] Reset filters",
+      "filterSearch": "[IT] Search",
+      "filterCategory": "[IT] Category",
+      "filterSource": "[IT] Source",
+      "filterFeatured": "[IT] Featured only"
     },
     "newsDetail": {
       "notFound": "Articolo non trovato",
@@ -1351,7 +1476,6 @@
     },
     "personalities": {
       "title": "Personalità",
-      "subtitle": "Esplora oltre 8.000 attivisti/e, artisti/e, scrittori/trici, atleti/e e icone storiche LGBTQ+.",
       "active": "Attivi:",
       "clearAll": "Cancella tutto",
       "emptyTitle": "Nessuna personalità corrisponde ai tuoi filtri",
@@ -1364,8 +1488,8 @@
       "discover": "Scopri",
       "myGroups": "I miei gruppi",
       "popular": "Popolare",
-      "emptyTitle": "Ancora nessun gruppo qui",
-      "emptyDescription": "Sii la scintilla — crea il primo gruppo e riunisci le persone.",
+      "emptyTitle": "Nessun gruppo ancora.",
+      "emptyDescription": "Crea il primo.",
       "createGroup": "Crea un gruppo",
       "mostPopular": "Gruppi più popolari",
       "noPopular": "Ancora nessun gruppo popolare disponibile."
@@ -1438,6 +1562,15 @@
       "body": "Ricevi una notifica 30 minuti prima di ogni prenotazione e quando passaporto o visto stanno per scadere.",
       "turnOn": "Attiva",
       "turnOff": "Disattiva"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "Vedi dettagli",
+      "share": "Condividi",
+      "linkCopied": "Link copiato",
+      "linkCopiedDescription": "Ora puoi incollarlo",
+      "shareFailed": "Condivisione non riuscita"
     }
   }
 }

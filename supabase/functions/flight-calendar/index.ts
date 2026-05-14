@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, corsResponse, errorResponse } from "../_shared/supabase-client.ts";
 
 /**
@@ -9,7 +8,7 @@ import { getCorsHeaders, corsResponse, errorResponse } from "../_shared/supabase
  * Uses Travelpayouts calendar and monthly endpoints.
  */
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {

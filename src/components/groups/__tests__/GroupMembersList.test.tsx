@@ -9,6 +9,13 @@ vi.mock('@/components/profile/SocialLinksDisplay', () => ({
   SocialLinksDisplay: () => <div data-testid="social-links" />,
 }));
 
+vi.mock('@/hooks/useGroupMemberManagement', () => ({
+  useGroupMemberManagement: () => ({
+    changeRole: { mutateAsync: vi.fn() },
+    removeMember: { mutateAsync: vi.fn() },
+  }),
+}));
+
 import { GroupMembersList } from '../GroupMembersList';
 
 const mockMembers = [

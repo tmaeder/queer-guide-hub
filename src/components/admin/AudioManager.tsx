@@ -5,11 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listWithJoinDesc, deleteRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { ModernAudioPlayer } from '@/components/ui/modern-audio-player';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface AudioFile {
   id: string;
@@ -46,16 +44,11 @@ export function AudioManager() {
   const loadAudios = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('audio_files')
-        .select(`
-          *,
-          renditions:audio_renditions(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setAudios(data || []);
+      const data = await listWithJoinDesc<AudioFile>(
+        'audio_files',
+        '*, renditions:audio_renditions(*)',
+      );
+      setAudios(data);
     } catch (error) {
       console.error('Error loading audio files:', error);
       toast.error('Failed to load audio files');
@@ -68,11 +61,7 @@ export function AudioManager() {
     if (!confirm('Are you sure you want to delete this audio file?')) return;
 
     try {
-      const { error } = await supabase
-        .from('audio_files')
-        .delete()
-        .eq('id', audioId);
-
+      const { error } = await deleteRow('audio_files', audioId);
       if (error) throw error;
 
       toast.success('Audio file deleted successfully');
@@ -82,6 +71,7 @@ export function AudioManager() {
       toast.error('Failed to delete audio file');
     }
   };
+
   const formatDuration = (seconds?: number): string => {
     if (!seconds) return 'Unknown';
     const mins = Math.floor(seconds / 60);
@@ -108,87 +98,84 @@ export function AudioManager() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Box sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: 32, width: 32, borderBottom: 2, borderColor: 'primary.main', mx: 'auto', mb: 2 }}></Box>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
           <p>Loading audio files...</p>
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Audio Library</Typography>
-        <Box sx={{ position: 'relative', width: 256 }}>
-          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Audio Library</h2>
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search audio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-
+            className="pl-9"
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Audio Grid */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredAudios.map((audio) => (
           <Card key={audio.id}>
-            <Box sx={{ aspectRatio: '1/1', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div className="aspect-square bg-muted flex items-center justify-center relative">
               {audio.poster_image_path ? (
-                <Box
-                  component="img"
+                <img
                   src={`https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/audio/${audio.poster_image_path}`}
                   alt={audio.title}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <Music style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
+                <Music className="h-12 w-12 text-muted-foreground" />
               )}
 
-              <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+              <div className="absolute top-2 right-2">
                 <Badge style={{ backgroundColor: getStatusColor(audio.status), color: 'white' }}>
                   {audio.status}
                 </Badge>
-              </Box>
+              </div>
 
               {audio.duration_seconds && (
-                <Box sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.75)', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.75rem' }}>
+                <div className="absolute bottom-2 right-2 bg-black/75 text-white px-2 py-0.5 rounded text-xs">
                   {formatDuration(audio.duration_seconds)}
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
 
             <CardContent>
-              <Typography variant="h3" sx={{ fontWeight: 600, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{audio.title}</Typography>
+              <h3 className="font-semibold mb-1 truncate">{audio.title}</h3>
 
               {audio.artist && (
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <p className="text-sm text-muted-foreground mb-1 truncate">
                   by {audio.artist}
-                </Typography>
+                </p>
               )}
 
               {audio.album && (
-                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <p className="text-xs text-muted-foreground mb-2 truncate">
                   from {audio.album}
-                </Typography>
+                </p>
               )}
 
               {audio.description && (
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                   {audio.description}
-                </Typography>
+                </p>
               )}
 
-              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
+              <div className="text-xs text-muted-foreground mb-3">
                 <div>Renditions: {audio.renditions.length}</div>
                 <div>Created: {new Date(audio.created_at).toLocaleDateString()}</div>
-              </Box>
+              </div>
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <div className="flex gap-2">
                 {audio.status === 'completed' && audio.renditions.length > 0 && (
                   <Dialog>
                     <DialogTrigger asChild>
@@ -197,14 +184,14 @@ export function AudioManager() {
                         size="sm"
                         onClick={() => setSelectedAudio(audio)}
                       >
-                        <Play style={{ height: 16, width: 16 }} />
+                        <Play className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>{audio.title}</DialogTitle>
                       </DialogHeader>
-                      <Box sx={{ width: '100%' }}>
+                      <div className="w-full">
                         <ModernAudioPlayer
                           audio={{
                             id: audio.id,
@@ -226,9 +213,8 @@ export function AudioManager() {
                             }))
                           }}
                           controls={true}
-
                         />
-                      </Box>
+                      </div>
                     </DialogContent>
                   </Dialog>
                 )}
@@ -237,25 +223,24 @@ export function AudioManager() {
                   variant="outline"
                   size="sm"
                   onClick={() => deleteAudio(audio.id)}
-
                 >
-                  <Trash2 style={{ height: 16, width: 16 }} />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
-              </Box>
+              </div>
             </CardContent>
           </Card>
         ))}
-      </Box>
+      </div>
 
       {filteredAudios.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 6 }}>
-          <Music style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
-          <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No audio files found</Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
+        <div className="text-center py-12">
+          <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No audio files found</h3>
+          <p className="text-muted-foreground">
             {searchTerm ? 'Try adjusting your search terms' : 'Upload some audio files to get started'}
           </p>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

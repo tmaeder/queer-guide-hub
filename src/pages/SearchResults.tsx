@@ -41,14 +41,15 @@ import {
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
+import { SearchPagination } from '@/components/search/SearchPagination';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
+import { CONTENT_TYPES, supportsPriceSort, resolveType } from '@/lib/searchTaxonomy';
+
+const HITS_PER_PAGE = 20;
+const MAX_HEADING_QUERY_LEN = 80;
 
 const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
   venue: MapPin,
@@ -76,7 +77,6 @@ const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSPr
 
 export default function SearchResults() {
   const { _t } = useTranslation();
-  const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useLocalizedNavigate();
   const trackClick = useTrackClick();
@@ -86,11 +86,15 @@ export default function SearchResults() {
   const [sortBy, setSortBy] = useState(initialSort);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [searchQuery, setSearchQuery] = useState('');
+  // P0-4: 1-indexed page param survives reload; resets to 1 when q/sort/filters change.
+  const initialPage = Math.max(1, Number(searchParams.get('page') || 1));
+  const [page, setPage] = useState(initialPage);
 
   const query = searchParams.get('q') || '';
   const initialTypes = searchParams.get('types')?.split(',') || [];
   const initialLocation = searchParams.get('location') || undefined;
   const initialCategories = searchParams.get('categories')?.split(',') || [];
+  const initialClusterIds = searchParams.get('clusters')?.split(',') || [];
 
   useEffect(() => {
     setSearchQuery(query);
@@ -100,15 +104,19 @@ export default function SearchResults() {
     types: initialTypes,
     location: initialLocation,
     categories: initialCategories.length > 0 ? initialCategories : undefined,
+    cluster_ids: initialClusterIds.length > 0 ? initialClusterIds : undefined,
   });
 
-  const { results, loading } = useSearch(query, {
-    ...filters,
-    types: selectedTab === 'all' ? filters.types : [selectedTab],
-  });
+  const activeTypes = selectedTab === 'all' ? filters.types : [selectedTab];
+  const { results, loading, error, errorKind, totalHits, tooShort } = useSearch(
+    query,
+    { ...filters, types: activeTypes },
+    page,
+  );
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
+    setPage(1); // P0-4: any filter change resets paging.
     const params = new URLSearchParams(searchParams);
     if (newFilters.types && newFilters.types.length > 0) {
       params.set('types', newFilters.types.join(','));
@@ -125,6 +133,22 @@ export default function SearchResults() {
     } else {
       params.delete('categories');
     }
+    if (newFilters.cluster_ids && newFilters.cluster_ids.length > 0) {
+      params.set('clusters', newFilters.cluster_ids.join(','));
+    } else {
+      params.delete('clusters');
+    }
+    params.delete('page');
+    setSearchParams(params);
+  };
+
+  // P1-7: Clear All in the filters panel must also clear the visible search input.
+  const handleClearAll = () => {
+    setSearchQuery('');
+    setFilters({});
+    setPage(1);
+    const params = new URLSearchParams();
+    if (sortBy && sortBy !== 'relevance') params.set('sort', sortBy);
     setSearchParams(params);
   };
 
@@ -135,9 +159,25 @@ export default function SearchResults() {
     } else {
       params.delete('sort');
     }
+    params.delete('page');
     setSearchParams(params);
+    setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- searchParams/setSearchParams are from useSearchParams, stable refs; only re-run on sortBy
   }, [sortBy]);
+
+  // P0-4: keep page param in URL in sync with state, removing when on page 1.
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (page > 1) params.set('page', String(page));
+    else params.delete('page');
+    setSearchParams(params);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  // Reset to page 1 whenever the query string itself changes.
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
 
   const getResultsByType = () => {
     return results.reduce(
@@ -243,75 +283,71 @@ export default function SearchResults() {
   };
 
   const renderResultCard = (result: SearchResult) => {
+    // P0-2: never render a card without an objectID — clicking would build a
+    // /search?q=undefined link. P1-6: fall back to name/title legacy variants
+    // so a personality with `name` but no `title` still shows its label.
+    if (!result?.objectID) return null;
+    const displayTitle =
+      result.title ||
+      (result as unknown as { name?: string }).name ||
+      '';
+    if (!displayTitle) return null;
     const Icon = contentTypeIcons[result.type] || HelpCircle;
 
     if (viewMode === 'grid') {
       return (
         <Card
           key={`${result.type}-${result.objectID}`}
-
           onClick={() => navigateToResult(result)}
         >
-          <Box sx={{ position: 'relative' }}>
+          <div className="relative">
             {result.imageUrl ? (
-              <Box
-                sx={{
-                  aspectRatio: '16/9',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  borderRadius: '8px 8px 0 0',
-                }}
+              <div
+                className="relative overflow-hidden"
+                style={{ aspectRatio: '16/9', borderRadius: '8px 8px 0 0' }}
               >
-                <Box
-                  component="img"
+                <img
                   src={result.imageUrl}
                   alt={result.title}
-                  sx={{
+                  style={{
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
                     transition: 'transform 0.2s',
                   }}
                 />
-                <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
+                <div className="absolute" style={{ top: 8, left: 8 }}>
                   <Badge
                     variant="secondary"
-                    style={{ fontSize: '0.75rem', background: theme.palette.background.paper }}
+                    style={{ fontSize: '0.75rem', background: 'hsl(var(--card))' }}
                   >
                     <Icon style={{ width: 12, height: 12, marginRight: 4 }} />
                     {result.type}
                   </Badge>
-                </Box>
+                </div>
                 {result.metadata?.featured && (
-                  <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                  <div className="absolute" style={{ top: 8, right: 8 }}>
                     <Badge style={{ fontSize: '0.75rem' }}>
                       <Sparkles style={{ width: 12, height: 12, marginRight: 4 }} />
                       Featured
                     </Badge>
-                  </Box>
+                  </div>
                 )}
-              </Box>
+              </div>
             ) : (
-              <Box
-                sx={{
-                  aspectRatio: '16/9',
-                  bgcolor: 'action.hover',
-                  borderRadius: '8px 8px 0 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+              <div
+                className="flex items-center justify-center bg-muted"
+                style={{ aspectRatio: '16/9', borderRadius: '8px 8px 0 0' }}
               >
-                <Icon style={{ width: 48, height: 48, color: theme.palette.text.secondary }} />
-              </Box>
+                <Icon style={{ width: 48, height: 48, color: 'hsl(var(--muted-foreground))' }} />
+              </div>
             )}
-          </Box>
+          </div>
           <CardContent style={{ padding: 16 }}>
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: 600,
-                mb: 1,
+            <p
+              className="font-semibold mb-2"
+              style={{
+                fontSize: '1rem',
                 overflow: 'hidden',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
@@ -319,49 +355,44 @@ export default function SearchResults() {
               }}
             >
               {result.title}
-            </Typography>
+            </p>
             {result.description && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
+              <p
+                className="text-sm text-muted-foreground"
+                style={{
                   overflow: 'hidden',
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
-                  mb: 1.5,
+                  marginBottom: 12,
                 }}
               >
                 {result.description}
-              </Typography>
+              </p>
             )}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <div className="flex flex-wrap items-center mb-3" style={{ gap: 8 }}>
               {result.location && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <div className="flex items-center" style={{ gap: 4 }}>
                   <MapPin style={{ width: 12, height: 12 }} />
-                  <Typography variant="caption" color="text.secondary">
-                    {result.location}
-                  </Typography>
-                </Box>
+                  <span className="text-xs text-muted-foreground">{result.location}</span>
+                </div>
               )}
               {result.rating && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Star style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }} />
-                  <Typography variant="caption" color="text.secondary">
-                    {result.rating}
-                  </Typography>
-                </Box>
+                <div className="flex items-center" style={{ gap: 4 }}>
+                  <Star style={{ width: 12, height: 12, fill: 'currentColor' }} />
+                  <span className="text-xs text-muted-foreground">{result.rating}</span>
+                </div>
               )}
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            </div>
+            <div className="flex items-center justify-between">
               {result.price ? (
-                <Typography sx={{ fontWeight: 600, fontSize: '1.125rem', color: 'primary.main' }}>
+                <p className="font-semibold" style={{ fontSize: '1.125rem', color: 'hsl(var(--primary))' }}>
                   ${result.price}
-                </Typography>
+                </p>
               ) : (
-                <Box />
+                <div />
               )}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="flex items-center" style={{ gap: 8 }}>
                 <SearchFeedbackButtons
                   entity={{ type: result.type, id: result.objectID }}
                   query={query}
@@ -373,8 +404,8 @@ export default function SearchResults() {
                 >
                   View
                 </Button>
-              </Box>
-            </Box>
+              </div>
+            </div>
           </CardContent>
         </Card>
       );
@@ -383,39 +414,30 @@ export default function SearchResults() {
     return (
       <Card
         key={`${result.type}-${result.objectID}`}
-
         onClick={() => navigateToResult(result)}
       >
         <CardContent style={{ padding: 16 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+          <div className="flex items-start" style={{ gap: 16 }}>
             {result.imageUrl && (
-              <Box sx={{ flexShrink: 0 }}>
-                <Box
-                  component="img"
+              <div className="flex-shrink-0">
+                <img
                   src={result.imageUrl}
                   alt={result.title}
-                  sx={{
+                  style={{
                     width: 80,
                     height: 80,
                     objectFit: 'cover',
-                    borderRadius: 2,
+                    borderRadius: 8,
                     transition: 'transform 0.2s',
                   }}
                 />
-              </Box>
+              </div>
             )}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  gap: 1,
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Icon style={{ width: 16, height: 16, color: theme.palette.text.secondary }} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between" style={{ gap: 8 }}>
+                <div className="flex-1">
+                  <div className="flex items-center mb-2" style={{ gap: 8 }}>
+                    <Icon style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
                     <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
                       {result.type}
                     </Badge>
@@ -425,71 +447,58 @@ export default function SearchResults() {
                         Featured
                       </Badge>
                     )}
-                  </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  </div>
+                  <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
                     {result.title}
-                  </Typography>
+                  </h3>
                   {result.description && (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
+                    <p
+                      className="text-sm text-muted-foreground"
+                      style={{
                         overflow: 'hidden',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
-                        mb: 1.5,
+                        marginBottom: 12,
                       }}
                     >
                       {result.description}
-                    </Typography>
+                    </p>
                   )}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      gap: 2,
-                      mb: 1.5,
-                    }}
-                  >
+                  <div className="flex flex-wrap items-center mb-3" style={{ gap: 16 }}>
                     {result.location && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <div className="flex items-center" style={{ gap: 4 }}>
                         <MapPin style={{ width: 12, height: 12 }} />
-                        <Typography variant="body2" color="text.secondary">
-                          {result.location}
-                        </Typography>
-                      </Box>
+                        <span className="text-sm text-muted-foreground">{result.location}</span>
+                      </div>
                     )}
                     {result.date && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <div className="flex items-center" style={{ gap: 4 }}>
                         <Calendar style={{ width: 12, height: 12 }} />
-                        <Typography variant="body2" color="text.secondary">
+                        <span className="text-sm text-muted-foreground">
                           {formatResultDate(result.date)}
-                        </Typography>
-                      </Box>
+                        </span>
+                      </div>
                     )}
                     {result.rating && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <div className="flex items-center" style={{ gap: 4 }}>
                         <Star
-                          style={{ width: 12, height: 12, fill: '#facc15', color: '#facc15' }}
+                          style={{ width: 12, height: 12, fill: 'currentColor' }}
                         />
-                        <Typography variant="body2" color="text.secondary">
-                          {result.rating}
-                        </Typography>
-                      </Box>
+                        <span className="text-sm text-muted-foreground">{result.rating}</span>
+                      </div>
                     )}
                     {result.metadata?.viewsCount && (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <div className="flex items-center" style={{ gap: 4 }}>
                         <Eye style={{ width: 12, height: 12 }} />
-                        <Typography variant="body2" color="text.secondary">
+                        <span className="text-sm text-muted-foreground">
                           {result.metadata.viewsCount} views
-                        </Typography>
-                      </Box>
+                        </span>
+                      </div>
                     )}
-                  </Box>
+                  </div>
                   {result.metadata?.tags && result.metadata.tags.length > 0 && (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    <div className="flex flex-wrap" style={{ gap: 4 }}>
                       {result.metadata.tags.slice(0, 4).map((tag: string, index: number) => (
                         <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
                           {tag}
@@ -500,18 +509,14 @@ export default function SearchResults() {
                           +{result.metadata.tags.length - 4} more
                         </Badge>
                       )}
-                    </Box>
+                    </div>
                   )}
-                </Box>
-                <Box
-                  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}
-                >
+                </div>
+                <div className="flex flex-col items-end" style={{ gap: 8 }}>
                   {result.price && (
-                    <Typography
-                      sx={{ fontWeight: 600, fontSize: '1.25rem', color: 'primary.main' }}
-                    >
+                    <p className="font-semibold" style={{ fontSize: '1.25rem', color: 'hsl(var(--primary))' }}>
                       ${result.price}
-                    </Typography>
+                    </p>
                   )}
                   <SearchFeedbackButtons
                     entity={{ type: result.type, id: result.objectID }}
@@ -524,10 +529,10 @@ export default function SearchResults() {
                   >
                     View Details
                   </Button>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
+                </div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -544,9 +549,11 @@ export default function SearchResults() {
     {} as Record<string, SearchResult[]>,
   );
 
+  const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+  const listClass = 'flex flex-col gap-4';
 
   return (
-    <Container sx={{ px: 2, py: 4 }}>
+    <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <PageHeader
         title="Search Results"
@@ -554,7 +561,11 @@ export default function SearchResults() {
           loading
             ? 'Searching across all content...'
             : query
-              ? `${totalResults} results found for "${query}"`
+              ? `${totalResults} results found for "${
+                  query.length > MAX_HEADING_QUERY_LEN
+                    ? query.slice(0, MAX_HEADING_QUERY_LEN) + '…'
+                    : query
+                }"`
               : undefined
         }
         actions={
@@ -577,8 +588,8 @@ export default function SearchResults() {
         }
       >
         {/* Enhanced Search Bar */}
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Box sx={{ flex: 1, position: 'relative' }}>
+        <div className="flex" style={{ gap: 12 }}>
+          <div className="flex-1 relative">
             <Search
               style={{
                 position: 'absolute',
@@ -587,7 +598,7 @@ export default function SearchResults() {
                 transform: 'translateY(-50%)',
                 width: 16,
                 height: 16,
-                color: theme.palette.text.secondary,
+                color: 'hsl(var(--muted-foreground))',
               }}
             />
             <Input
@@ -597,104 +608,92 @@ export default function SearchResults() {
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               style={{ paddingLeft: 40 }}
             />
-          </Box>
+          </div>
           <Button onClick={handleSearch}>Search</Button>
-        </Box>
+        </div>
       </PageHeader>
 
       {/* Filters Panel */}
       {showFilters && (
         <Card>
-          <SearchFiltersPanel filters={filters} onFiltersChange={handleFiltersChange} />
+          <SearchFiltersPanel
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onClearAll={handleClearAll}
+          />
         </Card>
       )}
 
       {/* Results Controls */}
       {!loading && results.length > 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'flex-start', sm: 'center' },
-            justifyContent: 'space-between',
-            gap: 2,
-            mb: 3,
-            p: 2,
-            bgcolor: 'action.hover',
-            borderRadius: 2,
-          }}
+        <div
+          className="flex flex-col sm:flex-row sm:items-center justify-between bg-muted mb-6"
+          style={{ gap: 16, padding: 16, borderRadius: 8 }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                Sort by:
-              </Typography>
+          <div className="flex items-center" style={{ gap: 16 }}>
+            <div className="flex items-center" style={{ gap: 8 }}>
+              <p className="text-sm font-medium">Sort by:</p>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger style={{ width: 160 }}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent
-                  style={{ zIndex: 50, backgroundColor: theme.palette.background.paper }}
-                >
+                <SelectContent style={{ zIndex: 50 }}>
                   <SelectItem value="relevance">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <TrendingUp style={{ width: 12, height: 12 }} />
                       Relevance
-                    </Box>
+                    </span>
                   </SelectItem>
                   <SelectItem value="newest">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <Clock style={{ width: 12, height: 12 }} />
                       Newest
-                    </Box>
+                    </span>
                   </SelectItem>
                   <SelectItem value="oldest">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <Clock style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
                       Oldest
-                    </Box>
+                    </span>
                   </SelectItem>
                   <SelectItem value="rating">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <Star style={{ width: 12, height: 12 }} />
                       Highest Rated
-                    </Box>
+                    </span>
                   </SelectItem>
                   <SelectItem value="popular">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <Eye style={{ width: 12, height: 12 }} />
                       Most Popular
-                    </Box>
+                    </span>
                   </SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  {/* P2-11: only show price sort when every active type can have a price. */}
+                  {supportsPriceSort(activeTypes) && (
+                    <>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    </>
+                  )}
                   <SelectItem value="alpha-asc">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <ArrowUpDown style={{ width: 12, height: 12 }} />A - Z
-                    </Box>
+                    </span>
                   </SelectItem>
                   <SelectItem value="alpha-desc">
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <span className="inline-flex items-center" style={{ gap: 8 }}>
                       <ArrowUpDown style={{ width: 12, height: 12, transform: 'rotate(180deg)' }} />
                       Z - A
-                    </Box>
+                    </span>
                   </SelectItem>
                 </SelectContent>
               </Select>
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              View:
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                borderRadius: 2,
-              }}
-            >
+          <div className="flex items-center" style={{ gap: 8 }}>
+            <p className="text-sm font-medium">View:</p>
+            <div className="flex items-center" style={{ borderRadius: 8 }}>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
@@ -711,24 +710,40 @@ export default function SearchResults() {
               >
                 <Grid style={{ width: 16, height: 16 }} />
               </Button>
-            </Box>
-          </Box>
-        </Box>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Results */}
       {loading ? (
         <PageLoadingState count={6} variant={viewMode === 'grid' ? 'card' : 'list'} />
+      ) : tooShort ? (
+        // P2-8: helpful guidance instead of "0 results" for sub-MIN_QUERY_LEN inputs.
+        <div
+          className="flex flex-col items-center justify-center text-center"
+          style={{ paddingTop: 48, paddingBottom: 48 }}
+        >
+          <Search
+            style={{ width: 48, height: 48, color: 'hsl(var(--muted-foreground))', marginBottom: 16 }}
+          />
+          <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+            Keep typing
+          </h3>
+          <p className="text-muted-foreground">
+            Enter at least 2 characters to start searching.
+          </p>
+        </div>
       ) : results.length === 0 ? (
         <>
           {/* Search Suggestions -- shown when query is empty */}
           {(!query || query.trim() === '') && (
             <Card>
               <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                <h3 className="font-semibold mb-4" style={{ fontSize: '1.125rem' }}>
                   Try searching for...
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+                </h3>
+                <div className="flex flex-wrap mb-6" style={{ gap: 8 }}>
                   {[
                     'Berlin venues',
                     'Pride events',
@@ -750,11 +765,9 @@ export default function SearchResults() {
                       {suggestion}
                     </Button>
                   ))}
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Or browse by category:
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Or browse by category:</p>
+                <div className="flex flex-wrap" style={{ gap: 8 }}>
                   {[
                     { label: 'Venues', path: '/venues' },
                     { label: 'Events', path: '/events' },
@@ -772,47 +785,60 @@ export default function SearchResults() {
                       {cat.label}
                     </Button>
                   ))}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           )}
 
-          {/* No results -- shown when there IS a query but no results */}
-          {query && query.trim() !== '' && (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                py: 6,
-                textAlign: 'center',
-              }}
+          {query && query.trim() !== '' && errorKind === 'unavailable' && (
+            <div
+              role="alert"
+              className="flex flex-col items-center justify-center text-center"
+              style={{ paddingTop: 48, paddingBottom: 48 }}
             >
               <Search
                 style={{
                   width: 48,
                   height: 48,
-                  color: theme.palette.text.secondary,
+                  color: 'hsl(var(--muted-foreground))',
                   marginBottom: 16,
                 }}
               />
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+              <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
+                Search is temporarily unavailable
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {error ?? "We've been notified and are looking into it."}
+              </p>
+            </div>
+          )}
+          {query && query.trim() !== '' && errorKind !== 'unavailable' && (
+            <div
+              className="flex flex-col items-center justify-center text-center"
+              style={{ paddingTop: 48, paddingBottom: 48 }}
+            >
+              <Search
+                style={{
+                  width: 48,
+                  height: 48,
+                  color: 'hsl(var(--muted-foreground))',
+                  marginBottom: 16,
+                }}
+              />
+              <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
                 No results found
-              </Typography>
-              <Typography color="text.secondary" sx={{ mb: 2 }}>
+              </h3>
+              <p className="text-muted-foreground mb-4">
                 Try adjusting your search query or filters
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
+              </p>
+              <div className="flex" style={{ gap: 12 }}>
                 <Button variant="outline" onClick={() => setShowFilters(true)}>
                   Adjust Filters
                 </Button>
-              </Box>
-              <Box sx={{ mt: 4 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Or try one of these searches:
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+              </div>
+              <div style={{ marginTop: 32 }}>
+                <p className="text-sm text-muted-foreground mb-4">Or try one of these searches:</p>
+                <div className="flex flex-wrap justify-center" style={{ gap: 8 }}>
                   {[
                     'Berlin venues',
                     'Pride events',
@@ -834,9 +860,9 @@ export default function SearchResults() {
                       {suggestion}
                     </Button>
                   ))}
-                </Box>
-              </Box>
-            </Box>
+                </div>
+              </div>
+            </div>
           )}
         </>
       ) : (
@@ -845,64 +871,46 @@ export default function SearchResults() {
             <TabsTrigger value="all">All ({totalResults})</TabsTrigger>
             {Object.entries(resultsByType).map(([type, typeResults]) => {
               const Icon = contentTypeIcons[type] || HelpCircle;
+              // P2-10/P3-12: never render `undefined (n)` — fall back to taxonomy
+              // label or a neutral "Other" bucket.
+              const canonicalId = resolveType(type);
+              const label =
+                CONTENT_TYPES.find((t) => t.id === canonicalId)?.label ??
+                (type && type !== 'undefined' ? type : 'Other');
               return (
                 <TabsTrigger
-                  key={type}
+                  key={type || 'other'}
                   value={type}
                   style={{ display: 'flex', alignItems: 'center', gap: 4 }}
                 >
                   <Icon style={{ width: 12, height: 12 }} />
-                  {type} ({typeResults.length})
+                  {label} ({typeResults.length})
                 </TabsTrigger>
               );
             })}
           </TabsList>
 
           <TabsContent value="all">
-            <Box
-              sx={
-                viewMode === 'grid'
-                  ? {
-                      display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '1fr',
-                        md: '1fr 1fr',
-                        lg: 'repeat(3, 1fr)',
-                        xl: 'repeat(4, 1fr)',
-                      },
-                      gap: 3,
-                    }
-                  : { display: 'flex', flexDirection: 'column', gap: 2 }
-              }
-            >
+            <div className={viewMode === 'grid' ? gridClass : listClass}>
               {sortedResults.map(renderResultCard)}
-            </Box>
+            </div>
+            <SearchPagination
+              page={page}
+              hitsPerPage={HITS_PER_PAGE}
+              totalHits={totalHits}
+              onPageChange={setPage}
+            />
           </TabsContent>
 
           {Object.entries(sortedResultsByType).map(([type, typeResults]) => (
             <TabsContent key={type} value={type}>
-              <Box
-                sx={
-                  viewMode === 'grid'
-                    ? {
-                        display: 'grid',
-                        gridTemplateColumns: {
-                          xs: '1fr',
-                          md: '1fr 1fr',
-                          lg: 'repeat(3, 1fr)',
-                          xl: 'repeat(4, 1fr)',
-                        },
-                        gap: 3,
-                      }
-                    : { display: 'flex', flexDirection: 'column', gap: 2 }
-                }
-              >
+              <div className={viewMode === 'grid' ? gridClass : listClass}>
                 {typeResults.map(renderResultCard)}
-              </Box>
+              </div>
             </TabsContent>
           ))}
         </Tabs>
       )}
-    </Container>
+    </div>
   );
 }

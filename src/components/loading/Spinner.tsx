@@ -1,24 +1,36 @@
 import * as React from 'react';
-import CircularProgress, { type CircularProgressProps } from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
-export interface SpinnerProps extends Omit<CircularProgressProps, 'aria-label'> {
+export interface SpinnerProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Accessible name announced to screen readers. Defaults to "Loading". */
   label?: string;
+  /** Pixel size of the spinner icon. Defaults to 24 (matches MUI medium). */
+  size?: number;
 }
 
 /**
- * MUI CircularProgress with a guaranteed accessible name (WCAG 4.1.2,
- * axe `aria-progressbar-name`). Use everywhere instead of bare
- * `<CircularProgress />`.
+ * Accessible loading spinner. Replaces an earlier MUI CircularProgress wrapper.
+ * Use everywhere instead of bare <Loader2 />.
  */
 export const Spinner = React.forwardRef<HTMLSpanElement, SpinnerProps>(function Spinner(
-  { label, ...props },
+  { label, size = 24, className, ...props },
   ref,
 ) {
   const { t } = useTranslation();
   const accessibleName = label ?? t('common.loading', 'Loading');
-  return <CircularProgress ref={ref} aria-label={accessibleName} role="progressbar" {...props} />;
+  return (
+    <span
+      ref={ref}
+      role="progressbar"
+      aria-label={accessibleName}
+      className={cn('inline-flex items-center justify-center', className)}
+      {...props}
+    >
+      <Loader2 className="animate-spin" style={{ width: size, height: size }} />
+    </span>
+  );
 });
 
 export default Spinner;

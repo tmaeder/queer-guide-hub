@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -49,40 +46,40 @@ export default function Welcome() {
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Loader2 style={{ width: 32, height: 32, animation: 'spin 1s linear infinite' }} />
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Container sx={{ py: 6 }}>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto py-12 px-4">
         <Card>
           <CardHeader>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <Heart size={48} color="var(--mui-palette-primary-main)" style={{ fill: 'currentcolor' }} />
-            </Box>
+            <div className="flex justify-center mb-4">
+              <Heart size={48} color="hsl(var(--primary))" style={{ fill: 'currentcolor' }} />
+            </div>
             <CardTitle>{t('onboarding.welcome', 'Welcome to The Queer Guide')}</CardTitle>
             <CardDescription>
               {t('onboarding.welcomeBlurb', "You're in. A few quick optional steps to make it yours.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+            <div className="flex flex-col gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
                   <KeyRound size={20} />
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  <p className="text-base font-semibold">
                     {t('onboarding.passkeyTitle', 'Set up a passkey')}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
                   {t(
                     'onboarding.passkeyBlurb',
                     'Sign in faster and more securely with your device. No passwords to remember.'
                   )}
-                </Typography>
+                </p>
                 {enrollErr && (
                   <Alert variant="destructive">
                     <AlertDescription>{enrollErr}</AlertDescription>
@@ -93,29 +90,28 @@ export default function Welcome() {
                   variant={hasPasskey ? 'outline' : 'default'}
                   onClick={handleEnrollPasskey}
                   disabled={enrolling || hasPasskey}
-
                 >
                   {enrolling && (
-                    <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: 'spin 1s linear infinite' }} />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   {hasPasskey
                     ? t('onboarding.passkeyAlreadyEnrolled', 'Passkey already enabled')
                     : t('onboarding.passkeyEnable', 'Enable passkey')}
                 </Button>
-              </Box>
+              </div>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+              <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 <Button onClick={() => finish(false)}>
                   {t('onboarding.continue', 'Continue to The Queer Guide')}
                 </Button>
                 <Button variant="ghost" onClick={() => finish(true)}>
                   {t('onboarding.skip', 'Skip for now')}
                 </Button>
-              </Box>
-            </Box>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 }

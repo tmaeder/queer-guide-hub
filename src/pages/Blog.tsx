@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Calendar, User, Search, Heart, ArrowRight } from "lucide-react";
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
 
 export default function Blog() {
   const navigate = useLocalizedNavigate();
@@ -20,83 +17,85 @@ export default function Blog() {
   const categories = ["All Posts", "Community", "Travel", "Business", "Events", "Resources"];
 
   return (
-    <Container sx={{ py: 4 }}>
+    <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2 }}>
-          <BookOpen style={{ width: 48, height: 48 }} color="var(--mui-palette-primary-main)" />
-          <Typography variant="h3" sx={{ fontWeight: 700, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Queer Guide Blog</Typography>
-        </Box>
-        <Typography variant="h6" color="text.secondary" sx={{ mx: 'auto' }}>
+      <div className="text-center mb-12">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <BookOpen style={{ width: 48, height: 48 }} className="text-primary" />
+          <h1 className="text-4xl font-bold text-foreground">
+            The Queer Guide Blog
+          </h1>
+        </div>
+        <p className="text-lg text-muted-foreground mx-auto">
           Stories, insights, and resources from the LGBTQ+ community.
           Learn, connect, and stay informed with our latest articles.
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {blogPosts.length === 0 ? (
         <>
           {/* Coming Soon Empty State */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3fr 1fr' }, gap: 4 }}>
-            <Box>
+          <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-8">
+            <div>
               <Card style={{ padding: 48, textAlign: 'center' }}>
-                <BookOpen style={{ width: 64, height: 64, margin: '0 auto 16px', color: 'var(--mui-palette-text-secondary)' }} />
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Blog Coming Soon</Typography>
-                <Typography color="text.secondary" sx={{ mx: 'auto', mb: 3 }}>
+                <BookOpen style={{ width: 64, height: 64, margin: '0 auto 16px' }} className="text-muted-foreground" />
+                <h2 className="text-2xl font-bold mb-4">Blog Coming Soon</h2>
+                <p className="text-muted-foreground mx-auto mb-6">
                   We're working on bringing you stories, insights, and resources from the LGBTQ+ community. In the meantime, explore our latest content:
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                </p>
+                <div className="flex justify-center gap-4 flex-wrap">
                   <Button variant="outline" onClick={() => navigate('/news')}>Browse News</Button>
                   <Button variant="outline" onClick={() => navigate('/resources')}>Explore Resources</Button>
-                </Box>
+                </div>
               </Card>
-            </Box>
+            </div>
 
             {/* Sidebar - only newsletter CTA */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="flex flex-col gap-8">
               <Card>
                 <CardContent>
-                  <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Stay Updated</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <p className="font-semibold mb-3">Stay Updated</p>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Get our latest articles and community updates delivered to your inbox.
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  </p>
+                  <div className="flex flex-col gap-3">
                     <Input placeholder="Your email address" type="email" />
                     <Button style={{ width: '100%', display: 'flex', gap: 8 }}>
                       <Heart style={{ width: 16, height: 16 }} />
                       Subscribe
                     </Button>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </>
       ) : (
         <>
           {/* Search and Navigation */}
-          <Box sx={{ mb: 6 }}>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-              <Box sx={{ position: 'relative', width: { xs: '100%', md: '24rem' } }}>
-                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--mui-palette-text-secondary)' }} />
+          <div className="mb-12">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
+              <div className="relative w-full md:w-96">
+                <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16 }} className="text-muted-foreground" />
                 <Input
                   placeholder="Search articles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{ paddingLeft: 40 }}
                 />
-              </Box>
+              </div>
               <Button style={{ display: 'flex', gap: 8 }}>
                 <Heart style={{ width: 16, height: 16 }} />
                 Subscribe to Updates
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3fr 1fr' }, gap: 4 }}>
+          <div className="grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-8">
             {/* Main Content */}
-            <Box>
+            <div>
               {/* Articles by Category */}
-              <Box component="section">
+              <section>
                 <Tabs defaultValue="All Posts" style={{ width: '100%' }}>
                   <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(6, 1fr)', marginBottom: 32 }}>
                     {categories.map((category) => (
@@ -107,24 +106,24 @@ export default function Blog() {
                   </TabsList>
 
                   <TabsContent value="All Posts">
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {blogPosts.map((post) => (
                         <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
-                          <Box sx={{ height: 192, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
+                          <div className="h-48 bg-muted"></div>
                           <CardContent>
                             <Badge variant="secondary">{post.category}</Badge>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1.5, mb: 1 }}>{post.title}</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{post.excerpt}</Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <p className="font-semibold mt-3 mb-2 text-base">{post.title}</p>
+                            <p className="text-sm text-muted-foreground mb-4">{post.excerpt}</p>
+                            <div className="flex items-center gap-4 mb-4">
+                              <div className="flex items-center gap-1">
                                 <User style={{ width: 12, height: 12 }} />
-                                <Typography variant="caption" color="text.secondary">{post.author}</Typography>
-                              </Box>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <span className="text-xs text-muted-foreground">{post.author}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
                                 <Calendar style={{ width: 12, height: 12 }} />
-                                <Typography variant="caption" color="text.secondary">{post.publishDate}</Typography>
-                              </Box>
-                            </Box>
+                                <span className="text-xs text-muted-foreground">{post.publishDate}</span>
+                              </div>
+                            </div>
                             <Button variant="outline" size="sm" style={{ display: 'flex', gap: 8 }}>
                               Read Article
                               <ArrowRight style={{ width: 12, height: 12 }} />
@@ -132,29 +131,29 @@ export default function Blog() {
                           </CardContent>
                         </Card>
                       ))}
-                    </Box>
+                    </div>
                   </TabsContent>
 
                   {categories.slice(1).map((category) => (
                     <TabsContent key={category} value={category}>
-                      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {blogPosts.filter(post => post.category === category).map((post) => (
                           <Card key={post.id} style={{ overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
-                            <Box sx={{ height: 192, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
+                            <div className="h-48 bg-muted"></div>
                             <CardContent>
                               <Badge variant="secondary">{post.category}</Badge>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1.5, mb: 1 }}>{post.title}</Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{post.excerpt}</Typography>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <p className="font-semibold mt-3 mb-2 text-base">{post.title}</p>
+                              <p className="text-sm text-muted-foreground mb-4">{post.excerpt}</p>
+                              <div className="flex items-center gap-4 mb-4">
+                                <div className="flex items-center gap-1">
                                   <User style={{ width: 12, height: 12 }} />
-                                  <Typography variant="caption" color="text.secondary">{post.author}</Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  <span className="text-xs text-muted-foreground">{post.author}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
                                   <Calendar style={{ width: 12, height: 12 }} />
-                                  <Typography variant="caption" color="text.secondary">{post.publishDate}</Typography>
-                                </Box>
-                              </Box>
+                                  <span className="text-xs text-muted-foreground">{post.publishDate}</span>
+                                </div>
+                              </div>
                               <Button variant="outline" size="sm" style={{ display: 'flex', gap: 8 }}>
                                 Read Article
                                 <ArrowRight style={{ width: 12, height: 12 }} />
@@ -162,72 +161,72 @@ export default function Blog() {
                             </CardContent>
                           </Card>
                         ))}
-                      </Box>
+                      </div>
                     </TabsContent>
                   ))}
                 </Tabs>
-              </Box>
-            </Box>
+              </section>
+            </div>
 
             {/* Sidebar */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="flex flex-col gap-8">
               {/* Newsletter Signup */}
               <Card>
                 <CardContent>
-                  <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Stay Updated</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <p className="font-semibold mb-3">Stay Updated</p>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Get our latest articles and community updates delivered to your inbox.
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                  </p>
+                  <div className="flex flex-col gap-3">
                     <Input placeholder="Your email address" type="email" />
                     <Button style={{ width: '100%', display: 'flex', gap: 8 }}>
                       <Heart style={{ width: 16, height: 16 }} />
                       Subscribe
                     </Button>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Popular Posts */}
               <Card>
                 <CardContent>
-                  <Typography sx={{ fontWeight: 600, mb: 2 }}>Popular Articles</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <p className="font-semibold mb-4">Popular Articles</p>
+                  <div className="flex flex-col gap-4">
                     {blogPosts.slice(0, 3).map((post) => (
-                      <Box key={post.id} sx={{ display: 'flex', gap: 1.5 }}>
-                        <Box sx={{ width: 64, height: 64, flexShrink: 0, borderRadius: 1, background: 'linear-gradient(to right, var(--mui-palette-primary-main), var(--mui-palette-secondary-main))' }}></Box>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4, mb: 0.5 }}>{post.title}</Typography>
-                          <Typography variant="caption" color="text.secondary">
+                      <div key={post.id} className="flex gap-3">
+                        <div className="w-16 h-16 shrink-0 rounded bg-muted"></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium leading-tight mb-1">{post.title}</p>
+                          <span className="text-xs text-muted-foreground">
                             {post.publishDate}
-                          </Typography>
-                        </Box>
-                      </Box>
+                          </span>
+                        </div>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Categories */}
               <Card>
                 <CardContent>
-                  <Typography sx={{ fontWeight: 600, mb: 2 }}>Categories</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <p className="font-semibold mb-4">Categories</p>
+                  <div className="flex flex-col gap-2">
                     {categories.slice(1).map((category) => (
-                      <Box key={category} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">{category}</Typography>
+                      <div key={category} className="flex items-center justify-between">
+                        <p className="text-sm">{category}</p>
                         <Badge variant="secondary" style={{ fontSize: '0.75rem' }}>
                           {blogPosts.filter(p => p.category === category).length}
                         </Badge>
-                      </Box>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </>
       )}
-    </Container>
+    </div>
   );
 }

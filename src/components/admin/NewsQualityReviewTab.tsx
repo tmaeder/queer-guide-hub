@@ -1,32 +1,26 @@
 /**
  * News Quality Review Tab — surfaces news_articles flagged by the
  * pipeline-quality-enhance stage (quality_status = 'review' or 'rejected').
- *
- * Shows the AI's structured QualityDecision plus side-by-side before/after,
- * with admin actions: approve & publish, send to drafts, mark irrelevant,
- * revert to original (from news_articles_originals).
  */
 
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import { CheckCircle2, AlertTriangle, RotateCcw, EyeOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { CheckCircle2, AlertTriangle, RotateCcw, EyeOff, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
+import { diffWords, diffChangeRatio } from '@/lib/text-diff';
 
-// New news_articles columns + the news_articles_originals table aren't in the
-// generated Database types yet. Route writes/reads through a permissive client
-// until types regenerate. Reads are still narrowed via the ArticleRow cast.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sb = untypedSupabase as any;
 
@@ -68,6 +62,8 @@ interface ArticleRow {
 
 const STATUSES = ['review', 'rejected'] as const;
 
+const fmtPct = (v: number) => `${(v > 1 ? v : v * 100).toFixed(0)}%`;
+
 function HealthStat({
   label,
   value,
@@ -78,27 +74,65 @@ function HealthStat({
   color: string;
 }) {
   return (
-    <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider' }}>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-        {label}
-      </Typography>
-      <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color }}>
+    <div className="border p-3">
+      <span className="block text-xs text-muted-foreground">{label}</span>
+      <div className="text-2xl font-bold" style={{ color }}>
         {typeof value === 'number' ? value.toLocaleString() : value}
-      </Typography>
-    </Box>
+      </div>
+    </div>
+  );
+}
+
+function InlineDiff({ before, after }: { before: string; after: string }) {
+  const segs = useMemo(() => diffWords(before, after), [before, after]);
+  return (
+    <div className="whitespace-pre-wrap text-sm leading-relaxed">
+      {segs.map((s, i) => {
+        if (s.kind === 'eq') return <span key={i}>{s.text}</span>;
+        if (s.kind === 'add') {
+          return (
+            <span
+              key={i}
+              style={{
+                backgroundColor: 'rgba(34,197,94,0.18)',
+                color: 'rgb(21,128,61)',
+                padding: '0 2px',
+              }}
+            >
+              {s.text}
+            </span>
+          );
+        }
+        return (
+          <span
+            key={i}
+            style={{
+              backgroundColor: 'rgba(239,68,68,0.18)',
+              color: 'rgb(153,27,27)',
+              textDecoration: 'line-through',
+              padding: '0 2px',
+            }}
+          >
+            {s.text}
+          </span>
+        );
+      })}
+    </div>
   );
 }
 
 function ScoreChip({ label, value }: { label: string; value: number | null }) {
   const v = value ?? 0;
-  const color = v >= 0.75 ? 'success' : v >= 0.5 ? 'warning' : 'default';
+  const tone =
+    v >= 0.75
+      ? 'border-emerald-500 text-emerald-600'
+      : v >= 0.5
+        ? 'border-amber-500 text-amber-600'
+        : 'border-muted text-muted-foreground';
   return (
-    <Chip
-      size="small"
-      label={`${label} ${(v * 100).toFixed(0)}%`}
-      color={color as 'success' | 'warning' | 'default'}
-      variant="outlined"
-    />
+    <Badge variant="outline" className={cn('font-normal', tone)}>
+      {label} {(v * 100).toFixed(0)}%
+    </Badge>
   );
 }
 
@@ -216,6 +250,25 @@ export default function NewsQualityReviewTab() {
     },
   });
 
+  const { data: sourceHealth } = useQuery({
+    queryKey: ['news-quality-source-health'],
+    queryFn: async () => {
+      const { data, error: e } = await sb
+        .from('news_quality_source_health')
+        .select('source_id, source_name, total, passed, review, rejected, reject_rate, avg_quality')
+        .gte('total', 5)
+        .order('reject_rate', { ascending: false, nullsFirst: false })
+        .limit(8);
+      if (e) throw e;
+      return (data ?? []) as Array<{
+        source_id: string; source_name: string; total: number;
+        passed: number; review: number; rejected: number;
+        reject_rate: number | null; avg_quality: number | null;
+      }>;
+    },
+    refetchInterval: 120_000,
+  });
+
   const toggleEnabled = useMutation({
     mutationFn: async (enabled: boolean) => {
       const { error: e } = await sb.from('news_quality_settings')
@@ -232,129 +285,163 @@ export default function NewsQualityReviewTab() {
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <CircularProgress size={28} />
-      </Box>
+      <div className="p-8 text-center">
+        <Loader2 className="mx-auto h-7 w-7 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
   if (error) {
-    return <Alert severity="error">{(error as Error).message}</Alert>;
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{(error as Error).message}</AlertDescription>
+      </Alert>
+    );
   }
 
   return (
-    <Box>
+    <div>
       {settings && (
-        <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider' }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-              Pipeline status:
-            </Typography>
-            <Chip
-              size="small"
-              label={settings.enabled ? 'Enabled' : 'Disabled'}
-              color={settings.enabled ? 'success' : 'default'}
-            />
+        <div className="mb-6 border p-4">
+          <div className="flex items-center gap-4">
+            <h4 className="text-sm font-semibold">Pipeline status:</h4>
+            <Badge variant={settings.enabled ? 'default' : 'secondary'}>
+              {settings.enabled ? 'Enabled' : 'Disabled'}
+            </Badge>
             <Button
-              size="small"
-              variant={settings.enabled ? 'outlined' : 'contained'}
-              color={settings.enabled ? 'error' : 'success'}
+              size="sm"
+              variant={settings.enabled ? 'outline' : 'default'}
               onClick={() => toggleEnabled.mutate(!settings.enabled)}
               disabled={toggleEnabled.isPending}
             >
               {settings.enabled ? 'Disable' : 'Enable'}
             </Button>
-          </Stack>
-        </Box>
+          </div>
+        </div>
       )}
 
       {health && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(2,1fr)', md: 'repeat(6,1fr)' },
-            gap: 2,
-            mb: 3,
-          }}
-        >
+        <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-6">
           <HealthStat label="Passed" value={health.passed} color="#22c55e" />
           <HealthStat label="Review" value={health.review} color="#f59e0b" />
           <HealthStat label="Rejected" value={health.rejected} color="#ef4444" />
           <HealthStat label="Legacy" value={health.legacy_unprocessed} color="#6b7280" />
           <HealthStat
             label="Avg relevance"
-            value={health.avg_relevance != null ? `${(health.avg_relevance * 100).toFixed(0)}%` : '—'}
+            value={health.avg_relevance != null ? fmtPct(health.avg_relevance) : '—'}
             color="#3b82f6"
           />
           <HealthStat
             label="Avg quality"
-            value={health.avg_quality_after != null ? `${(health.avg_quality_after * 100).toFixed(0)}%` : '—'}
+            value={health.avg_quality_after != null ? fmtPct(health.avg_quality_after) : '—'}
             color="#3b82f6"
           />
-        </Box>
+        </div>
       )}
 
-      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-        <Chip label={`Review: ${counts.review}`} color="warning" variant="outlined" />
-        <Chip label={`Rejected: ${counts.rejected}`} color="error" variant="outlined" />
-      </Stack>
+      {sourceHealth && sourceHealth.length > 0 && (
+        <div className="mb-6">
+          <p className="mb-2 block text-xs uppercase tracking-wide text-muted-foreground">
+            Sources by reject rate
+          </p>
+          <div className="grid grid-cols-1 gap-2">
+            {sourceHealth.map((s) => {
+              const pct = s.reject_rate != null ? Math.round(s.reject_rate * 100) : 0;
+              const tone =
+                pct > 50
+                  ? 'border-red-500 text-red-600'
+                  : pct > 25
+                    ? 'border-amber-500 text-amber-600'
+                    : '';
+              return (
+                <div
+                  key={s.source_id}
+                  className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border p-2"
+                >
+                  <p className="text-sm font-semibold">{s.source_name}</p>
+                  <span className="text-xs text-muted-foreground">
+                    {s.passed} passed · {s.review} review · {s.rejected} rejected ({s.total})
+                  </span>
+                  <Badge variant="outline" className={cn('font-normal', tone)}>
+                    {pct}% reject
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Badge variant="outline" className="border-amber-500 text-amber-600">
+          Review: {counts.review}
+        </Badge>
+        <Badge variant="outline" className="border-red-500 text-red-600">
+          Rejected: {counts.rejected}
+        </Badge>
+      </div>
 
       {(!rows || rows.length === 0) && (
-        <Alert severity="info">No articles awaiting quality review.</Alert>
+        <Alert>
+          <AlertDescription>No articles awaiting quality review.</AlertDescription>
+        </Alert>
       )}
 
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-4">
         {rows?.map((r) => (
-          <Box
+          <div
             key={r.id}
-            sx={{
-              p: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              cursor: 'pointer',
-              '&:hover': { backgroundColor: 'action.hover' },
-            }}
+            className="cursor-pointer border p-4 hover:bg-accent"
             onClick={() => setSelected(r)}
           >
-            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-semibold">
                   {r.quality_decision?.title || r.title}
-                </Typography>
+                </p>
                 {r.quality_decision?.excerpt && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {r.quality_decision.excerpt}
-                  </Typography>
+                  </p>
                 )}
-                <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
+                <div className="mt-2 flex flex-wrap gap-2">
                   <ScoreChip label="Relevance" value={r.relevance_score} />
                   <ScoreChip label="Quality" value={r.quality_score} />
-                  {r.sentiment && <Chip size="small" label={r.sentiment} variant="outlined" />}
+                  {r.sentiment && <Badge variant="outline">{r.sentiment}</Badge>}
                   {r.quality_decision?.isSatire && (
-                    <Chip size="small" label="satire" color="warning" />
+                    <Badge className="bg-amber-500 text-white">satire</Badge>
                   )}
                   {(r.auto_publish_blocked_reasons ?? []).map((reason) => (
-                    <Chip key={reason} size="small" label={reason} variant="outlined" />
+                    <Badge key={reason} variant="outline">
+                      {reason}
+                    </Badge>
                   ))}
-                </Stack>
-              </Box>
-              <Chip
-                size="small"
-                label={r.quality_status ?? 'pending'}
-                color={r.quality_status === 'review' ? 'warning' : 'error'}
-              />
-            </Stack>
-          </Box>
+                </div>
+              </div>
+              <Badge
+                variant="outline"
+                className={
+                  r.quality_status === 'review'
+                    ? 'border-amber-500 text-amber-600'
+                    : 'border-red-500 text-red-600'
+                }
+              >
+                {r.quality_status ?? 'pending'}
+              </Badge>
+            </div>
+          </div>
         ))}
-      </Stack>
+      </div>
 
-      <Dialog open={!!selected} onClose={() => setSelected(null)} fullWidth maxWidth="lg">
-        {selected && (
-          <>
-            <DialogTitle>{selected.quality_decision?.title || selected.title}</DialogTitle>
-            <DialogContent dividers>
-              <Stack spacing={2}>
-                <Stack direction="row" spacing={1} flexWrap="wrap">
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-4xl">
+          {selected && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selected.quality_decision?.title || selected.title}</DialogTitle>
+              </DialogHeader>
+              <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto border-t border-b py-4">
+                <div className="flex flex-wrap gap-2">
                   <ScoreChip label="Relevance" value={selected.relevance_score} />
                   <ScoreChip label="Quality (after)" value={selected.quality_score} />
                   <ScoreChip
@@ -365,104 +452,113 @@ export default function NewsQualityReviewTab() {
                     label="Confidence"
                     value={selected.quality_decision?.confidence ?? null}
                   />
-                </Stack>
+                </div>
 
                 {selected.quality_decision?.warnings.length ? (
-                  <Alert severity="warning" icon={<AlertTriangle size={16} />}>
-                    {selected.quality_decision.warnings.join(' • ')}
+                  <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      {selected.quality_decision.warnings.join(' • ')}
+                    </AlertDescription>
                   </Alert>
                 ) : null}
 
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 2,
-                  }}
-                >
-                  <Box>
-                    <Typography variant="overline" color="text.secondary">
-                      Original
-                    </Typography>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                      {selected.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                      {selected.content?.slice(0, 4000)}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="overline" color="text.secondary">
-                      Cleaned
-                    </Typography>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                      {selected.quality_decision?.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                      {selected.quality_decision?.cleanedBody.slice(0, 4000)}
-                    </Typography>
-                  </Box>
-                </Box>
+                <div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Title
+                    </span>
+                    {selected.quality_decision?.title &&
+                      selected.quality_decision.title !== selected.title && (
+                        <Badge variant="outline">
+                          {(diffChangeRatio(selected.title, selected.quality_decision.title) * 100).toFixed(0)}% rewritten
+                        </Badge>
+                      )}
+                  </div>
+                  <div className="mb-4">
+                    <InlineDiff
+                      before={selected.title}
+                      after={selected.quality_decision?.title ?? selected.title}
+                    />
+                  </div>
+
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Body
+                    </span>
+                    {selected.quality_decision?.cleanedBody && (
+                      <Badge variant="outline">
+                        {(diffChangeRatio(selected.content ?? '', selected.quality_decision.cleanedBody) * 100).toFixed(0)}% rewritten
+                      </Badge>
+                    )}
+                  </div>
+                  <InlineDiff
+                    before={(selected.content ?? '').slice(0, 4000)}
+                    after={(selected.quality_decision?.cleanedBody ?? selected.content ?? '').slice(0, 4000)}
+                  />
+                </div>
 
                 {selected.quality_decision?.removedArtifacts.length ? (
-                  <Box>
-                    <Typography variant="overline" color="text.secondary">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
                       Removed artefacts
-                    </Typography>
-                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {selected.quality_decision.removedArtifacts.map((a) => (
-                        <Chip key={a} size="small" label={a} variant="outlined" />
+                        <Badge key={a} variant="outline">
+                          {a}
+                        </Badge>
                       ))}
-                    </Stack>
-                  </Box>
+                    </div>
+                  </div>
                 ) : null}
 
                 {selected.quality_decision?.tags.length ? (
-                  <Box>
-                    <Typography variant="overline" color="text.secondary">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
                       Suggested tags
-                    </Typography>
-                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
                       {selected.quality_decision.tags.map((t) => (
-                        <Chip key={t} size="small" label={t} />
+                        <Badge key={t}>{t}</Badge>
                       ))}
-                    </Stack>
-                  </Box>
+                    </div>
+                  </div>
                 ) : null}
-              </Stack>
-            </DialogContent>
-            <DialogActions sx={{ px: 3, py: 2, justifyContent: 'space-between' }}>
-              <Button
-                color="inherit"
-                startIcon={<RotateCcw size={16} />}
-                onClick={() => revert.mutate(selected)}
-                disabled={revert.isPending}
-              >
-                Revert to original
-              </Button>
-              <Stack direction="row" spacing={1}>
+              </div>
+              <DialogFooter className="justify-between">
                 <Button
-                  color="error"
-                  startIcon={<EyeOff size={16} />}
-                  onClick={() => markIrrelevant.mutate(selected)}
-                  disabled={markIrrelevant.isPending}
+                  variant="ghost"
+                  onClick={() => revert.mutate(selected)}
+                  disabled={revert.isPending}
                 >
-                  Mark irrelevant
+                  <RotateCcw size={16} className="mr-2" />
+                  Revert to original
                 </Button>
-                <Button
-                  variant="contained"
-                  color="success"
-                  startIcon={<CheckCircle2 size={16} />}
-                  onClick={() => approve.mutate(selected)}
-                  disabled={approve.isPending}
-                >
-                  Approve & publish
-                </Button>
-              </Stack>
-            </DialogActions>
-          </>
-        )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="border-red-500 text-red-600"
+                    onClick={() => markIrrelevant.mutate(selected)}
+                    disabled={markIrrelevant.isPending}
+                  >
+                    <EyeOff size={16} className="mr-2" />
+                    Mark irrelevant
+                  </Button>
+                  <Button
+                    className="bg-emerald-600 text-white hover:bg-emerald-700"
+                    onClick={() => approve.mutate(selected)}
+                    disabled={approve.isPending}
+                  >
+                    <CheckCircle2 size={16} className="mr-2" />
+                    Approve & publish
+                  </Button>
+                </div>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }

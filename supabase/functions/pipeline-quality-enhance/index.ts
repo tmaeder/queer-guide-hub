@@ -8,6 +8,8 @@ import { resolveEntities } from '../_shared/news-quality/entity-link.ts'
 import { evaluatePublishGate } from '../_shared/news-quality/decision.ts'
 import { probeImage } from '../_shared/news-quality/image-check.ts'
 import { findReplacementImage } from '../_shared/news-quality/image-replace.ts'
+import { hashImageUrl } from '../_shared/news-quality/image-hash.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Quality Enhance (News) — AI-assisted relevance + rewrite + entity linking + image probe.
 // Reads ingestion_staging rows post-enrich, writes a QualityDecision into enriched_data + applies
@@ -57,7 +59,7 @@ async function callQualityLLM(
   return parseQualityDecision(result.content)
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-quality-enhance', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -229,6 +231,10 @@ Deno.serve(async (req) => {
           // Top-level resolved IDs are what news_commit_staging_batch reads.
           country_ids: countryRes.linked.map((c) => c.id),
           city_ids:    cityRes.linked.map((c) => c.id),
+          // Image dedup hash — uses replacement URL when set, else original.
+          image_hash: await hashImageUrl(
+            replacementImage?.url ?? imageUrl ?? '',
+          ),
           quality_resolved_links: {
             countries: countryRes.linked,
             cities: cityRes.linked,
@@ -278,4 +284,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-quality-enhance:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

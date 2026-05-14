@@ -275,11 +275,11 @@ async function handleContinue(
     const nodeConfig = currentNode.data?.config || {}
 
     const payload = {
+      dry_run: (context as Record<string, boolean>).dry_run || false,
+      batch_size: (context as Record<string, number>).batch_size || 50,
       ...nodeConfig,
       pipeline_run_id: runId,
       node_id: currentNodeId,
-      dry_run: (context as Record<string, boolean>).dry_run || false,
-      batch_size: (context as Record<string, number>).batch_size || 50,
     }
 
     const controller = new AbortController()
@@ -487,7 +487,7 @@ async function advanceToNextNodes(
       const hasFailed = nodes.some(n => nodeStates[n.id]?.status === 'failed')
       await supabase
         .from('pipeline_runs')
-        .update({ status: hasFailed ? 'failed' : 'completed' })
+        .update({ status: hasFailed ? 'failed' : 'completed', completed_at: new Date().toISOString() })
         .eq('id', run.id as string)
     }
     return

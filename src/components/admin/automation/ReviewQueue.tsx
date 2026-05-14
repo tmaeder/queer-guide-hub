@@ -3,25 +3,31 @@
  */
 
 import { useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import Checkbox from '@mui/material/Checkbox';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import LinearProgress from '@mui/material/LinearProgress';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import { CheckCircle2, XCircle, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import type { ContentChange } from '@/hooks/useAutomation';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -36,12 +42,12 @@ interface Props {
   isRejecting: boolean;
 }
 
-const CHANGE_TYPE_COLOR: Record<string, 'info' | 'success' | 'warning' | 'error' | 'default'> = {
-  normalize: 'info',
-  sanitize: 'info',
-  enrich: 'success',
-  flag: 'warning',
-  ai_enhance: 'default',
+const CHANGE_TYPE_CLASS: Record<string, string> = {
+  normalize: 'bg-blue-100 text-blue-800 border-blue-200',
+  sanitize: 'bg-blue-100 text-blue-800 border-blue-200',
+  enrich: 'bg-green-100 text-green-800 border-green-200',
+  flag: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  ai_enhance: 'bg-muted text-muted-foreground',
 };
 
 export function ReviewQueue({
@@ -91,58 +97,61 @@ export function ReviewQueue({
 
   if (changes.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 6 }}>
+      <div className="text-center py-12">
         <CheckCircle2 size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
-        <Typography variant="h6" color="text.secondary">
-          No pending changes
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <h6 className="text-lg font-semibold text-muted-foreground">No pending changes</h6>
+        <p className="text-sm text-muted-foreground">
           All automation changes have been reviewed.
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
+  const confidenceColor = (c: number) =>
+    c >= 0.9 ? 'bg-green-500' : c >= 0.7 ? 'bg-blue-500' : 'bg-yellow-500';
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col gap-4">
       {/* Filters & bulk actions */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <FormControl size="small" sx={{ minWidth: 140 }}>
-          <InputLabel>Change Type</InputLabel>
-          <Select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            label="Change Type"
-          >
-            <MenuItem value="all">All Types</MenuItem>
-            {changeTypes.map((t) => (
-              <MenuItem key={t} value={t}>
-                {t}
-              </MenuItem>
-            ))}
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex flex-col gap-1 min-w-[140px]">
+          <Label className="text-xs">Change Type</Label>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {changeTypes.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
 
-        <FormControl size="small" sx={{ minWidth: 140 }}>
-          <InputLabel>Content Type</InputLabel>
-          <Select
-            value={contentTypeFilter}
-            onChange={(e) => setContentTypeFilter(e.target.value)}
-            label="Content Type"
-          >
-            <MenuItem value="all">All Content</MenuItem>
-            {contentTypes.map((t) => (
-              <MenuItem key={t} value={t}>
-                {t}
-              </MenuItem>
-            ))}
+        <div className="flex flex-col gap-1 min-w-[140px]">
+          <Label className="text-xs">Content Type</Label>
+          <Select value={contentTypeFilter} onValueChange={setContentTypeFilter}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Content</SelectItem>
+              {contentTypes.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
 
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
+        <p className="text-sm text-muted-foreground ml-auto">
           {filteredChanges.length} pending
           {hasSelection && ` · ${selectedIds.length} selected`}
-        </Typography>
+        </p>
 
         {hasSelection && (
           <>
@@ -171,141 +180,135 @@ export function ReviewQueue({
             </Button>
           </>
         )}
-      </Box>
+      </div>
 
       {/* Table */}
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10">
+              <Checkbox
+                checked={selected.size === filteredChanges.length && filteredChanges.length > 0}
+                onCheckedChange={toggleSelectAll}
+              />
+            </TableHead>
+            <TableHead>Content</TableHead>
+            <TableHead>Field</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Confidence</TableHead>
+            <TableHead>Reasoning</TableHead>
+            <TableHead>Age</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredChanges.map((change) => (
+            <TableRow
+              key={change.id}
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => onViewDetail(change)}
+            >
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <Checkbox
-                  size="small"
-                  checked={selected.size === filteredChanges.length && filteredChanges.length > 0}
-                  indeterminate={selected.size > 0 && selected.size < filteredChanges.length}
-                  onChange={toggleSelectAll}
+                  checked={selected.has(change.id)}
+                  onCheckedChange={() => toggleSelect(change.id)}
                 />
               </TableCell>
-              <TableCell>Content</TableCell>
-              <TableCell>Field</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Confidence</TableCell>
-              <TableCell>Reasoning</TableCell>
-              <TableCell>Age</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredChanges.map((change) => (
-              <TableRow
-                key={change.id}
-                hover
-                sx={{ cursor: 'pointer' }}
-                onClick={() => onViewDetail(change)}
-              >
-                <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    size="small"
-                    checked={selected.has(change.id)}
-                    onChange={() => toggleSelect(change.id)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography variant="body2" fontWeight={600} noWrap sx={{ maxWidth: 200 }}>
-                      {change.content_name}
-                    </Typography>
-                    <Chip
-                      label={change.content_type}
-                      size="small"
-                      variant="outlined"
-                      sx={{ height: 18, fontSize: '0.65rem' }}
+              <TableCell>
+                <div>
+                  <p className="text-sm font-semibold truncate max-w-[200px]">
+                    {change.content_name}
+                  </p>
+                  <Badge variant="outline" className="h-[18px] text-[0.65rem] px-1.5">
+                    {change.content_type}
+                  </Badge>
+                </div>
+              </TableCell>
+              <TableCell>
+                <p className="text-sm font-mono text-[0.8rem]">{change.field_name}</p>
+              </TableCell>
+              <TableCell>
+                <Badge
+                  className={`h-[22px] text-[0.7rem] ${CHANGE_TYPE_CLASS[change.change_type] ?? 'bg-muted text-muted-foreground'}`}
+                  variant="outline"
+                >
+                  {change.change_type}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2 min-w-[80px]">
+                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${confidenceColor(change.confidence)}`}
+                      style={{ width: `${change.confidence * 100}%` }}
                     />
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontFamily="monospace" fontSize="0.8rem">
-                    {change.field_name}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={change.change_type}
-                    size="small"
-                    color={CHANGE_TYPE_COLOR[change.change_type] ?? 'default'}
-                    sx={{ height: 22, fontSize: '0.7rem' }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 80 }}>
-                    <LinearProgress
-                      variant="determinate"
-                      value={change.confidence * 100}
-                      sx={{ flex: 1, height: 6, borderRadius: 3 }}
-                      color={
-                        change.confidence >= 0.9
-                          ? 'success'
-                          : change.confidence >= 0.7
-                            ? 'info'
-                            : 'warning'
-                      }
-                    />
-                    <Typography variant="caption" fontWeight={600} sx={{ minWidth: 32 }}>
-                      {Math.round(change.confidence * 100)}%
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    noWrap
-                    sx={{ maxWidth: 250, display: 'block' }}
-                  >
-                    {change.reasoning}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="caption" color="text.secondary">
-                    {formatDistanceToNow(new Date(change.created_at), { addSuffix: true })}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right" onClick={(e) => e.stopPropagation()}>
-                  <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                    <Tooltip title="View detail">
-                      <IconButton size="small" onClick={() => onViewDetail(change)}>
+                  </div>
+                  <span className="text-xs font-semibold min-w-[32px]">
+                    {Math.round(change.confidence * 100)}%
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <p className="text-xs text-muted-foreground truncate max-w-[250px] block">
+                  {change.reasoning}
+                </p>
+              </TableCell>
+              <TableCell>
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(change.created_at), { addSuffix: true })}
+                </span>
+              </TableCell>
+              <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-1 justify-end">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => onViewDetail(change)}
+                      >
                         <Eye size={16} />
-                      </IconButton>
-                    </Tooltip>
-                    {change.change_type !== 'flag' && (
-                      <Tooltip title="Approve & apply">
-                        <IconButton
-                          size="small"
-                          color="success"
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>View detail</TooltipContent>
+                  </Tooltip>
+                  {change.change_type !== 'flag' && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-green-600"
                           onClick={() => onApprove(change.id)}
                           disabled={isApproving}
                         >
                           <CheckCircle2 size={16} />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    <Tooltip title="Reject">
-                      <IconButton
-                        size="small"
-                        color="error"
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Approve & apply</TooltipContent>
+                    </Tooltip>
+                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-destructive"
                         onClick={() => onReject(change.id)}
                         disabled={isRejecting}
                       >
                         <XCircle size={16} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Reject</TooltipContent>
+                  </Tooltip>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

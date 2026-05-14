@@ -4,10 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, Users } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { format } from 'date-fns';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 type Event = Database['public']['Tables']['events']['Row'];
 
@@ -19,10 +17,8 @@ interface VenueEventsProps {
 }
 
 export function VenueEvents({ venueId, venueName, events, compact = false }: VenueEventsProps) {
-  // Filter events for this venue
   const venueEvents = events.filter(event => event.venue_id === venueId);
 
-  // Get upcoming events only
   const upcomingEvents = venueEvents.filter(event =>
     new Date(event.start_date) > new Date()
   ).slice(0, compact ? 3 : 10);
@@ -31,45 +27,38 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
     return null;
   }
 
-  const formatEventDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, 'MMM d, yyyy');
-  };
-
-  const formatEventTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, 'h:mm a');
-  };
+  const formatEventDate = (dateString: string) => format(new Date(dateString), 'MMM d, yyyy');
+  const formatEventTime = (dateString: string) => format(new Date(dateString), 'h:mm a');
 
   if (compact) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">Upcoming Events</Typography>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium text-muted-foreground">Upcoming Events</p>
         {upcomingEvents.map((event) => (
-          <Box key={event.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, borderRadius: 1, bgcolor: 'action.hover' }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div key={event.id} className="flex items-center justify-between p-2 bg-muted">
+            <div className="flex-1">
+              <p className="text-sm font-medium truncate">
                 {event.title}
                 <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+              </p>
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar style={{ width: 12, height: 12 }} />
-                <Typography variant="caption">{formatEventDate(event.start_date)}</Typography>
+                <span className="text-xs">{formatEventDate(event.start_date)}</span>
                 <Clock style={{ width: 12, height: 12 }} />
-                <Typography variant="caption">{formatEventTime(event.start_date)}</Typography>
-              </Box>
-            </Box>
+                <span className="text-xs">{formatEventTime(event.start_date)}</span>
+              </div>
+            </div>
             <Badge variant="outline">
               {event.event_type}
             </Badge>
-          </Box>
+          </div>
         ))}
         {venueEvents.length > 3 && (
-          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+          <span className="text-xs text-muted-foreground text-center">
             +{venueEvents.length - 3} more events
-          </Typography>
+          </span>
         )}
-      </Box>
+      </div>
     );
   }
 
@@ -79,47 +68,47 @@ export function VenueEvents({ venueId, venueName, events, compact = false }: Ven
         <CardTitle>Upcoming Events at {venueName}</CardTitle>
       </CardHeader>
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {upcomingEvents.map((event) => (
-            <Box key={event.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 1, border: 1, borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' }, transition: 'background-color 0.2s' }}>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            <div key={event.id} className="flex items-center justify-between p-3 border border-border hover:bg-muted transition-colors">
+              <div className="flex-1">
+                <p className="text-sm font-medium">
                   {event.title}
                   <ContentLangBadge text={event.title} language={(event as { content_language?: string | null }).content_language} />
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5, color: 'text.secondary' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                </p>
+                <div className="flex items-center gap-4 mt-1 text-muted-foreground">
+                  <div className="flex items-center gap-1">
                     <Calendar style={{ width: 12, height: 12 }} />
-                    <Typography variant="body2">{formatEventDate(event.start_date)}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span className="text-sm">{formatEventDate(event.start_date)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
                     <Clock style={{ width: 12, height: 12 }} />
-                    <Typography variant="body2">{formatEventTime(event.start_date)}</Typography>
-                  </Box>
+                    <span className="text-sm">{formatEventTime(event.start_date)}</span>
+                  </div>
                   {event.max_attendees && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <div className="flex items-center gap-1">
                       <Users style={{ width: 12, height: 12 }} />
-                      <Typography variant="body2">Max {event.max_attendees}</Typography>
-                    </Box>
+                      <span className="text-sm">Max {event.max_attendees}</span>
+                    </div>
                   )}
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
                 <Badge variant="outline">{event.event_type}</Badge>
                 {event.is_free ? (
                   <Badge variant="outline">Free</Badge>
                 ) : (
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {event.price_min ? formatCurrency(event.price_min) : 'Price TBA'}
-                  </Typography>
+                  <span className="text-sm font-medium">
+                    {event.price_min ? formatCurrency(event.price_min, event.currency) : 'Price TBA'}
+                  </span>
                 )}
                 <Button size="sm" variant="outline">
                   Details
                 </Button>
-              </Box>
-            </Box>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

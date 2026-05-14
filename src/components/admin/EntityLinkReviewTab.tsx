@@ -6,14 +6,10 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 
@@ -73,91 +69,93 @@ export default function EntityLinkReviewTab() {
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <CircularProgress size={28} />
-      </Box>
+      <div className="p-8 text-center">
+        <Loader2 className="h-7 w-7 animate-spin inline-block" />
+      </div>
     );
   }
-  if (error) return <Alert severity="error">{(error as Error).message}</Alert>;
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{(error as Error).message}</AlertDescription>
+      </Alert>
+    );
+  }
 
   const types: Array<EntityType | 'all'> = [
     'all', 'country', 'city', 'region', 'venue', 'event', 'personality', 'organisation',
   ];
 
   return (
-    <Box>
-      <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: 'wrap' }}>
+    <div>
+      <div className="flex flex-row gap-2 mb-6 flex-wrap">
         {types.map((t) => (
-          <Chip
+          <Badge
             key={t}
-            label={t}
-            color={filter === t ? 'primary' : 'default'}
-            variant={filter === t ? 'filled' : 'outlined'}
+            variant={filter === t ? 'default' : 'outline'}
             onClick={() => setFilter(t)}
-            sx={{ textTransform: 'capitalize' }}
-          />
+            className="capitalize cursor-pointer"
+          >
+            {t}
+          </Badge>
         ))}
-      </Stack>
+      </div>
 
       {(!rows || rows.length === 0) && (
-        <Alert severity="info">No pending entity-link review items.</Alert>
+        <Alert>
+          <AlertDescription>No pending entity-link review items.</AlertDescription>
+        </Alert>
       )}
 
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-4">
         {rows?.map((r) => (
-          <Box key={r.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                  <Chip size="small" label={r.entity_type} color="primary" variant="outlined" />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {r.candidate_name}
-                  </Typography>
+          <div key={r.id} className="p-4 border border-border">
+            <div className="flex flex-row justify-between items-start gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-row gap-2 items-center mb-1">
+                  <Badge variant="outline" className="text-xs">{r.entity_type}</Badge>
+                  <p className="text-sm font-semibold">{r.candidate_name}</p>
                   {r.score != null && (
-                    <Chip
-                      size="small"
-                      label={`score ${(r.score * 100).toFixed(0)}%`}
-                      variant="outlined"
-                    />
+                    <Badge variant="outline" className="text-xs">
+                      score {(r.score * 100).toFixed(0)}%
+                    </Badge>
                   )}
-                </Stack>
+                </div>
                 {r.context_snippet && (
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  <span className="block text-xs text-muted-foreground mb-1">
                     {r.context_snippet}
-                  </Typography>
+                  </span>
                 )}
                 {r.news_articles && (
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-xs text-muted-foreground">
                     Article: {r.news_articles.title}
-                  </Typography>
+                  </span>
                 )}
-              </Box>
-              <Stack direction="row" spacing={1}>
+              </div>
+              <div className="flex flex-row gap-2">
                 <Button
-                  size="small"
-                  variant="contained"
-                  color="success"
-                  startIcon={<CheckCircle2 size={14} />}
+                  size="sm"
                   onClick={() => resolve.mutate({ id: r.id, status: 'approved' })}
                   disabled={resolve.isPending}
                 >
+                  <CheckCircle2 size={14} className="mr-1" />
                   Approve
                 </Button>
                 <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  startIcon={<XCircle size={14} />}
+                  size="sm"
+                  variant="outline"
                   onClick={() => resolve.mutate({ id: r.id, status: 'rejected' })}
                   disabled={resolve.isPending}
+                  className="text-destructive border-destructive"
                 >
+                  <XCircle size={14} className="mr-1" />
                   Reject
                 </Button>
-              </Stack>
-            </Stack>
-          </Box>
+              </div>
+            </div>
+          </div>
         ))}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 }

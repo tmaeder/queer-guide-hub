@@ -64,7 +64,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
             </Button>
           </div>
 
-          <div className="text-[10px] text-muted-foreground mb-2">
+          <div className="text-2xs text-muted-foreground mb-2">
             Expression evaluated at runtime. Downstream node is skipped if false.
           </div>
 
@@ -80,7 +80,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
             }}
           />
 
-          <div className="mt-2 text-[10px] text-muted-foreground">
+          <div className="mt-2 text-2xs text-muted-foreground">
             <div className="mb-1 font-medium">Examples:</div>
             <div className="flex flex-col gap-0.5">
               {EXAMPLES.map(ex => (
@@ -95,7 +95,7 @@ export default function EdgeConditionPopover({ edge, onClose, onUpdate, onDelete
             </div>
           </div>
 
-          <div className="mt-2 text-[10px] text-muted-foreground">
+          <div className="mt-2 text-2xs text-muted-foreground">
             <span className="font-medium">Available vars: </span>
             <span className="font-mono">items_count, items_valid, items_invalid, entity_type, source_name, dry_run</span>
           </div>

@@ -72,7 +72,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
       <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <History className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-semibold text-[13px]">Run History</span>
+          <span className="font-semibold text-sm">Run History</span>
         </div>
         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setCollapsed(true)}>
           <ChevronRight className="h-3.5 w-3.5" />
@@ -85,7 +85,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
               filter === f
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -125,20 +125,20 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
             >
               <div className="flex items-center gap-2 mb-1">
                 <Icon className={`h-3.5 w-3.5 shrink-0 ${iconClass}`} />
-                <span className="text-[11px] font-mono font-medium truncate flex-1">
+                <span className="text-xs2 font-mono font-medium truncate flex-1">
                   {run.id.slice(0, 8)}
                 </span>
                 {run.pipeline_version && (
-                  <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 font-mono">
+                  <Badge variant="outline" className="text-3xs px-1 py-0 h-4 font-mono">
                     v{run.pipeline_version}
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <div className="flex items-center justify-between text-2xs text-muted-foreground">
                 <span>{formatDistanceToNow(new Date(timestamp), { addSuffix: true })}</span>
                 <span className="font-mono">{formatDuration(run.duration_ms)}</span>
               </div>
-              <div className="flex items-center gap-2 mt-1 text-[10px]">
+              <div className="flex items-center gap-2 mt-1 text-2xs">
                 <span className="text-green-700 dark:text-green-300">{succeeded}</span>
                 <span className="text-muted-foreground">/</span>
                 <span>{total}</span>
@@ -152,7 +152,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
                 </span>
               </div>
               {run.error_message && (
-                <div className="mt-1 text-[10px] text-destructive truncate" title={run.error_message}>
+                <div className="mt-1 text-2xs text-destructive truncate" title={run.error_message}>
                   {run.error_message}
                 </div>
               )}
@@ -163,7 +163,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
 
       {/* Footer info */}
       {!isLoading && filtered.length > 0 && (
-        <div className="px-3 py-1.5 border-t border-border text-[10px] text-muted-foreground text-center">
+        <div className="px-3 py-1.5 border-t border-border text-2xs text-muted-foreground text-center">
           Showing {filtered.length} of {runs.length} runs
         </div>
       )}

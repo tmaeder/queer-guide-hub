@@ -7,9 +7,6 @@
  */
 
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import LinearProgress from '@mui/material/LinearProgress';
 import {
   Dialog,
   DialogContent,
@@ -144,10 +141,10 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
       <DialogContent style={{ maxWidth: 540 }}>
         <DialogHeader>
           <DialogTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <span className="flex items-center gap-2">
               <Wand2 style={{ height: 20, width: 20 }} />
               Bulk Content Enrichment
-            </Box>
+            </span>
           </DialogTitle>
           <DialogDescription>
             Run automation modules to validate, enrich, and improve content in batch. Results appear
@@ -155,9 +152,9 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
+        <div className="flex flex-col gap-5 mt-2">
           {/* Module Selection */}
-          <Box>
+          <div>
             <Label>Automation Module</Label>
             <Select value={moduleName} onValueChange={setModuleName} disabled={loading}>
               <SelectTrigger>
@@ -172,107 +169,81 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
               </SelectContent>
             </Select>
             {selectedModule && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mt: 0.5, display: 'block' }}
-              >
+              <span className="block mt-1 text-xs text-muted-foreground">
                 {selectedModule.description}
-              </Typography>
+              </span>
             )}
-          </Box>
+          </div>
 
           {/* Info box */}
-          <Box sx={{ bgcolor: 'action.hover', borderRadius: 1, p: 1.5 }}>
-            <Typography variant="caption" color="text.secondary">
+          <div className="bg-muted rounded p-3">
+            <span className="text-xs text-muted-foreground">
               The module will process items according to its configured batch size and create flags
               in the automation review queue. High-confidence changes may be auto-approved based on
               module settings.
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
           {/* Progress */}
           {loading && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
-                <Typography variant="body2">Running {selectedModule?.label}...</Typography>
-              </Box>
-              <LinearProgress sx={{ borderRadius: 1 }} />
-            </Box>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Loader2 style={{ height: 16, width: 16 }} className="animate-spin" />
+                <span className="text-sm">Running {selectedModule?.label}...</span>
+              </div>
+              <div className="h-1 w-full overflow-hidden rounded bg-secondary">
+                <div className="h-full w-1/3 animate-pulse bg-primary" />
+              </div>
+            </div>
           )}
 
           {/* Results */}
           {result && !loading && (
-            <Box
-              sx={{
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: 2,
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="border border-border rounded-lg p-4 flex flex-col gap-3">
+              <div className="flex items-center gap-2">
                 <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                  Processing Complete
-                </Typography>
-              </Box>
+                <span className="text-sm font-semibold">Processing Complete</span>
+              </div>
 
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-1">
                   <FileText style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
-                  <Typography variant="body2">
+                  <span className="text-sm">
                     <strong>{result.items_processed}</strong> / {result.items_total} processed
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
                   <Zap style={{ height: 14, width: 14, color: '#f59e0b' }} />
-                  <Typography variant="body2">
+                  <span className="text-sm">
                     <strong>{result.flags_created}</strong> flags created
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
                   <CheckCircle style={{ height: 14, width: 14, color: '#16a34a' }} />
-                  <Typography variant="body2">
+                  <span className="text-sm">
                     <strong>{result.auto_approved}</strong> auto-approved
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
                 {result.items_failed > 0 && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <div className="flex items-center gap-1">
                     <AlertTriangle style={{ height: 14, width: 14, color: '#ef4444' }} />
-                    <Typography variant="body2">
+                    <span className="text-sm">
                       <strong>{result.items_failed}</strong> failed
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 )}
-              </Box>
+              </div>
 
               {result.errors.length > 0 && (
-                <Box
-                  sx={{
-                    mt: 1,
-                    maxHeight: 100,
-                    overflow: 'auto',
-                    fontSize: '0.75rem',
-                    color: 'error.main',
-                  }}
-                >
+                <div className="mt-2 max-h-24 overflow-auto text-xs text-destructive">
                   {result.errors.slice(0, 5).map((e, i) => (
-                    <Typography
-                      key={i}
-                      variant="caption"
-                      sx={{ display: 'block', color: 'error.main' }}
-                    >
+                    <span key={i} className="block text-xs text-destructive">
                       {e}
-                    </Typography>
+                    </span>
                   ))}
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
           )}
 
           {/* Run button */}
@@ -282,7 +253,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
               {result ? 'Run Again' : `Run ${selectedModule?.label || 'Module'}`}
             </Button>
           )}
-        </Box>
+        </div>
       </DialogContent>
     </Dialog>
   );

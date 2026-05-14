@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
-import { useTheme } from '@mui/material/styles';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldCheck, Map as MapIcon, Users, Luggage, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -38,66 +34,34 @@ const bullets: ValueBullet[] = [
 
 export function TripsSignedOutHero() {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [authOpen, setAuthOpen] = useState(false);
-  const brand = theme.palette.brand?.main || '#DB2777';
-  const accent = theme.palette.accent?.main || '#F59E0B';
+  const brand = 'hsl(var(--foreground))';
+  const accent = 'hsl(var(--foreground))';
   const { data: templates, isLoading } = useTripTemplates();
   const previewTemplates = (templates ?? []).slice(0, 3);
 
   return (
-    <Container sx={{ py: { xs: 4, md: 8 } }}>
-      <Box
-        className="hero-gradient"
-        sx={{
-          overflow: 'hidden',
-          px: { xs: 3, md: 6 },
-          py: { xs: 5, md: 8 },
-        }}
-      >
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' },
-            gap: { xs: 5, md: 6 },
-            alignItems: 'center',
-          }}
-        >
+    <div className="container mx-auto py-8 md:py-16 px-4">
+      <div className="hero-gradient overflow-hidden px-6 md:px-12 py-10 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-10 md:gap-12 items-center">
           {/* Copy column */}
-          <Box>
-            <Badge
-              variant="outline"
-
-            >
-              <Box
-                component="span"
-                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-              >
+          <div>
+            <Badge variant="outline">
+              <span className="inline-flex items-center gap-1">
                 <Luggage style={{ width: 12, height: 12 }} />
                 {t('trips.signedOut.badge')}
-              </Box>
+              </span>
             </Badge>
 
-            <Typography
-              variant="h2"
-              sx={{
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                lineHeight: 1.1,
-                mb: 2,
-              }}
-            >
+            <h2 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] leading-[1.1] mb-4">
               {t('trips.signedOut.title')}
-            </Typography>
+            </h2>
 
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{ mb: 4, maxWidth: 480, fontSize: { md: '1.0625rem' } }}
-            >
+            <p className="mb-8 max-w-[480px] md:text-[1.0625rem] text-muted-foreground">
               {t('trips.signedOut.subtitle')}
-            </Typography>
+            </p>
 
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 4 }}>
+            <div className="flex flex-wrap gap-3 mb-8">
               <Button
                 size="lg"
                 variant="brand"
@@ -111,79 +75,43 @@ export function TripsSignedOutHero() {
                 size="lg"
                 variant="outline"
                 onClick={() => {
-                  // Scroll to templates section further down /trips page,
-                  // or open auth dialog if templates aren't visible yet.
                   setAuthOpen(true);
                 }}
               >
                 {t('trips.signedOut.secondaryCta')}
               </Button>
-            </Box>
+            </div>
 
-            <Box
-              component="ul"
-              sx={{
-                listStyle: 'none',
-                p: 0,
-                m: 0,
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                gap: 2,
-              }}
-            >
+            <ul className="list-none p-0 m-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {bullets.map(({ icon: Icon, titleKey, bodyKey }) => (
-                <Box
-                  key={titleKey}
-                  component="li"
-                  sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start' }}
-                >
-                  <Box
-                    sx={{
-                      flexShrink: 0,
-                      width: 36,
-                      height: 36,
-                      borderRadius: 2,
-                      bgcolor: `${brand}12`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                <li key={titleKey} className="flex gap-3 items-start">
+                  <div
+                    className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center"
+                    style={{ backgroundColor: `${brand}12` }}
                   >
                     <Icon style={{ width: 18, height: 18, color: brand }} />
-                  </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{ fontWeight: 700, mb: 0.25 }}
-                    >
+                  </div>
+                  <div className="min-w-0">
+                    <h6 className="font-bold mb-0.5 text-sm">
                       {t(titleKey)}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    </h6>
+                    <span className="text-xs text-muted-foreground">
                       {t(bodyKey)}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </span>
+                  </div>
+                </li>
               ))}
-            </Box>
-          </Box>
+            </ul>
+          </div>
 
           {/* Preview column */}
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'grid' },
-              gridTemplateColumns: '1fr',
-              gap: 2,
-              position: 'relative',
-            }}
-          >
+          <div className="hidden md:grid grid-cols-1 gap-4 relative">
             {isLoading && previewTemplates.length === 0
               ? Array.from({ length: 3 }).map((_, i) => (
                   <Skeleton
                     key={i}
-                    variant="rectangular"
-                    sx={{
-                      height: 160,
-                      borderRadius: 0,
+                    className="h-40 rounded-none"
+                    style={{
                       transform: `translateX(${i * 12}px) rotate(${(i - 1) * 0.8}deg)`,
                     }}
                   />
@@ -197,86 +125,58 @@ export function TripsSignedOutHero() {
                       transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
                     }}
                   >
-                    <Box
-                      sx={{
+                    <div
+                      className="p-5 min-h-[96px] flex flex-col justify-between"
+                      style={{
                         backgroundImage: template.coverImageUrl
                           ? `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url("${template.coverImageUrl}"), ${template.gradient}`
                           : template.gradient,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
-                        p: 2.5,
-                        minHeight: 96,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
                       }}
                     >
-                      <Box>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            fontWeight: 700,
-                            color: 'common.white',
-                            lineHeight: 1.25,
+                      <div>
+                        <h6
+                          className="font-bold leading-tight text-sm text-white"
+                          style={{
                             textShadow: template.coverImageUrl
                               ? '0 1px 2px rgba(0,0,0,0.5)'
                               : 'none',
                           }}
                         >
                           {template.title}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'rgba(255,255,255,0.85)' }}
-                        >
+                        </h6>
+                        <span className="text-xs text-white/85">
                           {template.cities}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          alignSelf: 'flex-start',
-                          bgcolor: 'rgba(255,255,255,0.2)',
-                          color: 'common.white',
-                          px: 1,
-                          py: 0.25,
-                          borderRadius: 1,
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                        }}
+                        </span>
+                      </div>
+                      <div
+                        className="inline-flex items-center gap-1 self-start text-white bg-white/20 px-2 py-0.5 rounded text-[0.7rem] font-semibold"
                       >
                         <ShieldCheck style={{ width: 11, height: 11 }} />
                         {t('trips.signedOut.safeLabel')}
-                      </Box>
-                    </Box>
+                      </div>
+                    </div>
                     <CardContent>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                      >
-                        <Box
-                          component="span"
-                          sx={{
-                            display: 'inline-block',
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <span
+                          className="inline-block rounded-full"
+                          style={{
                             width: 6,
                             height: 6,
-                            borderRadius: '50%',
-                            bgcolor: accent,
+                            backgroundColor: accent,
                           }}
                         />
                         {t('trips.signedOut.daysLabel', { count: template.days })}
-                      </Typography>
+                      </span>
                     </CardContent>
                   </Card>
                 ))}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
 
       <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
-    </Container>
+    </div>
   );
 }

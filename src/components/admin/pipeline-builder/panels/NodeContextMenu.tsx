@@ -104,7 +104,7 @@ export default function NodeContextMenu({
             <Icon className="h-3.5 w-3.5 shrink-0" />
             <span className="flex-1">{entry.label}</span>
             {entry.shortcut && (
-              <kbd className="text-[10px] text-muted-foreground font-mono">{entry.shortcut}</kbd>
+              <kbd className="text-2xs text-muted-foreground font-mono">{entry.shortcut}</kbd>
             )}
           </button>
         );

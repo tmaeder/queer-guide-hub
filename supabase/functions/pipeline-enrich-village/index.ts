@@ -1,5 +1,6 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // Pipeline Enrich (Queer Village) — Wikipedia description + Wikidata + image enrichment.
 // Reads pending queer_villages staging rows, writes enriched_data.
@@ -41,7 +42,7 @@ async function fetchPexelsImage(query: string, apiKey: string): Promise<string |
   } catch { return null }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-enrich-village', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -157,4 +158,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-enrich-village:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))
