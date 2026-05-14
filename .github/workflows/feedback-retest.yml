@@ -70,6 +70,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
+        run: npm ci --legacy-peer-deps
         run: npm ci
 
       - name: Notify Supabase — running
@@ -94,6 +95,7 @@ jobs:
             lint)      npm run lint      > .retest/log 2>&1 ;;
             unit)      npm test          > .retest/log 2>&1 ;;
             e2e)       npx playwright test --reporter=line > .retest/log 2>&1 ;;
+            targeted)  npm test          > .retest/log 2>&1 ;;
             targeted)
               # Targeted: ask Vitest which test files relate to the changed
               # source files. If no files_changed were supplied, fall back to

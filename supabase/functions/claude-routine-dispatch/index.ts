@@ -20,6 +20,7 @@
 // reserve the run themselves.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import {
   corsResponse,
   errorResponse,
@@ -42,6 +43,13 @@ async function hashPrompt(p: string): Promise<string> {
   return Array.from(new Uint8Array(buf))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+function userClientFor(req: Request) {
+  const auth = req.headers.get('Authorization') ?? '';
+  return createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: auth } },
+  });
 }
 
 function userClientFor(req: Request) {

@@ -157,6 +157,7 @@ export function useDispatchClaudeRoutine() {
   return useMutation({
     mutationFn: async (args: {
       storyId: string;
+      runner?: 'mock' | 'github_actions' | 'webhook' | 'api';
       runner?: 'mock' | 'github_actions' | 'webhook' | 'api' | 'local';
       /** When set, the admin's edited prompt overrides the server-built one. */
       promptOverride?: string;
