@@ -1374,7 +1374,9 @@
       "signInRequired": "Connexion requise",
       "signInList": "Crée un compte gratuit pour inscrire ton entreprise.",
       "signInFavorites": "Connecte-toi pour enregistrer tes favoris.",
-      "loadError": "Une erreur est survenue lors du chargement du marché. Réessaie."
+      "loadError": "Une erreur est survenue lors du chargement du marché. Réessaie.",
+      "emptyFiltersTitle": "[FR] No listings match these filters.",
+      "emptyFiltersDescription": "[FR] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Article introuvable",

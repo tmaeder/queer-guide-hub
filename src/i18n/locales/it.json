@@ -1370,7 +1370,9 @@
       "signInRequired": "Accesso richiesto",
       "signInList": "Crea un account gratuito per registrare la tua attività.",
       "signInFavorites": "Accedi per salvare i preferiti.",
-      "loadError": "Qualcosa è andato storto durante il caricamento del mercato. Riprova."
+      "loadError": "Qualcosa è andato storto durante il caricamento del mercato. Riprova.",
+      "emptyFiltersTitle": "[IT] No listings match these filters.",
+      "emptyFiltersDescription": "[IT] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Articolo non trovato",

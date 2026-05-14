@@ -1398,7 +1398,9 @@
       "signInRequired": "Требуется вход",
       "signInList": "Создай бесплатный аккаунт, чтобы разместить свой бизнес.",
       "signInFavorites": "Войди, чтобы сохранять избранное.",
-      "loadError": "При загрузке маркетплейса произошла ошибка. Попробуй ещё раз."
+      "loadError": "При загрузке маркетплейса произошла ошибка. Попробуй ещё раз.",
+      "emptyFiltersTitle": "[RU] No listings match these filters.",
+      "emptyFiltersDescription": "[RU] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Товар не найден",
