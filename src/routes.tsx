@@ -124,6 +124,7 @@ const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
 
 const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
 const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
+const Footprint = lazyRetry(() => import('./pages/profile/Footprint'));
 const UserProfile = lazyRetry(() => import('./pages/UserProfile'));
 const Feed = lazyRetry(() => import('./pages/Feed'));
 
@@ -422,6 +423,7 @@ export const AppRoutes = () => {
                 <Route path="community" element={<Navigate to="/feed" replace />} />
                 <Route path="profile/settings" element={<ProfileSettings />} />
                 <Route path="profile/tiers" element={<ProfileTiers />} />
+                <Route path="profile/footprint" element={<Footprint />} />
                 <Route path="user/:userId" element={<UserProfile />} />
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />
