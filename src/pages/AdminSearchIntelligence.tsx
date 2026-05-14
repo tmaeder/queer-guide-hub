@@ -12,23 +12,8 @@ import { TopicsTab } from '@/components/admin/search-intelligence/TopicsTab';
 import { SetupTab } from '@/components/admin/search-intelligence/SetupTab';
 import { PlaceholderTab } from '@/components/admin/search-intelligence/PlaceholderTab';
 
-const FEATURE_FLAG_ENABLED = import.meta.env.VITE_FEATURE_SEARCH_INTELLIGENCE === '1';
-
 export default function AdminSearchIntelligence() {
   const [tab, setTab] = useState('overview');
-
-  if (!FEATURE_FLAG_ENABLED) {
-    return (
-      <div className="container mx-auto max-w-screen-md px-4 py-8">
-        <h1 className="text-3xl font-bold mb-2">Search Intelligence</h1>
-        <p className="text-sm text-muted-foreground">
-          This admin surface is behind the <code>VITE_FEATURE_SEARCH_INTELLIGENCE</code> feature
-          flag. Set it to <code>1</code> at build time to enable. Backend (database + edge function)
-          is already deployable independently.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto max-w-screen-xl px-4 py-8">
