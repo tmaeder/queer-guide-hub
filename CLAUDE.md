@@ -58,6 +58,7 @@ queer-guide-hub/
 
 - **Edge functions:** 177
 - **Migrations:** 298
+- **Migrations:** 296
 
 ## Infrastructure
 

@@ -9,6 +9,51 @@ import { PrideScroller } from '@/components/travel/PrideScroller';
 import { InspirationGrid } from '@/components/travel/InspirationGrid';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
+import { SpecialOffersSection } from '@/components/travel/SpecialOffersSection';
+import type { BookingResult } from '@/lib/booking/types';
+
+type BookingTab = 'flights' | 'hotels' | 'activities';
+
+const TAB_CONFIG: { value: BookingTab; label: string; icon: typeof Plane }[] = [
+  { value: 'flights', label: 'Flights', icon: Plane },
+  { value: 'hotels', label: 'Hotels', icon: Hotel },
+  { value: 'activities', label: 'Activities', icon: Ticket },
+];
+
+const HOTEL_TYPE_LABEL_FALLBACK: Record<HotelTypeOption, string> = {
+  all: 'Any type',
+  hotel: 'Hotel',
+  boutique: 'Boutique Hotel',
+  bnb: 'B&B',
+  hostel: 'Hostel',
+  guesthouse: 'Guesthouse',
+  apartment: 'Apartment',
+  resort: 'Resort',
+};
+
+function parseUrlType(raw: string | null): HotelTypeOption | undefined {
+  if (!raw) return undefined;
+  return (HOTEL_TYPE_OPTIONS as readonly string[]).includes(raw)
+    ? (raw as HotelTypeOption)
+    : undefined;
+}
+
+function parseUrlBound(raw: string | null): number | undefined {
+  if (!raw) return undefined;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return undefined;
+  return n;
+}
+
+interface HotelSearchState {
+  city: string;
+  checkIn?: string;
+  checkOut?: string;
+  guests: number;
+  hotelType?: HotelTypeOption;
+  priceMin?: number;
+  priceMax?: number;
+}
 import { useRecommendations } from '@/hooks/useRecommendations';
 
 export default function Travel() {
@@ -46,6 +91,63 @@ export default function Travel() {
 
       {!intentBook && <StartTripHero />}
 
+          {hasActiveHotelFilters && hotelSearch && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2, alignItems: 'center' }}>
+              {hotelSearch.hotelType && (
+                <Chip
+                  label={`${t('pages.travel.hotels.typeLabel', 'Type')}: ${t(`pages.travel.hotels.type.${hotelSearch.hotelType}`, HOTEL_TYPE_LABEL_FALLBACK[hotelSearch.hotelType])}`}
+                  size="small"
+                  onDelete={() => clearHotelFilter('hotelType')}
+                />
+              )}
+              {hotelSearch.priceMin !== undefined && (
+                <Chip
+                  label={`≥ €${hotelSearch.priceMin}`}
+                  size="small"
+                  onDelete={() => clearHotelFilter('priceMin')}
+                />
+              )}
+              {hotelSearch.priceMax !== undefined && (
+                <Chip
+                  label={`≤ €${hotelSearch.priceMax}`}
+                  size="small"
+                  onDelete={() => clearHotelFilter('priceMax')}
+                />
+              )}
+              <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
+                {t('pages.travel.hotels.clearFilters', 'Clear filters')}
+              </Button>
+            </Box>
+          )}
+
+          {hotelsLoading ? (
+            <ResultsGrid>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} variant="rounded" height={240} />
+              ))}
+            </ResultsGrid>
+          ) : hotelResults && hotelResults.length > 0 ? (
+            <ResultsGrid>
+              {rankResults(hotelResults).map((hotel) => (
+                <UnifiedBookingCard key={hotel.id} result={hotel} />
+              ))}
+            </ResultsGrid>
+          ) : hotelSearch && hasActiveHotelFilters ? (
+            <EmptyState>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                <span>{t('pages.travel.hotels.noResultsWithFilters', 'No hotels match your filters in {{city}}.', { city: hotelSearch.city })}</span>
+                <Button size="sm" variant="outline" onClick={clearAllHotelFilters}>
+                  Clear filters
+                </Button>
+              </Box>
+            </EmptyState>
+          ) : hotelSearch ? (
+            <EmptyState>No hotels found in {hotelSearch.city}. Try a different city.</EmptyState>
+          ) : (
+            <EmptyState>Search for a city above to find hotels.</EmptyState>
+          )}
+        </Paper>
+      )}
       <PrideScroller />
 
       <InspirationGrid />

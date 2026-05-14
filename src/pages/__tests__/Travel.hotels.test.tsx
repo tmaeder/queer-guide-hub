@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useSearchParams } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
 vi.mock('react-i18next', () => ({
@@ -56,6 +57,15 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 
 import Travel from '../Travel';
 
+const testTheme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: { main: '#222' },
+    // @ts-expect-error brand is a custom extension
+    brand: { main: '#DB2777' },
+  },
+});
+
 function UrlProbe({ onChange }: { onChange: (p: URLSearchParams) => void }) {
   const [params] = useSearchParams();
   onChange(params);
@@ -66,6 +76,21 @@ function renderAt(path: string, onUrlChange: (p: URLSearchParams) => void = () =
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
+      <ThemeProvider theme={testTheme}>
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route
+              path="/travel"
+              element={
+                <>
+                  <Travel />
+                  <UrlProbe onChange={onUrlChange} />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </ThemeProvider>
       <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route
@@ -125,6 +150,10 @@ describe('Travel — hotels URL sync', { timeout: 20000 }, () => {
       latest = p;
     });
 
+    const chip = document.querySelector('.MuiChip-root[class*="MuiChip-deletable"]');
+    expect(chip).toBeTruthy();
+    const deleteIcon = chip!.querySelector('.MuiChip-deleteIcon') as HTMLElement;
+    fireEvent.click(deleteIcon);
     const typeChipClear = screen
       .getAllByRole('button', { name: 'Clear' })
       .find((btn) => btn.closest('div')?.textContent?.includes('Type:'));
