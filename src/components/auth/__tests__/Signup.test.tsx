@@ -20,6 +20,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@/components/routing/LocalizedLink', () => ({
+  // eslint-disable-next-line jsx-a11y/anchor-is-valid
   LocalizedLink: ({ children }: { children: React.ReactNode }) => <a href="#">{children}</a>,
 }));
 
