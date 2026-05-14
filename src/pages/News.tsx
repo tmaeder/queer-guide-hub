@@ -13,7 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, ChevronLeft, ChevronRight, LayoutList, BookOpen } from "lucide-react";
+import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, ChevronLeft, ChevronRight, LayoutList, BookOpen, Rows3, Rows4, Layers } from "lucide-react";
+import { useNewsStories } from "@/hooks/useNewsStories";
+import { StoryCard } from "@/components/news/StoryCard";
 import { fetchNamesByIds } from "@/hooks/usePageFetchers";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -44,23 +46,15 @@ const sortOptions: SortOption[] = [{
   value: 'title-desc', label: 'Title Z-A', field: 'title', order: 'desc'
 }];
 
-type ViewMode = 'grid' | 'list' | 'headlines' | 'magazine';
+type ViewMode = 'grid' | 'list' | 'headlines' | 'magazine' | 'stories';
+type Density = 'comfortable' | 'compact';
+const DENSITY_STORAGE_KEY = 'news:density';
+const readInitialDensity = (): Density => {
+  if (typeof window === 'undefined') return 'comfortable';
+  return window.localStorage.getItem(DENSITY_STORAGE_KEY) === 'compact' ? 'compact' : 'comfortable';
+};
 
 export default function News() {
-  useMeta({
-    title: 'News',
-    description: 'Stay informed with the latest LGBTQ+ news and stories from around the world.',
-    canonicalPath: '/news',
-    jsonLd: {
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: 'LGBTQ+ News',
-      description: 'Stay informed with the latest LGBTQ+ news and stories from around the world.',
-      url: 'https://queer.guide/news',
-      isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
-    },
-  });
-
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const {
@@ -82,7 +76,7 @@ export default function News() {
   // Filter, sort, view, search and pagination are all reflected in the
   // querystring so users can copy URLs, refresh, or use back/forward.
   const [searchParams, setSearchParams] = useSearchParams();
-  const validViewModes: ViewMode[] = ['grid', 'list', 'headlines', 'magazine'];
+  const validViewModes: ViewMode[] = ['grid', 'list', 'headlines', 'magazine', 'stories'];
   const isViewMode = (v: string | null): v is ViewMode =>
     !!v && (validViewModes as string[]).includes(v);
   const validSorts = sortOptions.map((o) => o.value);
@@ -117,6 +111,14 @@ export default function News() {
   const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(initialFilters);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory);
+  const [density, setDensity] = useState<Density>(readInitialDensity);
+
+  const { stories, heroArticles: storyHeroes, loading: storiesLoading } = useNewsStories({ minArticles: 2, limit: 60 });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(DENSITY_STORAGE_KEY, density);
+  }, [density]);
 
   // Write the canonical state back to the URL whenever it changes. We push for
   // explicit user actions (filter/sort/view/page) and replace for the search
@@ -187,6 +189,38 @@ export default function News() {
     categories.forEach((c) => { map[c.slug] = c; });
     return map;
   }, [categories]);
+
+  const activeCategoryName = activeCategory ? categoriesMap[activeCategory]?.name ?? activeCategory : null;
+  const metaTitle = activeCategoryName ? `${activeCategoryName} news` : 'News';
+  const metaDescription = activeCategoryName
+    ? `Latest ${activeCategoryName.toLowerCase()} news and stories from the LGBTQ+ community worldwide.`
+    : 'Stay informed with the latest LGBTQ+ news and stories from around the world.';
+  useMeta({
+    title: metaTitle,
+    description: metaDescription,
+    canonicalPath: '/news',
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: activeCategoryName ? `LGBTQ+ ${activeCategoryName} News` : 'LGBTQ+ News',
+        description: metaDescription,
+        url: activeCategory ? `https://queer.guide/news?category=${activeCategory}` : 'https://queer.guide/news',
+        isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://queer.guide' },
+          { '@type': 'ListItem', position: 2, name: 'News', item: 'https://queer.guide/news' },
+          ...(activeCategoryName
+            ? [{ '@type': 'ListItem', position: 3, name: activeCategoryName, item: `https://queer.guide/news?category=${activeCategory}` }]
+            : []),
+        ],
+      },
+    ],
+  });
 
   // Load city/country names
   useEffect(() => {
@@ -426,17 +460,18 @@ export default function News() {
           </div>
         </PageHeader>
 
-        {/* Category Tabs */}
+        {/* Category Tabs (sticky) */}
         {categories.length > 0 && (
           <div
             role="tablist"
             aria-label={t('pages.news.categoriesLabel', 'News categories')}
-            className="flex gap-2 mb-6 overflow-x-auto pb-2"
+            className="flex gap-2 mb-6 overflow-x-auto pb-2 sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 -mx-4 px-4 pt-2"
             style={{ scrollbarWidth: 'none' }}
           >
             <button
               type="button"
               role="tab"
+              aria-current={activeCategory === null ? 'true' : undefined}
               aria-selected={activeCategory === null}
               className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeCategory === null
@@ -455,6 +490,7 @@ export default function News() {
                   key={cat.id}
                   type="button"
                   role="tab"
+                  aria-current={selected ? 'true' : undefined}
                   aria-selected={selected}
                   className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     selected
@@ -553,6 +589,35 @@ export default function News() {
                 <Button variant={viewMode === 'magazine' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('magazine')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Magazine view" title="Magazine">
                   <BookOpen size={16} />
                 </Button>
+                <Button variant={viewMode === 'stories' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('stories')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Stories view" title="Stories">
+                  <Layers size={16} />
+                </Button>
+              </div>
+
+              {/* Density toggle */}
+              <div className="hidden md:flex items-center rounded-lg p-1 border border-border" role="group" aria-label="Card density">
+                <Button
+                  variant={density === 'comfortable' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDensity('comfortable')}
+                  style={{ height: 32, width: 32, padding: 0 }}
+                  aria-label="Comfortable density"
+                  aria-pressed={density === 'comfortable'}
+                  title="Comfortable"
+                >
+                  <Rows3 size={16} />
+                </Button>
+                <Button
+                  variant={density === 'compact' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDensity('compact')}
+                  style={{ height: 32, width: 32, padding: 0 }}
+                  aria-label="Compact density"
+                  aria-pressed={density === 'compact'}
+                  title="Compact"
+                >
+                  <Rows4 size={16} />
+                </Button>
               </div>
 
               <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }} aria-label="Toggle filters">
@@ -565,6 +630,25 @@ export default function News() {
             </div>
           </div>
         </div>
+
+        {/* Trending tags strip */}
+        {trendingTags.length > 0 && !quickSearch && (
+          <div className="flex items-center gap-2 mb-6 flex-wrap" aria-label={t('pages.news.trendingTags', 'Trending tags')}>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+              <TrendingUp size={14} /> {t('pages.news.trendingTags', 'Trending')}
+            </span>
+            {trendingTags.slice(0, 10).map(({ tag }) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleFilterByTag(tag)}
+                className="text-xs rounded-full border border-border px-3 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Active Filters Summary */}
         {hasActiveFilters && sortedArticles.length > 0 && (
@@ -652,7 +736,7 @@ export default function News() {
               )
             )}
 
-            {!loading && !error && paginatedArticles.length > 0 && (
+            {!error && (paginatedArticles.length > 0 || viewMode === 'stories') && !(loading && viewMode !== 'stories') && (
               <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
@@ -661,6 +745,23 @@ export default function News() {
                 </div>
 
                 <AnimatePresence mode="wait" initial={false}>
+                {/* Stories View */}
+                {viewMode === 'stories' && (
+                  <motion.div key="stories" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
+                    {storiesLoading ? (
+                      <p className="text-sm text-muted-foreground">Loading stories…</p>
+                    ) : stories.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No multi-article stories yet. Check back as more coverage accumulates.</p>
+                    ) : (
+                      <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {stories.map((s) => (
+                          <StoryCard key={s.id} story={s} hero={s.hero_article_id ? storyHeroes[s.hero_article_id] : undefined} />
+                        ))}
+                      </StaggerGrid>
+                    )}
+                  </motion.div>
+                )}
+
                 {/* Headlines View */}
                 {viewMode === 'headlines' && (
                   <motion.div key="headlines" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
@@ -735,6 +836,7 @@ export default function News() {
                           <NewsCard
                             key={article.id}
                             article={article}
+                            density={density}
                             onViewArticle={handleViewArticle}
                             onFilterByTag={handleFilterByTag}
                             onFilterBySource={handleFilterBySource}
@@ -765,6 +867,7 @@ export default function News() {
                         key={article.id}
                         article={article}
                         variant={viewMode === 'list' ? 'compact' : undefined}
+                        density={density}
                         onViewArticle={handleViewArticle}
                         onFilterByTag={handleFilterByTag}
                         onFilterBySource={handleFilterBySource}
@@ -783,7 +886,7 @@ export default function News() {
                 </AnimatePresence>
 
                 {/* Pagination */}
-                {totalPages > 1 && (
+                {totalPages > 1 && viewMode !== 'stories' && (
                   <div className="flex items-center justify-center gap-2 pt-4">
                     <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <ChevronLeft size={16} /> {t('pages.news.previous', 'Previous')}

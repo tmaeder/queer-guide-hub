@@ -17,9 +17,13 @@ const Events = lazyRetry(() => import('./pages/Events'));
 const EventDetail = lazyRetry(() => import('./pages/EventDetail'));
 const Marketplace = lazyRetry(() => import('./pages/Marketplace'));
 const MarketplaceItemDetail = lazyRetry(() => import('./pages/MarketplaceItemDetail'));
+const MarketplaceCategory = lazyRetry(() => import('./pages/MarketplaceCategory'));
+const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'));
+const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 
 const Places = lazyRetry(() => import('./pages/Places'));
 const Resources = lazyRetry(() => import('./pages/Ressources'));
+const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
 const UserDirectory = lazyRetry(() => import('./pages/UserDirectory'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));
 const PersonalityDetail = lazyRetry(() => import('./pages/PersonalityDetail'));
@@ -66,6 +70,9 @@ const AdminMarketplace = lazy(() => import('./pages/AdminMarketplace'));
 const AdminNewsSources = lazy(() => import('./pages/AdminNewsSources'));
 const EmailTemplates = lazy(() => import('./pages/admin/EmailTemplates'));
 const AdminPersonalities = lazy(() => import('./pages/AdminPersonalities'));
+const AdminQuests = lazy(() => import('./pages/AdminQuests'));
+const Quests = lazyRetry(() => import('./pages/Quests'));
+const QuestDetail = lazyRetry(() => import('./pages/QuestDetail'));
 const AdminRedirects = lazy(() => import('./pages/AdminRedirects'));
 const AdminPipelines = lazy(() => import('./pages/AdminPipelines'));
 const AdminIngestionRules = lazy(() => import('./pages/AdminIngestionRules'));
@@ -121,8 +128,11 @@ const CloudflareDashboard = lazy(() =>
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
 const News = lazyRetry(() => import('./pages/News'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
+const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
+const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
+const Footprint = lazyRetry(() => import('./pages/profile/Footprint'));
 const UserProfile = lazyRetry(() => import('./pages/UserProfile'));
 const Feed = lazyRetry(() => import('./pages/Feed'));
 
@@ -302,6 +312,7 @@ export const AppRoutes = () => {
                 <Route path="cities" element={<Navigate to="/admin/content/cities" replace />} />
                 <Route path="countries" element={<AdminCountries />} />
                 <Route path="personalities" element={<AdminPersonalities />} />
+                <Route path="quests" element={<AdminQuests />} />
                 <Route path="marketplace" element={<AdminMarketplace />} />
                 <Route path="groups" element={<AdminGroups />} />
                 <Route path="news-sources" element={<AdminNewsSources />} />
@@ -359,6 +370,9 @@ export const AppRoutes = () => {
                 <Route path="events" element={<Events />} />
                 <Route path="events/:slug" element={<EventDetail />} />
                 <Route path="marketplace" element={<Marketplace />} />
+                <Route path="marketplace/share" element={<MarketplaceShare />} />
+                <Route path="marketplace/category/:slug" element={<MarketplaceCategory />} />
+                <Route path="marketplace/merchants/:domain" element={<MarketplaceMerchant />} />
                 <Route path="marketplace/:slug" element={<MarketplaceItemDetail />} />
                 <Route path="hotels" element={<Hotels />} />
                 <Route path="hotels/:slug" element={<HotelDetail />} />
@@ -384,7 +398,10 @@ export const AppRoutes = () => {
                 <Route path="users" element={<UserDirectory />} />
                 <Route path="personalities" element={<Personalities />} />
                 <Route path="personalities/:slug" element={<PersonalityDetail />} />
+                <Route path="quests" element={<Quests />} />
+                <Route path="quests/:slug" element={<QuestDetail />} />
                 <Route path="resources" element={<Resources />} />
+                <Route path="resources/topic/:slug" element={<ResourceTopic />} />
                 <Route path="resources/c/:categorySlug" element={<Resources />} />
                 <Route path="resources/:tagName" element={<Resources />} />
                 <Route path="professions/:professionName" element={<ProfessionDetail />} />
@@ -407,6 +424,7 @@ export const AppRoutes = () => {
                 <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
                 <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
                 <Route path="news" element={<News />} />
+                <Route path="news/story/:slug" element={<NewsStoryDetail />} />
                 <Route path="news/:slug" element={<NewsDetail />} />
                 <Route path="search" element={<SearchResults />} />
                 <Route path="groups" element={<Groups />} />
@@ -420,10 +438,13 @@ export const AppRoutes = () => {
                 <Route path="feed" element={<Feed />} />
                 <Route path="community" element={<Navigate to="/feed" replace />} />
                 <Route path="profile/settings" element={<ProfileSettings />} />
+                <Route path="profile/tiers" element={<ProfileTiers />} />
+                <Route path="profile/footprint" element={<Footprint />} />
                 <Route path="user/:userId" element={<UserProfile />} />
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />
                 <Route path="help" element={<HelpHotlines />} />
+                <Route path="help/:country" element={<HelpHotlines />} />
                 <Route path="submit" element={<SubmitHub />} />
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />

@@ -74,24 +74,18 @@ const LatestNewsSlider = React.memo(() => {
   return (
     <section className="w-full px-4 py-8 sm:px-6 md:px-8 md:py-16">
       {/* Header */}
-      <div className="mb-4 flex items-end justify-between gap-4">
-        <div>
-          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {t('home.news.eyebrow', 'Today in the community')}
-          </div>
-          <h2
-            className="m-0 text-[2rem] font-extrabold leading-[1.05] tracking-tight md:text-[2.5rem]"
-            style={{ fontFamily: DISPLAY_FONT }}
-          >
-            {t('home.news.title', 'Latest News')}
-          </h2>
-        </div>
+      <div className="mb-4 flex items-baseline justify-between gap-4">
+        <h2
+          className="m-0 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight md:text-[2.25rem]"
+          style={{ fontFamily: DISPLAY_FONT }}
+        >
+          {t('home.news.title', 'Latest News')}
+        </h2>
         <LocalizedLink
           to="/news"
-          className="group/all whitespace-nowrap inline-flex items-center gap-1 text-sm font-semibold text-foreground no-underline transition-opacity hover:opacity-70"
+          className="whitespace-nowrap text-[0.8125rem] text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
         >
-          {t('common.allStories', 'All stories')}
-          <span aria-hidden="true" className="transition-transform duration-300 group-hover/all:translate-x-1">→</span>
+          {t('common.allStories', 'All stories')} →
         </LocalizedLink>
       </div>
       <Hairline />
@@ -101,13 +95,13 @@ const LatestNewsSlider = React.memo(() => {
         {/* Feature story */}
         <LocalizedLink
           to={`/news/${feature.slug}`}
-          className="group/feat block text-foreground no-underline"
+          className="block text-foreground no-underline transition-opacity hover:opacity-85"
         >
-          <div className="mb-4 aspect-[3/2] w-full overflow-hidden rounded-2xl border border-border bg-muted shadow-sm transition-shadow duration-300 group-hover/feat:shadow-md">
+          <div className="mb-4 aspect-[3/2] w-full overflow-hidden bg-muted">
               <img
                 src={feature.image_url || getRandomFallbackImage()}
                 alt=""
-                className="block h-full w-full object-cover transition-transform duration-700 ease-out group-hover/feat:scale-[1.03]"
+                className="block h-full w-full object-cover"
               />
             </div>
           <div

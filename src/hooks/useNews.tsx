@@ -23,6 +23,7 @@ interface NewsFilters {
   };
   search?: string;
   featured?: boolean;
+  inStory?: boolean;
   location?: {
     country_id?: string;
     city_id?: string;
@@ -126,6 +127,24 @@ export const useNews = () => {
       }
       if (filters?.tags && filters.tags.length > 0) {
         queryBuilder = (queryBuilder as typeof queryBuilder).overlaps('tags', filters.tags);
+      }
+
+      // Restrict to articles that belong to a multi-article story.
+      if (filters?.inStory) {
+        const { data: storyLinks } = await supabase
+          .from('news_story_articles' as never)
+          .select('article_id, story_id, news_stories!inner(article_count)') as unknown as {
+            data: Array<{ article_id: string; news_stories: { article_count: number } }> | null;
+          };
+        const eligibleIds = (storyLinks ?? [])
+          .filter((l) => l.news_stories?.article_count >= 2)
+          .map((l) => l.article_id);
+        if (eligibleIds.length === 0) {
+          setArticles([]);
+          setLoading(false);
+          return;
+        }
+        queryBuilder = (queryBuilder as typeof queryBuilder).in('id', eligibleIds);
       }
 
       const { data, error: fetchError } = await (queryBuilder as typeof queryBuilder).limit(200);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -8,6 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
   Search,
   Filter,
@@ -20,6 +25,8 @@ import {
   List,
   SortAsc,
   SortDesc,
+  Sliders,
+  ChevronDown,
 } from 'lucide-react';
 import { getCategoryShortName, parentOrder } from './categoryMeta';
 import type { CategoryTreeNode } from '@/hooks/useCentralizedTags';
@@ -66,9 +73,11 @@ export function ResourcesFilterBar({
   onSortDirectionToggle,
   categoriesTree,
 }: ResourcesFilterBarProps) {
+  const advancedActive = usageFilter !== 'all' || hasImageFilter || sortDirection !== 'desc';
+  const [advancedOpen, setAdvancedOpen] = useState(advancedActive);
+
   return (
     <div className="rounded-md border border-border bg-background p-4 md:p-6 mb-6">
-      {/* Row 1: Search + View toggles */}
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="relative flex-1">
           <Search
@@ -124,7 +133,6 @@ export function ResourcesFilterBar({
         </div>
       </div>
 
-      {/* Row 2: Filters + Sort */}
       <div className="flex flex-wrap gap-3 items-center">
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
           <SelectTrigger style={{ width: 220, height: 40 }} aria-label="Filter by category">
@@ -151,69 +159,87 @@ export function ResourcesFilterBar({
           </SelectContent>
         </Select>
 
-        <Select value={usageFilter} onValueChange={onUsageFilterChange}>
-          <SelectTrigger style={{ width: 140, height: 40 }} aria-label="Filter by usage">
-            <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
-            <SelectValue placeholder="Usage" />
+        <Select
+          value={sortBy}
+          onValueChange={(value: string) => onSortByChange(value as SortOption)}
+        >
+          <SelectTrigger style={{ width: 150, height: 40 }} aria-label="Sort by">
+            <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+            <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Tags</SelectItem>
-            <SelectItem value="used">Used</SelectItem>
-            <SelectItem value="unused">Unused</SelectItem>
+            <SelectItem value="usage">Most used</SelectItem>
+            <SelectItem value="alphabetical">Alphabetical</SelectItem>
+            <SelectItem value="recent">Newest</SelectItem>
           </SelectContent>
         </Select>
 
-        <Button
-          variant={hasImageFilter ? 'default' : 'secondary'}
-          size="sm"
-          style={{ height: 40 }}
-          onClick={() => onHasImageFilterChange(!hasImageFilter)}
-          title="Only show tags with images"
-          aria-label="Only show tags with images"
-          aria-pressed={hasImageFilter}
-        >
-          <Image style={{ width: 16, height: 16, marginRight: 6 }} />
-          Has Image
-        </Button>
+        <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen} className="ml-auto">
+          <CollapsibleTrigger asChild>
+            <Button
+              variant={advancedActive ? 'default' : 'ghost'}
+              size="sm"
+              style={{ height: 40 }}
+              aria-expanded={advancedOpen}
+            >
+              <Sliders style={{ width: 14, height: 14, marginRight: 6 }} />
+              Advanced
+              <ChevronDown
+                style={{
+                  width: 14,
+                  height: 14,
+                  marginLeft: 6,
+                  transition: 'transform 150ms',
+                  transform: advancedOpen ? 'rotate(180deg)' : 'rotate(0)',
+                }}
+              />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="w-full mt-3 flex flex-wrap gap-3 items-center">
+            <Select value={usageFilter} onValueChange={onUsageFilterChange}>
+              <SelectTrigger style={{ width: 140, height: 40 }} aria-label="Filter by usage">
+                <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
+                <SelectValue placeholder="Usage" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tags</SelectItem>
+                <SelectItem value="used">Used</SelectItem>
+                <SelectItem value="unused">Unused</SelectItem>
+              </SelectContent>
+            </Select>
 
-        <div className="ml-auto flex gap-2 items-center">
-          <Select
-            value={sortBy}
-            onValueChange={(value: string) => onSortByChange(value as SortOption)}
-          >
-            <SelectTrigger style={{ width: 150, height: 40 }} aria-label="Sort by">
-              <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="usage">Most used</SelectItem>
-              <SelectItem value="alphabetical">Alphabetical</SelectItem>
-              <SelectItem value="recent">Newest</SelectItem>
-            </SelectContent>
-          </Select>
-          <div
-            aria-hidden="true"
-            style={{ width: 1, height: 24, backgroundColor: 'hsl(var(--border))' }}
-          />
-          <Button
-            variant="secondary"
-            size="sm"
-            style={{ height: 40, width: 40, padding: 0 }}
-            onClick={onSortDirectionToggle}
-            title={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
-            aria-label={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
-            aria-pressed={sortDirection === 'desc'}
-          >
-            {sortDirection === 'asc' ? (
-              <SortAsc style={{ width: 16, height: 16 }} />
-            ) : (
-              <SortDesc style={{ width: 16, height: 16 }} />
-            )}
-          </Button>
-        </div>
+            <Button
+              variant={hasImageFilter ? 'default' : 'secondary'}
+              size="sm"
+              style={{ height: 40 }}
+              onClick={() => onHasImageFilterChange(!hasImageFilter)}
+              title="Only show tags with images"
+              aria-label="Only show tags with images"
+              aria-pressed={hasImageFilter}
+            >
+              <Image style={{ width: 16, height: 16, marginRight: 6 }} />
+              Has Image
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              style={{ height: 40, width: 40, padding: 0 }}
+              onClick={onSortDirectionToggle}
+              title={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
+              aria-label={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
+              aria-pressed={sortDirection === 'desc'}
+            >
+              {sortDirection === 'asc' ? (
+                <SortAsc style={{ width: 16, height: 16 }} />
+              ) : (
+                <SortDesc style={{ width: 16, height: 16 }} />
+              )}
+            </Button>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
-      {/* Active filters summary */}
       {(filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter) && (
         <div className="flex flex-wrap gap-2 mt-4 items-center">
           <span className="text-xs text-muted-foreground">Active:</span>

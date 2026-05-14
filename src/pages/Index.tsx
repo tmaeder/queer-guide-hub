@@ -25,6 +25,7 @@ import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
 import { MovingBorder } from '@/components/effects/MovingBorder';
 import { MagneticButton } from '@/components/motion';
+import { GrainOverlay } from '@/components/effects/GrainOverlay';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
 const LatestNewsSlider = React.lazy(() => import('@/components/home/LatestNewsSlider'));
@@ -64,24 +65,19 @@ const Index = React.memo(() => {
   return (
     <div className="min-h-screen">
       {/* ── Hero + Map ───────────────────────────────────────────────── */}
-      <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-mesh opacity-70" />
+      <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background">
+        <GrainOverlay />
         {/* Text panel */}
-        <SpotlightEffect className="md:flex-[0_0_38%] flex flex-col justify-center px-6 sm:px-10 md:px-12 py-14 sm:py-20 md:py-0 relative z-[1]">
-          {/* WCAG 1.4.4 — eyebrow bumped from 11px → 12px for comfortable reading. */}
-          <div className="reveal-up mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
-            <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground animate-pulse" />
-            {t('home.eyebrow', 'LGBTQ+ Travel & Community')}
-          </div>
+        <SpotlightEffect className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0 relative z-[1]">
           <TextGenerateEffect
             words={`${t('home.heroLine1', 'Discover.')} ${t('home.heroLine2', 'Connect.')} ${t('home.heroLine3', 'Belong.')}`}
-            className="text-[2.75rem] sm:text-[3.5rem] md:text-[4rem] lg:text-[4.5rem] font-extrabold leading-[1.02] mb-5 text-gradient-fg"
-            style={{ letterSpacing: '-0.045em' }}
+            className="text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] lg:text-[4rem] font-extrabold leading-[1.05] mb-4 text-foreground"
+            style={{ letterSpacing: '-0.04em' }}
             as="h1"
             staggerDelay={0.08}
           />
 
-          <p className="reveal-up reveal-delay-1 max-w-md text-base md:text-[1.0625rem] text-muted-foreground mb-7 leading-[1.6]">
+          <p className="reveal-up reveal-delay-1 text-[0.9375rem] md:text-[1.0625rem] text-muted-foreground mb-6 leading-[1.6]">
             {t('home.subtitle', 'Safe venues, vibrant events, and communities that get you — wherever you are.')}
           </p>
 
@@ -102,7 +98,7 @@ const Index = React.memo(() => {
         </SpotlightEffect>
 
         {/* Map panel */}
-        <div className="md:flex-1 min-h-[55vh] md:min-h-0 relative md:rounded-l-[2.5rem] md:overflow-hidden md:border-l md:border-border md:my-6 md:mr-4 lg:my-8 lg:mr-6">
+        <div className="md:flex-1 min-h-[55vh] md:min-h-0 relative">
           <ErrorBoundary section="map" fallback={null}>
             <React.Suspense
               fallback={
@@ -110,7 +106,7 @@ const Index = React.memo(() => {
               }
             >
               <ExploreMap
-                height={isMobile ? '55vh' : 'calc(100vh - 64px - 4rem)'}
+                height={isMobile ? '55vh' : 'calc(100vh - 64px)'}
                 defaultLayers={['venues', 'events']}
                 showFilters
                 showLayerToggles
@@ -125,9 +121,8 @@ const Index = React.memo(() => {
       {showStatsStrip && (
         <div
           data-testid="homepage-stats-strip"
-          className="relative mx-4 sm:mx-6 md:mx-8 my-8 md:my-12 rounded-3xl border border-foreground/10 bg-foreground text-background py-12 md:py-16 px-6 sm:px-8 md:px-12 overflow-hidden shadow-xl"
+          className="bg-foreground text-background py-10 md:py-14 px-4 sm:px-6 md:px-8"
         >
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(at_20%_20%,hsl(0_0%_100%/0.08)_0%,transparent_50%),radial-gradient(at_80%_80%,hsl(0_0%_100%/0.05)_0%,transparent_50%)]" />
           <StaggerGrid
             stagger={0.1}
             className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
@@ -183,17 +178,10 @@ const Index = React.memo(() => {
       </section>
 
       {/* ── Features Grid ────────────────────────────────────────────── */}
-      <BackgroundDots className="py-16 md:py-24 px-4 sm:px-6 md:px-8">
-        <div className="reveal-up mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
-          <span aria-hidden="true" className="h-1 w-1 rounded-full bg-foreground" />
-          {t('home.exploreEyebrow', 'Everything in one place')}
-        </div>
-        <h2 className="reveal-up font-extrabold mb-3 text-[2rem] md:text-[3rem] leading-[1.05] tracking-tight text-balance max-w-3xl">
+      <BackgroundDots className="py-12 md:py-16 px-4 sm:px-6 md:px-8">
+        <h2 className="reveal-up font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">
           {t('home.explore', 'Explore')}
         </h2>
-        <p className="reveal-up reveal-delay-1 mb-10 md:mb-14 max-w-2xl text-base md:text-lg text-muted-foreground leading-relaxed">
-          {t('home.exploreSubtitle', 'Verified venues, real events, and the community that built them.')}
-        </p>
 
         <BentoGrid>
           {featureDefs.map((feature, i) => {
@@ -203,25 +191,18 @@ const Index = React.memo(() => {
               <BentoGridItem
                 key={feature.titleKey}
                 colSpan={isLarge ? 2 : 1}
-                className="group/bento relative overflow-hidden rounded-2xl border border-border bg-card p-6 md:p-7 shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-lg"
               >
-                <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-foreground/[0.04] opacity-0 transition-opacity duration-300 group-hover/bento:opacity-100" />
                 <LocalizedLink
                   to={feature.link}
-                  className="relative flex h-full flex-col gap-3 no-underline"
+                  style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}
                 >
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
-                    <Icon size={20} aria-hidden="true" />
-                  </div>
-                  <div className="text-lg md:text-xl font-bold leading-tight tracking-tight">
+                  <div className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2">
+                    <Icon size={20} aria-hidden="true" style={{ flexShrink: 0 }} />
                     {t(feature.titleKey)}
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-[1.5]">
                     {t(feature.descKey)}
                   </p>
-                  <span aria-hidden="true" className="mt-auto inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-foreground/70 transition-transform duration-300 group-hover/bento:translate-x-1">
-                    {t('home.bentoExplore', 'Open')} →
-                  </span>
                 </LocalizedLink>
               </BentoGridItem>
             );

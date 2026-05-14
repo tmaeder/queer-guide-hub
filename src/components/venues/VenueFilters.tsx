@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Command,
   CommandEmpty,
@@ -22,6 +23,12 @@ interface VenueFiltersProps {
   initialSearch?: string;
   /** Seed initial category chip selection. */
   initialCategory?: string;
+  initialCity?: string;
+  initialTags?: string[];
+  initialAmenities?: string[];
+  initialServices?: string[];
+  initialAccessibilityAttributes?: string[];
+  initialTargetGroups?: string[];
   onFiltersChange: (filters: {
     search?: string;
     city?: string;
@@ -107,18 +114,26 @@ const commonServices = [
 export function VenueFilters({
   initialSearch = '',
   initialCategory = '',
+  initialCity = '',
+  initialTags,
+  initialAmenities,
+  initialServices,
+  initialAccessibilityAttributes,
+  initialTargetGroups,
   onFiltersChange,
 }: VenueFiltersProps) {
   const [search, setSearch] = useState(initialSearch);
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState(initialCity);
   const [category, setCategory] = useState(initialCategory);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialTags ?? []);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(initialAmenities ?? []);
+  const [selectedServices, setSelectedServices] = useState<string[]>(initialServices ?? []);
   const [selectedAccessibilityAttributes, setSelectedAccessibilityAttributes] = useState<string[]>(
-    [],
+    initialAccessibilityAttributes ?? [],
   );
-  const [selectedTargetGroups, setSelectedTargetGroups] = useState<string[]>([]);
+  const [selectedTargetGroups, setSelectedTargetGroups] = useState<string[]>(
+    initialTargetGroups ?? [],
+  );
   const [tagsOpen, setTagsOpen] = useState(false);
   const [amenitiesOpen, setAmenitiesOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -139,6 +154,32 @@ export function VenueFilters({
     fetchTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sync array filters when URL-driven props change (e.g. back/forward
+  // navigation). Compares joined keys so we don't fight user typing.
+  const initialTagsKey = (initialTags ?? []).join(',');
+  const initialAmenitiesKey = (initialAmenities ?? []).join(',');
+  const initialServicesKey = (initialServices ?? []).join(',');
+  const initialAccessibilityKey = (initialAccessibilityAttributes ?? []).join(',');
+  const initialTargetGroupsKey = (initialTargetGroups ?? []).join(',');
+  useEffect(() => {
+    setSelectedTags(initialTags ?? []);
+  }, [initialTagsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedAmenities(initialAmenities ?? []);
+  }, [initialAmenitiesKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedServices(initialServices ?? []);
+  }, [initialServicesKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedAccessibilityAttributes(initialAccessibilityAttributes ?? []);
+  }, [initialAccessibilityKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSelectedTargetGroups(initialTargetGroups ?? []);
+  }, [initialTargetGroupsKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setCity(initialCity);
+  }, [initialCity]);
 
   // Build current filters object
   const buildFilters = useCallback(
@@ -405,23 +446,24 @@ export function VenueFilters({
         </div>
       </div>
 
-      {/* Category Chips */}
-      <div className="flex gap-1.5 flex-wrap max-w-full">
+      {/* Category Chips — horizontally scroll on narrow screens (Airbnb-style),
+          wrap on wider screens. -mx + px keeps the scroll edge flush with card. */}
+      <div className="flex gap-1.5 overflow-x-auto sm:flex-wrap max-w-full -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
         {categories.map((cat) => (
           <Button
             key={cat}
             variant={category === cat ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleCategoryClick(cat)}
-            className="rounded-full h-8 px-3.5 text-xs font-medium transition-all"
+            className="rounded-full h-8 px-3.5 text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
           >
             {categoryLabels[cat] ?? cat}
           </Button>
         ))}
       </div>
 
-      {/* Active Filter Chips */}
-      {hasActiveFilters && !showAdvanced && (
+      {/* Active Filter Chips — always visible when any filter is on */}
+      {hasActiveFilters && (
         <div className="flex flex-wrap gap-1.5 items-center pt-1 px-1">
           {search && (
             <Badge variant="secondary">
@@ -477,21 +519,46 @@ export function VenueFilters({
         </div>
       )}
 
-      {/* Advanced Filters Panel */}
+      {/* Advanced Filters Panel — inline on desktop, bottom-sheet on mobile */}
       {showAdvanced && (
-        <nav
-          aria-label="Venue filters"
-          className="flex flex-col gap-6 pt-5 mt-1 border-t border-border"
-        >
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
-              Refine
-            </span>
-          </div>
+        <>
+          {/* Mobile: bottom sheet */}
+          <Sheet
+            open={showAdvanced}
+            onOpenChange={(o) => !o && setShowAdvanced(false)}
+          >
+            <SheetContent side="bottom" className="md:hidden max-h-[85dvh] overflow-y-auto p-4">
+              <SheetHeader>
+                <SheetTitle>Refine</SheetTitle>
+              </SheetHeader>
+              {renderAdvancedPanel()}
+            </SheetContent>
+          </Sheet>
 
-          {/* City input */}
-          <div className="max-w-[400px] flex flex-col gap-1.5">
+          {/* Desktop: inline */}
+          <nav
+            aria-label="Venue filters"
+            className="hidden md:flex flex-col gap-6 pt-5 mt-1 border-t border-border"
+          >
+            {renderAdvancedPanel()}
+          </nav>
+        </>
+      )}
+    </div>
+  );
+
+  function renderAdvancedPanel() {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+            Refine
+          </span>
+        </div>
+
+        {/* City input */}
+        <div className="max-w-[400px] flex flex-col gap-1.5">
             <Label htmlFor="city" className="text-[11px] uppercase tracking-wider text-muted-foreground">City</Label>
             <Input
               id="city"
@@ -583,10 +650,9 @@ export function VenueFilters({
               </Button>
             </div>
           )}
-        </nav>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
 }
 
 // Extracted filter dropdown component to reduce repetition

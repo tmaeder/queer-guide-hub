@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MarkVisitedButton } from '@/components/marks/MarkVisitedButton';
 import { useToast } from '@/hooks/use-toast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useVenues } from '@/hooks/useVenues';
@@ -149,6 +150,10 @@ export default function QueerVillageDetail() {
       />
       {village && (
         <div className="mx-auto px-4">
+          <div className="mt-6 flex flex-wrap gap-2">
+            <MarkVisitedButton entityType="village" entityId={village.id} kind="visited" />
+            <MarkVisitedButton entityType="village" entityId={village.id} kind="saved" />
+          </div>
           <SimilarItems entity={{ type: 'queer_village', id: village.id }} className="mt-8" />
         </div>
       )}

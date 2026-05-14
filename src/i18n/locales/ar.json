@@ -313,7 +313,11 @@
       "fitAll": "عرض الكل",
       "fitAllAria": "ضبط كل الأماكن على الشاشة",
       "filterAll": "كل الأيام",
-      "dayLabel": "اليوم {{number}}"
+      "dayLabel": "اليوم {{number}}",
+      "showAttractions": "[AR] Attractions",
+      "showEvents": "[AR] Events",
+      "suggestedVenue": "[AR] Suggested venue",
+      "eventOn": "[AR] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "لا توجد معلومات أمان بعد",
@@ -708,7 +712,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[AR] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +743,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[AR] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[AR] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -758,7 +765,9 @@
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[AR] Free, takes a minute.",
+      "haveAccountQ": "[AR] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +809,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[AR] Continue to The Queer Guide",
+      "banner": "[AR] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[AR] Verification email sent. Check your inbox.",
+      "resendShort": "[AR] Resend",
+      "gateTitle": "[AR] Verify your email first",
+      "gateDescription": "[AR] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[AR] Sign in required",
+      "description": "[AR] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1004,6 +1023,77 @@
       "legal": "قانوني",
       "relationships": "العلاقات",
       "women": "النساء"
+    },
+    "quick_exit": "[AR] Quick exit",
+    "quick_exit_aria": "[AR] Leave this page immediately (ESC)",
+    "hide_screen": "[AR] Hide screen",
+    "reveal_aria": "[AR] Click anywhere to show the page again",
+    "hidden_hint": "[AR] Page hidden. Click anywhere to show again.",
+    "hero_label": "[AR] Recommended right now",
+    "expect_title": "[AR] What happens when you call",
+    "expect_short": "[AR] What to expect",
+    "expect_1": "[AR] You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "[AR] You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "[AR] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "[AR] If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "[AR] While you wait",
+    "self_help_title": "[AR] Steady yourself",
+    "self_help_desc": "[AR] Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "[AR] 4-7-8 breathing",
+    "breathing_1": "[AR] Breathe in through your nose for 4 seconds.",
+    "breathing_2": "[AR] Hold your breath for 7 seconds.",
+    "breathing_3": "[AR] Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "[AR] Repeat 4 times.",
+    "grounding_title": "[AR] 5-4-3-2-1 grounding",
+    "grounding_intro": "[AR] Name, out loud or in your head:",
+    "grounding_5": "[AR] 5 things you can see",
+    "grounding_4": "[AR] 4 things you can touch",
+    "grounding_3": "[AR] 3 things you can hear",
+    "grounding_2": "[AR] 2 things you can smell",
+    "grounding_1": "[AR] 1 thing you can taste",
+    "safety_plan_title": "[AR] Safety plan",
+    "safety_plan_desc": "[AR] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "[AR] Open template (Stanley-Brown)",
+    "report": "[AR] Report",
+    "report_aria": "[AR] Report a problem with this hotline",
+    "report_title": "[AR] Report this hotline",
+    "report_desc": "[AR] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "[AR] Reason",
+    "report_detail": "[AR] Details (optional)",
+    "report_submit": "[AR] Submit report",
+    "report_thanks": "[AR] Thank you. We'll review it.",
+    "filter_intersection": "[AR] Population",
+    "filter_intersection_all": "[AR] All",
+    "badge_reports_police": "[AR] May report to police",
+    "operator": "[AR] Operated by",
+    "verified_on": "[AR] Verified",
+    "affiliation": {
+      "religious": "[AR] religious",
+      "state": "[AR] state",
+      "ngo": "[AR] NGO",
+      "secular": "[AR] secular"
+    },
+    "channel": {
+      "phone": "[AR] Call",
+      "sms": "[AR] Text",
+      "whatsapp": "[AR] WhatsApp",
+      "chat": "[AR] Chat",
+      "email": "[AR] Email"
+    },
+    "intersection": {
+      "trans-youth": "[AR] Trans youth",
+      "asylum": "[AR] Asylum seekers",
+      "sex-work": "[AR] Sex workers",
+      "hiv": "[AR] HIV+",
+      "elders": "[AR] Elders",
+      "deaf": "[AR] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[AR] Number disconnected / no answer",
+      "wrong_number": "[AR] Wrong number",
+      "closed": "[AR] Service has shut down",
+      "unsafe": "[AR] Unsafe / harmful experience",
+      "other": "[AR] Other"
     }
   },
   "sos": {
@@ -1106,7 +1196,8 @@
       "accessibility": "إمكانية الوصول",
       "bookings": "الحجوزات",
       "tripInbox": "بريد الرحلة",
-      "extension": "إضافة المتصفح"
+      "extension": "إضافة المتصفح",
+      "footprint": "[AR] Footprint"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -1122,7 +1213,10 @@
       "accessibility": "إمكانية الوصول",
       "legal": "قانوني",
       "contact": "تواصل معنا"
-    }
+    },
+    "signUp": "[AR] Sign up",
+    "navigation": "[AR] Navigation",
+    "signIn": "[AR] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,6 +1314,45 @@
       "filteredEmpty": {
         "title": "لا توجد فعاليات تطابق فلاترك",
         "body": "حاول تعديل الفلاتر أو البحث لرؤية نتائج أكثر."
+      },
+      "prideSubtype": "[AR] Pride type",
+      "mapView": "[AR] Map view",
+      "preset": {
+        "label": "[AR] Quick filters",
+        "thisWeekend": "[AR] This weekend",
+        "nearMe": "[AR] Near me",
+        "pride": "[AR] Pride season",
+        "thisMonth": "[AR] This month",
+        "free": "[AR] Free",
+        "featured": "[AR] Featured"
+      },
+      "rail": {
+        "featured": "[AR] Featured this week",
+        "featuredSubtitle": "[AR] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[AR] No events match your filters",
+        "body": "[AR] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[AR] Drop \"{{city}}\" filter",
+        "clearDate": "[AR] Drop date filter",
+        "viewAll": "[AR] View all upcoming events",
+        "sameCityHeader": "[AR] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[AR] Try other cities in your date range",
+        "fallbackHeader": "[AR] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[AR] Spotlight",
+        "happeningNow": "[AR] Happening now",
+        "tomorrow": "[AR] Starts tomorrow",
+        "inDays_one": "[AR] Starts in {{count}} day",
+        "inDays_other": "[AR] Starts in {{count}} days",
+        "nearbyCount_one": "[AR] {{count}} event in {{city}}",
+        "nearbyCount_other": "[AR] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[AR] Sort events",
+      "sort": {
+        "dateAsc": "[AR] Soonest first",
+        "dateDesc": "[AR] Latest first"
       }
     },
     "eventDetail": {
@@ -1279,7 +1412,60 @@
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
       "exploreCta": "الوجهات",
-      "exploreDescription": "مدن وبلدان مع معلومات أمان وأدلة سفر."
+      "exploreDescription": "مدن وبلدان مع معلومات أمان وأدلة سفر.",
+      "hotels": {
+        "typeLabel": "[AR] Type",
+        "priceMin": "[AR] Min €",
+        "priceMax": "[AR] Max €",
+        "priceUnavailable": "[AR] Price on request",
+        "clearFilters": "[AR] Clear filters",
+        "noResultsWithFilters": "[AR] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[AR] Any type",
+          "hotel": "[AR] Hotel",
+          "boutique": "[AR] Boutique Hotel",
+          "bnb": "[AR] B&B",
+          "hostel": "[AR] Hostel",
+          "guesthouse": "[AR] Guesthouse",
+          "apartment": "[AR] Apartment",
+          "resort": "[AR] Resort"
+        }
+      },
+      "hero": {
+        "title": "[AR] Plan a trip",
+        "subtitle": "[AR] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[AR] Where to?",
+        "start": "[AR] Start",
+        "end": "[AR] End",
+        "cta": "[AR] Plan this trip",
+        "discover": "[AR] Or",
+        "discoverLink": "[AR] browse public trips",
+        "discoverTail": "[AR] from the community.",
+        "errors": {
+          "city": "[AR] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[AR] Continue planning",
+        "placeCount": "[AR] {{count}} places"
+      },
+      "pride": {
+        "title": "[AR] Pride this season",
+        "window": "[AR] Next 4 months",
+        "empty": "[AR] No upcoming Pride events.",
+        "safety": "[AR] Equality score"
+      },
+      "inspiration": {
+        "villages": "[AR] Queer villages",
+        "publicTrips": "[AR] Public trips",
+        "viewAll": "[AR] View all",
+        "noVillages": "[AR] No villages yet.",
+        "noTrips": "[AR] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[AR] Book now",
+        "subtitle": "[AR] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "السوق",
@@ -1290,7 +1476,9 @@
       "signInRequired": "يجب تسجيل الدخول",
       "signInList": "أنشئ حساباً مجانياً لإدراج نشاطك التجاري.",
       "signInFavorites": "يرجى تسجيل الدخول لحفظ المفضلة.",
-      "loadError": "حدث خطأ أثناء تحميل السوق. يرجى المحاولة مرة أخرى."
+      "loadError": "حدث خطأ أثناء تحميل السوق. يرجى المحاولة مرة أخرى.",
+      "emptyFiltersTitle": "[AR] No listings match these filters.",
+      "emptyFiltersDescription": "[AR] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "العنصر غير موجود",
@@ -1329,7 +1517,14 @@
       "emptyTitle": "لا مقالات بعد.",
       "emptyDescription": "عد لاحقاً.",
       "previous": "السابق",
-      "next": "التالي"
+      "next": "التالي",
+      "filteredEmptyTitle": "[AR] No news matches your filters.",
+      "filteredEmptyDescription": "[AR] Reset filters or try another topic.",
+      "resetFilters": "[AR] Reset filters",
+      "filterSearch": "[AR] Search",
+      "filterCategory": "[AR] Category",
+      "filterSource": "[AR] Source",
+      "filterFeatured": "[AR] Featured only"
     },
     "newsDetail": {
       "notFound": "المقال غير موجود",

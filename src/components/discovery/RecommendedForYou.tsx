@@ -115,17 +115,10 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 
 	return (
 		<section className={className} aria-label="Recommended for you">
-			<div className="flex items-end justify-between mb-4 gap-4">
-				<div>
-					<div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-						<Sparkles className="h-3 w-3" />
-						For you
-					</div>
-					<h2 className="text-xl md:text-2xl font-bold tracking-tight leading-tight">
-						Recommended for you
-					</h2>
-				</div>
-			</div>
+			<h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+				<Sparkles className="h-5 w-5 text-foreground" />
+				Recommended for you
+			</h2>
 			<SkeletonCrossfade
 				loading={!items}
 				skeleton={
@@ -148,18 +141,16 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 									<LocalizedLink
 										key={`${it.type}:${it.id}`}
 										to={to}
-										className="group/rec shrink-0 w-60 no-underline"
+										className="shrink-0 w-56"
 										onClick={() => trackClick({ type: it.type, id: it.id }, "recommended")}
 									>
-										<Card className="h-44 overflow-hidden transition-[transform,box-shadow] duration-300 ease-out group-hover/rec:-translate-y-0.5 group-hover/rec:shadow-md" hoverable>
-											<div className="relative overflow-hidden h-24">
-												<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover/rec:scale-[1.05]" />
-											</div>
-											<CardContent className="p-3">
-												<div className="text-sm font-semibold truncate">
+										<Card className="h-40 overflow-hidden transition">
+											<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-24 w-full object-cover" />
+											<CardContent className="p-2">
+												<div className="text-sm font-medium truncate">
 													{decodeEntities(it.title!)}
 												</div>
-												<div className="text-xs text-muted-foreground truncate mt-0.5">
+												<div className="text-xs text-muted-foreground truncate">
 													{[it.city, it.country].filter(Boolean).join(", ")}
 												</div>
 											</CardContent>

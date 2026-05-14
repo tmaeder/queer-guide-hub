@@ -313,7 +313,11 @@
       "fitAll": "Ver todo",
       "fitAllAria": "Encuadrar todos los lugares",
       "filterAll": "Todos los días",
-      "dayLabel": "Día {{number}}"
+      "dayLabel": "Día {{number}}",
+      "showAttractions": "[ES] Attractions",
+      "showEvents": "[ES] Events",
+      "suggestedVenue": "[ES] Suggested venue",
+      "eventOn": "[ES] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "Aún sin información de seguridad",
@@ -708,7 +712,8 @@
       "displayName": "¿Cómo te llamamos?",
       "pronouns": "Elige tus pronombres",
       "country": "Opcional",
-      "language": "Elige idioma"
+      "language": "Elige idioma",
+      "passwordMin8": "[ES] At least 8 characters"
     },
     "errors": {
       "emailRequired": "El correo es obligatorio",
@@ -738,7 +743,9 @@
       "age": "Confirmo que tengo 18 años o más",
       "termsAria": "Aceptar términos de servicio",
       "privacyAria": "Aceptar política de privacidad",
-      "ageAria": "Confirmar que tengo 18 años o más"
+      "ageAria": "Confirmar que tengo 18 años o más",
+      "combined": "[ES] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[ES] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continuar con Google",
@@ -758,7 +765,9 @@
         "account": "Cuenta",
         "profile": "Perfil",
         "interests": "Intereses"
-      }
+      },
+      "blurb": "[ES] Free, takes a minute.",
+      "haveAccountQ": "[ES] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "ella",
@@ -800,7 +809,17 @@
       "resend": "Reenviar correo de verificación",
       "resendIn": "Reenviar en {{seconds}}s",
       "resent": "Correo de verificación enviado. Revisa tu bandeja de entrada.",
-      "backToLogin": "Volver a iniciar sesión"
+      "backToLogin": "Volver a iniciar sesión",
+      "continue": "[ES] Continue to The Queer Guide",
+      "banner": "[ES] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[ES] Verification email sent. Check your inbox.",
+      "resendShort": "[ES] Resend",
+      "gateTitle": "[ES] Verify your email first",
+      "gateDescription": "[ES] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[ES] Sign in required",
+      "description": "[ES] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1004,6 +1023,77 @@
       "legal": "Legal",
       "relationships": "Relaciones",
       "women": "Mujeres"
+    },
+    "quick_exit": "[ES] Quick exit",
+    "quick_exit_aria": "[ES] Leave this page immediately (ESC)",
+    "hide_screen": "[ES] Hide screen",
+    "reveal_aria": "[ES] Click anywhere to show the page again",
+    "hidden_hint": "[ES] Page hidden. Click anywhere to show again.",
+    "hero_label": "[ES] Recommended right now",
+    "expect_title": "[ES] What happens when you call",
+    "expect_short": "[ES] What to expect",
+    "expect_1": "[ES] You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "[ES] You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "[ES] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "[ES] If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "[ES] While you wait",
+    "self_help_title": "[ES] Steady yourself",
+    "self_help_desc": "[ES] Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "[ES] 4-7-8 breathing",
+    "breathing_1": "[ES] Breathe in through your nose for 4 seconds.",
+    "breathing_2": "[ES] Hold your breath for 7 seconds.",
+    "breathing_3": "[ES] Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "[ES] Repeat 4 times.",
+    "grounding_title": "[ES] 5-4-3-2-1 grounding",
+    "grounding_intro": "[ES] Name, out loud or in your head:",
+    "grounding_5": "[ES] 5 things you can see",
+    "grounding_4": "[ES] 4 things you can touch",
+    "grounding_3": "[ES] 3 things you can hear",
+    "grounding_2": "[ES] 2 things you can smell",
+    "grounding_1": "[ES] 1 thing you can taste",
+    "safety_plan_title": "[ES] Safety plan",
+    "safety_plan_desc": "[ES] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "[ES] Open template (Stanley-Brown)",
+    "report": "[ES] Report",
+    "report_aria": "[ES] Report a problem with this hotline",
+    "report_title": "[ES] Report this hotline",
+    "report_desc": "[ES] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "[ES] Reason",
+    "report_detail": "[ES] Details (optional)",
+    "report_submit": "[ES] Submit report",
+    "report_thanks": "[ES] Thank you. We'll review it.",
+    "filter_intersection": "[ES] Population",
+    "filter_intersection_all": "[ES] All",
+    "badge_reports_police": "[ES] May report to police",
+    "operator": "[ES] Operated by",
+    "verified_on": "[ES] Verified",
+    "affiliation": {
+      "religious": "[ES] religious",
+      "state": "[ES] state",
+      "ngo": "[ES] NGO",
+      "secular": "[ES] secular"
+    },
+    "channel": {
+      "phone": "[ES] Call",
+      "sms": "[ES] Text",
+      "whatsapp": "[ES] WhatsApp",
+      "chat": "[ES] Chat",
+      "email": "[ES] Email"
+    },
+    "intersection": {
+      "trans-youth": "[ES] Trans youth",
+      "asylum": "[ES] Asylum seekers",
+      "sex-work": "[ES] Sex workers",
+      "hiv": "[ES] HIV+",
+      "elders": "[ES] Elders",
+      "deaf": "[ES] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[ES] Number disconnected / no answer",
+      "wrong_number": "[ES] Wrong number",
+      "closed": "[ES] Service has shut down",
+      "unsafe": "[ES] Unsafe / harmful experience",
+      "other": "[ES] Other"
     }
   },
   "sos": {
@@ -1106,7 +1196,8 @@
       "accessibility": "Accesibilidad",
       "bookings": "Reservas",
       "tripInbox": "Bandeja de viajes",
-      "extension": "Extensión del Navegador"
+      "extension": "Extensión del Navegador",
+      "footprint": "[ES] Footprint"
     },
     "modes": {
       "dating": "Buscando el amor",
@@ -1122,7 +1213,10 @@
       "accessibility": "Accesibilidad",
       "legal": "Legal",
       "contact": "Contacto"
-    }
+    },
+    "signUp": "[ES] Sign up",
+    "navigation": "[ES] Navigation",
+    "signIn": "[ES] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,6 +1314,45 @@
       "filteredEmpty": {
         "title": "Ningún evento coincide con tus filtros",
         "body": "Intenta ajustar tus filtros o búsqueda para ver más resultados."
+      },
+      "prideSubtype": "[ES] Pride type",
+      "mapView": "[ES] Map view",
+      "preset": {
+        "label": "[ES] Quick filters",
+        "thisWeekend": "[ES] This weekend",
+        "nearMe": "[ES] Near me",
+        "pride": "[ES] Pride season",
+        "thisMonth": "[ES] This month",
+        "free": "[ES] Free",
+        "featured": "[ES] Featured"
+      },
+      "rail": {
+        "featured": "[ES] Featured this week",
+        "featuredSubtitle": "[ES] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[ES] No events match your filters",
+        "body": "[ES] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[ES] Drop \"{{city}}\" filter",
+        "clearDate": "[ES] Drop date filter",
+        "viewAll": "[ES] View all upcoming events",
+        "sameCityHeader": "[ES] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[ES] Try other cities in your date range",
+        "fallbackHeader": "[ES] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[ES] Spotlight",
+        "happeningNow": "[ES] Happening now",
+        "tomorrow": "[ES] Starts tomorrow",
+        "inDays_one": "[ES] Starts in {{count}} day",
+        "inDays_other": "[ES] Starts in {{count}} days",
+        "nearbyCount_one": "[ES] {{count}} event in {{city}}",
+        "nearbyCount_other": "[ES] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[ES] Sort events",
+      "sort": {
+        "dateAsc": "[ES] Soonest first",
+        "dateDesc": "[ES] Latest first"
       }
     },
     "eventDetail": {
@@ -1279,7 +1412,60 @@
       "activitiesComingSoon": "Actividades próximamente.",
       "browseDestinations": "Explorar destinos",
       "exploreCta": "Destinos",
-      "exploreDescription": "Ciudades y países con información de seguridad y guías de viaje."
+      "exploreDescription": "Ciudades y países con información de seguridad y guías de viaje.",
+      "hotels": {
+        "typeLabel": "[ES] Type",
+        "priceMin": "[ES] Min €",
+        "priceMax": "[ES] Max €",
+        "priceUnavailable": "[ES] Price on request",
+        "clearFilters": "[ES] Clear filters",
+        "noResultsWithFilters": "[ES] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[ES] Any type",
+          "hotel": "[ES] Hotel",
+          "boutique": "[ES] Boutique Hotel",
+          "bnb": "[ES] B&B",
+          "hostel": "[ES] Hostel",
+          "guesthouse": "[ES] Guesthouse",
+          "apartment": "[ES] Apartment",
+          "resort": "[ES] Resort"
+        }
+      },
+      "hero": {
+        "title": "[ES] Plan a trip",
+        "subtitle": "[ES] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[ES] Where to?",
+        "start": "[ES] Start",
+        "end": "[ES] End",
+        "cta": "[ES] Plan this trip",
+        "discover": "[ES] Or",
+        "discoverLink": "[ES] browse public trips",
+        "discoverTail": "[ES] from the community.",
+        "errors": {
+          "city": "[ES] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[ES] Continue planning",
+        "placeCount": "[ES] {{count}} places"
+      },
+      "pride": {
+        "title": "[ES] Pride this season",
+        "window": "[ES] Next 4 months",
+        "empty": "[ES] No upcoming Pride events.",
+        "safety": "[ES] Equality score"
+      },
+      "inspiration": {
+        "villages": "[ES] Queer villages",
+        "publicTrips": "[ES] Public trips",
+        "viewAll": "[ES] View all",
+        "noVillages": "[ES] No villages yet.",
+        "noTrips": "[ES] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[ES] Book now",
+        "subtitle": "[ES] Search flights, hotels, and activities directly — no trip required."
+      }
     },
     "marketplace": {
       "title": "Mercado",
@@ -1290,7 +1476,9 @@
       "signInRequired": "Inicio de sesión requerido",
       "signInList": "Crea una cuenta gratuita para publicar tu negocio.",
       "signInFavorites": "Inicia sesión para guardar favoritos.",
-      "loadError": "Algo salió mal al cargar el mercado. Por favor, inténtalo de nuevo."
+      "loadError": "Algo salió mal al cargar el mercado. Por favor, inténtalo de nuevo.",
+      "emptyFiltersTitle": "[ES] No listings match these filters.",
+      "emptyFiltersDescription": "[ES] Try clearing filters or broadening your search."
     },
     "marketplaceDetail": {
       "notFound": "Artículo no encontrado",
@@ -1329,7 +1517,14 @@
       "emptyTitle": "Aún no hay artículos.",
       "emptyDescription": "Vuelve más tarde.",
       "previous": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "filteredEmptyTitle": "[ES] No news matches your filters.",
+      "filteredEmptyDescription": "[ES] Reset filters or try another topic.",
+      "resetFilters": "[ES] Reset filters",
+      "filterSearch": "[ES] Search",
+      "filterCategory": "[ES] Category",
+      "filterSource": "[ES] Source",
+      "filterFeatured": "[ES] Featured only"
     },
     "newsDetail": {
       "notFound": "Artículo no encontrado",

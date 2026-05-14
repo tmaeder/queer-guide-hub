@@ -2,6 +2,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
+import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
@@ -34,6 +35,8 @@ import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/u
 import { formatDistanceToNow, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
+import { fetchStoryForArticle } from '@/hooks/useNewsStories';
+import { Layers } from 'lucide-react';
 
 interface NewsArticle {
   id: string;
@@ -83,6 +86,7 @@ export default function NewsDetail() {
   const [cityNames, setCityNames] = useState<Record<string, string>>({});
   const [countryNames, setCountryNames] = useState<Record<string, string>>({});
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
+  const [story, setStory] = useState<{ slug: string; title: string; article_count: number } | null>(null);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
 
   // Per-article SEO tags (client-side; edge-rendered tags are tracked separately for crawlers).
@@ -173,6 +177,9 @@ export default function NewsDetail() {
             setRelatedArticles,
           );
         }
+
+        // Story membership
+        fetchStoryForArticle(data.id).then(setStory).catch(() => setStory(null));
       } catch (err) {
         console.error('Error fetching article:', err);
         setArticle(null);
@@ -294,25 +301,33 @@ export default function NewsDetail() {
 
       {/* Hero image */}
       {article.image_url && (
-        <div className="relative w-full h-56 md:h-80 rounded-3xl overflow-hidden border border-border shadow-md mb-6 group/hero">
+        <div className="w-full h-40 md:h-60 rounded-2xl overflow-hidden mb-6">
           <img
             src={article.image_url}
             alt={decodeHtmlEntities(article.title)}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/hero:scale-[1.03]"
+            className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-scrim opacity-70" />
         </div>
       )}
 
       {/* Title Row */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
+          {story && (
+            <LocalizedLink
+              to={`/news/story/${story.slug}`}
+              className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground mb-3 no-underline"
+            >
+              <Layers style={{ width: 12, height: 12 }} aria-hidden="true" />
+              Part of story · {story.article_count} articles
+            </LocalizedLink>
+          )}
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-[1.1] tracking-tight text-balance m-0">
+            <h1 className="text-2xl font-bold leading-tight m-0">
               {decodeHtmlEntities(article.title)}
             </h1>
             {article.is_featured && (
@@ -632,6 +647,7 @@ export default function NewsDetail() {
         </div>
       </div>
       <SimilarItems entity={{ type: 'news', id: article.id }} className="mt-8" title="Related news" />
+      <MarketplaceRelated className="mt-10" />
     </div>
   );
 }

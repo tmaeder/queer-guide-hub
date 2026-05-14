@@ -104,17 +104,10 @@ export function TrendingStrip({
 
 	return (
 		<section className={className} aria-label={headline}>
-			<div className="flex items-end justify-between mb-4 gap-4">
-				<div>
-					<div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-						<TrendingUp className="h-3 w-3" />
-						{title}
-					</div>
-					<h2 className="text-xl md:text-2xl font-bold tracking-tight leading-tight">
-						{headline}
-					</h2>
-				</div>
-			</div>
+			<h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+				<TrendingUp className="h-5 w-5 text-foreground" />
+				{headline}
+			</h2>
 			<SkeletonCrossfade
 				loading={!items}
 				skeleton={
@@ -137,7 +130,7 @@ export function TrendingStrip({
 									<LocalizedLink
 										key={`${it.entity_type}:${it.entity_id}`}
 										to={to}
-										className="group/trend shrink-0 w-60 no-underline"
+										className="shrink-0 w-56"
 										onClick={() =>
 											trackClick(
 												{ type: it.entity_type, id: it.entity_id },
@@ -146,13 +139,11 @@ export function TrendingStrip({
 											)
 										}
 									>
-										<Card className="h-44 overflow-hidden transition-[transform,box-shadow] duration-300 ease-out group-hover/trend:-translate-y-0.5 group-hover/trend:shadow-md" hoverable>
-											<div className="relative overflow-hidden h-24">
-												<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover/trend:scale-[1.05]" />
-											</div>
-											<CardContent className="p-3">
-												<div className="text-sm font-semibold truncate">{it.title}</div>
-												<div className="text-xs text-muted-foreground truncate mt-0.5">
+										<Card className="h-40 overflow-hidden transition">
+											<img src={it.image_url || getRandomFallbackImage()} alt="" loading="lazy" className="h-24 w-full object-cover" />
+											<CardContent className="p-2">
+												<div className="text-sm font-medium truncate">{it.title}</div>
+												<div className="text-xs text-muted-foreground truncate">
 													{[it.city, it.country].filter(Boolean).join(", ")}
 												</div>
 											</CardContent>

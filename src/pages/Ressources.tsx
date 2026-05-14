@@ -13,7 +13,6 @@ import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetc
 import { useMeta } from '@/hooks/useMeta';
 import { useSafeMode } from '@/providers/SafeModeProvider';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Network } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -24,6 +23,9 @@ import { ResourceOverview } from '@/pages/resources/ResourceOverview';
 import { ResourceCategory, ResourceSubcategory } from '@/pages/resources/ResourceCategory';
 import { ResourceProfessions } from '@/pages/resources/ResourceProfessions';
 import { ResourceSearch } from '@/pages/resources/ResourceSearch';
+import { CrisisStrip } from '@/pages/resources/sections/CrisisStrip';
+import { TopicHubGrid } from '@/pages/resources/sections/TopicHubGrid';
+import { OrgsDirectory } from '@/pages/resources/sections/OrgsDirectory';
 import { isRealTagImage, type ViewMode, type DisplayMode, type SortOption } from '@/pages/resources/resourceHelpers';
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
@@ -422,15 +424,18 @@ export default function Ressources() {
   return (
     <div className="container mx-auto py-8 md:py-16 px-4">
       <PageHeader
-        title="Resources"
-        subtitle="LGBTQ+ terms, concepts and topics — organised into a clean, browsable taxonomy"
+        title="Help & Resources"
+        subtitle="Crisis support, practical guides, and the people and organisations behind them."
         center
-      >
-        <div className="flex items-center justify-center gap-3">
-          <Badge variant="secondary">{allTags.length} tags</Badge>
-          <Badge variant="secondary">{orderedParents.length} categories</Badge>
+      />
+
+      {viewMode === 'overview' && !showFilteredResults && (
+        <div className="flex flex-col gap-10 mb-10">
+          <CrisisStrip />
+          <TopicHubGrid />
+          <OrgsDirectory />
         </div>
-      </PageHeader>
+      )}
 
       <ResourcesFilterBar
         searchQuery={searchQuery}
