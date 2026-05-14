@@ -20,7 +20,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@/components/routing/LocalizedLink', () => ({
-  LocalizedLink: ({ children }: { children: React.ReactNode }) => <a href="#">{children}</a>,
+  LocalizedLink: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
 
 vi.mock('@/hooks/useLocalizedNavigate', () => ({
