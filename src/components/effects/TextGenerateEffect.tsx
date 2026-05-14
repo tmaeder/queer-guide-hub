@@ -45,17 +45,21 @@ export function TextGenerateEffect({
     return <Tag className={className} style={style}>{words}</Tag>;
   }
 
+  // WCAG 1.4.3, 1.3.1 — keep text visible at all times; animate transform/blur only,
+  // not opacity. Previously the pre-reveal state was opacity:0, which left the H1
+  // invisible without JS, before the IntersectionObserver fired, and with screen-reader
+  // text-stripping CSS.
   return (
     <Tag ref={ref as React.Ref<HTMLHeadingElement>} className={cn('inline', className)} style={style}>
       {wordArray.map((word, i) => (
         <motion.span
           key={`${word}-${i}`}
           className="inline-block"
-          initial={{ opacity: 0, filter: blur ? 'blur(8px)' : 'none', y: 4 }}
+          initial={{ opacity: 1, filter: blur ? 'blur(8px)' : 'none', y: 4 }}
           animate={
             inView
               ? { opacity: 1, filter: 'blur(0px)', y: 0 }
-              : { opacity: 0, filter: blur ? 'blur(8px)' : 'none', y: 4 }
+              : { opacity: 1, filter: blur ? 'blur(8px)' : 'none', y: 4 }
           }
           transition={{
             ...springs.snappy,
