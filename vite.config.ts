@@ -126,6 +126,38 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next/')) {
             return 'i18n';
           }
+          if (
+            id.includes('node_modules/framer-motion/') ||
+            id.includes('node_modules/motion-dom/') ||
+            id.includes('node_modules/motion-utils/')
+          ) {
+            return 'framer-motion';
+          }
+          if (id.includes('node_modules/@radix-ui/')) {
+            return 'radix';
+          }
+          if (
+            id.includes('node_modules/@tanstack/react-query') ||
+            id.includes('node_modules/@tanstack/query-')
+          ) {
+            return 'react-query';
+          }
+          if (id.includes('node_modules/lucide-react/')) {
+            return 'lucide';
+          }
+          if (id.includes('node_modules/@supabase/')) {
+            return 'supabase';
+          }
+          if (id.includes('node_modules/recharts/') || id.includes('node_modules/victory-vendor/')) {
+            return 'recharts';
+          }
+          // i18n locale JSON files: split per-language so only the active
+          // locale (loaded via i18next backend at runtime) hits the network.
+          // src/i18n/locales/<lang>/<ns>.json
+          const localeMatch = id.match(/[\\/]src[\\/]i18n[\\/]locales[\\/]([a-z-]+)[\\/]/);
+          if (localeMatch) {
+            return `locale-${localeMatch[1]}`;
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';
@@ -150,6 +182,15 @@ export default defineConfig(({ mode }) => ({
     },
     cssCodeSplit: true,
     minify: mode === 'production' ? 'esbuild' : false,
+    // Strip heavy route-only chunks from the entry's modulepreload list.
+    // These get loaded lazily by the routes that need them; preloading on
+    // every page wastes ~600 KB on first paint.
+    modulePreload: {
+      resolveDependencies(_filename, deps) {
+        const skip = /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|gsap|hls)-[A-Za-z0-9_-]+\.js$/;
+        return deps.filter((d) => !skip.test(d));
+      },
+    },
     // Cloudflare Pages optimization
     target: 'es2022',
     sourcemap: mode === 'production' ? 'hidden' : true,
