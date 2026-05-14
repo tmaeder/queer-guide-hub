@@ -117,7 +117,7 @@ export function ResourceTagDetail({
             style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)' }}
           >
             {primary && (
-              <p className="font-semibold mb-1 uppercase" style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.65)', letterSpacing: '0.04em' }}>
+              <p className="font-semibold mb-1 uppercase text-white/65" style={{ fontSize: '0.7rem', letterSpacing: '0.04em' }}>
                 {parentName ? `${getCategoryShortName(parentName)} › ` : ''}
                 {getCategoryShortName(primary.name)}
               </p>
