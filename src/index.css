@@ -609,3 +609,11 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 96px !important;
   }
 }
+
+/* WCAG 2.2 AA 2.5.8 — MapLibre attribution links must hit ≥24×24 tactile target.
+   Pad the anchor without altering its visible text size or the map layout. */
+.maplibregl-ctrl-attrib a {
+  display: inline-block;
+  min-height: 24px;
+  padding-block: 6px;
+}
