@@ -1,0 +1,14 @@
+name = "queer-guide-geo"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+
+# Returns the requesting visitor's country from Cloudflare's edge geolocation
+# (request.cf.country). No PII, no IP stored, no logs of individual requests.
+# Used by /help to pre-select the user's country.
+
+[vars]
+ALLOWED_ORIGINS = "https://queer.guide,https://www.queer.guide,http://localhost:8080,http://localhost:3000"
+
+[[routes]]
+pattern = "queer.guide/api/geo"
+zone_name = "queer.guide"
