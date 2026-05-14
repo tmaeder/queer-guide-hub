@@ -128,6 +128,7 @@ export default defineConfig(({ mode }) => ({
           }
           if (
             id.includes('node_modules/framer-motion/') ||
+            id.includes('node_modules/motion/') ||
             id.includes('node_modules/motion-dom/') ||
             id.includes('node_modules/motion-utils/')
           ) {
@@ -152,9 +153,8 @@ export default defineConfig(({ mode }) => ({
             return 'recharts';
           }
           // i18n locale JSON files: split per-language so only the active
-          // locale (loaded via i18next backend at runtime) hits the network.
-          // src/i18n/locales/<lang>/<ns>.json
-          const localeMatch = id.match(/[\\/]src[\\/]i18n[\\/]locales[\\/]([a-z-]+)[\\/]/);
+          // locale ends up downloaded. src/i18n/locales/<lang>.json
+          const localeMatch = id.match(/[\\/]src[\\/]i18n[\\/]locales[\\/]([a-z-]+)\.json$/);
           if (localeMatch) {
             return `locale-${localeMatch[1]}`;
           }

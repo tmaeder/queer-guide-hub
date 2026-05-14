@@ -1,0 +1,1802 @@
+{
+  "submission": {
+    "errors": {
+      "title": "Scan failed",
+      "retry": "Retry",
+      "fileTooLarge": "This file is too large. Maximum allowed size is {{maxMb}} MB.",
+      "unsupportedType": "We can't read this file type. Please upload an image, PDF, DOC, DOCX, or TXT file.",
+      "unreadableFile": "We couldn't read this file. It may be corrupted. Try a different file.",
+      "extractionEmpty": "We couldn't extract event details from this flyer. You can still fill in the form manually below.",
+      "rateLimited": "You've reached the scan limit. Please try again in an hour.",
+      "networkError": "Connection problem. Please check your internet and try again.",
+      "serverError": "Something went wrong on our side. Please try again in a moment.",
+      "uploadFailed": "Upload failed. Please try again.",
+      "manualFallbackCta": "Fill in manually",
+      "unsupportedTypeNamed": "{{names}} wasn't uploaded. Supported files are images, PDFs, DOC, DOCX, and TXT.",
+      "fileTooLargeNamed": "{{names}} wasn't uploaded. Maximum file size is {{maxMb}} MB."
+    }
+  },
+  "directory": {
+    "title": "Répertoire Géographique",
+    "loading": "Chargement du répertoire...",
+    "error": "Erreur: {{message}}",
+    "back": "Retour",
+    "breadcrumb": "Répertoire",
+    "countries": "Pays",
+    "cities": "Grandes Villes",
+    "countriesByContinent": "Pays par Continent",
+    "citiesByContinent": "Villes par Continent et Pays",
+    "citiesIn": "Villes en {{country}}",
+    "searchResults": "Résultats de Recherche",
+    "noResults": "Aucun résultat trouvé. Essayez un autre terme de recherche.",
+    "capital": "Capitale",
+    "majorCity": "Grande Ville",
+    "population": "Population",
+    "region": "Région",
+    "timezone": "Fuseau Horaire",
+    "coordinates": "Coordonnées"
+  },
+  "search": {
+    "placeholder": "Rechercher pays et villes...",
+    "nearMe": "Près de Moi",
+    "filters": "Filtres",
+    "continent": "Continent",
+    "all": "Tous",
+    "populationRange": "Gamme de Population",
+    "sortBy": "Trier Par",
+    "name": "Nom",
+    "ascending": "Croissant",
+    "descending": "Décroissant",
+    "placeholders": {
+      "venues": "Rechercher des lieux…",
+      "events": "Trouver des événements…",
+      "marketplace": "Parcourir le marché…",
+      "people": "Découvrir des personnes…",
+      "news": "Lire les actualités…",
+      "resources": "Explorer les ressources…",
+      "personalities": "Rencontrer des personnalités…"
+    }
+  },
+  "common": {
+    "contentInLanguage": "En {{lang}}",
+    "loading": "Chargement…",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "language": "Langue",
+    "next": "Suivant",
+    "back": "Retour",
+    "loadMore": "Charger plus",
+    "tryAgain": "Réessayer",
+    "allEvents": "Tous les événements",
+    "browseAll": "Tout parcourir",
+    "allStories": "Tous les articles",
+    "create": "Créer",
+    "skip": "Passer",
+    "done": "Terminé",
+    "unknown": "Inconnu",
+    "somethingWentWrong": "Un problème est survenu.",
+    "clear": "Effacer"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "venues": "Lieux",
+    "events": "Événements",
+    "marketplace": "Marché",
+    "directory": "Répertoire",
+    "about": "À Propos",
+    "contact": "Contact",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "profile": "Profil"
+  },
+  "footer": {
+    "madeWith": "Fait avec",
+    "backToTop": "Retour en Haut",
+    "newsletter": "Newsletter",
+    "newsletterDescription": "Restez informé des dernières actualités et événements",
+    "subscribe": "S'abonner",
+    "social": "Suivez-nous",
+    "community": "Communauté",
+    "resources": "Ressources",
+    "legal": "Légal",
+    "copyright": "© {{year}} Tous droits réservés.",
+    "about": "À propos",
+    "legalLink": "Mentions légales",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "contact": "Contact",
+    "supportUs": "Nous soutenir"
+  },
+  "trips": {
+    "title": "Mes voyages",
+    "subtitle": "Planifiez, organisez et voyagez en sécurité.",
+    "create": "Créer un voyage",
+    "error": {
+      "invalid-id": {
+        "title": "Lien de voyage invalide",
+        "description": "Ce lien ne pointe pas vers un voyage valide. Retournez à vos voyages pour continuer."
+      },
+      "not-found": {
+        "title": "Voyage introuvable",
+        "description": "Ce voyage a peut-être été supprimé ou le lien est obsolète."
+      },
+      "permission-denied": {
+        "title": "Vous n'avez pas accès à ce voyage",
+        "description": "Demandez au propriétaire du voyage de vous inviter, ou retournez à vos propres voyages."
+      },
+      "load-error": {
+        "title": "Impossible de charger ce voyage",
+        "description": "Une erreur est survenue lors du chargement. Veuillez réessayer."
+      }
+    },
+    "empty": {
+      "title": "Planifiez votre premier voyage",
+      "description": "Construisez un itinéraire, consultez les informations LGBTQ+ pour chaque destination et gardez tout au même endroit.",
+      "cta": "Créer mon premier voyage",
+      "hero": {
+        "title": "[FR] Plan a trip you'll feel safe on.",
+        "subtitle": "[FR] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[FR] Start from scratch",
+          "description": "[FR] Empty itinerary, your destinations, your pace.",
+          "cta": "[FR] Create trip"
+        },
+        "template": {
+          "title": "[FR] Use a template",
+          "description": "[FR] Pre-built itineraries you can fork and edit.",
+          "cta": "[FR] Browse templates"
+        },
+        "discover": {
+          "title": "[FR] Fork a public trip",
+          "description": "[FR] Real itineraries from other QG travelers.",
+          "cta": "[FR] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[FR] From real travelers",
+      "discoverTitle": "[FR] Recent public trips",
+      "discoverCta": "[FR] Open Discover"
+    },
+    "filteredEmpty": {
+      "title": "Aucun voyage ne correspond",
+      "description": "Essayez de modifier votre recherche ou votre filtre.",
+      "cta": "Effacer les filtres"
+    },
+    "status": {
+      "planning": "En préparation",
+      "active": "En cours",
+      "completed": "Terminé",
+      "archived": "Archivé"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Rechercher dans vos voyages…",
+      "searchAria": "Rechercher des voyages",
+      "statusAria": "Filtrer par statut",
+      "sortAria": "Trier les voyages",
+      "status": {
+        "all": "Tous",
+        "planning": "En préparation",
+        "active": "En cours",
+        "completed": "Terminés",
+        "archived": "Archivés",
+        "saved": "[FR] Saved"
+      },
+      "sort": {
+        "recent": "Récemment modifiés",
+        "start_date": "Date de départ",
+        "alphabetical": "Alphabétique"
+      }
+    },
+    "signedOut": {
+      "badge": "Planificateur de voyage",
+      "title": "Planifiez des voyages qui vous protègent.",
+      "subtitle": "Créez des itinéraires queer-friendly, consultez les infos LGBTQ+ de chaque destination et organisez-les avec vos compagnons de voyage.",
+      "primaryCta": "Connectez-vous pour planifier un voyage",
+      "secondaryCta": "Découvrir le fonctionnement",
+      "safeLabel": "Sûr",
+      "daysLabel_one": "{{count}} jour",
+      "daysLabel_other": "{{count}} jours",
+      "bullets": {
+        "safety": {
+          "title": "Briefings sécurité",
+          "body": "Statut légal et contexte LGBTQ+ pour chaque pays de votre itinéraire."
+        },
+        "itinerary": {
+          "title": "Itinéraires glisser-déposer",
+          "body": "Organisez vos journées visuellement et réorganisez les étapes en un instant."
+        },
+        "collaborate": {
+          "title": "Voyagez ensemble",
+          "body": "Partagez notes, discussions et budgets avec vos compagnons de route."
+        }
+      },
+      "samples": {
+        "berlin": "Semaine Pride Berlin",
+        "barcelona": "Barcelone : plage et nuit",
+        "bangkok": "Bangkok & Phuket"
+      }
+    },
+    "card": {
+      "fromDate": "À partir du {{date}}",
+      "noDates": "Pas de dates",
+      "placeCount_zero": "{{count}} lieux",
+      "placeCount_one": "{{count}} lieu",
+      "placeCount_other": "{{count}} lieux",
+      "dayCount_zero": "{{count}} jours",
+      "dayCount_one": "{{count}} jour",
+      "dayCount_other": "{{count}} jours",
+      "memberCount_one": "{{count}} membre",
+      "memberCount_other": "{{count}} membres",
+      "ariaLabel": "Ouvrir le voyage {{title}}",
+      "menuAria": "Options du voyage",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleting": "Suppression…",
+      "cancel": "Annuler",
+      "deleteTitle": "Supprimer le voyage",
+      "deleteConfirm": "Supprimer \"{{title}}\" ? Cette action est irréversible.",
+      "safety": {
+        "safe": "Destinations sûres",
+        "caution": "Vérifier les conditions locales",
+        "danger": "Destination à haut risque sur ce voyage"
+      },
+      "activeToday": "Actif · Aujourd hui"
+    },
+    "toast": {
+      "created": "Voyage créé",
+      "createdDescription": "Ajoutez maintenant des destinations.",
+      "deleted": "Voyage supprimé",
+      "deletedDescription": "\"{{title}}\" a été supprimé.",
+      "error": "Une erreur est survenue"
+    },
+    "dialog": {
+      "create": {
+        "title": "Créer un voyage",
+        "description": "Où allez-vous ? Vous pourrez ajouter destinations et infos sécurité plus tard.",
+        "cityCountryLabel": "Ville et pays",
+        "cityCountryPlaceholder": "Rechercher une ville…",
+        "noCityMatch": "Aucune ville correspondante.",
+        "addNewPlace": "Ajouter « {{query}} » comme nouveau lieu",
+        "datesUnlockHint": "Ajoute des dates pour des suggestions d'hébergement, vol et sécurité.",
+        "defaultTitle": "Voyage à {{city}}",
+        "titleField": "Titre du voyage",
+        "titlePlaceholder": "Ex. Semaine Pride Berlin 2026",
+        "descriptionField": "Description",
+        "descriptionPlaceholder": "De quoi parle ce voyage ?",
+        "startDate": "Date de début",
+        "endDate": "Date de fin",
+        "currency": "Devise",
+        "submit": "Créer le voyage",
+        "cancel": "Annuler",
+        "endBeforeStart": "La date de fin doit être après la date de début.",
+        "failed": "Impossible de créer votre voyage. Réessayez."
+      }
+    },
+    "backToTrips": "Retour aux voyages",
+    "planner": {
+      "loadFailed": "Impossible de charger ce voyage.",
+      "notFound": "Voyage introuvable.",
+      "progressTooltip": "Progression de la planification",
+      "days_one": "{{count}} jour",
+      "days_other": "{{count}} jours",
+      "placesCount_zero": "{{count}} lieux",
+      "placesCount_one": "{{count}} lieu",
+      "placesCount_other": "{{count}} lieux",
+      "daysPlanned_one": "{{count}} jour planifié",
+      "daysPlanned_other": "{{count}} jours planifiés"
+    },
+    "share": {
+      "title": "Partager ce voyage",
+      "description": "Créez un lien que n'importe qui peut ouvrir, sans compte.",
+      "activeLinks_one": "{{count}} lien actif",
+      "activeLinks_other": "{{count}} liens actifs",
+      "createNew": "Créer un nouveau lien",
+      "previewLabel": "Les destinataires verront :",
+      "itineraryAlways": "Itinéraire (toujours partagé)",
+      "expiresLabel": "Expire le (facultatif)",
+      "createButton": "Créer le lien",
+      "close": "Fermer",
+      "created": "Lien créé",
+      "createFailed": "Impossible de créer le lien",
+      "deleted": "Lien supprimé",
+      "deleteFailed": "Impossible de supprimer le lien",
+      "copied": "Lien copié",
+      "copyAria": "Copier le lien",
+      "deleteAria": "Supprimer le lien",
+      "deleteTitle": "Supprimer le lien",
+      "deleteConfirm": "Toute personne ayant ce lien perdra l'accès. Cette action est irréversible.",
+      "expired": "Expiré",
+      "expiresOn": "Expire le {{date}}"
+    },
+    "itinerary": {
+      "add": "Ajouter",
+      "addPlace": "Ajouter un lieu",
+      "unassigned": "Non assignés",
+      "unassignedHint": "Glissez-les dans un jour pour les planifier.",
+      "emptyTitle": "Votre itinéraire est vide",
+      "emptyDescription": "Ajoutez votre premier lieu pour commencer.",
+      "dayShort": "Jour",
+      "dropHere": "Glissez des lieux ici ou cliquez sur Ajouter",
+      "dayTitlePlaceholder": "Titre du jour…",
+      "editDayTitle": "Modifier le titre",
+      "saveDayTitle": "Enregistrer le titre",
+      "reordered": "Lieu réordonné",
+      "moved": "Lieu déplacé",
+      "removed": "Lieu supprimé",
+      "dayUpdated": "Jour mis à jour",
+      "dragHandleAria": "Glisser pour réordonner"
+    },
+    "map": {
+      "emptyNoPlaces": "Ajoutez des lieux pour les voir sur la carte",
+      "emptyNoCoords": "Aucun de vos lieux n'a de coordonnées",
+      "fitAll": "Tout voir",
+      "fitAllAria": "Cadrer tous les lieux",
+      "filterAll": "Tous les jours",
+      "dayLabel": "Jour {{number}}",
+      "showAttractions": "[FR] Attractions",
+      "showEvents": "[FR] Events",
+      "suggestedVenue": "[FR] Suggested venue",
+      "eventOn": "[FR] Event · {{date}}"
+    },
+    "safety": {
+      "emptyTitle": "Pas encore d'informations de sécurité",
+      "emptyDescription": "Ajoutez des destinations à votre voyage et nous afficherons le statut légal LGBTQ+ et le contexte local de chaque pays.",
+      "crossBorderHeading": "Alertes aux frontières",
+      "countriesHeading": "Pays de votre voyage",
+      "crossBorderTitle": "Forte baisse de {{from}} à {{to}}",
+      "crossBorderBody": "Le score d'égalité chute de {{drop}} points. Renseignez-vous sur les lois locales avant de passer la frontière.",
+      "dataSource": "Données de la base ILGA World, mises à jour chaque année. Les scores sont indicatifs, pas une garantie — vérifiez l'actualité avant de partir.",
+      "basedOn_one": "D'après les données LGBTQ+ pour {{count}} pays de votre voyage.",
+      "basedOn_other": "D'après les données LGBTQ+ pour {{count}} pays de votre voyage.",
+      "worstCountry": "Score le plus bas : {{country}} ({{score}}/100).",
+      "stops_zero": "{{count}} étapes",
+      "stops_one": "{{count}} étape",
+      "stops_other": "{{count}} étapes",
+      "warningCount_one": "{{count}} alerte",
+      "warningCount_other": "{{count}} alertes",
+      "toggleDetails": "Afficher les détails pour {{country}}",
+      "viewOnIlga": "Voir sur la base ILGA",
+      "risk": {
+        "low": "Risque faible",
+        "moderate": "Risque modéré",
+        "high": "Risque élevé",
+        "critical": "Risque critique"
+      },
+      "headline": {
+        "low": "Votre voyage semble sûr.",
+        "moderate": "Un peu de prudence nécessaire.",
+        "high": "Risque élevé sur votre itinéraire.",
+        "critical": "Risque critique sur votre itinéraire."
+      },
+      "flags": {
+        "deathPenalty": "Peine de mort en vigueur pour les relations entre personnes du même sexe",
+        "criminalized": "Les relations entre personnes du même sexe sont criminalisées"
+      },
+      "scoreLabel": {
+        "veryHigh": "Très élevé",
+        "high": "Élevé",
+        "moderate": "Modéré",
+        "low": "Faible",
+        "veryLow": "Très faible",
+        "noData": "Aucune donnée"
+      },
+      "detail": {
+        "criminalized": {
+          "label": "Statut légal",
+          "value": "Les relations entre personnes du même sexe sont illégales"
+        },
+        "deathPenalty": {
+          "label": "Peine maximale",
+          "value": "Peine de mort applicable"
+        },
+        "ssu": "Unions entre personnes du même sexe",
+        "employment": "Protection à l'emploi"
+      },
+      "tip": {
+        "safe": "Large acceptation LGBTQ+. Restez attentif·ve aux manifestations publiques d'affection comme partout ailleurs.",
+        "caution": "Soyez prudent·e avec les manifestations publiques d'affection. Renseignez-vous sur la ville et lisez des récits de voyage récents.",
+        "danger": "Prenez le risque au sérieux. Évitez les manifestations publiques d'affection et les applis de rencontre, et restez discret·e."
+      }
+    },
+    "budget": {
+      "emptyTitle": "Aucune dépense pour l'instant",
+      "emptyDescription": "Suivez les dépenses et partagez les frais avec votre groupe.",
+      "addExpense": "Ajouter une dépense",
+      "totalSpend": "Dépense totale",
+      "spendingByCategory": "Dépenses par catégorie",
+      "settlements": "Règlements",
+      "unknownMember": "Inconnu",
+      "paidBy": "Payé par",
+      "splitWays_one": "partagé en {{count}} part",
+      "splitWays_other": "partagé en {{count}} parts",
+      "itemsCount_one": "{{count}} dépense suivie",
+      "itemsCount_other": "{{count}} dépenses suivies",
+      "membersCount_one": "{{count}} membre",
+      "membersCount_other": "{{count}} membres",
+      "deleted": "Dépense supprimée",
+      "deleteFailed": "Impossible de supprimer la dépense",
+      "deleteAria": "Supprimer la dépense",
+      "deleteTitle": "Supprimer la dépense",
+      "deleteConfirm": "Supprimer cette dépense ? Cette action est irréversible.",
+      "category": "Catégorie",
+      "expenseAdded": "Dépense ajoutée",
+      "addFailed": "Échec de l'ajout de la dépense",
+      "titleLabel": "Titre",
+      "titlePlaceholder": "ex. Dîner au Rainbow Cafe",
+      "amount": "Montant",
+      "currency": "Devise",
+      "categories": {
+        "food": "Nourriture",
+        "transport": "Transport",
+        "accommodation": "Hébergement",
+        "activities": "Activités",
+        "shopping": "Shopping",
+        "other": "Autre"
+      },
+      "date": "Date",
+      "splitAmong": "Partager entre"
+    },
+    "reservations": {
+      "emptyTitle": "Pas encore de réservations",
+      "emptyDescription": "Ajoutez vols, hôtels et activités pour tout avoir au même endroit.",
+      "add": "Ajouter une réservation",
+      "nextUp": "Prochaine étape",
+      "deleted": "Réservation supprimée",
+      "deleteFailed": "Impossible de supprimer la réservation",
+      "deleteTitle": "Supprimer la réservation",
+      "deleteConfirm": "Supprimer cette réservation ? Cette action est irréversible.",
+      "type": {
+        "flight": "Vols",
+        "hotel": "Hôtels",
+        "activity": "Activités",
+        "transport": "Transport",
+        "other": "Autre"
+      },
+      "status": {
+        "confirmed": "Confirmée",
+        "cancelled": "Annulée",
+        "pending": "En attente"
+      }
+    },
+    "packing": {
+      "emptyTitle": "Pas encore d'articles.",
+      "emptyDescription": "Ajoute des articles ou utilise un modèle.",
+      "progress": "{{checked}} sur {{total}} préparés",
+      "addItem": "Ajouter un article…",
+      "removeAria": "Retirer l'article",
+      "added": "Article ajouté",
+      "addFailed": "Impossible d'ajouter l'article",
+      "removed": "Article retiré",
+      "removeFailed": "Impossible de retirer l'article",
+      "templateAdded": "Modèle ajouté",
+      "templateFailed": "Impossible d'ajouter le modèle",
+      "templates": {
+        "essentials": "Indispensables",
+        "lgbtq-safety": "Kit sécurité LGBTQ+",
+        "beach": "Kit plage"
+      },
+      "category": {
+        "clothing": "Vêtements",
+        "toiletries": "Hygiène",
+        "electronics": "Électronique",
+        "documents": "Documents",
+        "safety": "Sécurité",
+        "lgbtq-specific": "Spécifique LGBTQ+",
+        "other": "Autre"
+      }
+    },
+    "collaborate": {
+      "chat": "Discussion",
+      "notes": "Notes",
+      "polls": "Sondages"
+    },
+    "shared": {
+      "badge": "Voyage partagé",
+      "metaDescription": "Un voyage sur Queer Guide, le planificateur de voyage LGBTQ+.",
+      "notFoundTitle": "Voyage introuvable",
+      "notFoundDescription": "Ce lien de partage a peut-être expiré ou été supprimé.",
+      "safetyNotice": "Avis de sécurité",
+      "safetyCountry": "{{country}} a un score d'égalité plus bas ({{score}}). Renseignez-vous avant de voyager.",
+      "tabs": {
+        "itinerary": "Itinéraire",
+        "budget": "Budget",
+        "notes": "Notes",
+        "packing": "Bagages"
+      },
+      "dayLabel": "Jour {{number}}",
+      "noPlaces": "Aucun lieu prévu",
+      "unknownPlace": "Inconnu",
+      "unassigned": "Non assigné",
+      "untitled": "Sans titre",
+      "packed": "{{checked}}/{{total}} préparés",
+      "ctaTitle": "Planifiez votre propre voyage queer-friendly",
+      "ctaSubtitle": "Itinéraires gratuits, infos sécurité LGBTQ+ et planification partagée avec vos proches.",
+      "ctaPrimary": "Commencer à planifier",
+      "ctaSecondary": "Se connecter",
+      "footer": "Partagé via queer.guide"
+    },
+    "tabs": {
+      "itinerary": "Itinéraire",
+      "map": "Carte",
+      "safety": "Sécurité",
+      "budget": "Budget",
+      "reservations": "Réservations",
+      "packing": "Bagages",
+      "collaborate": "Collaborer"
+    },
+    "today": {
+      "offlineBanner": "Hors ligne — itinéraire enregistré affiché.",
+      "pushPrompt": "Recevoir un rappel 30 min avant chaque réservation.",
+      "pushEnable": "Activer"
+    },
+    "bookingAssistant": {
+      "tabs": {
+        "suggestions": "Suggestions",
+        "book": "Réserver"
+      },
+      "addedToast": "Ajouté au voyage",
+      "addFailedToast": "Échec de l ajout",
+      "emptyHint": "Ajoutez des lieux pour voir les suggestions et options de réservation",
+      "lowerEquality": "a un score d égalité plus faible",
+      "suggestedFor": "Suggéré pour {{city}}",
+      "unknownCity": "Inconnu",
+      "add": "Ajouter",
+      "stillNeed": "Encore besoin",
+      "flights": "Vols",
+      "search": "Rechercher",
+      "flightsBooked": "Vols réservés",
+      "hotel": "Hôtel",
+      "hotelIn": "Hôtel à {{city}}",
+      "hotelBooked": "Hôtel réservé",
+      "hotelsIn": "Hôtels à {{city}}",
+      "noHotelsFound": "Aucun hôtel trouvé"
+    },
+    "contextBar": {
+      "openTrip": "Ouvrir le voyage",
+      "ariaLabel": "Voyage actif",
+      "dismissAria": "Fermer la bannière du voyage actif"
+    },
+    "phase": {
+      "label": {
+        "seed": "Début",
+        "plan": "Planifier",
+        "countdown": "Compte à rebours",
+        "live": "En direct",
+        "memory": "Souvenir"
+      },
+      "status": {
+        "datesNotSet": "Dates non définies",
+        "inDays": "Dans {{count}} jours",
+        "tomorrow": "Demain",
+        "soon": "Bientôt",
+        "dayOf": "Aujourd hui",
+        "daysAgo": "Il y a {{count}} jours",
+        "yesterday": "Hier"
+      }
+    },
+    "discover": {
+      "title": "Découvrir des lieux",
+      "button": "Parcourir le marché",
+      "eyebrow": "[FR] Real travelers",
+      "subtitle": "[FR] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[FR] Filter by city…",
+      "aria": "[FR] Discover public trips",
+      "sortAria": "[FR] Sort trips",
+      "viewAria": "[FR] View mode",
+      "filterAria": "[FR] Filter trips",
+      "filtersAria": "[FR] Open filters",
+      "filters": {
+        "title": "[FR] undefined",
+        "travelerType": "[FR] undefined",
+        "duration": "[FR] undefined",
+        "minEquality": "[FR] undefined",
+        "minEqualityAria": "[FR] undefined",
+        "minEqualityHint": "[FR] undefined",
+        "noMin": "[FR] undefined",
+        "quality": "[FR] undefined",
+        "hasCover": "[FR] undefined",
+        "hasOwnerProfile": "[FR] undefined",
+        "clear": "[FR] undefined"
+      },
+      "activeCountAria": "[FR] {{count}} active",
+      "view": {
+        "list": "[FR] List view",
+        "map": "[FR] Map view"
+      },
+      "sort": {
+        "recent": "[FR] Most recent",
+        "trending": "[FR] Trending",
+        "most_places": "[FR] Most places",
+        "longest": "[FR] Longest",
+        "safest": "[FR] Safest"
+      },
+      "filter": {
+        "dated": "[FR] Has dates",
+        "multiday": "[FR] Multi-day",
+        "safe": "[FR] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[FR] Any",
+        "solo": "[FR] Solo",
+        "couple": "[FR] Couple",
+        "group": "[FR] Group",
+        "family": "[FR] Family"
+      },
+      "duration": {
+        "any": "[FR] Any length",
+        "weekend": "[FR] Weekend (1–3 days)",
+        "week": "[FR] Week (4–9 days)",
+        "long": "[FR] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[FR] Europe",
+        "north_america": "[FR] North America",
+        "latin_america": "[FR] Latin America",
+        "asia": "[FR] Asia",
+        "oceania": "[FR] Oceania",
+        "africa": "[FR] Africa",
+        "middle_east": "[FR] Middle East",
+        "other": "[FR] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[FR] Staff picks",
+        "title": "[FR] Trips worth copying"
+      },
+      "all": "[FR] All public trips",
+      "moreInspiration": "[FR] More inspiration",
+      "moreInspirationDescription": "[FR] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[FR] No public trips yet",
+      "emptyFiltered": "[FR] No public trips match that city. Try a different one.",
+      "emptyDescription": "[FR] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[FR] A QG traveler",
+      "placeCount": "[FR] {{count}} places",
+      "fork": "[FR] Fork into my trips",
+      "forkAria": "[FR] Fork this trip",
+      "forking": "[FR] Forking…",
+      "forked": "[FR] Trip forked",
+      "forkedDescription": "[FR] Your copy is ready — edit days and places freely.",
+      "forkError": "[FR] Could not create trip",
+      "inspiredTitle": "[FR] Inspired by: {{title}}",
+      "signalsAria": "[FR] Trip activity",
+      "forkCount": "[FR] {{count}} forks",
+      "saveCount": "[FR] {{count}} saves",
+      "filtersButton": "[FR] Filters"
+    },
+    "polls": {
+      "createdToast": "Sondage créé",
+      "createFailedToast": "Échec de la création du sondage",
+      "voteFailedToast": "Échec du vote",
+      "poll": "sondage",
+      "polls": "sondages",
+      "create": "Créer un sondage",
+      "noPolls": "Pas encore de sondages",
+      "noPollsHint": "Crées-en un pour aider ton groupe à décider",
+      "closed": "Fermé",
+      "multiple": "Multiple",
+      "totalVote": "vote au total",
+      "totalVotes": "votes au total",
+      "closePoll": "Fermer le sondage",
+      "questionPlaceholder": "Que voudrais-tu demander ?",
+      "options": "Options",
+      "optionPlaceholder": "Option {{n}}",
+      "addOption": "+ Ajouter une option",
+      "allowMultiple": "Autoriser les choix multiples",
+      "deadline": "Date limite (optionnelle)"
+    },
+    "bundledCheckout": {
+      "stayIn": "Séjour à {{city}}",
+      "compareHotels": "Compare les hôtels pour tes dates",
+      "thingsToDoIn": "Que faire à {{city}}",
+      "toursTicketsDayTrips": "Visites, billets, excursions",
+      "title": "Regroupe tes réservations",
+      "description": "Parcours les hôtels et activités pour chaque ville de ton voyage.",
+      "emptyHint": "Ajoute d'abord des lieux à ton voyage — nous générerons des liens réservables par ville.",
+      "openedOf": "{{booked}} sur {{total}} ouverts",
+      "allSkipped": "Toutes les étapes ignorées",
+      "revisitHint": "Tu peux revenir ici à tout moment depuis l'onglet Budget.",
+      "stepOf": "Étape {{current}} sur {{total}} · {{booked}} ouvertes",
+      "via": "via",
+      "openAndMarkBooked": "Ouvrir & marquer comme réservé"
+    },
+    "addPlace": {
+      "addedToast": "Lieu ajouté au voyage",
+      "addFailedToast": "Échec de l'ajout du lieu",
+      "title": "Ajouter un lieu",
+      "assignToDay": "Assigner à un jour",
+      "unassigned": "Non assigné",
+      "searchTab": "Rechercher sur queer.guide",
+      "customTab": "Lieu personnalisé",
+      "searchPlaceholder": "Rechercher lieux, événements, hôtels...",
+      "recent": "Récents",
+      "filter": {
+        "all": "Tous",
+        "venue": "Lieu",
+        "event": "Événement",
+        "hotel": "Hôtel"
+      },
+      "noResults": "Aucun résultat trouvé. Essaie une autre recherche ou ajoute un lieu personnalisé.",
+      "placeName": "Nom du lieu",
+      "placeNamePlaceholder": "ex. Rainbow Cafe",
+      "address": "Adresse",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "category": "Catégorie",
+      "customCategories": {
+        "restaurant": "Restaurant",
+        "bar": "Bar",
+        "club": "Club",
+        "cafe": "Café",
+        "museum": "Musée",
+        "park": "Parc",
+        "beach": "Plage",
+        "shopping": "Shopping",
+        "accommodation": "Hébergement",
+        "transport": "Transport",
+        "other": "Autre"
+      }
+    },
+    "addTo": {
+      "tripFallback": "voyage",
+      "addedTitle": "Ajouté à {{trip}}",
+      "addedDesc": "{{name}} a été ajouté à ton voyage.",
+      "failedToAdd": "Échec de l'ajout",
+      "addedNewDesc": "{{name}} a été ajouté à ton nouveau voyage.",
+      "failedToCreate": "Échec de la création du voyage.",
+      "title": "Ajouter au voyage",
+      "signInPrompt": "Connecte-toi pour planifier des voyages",
+      "signInDesc": "Crée un compte pour enregistrer des lieux dans tes plans de voyage.",
+      "adding": "Ajout",
+      "assignToDay": "Assigner à un jour (optionnel)",
+      "createNewTrip": "Créer un nouveau voyage",
+      "backToTrips": "Retour aux voyages",
+      "firstTripHint": "Crée ton premier voyage pour commencer à planifier.",
+      "tripTitle": "Titre du voyage",
+      "tripTitlePlaceholder": "ex. Pride Week Berlin 2026",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "createAndAdd": "Créer et ajouter"
+    },
+    "notes": {
+      "updatedToast": "Note mise à jour",
+      "saveFailedToast": "Échec de l'enregistrement de la note",
+      "createdToast": "Note créée",
+      "createFailedToast": "Échec de la création de la note",
+      "deletedToast": "Note supprimée",
+      "deleteFailedToast": "Échec de la suppression de la note",
+      "note": "note",
+      "notes": "notes",
+      "newNote": "Nouvelle note",
+      "noNotes": "Pas encore de notes",
+      "noNotesHint": "Crées-en une pour partager des informations avec ton groupe",
+      "untitled": "Sans titre",
+      "category": {
+        "general": "Général",
+        "logistics": "Logistique",
+        "safety": "Sécurité",
+        "ideas": "Idées"
+      },
+      "editNote": "Modifier la note",
+      "titlePlaceholder": "Titre de la note",
+      "contentPlaceholder": "Écris ta note...",
+      "categoryLabel": "Catégorie",
+      "unpin": "Détacher",
+      "pin": "Épingler",
+      "deleteTitle": "Supprimer la note",
+      "deleteConfirm": "Es-tu sûr de vouloir supprimer cette note ? Cela ne peut pas être annulé."
+    },
+    "next": {
+      "live": "[FR] Active now",
+      "countdown": "[FR] Coming up",
+      "upcoming": "[FR] Upcoming",
+      "open": "[FR] Open trip",
+      "openLive": "[FR] Open today's plan",
+      "today": "[FR] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[FR] Inspired by your trips",
+      "title": "[FR] Public trips you might like",
+      "cta": "[FR] See all"
+    },
+    "save": {
+      "save": "[FR] Save",
+      "saved": "[FR] Saved",
+      "saveAria": "[FR] Save trip",
+      "unsaveAria": "[FR] Unsave trip",
+      "error": "[FR] Could not update save"
+    }
+  },
+  "auth": {
+    "welcome": "Bienvenue !",
+    "welcomeBack": "Content·e de te revoir",
+    "signUp": "Créer un compte",
+    "signIn": "Se connecter",
+    "createAccount": "Créer un compte",
+    "forgotPassword": "Mot de passe oublié ?",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "sendResetLink": "Envoyer le lien",
+    "resetSent": "Vérifie tes emails pour le lien de réinitialisation.",
+    "forgotBlurb": "On t'envoie un lien par email.",
+    "signinBlurb": "Connecte-toi pour continuer",
+    "orWithEmail": "Ou par email",
+    "noAccount": "Pas encore de compte ? Crée-en un",
+    "backToSignIn": "Retour à la connexion",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "fields": {
+      "email": "Email",
+      "password": "Mot de passe",
+      "displayName": "Nom affiché",
+      "pronouns": "Pronoms",
+      "country": "Pays",
+      "language": "Langue préférée"
+    },
+    "placeholders": {
+      "email": "toi@exemple.com",
+      "password": "Au moins 10 caractères",
+      "displayName": "Comment on t'appelle ?",
+      "pronouns": "Choisis tes pronoms",
+      "country": "Facultatif",
+      "language": "Choisis une langue",
+      "passwordMin8": "[FR] At least 8 characters"
+    },
+    "errors": {
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Entre une adresse email valide",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 10 caractères",
+      "passwordTooWeak": "Choisis un mot de passe plus fort",
+      "consentRequired": "Accepte les conditions, la politique de confidentialité et confirme avoir 18 ans ou plus",
+      "displayNameRequired": "Le nom affiché est requis",
+      "fillAllFields": "Remplis tous les champs",
+      "invalidCredentials": "Email ou mot de passe incorrect.",
+      "emailNotConfirmed": "Confirme ton email avant de te connecter.",
+      "alreadyRegistered": "Un compte avec cet email existe déjà. Essaie de te connecter.",
+      "oauthFailed": "La connexion a échoué. Réessaie.",
+      "unexpected": "Une erreur inattendue est survenue. Réessaie."
+    },
+    "passwordStrength": {
+      "veryWeak": "Très faible",
+      "weak": "Faible",
+      "fair": "Moyen",
+      "good": "Bon",
+      "strong": "Fort"
+    },
+    "consent": {
+      "terms": "J'accepte les <1>Conditions d'utilisation</1>",
+      "privacy": "J'accepte la <1>Politique de confidentialité</1>",
+      "age": "Je confirme avoir 18 ans ou plus",
+      "termsAria": "Accepter les conditions d'utilisation",
+      "privacyAria": "Accepter la politique de confidentialité",
+      "ageAria": "Confirmer avoir 18 ans ou plus",
+      "combined": "[FR] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[FR] Accept terms, privacy and confirm 18 or older"
+    },
+    "oauth": {
+      "google": "Continuer avec Google",
+      "apple": "Continuer avec Apple"
+    },
+    "signup": {
+      "title": "Crée ton compte",
+      "stepIndicator": "Étape {{current}} sur {{total}}",
+      "haveAccount": "Se connecter",
+      "create": "Créer le compte",
+      "orWithEmail": "Ou par email",
+      "profileBlurb": "Parle-nous un peu de toi. Tu pourras tout modifier plus tard.",
+      "interestsBlurb": "Facultatif. Passe si tu préfères.",
+      "lookingForTitle": "Je cherche",
+      "interestsTitle": "Centres d'intérêt",
+      "steps": {
+        "account": "Compte",
+        "profile": "Profil",
+        "interests": "Centres d'intérêt"
+      },
+      "blurb": "[FR] Free, takes a minute.",
+      "haveAccountQ": "[FR] Already have an account? Sign in"
+    },
+    "pronouns": {
+      "she/her": "elle",
+      "he/him": "il",
+      "they/them": "iel",
+      "she/they": "elle/iel",
+      "he/they": "il/iel",
+      "xe/xem": "xe/xem",
+      "prefer-not-to-say": "Ne préfère pas dire"
+    },
+    "lookingFor": {
+      "friends": "Des ami·es",
+      "dating": "Des rencontres",
+      "community": "Une communauté",
+      "events": "Des événements",
+      "travel-tips": "Des conseils de voyage",
+      "safe-spaces": "Des espaces safe",
+      "activism": "Du militantisme",
+      "mentorship": "Du mentorat"
+    },
+    "interests": {
+      "arts-culture": "Arts et culture",
+      "music": "Musique",
+      "nightlife": "Vie nocturne",
+      "fitness": "Sport",
+      "food": "Gastronomie",
+      "travel": "Voyage",
+      "film": "Cinéma",
+      "literature": "Littérature",
+      "tech": "Tech",
+      "activism": "Militantisme",
+      "wellness": "Bien-être",
+      "fashion": "Mode"
+    },
+    "verifyEmail": {
+      "title": "Vérifie tes emails",
+      "description": "On a envoyé un lien de vérification à",
+      "instructions": "Clique sur le lien dans l'email pour activer ton compte. Le lien expire dans 24 heures.",
+      "resend": "Renvoyer l'email de vérification",
+      "resendIn": "Renvoyer dans {{seconds}}s",
+      "resent": "Email de vérification envoyé. Vérifie ta boîte de réception.",
+      "backToLogin": "Retour à la connexion",
+      "continue": "[FR] Continue to The Queer Guide",
+      "banner": "[FR] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[FR] Verification email sent. Check your inbox.",
+      "resendShort": "[FR] Resend",
+      "gateTitle": "[FR] Verify your email first",
+      "gateDescription": "[FR] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[FR] Sign in required",
+      "description": "[FR] Please sign in to continue."
+    }
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur The Queer Guide",
+    "welcomeBlurb": "Tu y es. Quelques étapes rapides et optionnelles pour personnaliser ton expérience.",
+    "passkeyTitle": "Configure une passkey",
+    "passkeyBlurb": "Connecte-toi plus vite et en toute sécurité avec ton appareil. Plus besoin de mot de passe.",
+    "passkeyEnable": "Activer la passkey",
+    "passkeyAlreadyEnrolled": "Passkey déjà activée",
+    "passkeyEnrolled": "Passkey activée",
+    "continue": "Accéder à The Queer Guide",
+    "skip": "Passer pour l'instant"
+  },
+  "events": {
+    "title": "Événements",
+    "upcoming": "Événements à venir",
+    "past": "Événements passés",
+    "create": "Créer un événement",
+    "rsvp": "Participer",
+    "attending": "J'y vais",
+    "interested": "Intéressé·e",
+    "share": "Partager",
+    "details": "Détails de l'événement",
+    "location": "Lieu",
+    "organizer": "Organisateur·ice",
+    "free": "Gratuit",
+    "ticketsRequired": "Billets requis",
+    "soldOut": "Complet",
+    "cancelled": "Annulé"
+  },
+  "venues": {
+    "title": "Lieux",
+    "safeSpace": "Espace safe",
+    "queerOwned": "Géré·e par des queers",
+    "queerFriendly": "Queer-friendly",
+    "accessibility": "Accessible",
+    "verified": "Vérifié",
+    "hours": "Horaires d'ouverture",
+    "contact": "Contact",
+    "directions": "Itinéraire",
+    "checkin": "Pointer",
+    "review": "Écrire un avis",
+    "photos": "Photos",
+    "amenities": "Équipements",
+    "services": "Services"
+  },
+  "marketplace": {
+    "title": "Marketplace",
+    "queerOwned": "Géré·e par des queers",
+    "supportLocal": "Soutenir le local",
+    "handmade": "Fait main",
+    "sustainable": "Durable",
+    "addToCart": "Ajouter au panier",
+    "soldOut": "Épuisé",
+    "onSale": "En promo",
+    "newArrival": "Nouveauté",
+    "featured": "À la une",
+    "reviews": "Avis"
+  },
+  "profile": {
+    "editProfile": "Modifier le profil",
+    "pronouns": "Pronoms",
+    "location": "Localisation",
+    "bio": "À propos de moi",
+    "interests": "Centres d'intérêt",
+    "lookingFor": "Je cherche",
+    "photos": "Photos",
+    "settings": "Paramètres",
+    "privacy": "Confidentialité",
+    "notifications": "Notifications",
+    "blockedUsers": "Utilisateur·ices bloqué·es",
+    "reportUser": "Signaler",
+    "sendMessage": "Envoyer un message"
+  },
+  "groups": {
+    "title": "Groupes",
+    "join": "Rejoindre le groupe",
+    "leave": "Quitter le groupe",
+    "create": "Créer un groupe",
+    "members": "Membres",
+    "admins": "Admins",
+    "posts": "Publications",
+    "events": "Événements",
+    "rules": "Règles du groupe",
+    "private": "Privé",
+    "public": "Public",
+    "invite": "Inviter"
+  },
+  "messaging": {
+    "messages": "Messages",
+    "newMessage": "Nouveau message",
+    "sendMessage": "Envoyer",
+    "typing": "écrit…",
+    "online": "En ligne",
+    "lastSeen": "Vu·e pour la dernière fois",
+    "delivered": "Distribué",
+    "read": "Lu",
+    "block": "Bloquer",
+    "report": "Signaler la conversation"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markRead": "Marquer comme lu",
+    "markAllRead": "Tout marquer comme lu",
+    "newMessage": "Nouveau message",
+    "newFollow": "Nouvel·le abonné·e",
+    "eventInvite": "Invitation à un événement",
+    "groupInvite": "Invitation à un groupe",
+    "mentionedYou": "t'a mentionné·e",
+    "likedPost": "a aimé ta publication",
+    "commentedOn": "a commenté ta publication"
+  },
+  "general": {
+    "yes": "Oui",
+    "no": "Non",
+    "maybe": "Peut-être",
+    "thanks": "Merci !",
+    "sorry": "Désolé·e !",
+    "congrats": "Félicitations !",
+    "welcome": "Bienvenue !",
+    "goodbye": "Au revoir !",
+    "loading": "Chargement…",
+    "error": "Quelque chose a mal tourné",
+    "success": "C'est fait !",
+    "tryAgain": "Réessayer",
+    "comingSoon": "Pas encore disponible",
+    "underConstruction": "En cours de développement"
+  },
+  "donate": {
+    "title": "Soutenir queer.guide",
+    "subtitle": "queer.guide est une plateforme gratuite qui connecte la communauté LGBTQ+ avec des espaces safe, des événements et des ressources dans le monde entier. Ton don nous aide à la maintenir accessible à tou·tes.",
+    "tipJar": "Montants rapides",
+    "customAmount": "Montant libre",
+    "frequency": "Fréquence",
+    "one_time": "Ponctuel",
+    "month": "Mensuel",
+    "year": "Annuel",
+    "email": "Email",
+    "name": "Nom (facultatif)",
+    "namePlaceholder": "Comment tu veux apparaître sur le mur des donateur·ices",
+    "message": "Message (facultatif)",
+    "messagePlaceholder": "Laisse un message de soutien",
+    "anonymous": "Donner anonymement",
+    "cta": "Donner {{amount}}",
+    "ctaDisabled": "Entre un montant",
+    "error": "Quelque chose a mal tourné. Réessaie.",
+    "donorWall": "Soutiens récents",
+    "loadingDonors": "Chargement des donateur·ices…",
+    "noDonorsYet": "Sois le·a premier·ère à soutenir queer.guide !",
+    "anonymousDonor": "Un·e soutien",
+    "recurring": "Récurrent",
+    "thankYou": "Merci !",
+    "successMessage": "Ton don aide à garder queer.guide gratuit et accessible pour la communauté LGBTQ+ dans le monde entier.",
+    "backHome": "Retour à l'accueil"
+  },
+  "help": {
+    "title": "Aide et lignes de crise",
+    "subtitle": "Tu n'es pas seul·e. Trouve du soutien immédiat ici.",
+    "meta_description": "Lignes de crise LGBTQIA+ gratuites et anonymes et services de soutien dans le monde entier. Tu n'es pas seul·e.",
+    "emergency_title": "En danger immédiat ?",
+    "emergency_body": "Appelle les secours immédiatement : 112 (UE) ou 911 (US/CA). Chaque seconde compte.",
+    "filter_country": "Pays",
+    "filter_country_all": "Tous les pays",
+    "filter_topic": "Sujet",
+    "filter_topic_all": "Tous les sujets",
+    "call_now": "Appeler maintenant",
+    "call_aria": "Appeler {{name}} {{phone}}",
+    "hours": "Horaires",
+    "languages": "Langues",
+    "disclaimer": "Queer Guide ne remplace pas une aide professionnelle.",
+    "no_results": "Aucune ligne ne correspond à ces filtres. Essaie « Tous les pays » ou consulte les annuaires internationaux.",
+    "no_results_title": "Aucune ligne trouvée",
+    "search_placeholder": "Rechercher des lignes d'aide…",
+    "saved_hotlines": "Tes lignes sauvegardées",
+    "quick_call": "Appel rapide",
+    "badge_24_7": "24h/24",
+    "badge_free": "Gratuit",
+    "badge_anonymous": "Anonyme",
+    "save": "Sauvegarder la ligne",
+    "unsave": "Retirer des sauvegardées",
+    "reset_filters": "Réinitialiser les filtres",
+    "related_resources": "Ressources associées",
+    "browse_resources": "Voir toutes les ressources",
+    "breadcrumb_resources": "Ressources",
+    "breadcrumb_support": "Soutien et actualités",
+    "breadcrumb_hotlines": "Lignes de crise",
+    "error_title": "Page d'aide indisponible",
+    "error_body": "En cas de danger immédiat, appelle le numéro d'urgence local : 112 (UE) ou 911 (US/CA).",
+    "topic": {
+      "general": "Général",
+      "crisis": "Crise",
+      "suicide": "Prévention du suicide",
+      "lgbtq": "LGBTQIA+",
+      "youth": "Jeunes",
+      "trans": "Trans",
+      "coming-out": "Coming out",
+      "violence": "Violence",
+      "discrimination": "Discrimination",
+      "health": "Santé",
+      "hiv": "VIH",
+      "legal": "Juridique",
+      "relationships": "Relations",
+      "women": "Femmes"
+    },
+    "quick_exit": "[FR] Quick exit",
+    "quick_exit_aria": "[FR] Leave this page immediately (ESC)",
+    "hide_screen": "[FR] Hide screen",
+    "reveal_aria": "[FR] Click anywhere to show the page again",
+    "hidden_hint": "[FR] Page hidden. Click anywhere to show again.",
+    "hero_label": "[FR] Recommended right now",
+    "expect_title": "[FR] What happens when you call",
+    "expect_short": "[FR] What to expect",
+    "expect_1": "[FR] You'll hear a short greeting. You don't have to give your name.",
+    "expect_2": "[FR] You can hang up at any time. You can call back as often as you need.",
+    "expect_3": "[FR] Free hotlines in DE/AT/CH don't appear on itemized phone bills.",
+    "expect_4": "[FR] If you can't speak, ask for text or chat — most hotlines offer it.",
+    "self_help_trigger": "[FR] While you wait",
+    "self_help_title": "[FR] Steady yourself",
+    "self_help_desc": "[FR] Short techniques you can use while you wait, or instead of a call if you're not ready.",
+    "breathing_title": "[FR] 4-7-8 breathing",
+    "breathing_1": "[FR] Breathe in through your nose for 4 seconds.",
+    "breathing_2": "[FR] Hold your breath for 7 seconds.",
+    "breathing_3": "[FR] Breathe out through your mouth for 8 seconds.",
+    "breathing_4": "[FR] Repeat 4 times.",
+    "grounding_title": "[FR] 5-4-3-2-1 grounding",
+    "grounding_intro": "[FR] Name, out loud or in your head:",
+    "grounding_5": "[FR] 5 things you can see",
+    "grounding_4": "[FR] 4 things you can touch",
+    "grounding_3": "[FR] 3 things you can hear",
+    "grounding_2": "[FR] 2 things you can smell",
+    "grounding_1": "[FR] 1 thing you can taste",
+    "safety_plan_title": "[FR] Safety plan",
+    "safety_plan_desc": "[FR] A short written plan you can pull up when things get bad — your warning signs, coping steps, people to call, and reasons to live.",
+    "safety_plan_link": "[FR] Open template (Stanley-Brown)",
+    "report": "[FR] Report",
+    "report_aria": "[FR] Report a problem with this hotline",
+    "report_title": "[FR] Report this hotline",
+    "report_desc": "[FR] Thanks for helping keep this list accurate. Reports are reviewed by our team.",
+    "report_reason": "[FR] Reason",
+    "report_detail": "[FR] Details (optional)",
+    "report_submit": "[FR] Submit report",
+    "report_thanks": "[FR] Thank you. We'll review it.",
+    "filter_intersection": "[FR] Population",
+    "filter_intersection_all": "[FR] All",
+    "badge_reports_police": "[FR] May report to police",
+    "operator": "[FR] Operated by",
+    "verified_on": "[FR] Verified",
+    "affiliation": {
+      "religious": "[FR] religious",
+      "state": "[FR] state",
+      "ngo": "[FR] NGO",
+      "secular": "[FR] secular"
+    },
+    "channel": {
+      "phone": "[FR] Call",
+      "sms": "[FR] Text",
+      "whatsapp": "[FR] WhatsApp",
+      "chat": "[FR] Chat",
+      "email": "[FR] Email"
+    },
+    "intersection": {
+      "trans-youth": "[FR] Trans youth",
+      "asylum": "[FR] Asylum seekers",
+      "sex-work": "[FR] Sex workers",
+      "hiv": "[FR] HIV+",
+      "elders": "[FR] Elders",
+      "deaf": "[FR] Deaf / HoH"
+    },
+    "report_options": {
+      "disconnected": "[FR] Number disconnected / no answer",
+      "wrong_number": "[FR] Wrong number",
+      "closed": "[FR] Service has shut down",
+      "unsafe": "[FR] Unsafe / harmful experience",
+      "other": "[FR] Other"
+    }
+  },
+  "sos": {
+    "button": "SOS",
+    "confirmTitle": "Envoyer une alerte d'urgence ?",
+    "confirmBody": "Tes {{count}} ami·es seront immédiatement prévenu·es. Ta position actuelle sera partagée si disponible.",
+    "send": "Envoyer le SOS",
+    "sending": "Envoi en cours…",
+    "sent": "Alerte d'urgence envoyée à {{count}} ami·es",
+    "cooldown": "Attends un peu avant d'envoyer une nouvelle alerte",
+    "noFriends": "Ajoute des ami·es pour utiliser le SOS",
+    "notificationTitle": "SOS de {{name}}",
+    "notificationBody": "{{name}} a besoin d'aide ! Prends de ses nouvelles.",
+    "notificationBodyWithLocation": "{{name}} a besoin d'aide ! Position partagée.",
+    "error": "Échec de l'envoi de l'alerte. Réessaie."
+  },
+  "home": {
+    "heroLine1": "Lieux queer,",
+    "heroLine2": "événements et personnes.",
+    "heroLine3": "Partout dans le monde.",
+    "subtitle": "Lieux safe, événements vibrants et communautés qui te comprennent — où que tu sois.",
+    "browseVenues": "Explorer les lieux",
+    "viewEvents": "Voir les événements",
+    "explore": "Explorer",
+    "stats": {
+      "venues": "Lieux",
+      "members": "Membres",
+      "cities": "Villes",
+      "events": "Événements"
+    },
+    "features": {
+      "venues": "Lieux",
+      "venuesDesc": "Espaces queer-friendly vérifiés où tu peux être toi-même",
+      "events": "Événements",
+      "eventsDesc": "Rencontres locales et virtuelles près de chez toi",
+      "marketplace": "Marketplace",
+      "marketplaceDesc": "Soutiens les commerces et créateur·ices queer",
+      "places": "Destinations",
+      "placesDesc": "Explore les villes et pays queer-friendly",
+      "hotels": "Hôtels",
+      "hotelsDesc": "Hébergements accueillants dans le monde entier",
+      "community": "Communauté",
+      "communityDesc": "Rencontre du monde et rejoins des groupes",
+      "resources": "Ressources",
+      "resourcesDesc": "Droits, culture et soutien communautaire"
+    },
+    "weekly": {
+      "title": "Cette semaine",
+      "titleNear": "Cette semaine près de chez vous"
+    },
+    "upcoming": {
+      "title": "Événements à venir",
+      "titleNear": "Événements à venir près de chez vous",
+      "next14": "Les 14 prochains jours"
+    },
+    "news": {
+      "title": "Actualités"
+    }
+  },
+  "header": {
+    "signInSignUp": "Connexion / Inscription",
+    "signOut": "Déconnexion",
+    "adminConsole": "Console admin",
+    "closeMenu": "Fermer le menu",
+    "openMenu": "Ouvrir le menu",
+    "openNavigation": "Ouvrir le menu de navigation",
+    "openUserMenu": "Ouvrir le menu utilisateur",
+    "selectMode": "Choisir un mode",
+    "contribute": "Contribuer",
+    "submitEvent": "Proposer un événement",
+    "submitVenue": "Proposer un lieu",
+    "submitProduct": "Proposer un produit",
+    "submitHotel": "Proposer un hôtel",
+    "nav": {
+      "discover": "Découvrir",
+      "connect": "Connecter",
+      "more": "Plus",
+      "venues": "Lieux",
+      "events": "Événements",
+      "places": "Destinations",
+      "map": "Carte",
+      "feed": "Fil d'actu",
+      "groups": "Groupes",
+      "members": "Membres",
+      "marketplace": "Marketplace",
+      "resources": "Ressources",
+      "news": "Actualités",
+      "travel": "Voyage",
+      "personalities": "Personnalités",
+      "hotels": "Hôtels",
+      "help": "Aide"
+    },
+    "userMenu": {
+      "myTrips": "Mes voyages",
+      "favorites": "Favoris",
+      "settings": "Paramètres",
+      "inbox": "Boîte de réception",
+      "friends": "Ami·es",
+      "myGroups": "Mes groupes",
+      "accessibility": "Accessibilité",
+      "bookings": "Réservations",
+      "tripInbox": "Boîte de réception voyages",
+      "extension": "Extension Navigateur",
+      "footprint": "[FR] Footprint"
+    },
+    "modes": {
+      "dating": "En quête d'amour",
+      "friends": "Trouver des ami·es",
+      "exploration": "Explorer la scène",
+      "fun": "Juste pour le fun",
+      "networking": "Réseautage pro",
+      "community": "Construire une communauté"
+    },
+    "legal": {
+      "about": "À propos",
+      "help": "Aide",
+      "accessibility": "Accessibilité",
+      "legal": "Mentions légales",
+      "contact": "Contact"
+    },
+    "signUp": "[FR] Sign up",
+    "navigation": "[FR] Navigation",
+    "signIn": "[FR] Sign in"
+  },
+  "pages": {
+    "venues": {
+      "sortFeatured": "En vedette",
+      "sortName": "Nom",
+      "sortCategory": "Catégorie",
+      "sortCity": "Ville",
+      "sortNewest": "Plus récents",
+      "gridView": "Vue en grille",
+      "mapView": "Vue carte",
+      "submit": "Soumettre",
+      "emptyTitle": "Aucun lieu ne correspond à tes filtres.",
+      "emptyDescription": "Élargis ta recherche ou change de ville.",
+      "submitVenue": "Proposer un lieu",
+      "clearFilters": "Effacer les filtres",
+      "emptyDataset": {
+        "title": "Aucun lieu pour le moment",
+        "body": "Nous n'avons pas encore ajouté de lieux ici. Aide-nous à enrichir le guide en en proposant un."
+      },
+      "filteredEmpty": {
+        "title": "Aucun lieu ne correspond à tes filtres",
+        "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
+      }
+    },
+    "venueDetail": {
+      "loadFailed": "Impossible de charger les détails du lieu.",
+      "failedToLoad": "Échec du chargement",
+      "failedDescription": "Impossible de charger les détails du lieu. Vérifie ta connexion et réessaie.",
+      "backToVenues": "Retour aux lieux",
+      "notFound": "Lieu introuvable",
+      "notFoundDescription": "Le lieu que tu cherches n'existe pas.",
+      "verified": "Vérifié",
+      "addToTrip": "Ajouter au voyage",
+      "call": "Appeler",
+      "website": "Site web",
+      "about": "À propos",
+      "amenities": "Équipements",
+      "contact": "Contact",
+      "directions": "Itinéraire",
+      "hoursNotAvailable": "Horaires non disponibles",
+      "hours": "Horaires",
+      "tags": "Tags",
+      "overview": "Aperçu",
+      "photos": "Photos",
+      "noPhotos": "Aucune photo disponible",
+      "noEvents": "Aucun événement à venir dans ce lieu",
+      "noReviews": "Pas encore d'avis. Sois la première personne à en laisser un !"
+    },
+    "events": {
+      "title": "Événements",
+      "subtitle": "Découvre et participe aux événements communautaires près de chez toi",
+      "submitEvent": "Proposer un événement",
+      "gridView": "Vue en grille",
+      "calendarView": "Vue calendrier",
+      "city": "Ville",
+      "eventType": "Type d'événement",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "applyFilters": "Appliquer les filtres",
+      "clearAll": "Tout effacer",
+      "activeFilters": "Filtres actifs :",
+      "loadMore": "Charger plus d'événements",
+      "submitAnEvent": "Proposer un événement",
+      "clearFiltersLabel": "Effacer les filtres",
+      "signInRequired": "Connexion requise",
+      "signInRsvp": "Connecte-toi pour confirmer ta participation aux événements.",
+      "rsvpUpdated": "Participation mise à jour",
+      "locationFound": "Position trouvée",
+      "nearLocationDesc": "Événements près de ta position",
+      "locationError": "Erreur de localisation",
+      "locationErrorDesc": "Impossible d'obtenir ta position. Autorise l'accès à la localisation.",
+      "showPastEvents": "Afficher les événements passés",
+      "pastEvents": "Événements passés",
+      "filterSearch": "Recherche : {{value}}",
+      "filterCity": "Ville : {{value}}",
+      "filterNearYou": "Près de vous : {{value}}",
+      "filterFrom": "Du : {{value}}",
+      "filterTo": "Au : {{value}}",
+      "filterNearMe": "Près de moi",
+      "clearFilterSearch": "Effacer la recherche",
+      "clearFilterCity": "Effacer le filtre ville",
+      "clearFilterEventType": "Effacer le filtre type d'événement",
+      "clearFilterStartDate": "Effacer la date de début",
+      "clearFilterEndDate": "Effacer la date de fin",
+      "clearFilterNearMe": "Effacer le filtre de proximité",
+      "clearFilterPast": "Effacer le filtre événements passés",
+      "noPastEvents": "Aucun événement passé trouvé",
+      "noPastEventsDesc": "Aucun événement passé ne correspond à ces filtres. Désactive le bouton pour voir les prochains événements.",
+      "emptyTitle": "Pas encore d'événements.",
+      "emptyDescription": "Élargis tes filtres ou reviens plus tard.",
+      "emptyDataset": {
+        "title": "Aucun événement pour le moment",
+        "body": "Nous n'avons pas encore ajouté d'événements ici. Aide-nous à enrichir le guide en en proposant un."
+      },
+      "filteredEmpty": {
+        "title": "Aucun événement ne correspond à tes filtres",
+        "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
+      },
+      "prideSubtype": "[FR] Pride type",
+      "mapView": "[FR] Map view",
+      "preset": {
+        "label": "[FR] Quick filters",
+        "thisWeekend": "[FR] This weekend",
+        "nearMe": "[FR] Near me",
+        "pride": "[FR] Pride season",
+        "thisMonth": "[FR] This month",
+        "free": "[FR] Free",
+        "featured": "[FR] Featured"
+      },
+      "rail": {
+        "featured": "[FR] Featured this week",
+        "featuredSubtitle": "[FR] Editor picks"
+      },
+      "smartEmpty": {
+        "title": "[FR] No events match your filters",
+        "body": "[FR] Try one of the suggestions below, or clear filters to browse everything.",
+        "clearCity": "[FR] Drop \"{{city}}\" filter",
+        "clearDate": "[FR] Drop date filter",
+        "viewAll": "[FR] View all upcoming events",
+        "sameCityHeader": "[FR] Try in {{city}} on other dates",
+        "otherCitiesHeader": "[FR] Try other cities in your date range",
+        "fallbackHeader": "[FR] Other upcoming events"
+      },
+      "spotlight": {
+        "eyebrow": "[FR] Spotlight",
+        "happeningNow": "[FR] Happening now",
+        "tomorrow": "[FR] Starts tomorrow",
+        "inDays_one": "[FR] Starts in {{count}} day",
+        "inDays_other": "[FR] Starts in {{count}} days",
+        "nearbyCount_one": "[FR] {{count}} event in {{city}}",
+        "nearbyCount_other": "[FR] {{count}} events in {{city}}"
+      },
+      "sortLabel": "[FR] Sort events",
+      "sort": {
+        "dateAsc": "[FR] Soonest first",
+        "dateDesc": "[FR] Latest first"
+      }
+    },
+    "eventDetail": {
+      "loadFailed": "Impossible de charger les détails de l'événement.",
+      "failedToLoad": "Échec du chargement",
+      "failedDescription": "Impossible de charger les détails de l'événement. Vérifie ta connexion et réessaie.",
+      "notFound": "Événement introuvable",
+      "notFoundDescription": "L'événement que tu cherches n'existe pas.",
+      "backToEvents": "Retour aux événements",
+      "addToTrip": "Ajouter au voyage",
+      "pastEvent": "Cet événement est terminé.",
+      "authRequired": "Authentification requise",
+      "signInAttendance": "Connecte-toi pour mettre à jour ta participation",
+      "attendanceUpdated": "Participation mise à jour",
+      "attendanceFailed": "Échec de la mise à jour de la participation",
+      "exportFailed": "Échec de l'exportation",
+      "exportFailedDesc": "Impossible d'exporter l'événement dans le calendrier",
+      "exportSuccess": "Exportation au calendrier réussie",
+      "exportSuccessDesc": "L'événement a été exporté dans ton calendrier",
+      "linkCopied": "Lien copié",
+      "linkCopiedDesc": "Lien de l'événement copié dans le presse-papiers"
+    },
+    "hotels": {
+      "title": "Hôtels & BnBs",
+      "subtitle": "Hébergements LGBTQ+ friendly dans le monde entier",
+      "submitHotel": "Proposer un hôtel",
+      "noResults": "Aucun hôtel trouvé",
+      "noResultsHint": "Essaie d'ajuster tes filtres ou reviens plus tard.",
+      "resetFilters": "Réinitialiser les filtres",
+      "emptyDataset": {
+        "title": "Aucun hôtel pour le moment",
+        "body": "Nous n'avons pas encore ajouté d'hôtels ici. Aide-nous à enrichir le guide en en proposant un."
+      },
+      "filteredEmpty": {
+        "title": "Aucun hôtel ne correspond à tes filtres",
+        "body": "Essaie d'ajuster tes filtres ou ta recherche pour voir plus de résultats."
+      }
+    },
+    "hotelDetail": {
+      "loadFailed": "Impossible de charger les détails de l'hôtel.",
+      "notFound": "Hôtel introuvable",
+      "backToHotels": "Retour aux hôtels",
+      "addToTrip": "Ajouter au voyage",
+      "bookNow": "Réserver",
+      "website": "Site web",
+      "about": "À propos",
+      "safetyNotes": "Notes de sécurité",
+      "amenities": "Équipements",
+      "contact": "Contact",
+      "tags": "Tags",
+      "overview": "Aperçu",
+      "lgbtqFriendly": "LGBTQ+ Friendly"
+    },
+    "travel": {
+      "title": "Réserver un voyage",
+      "subtitle": "Trouve des vols, hôtels et activités dans des destinations LGBTQ+ friendly",
+      "activitiesComingSoon": "Activités bientôt disponibles.",
+      "browseDestinations": "Parcourir les destinations",
+      "exploreCta": "Destinations",
+      "exploreDescription": "Villes et pays avec infos de sécurité et guides de voyage.",
+      "hotels": {
+        "typeLabel": "[FR] Type",
+        "priceMin": "[FR] Min €",
+        "priceMax": "[FR] Max €",
+        "priceUnavailable": "[FR] Price on request",
+        "clearFilters": "[FR] Clear filters",
+        "noResultsWithFilters": "[FR] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[FR] Any type",
+          "hotel": "[FR] Hotel",
+          "boutique": "[FR] Boutique Hotel",
+          "bnb": "[FR] B&B",
+          "hostel": "[FR] Hostel",
+          "guesthouse": "[FR] Guesthouse",
+          "apartment": "[FR] Apartment",
+          "resort": "[FR] Resort"
+        }
+      },
+      "hero": {
+        "title": "[FR] Plan a trip",
+        "subtitle": "[FR] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
+        "cityLabel": "[FR] Where to?",
+        "start": "[FR] Start",
+        "end": "[FR] End",
+        "cta": "[FR] Plan this trip",
+        "discover": "[FR] Or",
+        "discoverLink": "[FR] browse public trips",
+        "discoverTail": "[FR] from the community.",
+        "errors": {
+          "city": "[FR] Pick a city to plan a trip."
+        }
+      },
+      "resume": {
+        "title": "[FR] Continue planning",
+        "placeCount": "[FR] {{count}} places"
+      },
+      "pride": {
+        "title": "[FR] Pride this season",
+        "window": "[FR] Next 4 months",
+        "empty": "[FR] No upcoming Pride events.",
+        "safety": "[FR] Equality score"
+      },
+      "inspiration": {
+        "villages": "[FR] Queer villages",
+        "publicTrips": "[FR] Public trips",
+        "viewAll": "[FR] View all",
+        "noVillages": "[FR] No villages yet.",
+        "noTrips": "[FR] No public trips yet."
+      },
+      "bookNow": {
+        "title": "[FR] Book now",
+        "subtitle": "[FR] Search flights, hotels, and activities directly — no trip required."
+      }
+    },
+    "marketplace": {
+      "title": "Marché",
+      "subtitle": "Découvre et soutiens des entreprises locales proposant des produits et services",
+      "listBusiness": "Inscris ton entreprise",
+      "emptyTitle": "Pas encore d'annonces.",
+      "emptyDescription": "De nouvelles arrivent chaque semaine.",
+      "signInRequired": "Connexion requise",
+      "signInList": "Crée un compte gratuit pour inscrire ton entreprise.",
+      "signInFavorites": "Connecte-toi pour enregistrer tes favoris.",
+      "loadError": "Une erreur est survenue lors du chargement du marché. Réessaie.",
+      "emptyFiltersTitle": "[FR] No listings match these filters.",
+      "emptyFiltersDescription": "[FR] Try clearing filters or broadening your search."
+    },
+    "marketplaceDetail": {
+      "notFound": "Article introuvable",
+      "notFoundDesc": "L'article du marché que tu cherches n'existe pas.",
+      "backToMarketplace": "Retour au marché",
+      "loadFailed": "Impossible de charger les détails de l'annonce.",
+      "authRequired": "Authentification requise",
+      "photos": "Photos",
+      "description": "Description",
+      "shippingInfo": "Informations de livraison",
+      "noReviews": "Pas encore d'avis",
+      "verifiedPurchase": "Achat vérifié",
+      "priceContact": "Prix et contact",
+      "sendEmail": "Envoyer un e-mail",
+      "visitWebsite": "Visiter le site web",
+      "shippingAvailable": "Livraison disponible",
+      "businessDetails": "Détails de l'entreprise",
+      "businessType": "Type d'entreprise",
+      "location": "Lieu",
+      "listed": "Publié",
+      "socialMedia": "Réseaux sociaux",
+      "favorited": "En favori",
+      "favorite": "Favori",
+      "share": "Partager",
+      "linkCopied": "Lien copié",
+      "linkCopiedDesc": "Lien de l'annonce copié dans le presse-papiers"
+    },
+    "news": {
+      "title": "Actualités",
+      "subtitle": "Reste informé·e avec les dernières nouvelles et histoires de la communauté LGBTQ+ dans le monde",
+      "featuredStories": "Articles à la une",
+      "searchPlaceholder": "Recherche rapide d'articles...",
+      "filters": "Filtres",
+      "activeFilters": "Filtres actifs",
+      "clearAll": "Tout effacer",
+      "emptyTitle": "Pas encore d'articles.",
+      "emptyDescription": "Reviens plus tard.",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "filteredEmptyTitle": "[FR] No news matches your filters.",
+      "filteredEmptyDescription": "[FR] Reset filters or try another topic.",
+      "resetFilters": "[FR] Reset filters",
+      "filterSearch": "[FR] Search",
+      "filterCategory": "[FR] Category",
+      "filterSource": "[FR] Source",
+      "filterFeatured": "[FR] Featured only",
+      "trendingTags": "[FR] Trending",
+      "minRead": "[FR] min read",
+      "share": "[FR] Share",
+      "linkCopied": "[FR] Link copied",
+      "density": "[FR] Density",
+      "comfortable": "[FR] Comfortable",
+      "compact": "[FR] Compact"
+    },
+    "newsDetail": {
+      "notFound": "Article introuvable",
+      "notFoundDesc": "L'article que tu cherches n'existe pas.",
+      "backToNews": "Retour aux actualités",
+      "share": "Partager",
+      "readFull": "Lire l'article complet",
+      "article": "Article",
+      "readFullHint": "Pour lire l'article complet, clique sur \"Lire l'article complet\" ci-dessus.",
+      "readFullTitle": "Lire l'article complet",
+      "openArticle": "Ouvrir l'article",
+      "relatedArticles": "Articles connexes",
+      "articleInfo": "Info sur l'article",
+      "published": "Publié",
+      "author": "Auteur·rice",
+      "source": "Source",
+      "views": "Vues",
+      "links": "Liens",
+      "originalArticle": "Article original"
+    },
+    "personalities": {
+      "title": "Personnalités",
+      "active": "Actifs :",
+      "clearAll": "Tout effacer",
+      "emptyTitle": "Aucune personnalité ne correspond à tes filtres",
+      "emptyDescription": "Essaie de supprimer un filtre ou de chercher un autre nom.",
+      "loadingMore": "Chargement en cours…",
+      "view": {
+        "grid": "[FR] Grid",
+        "timeline": "[FR] Timeline",
+        "map": "[FR] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[FR] Born this week",
+        "diedThisWeek": "[FR] Remembered this week",
+        "browseByEra": "[FR] Browse by era",
+        "browseByField": "[FR] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[FR] In the news",
+        "relatedEvents": "[FR] Related events"
+      }
+    },
+    "groups": {
+      "title": "Groupes communautaires",
+      "subtitle": "Connecte-toi avec des personnes partageant les mêmes idées, partage des expériences et construis des relations significatives dans des espaces sûrs et inclusifs.",
+      "discover": "Découvrir",
+      "myGroups": "Mes groupes",
+      "popular": "Populaire",
+      "emptyTitle": "Pas encore de groupes.",
+      "emptyDescription": "Crée le premier.",
+      "createGroup": "Créer un groupe",
+      "mostPopular": "Groupes les plus populaires",
+      "noPopular": "Pas encore de groupes populaires."
+    },
+    "groupDetail": {
+      "signInRequired": "Connecte-toi pour voir les détails du groupe."
+    },
+    "myGroups": {
+      "title": "Mes groupes",
+      "subtitle": "Gère et explore tes groupes communautaires",
+      "discoverGroups": "Découvrir des groupes",
+      "totalGroups": "Total de groupes",
+      "owned": "Créés",
+      "memberOf": "Membre de",
+      "private": "Privé",
+      "searchPlaceholder": "Chercher dans tes groupes...",
+      "mostRecent": "Plus récents",
+      "nameAZ": "Nom A–Z",
+      "mostMembers": "Plus de membres",
+      "emptyTitle": "Tu n'as encore rejoint aucun groupe",
+      "emptyDescription": "Commence par rejoindre des groupes existants ou crée le tien !",
+      "browseGroups": "Parcourir les groupes"
+    },
+    "feed": {
+      "activePosts": "Publications actives",
+      "totalLikes": "Total de likes",
+      "comments": "Commentaires",
+      "createPostPlaceholder": "Qu'est-ce qui te passe par la tête ? Partage avec la communauté...",
+      "searchPlaceholder": "Chercher des publications ou utilisateur·rices...",
+      "recent": "Récents",
+      "popular": "Populaire",
+      "emptyTitle": "Ton fil est vide",
+      "emptyDescription": "Suis des personnes et des groupes pour voir leurs publications ici.",
+      "createFirstPost": "Créer ta première publication"
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "description": "La page que tu cherches n'existe pas ou a été déplacée.",
+      "goBack": "Retour",
+      "returnHome": "Retour à l'accueil"
+    },
+    "bookings": {
+      "signIn": "Connecte-toi pour voir tes réservations",
+      "signInDescription": "Tes réservations de vols, hôtels et activités apparaîtront ici.",
+      "title": "Mes réservations",
+      "subtitle": "Suis tes vols, hôtels et activités au même endroit.",
+      "noBookings": "Pas encore de réservations",
+      "noBookingsHint": "Cherche des vols et hôtels pour commencer à réserver.",
+      "browseTravel": "Parcourir les voyages"
+    },
+    "messages": {
+      "title": "Messages",
+      "signInDesc": "Connecte-toi pour accéder à tes messages.",
+      "subtitle": "Reste connecté·e avec ta communauté"
+    },
+    "submit": {
+      "title": "Contribuer à Queer Guide",
+      "subtitle": "Aide à construire le répertoire LGBTQ+ le plus complet au monde. Toutes les soumissions sont examinées avant publication.",
+      "scanFlyer": "Scanner un flyer",
+      "scanFlyerDescription": "Prends une photo d'un flyer d'événement ou d'une carte de lieu et nous extrairons les détails automatiquement.",
+      "getStarted": "Commencer"
+    },
+    "sitemap": {
+      "searchPlaceholder": "Rechercher dans le plan du site..."
+    }
+  },
+  "settings": {
+    "push": {
+      "title": "Rappels de voyage",
+      "body": "Recevez une notification 30 minutes avant chaque réservation, et à l’approche de l’expiration du passeport ou du visa.",
+      "turnOn": "Activer",
+      "turnOff": "Désactiver"
+    }
+  },
+  "map": {
+    "popup": {
+      "viewDetails": "Voir les détails",
+      "share": "Partager",
+      "linkCopied": "Lien copié",
+      "linkCopiedDescription": "Vous pouvez le coller",
+      "shareFailed": "Échec du partage"
+    }
+  }
+}
