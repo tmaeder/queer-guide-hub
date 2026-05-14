@@ -165,6 +165,32 @@ Deno.serve(async (req) => {
         const configResults: Record<string, { ok: boolean; error?: string }> = {}
         for (const [idx, settings] of Object.entries(INDEX_SETTINGS)) {
           try {
+            // Ensure index exists with primaryKey="id" before applying settings.
+            // Without an explicit primaryKey, document uploads enqueue then fail
+            // async ("missing primaryKey"), leaving the index empty silently.
+            const createRes = await fetch(`${MEILI_URL}/indexes`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${MEILI_ADMIN_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ uid: idx, primaryKey: 'id' }),
+            })
+            if (!createRes.ok && createRes.status !== 202 && createRes.status !== 201) {
+              const errBody = await createRes.text()
+              if (!errBody.includes('index_already_exists')) {
+                throw new Error(`POST /indexes ${idx}: ${createRes.status} ${errBody}`)
+              }
+            }
+            // For existing indexes that may lack primaryKey, set it explicitly.
+            await fetch(`${MEILI_URL}/indexes/${idx}`, {
+              method: 'PATCH',
+              headers: {
+                Authorization: `Bearer ${MEILI_ADMIN_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ primaryKey: 'id' }),
+            })
             await meiliPatch(`/indexes/${idx}/settings`, settings)
             configResults[idx] = { ok: true }
           } catch (e) {
