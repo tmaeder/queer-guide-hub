@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import * as Icons from 'lucide-react';
+import { resolvePipelineIcon } from '../icon-registry';
 import type { Node } from '@xyflow/react';
 
 interface FindNodePaletteProps {
@@ -51,9 +51,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
             <CommandGroup heading={`${nodes.length} nodes on canvas`}>
               {nodes.map(n => {
                 const d = n.data as { label?: string; icon?: string; color?: string; nodeTypeSlug?: string; status?: string };
-                const Icon = d.icon
-                  ? (Icons as Record<string, unknown>)[d.icon] as React.ComponentType<{ className?: string }> || Icons.Box
-                  : Icons.Box;
+                const Icon = resolvePipelineIcon(d.icon);
                 const color = d.color || '#6b7280';
                 return (
                   <CommandItem

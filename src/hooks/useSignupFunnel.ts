@@ -5,13 +5,15 @@ export type FunnelEvent =
   | 'signup_landing_view'
   | 'oauth_start'
   | 'oauth_complete'
-  | 'step_started'
-  | 'step_completed'
-  | 'step_validation_error'
+  | 'signup_validation_error'
   | 'signup_completed'
   | 'email_verified'
   | 'onboarding_skipped'
-  | 'onboarding_completed';
+  | 'onboarding_completed'
+  // Retained for back-compat with OAuthButtons / legacy paths
+  | 'step_started'
+  | 'step_completed'
+  | 'step_validation_error';
 
 interface EmitOpts {
   step?: number;

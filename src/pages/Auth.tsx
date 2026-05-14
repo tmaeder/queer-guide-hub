@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Heart, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import MultiStepSignup from '@/components/auth/MultiStepSignup';
+import Signup from '@/components/auth/Signup';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
 
@@ -22,7 +23,26 @@ export default function Auth() {
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const [mode, setMode] = useState<Mode>('signin');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMode: Mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
+  const [mode, setMode] = useState<Mode>(initialMode);
+
+  useEffect(() => {
+    const urlMode = searchParams.get('mode');
+    if (mode === 'signup' && urlMode !== 'signup') {
+      setSearchParams((p) => {
+        const next = new URLSearchParams(p);
+        next.set('mode', 'signup');
+        return next;
+      }, { replace: true });
+    } else if (mode !== 'signup' && urlMode === 'signup') {
+      setSearchParams((p) => {
+        const next = new URLSearchParams(p);
+        next.delete('mode');
+        return next;
+      }, { replace: true });
+    }
+  }, [mode, searchParams, setSearchParams]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +101,7 @@ export default function Auth() {
     return (
       <div className="min-h-screen bg-background py-12">
         <div className="container mx-auto px-4">
-          <MultiStepSignup onBack={() => setMode('signin')} />
+          <Signup onBack={() => setMode('signin')} />
         </div>
       </div>
     );

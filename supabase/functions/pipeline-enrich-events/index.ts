@@ -7,7 +7,7 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // Reads pending event staging rows, writes enriched_data, sets enrichment_status.
 // Idempotent (skips already-enriched rows).
 
-const WALL_CLOCK_LIMIT_MS = 45_000
+const WALL_CLOCK_LIMIT_MS = 90_000
 
 Deno.serve(withErrorReporting('pipeline-enrich-events', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -16,7 +16,7 @@ Deno.serve(withErrorReporting('pipeline-enrich-events', async (req) => {
   try {
     const body = await req.json().catch(() => ({}))
     const pipelineRunId = body.pipeline_run_id as string | undefined
-    const batchSize     = Math.min(200, body.batch_size ?? 50)
+    const batchSize     = Math.min(200, body.batch_size ?? 20)
     const dryRun        = body.dry_run === true
 
     let q = supabase

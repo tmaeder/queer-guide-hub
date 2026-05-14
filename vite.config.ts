@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -45,6 +46,13 @@ export default defineConfig(({ mode }) => ({
         filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
       },
       telemetry: false,
+    }),
+    process.env.BUNDLE_STATS === '1' && visualizer({
+      filename: 'bundle-baselines/stats.html',
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true,
+      sourcemap: false,
     }),
   ].filter(Boolean),
   define: {
