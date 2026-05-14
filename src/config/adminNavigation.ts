@@ -239,14 +239,6 @@ export const adminNavSections: AdminNavSection[] = [
         route: '/admin/ingestion-rules',
         adminOnly: true,
       },
-      {
-        id: 'ingestion-rules',
-        label: 'Ingestion Rules',
-        icon: Filter,
-        route: '/admin/ingestion-rules',
-        adminOnly: true,
-        color: '#8b5cf6',
-      },
     ],
   },
 

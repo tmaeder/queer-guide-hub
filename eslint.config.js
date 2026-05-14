@@ -20,6 +20,8 @@ export default tseslint.config(
       "functions/sitemap-places.xml.ts",
       "scripts/seo-check.mjs",
       "supabase/functions/pipeline-review-gate/index.ts",
+      "supabase/functions/pipeline-apply-rules/index.ts",
+      "src/pages/AdminIngestionRules.tsx",
       // Absorbed repos — not linted here
       "Dev/**",
       "client-sdk/**",
