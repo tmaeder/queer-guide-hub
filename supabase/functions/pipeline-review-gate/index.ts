@@ -93,6 +93,16 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
         for (const o of overrides ?? []) {
           trustOverrides.set(o.user_id, o.auto_approve)
         }
+        // Steward+ tier grants fast-track regardless of approved-count.
+        const { data: tierRows } = await supabase
+          .from('user_public_tiers')
+          .select('user_id, tier')
+          .in('user_id', uidArr)
+        for (const t of tierRows ?? []) {
+          if (t.tier === 'steward' || t.tier === 'guardian') {
+            trustOverrides.set(t.user_id, true)
+          }
+        }
       }
     }
 
@@ -129,7 +139,8 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
         if (uid) {
           const override = trustOverrides.get(uid)
           const rep = trustMap.get(uid)
-          if (override !== false && rep && rep.approved >= TRUST_MIN_APPROVED && rep.rejected === 0 && isMinorEdit(item as unknown as Record<string, unknown>)) {
+          const stewardFastTrack = override === true && (!rep || rep.rejected === 0)
+          if ((stewardFastTrack || (override !== false && rep && rep.approved >= TRUST_MIN_APPROVED && rep.rejected === 0)) && isMinorEdit(item as unknown as Record<string, unknown>)) {
             const { error: e } = await supabase
               .from('ingestion_staging')
               .update({
