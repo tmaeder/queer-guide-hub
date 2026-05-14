@@ -98,7 +98,7 @@ export const ExploreMapFiltersPanel = ({
   };
 
   return (
-    <div className="px-3 pt-2 pb-2 bg-background/90 backdrop-blur">
+    <div className="absolute top-3 left-16 right-3 z-20 rounded-2xl border border-border bg-background/85 backdrop-blur-md shadow-md px-3 py-2">
       <div className="flex gap-2 items-center">
         <Popover open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
@@ -124,7 +124,7 @@ export const ExploreMapFiltersPanel = ({
                 }}
                 onFocus={() => setPopoverOpen(true)}
                 onKeyDown={handleEnter}
-                className="pl-8 pr-8 h-9 text-sm"
+                className="pl-8 pr-8 h-9 text-sm rounded-xl"
               />
               {loading && (
                 <Loader2
@@ -154,7 +154,7 @@ export const ExploreMapFiltersPanel = ({
           <PopoverContent
             id="map-search-listbox"
             align="start"
-            className="p-0 w-[--radix-popover-trigger-width]"
+            className="p-0 w-[--radix-popover-trigger-width] rounded-xl border-border shadow-lg"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Command shouldFilter={false}>
@@ -194,7 +194,7 @@ export const ExploreMapFiltersPanel = ({
             aria-label={filtersOpen ? 'Hide filters' : 'Show filters'}
             aria-expanded={filtersOpen}
             onClick={() => setFiltersOpen((o) => !o)}
-            className="h-9 w-9 p-0"
+            className="h-9 w-9 p-0 rounded-xl border border-border"
           >
             <SlidersHorizontal size={16} />
           </Button>
@@ -202,14 +202,14 @@ export const ExploreMapFiltersPanel = ({
           <CollapsibleContent>
             <div className="mt-3 flex gap-2 flex-wrap items-end">
               <div className="flex flex-col gap-1 min-w-[140px]">
-                <Label htmlFor="category-filter" className="text-xs">
+                <Label htmlFor="category-filter" className="text-[11px] uppercase tracking-wider text-muted-foreground">
                   Category
                 </Label>
                 <Input
                   id="category-filter"
                   value={filters.category ?? ''}
                   onChange={(e) => updateFilter('category', e.target.value || undefined)}
-                  className="h-9 text-sm"
+                  className="h-9 text-sm rounded-xl"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export const ExploreMapFiltersPanel = ({
                   variant="ghost"
                   size="sm"
                   onClick={clearAll}
-                  className="text-destructive text-xs"
+                  className="text-destructive text-xs rounded-full"
                 >
                   <X size={14} className="mr-1" />
                   Clear all

@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -45,6 +46,13 @@ export default defineConfig(({ mode }) => ({
         filesToDeleteAfterUpload: ['./dist/assets/js/*.map'],
       },
       telemetry: false,
+    }),
+    process.env.BUNDLE_STATS === '1' && visualizer({
+      filename: 'bundle-baselines/stats.html',
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: true,
+      sourcemap: false,
     }),
   ].filter(Boolean),
   define: {
@@ -118,6 +126,33 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next/')) {
             return 'i18n';
           }
+          if (id.includes('node_modules/@radix-ui/')) {
+            return 'radix';
+          }
+          if (id.includes('node_modules/motion/') || id.includes('node_modules/framer-motion/')) {
+            return 'motion';
+          }
+          if (id.includes('node_modules/@tanstack/react-query')) {
+            return 'react-query';
+          }
+          if (id.includes('node_modules/@tanstack/react-table')) {
+            return 'react-table';
+          }
+          if (id.includes('node_modules/@dnd-kit/')) {
+            return 'dnd-kit';
+          }
+          if (id.includes('node_modules/react-hook-form/') || id.includes('node_modules/@hookform/')) {
+            return 'forms';
+          }
+          if (id.includes('node_modules/zod/')) {
+            return 'zod';
+          }
+          if (id.includes('node_modules/lucide-react/')) {
+            return 'lucide';
+          }
+          if (id.includes('node_modules/cmdk/') || id.includes('node_modules/embla-carousel')) {
+            return 'ui-extras';
+          }
           // Keep scheduler with React
           if (id.includes('node_modules/scheduler/')) {
             return 'vendor';
@@ -147,7 +182,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'production' ? 'hidden' : true,
     ...(mode === 'production' && {
       reportCompressedSize: false,
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 1300,
     }),
   },
 }));

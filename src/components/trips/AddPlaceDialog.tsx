@@ -234,13 +234,17 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
-      <DialogContent>
+      <DialogContent className="rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{t('trips.addPlace.title', 'Add Place')}</DialogTitle>
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+            {t('trips.addPlace.eyebrow', 'New place')}
+          </span>
+          <DialogTitle className="text-2xl font-bold tracking-tight">{t('trips.addPlace.title', 'Add Place')}</DialogTitle>
         </DialogHeader>
 
-        <div className="mt-2 mb-2 flex flex-col gap-1">
-          <Label htmlFor="add-place-day">{t('trips.addPlace.assignToDay', 'Assign to Day')}</Label>
+        <div className="mt-3 mb-1 flex flex-col gap-1.5">
+          <Label htmlFor="add-place-day" className="text-xs uppercase tracking-wider text-muted-foreground">{t('trips.addPlace.assignToDay', 'Assign to Day')}</Label>
           <Select value={dayId || '__none__'} onValueChange={(v) => setDayId(v === '__none__' ? '' : v)}>
             <SelectTrigger id="add-place-day">
               <SelectValue placeholder={t('trips.addPlace.unassigned', 'Unassigned')} />
@@ -265,21 +269,18 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
           <TabsContent value="search">
             <div className="relative">
-              <Search size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t('trips.addPlace.searchPlaceholder', 'Search venues, events, hotels...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-8 pr-8"
+                className="pl-10 pr-10 h-11 rounded-xl"
               />
               {searching && (
-                <Loader2 size={16} className="absolute right-2 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" aria-label="Loading" />
+                <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" aria-label="Loading" />
               )}
             </div>
-            <Button variant="ghost" size="sm" onClick={handleSearch} disabled={!searchQuery.trim()} className="mt-1">
-              {t('common.search', 'Search')}
-            </Button>
 
             {results.length === 0 && !searching && recentSearches.length > 0 && (
               <div className="mt-3">
@@ -296,7 +297,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                     <Badge
                       key={q}
                       variant="outline"
-                      className="cursor-pointer inline-flex items-center gap-1"
+                      className="cursor-pointer inline-flex items-center gap-1 rounded-full hover:bg-muted transition-colors"
                       onClick={() => runSearch(q)}
                     >
                       {q}
@@ -334,7 +335,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                     <Badge
                       key={tf}
                       variant={active ? 'default' : 'outline'}
-                      className="cursor-pointer"
+                      className="cursor-pointer rounded-full px-3 py-1 transition-all hover:shadow-sm"
                       onClick={() => setTypeFilter(tf)}
                     >
                       {`${t(`trips.addPlace.filter.${tf}`, labelFallback)} (${count})`}
@@ -345,7 +346,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
             )}
 
             {filteredResults.length > 0 && (
-              <ul className="mt-2 max-h-[280px] overflow-auto flex flex-col">
+              <ul className="mt-3 max-h-[280px] overflow-auto flex flex-col gap-1 -mx-1 px-1">
                 {filteredResults.map((r) => {
                   const isSelected = selected?.id === r.id && selected?.type === r.type;
                   return (
@@ -353,11 +354,11 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                       <button
                         type="button"
                         onClick={() => setSelected(r)}
-                        className={`w-full text-left min-h-[44px] px-3 py-2 hover:bg-muted ${isSelected ? 'bg-muted' : ''}`}
+                        className={`w-full text-left min-h-[52px] px-3 py-2.5 rounded-xl border transition-all ${isSelected ? 'bg-muted border-foreground/40 shadow-sm' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
                       >
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span>{r.name}</span>
-                          <Badge variant="outline">{r.type}</Badge>
+                          <span className="font-medium">{r.name}</span>
+                          <Badge variant="outline" className="rounded-full text-[10px] uppercase tracking-wider">{r.type}</Badge>
                           {r.type === 'venue' && (
                             <SocialSignalBadges signal={socialSignals?.get(r.id)} />
                           )}

@@ -194,7 +194,7 @@ export default function MultiStepSignup({ onBack }: Props) {
               {t('auth.signup.haveAccount', 'Sign in')}
             </Button>
           </div>
-          <Progress value={progress} className="w-full h-1.5" />
+          <Progress value={progress} className="w-full h-1" />
         </div>
       </CardHeader>
 
@@ -222,18 +222,18 @@ export default function MultiStepSignup({ onBack }: Props) {
 
           <div className="min-h-[280px]">{renderStep()}</div>
 
-          <div className="flex justify-between pt-4 border-t border-border">
-            <Button variant="outline" onClick={goPrev} disabled={currentStep === 1 || isLoading}>
+          <div className="flex justify-between pt-5 border-t border-border">
+            <Button variant="outline" onClick={goPrev} disabled={currentStep === 1 || isLoading} className="rounded-full">
               <ChevronLeft className="w-4 h-4 mr-1.5" />
               {t('common.back', 'Back')}
             </Button>
             {currentStep < totalSteps ? (
-              <Button onClick={goNext} disabled={isLoading}>
+              <Button onClick={goNext} disabled={isLoading} className="rounded-full px-6">
                 {t('common.next', 'Next')}
                 <ChevronRight className="w-4 h-4 ml-1.5" />
               </Button>
             ) : (
-              <Button onClick={handleSubmit} disabled={isLoading}>
+              <Button onClick={handleSubmit} disabled={isLoading} className="rounded-full px-6">
                 {isLoading && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}

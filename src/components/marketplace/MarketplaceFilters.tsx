@@ -118,17 +118,18 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-10"
+            className="pl-11 h-11 rounded-xl"
             aria-label="Search products and services"
           />
         </div>
-        <Button onClick={handleSearch} size="icon" aria-label="Search">
+        <Button onClick={handleSearch} size="icon" className="h-11 w-11 rounded-xl" aria-label="Search">
           <Search style={{ height: 16, width: 16 }} />
         </Button>
         <Button
-          variant="outline"
+          variant={showAllFilters ? 'default' : 'outline'}
           onClick={() => setShowAllFilters(!showAllFilters)}
           size="icon"
+          className="h-11 w-11 rounded-xl"
           aria-label="Toggle filters"
         >
           <Filter style={{ height: 16, width: 16 }} />
@@ -136,12 +137,18 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
       </div>
 
       {showAllFilters && (
-        <div className="flex flex-col gap-4 pt-4">
+        <div className="flex flex-col gap-6 pt-5 mt-1 border-t border-border">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+              Refine
+            </span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="category">Category</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="category" className="text-[11px] uppercase tracking-wider text-muted-foreground">Category</Label>
               <Select value={category} onValueChange={handleCategoryChange}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,10 +162,10 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
               </Select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="subcategory">Subcategory</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="subcategory" className="text-[11px] uppercase tracking-wider text-muted-foreground">Subcategory</Label>
               <Select value={subcategory} onValueChange={setSubcategory} disabled={!category}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl">
                   <SelectValue placeholder="Select subcategory" />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,10 +179,10 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
               </Select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="businessType">Business Type</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="businessType" className="text-[11px] uppercase tracking-wider text-muted-foreground">Business Type</Label>
               <Select value={businessType} onValueChange={setBusinessType}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -191,35 +198,38 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="location">Location</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="location" className="text-[11px] uppercase tracking-wider text-muted-foreground">Location</Label>
               <Input
                 id="location"
                 placeholder="Enter city, state..."
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                className="h-11 rounded-xl"
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="minPrice">Min Price</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="minPrice" className="text-[11px] uppercase tracking-wider text-muted-foreground">Min Price</Label>
               <Input
                 id="minPrice"
                 type="number"
                 placeholder="$0"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
+                className="h-11 rounded-xl"
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="maxPrice">Max Price</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="maxPrice" className="text-[11px] uppercase tracking-wider text-muted-foreground">Max Price</Label>
               <Input
                 id="maxPrice"
                 type="number"
                 placeholder="No limit"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
+                className="h-11 rounded-xl"
               />
             </div>
           </div>
@@ -233,13 +243,13 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           />
 
           <div className="flex gap-2 pt-2">
-            <Button onClick={handleSearch}>
-              <Sliders style={{ height: 16, width: 16 }} />
+            <Button onClick={handleSearch} className="rounded-full h-10 px-5">
+              <Sliders style={{ height: 16, width: 16, marginRight: 6 }} />
               Apply Filters
             </Button>
             {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
-                <X style={{ height: 16, width: 16 }} />
+              <Button variant="outline" onClick={clearFilters} className="rounded-full h-10 px-5">
+                <X style={{ height: 16, width: 16, marginRight: 6 }} />
                 Clear All
               </Button>
             )}
@@ -248,7 +258,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
       )}
 
       {hasActiveFilters && !showAllFilters && (
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="flex flex-wrap gap-1.5 items-center pt-1 px-1">
           <span className="text-sm text-muted-foreground">Active filters:</span>
           {search && (
             <Badge variant="secondary">

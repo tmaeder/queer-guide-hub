@@ -30,6 +30,11 @@ const PUBLIC_ROUTE_LIMITS = {
   mui: 550,
   pdfjs: 500,
   mammoth: 600,
+  // After PR replacing `import * as Icons from 'lucide-react'` with an
+  // explicit icon registry, lucide chunk dropped from ~606 KB raw to
+  // ~72 KB raw. Cap set ~40% above current so adding a few icons to the
+  // registry is fine but a regression to the wildcard pattern fails.
+  lucide: 100,
 };
 
 // Strings that must never appear in the eagerly-loaded `index-*` chunks.

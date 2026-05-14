@@ -113,7 +113,7 @@ export function TripTemplates() {
                       >
                         {template.title}
                       </p>
-                      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                      <p className="text-sm text-white/85">
                         {template.cities}
                       </p>
                     </div>
