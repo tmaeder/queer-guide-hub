@@ -416,7 +416,51 @@
     "empty": {
       "title": "Plan your first trip",
       "description": "Start an itinerary, check LGBTQ+ safety for every destination, and keep everything in one place.",
-      "cta": "Create your first trip"
+      "cta": "Create your first trip",
+      "hero": {
+        "title": "Plan a trip you'll feel safe on.",
+        "subtitle": "Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "Start from scratch",
+          "description": "Empty itinerary, your destinations, your pace.",
+          "cta": "Create trip"
+        },
+        "template": {
+          "title": "Use a template",
+          "description": "Pre-built itineraries you can fork and edit.",
+          "cta": "Browse templates"
+        },
+        "discover": {
+          "title": "Fork a public trip",
+          "description": "Real itineraries from other QG travelers.",
+          "cta": "Open Discover"
+        }
+      },
+      "discoverEyebrow": "From real travelers",
+      "discoverTitle": "Recent public trips",
+      "discoverCta": "Open Discover"
+    },
+    "next": {
+      "live": "Active now",
+      "countdown": "Coming up",
+      "upcoming": "Upcoming",
+      "open": "Open trip",
+      "openLive": "Open today's plan",
+      "today": "Today's view"
+    },
+    "inspired": {
+      "eyebrow": "Inspired by your trips",
+      "title": "Public trips you might like",
+      "cta": "See all"
+    },
+    "save": {
+      "save": "Save",
+      "saved": "Saved",
+      "saveAria": "Save trip",
+      "unsaveAria": "Unsave trip",
+      "error": "Could not update save"
     },
     "filteredEmpty": {
       "title": "No trips match",
@@ -439,7 +483,8 @@
         "planning": "Planning",
         "active": "Active",
         "completed": "Completed",
-        "archived": "Archived"
+        "archived": "Archived",
+        "saved": "Saved"
       },
       "sort": {
         "recent": "Recently updated",
@@ -832,7 +877,91 @@
     },
     "discover": {
       "title": "Places",
-      "button": "Browse marketplace"
+      "button": "Browse marketplace",
+      "eyebrow": "Real travelers",
+      "subtitle": "Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "Filter by city…",
+      "aria": "Discover public trips",
+      "sortAria": "Sort trips",
+      "viewAria": "View mode",
+      "filterAria": "Filter trips",
+      "filtersAria": "Open filters",
+      "filtersButton": "Filters",
+      "activeCountAria": "{{count}} active",
+      "view": {
+        "list": "List view",
+        "map": "Map view"
+      },
+      "sort": {
+        "recent": "Most recent",
+        "trending": "Trending",
+        "most_places": "Most places",
+        "longest": "Longest",
+        "safest": "Safest"
+      },
+      "filter": {
+        "dated": "Has dates",
+        "multiday": "Multi-day",
+        "safe": "Safe destinations"
+      },
+      "filters": {
+        "title": "Filter trips",
+        "travelerType": "Traveler type",
+        "duration": "Duration",
+        "minEquality": "Min equality score",
+        "minEqualityAria": "Minimum equality score",
+        "minEqualityHint": "Hides trips visiting countries below this LGBTQ+ legal equality score.",
+        "noMin": "No min",
+        "quality": "Trip quality",
+        "hasCover": "Has cover photo",
+        "hasOwnerProfile": "Owner has a profile",
+        "clear": "Clear all"
+      },
+      "travelerType": {
+        "any": "Any",
+        "solo": "Solo",
+        "couple": "Couple",
+        "group": "Group",
+        "family": "Family"
+      },
+      "duration": {
+        "any": "Any length",
+        "weekend": "Weekend (1–3 days)",
+        "week": "Week (4–9 days)",
+        "long": "Long (10+ days)"
+      },
+      "region": {
+        "europe": "Europe",
+        "north_america": "North America",
+        "latin_america": "Latin America",
+        "asia": "Asia",
+        "oceania": "Oceania",
+        "africa": "Africa",
+        "middle_east": "Middle East",
+        "other": "Other"
+      },
+      "staffPicks": {
+        "eyebrow": "Staff picks",
+        "title": "Trips worth copying"
+      },
+      "all": "All public trips",
+      "moreInspiration": "More inspiration",
+      "moreInspirationDescription": "Few public trips match. Start from a template instead.",
+      "emptyTitle": "No public trips yet",
+      "emptyFiltered": "No public trips match that city. Try a different one.",
+      "emptyDescription": "Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "A QG traveler",
+      "placeCount": "{{count}} places",
+      "fork": "Fork into my trips",
+      "forkAria": "Fork this trip",
+      "forking": "Forking…",
+      "forked": "Trip forked",
+      "forkedDescription": "Your copy is ready — edit days and places freely.",
+      "forkError": "Could not create trip",
+      "inspiredTitle": "Inspired by: {{title}}",
+      "signalsAria": "Trip activity",
+      "forkCount": "{{count}} forks",
+      "saveCount": "{{count}} saves"
     },
     "polls": {
       "createdToast": "Poll created",
