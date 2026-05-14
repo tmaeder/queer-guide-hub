@@ -109,10 +109,6 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
     <div className="flex flex-col gap-4 p-4 rounded-2xl border border-border bg-card/60 backdrop-blur-sm">
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -123,7 +119,6 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-11 h-11 rounded-xl"
-            className="pl-10"
             aria-label="Search products and services"
           />
         </div>
