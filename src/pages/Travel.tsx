@@ -9,7 +9,6 @@ import { PrideScroller } from '@/components/travel/PrideScroller';
 import { InspirationGrid } from '@/components/travel/InspirationGrid';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
-
 import { useRecommendations } from '@/hooks/useRecommendations';
 
 export default function Travel() {

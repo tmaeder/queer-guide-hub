@@ -14,7 +14,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, Trash2, Pencil, Link2 } from 'lucide-react';
@@ -71,14 +70,8 @@ export default function AdminIngestionRules() {
 
   const { data: rules = [], isLoading } = useQuery<Rule[]>({
     queryKey: ['ingestion_rules'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ingestion_rules')
-        .select('*')
-        .order('priority', { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as unknown as Rule[];
-    },
+    queryFn: () =>
+      listFrom<Rule>('ingestion_rules', '*', { col: 'priority', ascending: true }),
   });
 
   const upsertMut = useMutation({
@@ -99,12 +92,26 @@ export default function AdminIngestionRules() {
         if (error) throw error;
       } else {
         const { error } = await supabase.from('ingestion_rules').insert({
+        const { error } = await updateRow('ingestion_rules', rule.id, {
+          name: rule.name ?? '',
+          description: rule.description,
+          enabled: rule.enabled,
+          priority: rule.priority,
+          match: rule.match,
+          actions: rule.actions,
+          updated_at: new Date().toISOString(),
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await insertInto('ingestion_rules', {
           name: rule.name ?? '',
           description: rule.description,
           enabled: rule.enabled ?? true,
           priority: rule.priority ?? 100,
           match: (rule.match ?? {}) as never,
           actions: (rule.actions ?? {}) as never,
+          match: rule.match ?? {},
+          actions: rule.actions ?? {},
         });
         if (error) throw error;
       }
@@ -121,6 +128,7 @@ export default function AdminIngestionRules() {
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('ingestion_rules').delete().eq('id', id);
+      const { error } = await deleteRow('ingestion_rules', id);
       if (error) throw error;
     },
     onSuccess: () => {

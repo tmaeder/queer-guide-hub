@@ -1672,7 +1672,22 @@
       "clearAll": "Clear all",
       "emptyTitle": "No personalities match your filters",
       "emptyDescription": "Try clearing a filter or searching for a different name.",
-      "loadingMore": "Loading more…"
+      "loadingMore": "Loading more…",
+      "view": {
+        "grid": "Grid",
+        "timeline": "Timeline",
+        "map": "Map"
+      },
+      "editorial": {
+        "bornThisWeek": "Born this week",
+        "diedThisWeek": "Remembered this week",
+        "browseByEra": "Browse by era",
+        "browseByField": "Browse by field"
+      },
+      "detail": {
+        "inTheNews": "In the news",
+        "relatedEvents": "Related events"
+      }
     },
     "groups": {
       "title": "Community Groups",

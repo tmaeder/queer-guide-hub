@@ -186,7 +186,7 @@ export default function PersonalityDetail() {
             <PersonalitySidebar
               personality={personality}
               countryId={countryId}
-              onTagClick={(tag) => navigate(`/resources/${encodeURIComponent(tag)}`)}
+              onTagClick={(tag) => navigate(`/personalities?tag=${encodeURIComponent(tag)}`)}
             />
           ) : null
         }
