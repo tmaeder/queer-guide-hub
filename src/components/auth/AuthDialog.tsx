@@ -32,6 +32,19 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
     if (open) setMode(defaultMode);
   }, [open, defaultMode]);
 
+  // Signup uses a dedicated page (OAuth redirects, links). When the dialog
+  // is opened in signup mode, close it and route to /auth?mode=signup.
+  // Must run as an effect — calling navigate() during render caused an
+  // infinite loop (React error #185) because Header mounts a second
+  // AuthDialog with defaultMode="signup" that always rendered with
+  // mode === 'signup'.
+  useEffect(() => {
+    if (open && mode === 'signup') {
+      onOpenChange(false);
+      navigate('/auth?mode=signup');
+    }
+  }, [open, mode, onOpenChange, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -64,12 +77,7 @@ export function AuthDialog({ open, onOpenChange, defaultMode = 'signin' }: AuthD
     navigate('/auth?mode=signup');
   };
 
-  if (mode === 'signup') {
-    // Dialog can't host the full Signup component cleanly (links, OAuth redirects),
-    // so route to the dedicated /auth page in signup mode.
-    goToSignUp();
-    return null;
-  }
+  if (!open || mode === 'signup') return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

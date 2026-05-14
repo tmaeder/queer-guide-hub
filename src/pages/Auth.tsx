@@ -49,10 +49,11 @@ export default function Auth() {
   const [resetSent, setResetSent] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
 
-  if (user) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (user) navigate('/');
+  }, [user, navigate]);
+
+  if (user) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
