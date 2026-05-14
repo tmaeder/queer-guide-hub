@@ -43,18 +43,24 @@ const currencies = [
 interface Props {
   open: boolean;
   onClose: () => void;
+  /** Optional pre-seeded geo selection (e.g. from /travel hero deep link). */
+  initialGeo?: GeoSelection | null;
+  /** Optional pre-seeded start date (YYYY-MM-DD). */
+  initialStart?: string;
+  /** Optional pre-seeded end date (YYYY-MM-DD). */
+  initialEnd?: string;
 }
 
-export function CreateTripDialog({ open, onClose }: Props) {
+export function CreateTripDialog({ open, onClose, initialGeo, initialStart, initialEnd }: Props) {
   const { t, ready } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { createTrip } = useTripMutations();
   const { toast } = useToast();
-  const [geo, setGeo] = useState<GeoSelection | null>(null);
+  const [geo, setGeo] = useState<GeoSelection | null>(initialGeo ?? null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState(initialStart ?? '');
+  const [endDate, setEndDate] = useState(initialEnd ?? '');
   const [currency, setCurrency] = useState('EUR');
 
   const dateError = useMemo(() => {

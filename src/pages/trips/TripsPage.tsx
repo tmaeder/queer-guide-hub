@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { Plus, Map, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -6,6 +7,7 @@ import { useTrips } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
 import { TripCard } from '@/components/trips/TripCard';
 import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
+import type { GeoSelection } from '@/components/trips/create/CityCountryAutocomplete';
 import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { TripsInboxSection } from '@/components/trips/TripsInboxSection';
@@ -28,7 +30,34 @@ export default function TripsPage() {
   const navigate = useLocalizedNavigate();
   const { data: trips, isLoading, error, refetch } = useTrips();
   const [createOpen, setCreateOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
+
+  // Seed from /travel deep-link: ?cityId=&cityName=&countryId=&countryName=&countryCode=&timezone=&start=&end=
+  const seedGeo = useMemo<GeoSelection | null>(() => {
+    const cityId = searchParams.get('cityId');
+    const cityName = searchParams.get('cityName');
+    const countryId = searchParams.get('countryId');
+    const countryName = searchParams.get('countryName');
+    if (!cityId || !cityName || !countryId || !countryName) return null;
+    return {
+      cityId,
+      cityName,
+      countryId,
+      countryName,
+      countryCode: searchParams.get('countryCode'),
+      timezone: searchParams.get('timezone'),
+    };
+  }, [searchParams]);
+  const seedStart = searchParams.get('start') ?? undefined;
+  const seedEnd = searchParams.get('end') ?? undefined;
+
+  // Auto-open the create dialog when arriving from /travel with a city seed.
+  useEffect(() => {
+    if (seedGeo && !createOpen) {
+      setCreateOpen(true);
+    }
+  }, [seedGeo, createOpen]);
   const [statusFilter, setStatusFilter] = useState<TripStatusFilter>('all');
   const [sortKey, setSortKey] = useState<TripSortKey>('recent');
 
@@ -169,7 +198,27 @@ export default function TripsPage() {
         </div>
       )}
 
-      <CreateTripDialog open={createOpen} onClose={() => setCreateOpen(false)} />
+      <CreateTripDialog
+        open={createOpen}
+        onClose={() => {
+          setCreateOpen(false);
+          if (seedGeo) {
+            // Clear deep-link seed so reopening doesn't re-trigger auto-open.
+            setSearchParams(
+              (prev) => {
+                ['cityId', 'cityName', 'countryId', 'countryName', 'countryCode', 'timezone', 'start', 'end'].forEach(
+                  (k) => prev.delete(k),
+                );
+                return prev;
+              },
+              { replace: true },
+            );
+          }
+        }}
+        initialGeo={seedGeo}
+        initialStart={seedStart}
+        initialEnd={seedEnd}
+      />
     </div>
   );
 }
