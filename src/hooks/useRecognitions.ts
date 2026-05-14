@@ -105,6 +105,68 @@ export function useContributionMetrics(year: number) {
   });
 }
 
+export interface MailingAddressRow {
+  recipient: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  region: string | null;
+  postal_code: string | null;
+  country_code: string;
+  notes: string | null;
+  opted_in_zine: boolean;
+}
+
+export function useMailingAddress(userId: string | undefined) {
+  return useQuery<{ row: MailingAddressRow | null; missingTable: boolean }>({
+    queryKey: ['mailing-address', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('contributor_mailing_addresses')
+        .select('*')
+        .eq('user_id', userId!)
+        .maybeSingle();
+      if (error) {
+        if (TABLE_MISSING(error)) return { row: null, missingTable: true };
+        throw error;
+      }
+      return { row: (data ?? null) as MailingAddressRow | null, missingTable: false };
+    },
+  });
+}
+
+export function useMailingAddressMutations(userId: string | undefined) {
+  const queryClient = useQueryClient();
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ['mailing-address', userId] });
+
+  const upsert = useMutation({
+    mutationFn: async (row: MailingAddressRow) => {
+      if (!userId) throw new Error('not signed in');
+      const { error } = await supabase
+        .from('contributor_mailing_addresses')
+        .upsert({ ...row, user_id: userId }, { onConflict: 'user_id' });
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+
+  const remove = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('not signed in');
+      const { error } = await supabase
+        .from('contributor_mailing_addresses')
+        .delete()
+        .eq('user_id', userId);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+
+  return { upsert, remove };
+}
+
 export function useRecognitionMutations(year: number) {
   const queryClient = useQueryClient();
   const invalidate = () =>

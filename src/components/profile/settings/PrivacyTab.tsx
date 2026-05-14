@@ -5,6 +5,7 @@ import {
 } from '@/components/ui/select';
 import { SwitchField } from './fields';
 import { PasskeyButton } from '@/components/auth/PasskeyButton';
+import { RecognitionMailingForm } from '@/components/profile/RecognitionMailingForm';
 import type { ProfileFormData } from '@/types/profileForm';
 
 const VISIBILITY_OPTIONS = [
@@ -128,6 +129,8 @@ export function PrivacyTab({ formData, hasPasskey, onPrivacyChange }: PrivacyTab
           </div>
         </CardContent>
       </Card>
+
+      {ps.appear_in_recognition && <RecognitionMailingForm />}
     </div>
   );
 }
