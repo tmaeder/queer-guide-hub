@@ -313,7 +313,11 @@
       "fitAll": "عرض الكل",
       "fitAllAria": "ضبط كل الأماكن على الشاشة",
       "filterAll": "كل الأيام",
-      "dayLabel": "اليوم {{number}}"
+      "dayLabel": "اليوم {{number}}",
+      "showAttractions": "[AR] Attractions",
+      "showEvents": "[AR] Events",
+      "suggestedVenue": "[AR] Suggested venue",
+      "eventOn": "[AR] Event · {{date}}"
     },
     "safety": {
       "emptyTitle": "لا توجد معلومات أمان بعد",
@@ -708,7 +712,8 @@
       "displayName": "How should we call you?",
       "pronouns": "Select your pronouns",
       "country": "Optional",
-      "language": "Select language"
+      "language": "Select language",
+      "passwordMin8": "[AR] At least 8 characters"
     },
     "errors": {
       "emailRequired": "Email is required",
@@ -738,7 +743,9 @@
       "age": "I confirm I am 18 years or older",
       "termsAria": "Accept terms of service",
       "privacyAria": "Accept privacy policy",
-      "ageAria": "Confirm age 18 or older"
+      "ageAria": "Confirm age 18 or older",
+      "combined": "[AR] I agree to the <1>Terms</1> and <3>Privacy Policy</3>, and confirm I am 18 or older.",
+      "combinedAria": "[AR] Accept terms, privacy and confirm 18 or older"
     },
     "oauth": {
       "google": "Continue with Google",
@@ -758,7 +765,9 @@
         "account": "Account",
         "profile": "Profile",
         "interests": "Interests"
-      }
+      },
+      "blurb": "[AR] Free, takes a minute.",
+      "haveAccountQ": "[AR] Already have an account? Sign in"
     },
     "pronouns": {
       "she/her": "she/her",
@@ -800,7 +809,17 @@
       "resend": "Resend verification email",
       "resendIn": "Resend in {{seconds}}s",
       "resent": "Verification email sent. Please check your inbox.",
-      "backToLogin": "Back to sign in"
+      "backToLogin": "Back to sign in",
+      "continue": "[AR] Continue to The Queer Guide",
+      "banner": "[AR] Verify your email to unlock contributions and messaging.",
+      "bannerSent": "[AR] Verification email sent. Check your inbox.",
+      "resendShort": "[AR] Resend",
+      "gateTitle": "[AR] Verify your email first",
+      "gateDescription": "[AR] Confirm your email to contribute or message other members."
+    },
+    "required": {
+      "title": "[AR] Sign in required",
+      "description": "[AR] Please sign in to continue."
     }
   },
   "onboarding": {
@@ -1106,7 +1125,8 @@
       "accessibility": "إمكانية الوصول",
       "bookings": "الحجوزات",
       "tripInbox": "بريد الرحلة",
-      "extension": "إضافة المتصفح"
+      "extension": "إضافة المتصفح",
+      "footprint": "[AR] Footprint"
     },
     "modes": {
       "dating": "أبحث عن الحب",
@@ -1122,7 +1142,10 @@
       "accessibility": "إمكانية الوصول",
       "legal": "قانوني",
       "contact": "تواصل معنا"
-    }
+    },
+    "signUp": "[AR] Sign up",
+    "navigation": "[AR] Navigation",
+    "signIn": "[AR] Sign in"
   },
   "pages": {
     "venues": {
@@ -1220,7 +1243,8 @@
       "filteredEmpty": {
         "title": "لا توجد فعاليات تطابق فلاترك",
         "body": "حاول تعديل الفلاتر أو البحث لرؤية نتائج أكثر."
-      }
+      },
+      "prideSubtype": "[AR] Pride type"
     },
     "eventDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفعالية.",
@@ -1279,7 +1303,25 @@
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
       "exploreCta": "الوجهات",
-      "exploreDescription": "مدن وبلدان مع معلومات أمان وأدلة سفر."
+      "exploreDescription": "مدن وبلدان مع معلومات أمان وأدلة سفر.",
+      "hotels": {
+        "typeLabel": "[AR] Type",
+        "priceMin": "[AR] Min €",
+        "priceMax": "[AR] Max €",
+        "priceUnavailable": "[AR] Price on request",
+        "clearFilters": "[AR] Clear filters",
+        "noResultsWithFilters": "[AR] No hotels match your filters in {{city}}.",
+        "type": {
+          "all": "[AR] Any type",
+          "hotel": "[AR] Hotel",
+          "boutique": "[AR] Boutique Hotel",
+          "bnb": "[AR] B&B",
+          "hostel": "[AR] Hostel",
+          "guesthouse": "[AR] Guesthouse",
+          "apartment": "[AR] Apartment",
+          "resort": "[AR] Resort"
+        }
+      }
     },
     "marketplace": {
       "title": "السوق",
@@ -1329,7 +1371,14 @@
       "emptyTitle": "لا مقالات بعد.",
       "emptyDescription": "عد لاحقاً.",
       "previous": "السابق",
-      "next": "التالي"
+      "next": "التالي",
+      "filteredEmptyTitle": "[AR] No news matches your filters.",
+      "filteredEmptyDescription": "[AR] Reset filters or try another topic.",
+      "resetFilters": "[AR] Reset filters",
+      "filterSearch": "[AR] Search",
+      "filterCategory": "[AR] Category",
+      "filterSource": "[AR] Source",
+      "filterFeatured": "[AR] Featured only"
     },
     "newsDetail": {
       "notFound": "المقال غير موجود",

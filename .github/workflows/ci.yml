@@ -1,0 +1,51 @@
+name: CI
+
+# Per-PR correctness gate. Three independent jobs run in parallel:
+# typecheck, lint, and unit tests. Each is a hard fail on the PR check.
+# Bundle-shape and a11y gates live in their own workflows
+# (bundle-shape.yml, a11y.yml) with narrower path filters; this one
+# runs on every PR so anything that breaks tsc/eslint/vitest is caught
+# before review.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - run: npm run typecheck
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - run: npm test
