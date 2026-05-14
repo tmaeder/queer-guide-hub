@@ -49,7 +49,8 @@ export function Footer() {
             ))}
           </nav>
 
-          <span className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
+          {/* WCAG 1.4.4 — copyright bumped from 10.4px → 12px. */}
+          <span className="text-xs text-muted-foreground">
             &copy; {currentYear} Queer Guide
           </span>
         </div>
