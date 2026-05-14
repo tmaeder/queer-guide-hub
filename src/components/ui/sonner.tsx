@@ -10,7 +10,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme === 'system' ? undefined : theme}
       className="toaster group"
-      richColors
+      // No richColors. Strict B&W: toasts use neutral surfaces;
+      // semantic differentiation comes from the type icon Sonner
+      // injects (success / error / warning / info), not from hue.
+      // Avoids the dark-mode white-on-red contrast fail (~3.96:1)
+      // that richColors produced on destructive toasts.
       closeButton
       toastOptions={{
         classNames: {
@@ -25,4 +29,5 @@ const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Toaster, toast };

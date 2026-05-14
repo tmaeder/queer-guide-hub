@@ -243,6 +243,25 @@ export function useMarketplaceStats() {
   });
 }
 
+/** Fetch open pipeline health alerts */
+export function usePipelineHealthAlerts() {
+  return useQuery({
+    queryKey: ['pipeline-health-alerts'],
+    queryFn: async () => {
+      const { data, error } = await untypedFrom('pipeline_health_alerts')
+        .select('kind, subject, detail, first_seen_at')
+        .is('resolved_at', null);
+      if (error) throw error;
+      const bySubject: Record<string, { kind: string; detail: Record<string, unknown> }> = {};
+      for (const row of (data || []) as Array<{ kind: string; subject: string; detail: Record<string, unknown> }>) {
+        bySubject[row.subject] = { kind: row.kind, detail: row.detail };
+      }
+      return bySubject;
+    },
+    refetchInterval: 30_000,
+  });
+}
+
 /** Fetch pipeline definitions for listing */
 export function usePipelineDefinitionsList() {
   return useQuery({

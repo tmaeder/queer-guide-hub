@@ -3,8 +3,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { MapPin, Landmark } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardImage } from '@/components/ui/card';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import type { QueerVillageWithRelations } from '@/hooks/useQueerVillages';
 
 interface VillageCardProps {
@@ -35,26 +33,20 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
           )}
         </CardImage>
 
-        <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, lineHeight: 1.3 }} noWrap>
-            {village.name}
-          </Typography>
+        <div className="p-4 flex-1 flex flex-col gap-1">
+          <p className="text-base font-semibold leading-tight truncate">{village.name}</p>
 
           {(cityName || countryName) && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+            <div className="flex items-center gap-1 text-muted-foreground">
               <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
-              <Typography variant="body2" noWrap>
-                {[cityName, countryName].filter(Boolean).join(', ')}
-              </Typography>
-            </Box>
+              <p className="text-sm truncate">{[cityName, countryName].filter(Boolean).join(', ')}</p>
+            </div>
           )}
 
           {village.description && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mt: 0.5,
+            <p
+              className="text-sm text-muted-foreground mt-1"
+              style={{
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
@@ -63,9 +55,9 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
               }}
             >
               {village.description}
-            </Typography>
+            </p>
           )}
-        </Box>
+        </div>
       </Card>
     </LocalizedLink>
   );

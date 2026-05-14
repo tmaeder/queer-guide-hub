@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
-import Slider from '@mui/material/Slider';
-import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
+import { Loader2 } from 'lucide-react';
 import {
   Search,
   Zap,
@@ -29,6 +23,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import {
   Select,
   SelectContent,
@@ -50,14 +46,13 @@ import {
 } from '@/hooks/useImportHubQueries';
 import { DuplicatePairCard } from './import-hub/DuplicatePairCard';
 import { MergeDialog } from './import-hub/MergeDialog';
-import { brandColors } from '@/theme/muiTheme';
 
 // ==================== Entity Type Config ====================
 
 const ENTITY_TYPES = [
   { key: 'venues', label: 'Venues', icon: MapPin, color: '#ef4444' },
   { key: 'events', label: 'Events', icon: Calendar, color: '#f59e0b' },
-  { key: 'personalities', label: 'Personalities', icon: Users, color: brandColors.main },
+  { key: 'personalities', label: 'Personalities', icon: Users, color: 'hsl(var(--foreground))' },
   { key: 'news_articles', label: 'News', icon: Newspaper, color: '#3b82f6' },
   { key: 'cities', label: 'Cities', icon: Building2, color: '#10b981' },
   { key: 'tags', label: 'Tags', icon: Tag, color: '#ec4899' },
@@ -89,39 +84,33 @@ export function AutoCleanDuplicatesTab() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col" style={{ gap: 24 }}>
       {/* Summary Cards */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' },
-          gap: 1.5,
-        }}
-      >
+      <div className="grid grid-cols-3 md:grid-cols-6" style={{ gap: 12 }}>
         {ENTITY_TYPES.map(({ key, label, icon: Icon, color }) => {
           const count = (counts as unknown as Record<string, number>)?.[key] ?? 0;
           const bg = count === 0 ? '#10b98115' : count <= 5 ? '#f59e0b15' : '#ef444415';
           const border = count === 0 ? '#10b98130' : count <= 5 ? '#f59e0b30' : '#ef444430';
           return (
-            <Box
+            <div
               key={key}
-              sx={{
-                p: 1.5,
-                borderRadius: 1,
-                bgcolor: bg,
+              className="text-center"
+              style={{
+                padding: 12,
+                borderRadius: 4,
+                backgroundColor: bg,
                 border: `1px solid ${border}`,
-                textAlign: 'center',
               }}
             >
               <Icon style={{ width: 18, height: 18, color, margin: '0 auto 4px' }} />
-              <Typography sx={{ fontSize: '1.25rem', fontWeight: 700 }}>{count}</Typography>
-              <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+              <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{count}</p>
+              <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                 {label}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           );
         })}
-      </Box>
+      </div>
 
       {/* Scan & Clean */}
       <ScanAndCleanSection
@@ -139,28 +128,32 @@ export function AutoCleanDuplicatesTab() {
       <PendingReviewSection />
 
       {/* Merge History — collapsed by default */}
-      <Box>
-        <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', py: 1 }}
-          onClick={() => setShowHistory(!showHistory)}
-        >
-          <History style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Merge History
-          </Typography>
-          <IconButton size="small" sx={{ ml: 'auto' }}>
-            {showHistory ? (
-              <ChevronUp style={{ width: 16, height: 16 }} />
-            ) : (
-              <ChevronDown style={{ width: 16, height: 16 }} />
-            )}
-          </IconButton>
-        </Box>
-        <Collapse in={showHistory}>
-          <MergeHistorySection />
-        </Collapse>
-      </Box>
-    </Box>
+      <div>
+        <Collapsible open={showHistory} onOpenChange={setShowHistory}>
+          <button
+            type="button"
+            className="flex items-center cursor-pointer w-full"
+            style={{ gap: 8, paddingTop: 8, paddingBottom: 8 }}
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            <History style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
+            <span className="font-semibold" style={{ fontSize: '0.875rem' }}>
+              Merge History
+            </span>
+            <span className="ml-auto inline-flex items-center justify-center" style={{ width: 28, height: 28 }}>
+              {showHistory ? (
+                <ChevronUp style={{ width: 16, height: 16 }} />
+              ) : (
+                <ChevronDown style={{ width: 16, height: 16 }} />
+              )}
+            </span>
+          </button>
+          <CollapsibleContent>
+            <MergeHistorySection />
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+    </div>
   );
 }
 
@@ -186,7 +179,7 @@ function ScanAndCleanSection({
   lastResult: AutoCleanResult | null;
 }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col" style={{ gap: 24 }}>
       <Card>
         <CardHeader>
           <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -195,31 +188,31 @@ function ScanAndCleanSection({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', mb: 2 }}>
+          <p className="text-sm mb-4" style={{ color: 'var(--muted-foreground)' }}>
             Scans all content types for duplicates in batches of 500. High-confidence matches (above
             threshold) are auto-merged keeping the richer record. Lower-confidence pairs are flagged
             for manual review. Also clears duplicate and high-score merge candidates from Import
             Staging.
-          </Typography>
+          </p>
 
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: 220 }}>
-              <Typography
-                variant="caption"
-                sx={{ color: 'var(--muted-foreground)', whiteSpace: 'nowrap' }}
+          <div className="flex flex-wrap items-center mb-4" style={{ gap: 16 }}>
+            <div className="flex items-center" style={{ gap: 8, width: 220 }}>
+              <span
+                className="text-xs whitespace-nowrap"
+                style={{ color: 'var(--muted-foreground)' }}
               >
                 Auto-merge threshold: {(threshold * 100).toFixed(0)}%
-              </Typography>
+              </span>
               <Slider
-                value={threshold}
-                onChange={(_, v) => onThresholdChange(v as number)}
+                value={[threshold]}
+                onValueChange={([v]: number[]) => onThresholdChange(v)}
                 min={0.85}
                 max={0.95}
                 step={0.01}
-                size="small"
                 disabled={isRunning}
+                className="flex-1"
               />
-            </Box>
+            </div>
 
             {!isRunning ? (
               <>
@@ -242,7 +235,7 @@ function ScanAndCleanSection({
                 Stop
               </Button>
             )}
-          </Box>
+          </div>
 
           {/* Batch Progress */}
           {isRunning && <BatchProgressDisplay progress={progress} />}
@@ -251,7 +244,7 @@ function ScanAndCleanSection({
 
       {/* Results */}
       {lastResult && <ResultsSummary result={lastResult} />}
-    </Box>
+    </div>
   );
 }
 
@@ -274,27 +267,50 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
     pct = 92;
   }
 
+  const indeterminate = phase === 'processing';
+
   return (
-    <Box sx={{ mb: 1 }}>
+    <div style={{ marginBottom: 8 }}>
       {/* Progress info row */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-        <Typography variant="caption" sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}>
+      <div className="flex justify-between" style={{ marginBottom: 4 }}>
+        <span className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>
           {message}
-        </Typography>
-        <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+        </span>
+        <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
           {totalScanned.toLocaleString()} scanned
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* Progress bar */}
-      <LinearProgress
-        variant={phase === 'processing' ? 'indeterminate' : 'determinate'}
-        value={pct}
-        sx={{ borderRadius: 1, height: 6, mb: 1.5 }}
-      />
+      <div
+        className="bg-muted overflow-hidden"
+        style={{ borderRadius: 4, height: 6, marginBottom: 12, position: 'relative' }}
+      >
+        {indeterminate ? (
+          <div
+            className="absolute"
+            style={{
+              top: 0,
+              bottom: 0,
+              width: '40%',
+              backgroundColor: 'hsl(var(--primary))',
+              animation: 'indeterminate 1.5s ease-in-out infinite',
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: `${pct}%`,
+              height: '100%',
+              backgroundColor: 'hsl(var(--primary))',
+              transition: 'width 0.3s',
+            }}
+          />
+        )}
+      </div>
 
       {/* Per-type status chips */}
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <div className="flex flex-wrap" style={{ gap: 8 }}>
         {ENTITY_TYPES.filter((e) => e.key in typeProgress).map(({ key, label, icon: Icon }) => {
           const tp = typeProgress[key];
           if (!tp) return null;
@@ -302,17 +318,18 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
           const isDone = tp.done;
 
           return (
-            <Box
+            <div
               key={key}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1,
-                py: 0.25,
-                borderRadius: 0.5,
+              className="flex items-center"
+              style={{
+                gap: 4,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingTop: 2,
+                paddingBottom: 2,
+                borderRadius: 2,
                 fontSize: '0.75rem',
-                bgcolor: isDone ? '#10b98115' : isCurrent ? '#3b82f615' : 'var(--muted)',
+                backgroundColor: isDone ? '#10b98115' : isCurrent ? '#3b82f615' : 'var(--muted)',
                 border: `1px solid ${isDone ? '#10b98130' : isCurrent ? '#3b82f630' : 'transparent'}`,
                 transition: 'all 0.2s',
               }}
@@ -320,7 +337,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               {isDone ? (
                 <CheckCircle style={{ width: 12, height: 12, color: '#10b981' }} />
               ) : isCurrent ? (
-                <CircularProgress size={12} />
+                <Loader2 className="animate-spin" style={{ width: 12, height: 12 }} aria-label="Loading" />
               ) : (
                 <Icon style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
               )}
@@ -332,31 +349,32 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
                     : `${tp.scanned.toLocaleString()}/${tp.total.toLocaleString()}`}
                 </span>
               )}
-            </Box>
+            </div>
           );
         })}
 
         {/* Processing phase indicator */}
         {phase === 'processing' && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              px: 1,
-              py: 0.25,
-              borderRadius: 0.5,
+          <div
+            className="flex items-center"
+            style={{
+              gap: 4,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingTop: 2,
+              paddingBottom: 2,
+              borderRadius: 2,
               fontSize: '0.75rem',
-              bgcolor: '#6366f115',
+              backgroundColor: '#6366f115',
               border: '1px solid #6366f130',
             }}
           >
-            <CircularProgress size={12} />
+            <Loader2 className="animate-spin" style={{ width: 12, height: 12 }} aria-label="Loading" />
             <span>Processing</span>
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -364,107 +382,106 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
 
 function ResultsSummary({ result }: { result: AutoCleanResult }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col" style={{ gap: 16 }}>
       {/* Banner */}
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+      <div className="flex flex-wrap" style={{ gap: 16 }}>
         {result.total_auto_merged > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 2,
-              py: 1,
-              borderRadius: 1,
-              bgcolor: result.dry_run ? '#3b82f615' : '#10b98115',
+          <div
+            className="flex items-center"
+            style={{
+              gap: 8,
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 8,
+              paddingBottom: 8,
+              borderRadius: 4,
+              backgroundColor: result.dry_run ? '#3b82f615' : '#10b98115',
               border: `1px solid ${result.dry_run ? '#3b82f630' : '#10b98130'}`,
             }}
           >
             <CheckCircle
               style={{ width: 16, height: 16, color: result.dry_run ? '#3b82f6' : '#10b981' }}
             />
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            <p className="text-sm font-semibold">
               {result.dry_run ? 'Would auto-merge' : 'Auto-merged'}: {result.total_auto_merged}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
         {result.total_flagged > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 2,
-              py: 1,
-              borderRadius: 1,
-              bgcolor: '#f59e0b15',
+          <div
+            className="flex items-center"
+            style={{
+              gap: 8,
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 8,
+              paddingBottom: 8,
+              borderRadius: 4,
+              backgroundColor: '#f59e0b15',
               border: '1px solid #f59e0b30',
             }}
           >
             <AlertTriangle style={{ width: 16, height: 16, color: '#f59e0b' }} />
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              Flagged for review: {result.total_flagged}
-            </Typography>
-          </Box>
+            <p className="text-sm font-semibold">Flagged for review: {result.total_flagged}</p>
+          </div>
         )}
         {result.total_auto_merged === 0 && result.total_flagged === 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 2,
-              py: 1,
-              borderRadius: 1,
-              bgcolor: '#10b98115',
+          <div
+            className="flex items-center"
+            style={{
+              gap: 8,
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 8,
+              paddingBottom: 8,
+              borderRadius: 4,
+              backgroundColor: '#10b98115',
               border: '1px solid #10b98130',
             }}
           >
             <CheckCircle style={{ width: 16, height: 16, color: '#10b981' }} />
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              No duplicates found
-            </Typography>
-          </Box>
+            <p className="text-sm font-semibold">No duplicates found</p>
+          </div>
         )}
         {/* Total scanned badge */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            px: 2,
-            py: 1,
-            borderRadius: 1,
-            bgcolor: 'var(--muted)',
+        <div
+          className="flex items-center bg-muted"
+          style={{
+            gap: 8,
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingTop: 8,
+            paddingBottom: 8,
+            borderRadius: 4,
             border: '1px solid var(--border)',
           }}
         >
           <Database style={{ width: 16, height: 16, color: 'var(--muted-foreground)' }} />
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          <p className="text-sm font-semibold">
             Total scanned: {result.total_scanned.toLocaleString()}
-          </Typography>
-        </Box>
-      </Box>
+          </p>
+        </div>
+      </div>
 
       {/* Per-type breakdown */}
       <Card>
         <CardContent>
-          <Box
-            sx={{
-              display: 'grid',
+          <div
+            className="grid bg-muted"
+            style={{
               gridTemplateColumns: '140px 130px 100px 100px 1fr',
               gap: 0,
               borderBottom: '2px solid var(--border)',
-              bgcolor: 'var(--muted)',
-              px: 2,
-              py: 1,
+              paddingLeft: 16,
+              paddingRight: 16,
+              paddingTop: 8,
+              paddingBottom: 8,
             }}
           >
             {['Type', 'Scanned', 'Auto-merged', 'Flagged', 'Errors'].map((h) => (
-              <Typography
+              <span
                 key={h}
-                variant="caption"
-                sx={{
+                style={{
                   fontWeight: 600,
                   fontSize: '0.7rem',
                   textTransform: 'uppercase',
@@ -472,81 +489,76 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                 }}
               >
                 {h}
-              </Typography>
+              </span>
             ))}
-          </Box>
-          {Object.entries(result.by_type).map(([type, data]) => {
+          </div>
+          {Object.entries(result.by_type).map(([type, data], idx, arr) => {
             const cfg = ENTITY_TYPES.find((e) => e.key === type);
             const Icon = cfg?.icon ?? Database;
             const hasTotal = data.total && data.total > 0;
             const allScanned = hasTotal && data.scanned >= data.total;
+            const isLast = idx === arr.length - 1;
             return (
-              <Box
+              <div
                 key={type}
-                sx={{
-                  display: 'grid',
+                className="grid"
+                style={{
                   gridTemplateColumns: '140px 130px 100px 100px 1fr',
                   gap: 0,
-                  px: 2,
-                  py: 1,
-                  borderBottom: '1px solid var(--border)',
-                  '&:last-child': { borderBottom: 'none' },
+                  paddingLeft: 16,
+                  paddingRight: 16,
+                  paddingTop: 8,
+                  paddingBottom: 8,
+                  borderBottom: isLast ? 'none' : '1px solid var(--border)',
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className="flex items-center" style={{ gap: 8 }}>
                   <Icon style={{ width: 14, height: 14, color: cfg?.color }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {cfg?.label ?? type}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant="body2">
+                  <p className="text-sm font-medium">{cfg?.label ?? type}</p>
+                </div>
+                <div className="flex items-center" style={{ gap: 4 }}>
+                  <p className="text-sm">
                     {data.scanned.toLocaleString()}
                     {hasTotal && (
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ color: 'var(--muted-foreground)' }}
-                      >
+                      <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                         {' / '}
                         {data.total!.toLocaleString()}
-                      </Typography>
+                      </span>
                     )}
-                  </Typography>
+                  </p>
                   {allScanned && (
                     <CheckCircle
                       style={{ width: 12, height: 12, color: '#10b981', flexShrink: 0 }}
                     />
                   )}
-                </Box>
-                <Typography
-                  variant="body2"
-                  sx={{
+                </div>
+                <p
+                  className="text-sm"
+                  style={{
                     color: data.auto_merged > 0 ? '#10b981' : undefined,
                     fontWeight: data.auto_merged > 0 ? 600 : 400,
                   }}
                 >
                   {data.auto_merged}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
+                </p>
+                <p
+                  className="text-sm"
+                  style={{
                     color: data.flagged_for_review > 0 ? '#f59e0b' : undefined,
                     fontWeight: data.flagged_for_review > 0 ? 600 : 400,
                   }}
                 >
                   {data.flagged_for_review}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
+                </p>
+                <p
+                  style={{
                     color: data.errors?.length > 0 ? '#ef4444' : 'var(--muted-foreground)',
                     fontSize: '0.8rem',
                   }}
                 >
                   {data.errors?.length > 0 ? data.errors.join('; ') : '—'}
-                </Typography>
-              </Box>
+                </p>
+              </div>
             );
           })}
         </CardContent>
@@ -556,7 +568,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
       {result.staging && !result.staging.error && (
         <StagingResultsCard staging={result.staging} dryRun={result.dry_run} />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -582,11 +594,11 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Box
-          sx={{
-            display: 'grid',
+        <div
+          className="grid"
+          style={{
             gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: 1.5,
+            gap: 12,
           }}
         >
           {staging.phase1_skipped_duplicates > 0 && (
@@ -637,12 +649,15 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
               dryRun={dryRun}
             />
           )}
-        </Box>
+        </div>
         {staging.errors?.length > 0 && (
-          <Typography variant="caption" sx={{ color: '#ef4444', mt: 1, display: 'block' }}>
+          <span
+            className="text-xs block"
+            style={{ color: '#ef4444', marginTop: 8 }}
+          >
             Errors: {staging.errors.slice(0, 3).join('; ')}
             {staging.errors.length > 3 && ` (+${staging.errors.length - 3} more)`}
-          </Typography>
+          </span>
         )}
       </CardContent>
     </Card>
@@ -661,12 +676,19 @@ function StagingStat({
   dryRun: boolean;
 }) {
   return (
-    <Box sx={{ p: 1.5, borderRadius: 1, bgcolor: `${color}10`, border: `1px solid ${color}25` }}>
-      <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color }}>{value}</Typography>
-      <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
+    <div
+      style={{
+        padding: 12,
+        borderRadius: 4,
+        backgroundColor: `${color}10`,
+        border: `1px solid ${color}25`,
+      }}
+    >
+      <p style={{ fontSize: '1.25rem', fontWeight: 700, color }}>{value}</p>
+      <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
         {dryRun ? `Would: ${label}` : label}
-      </Typography>
-    </Box>
+      </span>
+    </div>
   );
 }
 
@@ -689,9 +711,9 @@ function PendingReviewSection() {
   const lowConfidence = pairs.filter((p) => p.confidence < 0.7);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <div className="flex flex-col" style={{ gap: 16 }}>
       {/* Filter bar */}
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      <div className="flex items-center" style={{ gap: 16 }}>
         <Select value={entityFilter} onValueChange={setEntityFilter}>
           <SelectTrigger style={{ width: 180 }}>
             <SelectValue />
@@ -713,39 +735,35 @@ function PendingReviewSection() {
         >
           <RefreshCw style={{ width: 14, height: 14 }} />
         </Button>
-        <Typography variant="body2" sx={{ color: 'var(--muted-foreground)' }}>
+        <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
           {pairs.length} pending pair{pairs.length !== 1 ? 's' : ''}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={28} />
-        </Box>
+        <div className="flex justify-center" style={{ paddingTop: 32, paddingBottom: 32 }}>
+          <Loader2 className="animate-spin" style={{ width: 28, height: 28 }} aria-label="Loading" />
+        </div>
       ) : pairs.length === 0 ? (
         <Card>
           <CardContent>
-            <Box
-              sx={{
-                mx: 'auto',
+            <div
+              className="flex items-center justify-center bg-muted mx-auto"
+              style={{
                 width: 80,
                 height: 80,
-                bgcolor: 'var(--muted)',
                 borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 2,
+                marginBottom: 16,
               }}
             >
               <CheckCircle style={{ width: 40, height: 40, color: '#10b981' }} />
-            </Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+            </div>
+            <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
               No Pending Duplicates
-            </Typography>
-            <Typography sx={{ color: 'var(--muted-foreground)' }}>
+            </h3>
+            <p style={{ color: 'var(--muted-foreground)' }}>
               Run a scan from the "Scan & Clean" tab to detect duplicates.
-            </Typography>
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -790,7 +808,7 @@ function PendingReviewSection() {
           }}
         />
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -807,25 +825,27 @@ function DuplicateGroup({
 }) {
   const [expanded, setExpanded] = useState(true);
   return (
-    <Box>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, cursor: 'pointer' }}
+    <div>
+      <button
+        type="button"
+        className="flex items-center cursor-pointer mb-2 w-full"
+        style={{ gap: 8 }}
         onClick={() => setExpanded(!expanded)}
       >
-        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color }} />
-        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+        <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: color }} />
+        <span className="font-semibold" style={{ fontSize: '0.875rem' }}>
           {label}
-        </Typography>
+        </span>
         <Badge variant="secondary">{pairs.length}</Badge>
-      </Box>
+      </button>
       {expanded && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col" style={{ gap: 12 }}>
           {pairs.map((pair) => (
             <DuplicatePairCard key={pair.id} pair={pair} onMerge={onMerge} />
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -844,50 +864,49 @@ function MergeHistorySection() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={28} />
-          </Box>
+          <div className="flex justify-center" style={{ paddingTop: 32, paddingBottom: 32 }}>
+            <Loader2 className="animate-spin" style={{ width: 28, height: 28 }} aria-label="Loading" />
+          </div>
         ) : history.length === 0 ? (
-          <Typography sx={{ color: 'var(--muted-foreground)', textAlign: 'center', py: 4 }}>
+          <p className="text-center" style={{ color: 'var(--muted-foreground)', paddingTop: 32, paddingBottom: 32 }}>
             No merges have been performed yet.
-          </Typography>
+          </p>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col" style={{ gap: 8 }}>
             {history.map((entry: Record<string, unknown>) => {
-              const details = entry.details || {};
+              const details = (entry.details as Record<string, unknown>) || {};
               return (
-                <Box
-                  key={entry.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    p: 1.5,
-                    borderRadius: 1,
-                    bgcolor: 'var(--muted)',
+                <div
+                  key={entry.id as string}
+                  className="flex items-center bg-muted"
+                  style={{
+                    gap: 16,
+                    padding: 12,
+                    borderRadius: 4,
                     fontSize: '0.85rem',
                   }}
                 >
                   <Merge style={{ width: 14, height: 14, color: '#3b82f6', flexShrink: 0 }} />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      {details.entity_type || 'unknown'}: Kept "{details.keep_name || '?'}", removed
-                      "{details.remove_name || '?'}"
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'var(--muted-foreground)' }}>
-                      {details.fk_updates || 0} references updated
-                    </Typography>
-                  </Box>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'var(--muted-foreground)', flexShrink: 0 }}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="text-sm font-medium">
+                      {(details.entity_type as string) || 'unknown'}: Kept "
+                      {(details.keep_name as string) || '?'}", removed "
+                      {(details.remove_name as string) || '?'}"
+                    </p>
+                    <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                      {(details.fk_updates as number) || 0} references updated
+                    </span>
+                  </div>
+                  <span
+                    className="text-xs"
+                    style={{ color: 'var(--muted-foreground)', flexShrink: 0 }}
                   >
-                    {new Date(entry.created_at).toLocaleString()}
-                  </Typography>
-                </Box>
+                    {new Date(entry.created_at as string).toLocaleString()}
+                  </span>
+                </div>
               );
             })}
-          </Box>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -7,14 +7,19 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Send, Check } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  fetchSendEventMembers,
+  fetchSendEventGroups,
+  postEventToGroup,
+  type SendEventMemberOption as MemberOption,
+  type SendEventGroupOption as GroupOption,
+} from '@/hooks/useSendEventDialog';
 import { useMessaging } from '@/hooks/useMessaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -28,12 +33,6 @@ interface SendEventDialogProps {
   eventPath: string;
 }
 
-interface MemberOption {
-  id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-}
-
 export function SendEventDialog({
   open,
   onOpenChange,
@@ -45,9 +44,14 @@ export function SendEventDialog({
   const { user } = useAuth();
   const { startConversation, sendMessage } = useMessaging();
   const { toast } = useToast();
+
+  const [activeTab, setActiveTab] = useState<'member' | 'group'>('member');
   const [search, setSearch] = useState('');
   const [members, setMembers] = useState<MemberOption[]>([]);
   const [selectedMember, setSelectedMember] = useState<MemberOption | null>(null);
+  const [groups, setGroups] = useState<GroupOption[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<GroupOption | null>(null);
+  const [loadingGroups, setLoadingGroups] = useState(false);
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -55,37 +59,32 @@ export function SendEventDialog({
   useEffect(() => {
     if (!open || !user) return;
     setSelectedMember(null);
+    setSelectedGroup(null);
     setNote('');
     setSearch('');
+    setActiveTab('member');
     fetchMembers('');
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMembers defined below, re-run on open/user change
+    fetchGroups();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user]);
 
   const fetchMembers = async (query: string) => {
     if (!user) return;
     setLoadingMembers(true);
     try {
-      let q = supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .neq('user_id', user.id)
-        .order('display_name')
-        .limit(30);
-
-      if (query.trim()) {
-        q = q.ilike('display_name', `%${query.trim()}%`);
-      }
-
-      const { data } = await q;
-      setMembers(
-        (data || []).map((p) => ({
-          id: p.user_id,
-          display_name: p.display_name,
-          avatar_url: p.avatar_url,
-        })),
-      );
+      setMembers(await fetchSendEventMembers(user.id, query));
     } finally {
       setLoadingMembers(false);
+    }
+  };
+
+  const fetchGroups = async () => {
+    if (!user) return;
+    setLoadingGroups(true);
+    try {
+      setGroups(await fetchSendEventGroups(user.id));
+    } finally {
+      setLoadingGroups(false);
     }
   };
 
@@ -93,8 +92,19 @@ export function SendEventDialog({
     if (!open) return;
     const timer = setTimeout(() => fetchMembers(search), 300);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchMembers defined above, re-run on search/open change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, open]);
+
+  const buildEventMessage = () => {
+    const eventUrl = `${window.location.origin}${eventPath}`;
+    const parts = [
+      `📅 ${eventTitle}`,
+      [eventDate, eventVenue].filter(Boolean).join(' · '),
+      eventUrl,
+    ];
+    if (note.trim()) parts.push('', note.trim());
+    return parts.join('\n');
+  };
 
   const handleSend = async () => {
     if (!selectedMember || !user) return;
@@ -102,21 +112,25 @@ export function SendEventDialog({
     try {
       const conversationId = await startConversation(selectedMember.id);
       if (!conversationId) throw new Error('Failed to create conversation');
-
-      const eventUrl = `${window.location.origin}${eventPath}`;
-      const parts = [
-        `📅 ${eventTitle}`,
-        [eventDate, eventVenue].filter(Boolean).join(' · '),
-        eventUrl,
-      ];
-      if (note.trim()) parts.push('', note.trim());
-
-      await sendMessage(conversationId, parts.join('\n'));
-
+      await sendMessage(conversationId, buildEventMessage());
       toast({ title: 'Sent', description: `Event sent to ${selectedMember.display_name || 'member'}` });
       onOpenChange(false);
     } catch {
       toast({ title: 'Error', description: 'Failed to send event', variant: 'destructive' });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleSendToGroup = async () => {
+    if (!selectedGroup || !user) return;
+    setSending(true);
+    try {
+      await postEventToGroup(selectedGroup.id, user.id, buildEventMessage());
+      toast({ title: 'Posted', description: `Event shared to ${selectedGroup.name}` });
+      onOpenChange(false);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to share event', variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -130,77 +144,96 @@ export function SendEventDialog({
       .slice(0, 2)
       .toUpperCase();
 
+  const renderRow = (
+    id: string,
+    name: string | null,
+    avatarUrl: string | null,
+    selected: boolean,
+    onSelect: () => void,
+  ) => (
+    <div
+      key={id}
+      onClick={onSelect}
+      className={`flex items-center gap-3 px-3 py-2 rounded cursor-pointer ${selected ? 'bg-accent' : 'hover:bg-muted'}`}
+    >
+      <Avatar style={{ width: 36, height: 36 }}>
+        <AvatarImage src={avatarUrl || undefined} />
+        <AvatarFallback>{initials(name)}</AvatarFallback>
+      </Avatar>
+      <p className="text-sm flex-1">{name || 'Anonymous'}</p>
+      {selected && <Check style={{ width: 16, height: 16, color: 'hsl(var(--primary))' }} />}
+    </div>
+  );
+
+  const canSend = activeTab === 'member' ? !!selectedMember : !!selectedGroup;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Send to Member</DialogTitle>
-          <DialogDescription>Share this event with a member via DM</DialogDescription>
+          <DialogTitle>Share Event</DialogTitle>
+          <DialogDescription>Send this event to a member or post it to a group</DialogDescription>
         </DialogHeader>
 
-        <Box sx={{ position: 'relative', mt: 2 }}>
-          <Search
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 16,
-              height: 16,
-              color: 'hsl(var(--muted-foreground))',
-            }}
-          />
-          <Input
-            placeholder="Search members..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ paddingLeft: 36 }}
-          />
-        </Box>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'member' | 'group')}>
+          <TabsList style={{ width: '100%', marginTop: 8 }}>
+            <TabsTrigger value="member" style={{ flex: 1 }}>Member</TabsTrigger>
+            <TabsTrigger value="group" style={{ flex: 1 }}>Group</TabsTrigger>
+          </TabsList>
 
-        <ScrollArea style={{ height: 240, marginTop: 8 }}>
-          {loadingMembers && members.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-              Loading...
-            </Typography>
-          ) : members.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-              No members found
-            </Typography>
-          ) : (
-            members.map((member) => {
-              const selected = selectedMember?.id === member.id;
-              return (
-                <Box
-                  key={member.id}
-                  onClick={() => setSelectedMember(selected ? null : member)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    px: 1.5,
-                    py: 1,
-                    borderRadius: 1,
-                    cursor: 'pointer',
-                    bgcolor: selected ? 'action.selected' : 'transparent',
-                    '&:hover': { bgcolor: selected ? 'action.selected' : 'action.hover' },
-                  }}
-                >
-                  <Avatar style={{ width: 36, height: 36 }}>
-                    <AvatarImage src={member.avatar_url || undefined} />
-                    <AvatarFallback>{initials(member.display_name)}</AvatarFallback>
-                  </Avatar>
-                  <Typography variant="body2" sx={{ flex: 1 }}>
-                    {member.display_name || 'Anonymous'}
-                  </Typography>
-                  {selected && <Check style={{ width: 16, height: 16, color: 'hsl(var(--primary))' }} />}
-                </Box>
-              );
-            })
-          )}
-        </ScrollArea>
+          <TabsContent value="member">
+            <div className="relative mt-3">
+              <Search
+                style={{
+                  position: 'absolute',
+                  left: 12,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: 16,
+                  height: 16,
+                  color: 'hsl(var(--muted-foreground))',
+                }}
+              />
+              <Input
+                placeholder="Search members..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ paddingLeft: 36 }}
+              />
+            </div>
+            <ScrollArea style={{ height: 220, marginTop: 8 }}>
+              {loadingMembers && members.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+              ) : members.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No members found</p>
+              ) : (
+                members.map((m) =>
+                  renderRow(m.id, m.display_name, m.avatar_url, selectedMember?.id === m.id, () =>
+                    setSelectedMember(selectedMember?.id === m.id ? null : m),
+                  ),
+                )
+              )}
+            </ScrollArea>
+          </TabsContent>
 
-        {selectedMember && (
+          <TabsContent value="group">
+            <ScrollArea style={{ height: 264, marginTop: 8 }}>
+              {loadingGroups && groups.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+              ) : groups.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No groups joined yet</p>
+              ) : (
+                groups.map((g) =>
+                  renderRow(g.id, g.name, g.image_url, selectedGroup?.id === g.id, () =>
+                    setSelectedGroup(selectedGroup?.id === g.id ? null : g),
+                  ),
+                )
+              )}
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+
+        {canSend && (
           <Input
             placeholder="Add a note (optional)"
             value={note}
@@ -213,7 +246,11 @@ export function SendEventDialog({
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button size="sm" onClick={handleSend} disabled={!selectedMember || sending}>
+          <Button
+            size="sm"
+            onClick={activeTab === 'member' ? handleSend : handleSendToGroup}
+            disabled={!canSend || sending}
+          >
             <Send style={{ width: 14, height: 14, marginRight: 6 }} />
             {sending ? 'Sending...' : 'Send'}
           </Button>

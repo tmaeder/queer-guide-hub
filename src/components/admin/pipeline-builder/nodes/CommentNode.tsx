@@ -59,7 +59,7 @@ function CommentNode({ data, selected, id }: NodeProps) {
 
       <div className="flex items-center gap-1.5 px-2 py-1 border-b" style={{ borderColor: `${scheme.border}50` }}>
         <StickyNote className="h-3 w-3 opacity-60" />
-        <span className="text-[10px] font-medium opacity-60">comment</span>
+        <span className="text-2xs font-medium opacity-60">comment</span>
         <div className="ml-auto">
           <Popover>
             <PopoverTrigger asChild>
@@ -91,7 +91,19 @@ function CommentNode({ data, selected, id }: NodeProps) {
         </div>
       </div>
 
-      <div className="p-2" onDoubleClick={() => setEditing(true)}>
+      <div
+        className="p-2"
+        role="button"
+        tabIndex={0}
+        aria-label="Edit comment text"
+        onDoubleClick={() => setEditing(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setEditing(true);
+          }
+        }}
+      >
         {editing ? (
           <textarea
             ref={textareaRef}

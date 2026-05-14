@@ -100,7 +100,7 @@ export default function CronEditor({ value, onChange }: CronEditorProps) {
         <div className="flex gap-1">
           <button
             onClick={() => setMode('preset')}
-            className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
               mode === 'preset'
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -108,7 +108,7 @@ export default function CronEditor({ value, onChange }: CronEditorProps) {
           >Preset</button>
           <button
             onClick={() => setMode('raw')}
-            className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+            className={`text-2xs px-2 py-0.5 rounded border transition-colors ${
               mode === 'raw'
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background text-muted-foreground border-border hover:bg-accent'
@@ -151,12 +151,12 @@ export default function CronEditor({ value, onChange }: CronEditorProps) {
             className="h-8 text-xs font-mono"
           />
           {!validation.valid && (
-            <div className="text-[10px] text-destructive">{validation.error}</div>
+            <div className="text-2xs text-destructive">{validation.error}</div>
           )}
         </>
       )}
 
-      <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+      <div className="text-xs2 text-muted-foreground flex items-center gap-1">
         <span className="opacity-60">→</span>
         <span>{description}</span>
       </div>
@@ -164,4 +164,5 @@ export default function CronEditor({ value, onChange }: CronEditorProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { describeCron, validateCron };

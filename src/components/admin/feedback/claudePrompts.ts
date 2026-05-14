@@ -34,9 +34,9 @@ export interface ApiErrorSubmission {
 
 const SERVICE_FILE_HINTS: Record<string, string> = {
   'cloudflare-worker': 'Dev/workers/',
-  'edge-function': 'Dev/web/supabase/functions/',
+  'edge-function': 'supabase/functions/',
   scraper: 'Dev/scraper/src/',
-  frontend: 'Dev/web/src/',
+  frontend: 'src/',
   sentry: '',
 };
 

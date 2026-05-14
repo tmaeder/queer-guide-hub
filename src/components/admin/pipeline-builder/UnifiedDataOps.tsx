@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, Component, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, Link } from 'react-router';
 import { ReactFlowProvider } from '@xyflow/react';
-import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, GitMerge, Plug, Bug, Bell, Merge, Activity, History, Webhook } from 'lucide-react';
+import { LayoutDashboard, Workflow, BarChart3, Shield, Newspaper, ClipboardCheck, AlertTriangle, Map, MapPin, GitMerge, Plug, Bug, Bell, Merge, Activity, History, Webhook } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const OverviewTab = lazy(() => import('./tabs/OverviewTab'));
@@ -9,10 +9,10 @@ const PipelineBuilder = lazy(() => import('./PipelineBuilder'));
 const MonitorTab = lazy(() => import('./tabs/MonitorTab'));
 const HealthTab = lazy(() => import('./tabs/HealthTab'));
 const NewsTab = lazy(() => import('./tabs/NewsTab'));
-const ReviewQueueTab = lazy(() => import('./tabs/ReviewQueueTab'));
 const DLQTab = lazy(() => import('./tabs/DLQTab'));
 const CoverageTab = lazy(() => import('./tabs/CoverageTab'));
 const GeoReviewTab = lazy(() => import('./tabs/GeoReviewTab'));
+const GeoMismatchTab = lazy(() => import('./tabs/GeoMismatchTab'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const ErrorsTab = lazy(() => import('./tabs/ErrorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
@@ -22,8 +22,9 @@ const AuditTab          = lazy(() => import('./tabs/AuditTab'));
 const IntegrationsTab   = lazy(() => import('./tabs/IntegrationsTab'));
 
 type Tab =
-  | 'overview' | 'builder' | 'monitor' | 'sources' | 'review' | 'dlq'
+  | 'overview' | 'builder' | 'monitor' | 'sources' | 'dlq'
   | 'errors' | 'alerts' | 'coverage' | 'news' | 'health' | 'geo-review'
+  | 'geo-mismatch'
   | 'dedup' | 'scraper-health' | 'audit' | 'integrations';
 
 const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -31,9 +32,9 @@ const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: s
   { key: 'builder',        label: 'Builder',    icon: Workflow },
   { key: 'monitor',        label: 'Monitor',    icon: BarChart3 },
   { key: 'sources',        label: 'Sources',    icon: Plug },
-  { key: 'review',         label: 'Review',     icon: ClipboardCheck },
   { key: 'dedup',          label: 'Dedup',      icon: Merge },
   { key: 'geo-review',     label: 'Geo Review', icon: GitMerge },
+  { key: 'geo-mismatch',   label: 'Geo Mismatch', icon: MapPin },
   { key: 'dlq',            label: 'DLQ',        icon: AlertTriangle },
   { key: 'errors',         label: 'Errors',     icon: Bug },
   { key: 'alerts',         label: 'Alerts',     icon: Bell },
@@ -50,9 +51,9 @@ const TAB_COMPONENTS: Record<Tab, React.LazyExoticComponent<React.ComponentType>
   builder: PipelineBuilder,
   monitor: MonitorTab,
   sources: SourcesTab,
-  review: ReviewQueueTab,
   dedup: DedupDecisionsTab,
   'geo-review': GeoReviewTab,
+  'geo-mismatch': GeoMismatchTab,
   dlq: DLQTab,
   errors: ErrorsTab,
   alerts: AlertsTab,
@@ -96,7 +97,8 @@ class TabErrorBoundary extends Component<{ children: ReactNode; tab: string }, {
 
 export default function UnifiedDataOps() {
   const [params, setParams] = useSearchParams();
-  const activeTab = (params.get('tab') as Tab) || 'overview';
+  const rawTab = params.get('tab') as Tab;
+  const activeTab = rawTab && rawTab in TAB_COMPONENTS ? rawTab : 'overview';
 
   const switchTab = useCallback((tab: Tab) => {
     setParams(tab === 'overview' ? {} : { tab });
@@ -125,7 +127,7 @@ export default function UnifiedDataOps() {
               role="tab"
               aria-selected={isActive}
               onClick={() => switchTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-[13px] whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
                 isActive
                   ? 'border-primary text-primary font-semibold'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
@@ -136,6 +138,13 @@ export default function UnifiedDataOps() {
             </button>
           );
         })}
+        <Link
+          to="/admin/review"
+          className="flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap text-muted-foreground hover:text-foreground transition-colors ml-auto"
+        >
+          <ClipboardCheck className="h-[15px] w-[15px]" />
+          Review Queue →
+        </Link>
       </div>
 
       {needsReactFlow ? <ReactFlowProvider>{content}</ReactFlowProvider> : content}

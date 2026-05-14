@@ -1,21 +1,8 @@
 /**
  * ReviewQueue -- Shows all content items currently in "review" state across all content types.
- * Features: vertical timeline layout, quick approve/reject actions, sort/filter controls,
- * rich empty state, and relative timestamps showing how long items have been waiting.
  */
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Tooltip from '@mui/material/Tooltip';
+import { useEffect, useState, useCallback, useMemo, useContext } from 'react';
 import {
   Clock,
   CheckCircle2,
@@ -29,9 +16,17 @@ import {
   CheckCheck,
   Loader2,
 } from 'lucide-react';
-import Checkbox from '@mui/material/Checkbox';
-import { useContext } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import {
+  fetchCMSReviewQueueMetadata,
+  fetchRecordTitle,
+} from '@/hooks/useCMSContentMetadata';
 import { getContentType, getContentTypeIds } from '@/config/contentTypeRegistry';
 import { useCMSWorkflow } from '@/hooks/useCMSWorkflow';
 import { AdminShellContext } from '@/components/admin/shell/AdminShell';
@@ -48,13 +43,11 @@ interface ReviewQueueItem {
 }
 
 interface ReviewQueueProps {
-  /** Called when editing an item. Falls back to AdminShell context. */
   onEdit?: (contentType: string, itemId: string) => void;
 }
 
 type SortOrder = 'newest' | 'oldest';
 
-/** Compute a human-readable "waiting since" string */
 function formatWaitingDuration(isoString: string | undefined): string {
   if (!isoString) return '';
   try {
@@ -76,7 +69,6 @@ function formatWaitingDuration(isoString: string | undefined): string {
 }
 
 export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
-  // Fallback to AdminShell context for editor integration
   const shellCtx = useContext(AdminShellContext);
   const onEdit = propOnEdit ?? ((ct: string, id: string) => shellCtx?.openEditor(ct, id));
   const [items, setItems] = useState<ReviewQueueItem[]>([]);
@@ -86,14 +78,11 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  // Filters and sorting
   const [filterContentType, setFilterContentType] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
-  // Workflow hook for approve/reject
   const { transition } = useCMSWorkflow('review' as WorkflowState);
 
-  // Content type options for filter dropdown
   const contentTypeOptions = useMemo(() => {
     const ids = getContentTypeIds();
     return ids
@@ -108,27 +97,19 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     setLoading(true);
     setActionError(null);
     try {
-      const { data, error } = await supabase
-        .from('cms_content_metadata' as 'events')
-        .select('*')
-        .eq('workflow_state', 'review')
-        .order('last_edited_at', { ascending: false });
+      const metaItems = await fetchCMSReviewQueueMetadata<CMSContentMetadata>();
 
-      if (error) throw error;
-
-      const metaItems = (data || []) as unknown as CMSContentMetadata[];
-
-      // Enrich with title from source tables
       const enriched: ReviewQueueItem[] = [];
       for (const meta of metaItems) {
         const config = getContentType(meta.source_table);
         if (!config) continue;
 
-        const { data: record } = await supabase
-          .from(config.tableName as 'events')
-          .select(config.titleField)
-          .eq(config.primaryKey, meta.source_id)
-          .single();
+        const record = await fetchRecordTitle(
+          config.tableName,
+          config.primaryKey,
+          meta.source_id,
+          config.titleField,
+        );
 
         enriched.push({
           metadata: meta,
@@ -153,7 +134,6 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     loadQueue();
   }, [loadQueue]);
 
-  // Handle approve action
   const handleApprove = useCallback(
     async (item: ReviewQueueItem) => {
       setActionLoading(item.metadata.id);
@@ -165,7 +145,6 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
       );
       setActionLoading(null);
       if (success) {
-        // Remove from list optimistically
         setItems((prev) => prev.filter((i) => i.metadata.id !== item.metadata.id));
       } else {
         setActionError(`Failed to approve "${item.title}".`);
@@ -174,11 +153,10 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     [transition],
   );
 
-  // Handle reject action (back to draft with comment requirement)
   const handleReject = useCallback(
     async (item: ReviewQueueItem) => {
       const comment = window.prompt('Please provide a reason for requesting changes:');
-      if (!comment?.trim()) return; // Requires comment per workflow config
+      if (!comment?.trim()) return;
 
       setActionLoading(item.metadata.id);
       setActionError(null);
@@ -198,8 +176,6 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     [transition],
   );
 
-  // ── Selection helpers ──────────────────────────────────────────
-
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -214,8 +190,6 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
       prev.size === items.length ? new Set() : new Set(items.map((i) => i.metadata.id)),
     );
   }, [items]);
-
-  // ── Bulk approve ─────────────────────────────────────────────
 
   const handleBulkApprove = useCallback(async () => {
     const targets = items.filter((i) => selectedIds.has(i.metadata.id));
@@ -246,11 +220,9 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
     setBulkLoading(true);
     setActionError(null);
-    let _successCount = 0;
 
     for (const item of items) {
-      const ok = await transition(item.metadata.source_table, item.metadata.source_id, 'published');
-      if (ok) _successCount++;
+      await transition(item.metadata.source_table, item.metadata.source_id, 'published');
     }
 
     setBulkLoading(false);
@@ -258,7 +230,6 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
     loadQueue();
   }, [items, transition, loadQueue]);
 
-  // Filtered and sorted items
   const displayItems = useMemo(() => {
     let filtered = items;
     if (filterContentType !== 'all') {
@@ -272,427 +243,252 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 10,
-          gap: 2,
-        }}
-      >
-        <CircularProgress size={36} />
-        <Typography variant="body2" color="text.secondary">
-          Loading review queue...
-        </Typography>
-      </Box>
+      <div className="flex flex-col items-center justify-center py-10 gap-2">
+        <Loader2 className="h-9 w-9 animate-spin" aria-label="Loading" />
+        <p className="text-sm text-muted-foreground">Loading review queue...</p>
+      </div>
     );
   }
 
   return (
-    <Box>
-      {/* ── Header ──────────────────────────────────────────── */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 3,
-          flexWrap: 'wrap',
-          gap: 1.5,
-        }}
-      >
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-            Review Queue
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-1.5">
+        <div>
+          <h5 className="text-2xl font-bold mb-0.5">Review Queue</h5>
+          <p className="text-sm text-muted-foreground">
             {items.length} item{items.length !== 1 ? 's' : ''} awaiting review
-          </Typography>
-        </Box>
+          </p>
+        </div>
         {items.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <div className="flex gap-1 items-center">
             {selectedIds.size > 0 && (
               <Button
-                size="small"
-                variant="contained"
-                color="success"
+                size="sm"
                 disabled={bulkLoading}
                 onClick={handleBulkApprove}
-                startIcon={
-                  bulkLoading ? (
-                    <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                  ) : (
-                    <CheckCheck size={14} />
-                  )
-                }
-                sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+                className="font-semibold text-[0.8rem] bg-green-600 hover:bg-green-700 text-white"
               >
+                {bulkLoading ? (
+                  <Loader2 size={14} className="animate-spin mr-1" />
+                ) : (
+                  <CheckCheck size={14} className="mr-1" />
+                )}
                 Approve Selected ({selectedIds.size})
               </Button>
             )}
             <Button
-              size="small"
-              variant="outlined"
-              color="success"
+              size="sm"
+              variant="outline"
               disabled={bulkLoading}
               onClick={handleApproveAll}
-              startIcon={
-                bulkLoading ? (
-                  <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                ) : (
-                  <CheckCheck size={14} />
-                )
-              }
-              sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+              className="font-semibold text-[0.8rem] border-green-600 text-green-600 hover:bg-green-50"
             >
+              {bulkLoading ? (
+                <Loader2 size={14} className="animate-spin mr-1" />
+              ) : (
+                <CheckCheck size={14} className="mr-1" />
+              )}
               Approve All ({items.length})
             </Button>
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
 
-      {/* ── Action error banner ─────────────────────────────── */}
+      {/* Action error */}
       {actionError && (
-        <Alert severity="error" onClose={() => setActionError(null)} sx={{ mb: 2 }}>
-          {actionError}
+        <Alert variant="destructive" className="mb-2">
+          <AlertDescription>{actionError}</AlertDescription>
         </Alert>
       )}
 
-      {/* ── Select All + Filters / Sort ────────────────────── */}
+      {/* Filters */}
       {items.length > 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 2,
-            mb: 3,
-            flexWrap: 'wrap',
-            alignItems: 'center',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <div className="flex gap-2 mb-3 flex-wrap items-center">
+          <div className="flex items-center gap-0.5">
             <Checkbox
-              size="small"
               checked={selectedIds.size === displayItems.length && displayItems.length > 0}
-              indeterminate={selectedIds.size > 0 && selectedIds.size < displayItems.length}
-              onChange={toggleSelectAll}
+              onCheckedChange={toggleSelectAll}
             />
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+            <span className="text-[0.8rem] text-muted-foreground">
               {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
-            </Typography>
-          </Box>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="review-filter-label">
-              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Filter style={{ width: 14, height: 14 }} />
-                Content Type
-              </Box>
-            </InputLabel>
-            <Select
-              labelId="review-filter-label"
-              value={filterContentType}
-              onChange={(e) => setFilterContentType(e.target.value)}
-              label="Content Type"
-              sx={{ fontSize: '0.875rem' }}
-            >
-              <MenuItem value="all">All Types</MenuItem>
-              {contentTypeOptions.map((ct) => (
-                <MenuItem key={ct.id} value={ct.id}>
-                  {ct.label}
-                </MenuItem>
-              ))}
+            </span>
+          </div>
+          <div className="min-w-[180px]">
+            <Label className="text-xs flex items-center gap-0.5 mb-1">
+              <Filter className="w-3.5 h-3.5" />
+              Content Type
+            </Label>
+            <Select value={filterContentType} onValueChange={setFilterContentType}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {contentTypeOptions.map((ct) => (
+                  <SelectItem key={ct.id} value={ct.id}>
+                    {ct.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel id="review-sort-label">
-              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <ArrowUpDown style={{ width: 14, height: 14 }} />
-                Sort
-              </Box>
-            </InputLabel>
-            <Select
-              labelId="review-sort-label"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-              label="Sort"
-              sx={{ fontSize: '0.875rem' }}
-            >
-              <MenuItem value="newest">Newest First</MenuItem>
-              <MenuItem value="oldest">Oldest First</MenuItem>
+          </div>
+          <div className="min-w-[140px]">
+            <Label className="text-xs flex items-center gap-0.5 mb-1">
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              Sort
+            </Label>
+            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as SortOrder)}>
+              <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+              </SelectContent>
             </Select>
-          </FormControl>
-        </Box>
+          </div>
+        </div>
       )}
 
-      {/* ── Empty State ─────────────────────────────────────── */}
+      {/* Empty State */}
       {displayItems.length === 0 && items.length === 0 ? (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            py: 8,
-            px: 4,
-            textAlign: 'center',
-          }}
-        >
-          {/* Checkmark-in-circle illustration */}
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              bgcolor: 'success.main',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mb: 2.5,
-              opacity: 0.9,
-              boxShadow: (theme) => `0 0 0 8px ${theme.palette.success.main}18`,
-            }}
+        <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center mb-2.5 opacity-90"
+            style={{ backgroundColor: '#16a34a', boxShadow: '0 0 0 8px rgba(22,163,74,0.1)' }}
           >
-            <CheckCircle2 style={{ width: 40, height: 40, color: '#ffffff' }} />
-          </Box>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-            All caught up!
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320 }}>
-            There are no items pending review. New submissions will appear here when editors submit
-            content for approval.
-          </Typography>
-        </Box>
+            <CheckCircle2 className="w-10 h-10 text-white" />
+          </div>
+          <h6 className="text-lg font-semibold mb-0.5">All caught up!</h6>
+          <p className="text-sm text-muted-foreground max-w-[320px]">
+            There are no items pending review. New submissions will appear here when editors submit content for approval.
+          </p>
+        </div>
       ) : displayItems.length === 0 && items.length > 0 ? (
-        /* Filtered to empty */
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            py: 6,
-            textAlign: 'center',
-          }}
-        >
-          <Inbox style={{ width: 36, height: 36, opacity: 0.3, marginBottom: 8 }} />
-          <Typography variant="body2" color="text.secondary">
-            No items match the selected filter.
-          </Typography>
-        </Box>
+        <div className="flex flex-col items-center py-6 text-center">
+          <Inbox className="w-9 h-9 opacity-30 mb-2" />
+          <p className="text-sm text-muted-foreground">No items match the selected filter.</p>
+        </div>
       ) : (
-        /* ── Timeline ─────────────────────────────────────── */
-        <Box sx={{ position: 'relative', pl: 4 }}>
-          {/* Vertical connecting line */}
-          <Box
-            sx={{
-              position: 'absolute',
-              left: 11,
-              top: 12,
-              bottom: 12,
-              width: 2,
-              bgcolor: 'divider',
-              borderRadius: 1,
-            }}
-          />
+        <div className="relative pl-4">
+          {/* Vertical line */}
+          <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-border rounded" />
 
           {displayItems.map((item, idx) => {
             const isActionLoading = actionLoading === item.metadata.id;
 
             return (
-              <Box
+              <div
                 key={item.metadata.id}
-                sx={{
-                  position: 'relative',
-                  pb: idx < displayItems.length - 1 ? 1.5 : 0,
-                }}
+                className="relative"
+                style={{ paddingBottom: idx < displayItems.length - 1 ? '12px' : 0 }}
               >
                 {/* Timeline dot */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    left: -28,
-                    top: 16,
-                    width: 12,
-                    height: 12,
-                    borderRadius: '50%',
-                    bgcolor: item.contentTypeColor,
-                    border: '2px solid',
-                    borderColor: 'background.paper',
-                    boxShadow: (theme) => `0 0 0 2px ${theme.palette.divider}`,
-                    zIndex: 1,
+                <div
+                  className="absolute -left-7 top-4 w-3 h-3 rounded-full border-2 z-[1]"
+                  style={{
+                    backgroundColor: item.contentTypeColor,
+                    borderColor: 'hsl(var(--background))',
+                    boxShadow: '0 0 0 2px hsl(var(--border))',
                   }}
                 />
 
                 {/* Card */}
-                <Box
-                  sx={{
-                    p: 2,
-                    borderRadius: 2,
-                    border: '1px solid',
-                    borderColor: selectedIds.has(item.metadata.id) ? 'primary.main' : 'divider',
-                    bgcolor: 'background.paper',
-                    transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      borderColor: 'primary.main',
-                      boxShadow: (theme) => `0 2px 8px ${theme.palette.action.hover}`,
-                    },
-                  }}
+                <div
+                  className={`p-2 rounded-lg border bg-card transition-[border-color,box-shadow] duration-150 cursor-pointer hover:border-primary hover:shadow-sm ${selectedIds.has(item.metadata.id) ? 'border-primary' : 'border-border'}`}
                   onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
                 >
-                  {/* Top row: checkbox + title + content type badge */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      justifyContent: 'space-between',
-                      gap: 1.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={selectedIds.has(item.metadata.id)}
-                      onChange={() => toggleSelect(item.metadata.id)}
-                      onClick={(e) => e.stopPropagation()}
-                      sx={{ mt: -0.5, ml: -0.5, mr: -0.5 }}
-                    />
-                    <Typography variant="body1" sx={{ fontWeight: 600, flex: 1 }}>
-                      {item.title}
-                    </Typography>
-                    <Chip
-                      label={item.contentTypeName}
-                      size="small"
-                      sx={{
-                        height: 22,
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        bgcolor: item.contentTypeColor + '18',
+                  {/* Top row */}
+                  <div className="flex items-start justify-between gap-1.5 mb-1">
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedIds.has(item.metadata.id)}
+                        onCheckedChange={() => toggleSelect(item.metadata.id)}
+                      />
+                    </div>
+                    <p className="text-base font-semibold flex-1">{item.title}</p>
+                    <Badge
+                      className="h-[22px] text-[0.7rem] font-semibold flex-shrink-0"
+                      style={{
+                        backgroundColor: item.contentTypeColor + '18',
                         color: item.contentTypeColor,
-                        flexShrink: 0,
                       }}
-                    />
-                  </Box>
+                    >
+                      {item.contentTypeName}
+                    </Badge>
+                  </div>
 
-                  {/* Meta row: submitted by, waiting duration */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                      mb: 1.5,
-                    }}
-                  >
+                  {/* Meta row */}
+                  <div className="flex items-center gap-2 mb-1.5">
                     {item.lastEditedBy && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                        }}
-                      >
-                        <User style={{ width: 12, height: 12 }} />
+                      <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                        <User className="w-3 h-3" />
                         Submitted by {item.lastEditedBy.slice(0, 8)}...
-                      </Typography>
+                      </span>
                     )}
                     {item.metadata.last_edited_at && (
-                      <Tooltip title={new Date(item.metadata.last_edited_at).toLocaleString()}>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                          }}
-                        >
-                          <Clock style={{ width: 12, height: 12 }} />
-                          Waiting {item.waitingDuration}
-                        </Typography>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                            <Clock className="w-3 h-3" />
+                            Waiting {item.waitingDuration}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>{new Date(item.metadata.last_edited_at).toLocaleString()}</TooltipContent>
                       </Tooltip>
                     )}
-                  </Box>
+                  </div>
 
                   {/* Action buttons */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      pt: 1,
-                      borderTop: '1px solid',
-                      borderColor: 'divider',
-                    }}
+                  <div
+                    className="flex items-center gap-1 pt-1 border-t border-border"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
+                      size="sm"
                       disabled={isActionLoading}
                       onClick={() => handleApprove(item)}
-                      startIcon={
-                        isActionLoading ? (
-                          <CircularProgress size={14} color="inherit" />
-                        ) : (
-                          <ThumbsUp style={{ width: 14, height: 14 }} />
-                        )
-                      }
-                      sx={{
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        fontSize: '0.8rem',
-                        py: 0.5,
-                      }}
+                      className="font-semibold text-[0.8rem] py-0.5 bg-green-600 hover:bg-green-700 text-white"
                     >
+                      {isActionLoading ? (
+                        <Loader2 size={14} className="animate-spin mr-1" aria-label="Loading" />
+                      ) : (
+                        <ThumbsUp className="w-3.5 h-3.5 mr-1" />
+                      )}
                       Approve
                     </Button>
 
                     <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
+                      size="sm"
+                      variant="outline"
                       disabled={isActionLoading}
                       onClick={() => handleReject(item)}
-                      startIcon={<ThumbsDown style={{ width: 14, height: 14 }} />}
-                      sx={{
-                        textTransform: 'none',
-                        fontWeight: 500,
-                        fontSize: '0.8rem',
-                        py: 0.5,
-                      }}
+                      className="font-medium text-[0.8rem] py-0.5 border-destructive text-destructive hover:bg-destructive/10"
                     >
+                      <ThumbsDown className="w-3.5 h-3.5 mr-1" />
                       Request Changes
                     </Button>
 
-                    <Box sx={{ flex: 1 }} />
+                    <div className="flex-1" />
 
-                    <Tooltip title="Open in editor">
-                      <Button
-                        size="small"
-                        variant="text"
-                        onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
-                        startIcon={<Edit style={{ width: 14, height: 14 }} />}
-                        sx={{
-                          textTransform: 'none',
-                          fontWeight: 500,
-                          fontSize: '0.8rem',
-                          color: 'text.secondary',
-                        }}
-                      >
-                        Review
-                      </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
+                          className="font-medium text-[0.8rem] text-muted-foreground"
+                        >
+                          <Edit className="w-3.5 h-3.5 mr-1" />
+                          Review
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Open in editor</TooltipContent>
                     </Tooltip>
-                  </Box>
-                </Box>
-              </Box>
+                  </div>
+                </div>
+              </div>
             );
           })}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

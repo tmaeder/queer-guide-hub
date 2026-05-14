@@ -1,7 +1,8 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: AWIN Affiliate Product Feed
@@ -14,7 +15,7 @@ const awinAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const feedUrl = (config.filters?.feedUrl as string) || Deno.env.get('AWIN_FEED_URL')
-    if (!feedUrl) throw new Error('AWIN feed URL not configured')
+    if (!feedUrl) throw new MissingCredentialsError('AWIN_FEED_URL')
 
     const supabase = getServiceClient()
     const limit = config.batchSize || 100
@@ -74,7 +75,7 @@ const awinAdapter: SourceAdapter = {
   getSourceId(raw: RawItem): string { return raw.sourceId },
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-awin', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -90,6 +91,9 @@ Deno.serve(async (req) => {
     const written = await writeToStaging(supabase, awinAdapter, rawItems, { ...config, targetTable: 'marketplace_listings' })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

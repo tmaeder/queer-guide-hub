@@ -1,16 +1,16 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
-import CircularProgress from '@mui/material/CircularProgress';
-import { useTheme } from '@mui/material/styles';
-import { Plane, Hotel, Plus, Shield, MapPin, Star, Check } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Plane, Hotel, Plus, Shield, MapPin, Star, Check, Loader2 } from 'lucide-react';
+import {
+  fetchBookingAssistantCities,
+  fetchTripReservations,
+  fetchBookingAssistantVenues,
+} from '@/hooks/useTripBookingAssistant';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips';
 import { useTravelDeals } from '@/hooks/useTravelDeals';
@@ -29,19 +29,11 @@ interface Props {
   endDate?: string;
 }
 
-interface CityInfo {
-  id: string;
-  name: string;
-  country_id: string | null;
-  countries?: { equality_score: number | null; name: string } | null;
-}
-
-export function TripBookingAssistant({ tripId, places, days, startDate, endDate }: Props) {
+export function TripBookingAssistant({ tripId, places, _days, startDate, endDate }: Props) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
-  const { originIata, originCity } = useVisitorOrigin();
+  const { originIata, _originCity } = useVisitorOrigin();
   const [bookingHotel, setBookingHotel] = useState<BookingResult | null>(null);
   const [activeTab, setActiveTab] = useState<'suggestions' | 'booking'>('suggestions');
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -61,15 +53,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
 
   const { data: cities } = useQuery({
     queryKey: ['trip-booking-cities', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, country_id, countries:country_id(equality_score, name)')
-        .in('id', cityIds);
-      if (error) throw error;
-      return (data || []) as CityInfo[];
-    },
+    queryFn: () => fetchBookingAssistantCities(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
@@ -77,14 +61,7 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
   // Fetch reservations to know what's already booked
   const { data: reservations } = useQuery({
     queryKey: ['trip-reservations', tripId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('reservations')
-        .select('id, type, title, provider, status')
-        .eq('trip_id', tripId);
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => fetchTripReservations(tripId),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -94,24 +71,14 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
   // Venue suggestions per city
   const { data: venues, isLoading: venuesLoading } = useQuery({
     queryKey: ['trip-suggestion-venues', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('venues')
-        .select('id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id')
-        .in('city_id', cityIds)
-        .order('foursquare_rating', { ascending: false, nullsFirst: false })
-        .limit(20);
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => fetchBookingAssistantVenues(cityIds),
     enabled: cityIds.length > 0 && activeTab === 'suggestions',
     staleTime: 10 * 60 * 1000,
   });
 
   // Flight deals for first city
   const firstCity = cities?.[0];
-  const { data: flightDeals } = useTravelDeals({
+  const { data: _flightDeals } = useTravelDeals({
     origin: originIata || undefined,
     type: 'popular_routes',
     limit: 3,
@@ -168,41 +135,44 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
     return (
       <Card>
         <CardContent>
-          <Typography variant="body2" color="text.secondary" className="text-center">
+          <p className="text-sm text-muted-foreground text-center">
             {t('trips.bookingAssistant.emptyHint', 'Add places to see suggestions and booking options')}
-          </Typography>
+          </p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Box>
+    <div>
       {/* Tab toggle */}
-      <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
+      <div className="flex gap-1 mb-4">
         {tabs.map(({ key, label, icon: Icon }) => (
           <Badge
             key={key}
             variant={activeTab === key ? 'default' : 'outline'}
             onClick={() => setActiveTab(key)}
-
+            className="cursor-pointer flex items-center gap-1"
           >
             <Icon size={13} />
             {label}
           </Badge>
         ))}
-      </Box>
+      </div>
 
       {/* Safety warnings */}
       {unsafeCities.map((city) => (
         <Card key={city.id} className="mb-2">
           <CardContent>
-            <Box className="flex items-start gap-2" sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}>
-              <Shield size={16} style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }} />
-              <Typography variant="body2">
+            <div
+              className="flex items-start gap-2 -mx-4 -mt-2 -mb-2 p-4 rounded"
+              style={{ backgroundColor: 'hsl(var(--warning) / 0.2)' }}
+            >
+              <Shield size={16} style={{ color: 'hsl(var(--warning))', flexShrink: 0, marginTop: 2 }} />
+              <p className="text-sm">
                 <strong>{city.name}</strong> {t('trips.bookingAssistant.lowerEquality', 'has a lower equality score')} ({city.countries?.equality_score}).
-              </Typography>
-            </Box>
+              </p>
+            </div>
           </CardContent>
         </Card>
       ))}
@@ -211,9 +181,9 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
       {activeTab === 'suggestions' && (
         <>
           {venuesLoading ? (
-            <Box className="flex justify-center py-8">
-              <CircularProgress size={24} />
-            </Box>
+            <div className="flex justify-center py-8">
+              <Loader2 size={24} className="animate-spin" aria-label="Loading" />
+            </div>
           ) : (
             cityIds.map((cityId) => {
               const city = (cities || []).find((c) => c.id === cityId);
@@ -224,28 +194,27 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
               if (cityVenues.length === 0) return null;
 
               return (
-                <Box key={cityId} sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 0.5, display: 'block' }}>
+                <div key={cityId} className="mb-4">
+                  <span className="text-xs text-muted-foreground font-semibold mb-1 block">
                     {t('trips.bookingAssistant.suggestedFor', 'Suggested for {{city}}', { city: city?.name || t('trips.bookingAssistant.unknownCity', 'Unknown') })}
-                  </Typography>
+                  </span>
                   {cityVenues.map((venue) => (
-                    <Box
+                    <div
                       key={venue.id}
-                      className="flex items-center gap-2 py-1.5"
-                      sx={{ borderBottom: '1px solid', borderColor: 'divider', minHeight: 44 }}
+                      className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
                     >
-                      <MapPin size={13} style={{ color: theme.palette.text.secondary, flexShrink: 0 }} />
+                      <MapPin size={13} className="text-muted-foreground flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <Typography variant="body2" noWrap fontWeight={500}>{venue.name}</Typography>
+                        <p className="text-sm truncate font-medium">{venue.name}</p>
                         {venue.category && <Badge variant="outline">{venue.category}</Badge>}
                       </div>
                       <Button variant="ghost" size="sm" onClick={() => handleAddVenue(venue)} disabled={addingId === venue.id}>
-                        {addingId === venue.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                        {addingId === venue.id ? <Loader2 size={12} className="animate-spin" aria-label="Loading" /> : <Plus size={12} />}
                         {t('trips.bookingAssistant.add', 'Add')}
                       </Button>
-                    </Box>
+                    </div>
                   ))}
-                </Box>
+                </div>
               );
             })
           )}
@@ -254,90 +223,90 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
 
       {/* Booking Tab */}
       {activeTab === 'booking' && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-4">
           {/* Still need section */}
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+          <span className="text-xs text-muted-foreground font-semibold">
             {t('trips.bookingAssistant.stillNeed', 'Still need')}
-          </Typography>
+          </span>
 
           {!hasFlightBooked && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
-              <Plane size={16} style={{ color: theme.palette.text.secondary }} />
-              <Typography variant="body2" sx={{ flex: 1 }}>{t('trips.bookingAssistant.flights', 'Flights')}</Typography>
+            <div className="flex items-center gap-2 p-3 bg-muted rounded">
+              <Plane size={16} className="text-muted-foreground" />
+              <p className="text-sm flex-1">{t('trips.bookingAssistant.flights', 'Flights')}</p>
               <LocalizedLink to="/travel?tab=flights">
                 <Button variant="outline" size="sm">{t('trips.bookingAssistant.search', 'Search')}</Button>
               </LocalizedLink>
-            </Box>
+            </div>
           )}
           {hasFlightBooked && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, opacity: 0.6 }}>
-              <Check size={16} style={{ color: theme.palette.success.main }} />
-              <Typography variant="body2">{t('trips.bookingAssistant.flightsBooked', 'Flights booked')}</Typography>
-            </Box>
+            <div className="flex items-center gap-2 p-3 opacity-60">
+              <Check size={16} style={{ color: 'hsl(var(--success))' }} />
+              <p className="text-sm">{t('trips.bookingAssistant.flightsBooked', 'Flights booked')}</p>
+            </div>
           )}
 
           {!hasHotelBooked && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
-              <Hotel size={16} style={{ color: theme.palette.text.secondary }} />
-              <Typography variant="body2" sx={{ flex: 1 }}>
+            <div className="flex items-center gap-2 p-3 bg-muted rounded">
+              <Hotel size={16} className="text-muted-foreground" />
+              <p className="text-sm flex-1">
                 {firstCity
                   ? t('trips.bookingAssistant.hotelIn', 'Hotel in {{city}}', { city: firstCity.name })
                   : t('trips.bookingAssistant.hotel', 'Hotel')}
-              </Typography>
+              </p>
               <LocalizedLink to={`/travel?tab=hotels${firstCity ? `&city=${encodeURIComponent(firstCity.name)}` : ''}`}>
                 <Button variant="outline" size="sm">{t('trips.bookingAssistant.search', 'Search')}</Button>
               </LocalizedLink>
-            </Box>
+            </div>
           )}
           {hasHotelBooked && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, opacity: 0.6 }}>
-              <Check size={16} style={{ color: theme.palette.success.main }} />
-              <Typography variant="body2">{t('trips.bookingAssistant.hotelBooked', 'Hotel booked')}</Typography>
-            </Box>
+            <div className="flex items-center gap-2 p-3 opacity-60">
+              <Check size={16} style={{ color: 'hsl(var(--success))' }} />
+              <p className="text-sm">{t('trips.bookingAssistant.hotelBooked', 'Hotel booked')}</p>
+            </div>
           )}
 
           {/* Quick hotel results */}
           {!hasHotelBooked && firstCity && (
-            <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
+            <div>
+              <span className="text-xs text-muted-foreground font-semibold mb-2 block">
                 {t('trips.bookingAssistant.hotelsIn', 'Hotels in {{city}}', { city: firstCity.name })}
-              </Typography>
+              </span>
               {hotelsLoading ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {[1, 2].map((i) => <Skeleton key={i} variant="rounded" height={80} />)}
-                </Box>
+                <div className="flex flex-col gap-2">
+                  {[1, 2].map((i) => <Skeleton key={i} className="h-20 rounded" />)}
+                </div>
               ) : hotelResults && hotelResults.length > 0 ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   {hotelResults.slice(0, 2).map((hotel) => (
-                    <Box
+                    <div
                       key={hotel.id}
-                      sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: 'action.hover', borderRadius: 1, cursor: 'pointer' }}
+                      className="flex items-center gap-3 p-3 bg-muted rounded cursor-pointer"
                       onClick={() => setBookingHotel(hotel)}
                     >
                       {hotel.imageUrl && (
-                        <Box component="img" src={hotel.imageUrl} alt={hotel.title} sx={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 1 }} />
+                        <img src={hotel.imageUrl} alt={hotel.title} className="w-14 h-14 object-cover rounded" />
                       )}
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="body2" fontWeight={600} noWrap>{hotel.title}</Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate">{hotel.title}</p>
+                        <div className="flex items-center gap-1">
                           {hotel.starRating && Array.from({ length: hotel.starRating }).map((_, i) => (
                             <Star key={i} size={10} style={{ fill: 'currentColor', color: 'var(--primary)' }} />
                           ))}
-                          {hotel.rating && <Typography variant="caption">{hotel.rating.toFixed(1)}</Typography>}
-                        </Box>
-                      </Box>
-                      <Typography variant="body2" fontWeight={700} color="primary">
+                          {hotel.rating && <span className="text-xs">{hotel.rating.toFixed(1)}</span>}
+                        </div>
+                      </div>
+                      <p className="text-sm font-bold text-primary">
                         {formatPrice(hotel.price, hotel.currency)}
-                      </Typography>
-                    </Box>
+                      </p>
+                    </div>
                   ))}
-                </Box>
+                </div>
               ) : (
-                <Typography variant="body2" color="text.secondary">{t('trips.bookingAssistant.noHotelsFound', 'No hotels found')}</Typography>
+                <p className="text-sm text-muted-foreground">{t('trips.bookingAssistant.noHotelsFound', 'No hotels found')}</p>
               )}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
       )}
 
       {/* Hotel Booking Dialog */}
@@ -347,6 +316,6 @@ export function TripBookingAssistant({ tripId, places, days, startDate, endDate 
         onClose={() => setBookingHotel(null)}
         tripId={tripId}
       />
-    </Box>
+    </div>
   );
 }

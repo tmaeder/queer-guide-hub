@@ -53,7 +53,22 @@ const TextType = ({
   const [isVisible, setIsVisible] = useState(!startOnVisible);
   const containerRef = useRef<HTMLElement>(null);
 
-  const textArray = Array.isArray(text) ? text : [text];
+  // Filter out empty/undefined entries so a missing i18n key doesn't cause
+  // the typing animation to freeze mid-word ("Sear|"). Memoize on the joined
+  // signature so unrelated re-renders don't reset the animation.
+  const rawTextArray = Array.isArray(text) ? text : [text];
+  const textArray = rawTextArray.filter((s): s is string => typeof s === 'string' && s.length > 0);
+  const textSignature = textArray.join('');
+
+  // Reset typing state when the source text array changes (e.g. mobile/desktop
+  // breakpoint switch, i18n bundle loaded after first paint). Otherwise we'd
+  // keep `currentCharIndex` from a longer string and visually freeze.
+  useEffect(() => {
+    setDisplayedText('');
+    setCurrentCharIndex(0);
+    setIsDeleting(false);
+    setCurrentTextIndex(0);
+  }, [textSignature]);
 
   const getRandomSpeed = () => {
     if (!variableSpeed) return typingSpeed;
@@ -89,7 +104,14 @@ const TextType = ({
 
     let timeout: NodeJS.Timeout;
 
+    // Guard: if `text` resolved to an empty array (e.g. an i18n bundle
+    // hadn't loaded yet during HMR) or contains nullish entries (a
+    // missing translation key returning undefined), skip the animation
+    // tick rather than crashing on `processedText.length`.
     const currentText = textArray[currentTextIndex];
+    if (typeof currentText !== 'string' || currentText.length === 0) {
+      return;
+    }
     const processedText = reverseMode ? currentText.split('').reverse().join('') : currentText;
 
     const executeTypingAnimation = () => {
@@ -154,8 +176,9 @@ const TextType = ({
     onSentenceComplete,
   ]);
 
+  const currentTextLen = textArray[currentTextIndex]?.length ?? 0;
   const shouldHideCursor =
-    hideCursorWhileTyping && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
+    hideCursorWhileTyping && (currentCharIndex < currentTextLen || isDeleting);
 
   return createElement(
     Component,

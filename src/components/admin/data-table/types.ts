@@ -51,6 +51,11 @@ export interface RowActionConfig<TData> {
 
 export interface AdminTableConfig<TData> {
   tableName: string;
+  /**
+   * Optional table to target for mutations (bulk edit/delete) when `tableName`
+   * is a read-only view. Defaults to `tableName`.
+   */
+  mutationTable?: string;
   select?: string;
   columns: ColumnDef<TData, unknown>[];
   entityFilters?: EntityFilterConfig[];
@@ -59,6 +64,7 @@ export interface AdminTableConfig<TData> {
   toolbarActions?: React.ReactNode;
   defaultSort?: { column: string; direction: 'asc' | 'desc' };
   defaultPageSize?: number;
+  defaultFilters?: Record<string, unknown>;
   enableSelection?: boolean;
   enableGrouping?: boolean;
   enableSearch?: boolean;
@@ -66,6 +72,7 @@ export interface AdminTableConfig<TData> {
   baseFilters?: Record<string, unknown>;
   exportColumns?: ExportColumnDef<TData>[];
   contentTypeId?: string;
+  onRowClick?: (row: TData) => void;
   /** Callback after bulk edit mutation succeeds */
   onBulkEditSuccess?: () => void;
   /** Callback after bulk delete mutation succeeds */

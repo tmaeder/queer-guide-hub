@@ -1,44 +1,46 @@
-# Logs
-logs
+node_modules/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
+.wrangler/
+.dev.vars
 .env
-.env.*
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+dist/
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+tmp/
+/tmp/*
+!tmp/.gitkeep
 
-# Vite build artifacts
-*.timestamp-*
+# Spreadsheets + binary data dumps (imported into DB, not source code)
+*.xlsx
+*.xls
+*.csv
+*.numbers
 
-# Claude Code
+# Reference dumps + source data artifacts
+*.xml
+*.ics
+*.docx
+*.rtf
+*.pptx
+# Root-only txt/json dumps (keep nested ones for real code)
+/*.txt
+/*.json
+
+# Local workspaces + tool outputs
 .claude/
-
-# Supabase CLI temp files
-supabase/.temp/
 .gstack/
-.sentryclirc
-dist-static
+.gstack-audit/
+Dev/
 
-# Terraform
-infra/terraform/.terraform/
-infra/terraform/terraform.tfstate*
-infra/terraform/terraform.tfvars
-infra/terraform/.terraform.lock.hcl
+# Supabase CLI local cache
+supabase/.temp/
+
+# Asset staging dirs
+Icons/
+!src/components/icons/
+stich/
+Queer Guide/
+
+# Legacy worker directories (migrated to workers/)
+worker/
+worker-ingest/
+worker-submit/

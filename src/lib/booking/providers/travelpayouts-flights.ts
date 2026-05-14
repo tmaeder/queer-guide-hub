@@ -8,7 +8,7 @@ export const travelpayoutsFlights: BookingProvider = {
   supportsInApp: false,
 
   async search(params: BookingSearchParams): Promise<BookingResult[]> {
-    const { originIata, destinationIata, checkIn, currency = 'eur', limit = 9 } = params;
+    const { originIata, destinationIata, _checkIn, currency = 'eur', limit = 9 } = params;
     if (!originIata) return [];
 
     const body: Record<string, unknown> = {

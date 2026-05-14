@@ -1,12 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import i18next from 'i18next';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import { ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ExternalLink, Loader2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { mapStyle } from '@/config/mapStyle';
 import {
@@ -23,6 +21,7 @@ import { ExploreMapFiltersPanel } from '@/components/map/ExploreMapFilters';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { hapticTrigger } from '@/hooks/useHaptics';
+import { useToast } from '@/hooks/use-toast';
 import { CLUSTER_MAX_ZOOM, CLUSTER_RADIUS, clampBbox, type Bbox } from '@/utils/mapViewport';
 import {
   useCountryBoundaries,
@@ -34,6 +33,7 @@ import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBo
 // ── Layer classification ─────────────────────────────────────────────────────
 
 /** Layers rendered as native MapLibre circle + label layers (area feel) */
+// eslint-disable-next-line react-refresh/only-export-components
 export const AREA_LAYERS: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
 
 /** Circle radius interpolation stops per area type: [zoom, radiusPx][] */
@@ -104,11 +104,16 @@ export interface ExploreMapProps {
   initialZoom?: number;
   /** Skip visitor geo auto-fly */
   skipAutoFly?: boolean;
+  /** Fired on map idle / moveend with the new viewport. Use to encode
+   *  state in the URL or persist preferences. */
+  onViewportChange?: (viewport: { center: [number, number]; zoom: number }) => void;
+  /** Fired when the enabled layer set changes. */
+  onLayersChange?: (layers: LayerType[]) => void;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export const ExploreMap: React.FC<ExploreMapProps> = ({
+export const ExploreMap = ({
   height = 480,
   defaultLayers,
   defaultFilters,
@@ -119,13 +124,17 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
   initialCenter,
   initialZoom,
   skipAutoFly = false,
+  onViewportChange: onViewportChangeProp,
+  onLayersChange: onLayersChangeProp,
 }) => {
   const navigate = useLocalizedNavigate();
+  const { toast } = useToast();
 
   // ── Map refs ─────────────────────────────────────────────────────────────
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
+  const hoverPopupRef = useRef<maplibregl.Popup | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const areaLayerIdsRef = useRef<Set<string>>(new Set());
   const pointLayersAddedRef = useRef(false);
@@ -184,9 +193,11 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   // ── Layer toggle ─────────────────────────────────────────────────────────
   const toggleLayer = useCallback((layer: LayerType) => {
-    setEnabledLayers((prev) =>
-      prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer],
-    );
+    setEnabledLayers((prev) => {
+      const next = prev.includes(layer) ? prev.filter((l) => l !== layer) : [...prev, layer];
+      onLayersChangeProp?.(next);
+      return next;
+    });
   }, []);
 
   // ── Geolocation ──────────────────────────────────────────────────────────
@@ -196,11 +207,39 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
 
   const { location: visitorGeo } = useVisitorLocation();
 
+  // Berlin — used as a curated fallback when neither URL state, an
+  // explicit prop, nor IP geolocation provides a center within ~2.5 s.
+  // Avoids the cold-load Sahara view (DEFAULT_CENTER = [0, 20] is in the
+  // empty desert and shows no markers, which reads as "the site is broken").
+  const FALLBACK_CENTER: [number, number] = [13.405, 52.52];
+  const FALLBACK_ZOOM = 10;
+  const fallbackFiredRef = useRef(false);
+
   useEffect(() => {
     if (skipAutoFly || initialCenter || !visitorGeo) return;
     setViewport({ center: [visitorGeo.longitude, visitorGeo.latitude], zoom: 10 });
     flyToLocation(visitorGeo.longitude, visitorGeo.latitude, 10);
-  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter]);
+    toast({
+      title: 'Showing your area',
+      description: visitorGeo.city ?? undefined,
+    });
+  }, [visitorGeo, flyToLocation, skipAutoFly, initialCenter, toast]);
+
+  useEffect(() => {
+    if (skipAutoFly || initialCenter || fallbackFiredRef.current) return;
+    const timer = setTimeout(() => {
+      if (visitorGeo || fallbackFiredRef.current) return;
+      fallbackFiredRef.current = true;
+      setViewport({ center: FALLBACK_CENTER, zoom: FALLBACK_ZOOM });
+      flyToLocation(FALLBACK_CENTER[0], FALLBACK_CENTER[1], FALLBACK_ZOOM);
+      toast({
+        title: 'Showing Berlin',
+        description: 'Search to change',
+      });
+    }, 2500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipAutoFly, initialCenter]);
 
   // ── Helper: extract bbox from map ────────────────────────────────────────
   const getMapBbox = useCallback((map: maplibregl.Map): Bbox => {
@@ -224,7 +263,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
         .addTo(map);
 
       popup.on('open', () => {
-        const link = popup.getElement()?.querySelector('a[href^="/"]');
+        const el = popup.getElement();
+        const link = el?.querySelector('a[href^="/"]');
         if (link) {
           link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -232,11 +272,52 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
             if (href) navigate(href);
           });
         }
+
+        const shareBtn = el?.querySelector('button[data-share-id]');
+        if (shareBtn) {
+          shareBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            hapticTrigger('nudge');
+            const btn = e.currentTarget as HTMLButtonElement;
+            const name = btn.getAttribute('data-share-name') ?? '';
+            const subtitle = btn.getAttribute('data-share-subtitle') ?? '';
+            const path = btn.getAttribute('data-share-url') ?? '';
+            const absoluteUrl = new URL(path, window.location.origin).toString();
+            const payload = { title: name, text: subtitle || name, url: absoluteUrl };
+
+            const fallbackToClipboard = async () => {
+              try {
+                await navigator.clipboard.writeText(absoluteUrl);
+                toast({
+                  title: i18next.t('map.popup.linkCopied', { defaultValue: 'Link copied' }),
+                  description: i18next.t('map.popup.linkCopiedDescription', { defaultValue: 'You can paste it now' }),
+                });
+              } catch {
+                toast({
+                  title: i18next.t('map.popup.shareFailed', { defaultValue: 'Share failed' }),
+                  variant: 'destructive',
+                });
+              }
+            };
+
+            if (typeof navigator.share === 'function') {
+              try {
+                await navigator.share(payload);
+              } catch (err) {
+                if ((err as { name?: string })?.name === 'AbortError') return;
+                console.error('navigator.share failed', err);
+                await fallbackToClipboard();
+              }
+            } else {
+              await fallbackToClipboard();
+            }
+          });
+        }
       });
 
       popupRef.current = popup;
     },
-    [navigate],
+    [navigate, toast],
   );
 
   // ── Map initialisation ───────────────────────────────────────────────────
@@ -275,10 +356,19 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     map.on('load', () => {
       setMapReady(true);
       mapRef.current = map;
-      const canvas = map.getCanvas();
-      if (!canvas.clientWidth || !canvas.clientHeight) return;
-      const bbox = getMapBbox(map);
-      onViewportChange(bbox, map.getZoom());
+
+      const tryInitialFetch = () => {
+        const canvas = map.getCanvas();
+        if (!canvas.clientWidth || !canvas.clientHeight) return false;
+        const bbox = getMapBbox(map);
+        onViewportChange(bbox, map.getZoom());
+        return true;
+      };
+
+      if (!tryInitialFetch()) {
+        // Canvas may not be laid out yet — retry after paint
+        requestAnimationFrame(() => tryInitialFetch());
+      }
     });
 
     map.on('moveend', () => {
@@ -288,6 +378,8 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       const z = map.getZoom();
       onViewportChange(bbox, z);
       setCurrentZoom(z);
+      const c = map.getCenter();
+      onViewportChangeProp?.({ center: [c.lng, c.lat], zoom: z });
     });
 
     return () => {
@@ -618,49 +710,93 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
     map.on('mouseenter', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
     map.on('mouseleave', CLUSTERS_LAYER, () => { map.getCanvas().style.cursor = ''; });
     map.on('mouseenter', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', UNCLUSTERED_LAYER, () => { map.getCanvas().style.cursor = ''; });
+    map.on('mouseleave', UNCLUSTERED_LAYER, () => {
+      map.getCanvas().style.cursor = '';
+      hoverPopupRef.current?.remove();
+      hoverPopupRef.current = null;
+    });
+
+    // Lightweight hover preview: name + subtitle, no close button, no action
+    // buttons. Click still opens the full popup with share/navigate.
+    map.on('mousemove', UNCLUSTERED_LAYER, (e: MapLayerMouseEvent) => {
+      const feat = e.features?.[0];
+      if (!feat || feat.geometry.type !== 'Point') return;
+      const props = feat.properties as Record<string, unknown>;
+      const name = String(props.name ?? '');
+      const subtitle = props.subtitle ? String(props.subtitle) : '';
+      const safeName = name.replace(/[&<>"]/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
+      );
+      const safeSub = subtitle.replace(/[&<>"]/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
+      );
+      const html = `<div style="font:13px system-ui;line-height:1.3;padding:2px 4px;max-width:200px"><div style="font-weight:600">${safeName}</div>${
+        safeSub ? `<div style="color:rgba(0,0,0,.6);font-size:11px;margin-top:2px">${safeSub}</div>` : ''
+      }</div>`;
+      if (!hoverPopupRef.current) {
+        hoverPopupRef.current = new maplibregl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          offset: 12,
+          maxWidth: '220px',
+          className: 'venue-hover-popup',
+        });
+      }
+      hoverPopupRef.current
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    });
 
     pointLayersAddedRef.current = true;
   }, [pointsGeoJSON, pointEnabledLayers, mapReady, showPopup]);
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
-    <Box className={className} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}>
-      <Box ref={containerRef} sx={{ height, width: '100%' }} />
+    <div
+      className={`relative rounded-2xl overflow-hidden border border-border ${className ?? ''}`}
+      style={{ height }}
+    >
+      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
 
       {/* Lightweight hover tooltip for boundary polygons */}
-      <Box
+      <div
         ref={tooltipRef}
-        sx={{
-          display: 'none',
-          position: 'absolute',
-          pointerEvents: 'none',
-          zIndex: 20,
-          bgcolor: 'background.paper',
-          color: 'text.primary',
-          px: 1.25,
-          py: 0.625,
-          fontSize: 13,
-          whiteSpace: 'nowrap',
-        }}
+        className="hidden absolute pointer-events-none z-20 bg-background text-foreground whitespace-nowrap"
+        style={{ paddingLeft: 10, paddingRight: 10, paddingTop: 5, paddingBottom: 5, fontSize: 13 }}
       />
+
+      {/* Visually-hidden list of currently-visible markers — alternative
+          presentation for screen readers and keyboard users (WCAG 1.3.1 / 2.1.1).
+          The map canvas itself can't expose individual pins to AT, so this
+          mirrors them as a flat list of links updated on each fetch.
+          `role="region"` is not allowed on <ul>; use a labelled <nav>
+          landmark wrapper instead (axe aria-allowed-role). */}
+      <nav className="sr-only" aria-label="Visible map results">
+      <ul>
+        {pointsGeoJSON.features.slice(0, 200).map((f) => {
+          const p = f.properties;
+          const href = p.linkTo || undefined;
+          const label = p.subtitle ? `${p.name} — ${p.subtitle}` : p.name;
+          return (
+            <li key={p.id}>
+              {href ? <a href={href}>{label}</a> : <span>{label}</span>}
+            </li>
+          );
+        })}
+        {areaMarkers.slice(0, 200).map((m) => (
+          <li key={m.id}>
+            {m.linkTo ? <a href={m.linkTo}>{m.name}</a> : <span>{m.name}</span>}
+          </li>
+        ))}
+      </ul>
+      </nav>
 
       {/* Loading overlay */}
       {!mapReady && (
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: 'background.default',
-            opacity: 0.7,
-            zIndex: 5,
-          }}
-        >
-          <CircularProgress size={32} />
-        </Box>
+        <div className="absolute inset-0 flex items-center justify-center bg-background opacity-70 z-[5]">
+          <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+        </div>
       )}
 
       {/* Layer toggles */}
@@ -674,61 +810,42 @@ export const ExploreMap: React.FC<ExploreMapProps> = ({
       )}
 
       {/* Fetching indicator + result count */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 12,
+      <div
+        className="absolute z-10 flex items-center gap-1.5 rounded-full border border-border bg-background/85 backdrop-blur-md shadow-md px-3 py-1.5 pointer-events-none transition-opacity duration-200"
+        style={{
+          bottom: 12,
           right: 56,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.5,
-          bgcolor: 'background.paper',
-          px: 1,
-          py: 0.5,
-          transition: 'opacity 200ms',
           opacity: isFetching || pointsTotalCount > 0 ? 1 : 0,
-          pointerEvents: 'none',
         }}
       >
-        {isFetching && <CircularProgress size={12} />}
-        <Typography variant="caption" color="text.secondary">
+        {isFetching && <Loader2 className="h-3 w-3 animate-spin" aria-label="Loading" />}
+        <span className="text-xs text-muted-foreground">
           {isFetching ? 'Loading...' : `${pointsTotalCount.toLocaleString()} results in view`}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* "Open full map" link for embedded previews */}
       {linkToFullMap && (
         <Button
-          size="small"
-          variant="contained"
-          startIcon={<ExternalLink size={14} />}
+          size="sm"
+          variant="ghost"
+          aria-label="Open full map"
           onClick={() => navigate(linkToFullMap)}
-          sx={{
-            position: 'absolute',
-            bottom: 36,
-            right: 12,
-            zIndex: 10,
-            textTransform: 'none',
-            fontSize: '0.8rem',
-            bgcolor: 'rgba(99,102,241,0.9)',
-            '&:hover': { bgcolor: 'rgba(99,102,241,1)' },
-          }}
+          className="absolute bottom-3 left-3 z-10 min-w-0 px-3 py-1.5 rounded-full border border-border normal-case text-xs leading-tight bg-background/85 backdrop-blur-md shadow-md hover:bg-background"
         >
-          Open Full Map
+          <ExternalLink size={14} />
+          <span className="hidden sm:inline ml-1">Full map</span>
         </Button>
       )}
 
       {/* Filters bar */}
       {showFilters && (
-        <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
-          <ExploreMapFiltersPanel
-            filters={filters}
-            onFiltersChange={setFilters}
-          />
-        </Box>
+        <ExploreMapFiltersPanel
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
       )}
-    </Box>
+    </div>
   );
 };
 

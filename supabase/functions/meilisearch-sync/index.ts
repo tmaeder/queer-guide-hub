@@ -1,10 +1,10 @@
-import { getCorsHeaders, getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, requireAdmin, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 
 const MEILI_URL = Deno.env.get('MEILISEARCH_URL')!
 const MEILI_ADMIN_KEY = Deno.env.get('MEILISEARCH_ADMIN_KEY')!
 
 interface SyncRequest {
-  action: 'full-sync' | 'sync-type' | 'upsert' | 'delete' | 'reconcile'
+  action: 'full-sync' | 'sync-type' | 'upsert' | 'delete' | 'reconcile' | 'configure'
   type?: string
   id?: string
   types?: string[]
@@ -70,6 +70,93 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true, type, id }, 200, req)
       }
 
+      case 'configure': {
+        // Apply index settings (searchable/filterable/sortable attrs, ranking
+        // rules, stop words, typo tolerance) to all Meilisearch indexes.
+        const STOP_WORDS = ['gay', 'queer', 'trans', 'lgbt', 'lgbtq', 'lgbtq+', 'lgbti']
+        const TIGHT_TYPO = { enabled: true, minWordSizeForTypos: { oneTypo: 8, twoTypos: 12 } }
+        const INDEX_SETTINGS: Record<string, Record<string, unknown>> = {
+          venues: {
+            searchableAttributes: ['title', 'description', 'address', 'city', 'country', 'tags', 'category'],
+            filterableAttributes: ['city', 'city_id', 'country', 'category', 'featured', 'tags', 'cluster_ids', 'target_groups', 'type', '_geo'],
+            sortableAttributes: ['title', '_geo'],
+            displayedAttributes: ['*'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          events: {
+            searchableAttributes: ['title', 'description', 'venue_name', 'city', 'country', 'event_type'],
+            filterableAttributes: ['city', 'city_id', 'country', 'event_type', 'featured', 'is_free', 'start_date', 'cluster_ids', 'target_groups', 'type', '_geo'],
+            sortableAttributes: ['start_date', 'title', '_geo'],
+            displayedAttributes: ['*'],
+            rankingRules: ['words', 'typo', 'exactness', 'proximity', 'attribute', 'sort', 'start_date:asc'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          cities: {
+            searchableAttributes: ['title', 'aliases', 'country'],
+            filterableAttributes: ['country', 'country_code', 'type', '_geo'],
+            sortableAttributes: ['title', 'population', '_geo'],
+            displayedAttributes: ['*'],
+            rankingRules: ['words', 'typo', 'exactness', 'attribute', 'proximity', 'sort', 'population:desc'],
+            typoTolerance: TIGHT_TYPO,
+          },
+          countries: {
+            searchableAttributes: ['title', 'description', 'code', 'continent'],
+            filterableAttributes: ['continent', 'type', '_geo'],
+            sortableAttributes: ['title', '_geo'],
+            displayedAttributes: ['*'],
+          },
+          news: {
+            searchableAttributes: ['title', 'description', 'category'],
+            filterableAttributes: ['category', 'is_featured', 'published_at', 'type'],
+            sortableAttributes: ['published_at', 'title'],
+            displayedAttributes: ['*'],
+            rankingRules: ['words', 'typo', 'exactness', 'proximity', 'attribute', 'sort', 'published_at:desc'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          marketplace: {
+            searchableAttributes: ['title', 'description', 'category'],
+            filterableAttributes: ['category', 'featured', 'price', 'type'],
+            sortableAttributes: ['price', 'title'],
+            displayedAttributes: ['*'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          personalities: {
+            searchableAttributes: ['title', 'description', 'profession', 'lgbti_connection', 'nationality'],
+            filterableAttributes: ['profession', 'nationality', 'is_featured', 'type'],
+            sortableAttributes: ['title'],
+            displayedAttributes: ['*'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          tags: {
+            searchableAttributes: ['title', 'description', 'category'],
+            filterableAttributes: ['category', 'type'],
+            sortableAttributes: ['title'],
+            displayedAttributes: ['*'],
+          },
+          queer_villages: {
+            searchableAttributes: ['title', 'description', 'city', 'country'],
+            filterableAttributes: ['city', 'country', 'featured', 'type', '_geo'],
+            sortableAttributes: ['title', '_geo'],
+            displayedAttributes: ['*'],
+          },
+        }
+        const configResults: Record<string, { ok: boolean; error?: string }> = {}
+        for (const [idx, settings] of Object.entries(INDEX_SETTINGS)) {
+          try {
+            await meiliPatch(`/indexes/${idx}/settings`, settings)
+            configResults[idx] = { ok: true }
+          } catch (e) {
+            configResults[idx] = { ok: false, error: e.message }
+          }
+        }
+        return jsonResponse({ success: true, results: configResults }, 200, req)
+      }
+
       case 'reconcile': {
         // Tombstone sweep: find docs in the Meilisearch index whose source
         // rows no longer exist in Supabase and delete them. Without this,
@@ -90,7 +177,7 @@ Deno.serve(async (req) => {
 
 // --- Meilisearch HTTP helpers ---
 
-async function meiliPost(path: string, body: unknown) {
+async function _meiliPost(path: string, body: unknown) {
   const res = await fetch(`${MEILI_URL}${path}`, {
     method: 'POST',
     headers: {
@@ -122,6 +209,22 @@ async function meiliPut(path: string, body: unknown) {
   return res.json()
 }
 
+async function meiliPatch(path: string, body: unknown) {
+  const res = await fetch(`${MEILI_URL}${path}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${MEILI_ADMIN_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Meilisearch PATCH ${path}: ${res.status} ${text}`)
+  }
+  return res.json()
+}
+
 async function meiliDelete(index: string, docId: string) {
   const res = await fetch(`${MEILI_URL}/indexes/${index}/documents/${docId}`, {
     method: 'DELETE',
@@ -135,11 +238,13 @@ async function meiliDelete(index: string, docId: string) {
 
 // --- Sync logic per type ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncType(supabase: any, type: string): Promise<number> {
   const fetcher = TYPE_FETCHERS[type]
   if (!fetcher) throw new Error(`Unknown type: ${type}`)
 
   // Paginate: Supabase returns max 1000 rows per query
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allDocs: any[] = []
   const PAGE_SIZE = 1000
   let offset = 0
@@ -154,15 +259,27 @@ async function syncType(supabase: any, type: string): Promise<number> {
 
   if (!allDocs.length) return 0
 
-  // Upsert documents in batches of 500
-  for (let i = 0; i < allDocs.length; i += 500) {
-    const batch = allDocs.slice(i, i + 500)
+  // For events: expand each master to one Meili doc per active occurrence.
+  // Falls back to a single doc when there are no occurrences (common for
+  // one-off events). See expandEventDocsToOccurrences below.
+  let toIndex = allDocs
+  if (type === 'events') {
+    toIndex = await expandEventDocsToOccurrences(supabase, allDocs)
+  }
+
+  // Augment each doc with cluster_ids[] / cluster_slugs[] from
+  // topic_clusters membership before pushing to Meili. Done in batches of 500
+  // to keep the IN clause manageable.
+  for (let i = 0; i < toIndex.length; i += 500) {
+    const batch = toIndex.slice(i, i + 500)
+    await enrichDocsWithClusters(supabase, type, batch)
     await meiliPut(`/indexes/${type}/documents`, batch)
   }
 
-  return allDocs.length
+  return toIndex.length
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function upsertDocument(supabase: any, type: string, id: string) {
   const fetcher = SINGLE_FETCHERS[type]
   if (!fetcher) throw new Error(`Unknown type: ${type}`)
@@ -174,11 +291,157 @@ async function upsertDocument(supabase: any, type: string, id: string) {
     return
   }
 
-  await meiliPut(`/indexes/${type}/documents`, [doc])
+  let toIndex = [doc]
+  if (type === 'events') {
+    toIndex = await expandEventDocsToOccurrences(supabase, [doc])
+    // Single-row trigger sync: also delete any stale per-occurrence docs that
+    // may exist from a previous expansion. We don't know the old occurrence
+    // ids; rely on the reconcile sweep + future expansion to overwrite.
+  }
+  await enrichDocsWithClusters(supabase, type, toIndex)
+  await meiliPut(`/indexes/${type}/documents`, toIndex)
+}
+
+/**
+ * Expand a batch of master event docs into per-occurrence Meili docs.
+ *
+ * Reads event_occurrences (status='active') for each master event in
+ * `docs`. For each active occurrence, emits a copy of the master doc with:
+ *   id                = `evt-{master_id}-{occurrence_start_iso}`
+ *   master_event_id   = master row id
+ *   occurrence_id     = event_occurrences.id
+ *   start_date        = occurrence_start (overrides master)
+ *   end_date          = occurrence_end (or master end_date)
+ *   title             = override_title ?? master title
+ *   description       = override_description ?? master description
+ *
+ * Master docs without any active occurrence pass through unchanged with
+ * `master_event_id = id` for storefront grouping consistency.
+ *
+ * Storefront usage: set `distinctAttribute = 'master_event_id'` so list
+ * pages show one card per series; date-window queries filter on the
+ * occurrence's start_date directly.
+ *
+ * Returns the new docs array. Does not mutate the input.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function expandEventDocsToOccurrences(supabase: any, docs: any[]): Promise<any[]> {
+  if (!docs.length) return docs
+  const ids = docs.map((d) => d.id).filter((x) => typeof x === 'string')
+  if (!ids.length) return docs
+
+  const { data: occurrences, error } = await supabase
+    .from('event_occurrences')
+    .select(
+      'id, master_event_id, occurrence_start, occurrence_end, override_title, override_description, status',
+    )
+    .in('master_event_id', ids)
+    .eq('status', 'active')
+  if (error) {
+    console.warn(
+      'expandEventDocsToOccurrences: event_occurrences fetch failed; falling back to master docs',
+      error.message,
+    )
+    return docs.map((d) => ({ ...d, master_event_id: d.id }))
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byMaster = new Map<string, any[]>()
+  for (const o of occurrences ?? []) {
+    const arr = byMaster.get(o.master_event_id) ?? []
+    arr.push(o)
+    byMaster.set(o.master_event_id, arr)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const out: any[] = []
+  for (const d of docs) {
+    const occ = byMaster.get(d.id)
+    if (!occ || occ.length === 0) {
+      out.push({ ...d, master_event_id: d.id })
+      continue
+    }
+    for (const o of occ) {
+      out.push({
+        ...d,
+        id: `evt-${d.id}-${o.occurrence_start}`,
+        master_event_id: d.id,
+        occurrence_id: o.id,
+        start_date: o.occurrence_start,
+        end_date: o.occurrence_end ?? d.end_date ?? null,
+        title: o.override_title ?? d.title,
+        description: o.override_description ?? d.description,
+      })
+    }
+  }
+  return out
+}
+
+// Map Meilisearch index name -> unified_tag_assignments.entity_type. Indexes
+// without a mapping (cities, countries, queer_villages, hotels, festivals,
+// tags) don't carry tag assignments today, so cluster membership is empty
+// for them by definition.
+const INDEX_TO_ASSIGNMENT_TYPE: Record<string, string> = {
+  venues: 'venue',
+  events: 'event',
+  news: 'article',
+  marketplace: 'listing',
+  personalities: 'profile',
+}
+
+/**
+ * Enrich a batch of Meili docs with cluster_ids[] + cluster_slugs[] from the
+ * topic_clusters membership graph. Mutates docs in place. Fail-open: if the
+ * entity_cluster_membership view isn't available (migration not applied yet),
+ * each doc gets empty arrays and a console.warn — never blocks the sync.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function enrichDocsWithClusters(supabase: any, type: string, docs: any[]) {
+  if (!docs.length) return
+  const assignmentType = INDEX_TO_ASSIGNMENT_TYPE[type]
+  if (!assignmentType) {
+    for (const doc of docs) {
+      doc.cluster_ids = []
+      doc.cluster_slugs = []
+    }
+    return
+  }
+  const ids = docs.map((d) => d.id).filter((x) => typeof x === 'string')
+  if (!ids.length) {
+    for (const doc of docs) {
+      doc.cluster_ids = []
+      doc.cluster_slugs = []
+    }
+    return
+  }
+  const { data, error } = await supabase
+    .from('entity_cluster_membership')
+    .select('entity_id, cluster_ids, cluster_slugs')
+    .eq('entity_type', assignmentType)
+    .in('entity_id', ids)
+  if (error) {
+    console.warn(
+      'cluster enrichment failed (entity_cluster_membership view missing?); emitting empty arrays',
+      error.message,
+    )
+    for (const doc of docs) {
+      doc.cluster_ids = []
+      doc.cluster_slugs = []
+    }
+    return
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byId = new Map<string, any>((data ?? []).map((r: any) => [r.entity_id, r]))
+  for (const doc of docs) {
+    const row = byId.get(doc.id)
+    doc.cluster_ids = row?.cluster_ids ?? []
+    doc.cluster_slugs = row?.cluster_slugs ?? []
+  }
 }
 
 // --- Data transformers ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TYPE_FETCHERS: Record<string, (sb: any, limit: number, offset: number) => Promise<any[]>> = {
   venues: fetchVenues,
   events: fetchEvents,
@@ -191,6 +454,7 @@ const TYPE_FETCHERS: Record<string, (sb: any, limit: number, offset: number) => 
   queer_villages: fetchQueerVillages,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SINGLE_FETCHERS: Record<string, (sb: any, id: string) => Promise<any | null>> = {
   venues: fetchVenue,
   events: fetchEvent,
@@ -205,6 +469,7 @@ const SINGLE_FETCHERS: Record<string, (sb: any, id: string) => Promise<any | nul
 
 // --- Venues ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapVenue(v: any) {
   return {
     id: v.id,
@@ -219,36 +484,41 @@ function mapVenue(v: any) {
     target_groups: v.target_groups || [],
     services: v.services || [],
     accessibility: v.accessibility_attributes || [],
-    featured: v.featured || false,
+    featured: v.is_featured || false,
     slug: v.slug,
     image_url: Array.isArray(v.images) ? v.images[0] : v.images,
     ...(v.latitude && v.longitude ? { _geo: { lat: Number(v.latitude), lng: Number(v.longitude) } } : {}),
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchVenues(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('venues')
-    .select('id, name, description, category, address, city, country, latitude, longitude, images, featured, slug, tags, target_groups, services, accessibility_attributes')
+    .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes')
     .neq('data_source', 'refuge_restrooms')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapVenue)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchVenue(sb: any, id: string) {
   const { data, error } = await sb
     .from('venues')
-    .select('id, name, description, category, address, city, country, latitude, longitude, images, featured, slug, tags, target_groups, services, accessibility_attributes, data_source')
+    .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes, data_source, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
   if (data.data_source === 'refuge_restrooms') return null
+  if (data.duplicate_of_id) return null
   return mapVenue(data)
 }
 
 // --- Events ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapEvent(e: any) {
   return {
     id: e.id,
@@ -265,7 +535,7 @@ function mapEvent(e: any) {
     is_free: e.is_free,
     price_min: e.price_min,
     price_max: e.price_max,
-    featured: e.featured || false,
+    featured: e.is_featured || false,
     target_groups: e.target_groups || [],
     accessibility: e.accessibility_attributes || [],
     slug: e.slug,
@@ -274,27 +544,32 @@ function mapEvent(e: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchEvents(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('events')
-    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, featured, target_groups, accessibility_attributes, slug, logo_url')
+    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, is_featured, target_groups, accessibility_attributes, slug, logo_url')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapEvent)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchEvent(sb: any, id: string) {
   const { data, error } = await sb
     .from('events')
-    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, featured, target_groups, accessibility_attributes, slug, logo_url')
+    .select('id, title, description, event_type, venue_name, address, city, country, latitude, longitude, start_date, end_date, is_free, price_min, price_max, is_featured, target_groups, accessibility_attributes, slug, logo_url, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapEvent(data)
 }
 
 // --- Cities ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapCity(c: any) {
   return {
     id: c.id,
@@ -312,27 +587,32 @@ function mapCity(c: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCities(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('cities')
     .select('id, name, description, latitude, longitude, image_url, slug, population, lgbt_friendly_rating, countries(name, code)')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapCity)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCity(sb: any, id: string) {
   const { data, error } = await sb
     .from('cities')
-    .select('id, name, description, latitude, longitude, image_url, slug, population, lgbt_friendly_rating, countries(name, code)')
+    .select('id, name, description, latitude, longitude, image_url, slug, population, lgbt_friendly_rating, countries(name, code), duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapCity(data)
 }
 
 // --- Countries ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapCountry(c: any) {
   return {
     id: c.id,
@@ -348,27 +628,32 @@ function mapCountry(c: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCountries(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('countries')
     .select('id, name, description, code, latitude, longitude, image_url, slug, continents(name)')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapCountry)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchCountry(sb: any, id: string) {
   const { data, error } = await sb
     .from('countries')
-    .select('id, name, description, code, latitude, longitude, image_url, slug, continents(name)')
+    .select('id, name, description, code, latitude, longitude, image_url, slug, continents(name), duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapCountry(data)
 }
 
 // --- News ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapNews(n: any) {
   return {
     id: n.id,
@@ -383,27 +668,32 @@ function mapNews(n: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchNews(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('news_articles')
     .select('id, title, content, category, is_featured, published_at, slug, image_url')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapNews)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchNewsArticle(sb: any, id: string) {
   const { data, error } = await sb
     .from('news_articles')
-    .select('id, title, content, category, is_featured, published_at, slug, image_url')
+    .select('id, title, content, category, is_featured, published_at, slug, image_url, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapNews(data)
 }
 
 // --- Marketplace ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapMarketplace(m: any) {
   return {
     id: m.id,
@@ -417,6 +707,7 @@ function mapMarketplace(m: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMarketplace(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('marketplace_listings')
@@ -427,6 +718,7 @@ async function fetchMarketplace(sb: any, limit: number, offset: number) {
   return (data || []).map(mapMarketplace)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchMarketplaceListing(sb: any, id: string) {
   const { data, error } = await sb
     .from('marketplace_listings')
@@ -440,6 +732,7 @@ async function fetchMarketplaceListing(sb: any, id: string) {
 
 // --- Personalities ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPersonality(p: any) {
   return {
     id: p.id,
@@ -456,27 +749,32 @@ function mapPersonality(p: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchPersonalities(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('personalities')
     .select('id, name, description, profession, lgbti_connection, nationality, birth_date, is_featured, slug, image_url')
+    .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
   return (data || []).map(mapPersonality)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchPersonality(sb: any, id: string) {
   const { data, error } = await sb
     .from('personalities')
-    .select('id, name, description, profession, lgbti_connection, nationality, birth_date, is_featured, slug, image_url')
+    .select('id, name, description, profession, lgbti_connection, nationality, birth_date, is_featured, slug, image_url, duplicate_of_id')
     .eq('id', id)
     .single()
   if (error || !data) return null
+  if (data.duplicate_of_id) return null
   return mapPersonality(data)
 }
 
 // --- Tags ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapTag(t: any) {
   return {
     id: t.id,
@@ -489,6 +787,7 @@ function mapTag(t: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchTags(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('unified_tags')
@@ -498,6 +797,7 @@ async function fetchTags(sb: any, limit: number, offset: number) {
   return (data || []).map(mapTag)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchTag(sb: any, id: string) {
   const { data, error } = await sb
     .from('unified_tags')
@@ -510,6 +810,7 @@ async function fetchTag(sb: any, id: string) {
 
 // --- Queer Villages ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapQueerVillage(qv: any) {
   return {
     id: qv.id,
@@ -525,6 +826,7 @@ function mapQueerVillage(qv: any) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchQueerVillages(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('queer_villages')
@@ -534,6 +836,7 @@ async function fetchQueerVillages(sb: any, limit: number, offset: number) {
   return (data || []).map(mapQueerVillage)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchQueerVillage(sb: any, id: string) {
   const { data, error } = await sb
     .from('queer_villages')
@@ -554,6 +857,7 @@ async function fetchQueerVillage(sb: any, id: string) {
  * Bounded to 50k docs per run — the scheduled call should process all
  * indexes sequentially.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function reconcileType(supabase: any, type: string): Promise<{
   meili_count: number
   source_count: number
@@ -565,13 +869,17 @@ async function reconcileType(supabase: any, type: string): Promise<{
   // 1) Collect all live IDs from Supabase. For very large tables (>50k), this
   // paginates in 10k chunks — keep the source of truth authoritative rather
   // than skipping the check.
+  // Tables that support dedup via duplicate_of_id — only index canonical records
+  const DEDUP_TABLES = new Set(['events', 'venues', 'cities', 'countries', 'news_articles', 'personalities'])
+
   const liveIds = new Set<string>()
-  const PAGE = 10_000
+  const PAGE = 1_000
   for (let from = 0; from < 500_000; from += PAGE) {
-    const { data, error } = await supabase
-      .from(table)
-      .select('id')
-      .range(from, from + PAGE - 1)
+    let query = supabase.from(table).select('id')
+    if (DEDUP_TABLES.has(table)) {
+      query = query.is('duplicate_of_id', null)
+    }
+    const { data, error } = await query.range(from, from + PAGE - 1)
     if (error) throw new Error(`source query ${table}: ${error.message}`)
     if (!data || data.length === 0) break
     for (const row of data) liveIds.add(String(row.id))

@@ -10,8 +10,8 @@ const QUEUE_CONFIG: Record<string, number> = {
   pipeline_steps: 300,    // 5 min — DAG pipeline execution
 }
 
-const MAX_MESSAGES_PER_QUEUE = 5
-const MAX_TOTAL_CONCURRENCY = 10
+const MAX_MESSAGES_PER_QUEUE = 10
+const MAX_TOTAL_CONCURRENCY = 20
 
 interface QueueMessage {
   msg_id: number

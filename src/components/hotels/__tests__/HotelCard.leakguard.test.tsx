@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it } from 'vitest';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { HotelCard } from '../HotelCard';

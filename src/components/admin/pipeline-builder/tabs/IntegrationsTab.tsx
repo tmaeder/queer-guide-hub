@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface Integration {
   id: string;
@@ -34,7 +34,6 @@ const KIND_LABEL: Record<string, string> = {
 
 export default function IntegrationsTab() {
   const qc = useQueryClient();
-  const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<Partial<Integration>>({
     name: '', kind: 'slack', webhook_url: '', min_severity: 'warn', enabled: true,
@@ -65,12 +64,12 @@ export default function IntegrationsTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Integration added' });
+      toast.success('Integration added');
       qc.invalidateQueries({ queryKey: ['alert-integrations'] });
       setDialogOpen(false);
       setForm({ name: '', kind: 'slack', webhook_url: '', min_severity: 'warn', enabled: true });
     },
-    onError: (e: Error) => toast({ title: 'Create failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Create failed: ${e.message}`),
   });
 
   const toggle = useMutation({
@@ -79,7 +78,7 @@ export default function IntegrationsTab() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alert-integrations'] }),
-    onError: (e: Error) => toast({ title: 'Toggle failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Toggle failed: ${e.message}`),
   });
 
   const remove = useMutation({
@@ -88,10 +87,10 @@ export default function IntegrationsTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: 'Integration removed' });
+      toast.success('Integration removed');
       qc.invalidateQueries({ queryKey: ['alert-integrations'] });
     },
-    onError: (e: Error) => toast({ title: 'Delete failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Delete failed: ${e.message}`),
   });
 
   const sendTest = useMutation({
@@ -105,8 +104,8 @@ export default function IntegrationsTab() {
       });
       if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
     },
-    onSuccess: (_, i) => toast({ title: 'Test message sent', description: i.name }),
-    onError: (e: Error) => toast({ title: 'Test failed', description: e.message, variant: 'destructive' }),
+    onSuccess: (_, i) => toast.success(`Test message sent: ${i.name}`),
+    onError: (e: Error) => toast.error(`Test failed: ${e.message}`),
   });
 
   const canSave = form.name && form.name.length >= 2 && form.webhook_url && form.webhook_url.startsWith('http');
@@ -117,7 +116,7 @@ export default function IntegrationsTab() {
         <div className="flex items-center gap-2">
           <Webhook className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-semibold">Alert Webhook Integrations</span>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{integrations.length}</Badge>
+          <Badge variant="outline" className="text-2xs px-1.5 py-0">{integrations.length}</Badge>
           <div className="flex-1" />
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -135,8 +134,9 @@ export default function IntegrationsTab() {
               </DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium">Name</label>
+                  <label htmlFor="integration-name" className="text-xs font-medium">Name</label>
                   <Input
+                    id="integration-name"
                     value={form.name || ''}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="e.g. #data-ops alerts"
@@ -144,9 +144,9 @@ export default function IntegrationsTab() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Type</label>
+                  <label htmlFor="integration-kind" className="text-xs font-medium">Type</label>
                   <Select value={form.kind || 'slack'} onValueChange={(v) => setForm({ ...form, kind: v as Integration['kind'] })}>
-                    <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="integration-kind" aria-label="Type" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="slack">Slack</SelectItem>
                       <SelectItem value="discord">Discord</SelectItem>
@@ -155,8 +155,9 @@ export default function IntegrationsTab() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Webhook URL</label>
+                  <label htmlFor="integration-url" className="text-xs font-medium">Webhook URL</label>
                   <Input
+                    id="integration-url"
                     value={form.webhook_url || ''}
                     onChange={(e) => setForm({ ...form, webhook_url: e.target.value })}
                     placeholder="https://hooks.slack.com/services/..."
@@ -164,12 +165,12 @@ export default function IntegrationsTab() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium">Minimum severity</label>
+                  <label htmlFor="integration-severity" className="text-xs font-medium">Minimum severity</label>
                   <Select
                     value={form.min_severity || 'warn'}
                     onValueChange={(v) => setForm({ ...form, min_severity: v as Integration['min_severity'] })}
                   >
-                    <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="integration-severity" aria-label="Minimum severity" className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="info">info (all alerts)</SelectItem>
                       <SelectItem value="warn">warn and above</SelectItem>
@@ -203,7 +204,7 @@ export default function IntegrationsTab() {
               <thead className="bg-muted/40">
                 <tr className="border-b border-border">
                   {['Name', 'Type', 'Min severity', 'URL', 'Sent', 'Last triggered', 'Enabled', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground text-xs2 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -212,14 +213,14 @@ export default function IntegrationsTab() {
                   <tr key={i.id} className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${!i.enabled ? 'opacity-50' : ''}`}>
                     <td className="px-3 py-2 font-medium">{i.name}</td>
                     <td className="px-3 py-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{KIND_LABEL[i.kind]}</Badge>
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0">{KIND_LABEL[i.kind]}</Badge>
                     </td>
                     <td className="px-3 py-2 text-xs capitalize">{i.min_severity}</td>
-                    <td className="px-3 py-2 text-[11px] font-mono text-muted-foreground truncate max-w-[280px]" title={i.webhook_url}>
+                    <td className="px-3 py-2 text-xs2 font-mono text-muted-foreground truncate max-w-[280px]" title={i.webhook_url}>
                       {i.webhook_url.replace(/^https?:\/\//, '').replace(/\/.*$/, '')}/…
                     </td>
                     <td className="px-3 py-2 tabular-nums text-xs">{i.total_sent}</td>
-                    <td className="px-3 py-2 text-[11px] text-muted-foreground">
+                    <td className="px-3 py-2 text-xs2 text-muted-foreground">
                       {i.last_triggered_at ? (
                         <Tooltip>
                           <TooltipTrigger asChild>

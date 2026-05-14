@@ -2,7 +2,7 @@ import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../
 import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
-import { rpcWithBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
+import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
 
 // ============================================================
 // Pipeline Commit
@@ -140,7 +140,6 @@ Deno.serve(async (req) => {
         .eq('target_table', 'news_articles')
         .eq('disposition', 'pending')
         .limit(50)
-      if (pipelineRunId) jobQuery.eq('pipeline_run_id', pipelineRunId)
       const { data: jobRows, error: jobErr } = await jobQuery
       if (jobErr) return errorResponse(`load jobs: ${jobErr.message}`, 500, req)
       const jobIds = Array.from(new Set((jobRows ?? []).map((r: { job_id: string }) => r.job_id)))
@@ -148,13 +147,13 @@ Deno.serve(async (req) => {
         return jsonResponse({ success: true, items: 0, message: 'no pending news to commit' }, 200, req)
       }
       let totalInserted = 0, totalUpdated = 0, totalSkipped = 0, totalErrors = 0
-      let circuitTripped = 0
+      let _circuitTripped = 0
       for (const jid of jobIds) {
         const { data, error, circuitOpen } = await rpcWithBreaker<unknown>(
           supabase, 'rpc.news_commit_staging_batch', 'news_commit_staging_batch',
           { p_job_id: jid, p_pipeline_run_id: pipelineRunId ?? null, p_limit: batchSize },
         )
-        if (circuitOpen) { circuitTripped++; continue }
+        if (circuitOpen) { _circuitTripped++; continue }
         if (error) { console.error(`news_commit ${jid}:`, error.message); totalErrors++; continue }
         const row = Array.isArray(data) ? data[0] : data
         totalInserted += row?.inserted ?? 0
@@ -173,6 +172,22 @@ Deno.serve(async (req) => {
       }, 200, req)
     }
 
+    if (resolvedTarget === 'queer_villages' && !dryRun) {
+      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, village_id: string, action: string }>>(
+        supabase, 'rpc.commit_village_staging_batch', 'commit_village_staging_batch', { p_limit: batchSize },
+      )
+      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
+      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+      const rows = (data ?? []) as Array<{ staging_id: string, village_id: string, action: string }>
+      const inserted = rows.filter((r) => r.action === 'inserted').length
+      const updated  = rows.filter((r) => r.action === 'updated').length
+      return jsonResponse({
+        success: true, items: rows.length,
+        items_processed: rows.length, items_succeeded: rows.length,
+        inserted, updated,
+      }, 200, req)
+    }
+
     // ---- Legacy non-venue path ----
     // Idempotency: select target_record_id + idempotency_key so we can SKIP
     // items that were already committed in a prior partial run. Without this,
@@ -185,7 +200,6 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (targetTable)   query = query.eq('target_table', targetTable)
 
     const { data: items, error } = await query
@@ -300,7 +314,6 @@ async function detectTarget(supabase: ReturnType<typeof getServiceClient>, runId
     .from('ingestion_staging')
     .select('target_table', { count: 'exact' })
     .eq('disposition', 'pending')
-    .eq('ai_validation_status', 'approved')
     .limit(1)
   if (runId) q.eq('pipeline_run_id', runId)
   const { data } = await q
@@ -347,7 +360,7 @@ function buildRecord(
       record.content   = normalized.description
       record.url       = ((normalized.urls as string[]) ?? [])[0]
       record.image_url = ((normalized.images as string[]) ?? [])[0]
-      if (meta.source_name)  record.source_name  = meta.source_name
+      if (meta.source_name)  record.publisher_name = meta.source_name
       if (meta.published_at) record.published_at = meta.published_at
       break
 

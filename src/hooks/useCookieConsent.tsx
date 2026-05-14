@@ -112,6 +112,7 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCookieConsent() {
   const context = useContext(CookieConsentContext);
   if (context === undefined) {

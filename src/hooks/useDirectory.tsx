@@ -42,6 +42,7 @@ export const useDirectory = () => {
           regions (*)
         `)
         .eq("continent_id", continentId)
+        .is("duplicate_of_id", null)
         .order("name");
 
       if (error) throw error;
@@ -60,6 +61,7 @@ export const useDirectory = () => {
           *,
           regions (*)
         `)
+        .is("duplicate_of_id", null)
         .order("name");
 
       if (error) throw error;
@@ -78,6 +80,7 @@ export const useDirectory = () => {
           countries (*)
         `)
         .eq("country_id", countryId)
+        .is("duplicate_of_id", null)
         .order("population", { ascending: false });
 
       if (error) throw error;
@@ -97,6 +100,7 @@ export const useDirectory = () => {
           countries (*)
         `)
         .eq("is_major_city", true)
+        .is("duplicate_of_id", null)
         .order("population", { ascending: false });
 
       if (error) throw error;
@@ -121,6 +125,7 @@ export const useDirectory = () => {
             *,
             regions (*)
           `)
+          .is("duplicate_of_id", null)
           .ilike("name", `%${query}%`),
         supabase
           .from("cities")
@@ -128,6 +133,7 @@ export const useDirectory = () => {
             *,
             countries (*)
           `)
+          .is("duplicate_of_id", null)
           .ilike("name", `%${query}%`)
           .limit(20)
       ]);
@@ -156,6 +162,7 @@ export const useDirectory = () => {
           *,
           countries (*)
         `)
+        .is("duplicate_of_id", null)
         .not('latitude', 'is', null)
         .not('longitude', 'is', null);
 

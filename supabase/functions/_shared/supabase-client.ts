@@ -63,8 +63,10 @@ export function corsResponse(req?: Request): Response {
 }
 
 /**
- * Verify the request comes from an authenticated admin user.
- * Returns the user ID on success, or a Response to return on failure.
+ * Verify the request comes from an authenticated admin user OR an internal
+ * service-role call (e.g. workflow-dispatcher, cron). Service role tokens are
+ * recognised by matching SUPABASE_SERVICE_ROLE_KEY and are granted full access
+ * without a user lookup.
  */
 export async function requireAdmin(
   req: Request,
@@ -76,6 +78,13 @@ export async function requireAdmin(
   }
 
   const token = authHeader.replace('Bearer ', '')
+
+  // Allow internal service-role invocations (workflow-dispatcher, cron, etc.)
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (serviceRoleKey && token === serviceRoleKey) {
+    return { userId: 'service-role' }
+  }
+
   const { data: userData, error: userError } = await serviceClient.auth.getUser(token)
   if (userError || !userData.user) {
     return errorResponse('Invalid authorization', 401, req)

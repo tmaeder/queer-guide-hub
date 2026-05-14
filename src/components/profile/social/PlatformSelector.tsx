@@ -4,8 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Search, Plus } from 'lucide-react';
 import { PLATFORM_CONFIGS, PlatformConfig } from './platformConfigs';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface PlatformSelectorProps {
   onPlatformSelect: (platform: string, url: string) => void;
@@ -32,7 +30,6 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
 
   const handleCustomAdd = () => {
     if (customUrl.trim()) {
-      // Auto-detect platform from URL
       const detectedPlatform = PLATFORM_CONFIGS.find((p) => {
         try {
           const regex = new RegExp(p.urlDetectionRegex.replace(/^\(\?i\)/, ''), 'i');
@@ -49,38 +46,19 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        p: 2,
-        bgcolor: 'background.paper',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ fontWeight: 500 }}>
-          Add Platform
-        </Typography>
+    <div className="flex flex-col gap-4 p-4 bg-background">
+      <div className="flex items-center justify-between">
+        <h6 className="text-base font-medium">Add Platform</h6>
         <Button variant="ghost" size="sm" onClick={() => setShowCustom(!showCustom)}>
           <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
           Custom URL
         </Button>
-      </Box>
+      </div>
 
       {showCustom && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1,
-            p: 1.5,
-            bgcolor: 'action.hover',
-            borderRadius: 1.5,
-          }}
-        >
+        <div className="flex flex-col gap-2 p-3 bg-muted">
           <Label htmlFor="custom-url">Custom URL</Label>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div className="flex gap-2">
             <Input
               id="custom-url"
               placeholder="https://platform.com/username"
@@ -90,12 +68,12 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             <Button onClick={handleCustomAdd} disabled={!customUrl.trim()}>
               Add
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        <Box sx={{ position: 'relative' }}>
+      <div className="flex flex-col gap-3">
+        <div className="relative">
           <Search
             style={{
               position: 'absolute',
@@ -110,48 +88,32 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             placeholder="Search platforms..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-
           />
-        </Box>
+        </div>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <div className="flex flex-wrap gap-2">
           {categories.map((category) => (
-            <Box
-              component="button"
+            <button
               key={category}
-              sx={{
-                px: 1.5,
-                py: 0.5,
-                borderRadius: '9999px',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                transition: 'colors 0.2s',
-                bgcolor: selectedCategory === category ? 'primary.main' : 'secondary.main',
-                color:
-                  selectedCategory === category ? 'primary.contrastText' : 'secondary.contrastText',
-                '&:hover': {
-                  bgcolor: selectedCategory === category ? 'primary.main' : 'secondary.dark',
-                  opacity: 0.8,
-                },
+              type="button"
+              className="px-3 py-1 text-sm font-medium transition-colors"
+              style={{
+                backgroundColor: selectedCategory === category ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                color: selectedCategory === category ? 'hsl(var(--primary-foreground))' : 'hsl(var(--secondary-foreground))',
                 border: 'none',
                 cursor: 'pointer',
               }}
               onClick={() => setSelectedCategory(category)}
             >
               {category.charAt(0).toUpperCase() + category.slice(1)}
-            </Box>
+            </button>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' },
-          gap: 1,
-          maxHeight: 240,
-          overflowY: 'auto',
-        }}
+      <div
+        className="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto"
+        style={{ maxHeight: 240 }}
       >
         {filteredPlatforms.map((platform) => {
           const Icon = platform.icon;
@@ -159,17 +121,14 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
             <Button
               key={platform.platform}
               variant="outline"
-
               onClick={() => handleQuickAdd(platform)}
             >
               <Icon style={{ width: 20, height: 20 }} />
-              <Typography variant="caption" sx={{ textAlign: 'center' }}>
-                {platform.platform}
-              </Typography>
+              <span className="text-xs text-center">{platform.platform}</span>
             </Button>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

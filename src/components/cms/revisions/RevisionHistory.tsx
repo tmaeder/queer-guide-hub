@@ -6,23 +6,19 @@
  */
 
 import { useEffect, useState } from 'react';
+import { History, Eye, RotateCcw, Clock, User, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Box,
-  Typography,
-  Button,
-  Stack,
-  Paper,
-  CircularProgress,
-  Alert,
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
-  Divider,
-  Avatar,
-  Tooltip,
-} from '@mui/material';
-import { History, Eye, RotateCcw, Clock, User } from 'lucide-react';
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCMSRevisions } from '@/hooks/useCMSRevisions';
 import type { CMSRevision } from '@/types/cms';
 import { RevisionDiff } from './RevisionDiff';
@@ -70,13 +66,11 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
   }, [sourceTable, sourceId, loadRevisions]);
 
   const handleViewDiff = (revision: CMSRevision, index: number) => {
-    // If the revision has pre-computed changes, use those
     if (revision.changes && Object.keys(revision.changes).length > 0) {
       setSelectedDiff(revision.changes);
       return;
     }
 
-    // Otherwise diff against the previous revision (next in the list since sorted desc)
     const prevRevision = revisions[index + 1];
     if (prevRevision) {
       const diffs = diffRevisions(prevRevision, revision);
@@ -86,7 +80,6 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
       }
       setSelectedDiff(changesMap);
     } else {
-      // First revision ever -- show all fields as "added"
       const changesMap: Record<string, { old: unknown; new: unknown }> = {};
       const snapshot = revision.snapshot || {};
       for (const [key, val] of Object.entries(snapshot)) {
@@ -105,235 +98,196 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
     setIsRestoring(false);
     setRestoreTarget(null);
     if (success) {
-      // Reload revisions to show the new restore entry
       await loadRevisions(sourceTable, sourceId);
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress size={24} />
-      </Box>
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 2 }}>
-        Failed to load revisions: {error}
+      <Alert variant="destructive" className="mb-4">
+        <AlertDescription>Failed to load revisions: {error}</AlertDescription>
       </Alert>
     );
   }
 
   if (revisions.length === 0) {
     return (
-      <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+      <div className="border border-border rounded-md p-6 text-center">
         <History size={24} className="text-gray-400 mx-auto mb-2" />
-        <Typography variant="body2" color="text.secondary">
+        <p className="text-sm text-muted-foreground">
           No revisions yet. Changes will be tracked once the content is saved.
-        </Typography>
-      </Paper>
+        </p>
+      </div>
     );
   }
 
   return (
-    <Box>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <History size={18} className="text-gray-500" />
-        <Typography variant="subtitle1" fontWeight={600}>
-          Revision History
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          ({revisions.length} revision{revisions.length !== 1 ? 's' : ''})
-        </Typography>
-      </Stack>
+    <TooltipProvider>
+      <div>
+        <div className="flex flex-row items-center gap-2 mb-4">
+          <History size={18} className="text-gray-500" />
+          <p className="text-base font-semibold">Revision History</p>
+          <span className="text-xs text-muted-foreground">
+            ({revisions.length} revision{revisions.length !== 1 ? 's' : ''})
+          </span>
+        </div>
 
-      {/* Diff viewer */}
-      {selectedDiff && (
-        <Box sx={{ mb: 3 }}>
-          <RevisionDiff changes={selectedDiff} onClose={() => setSelectedDiff(null)} />
-        </Box>
-      )}
+        {/* Diff viewer */}
+        {selectedDiff && (
+          <div className="mb-6">
+            <RevisionDiff changes={selectedDiff} onClose={() => setSelectedDiff(null)} />
+          </div>
+        )}
 
-      {/* Timeline */}
-      <Stack spacing={0}>
-        {revisions.map((revision, index) => {
-          const authorName =
-            revision.author?.display_name || revision.author?.email || 'Unknown';
-          const initials = authorName
-            .split(/[\s@]/)
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((s) => s[0]?.toUpperCase() || '')
-            .join('');
+        {/* Timeline */}
+        <div className="flex flex-col">
+          {revisions.map((revision, index) => {
+            const authorName =
+              revision.author?.display_name || revision.author?.email || 'Unknown';
+            const initials = authorName
+              .split(/[\s@]/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((s) => s[0]?.toUpperCase() || '')
+              .join('');
 
-          return (
-            <Box key={revision.id}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 2,
-                  py: 1.5,
-                  px: 2,
-                  borderRadius: 1,
-                  '&:hover': { backgroundColor: 'action.hover' },
-                }}
-              >
-                {/* Timeline indicator */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    pt: 0.5,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      backgroundColor: index === 0 ? 'primary.main' : 'grey.400',
-                      flexShrink: 0,
-                    }}
-                  />
-                  {index < revisions.length - 1 && (
-                    <Box
-                      sx={{
-                        width: 1,
-                        flex: 1,
-                        backgroundColor: 'divider',
-                        mt: 0.5,
-                      }}
+            return (
+              <div key={revision.id}>
+                <div className="flex gap-4 py-3 px-4 rounded hover:bg-muted">
+                  {/* Timeline indicator */}
+                  <div className="flex flex-col items-center pt-1">
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: index === 0 ? 'hsl(var(--primary))' : '#9ca3af' }}
                     />
-                  )}
-                </Box>
-
-                {/* Content */}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
-                    <Typography variant="body2" fontWeight={600}>
-                      Revision #{revision.revision_number}
-                    </Typography>
-                    {index === 0 && (
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          backgroundColor: 'primary.main',
-                          color: 'primary.contrastText',
-                          px: 0.75,
-                          py: 0.125,
-                          borderRadius: 0.5,
-                          fontSize: '0.65rem',
-                          fontWeight: 700,
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        CURRENT
-                      </Typography>
+                    {index < revisions.length - 1 && (
+                      <div className="w-px flex-1 bg-border mt-1" />
                     )}
-                  </Stack>
+                  </div>
 
-                  {revision.change_summary && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                      {revision.change_summary}
-                    </Typography>
-                  )}
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-row items-center gap-2 mb-1">
+                      <p className="text-sm font-semibold">
+                        Revision #{revision.revision_number}
+                      </p>
+                      {index === 0 && (
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[0.65rem] font-bold"
+                          style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
+                        >
+                          CURRENT
+                        </span>
+                      )}
+                    </div>
 
-                  <Stack direction="row" alignItems="center" spacing={1.5}>
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <Avatar
-                        sx={{ width: 18, height: 18, fontSize: '0.55rem', bgcolor: 'grey.400' }}
-                      >
-                        {initials || <User size={10} />}
-                      </Avatar>
-                      <Typography variant="caption" color="text.secondary">
-                        {authorName}
-                      </Typography>
-                    </Stack>
+                    {revision.change_summary && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        {revision.change_summary}
+                      </p>
+                    )}
 
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <Clock size={12} className="text-gray-400" />
-                      <Tooltip title={new Date(revision.created_at).toLocaleString()}>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatRelativeTime(revision.created_at)}
-                        </Typography>
-                      </Tooltip>
-                    </Stack>
-                  </Stack>
+                    <div className="flex flex-row items-center gap-3">
+                      <div className="flex flex-row items-center gap-1">
+                        <Avatar className="w-[18px] h-[18px]">
+                          <AvatarFallback className="text-[0.55rem] bg-gray-400">
+                            {initials || <User size={10} />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs text-muted-foreground">
+                          {authorName}
+                        </span>
+                      </div>
 
-                  {/* Actions */}
-                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                    <Button
-                      size="small"
-                      variant="text"
-                      startIcon={<Eye size={14} />}
-                      onClick={() => handleViewDiff(revision, index)}
-                      sx={{ fontSize: '0.75rem', textTransform: 'none' }}
-                    >
-                      View
-                    </Button>
-                    {index > 0 && (
+                      <div className="flex flex-row items-center gap-1">
+                        <Clock size={12} className="text-gray-400" />
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-xs text-muted-foreground">
+                              {formatRelativeTime(revision.created_at)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>{new Date(revision.created_at).toLocaleString()}</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-row gap-2 mt-2">
                       <Button
-                        size="small"
-                        variant="text"
-                        color="warning"
-                        startIcon={<RotateCcw size={14} />}
-                        onClick={() => setRestoreTarget(revision)}
-                        sx={{ fontSize: '0.75rem', textTransform: 'none' }}
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleViewDiff(revision, index)}
+                        className="text-xs normal-case"
                       >
-                        Restore
+                        <Eye size={14} />
+                        View
                       </Button>
-                    )}
-                  </Stack>
-                </Box>
-              </Box>
+                      {index > 0 && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setRestoreTarget(revision)}
+                          className="text-xs normal-case text-amber-600"
+                        >
+                          <RotateCcw size={14} />
+                          Restore
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-              {index < revisions.length - 1 && <Divider sx={{ ml: 4.5 }} />}
-            </Box>
-          );
-        })}
-      </Stack>
+                {index < revisions.length - 1 && <Separator className="ml-9" />}
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Restore confirmation dialog */}
-      <Dialog
-        open={!!restoreTarget}
-        onClose={() => !isRestoring && setRestoreTarget(null)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Restore Revision</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary">
-            Are you sure you want to restore to{' '}
-            <strong>Revision #{restoreTarget?.revision_number}</strong>? This will overwrite
-            the current content and create a new revision entry.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setRestoreTarget(null)}
-            disabled={isRestoring}
-            color="inherit"
-            size="small"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleRestoreConfirm}
-            disabled={isRestoring}
-            variant="contained"
-            color="warning"
-            size="small"
-            startIcon={
-              isRestoring ? <CircularProgress size={14} color="inherit" /> : <RotateCcw size={14} />
-            }
-          >
-            {isRestoring ? 'Restoring...' : 'Restore'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        {/* Restore confirmation dialog */}
+        <Dialog
+          open={!!restoreTarget}
+          onOpenChange={(open) => !open && !isRestoring && setRestoreTarget(null)}
+        >
+          <DialogContent className="max-w-xs">
+            <DialogHeader>
+              <DialogTitle>Restore Revision</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to restore to{' '}
+              <strong>Revision #{restoreTarget?.revision_number}</strong>? This will overwrite
+              the current content and create a new revision entry.
+            </p>
+            <DialogFooter>
+              <Button
+                onClick={() => setRestoreTarget(null)}
+                disabled={isRestoring}
+                variant="ghost"
+                size="sm"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRestoreConfirm}
+                disabled={isRestoring}
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                {isRestoring ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Loading" /> : <RotateCcw size={14} />}
+                {isRestoring ? 'Restoring...' : 'Restore'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </TooltipProvider>
   );
 }

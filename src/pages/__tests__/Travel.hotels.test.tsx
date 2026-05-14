@@ -91,6 +91,19 @@ function renderAt(path: string, onUrlChange: (p: URLSearchParams) => void = () =
           </Routes>
         </MemoryRouter>
       </ThemeProvider>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route
+            path="/travel"
+            element={
+              <>
+                <Travel />
+                <UrlProbe onChange={onUrlChange} />
+              </>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }
@@ -141,6 +154,11 @@ describe('Travel — hotels URL sync', { timeout: 20000 }, () => {
     expect(chip).toBeTruthy();
     const deleteIcon = chip!.querySelector('.MuiChip-deleteIcon') as HTMLElement;
     fireEvent.click(deleteIcon);
+    const typeChipClear = screen
+      .getAllByRole('button', { name: 'Clear' })
+      .find((btn) => btn.closest('div')?.textContent?.includes('Type:'));
+    expect(typeChipClear).toBeTruthy();
+    fireEvent.click(typeChipClear!);
 
     expect(latest.get('type')).toBeNull();
     expect(latest.get('priceMin')).toBe('80');

@@ -7,6 +7,7 @@ on:
     paths:
       - "supabase/functions/**"
       - "supabase/migrations/**"
+      - "supabase/config.toml"
       - ".github/workflows/deploy-supabase-functions.yml"
   workflow_dispatch:
     inputs:
@@ -32,6 +33,33 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: Guard — internal pipeline/source children must declare verify_jwt=false
+        run: |
+          set -e
+          missing=()
+          # Scoped to pipeline-* only. source-* functions are mixed-use
+          # (some are pipeline nodes, others are user-facing endpoints), so
+          # callers must opt them in to this guard manually.
+          for fn in supabase/functions/pipeline-*; do
+            [ -d "$fn" ] || continue
+            slug=$(basename "$fn")
+            if ! awk -v slug="$slug" '
+              $0 == "[functions." slug "]" {found=1; next}
+              found && /^verify_jwt = false/ {ok=1; exit}
+              found && /^\[/ {exit}
+              END {exit !ok}
+            ' supabase/config.toml; then
+              missing+=("$slug")
+            fi
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::These pipeline-* functions lack [functions.<slug>] verify_jwt = false in config.toml:"
+            printf '::error::  - %s\n' "${missing[@]}"
+            echo "::error::Add an entry to supabase/config.toml or the executor's bearer call will 401."
+            exit 1
+          fi
+          echo "All pipeline-* functions declare verify_jwt=false."
+
       - name: Install Supabase CLI
         uses: supabase/setup-cli@v1
         with:
@@ -40,13 +68,42 @@ jobs:
       - name: Push migrations
         if: env.SUPABASE_ACCESS_TOKEN != ''
         run: |
-          if git diff --name-only HEAD~1 HEAD | grep -q "^supabase/migrations/"; then
-            echo "Migration changes detected. Pushing to remote project..."
-            supabase link --project-ref "$SUPABASE_PROJECT_REF"
-            supabase db push
-          else
+          if ! git diff --name-only HEAD~1 HEAD | grep -q "^supabase/migrations/"; then
             echo "No migration changes. Skipping db push."
+            exit 0
           fi
+
+          echo "Migration changes detected. Pushing to remote project..."
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+          # Capture `db push` output so we can tell a drift error apart from
+          # a real migration failure. Remote-only migration versions (someone
+          # applied a migration without committing the file, or a branch was
+          # rolled back) are surfaced as a ::warning:: so the deploy-functions
+          # step can still run — the repo owner resolves the drift manually
+          # with either `supabase db pull` or `supabase migration repair`.
+          set +e
+          push_output=$(supabase db push 2>&1)
+          push_exit=$?
+          set -e
+          echo "$push_output"
+
+          if [ $push_exit -eq 0 ]; then
+            exit 0
+          fi
+
+          if echo "$push_output" | grep -q "Remote migration versions not found in local migrations directory"; then
+            {
+              echo "::warning title=Supabase migration drift::The remote project has migration versions that don't exist in this repo."
+              echo "::warning::Fix locally with \`supabase db pull\` (to commit the remote schema as new migration files)"
+              echo "::warning::or \`supabase migration repair --status reverted <version(s)>\` if those migrations were rolled back."
+              echo "::warning::Skipping \`db push\` for this run so edge functions can still deploy."
+            }
+            exit 0
+          fi
+
+          echo "::error title=Supabase db push failed::\`supabase db push\` failed for a reason other than drift. See log above."
+          exit 1
 
       - name: Deploy changed edge functions
         if: env.SUPABASE_ACCESS_TOKEN != ''
@@ -56,9 +113,11 @@ jobs:
           # Manual trigger with redeploy_all=true forces a full redeploy.
           # If a shared file changed in this push, also redeploy every function
           # (each bundles shared code at deploy time).
-          if [ "$REDEPLOY_ALL" = "true" ] || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/"; then
-            echo "Redeploying every function (manual trigger or shared code changed)."
-            CHANGED=$(ls -1 supabase/functions | grep -v '^_shared$')
+          if [ "$REDEPLOY_ALL" = "true" ] \
+             || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/functions/_shared/" \
+             || git diff --name-only HEAD~1 HEAD | grep -q "^supabase/config.toml$"; then
+            echo "Redeploying every function (manual trigger, shared code, or config.toml changed)."
+            CHANGED=$(ls -1 supabase/functions | grep -v '^_')
           else
             CHANGED=$(git diff --name-only HEAD~1 HEAD | awk -F/ '/^supabase\/functions\// && $3 != "_shared" {print $3}' | sort -u)
           fi

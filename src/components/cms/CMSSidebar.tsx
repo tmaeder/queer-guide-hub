@@ -1,23 +1,8 @@
 /**
  * CMSSidebar — Persistent left navigation for the CMS.
- * Groups: Dashboard, Content (per content type), Pages, Media, Review Queue, Audit Log, Settings.
- * Features: gradient header, colored icon badges, count badges, user info footer,
- * smooth collapse animation, section labels, hover micro-animations.
  */
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Collapse from '@mui/material/Collapse';
-import Divider from '@mui/material/Divider';
-import Chip from '@mui/material/Chip';
-import Avatar from '@mui/material/Avatar';
-import Skeleton from '@mui/material/Skeleton';
-import Tooltip from '@mui/material/Tooltip';
 import {
   LayoutDashboard,
   ChevronDown,
@@ -25,14 +10,27 @@ import {
   Image,
   ClipboardCheck,
   History,
+  Activity,
+  ShieldAlert,
   Settings,
   LogOut,
   Layers,
 } from 'lucide-react';
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
-import { supabase } from '@/integrations/supabase/client';
+import { countRows } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
-import { brandColors } from '@/theme/muiTheme';
+import { brandColors } from '@/theme/brandColors';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 export type CMSView =
   | 'overview'
@@ -40,6 +38,8 @@ export type CMSView =
   | 'pages'
   | 'media'
   | 'review'
+  | 'quality'
+  | 'moderation'
   | 'audit'
   | 'settings';
 
@@ -47,35 +47,21 @@ interface CMSSidebarProps {
   activeView: CMSView;
   activeContentType?: string;
   onNavigate: (view: CMSView, contentType?: string) => void;
-  /** Counts per content type for badges (overrides auto-loaded counts) */
   contentCounts?: Record<string, number>;
-  /** Items in review */
   reviewCount?: number;
 }
 
-/** Tiny uppercase section label */
 function SectionLabel({ children }: { children: string }) {
   return (
-    <Typography
-      variant="overline"
-      sx={{
-        display: 'block',
-        px: 2.5,
-        pt: 2,
-        pb: 0.5,
-        fontSize: '0.65rem',
-        fontWeight: 700,
-        letterSpacing: '0.08em',
-        color: 'text.disabled',
-        userSelect: 'none',
-      }}
+    <p
+      className="block px-5 pt-4 pb-1 text-[0.65rem] font-bold text-muted-foreground/60 uppercase select-none"
+      style={{ letterSpacing: '0.08em' }}
     >
       {children}
-    </Typography>
+    </p>
   );
 }
 
-/** Colored circle icon wrapper matching EditorHeader style */
 function IconBadge({
   icon: Icon,
   color,
@@ -86,71 +72,60 @@ function IconBadge({
   size?: number;
 }) {
   return (
-    <Box
-      sx={{
-        width: 28,
-        height: 28,
-        borderRadius: '8px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: color + '18',
-        color: color,
-        flexShrink: 0,
-        transition: 'background-color 0.2s ease',
-      }}
+    <div
+      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+      style={{ backgroundColor: color + '18', color: color }}
     >
       <Icon size={size} />
-    </Box>
+    </div>
   );
 }
 
-/** Styled nav item with left border indicator + hover micro-animation */
-const navItemSx = (isActive: boolean, accentColor?: string) => ({
-  borderRadius: '8px',
-  mx: 0.75,
-  mb: 0.25,
-  py: 0.75,
-  pl: isActive ? 1.5 : 1.75,
-  position: 'relative' as const,
-  transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
-  bgcolor: isActive
-    ? (accentColor ? accentColor + '10' : 'action.selected')
-    : 'transparent',
-  borderLeft: isActive
-    ? `3px solid ${accentColor || brandColors.main}`
-    : '3px solid transparent',
-  '&:hover': {
-    bgcolor: isActive
-      ? (accentColor ? accentColor + '14' : 'action.selected')
-      : 'action.hover',
-    transform: 'translateX(2px)',
-  },
-  '&.Mui-selected': {
-    bgcolor: accentColor ? accentColor + '10' : 'action.selected',
-    '&:hover': {
-      bgcolor: accentColor ? accentColor + '14' : 'action.selected',
-    },
-  },
-});
+interface NavItemProps {
+  isActive: boolean;
+  accentColor?: string;
+  onClick?: () => void;
+  className?: string;
+  children: React.ReactNode;
+}
 
-/** Count badge chip */
+function NavItem({ isActive, accentColor, onClick, className, children }: NavItemProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex items-center w-full text-left rounded-lg mx-1 mb-0.5 py-1.5 px-3 relative transition-all hover:translate-x-0.5',
+        className,
+      )}
+      style={{
+        backgroundColor: isActive
+          ? (accentColor ? accentColor + '10' : 'hsl(var(--accent))')
+          : 'transparent',
+        borderLeft: isActive
+          ? `3px solid ${accentColor || brandColors.main}`
+          : '3px solid transparent',
+        paddingLeft: isActive ? 12 : 14,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 function CountBadge({ count, color }: { count: number | undefined; color?: string }) {
   if (count === undefined) return null;
   return (
-    <Chip
-      label={count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
-      size="small"
-      sx={{
-        height: 20,
-        fontSize: '0.65rem',
-        fontWeight: 600,
-        minWidth: 28,
-        bgcolor: color ? color + '14' : 'action.hover',
-        color: color || 'text.secondary',
-        '& .MuiChip-label': { px: 0.75 },
+    <Badge
+      variant="secondary"
+      className="h-5 text-[0.65rem] font-semibold min-w-[28px] px-1.5"
+      style={{
+        backgroundColor: color ? color + '14' : undefined,
+        color: color || undefined,
       }}
-    />
+    >
+      {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
+    </Badge>
   );
 }
 
@@ -173,27 +148,21 @@ export function CMSSidebar({
       .filter(Boolean);
   }, []);
 
-  // Load content counts from Supabase on mount
   const loadCounts = useCallback(async () => {
     setCountsLoading(true);
     try {
       const counts: Record<string, number> = {};
       const promises = contentTypes.map(async (ct) => {
         try {
-          const { count, error } = await supabase
-            .from(ct.tableName as 'events')
-            .select('*', { count: 'exact', head: true });
-          if (!error && count !== null) {
-            counts[ct.id] = count;
-          }
+          counts[ct.id] = await countRows(ct.tableName);
         } catch {
-          // Silently skip tables that fail
+          // ignore
         }
       });
       await Promise.all(promises);
       setLoadedCounts(counts);
     } catch {
-      // Fail gracefully
+      // ignore
     } finally {
       setCountsLoading(false);
     }
@@ -203,10 +172,8 @@ export function CMSSidebar({
     loadCounts();
   }, [loadCounts]);
 
-  // Use external counts if provided, otherwise use loaded counts
   const contentCounts = externalCounts ?? loadedCounts;
 
-  // Extract user display info
   const userEmail = user?.email ?? '';
   const userDisplayName =
     (user?.user_metadata?.display_name as string) ||
@@ -216,396 +183,284 @@ export function CMSSidebar({
   const userInitial = userDisplayName.charAt(0).toUpperCase();
 
   return (
-    <Box
-      sx={{
-        width: 260,
-        minHeight: '100%',
-        borderRight: 1,
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="w-[260px] min-h-full border-r border-border bg-background flex flex-col overflow-hidden">
       {/* Gradient Header */}
-      <Box
-        sx={{
-          px: 2.5,
-          py: 2.5,
+      <div
+        className="px-5 py-5 border-b border-border"
+        style={{
           background: `linear-gradient(135deg, ${brandColors.main}14 0%, ${brandColors.light}0A 50%, transparent 100%)`,
-          borderBottom: 1,
-          borderColor: 'divider',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '10px',
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0"
+            style={{
               background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.light})`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
               boxShadow: `0 2px 8px ${brandColors.main}4D`,
             }}
           >
             <Layers size={16} color="#fff" />
-          </Box>
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 700,
+          </div>
+          <div>
+            <p
+              className="font-bold leading-tight"
+              style={{
                 letterSpacing: '-0.02em',
-                lineHeight: 1.2,
                 background: `linear-gradient(135deg, ${brandColors.main}, ${brandColors.main})`,
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
             >
               Content Hub
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>
-              Manage all content
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+            </p>
+            <p className="text-muted-foreground/60 text-[0.7rem]">Manage all content</p>
+          </div>
+        </div>
+      </div>
 
       {/* Scrollable nav area */}
-      <Box sx={{ flex: 1, overflow: 'auto', py: 0.5 }}>
-        {/* WORKSPACE section */}
+      <div className="flex-1 overflow-auto py-1">
         <SectionLabel>Workspace</SectionLabel>
 
-        <List component="nav" disablePadding>
-          {/* Dashboard */}
-          <ListItemButton
-            selected={activeView === 'overview'}
+        <nav className="flex flex-col">
+          <NavItem
+            isActive={activeView === 'overview'}
+            accentColor={brandColors.main}
             onClick={() => onNavigate('overview')}
-            sx={navItemSx(activeView === 'overview', brandColors.main)}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
-              <IconBadge icon={LayoutDashboard} color="#DB2777" size={15} />
-            </ListItemIcon>
-            <ListItemText
-              primary="Dashboard"
-              primaryTypographyProps={{
-                variant: 'body2',
-                fontWeight: activeView === 'overview' ? 600 : 400,
-                fontSize: '0.85rem',
-              }}
-            />
-          </ListItemButton>
+            <span className="min-w-9 mr-2 flex">
+              <IconBadge icon={LayoutDashboard} color="hsl(var(--foreground))" size={15} />
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'overview' ? 'font-semibold' : 'font-normal')}
+            >
+              Dashboard
+            </span>
+          </NavItem>
 
-          {/* Content types collapsible */}
-          <ListItemButton
+          <button
+            type="button"
             onClick={() => setContentOpen(!contentOpen)}
-            sx={{
-              borderRadius: '8px',
-              mx: 0.75,
-              mb: 0.25,
-              py: 0.75,
-              transition: 'all 0.15s ease',
-              '&:hover': {
-                transform: 'translateX(2px)',
-              },
-            }}
+            className="flex items-center w-full text-left rounded-lg mx-1 mb-0.5 py-1.5 px-3 transition-all hover:translate-x-0.5"
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
-              <Box
-                sx={{
-                  transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                  transform: contentOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
+            <span className="min-w-9 mr-2 flex">
+              <span
+                className="flex items-center transition-transform"
+                style={{ transform: contentOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
               >
                 <ChevronDown size={16} />
-              </Box>
-            </ListItemIcon>
-            <ListItemText
-              primary="Content"
-              primaryTypographyProps={{ variant: 'body2', fontWeight: 600, fontSize: '0.85rem' }}
-            />
+              </span>
+            </span>
+            <span className="text-[0.85rem] font-semibold flex-1">Content</span>
             {!countsLoading && (
-              <Typography
-                variant="caption"
-                sx={{ color: 'text.disabled', fontSize: '0.65rem', fontWeight: 500 }}
-              >
+              <span className="text-muted-foreground/60 text-[0.65rem] font-medium">
                 {contentTypes.length} types
-              </Typography>
+              </span>
             )}
-          </ListItemButton>
+          </button>
 
-          <Collapse
-            in={contentOpen}
-            timeout={300}
-            easing={{
-              enter: 'cubic-bezier(0.4, 0, 0.2, 1)',
-              exit: 'cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          >
-            <List component="div" disablePadding>
-              {/* "All Content" */}
-              <ListItemButton
-                selected={activeView === 'content' && !activeContentType}
+          <Collapsible open={contentOpen}>
+            <CollapsibleContent>
+              <NavItem
+                isActive={activeView === 'content' && !activeContentType}
+                accentColor={brandColors.main}
                 onClick={() => onNavigate('content')}
-                sx={{
-                  ...navItemSx(activeView === 'content' && !activeContentType, brandColors.main),
-                  pl: activeView === 'content' && !activeContentType ? 4.5 : 4.75,
-                  py: 0.5,
-                }}
+                className="!py-1"
               >
-                <ListItemText
-                  primary="All Content"
-                  primaryTypographyProps={{
-                    variant: 'body2',
-                    fontWeight: activeView === 'content' && !activeContentType ? 600 : 400,
-                    fontSize: '0.82rem',
-                  }}
-                />
-              </ListItemButton>
+                <span
+                  className={cn(
+                    'text-[0.82rem] flex-1 ml-9',
+                    activeView === 'content' && !activeContentType ? 'font-semibold' : 'font-normal',
+                  )}
+                >
+                  All Content
+                </span>
+              </NavItem>
 
               {contentTypes.map((ct) => {
                 const Icon = ct.icon;
                 const isActive = activeView === 'content' && activeContentType === ct.id;
                 const count = contentCounts[ct.id];
                 return (
-                  <ListItemButton
+                  <NavItem
                     key={ct.id}
-                    selected={isActive}
+                    isActive={isActive}
+                    accentColor={ct.color}
                     onClick={() => onNavigate('content', ct.id)}
-                    sx={{
-                      ...navItemSx(isActive, ct.color),
-                      pl: isActive ? 3.25 : 3.5,
-                      py: 0.5,
-                    }}
+                    className="!py-1 !pl-7"
                   >
-                    <ListItemIcon sx={{ minWidth: 36 }}>
+                    <span className="min-w-9 mr-2 flex">
                       <IconBadge icon={Icon} color={ct.color} size={14} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={ct.label.plural}
-                      primaryTypographyProps={{
-                        variant: 'body2',
-                        fontWeight: isActive ? 600 : 400,
-                        fontSize: '0.82rem',
-                      }}
-                    />
+                    </span>
+                    <span
+                      className={cn('text-[0.82rem] flex-1', isActive ? 'font-semibold' : 'font-normal')}
+                    >
+                      {ct.label.plural}
+                    </span>
                     {countsLoading ? (
-                      <Skeleton variant="rounded" width={28} height={18} sx={{ borderRadius: '9px' }} />
+                      <Skeleton className="w-7 h-[18px] rounded-[9px]" />
                     ) : (
                       <CountBadge count={count} color={ct.color} />
                     )}
-                  </ListItemButton>
+                  </NavItem>
                 );
               })}
-            </List>
-          </Collapse>
-        </List>
+            </CollapsibleContent>
+          </Collapsible>
+        </nav>
 
-        {/* TOOLS section */}
         <SectionLabel>Tools</SectionLabel>
 
-        <List component="nav" disablePadding>
-          {/* Pages */}
-          <ListItemButton
-            selected={activeView === 'pages'}
+        <nav className="flex flex-col">
+          <NavItem
+            isActive={activeView === 'pages'}
+            accentColor="#64748b"
             onClick={() => onNavigate('pages')}
-            sx={navItemSx(activeView === 'pages', '#64748b')}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
+            <span className="min-w-9 mr-2 flex">
               <IconBadge icon={FileText} color="#64748b" size={15} />
-            </ListItemIcon>
-            <ListItemText
-              primary="Pages"
-              primaryTypographyProps={{
-                variant: 'body2',
-                fontWeight: activeView === 'pages' ? 600 : 400,
-                fontSize: '0.85rem',
-              }}
-            />
-          </ListItemButton>
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'pages' ? 'font-semibold' : 'font-normal')}
+            >
+              Pages
+            </span>
+          </NavItem>
 
-          {/* Media Library */}
-          <ListItemButton
-            selected={activeView === 'media'}
+          <NavItem
+            isActive={activeView === 'media'}
+            accentColor="#3b82f6"
             onClick={() => onNavigate('media')}
-            sx={navItemSx(activeView === 'media', '#3b82f6')}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
+            <span className="min-w-9 mr-2 flex">
               <IconBadge icon={Image} color="#3b82f6" size={15} />
-            </ListItemIcon>
-            <ListItemText
-              primary="Media Library"
-              primaryTypographyProps={{
-                variant: 'body2',
-                fontWeight: activeView === 'media' ? 600 : 400,
-                fontSize: '0.85rem',
-              }}
-            />
-          </ListItemButton>
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'media' ? 'font-semibold' : 'font-normal')}
+            >
+              Media Library
+            </span>
+          </NavItem>
 
-          {/* Review Queue */}
-          <ListItemButton
-            selected={activeView === 'review'}
+          <NavItem
+            isActive={activeView === 'review'}
+            accentColor="#f59e0b"
             onClick={() => onNavigate('review')}
-            sx={navItemSx(activeView === 'review', '#f59e0b')}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
+            <span className="min-w-9 mr-2 flex">
               <IconBadge icon={ClipboardCheck} color="#f59e0b" size={15} />
-            </ListItemIcon>
-            <ListItemText
-              primary="Review Queue"
-              primaryTypographyProps={{
-                variant: 'body2',
-                fontWeight: activeView === 'review' ? 600 : 400,
-                fontSize: '0.85rem',
-              }}
-            />
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'review' ? 'font-semibold' : 'font-normal')}
+            >
+              Review Queue
+            </span>
             {reviewCount > 0 && (
-              <Chip
-                label={reviewCount}
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  minWidth: 24,
-                  bgcolor: '#fef3c7',
-                  color: '#92400e',
-                  '& .MuiChip-label': { px: 0.75 },
-                }}
-              />
+              <Badge
+                className="h-5 text-[0.65rem] font-bold min-w-[24px] px-1.5"
+                style={{ backgroundColor: '#fef3c7', color: '#92400e' }}
+              >
+                {reviewCount}
+              </Badge>
             )}
-          </ListItemButton>
+          </NavItem>
 
-          {/* Audit Log */}
-          <ListItemButton
-            selected={activeView === 'audit'}
+          <NavItem
+            isActive={activeView === 'quality'}
+            accentColor="#10b981"
+            onClick={() => onNavigate('quality')}
+          >
+            <span className="min-w-9 mr-2 flex">
+              <IconBadge icon={Activity} color="#10b981" size={15} />
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'quality' ? 'font-semibold' : 'font-normal')}
+            >
+              Data Quality
+            </span>
+          </NavItem>
+
+          <NavItem
+            isActive={activeView === 'moderation'}
+            accentColor="#ef4444"
+            onClick={() => onNavigate('moderation')}
+          >
+            <span className="min-w-9 mr-2 flex">
+              <IconBadge icon={ShieldAlert} color="#ef4444" size={15} />
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'moderation' ? 'font-semibold' : 'font-normal')}
+            >
+              Moderation
+            </span>
+          </NavItem>
+
+          <NavItem
+            isActive={activeView === 'audit'}
+            accentColor="#6366f1"
             onClick={() => onNavigate('audit')}
-            sx={navItemSx(activeView === 'audit', '#6366f1')}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
+            <span className="min-w-9 mr-2 flex">
               <IconBadge icon={History} color="#6366f1" size={15} />
-            </ListItemIcon>
-            <ListItemText
-              primary="Audit Log"
-              primaryTypographyProps={{
-                variant: 'body2',
-                fontWeight: activeView === 'audit' ? 600 : 400,
-                fontSize: '0.85rem',
-              }}
-            />
-          </ListItemButton>
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'audit' ? 'font-semibold' : 'font-normal')}
+            >
+              Audit Log
+            </span>
+          </NavItem>
 
-          <Divider sx={{ my: 0.75, mx: 1.5 }} />
+          <hr className="my-1.5 mx-3 border-border" />
 
-          {/* Settings */}
-          <ListItemButton
-            selected={activeView === 'settings'}
+          <NavItem
+            isActive={activeView === 'settings'}
+            accentColor="#64748b"
             onClick={() => onNavigate('settings')}
-            sx={navItemSx(activeView === 'settings', '#64748b')}
           >
-            <ListItemIcon sx={{ minWidth: 36 }}>
+            <span className="min-w-9 mr-2 flex">
               <IconBadge icon={Settings} color="#64748b" size={15} />
-            </ListItemIcon>
-            <ListItemText
-              primary="Settings"
-              primaryTypographyProps={{
-                variant: 'body2',
-                fontWeight: activeView === 'settings' ? 600 : 400,
-                fontSize: '0.85rem',
-              }}
-            />
-          </ListItemButton>
-        </List>
-      </Box>
+            </span>
+            <span
+              className={cn('text-[0.85rem] flex-1', activeView === 'settings' ? 'font-semibold' : 'font-normal')}
+            >
+              Settings
+            </span>
+          </NavItem>
+        </nav>
+      </div>
 
       {/* User info footer */}
-      <Box
-        sx={{
-          borderTop: 1,
-          borderColor: 'divider',
-          px: 2,
-          py: 1.5,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          bgcolor: 'grey.50',
-        }}
-      >
-        <Avatar
-          sx={{
-            width: 32,
-            height: 32,
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            bgcolor: brandColors.main,
-            color: '#fff',
-          }}
-          src={user?.user_metadata?.avatar_url as string | undefined}
-        >
-          {userInitial}
+      <div className="border-t border-border px-4 py-3 flex items-center gap-3 bg-muted/30">
+        <Avatar className="w-8 h-8">
+          <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
+          <AvatarFallback
+            className="text-xs font-semibold text-white"
+            style={{ backgroundColor: brandColors.main }}
+          >
+            {userInitial}
+          </AvatarFallback>
         </Avatar>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 600,
-              fontSize: '0.8rem',
-              lineHeight: 1.3,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {userDisplayName}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: 'text.disabled',
-              fontSize: '0.65rem',
-              lineHeight: 1.2,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: 'block',
-            }}
-          >
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-[0.8rem] leading-tight truncate">{userDisplayName}</p>
+          <p className="text-muted-foreground/60 text-[0.65rem] leading-tight truncate block">
             {userEmail}
-          </Typography>
-        </Box>
-        <Tooltip title="Sign out">
-          <Box
-            component="button"
-            onClick={() => supabase.auth.signOut()}
-            sx={{
-              p: 0.5,
-              borderRadius: '6px',
-              border: 'none',
-              bgcolor: 'transparent',
-              color: 'text.disabled',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              transition: 'all 0.15s ease',
-              '&:hover': {
-                bgcolor: 'action.hover',
-                color: 'text.secondary',
-              },
-            }}
-          >
-            <LogOut size={14} />
-          </Box>
-        </Tooltip>
-      </Box>
-    </Box>
+          </p>
+        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => supabase.auth.signOut()}
+                className="p-1 rounded-md border-0 bg-transparent text-muted-foreground/60 cursor-pointer flex items-center justify-center flex-shrink-0 transition-all hover:bg-muted hover:text-muted-foreground"
+              >
+                <LogOut size={14} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Sign out</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </div>
   );
 }

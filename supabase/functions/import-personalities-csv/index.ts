@@ -6,7 +6,6 @@
 // ============================================================
 
 import 'https://deno.land/x/xhr@0.1.0/mod.ts'
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 import { stagePersonality, triggerPersonalityPipeline, type RawPersonality } from '../_shared/personality-staging.ts'
 
@@ -34,7 +33,7 @@ function parseCsv(text: string): string[][] {
   return rows.filter(r => r.length > 0 && r.some(c => c.trim()))
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const cors = getCorsHeaders(req)
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors })
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: cors })

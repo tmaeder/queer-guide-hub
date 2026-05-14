@@ -6,27 +6,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  Tabs,
-  Tab,
-  Box,
-  Typography,
-  ImageList,
-  ImageListItem,
-  CircularProgress,
-  Stack,
-  Chip,
-  IconButton,
-  Tooltip,
-  Alert,
-  Pagination,
-} from '@mui/material';
-import {
   Search,
   Upload,
   X,
@@ -37,6 +16,7 @@ import {
   Check,
   Globe,
   FolderOpen,
+  Loader2,
 } from 'lucide-react';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,6 +24,26 @@ import type { CMSMedia } from '@/types/cms';
 import type { ExternalImage } from '@/hooks/useExternalImageSearch';
 import MediaUploader from './MediaUploader';
 import ExternalImageSearch from './ExternalImageSearch';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 interface MediaPickerDialogProps {
   open: boolean;
@@ -215,295 +215,283 @@ export default function MediaPickerDialog({
     (dialogMode === 'external' && !!selectedExternal);
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="lg"
-      fullWidth
-      PaperProps={{ sx: { height: '80vh', display: 'flex', flexDirection: 'column' } }}
-    >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
-        <Typography variant="h6" component="span">
-          Select Media
-        </Typography>
-        <IconButton onClick={onClose} size="small">
-          <X size={20} />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        className="max-w-5xl w-full p-0 flex flex-col"
+        style={{ height: '80vh' }}
+      >
+        <DialogHeader className="flex flex-row items-center justify-between pb-1 px-6 pt-4 space-y-0">
+          <DialogTitle className="text-lg">Select Media</DialogTitle>
+          <Button onClick={onClose} variant="ghost" size="sm" className="h-7 w-7 p-0">
+            <X size={20} />
+          </Button>
+        </DialogHeader>
 
-      {/* Top-level mode tabs: Library / External Sources */}
-      <Box sx={{ px: 3, pb: 0 }}>
-        <Tabs
-          value={dialogMode}
-          onChange={(_, v) => {
-            setDialogMode(v as DialogMode);
-            setSelectedId(null);
-            setSelectedExternal(null);
-          }}
-          sx={{ minHeight: 40, mb: 1.5 }}
-        >
-          <Tab
-            icon={<FolderOpen size={14} />}
-            iconPosition="start"
-            label="Media Library"
-            value="library"
-            sx={{ minHeight: 40, py: 0 }}
-          />
-          <Tab
-            icon={<Globe size={14} />}
-            iconPosition="start"
-            label="External Sources"
-            value="external"
-            sx={{ minHeight: 40, py: 0 }}
-          />
-        </Tabs>
-      </Box>
+        {/* Top-level mode tabs: Library / External Sources */}
+        <div className="px-6 pb-0">
+          <Tabs
+            value={dialogMode}
+            onValueChange={(v) => {
+              setDialogMode(v as DialogMode);
+              setSelectedId(null);
+              setSelectedExternal(null);
+            }}
+          >
+            <TabsList className="min-h-10 mb-3">
+              <TabsTrigger value="library">
+                <FolderOpen size={14} className="mr-1" />
+                Media Library
+              </TabsTrigger>
+              <TabsTrigger value="external">
+                <Globe size={14} className="mr-1" />
+                External Sources
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-      {/* Library mode */}
-      {dialogMode === 'library' && (
-        <>
-          <Box sx={{ px: 3, pb: 1 }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1.5 }}>
-              <TextField
-                size="small"
-                placeholder="Search files..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                slotProps={{
-                  input: {
-                    startAdornment: <Search size={16} className="text-gray-400 mr-2" />,
-                  },
-                }}
-                sx={{ flex: 1 }}
-              />
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<Upload size={16} />}
-                onClick={() => setShowUploader(!showUploader)}
-              >
-                Upload
-              </Button>
-            </Stack>
-
-            {showUploader && (
-              <Box sx={{ mb: 2 }}>
-                <MediaUploader
-                  onUploaded={handleUploaded}
-                  accept={mimeFilter ? `${mimeFilter}*` : undefined}
-                />
-              </Box>
-            )}
-
-            {!mimeFilter && (
-              <Tabs
-                value={activeTab}
-                onChange={(_, v) => {
-                  setActiveTab(v as MimeTab);
-                  setPage(1);
-                }}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{ minHeight: 36 }}
-              >
-                <Tab label="All" value="all" sx={{ minHeight: 36, py: 0 }} />
-                <Tab icon={<ImageIcon size={14} />} iconPosition="start" label="Images" value="image" sx={{ minHeight: 36, py: 0 }} />
-                <Tab icon={<FileText size={14} />} iconPosition="start" label="Documents" value="document" sx={{ minHeight: 36, py: 0 }} />
-                <Tab icon={<Film size={14} />} iconPosition="start" label="Video" value="video" sx={{ minHeight: 36, py: 0 }} />
-                <Tab icon={<Music size={14} />} iconPosition="start" label="Audio" value="audio" sx={{ minHeight: 36, py: 0 }} />
-              </Tabs>
-            )}
-          </Box>
-
-          <DialogContent dividers sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
-
-            {loading && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                <CircularProgress />
-              </Box>
-            )}
-
-            {!loading && media.length === 0 && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6 }}>
-                <ImageIcon size={48} className="text-gray-300 mb-2" />
-                <Typography variant="body2" color="text.secondary">
-                  No media found. Upload a file or search external sources.
-                </Typography>
+        {/* Library mode */}
+        {dialogMode === 'library' && (
+          <>
+            <div className="px-6 pb-1">
+              <div className="flex flex-row gap-3 items-center mb-3">
+                <div className="flex-1 relative">
+                  <Search
+                    size={16}
+                    className="text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  />
+                  <Input
+                    placeholder="Search files..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    className="pl-9 h-9"
+                  />
+                </div>
                 <Button
-                  size="small"
-                  sx={{ mt: 1 }}
-                  onClick={() => setDialogMode('external')}
-                  startIcon={<Globe size={14} />}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowUploader(!showUploader)}
                 >
-                  Browse External Sources
+                  <Upload size={16} className="mr-1" />
+                  Upload
                 </Button>
-              </Box>
-            )}
+              </div>
 
-            {!loading && media.length > 0 && (
-              <ImageList cols={4} gap={12} sx={{ m: 0 }}>
-                {media.map((item) => {
-                  const isSelected = selectedId === item.id;
-                  const isImage = item.mime_type.startsWith('image/');
+              {showUploader && (
+                <div className="mb-3">
+                  <MediaUploader
+                    onUploaded={handleUploaded}
+                    accept={mimeFilter ? `${mimeFilter}*` : undefined}
+                  />
+                </div>
+              )}
 
-                  return (
-                    <ImageListItem
-                      key={item.id}
-                      onClick={() => {
-                        setSelectedId(item.id);
-                        setSelectedExternal(null);
-                      }}
-                      sx={{
-                        cursor: 'pointer',
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        border: 2,
-                        borderColor: isSelected ? 'primary.main' : 'transparent',
-                        position: 'relative',
-                        '&:hover': {
-                          borderColor: isSelected ? 'primary.main' : 'action.hover',
-                        },
-                        bgcolor: 'grey.50',
-                      }}
-                    >
-                      {isImage ? (
-                        <img
-                          src={getMediaThumbnailUrl(item)}
-                          alt={item.alt_text?.en || item.filename}
-                          loading="lazy"
-                          style={{
-                            width: '100%',
-                            height: 160,
-                            objectFit: 'cover',
-                            display: 'block',
-                          }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: 160,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            bgcolor: 'grey.100',
-                          }}
-                        >
-                          {getMimeIcon(item.mime_type)}
-                        </Box>
-                      )}
+              {!mimeFilter && (
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(v) => {
+                    setActiveTab(v as MimeTab);
+                    setPage(1);
+                  }}
+                >
+                  <TabsList className="min-h-9">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="image">
+                      <ImageIcon size={14} className="mr-1" />
+                      Images
+                    </TabsTrigger>
+                    <TabsTrigger value="document">
+                      <FileText size={14} className="mr-1" />
+                      Documents
+                    </TabsTrigger>
+                    <TabsTrigger value="video">
+                      <Film size={14} className="mr-1" />
+                      Video
+                    </TabsTrigger>
+                    <TabsTrigger value="audio">
+                      <Music size={14} className="mr-1" />
+                      Audio
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
+            </div>
 
-                      {isSelected && (
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 6,
-                            right: 6,
-                            bgcolor: 'primary.main',
-                            borderRadius: '50%',
-                            width: 24,
-                            height: 24,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Check size={14} color="white" />
-                        </Box>
-                      )}
+            <div className="flex-1 overflow-auto p-3 border-y border-border">
+              {error && (
+                <Alert variant="destructive" className="mb-3">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-                      {/* External source badge */}
-                      {item.external_source && (
-                        <Chip
-                          label={item.external_source}
-                          size="small"
-                          sx={{
-                            position: 'absolute',
-                            top: 6,
-                            left: 6,
-                            height: 20,
-                            fontSize: '0.65rem',
-                            bgcolor: 'rgba(0,0,0,0.6)',
-                            color: 'white',
-                            textTransform: 'capitalize',
-                          }}
-                        />
-                      )}
+              {loading && (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+                </div>
+              )}
 
-                      <Box sx={{ p: 1 }}>
-                        <Tooltip title={item.original_filename}>
-                          <Typography
-                            variant="caption"
-                            noWrap
-                            display="block"
-                            sx={{ fontWeight: 500 }}
+              {!loading && media.length === 0 && (
+                <div className="flex flex-col items-center py-12">
+                  <ImageIcon size={48} className="text-gray-300 mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    No media found. Upload a file or search external sources.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="mt-1"
+                    onClick={() => setDialogMode('external')}
+                  >
+                    <Globe size={14} className="mr-1" />
+                    Browse External Sources
+                  </Button>
+                </div>
+              )}
+
+              {!loading && media.length > 0 && (
+                <div className="grid grid-cols-4 gap-3 m-0">
+                  {media.map((item) => {
+                    const isSelected = selectedId === item.id;
+                    const isImage = item.mime_type.startsWith('image/');
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          setSelectedId(item.id);
+                          setSelectedExternal(null);
+                        }}
+                        className={`cursor-pointer rounded overflow-hidden border-2 relative bg-gray-50 hover:border-muted ${
+                          isSelected
+                            ? 'border-primary hover:border-primary'
+                            : 'border-transparent'
+                        }`}
+                      >
+                        {isImage ? (
+                          <img
+                            src={getMediaThumbnailUrl(item)}
+                            alt={item.alt_text?.en || item.filename}
+                            loading="lazy"
+                            style={{
+                              width: '100%',
+                              height: 160,
+                              objectFit: 'cover',
+                              display: 'block',
+                            }}
+                          />
+                        ) : (
+                          <div
+                            className="w-full flex items-center justify-center bg-gray-100"
+                            style={{ height: 160 }}
                           >
-                            {item.original_filename}
-                          </Typography>
-                        </Tooltip>
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                          <Typography variant="caption" color="text.secondary">
-                            {formatFileSize(item.file_size)}
-                          </Typography>
-                          {item.width && item.height && (
-                            <Typography variant="caption" color="text.secondary">
-                              {' '}
-                              &middot; {item.width}&times;{item.height}
-                            </Typography>
-                          )}
-                        </Stack>
-                      </Box>
-                    </ImageListItem>
-                  );
-                })}
-              </ImageList>
-            )}
-          </DialogContent>
+                            {getMimeIcon(item.mime_type)}
+                          </div>
+                        )}
 
-          <Box sx={{ px: 3, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="caption" color="text.secondary">
-              {totalCount} item{totalCount !== 1 ? 's' : ''}
-            </Typography>
-            {totalPages > 1 && (
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={(_, p) => setPage(p)}
-                size="small"
-              />
-            )}
-          </Box>
-        </>
-      )}
+                        {isSelected && (
+                          <div className="absolute top-1.5 right-1.5 bg-primary rounded-full w-6 h-6 flex items-center justify-center">
+                            <Check size={14} color="white" />
+                          </div>
+                        )}
 
-      {/* External sources mode */}
-      {dialogMode === 'external' && (
-        <DialogContent dividers sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-          <ExternalImageSearch
-            onSelect={handleExternalSelect}
-            initialQuery={searchHint || ''}
-          />
-        </DialogContent>
-      )}
+                        {/* External source badge */}
+                        {item.external_source && (
+                          <span className="absolute top-1.5 left-1.5 h-5 px-1.5 text-[0.65rem] capitalize bg-black/60 text-white rounded flex items-center">
+                            {item.external_source}
+                          </span>
+                        )}
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} color="inherit">
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSelect}
-          variant="contained"
-          disabled={!hasSelection}
-        >
-          Select
-        </Button>
-      </DialogActions>
+                        <div className="p-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-xs font-medium block truncate">
+                                {item.original_filename}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent>{item.original_filename}</TooltipContent>
+                          </Tooltip>
+                          <div className="flex flex-row gap-1 items-center">
+                            <span className="text-xs text-muted-foreground">
+                              {formatFileSize(item.file_size)}
+                            </span>
+                            {item.width && item.height && (
+                              <span className="text-xs text-muted-foreground">
+                                {' '}
+                                &middot; {item.width}&times;{item.height}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-3 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">
+                {totalCount} item{totalCount !== 1 ? 's' : ''}
+              </span>
+              {totalPages > 1 && (
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        className={
+                          page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                        }
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <PaginationItem key={p}>
+                        <PaginationLink
+                          isActive={p === page}
+                          onClick={() => setPage(p)}
+                          className="cursor-pointer"
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        className={
+                          page === totalPages
+                            ? 'pointer-events-none opacity-50'
+                            : 'cursor-pointer'
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* External sources mode */}
+        {dialogMode === 'external' && (
+          <div className="flex-1 overflow-auto p-3 border-y border-border">
+            <ExternalImageSearch
+              onSelect={handleExternalSelect}
+              initialQuery={searchHint || ''}
+            />
+          </div>
+        )}
+
+        <DialogFooter className="px-6 pb-4 gap-2">
+          <Button onClick={onClose} variant="ghost">
+            Cancel
+          </Button>
+          <Button onClick={handleSelect} disabled={!hasSelection}>
+            Select
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

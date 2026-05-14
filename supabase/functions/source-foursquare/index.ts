@@ -1,7 +1,8 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: Foursquare Places API v3
@@ -30,7 +31,7 @@ const foursquareAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const apiKey = config.apiKey || Deno.env.get('FOURSQUARE_API_KEY')
-    if (!apiKey) throw new Error('FOURSQUARE_API_KEY not configured')
+    if (!apiKey) throw new MissingCredentialsError('FOURSQUARE_API_KEY')
 
     const supabase = getServiceClient()
     const cities = (config.filters?.cities as string[]) || getCityForHour()
@@ -175,7 +176,7 @@ function extractFsqTags(
 
 // ─── HTTP Handler ────────────────────────────────────────────
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-foursquare', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   const supabase = getServiceClient()
@@ -211,7 +212,13 @@ Deno.serve(async (req) => {
       items_failed: 0,
     }, 200, req)
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
+    if ((error as Error).message?.includes('401')) {
+      return jsonResponse(skippedResponse('invalid_credentials', ['FOURSQUARE_API_KEY']), 200, req)
+    }
     console.error('source-foursquare error:', error)
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

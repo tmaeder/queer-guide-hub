@@ -1,7 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { SideBySideComparison } from './SideBySideComparison';
 import { useEntityById, useMergeEntities } from '@/hooks/useImportHubQueries';
 
@@ -51,16 +49,16 @@ export function MergeDialog({
         </DialogHeader>
 
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
-            <CircularProgress size={32} />
-            <Typography sx={{ ml: 2, color: 'var(--muted-foreground)' }}>Loading records...</Typography>
-          </Box>
+          <div className="flex justify-center items-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
+            <p className="ml-4 text-muted-foreground">Loading records...</p>
+          </div>
         ) : !entityA || !entityB ? (
-          <Box sx={{ py: 4, textAlign: 'center' }}>
-            <Typography sx={{ color: 'var(--muted-foreground)' }}>
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground">
               One or both records could not be loaded. They may have been deleted.
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ) : (
           <SideBySideComparison
             entityType={entityType}
@@ -76,10 +74,10 @@ export function MergeDialog({
         )}
 
         {mergeMutation.isPending && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 2 }}>
-            <CircularProgress size={20} />
-            <Typography variant="body2" sx={{ ml: 1, color: 'var(--muted-foreground)' }}>Merging records...</Typography>
-          </Box>
+          <div className="flex justify-center items-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin" aria-label="Loading" />
+            <p className="ml-2 text-sm text-muted-foreground">Merging records...</p>
+          </div>
         )}
       </DialogContent>
     </Dialog>

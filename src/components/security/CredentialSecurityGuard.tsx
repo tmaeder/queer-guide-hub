@@ -81,6 +81,7 @@ export function CredentialSecurityGuard({ children }: CredentialSecurityGuardPro
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSecureCredentials() {
   const context = useContext(CredentialContext);
   if (context === undefined) {

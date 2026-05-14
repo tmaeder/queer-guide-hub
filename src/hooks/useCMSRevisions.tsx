@@ -56,7 +56,7 @@ export function useCMSRevisions(): UseCMSRevisionsReturn {
             const { data: profile } = await supabase
               .from('profiles' as 'venues')
               .select('display_name, email')
-              .eq('id', rev.created_by)
+              .eq('user_id', rev.created_by)
               .maybeSingle();
             author = profile ? { display_name: profile.display_name, email: profile.email } : undefined;
           }

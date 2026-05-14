@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { rpcWithBreaker, CircuitOpenError } from '../_shared/circuit-breaker.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Deduplicate (venue / event / hotel / city / country / news)
@@ -21,7 +22,7 @@ interface DedupCandidate {
   time_diff_hours?: number | null
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -32,16 +33,18 @@ Deno.serve(async (req) => {
     const reviewMin     = Math.min(body.review_min ?? 0.75, autoMergeMin)
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
+    const entityType    = body.entityType as string | undefined
 
     let query = supabase
       .from('ingestion_staging')
       .select('id, normalized_data, entity_type, target_table')
       .eq('ai_validation_status', 'approved')
       .eq('dedup_status', 'pending')
+      .eq('disposition', 'pending')
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
+    if (entityType) query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`load: ${error.message}`, 500, req)
@@ -377,4 +380,4 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-deduplicate', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

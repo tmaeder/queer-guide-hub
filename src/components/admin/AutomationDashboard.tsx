@@ -1,31 +1,8 @@
 /**
  * AutomationDashboard — Admin dashboard for the background automation system.
- *
- * Tabs: Overview · Modules · Review Queue · Link Health · Geo Validation
- *
- * Live-updating via Supabase Realtime on content_flags table.
  */
 
 import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
-import CircularProgress from '@mui/material/CircularProgress';
-import Switch from '@mui/material/Switch';
-import Slider from '@mui/material/Slider';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import {
   Zap,
   Settings,
@@ -45,19 +22,40 @@ import {
   Activity,
   BarChart3,
   Globe,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   useAutomationMonitor,
   type AutomationModule,
   type ContentFlag,
 } from '@/hooks/useAutomationMonitor';
 import { formatDistanceToNow } from 'date-fns';
-
-// ── Category Icons ──────────────────────────────────────────────────────────
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   content_quality: Shield,
@@ -69,11 +67,11 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   ai_enhancement: Bot,
 };
 
-const SEVERITY_COLORS: Record<string, 'default' | 'info' | 'warning' | 'error'> = {
-  info: 'info',
-  warning: 'warning',
-  error: 'error',
-  critical: 'error',
+const SEVERITY_CLASS: Record<string, string> = {
+  info: 'bg-blue-100 text-blue-800',
+  warning: 'bg-yellow-100 text-yellow-800',
+  error: 'bg-red-100 text-red-800',
+  critical: 'bg-red-100 text-red-800',
 };
 
 const FLAG_TYPE_LABELS: Record<string, string> = {
@@ -88,8 +86,6 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
   encoding_issue: 'Encoding Issue',
   outdated: 'Outdated',
 };
-
-// ── Main Component ──────────────────────────────────────────────────────────
 
 export function AutomationDashboard() {
   const {
@@ -116,22 +112,16 @@ export function AutomationDashboard() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       {/* Stats Overview */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' },
-          gap: 2,
-        }}
-      >
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
         <StatCard
           icon={Zap}
           label="Active Modules"
@@ -159,19 +149,15 @@ export function AutomationDashboard() {
         />
         <StatCard icon={BarChart3} label="Total Processed" value={stats.totalProcessed} />
         <StatCard icon={Activity} label="Modules" value={modules.length} />
-      </Box>
+      </div>
 
-      {/* Tabs */}
       <Tabs defaultValue="modules">
         <TabsList>
           <TabsTrigger value="modules">Modules</TabsTrigger>
           <TabsTrigger value="review">
             Review Queue
             {stats.pendingFlags > 0 && (
-              <Badge
-                variant="destructive"
-                style={{ marginLeft: 6, fontSize: '0.65rem', padding: '0 4px' }}
-              >
+              <Badge variant="destructive" className="ml-2 px-1 text-[0.65rem]">
                 {stats.pendingFlags}
               </Badge>
             )}
@@ -180,63 +166,42 @@ export function AutomationDashboard() {
           <TabsTrigger value="geo">Geo Validation</TabsTrigger>
         </TabsList>
 
-        {/* ── Modules Tab ──────────────────────────────────────────────────── */}
+        {/* Modules Tab */}
         <TabsContent value="modules">
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4">
             {modules.map((mod) => {
               const CategoryIcon = CATEGORY_ICONS[mod.category] || Zap;
               return (
                 <Card key={mod.id}>
                   <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      {/* Icon + Info */}
-                      <Box
-                        sx={{
-                          p: 1,
-                          bgcolor: mod.is_enabled ? '#dcfce7' : '#f3f4f6',
-                          borderRadius: 2,
-                          display: 'flex',
-                        }}
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="p-2 rounded-lg flex"
+                        style={{ backgroundColor: mod.is_enabled ? '#dcfce7' : '#f3f4f6' }}
                       >
                         <CategoryIcon
                           size={20}
                           style={{ color: mod.is_enabled ? '#16a34a' : '#9ca3af' }}
                         />
-                      </Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                            {mod.display_name}
-                          </Typography>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-[0.95rem]">{mod.display_name}</p>
                           {mod.schedule && (
-                            <Chip
-                              size="small"
-                              label={mod.schedule}
-                              variant="outlined"
-                              sx={{ fontSize: '0.7rem', height: 20 }}
-                            />
+                            <Badge variant="outline" className="text-[0.7rem] h-5">
+                              {mod.schedule}
+                            </Badge>
                           )}
                           {mod.auto_approve && (
-                            <Chip
-                              size="small"
-                              label="Auto-approve"
-                              color="success"
-                              sx={{ fontSize: '0.7rem', height: 20 }}
-                            />
+                            <Badge className="bg-green-100 text-green-800 text-[0.7rem] h-5">
+                              Auto-approve
+                            </Badge>
                           )}
-                        </Box>
-                        <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mt: 0.25 }}>
+                        </div>
+                        <p className="text-[0.8rem] text-muted-foreground mt-0.5">
                           {mod.description}
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            gap: 2,
-                            mt: 0.5,
-                            fontSize: '0.75rem',
-                            color: 'text.secondary',
-                          }}
-                        >
+                        </p>
+                        <div className="flex gap-4 mt-1 text-[0.75rem] text-muted-foreground flex-wrap items-center">
                           <span>Confidence: {(mod.confidence_threshold * 100).toFixed(0)}%</span>
                           <span>Batch: {mod.batch_size}</span>
                           <span>Runs: {mod.total_runs}</span>
@@ -248,200 +213,203 @@ export function AutomationDashboard() {
                             </span>
                           )}
                           {mod.last_run_status && (
-                            <Chip
-                              size="small"
-                              label={mod.last_run_status}
-                              color={
+                            <Badge
+                              className={`text-[0.65rem] h-[18px] ${
                                 mod.last_run_status === 'success'
-                                  ? 'success'
+                                  ? 'bg-green-100 text-green-800'
                                   : mod.last_run_status === 'partial'
-                                    ? 'warning'
-                                    : 'error'
-                              }
-                              sx={{ fontSize: '0.65rem', height: 18 }}
-                            />
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {mod.last_run_status}
+                            </Badge>
                           )}
-                        </Box>
-                      </Box>
+                        </div>
+                      </div>
 
-                      {/* Actions */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Tooltip title="Configure module">
-                          <IconButton size="small" onClick={() => setConfigModule(mod)}>
-                            <Settings size={16} />
-                          </IconButton>
+                      <div className="flex items-center gap-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              onClick={() => setConfigModule(mod)}
+                            >
+                              <Settings size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Configure module</TooltipContent>
                         </Tooltip>
-                        <Tooltip title="Trigger now">
-                          <span>
-                            <IconButton
-                              size="small"
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
                               disabled={!mod.is_enabled || isTriggering}
                               onClick={() => triggerModule(mod.name)}
                             >
                               <Play size={16} />
-                            </IconButton>
-                          </span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Trigger now</TooltipContent>
                         </Tooltip>
-                        <Tooltip title={mod.is_enabled ? 'Disable' : 'Enable'}>
-                          <Switch
-                            size="small"
-                            checked={mod.is_enabled}
-                            disabled={isToggling}
-                            onChange={() =>
-                              toggleModule({ moduleId: mod.id, enabled: !mod.is_enabled })
-                            }
-                          />
-                        </Tooltip>
-                      </Box>
-                    </Box>
+                        <Switch
+                          checked={mod.is_enabled}
+                          disabled={isToggling}
+                          onCheckedChange={() =>
+                            toggleModule({ moduleId: mod.id, enabled: !mod.is_enabled })
+                          }
+                        />
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               );
             })}
-          </Box>
+          </div>
         </TabsContent>
 
-        {/* ── Review Queue Tab ─────────────────────────────────────────────── */}
+        {/* Review Queue Tab */}
         <TabsContent value="review">
           <Card>
             <CardHeader>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
+              <div className="flex items-center justify-between">
+                <div>
                   <CardTitle>Review Queue</CardTitle>
                   <CardDescription>
                     {stats.pendingFlags} pending &middot; {stats.appliedFlags} applied &middot;{' '}
                     {flagStats?.rejected || 0} rejected
                   </CardDescription>
-                </Box>
-              </Box>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {pendingFlags.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                <div className="text-center py-12 text-muted-foreground">
                   <CheckCircle2 size={40} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
-                  <Typography>No pending items. All caught up!</Typography>
-                </Box>
+                  <p>No pending items. All caught up!</p>
+                </div>
               ) : (
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Type</TableCell>
-                        <TableCell>Title</TableCell>
-                        <TableCell>Content</TableCell>
-                        <TableCell>Severity</TableCell>
-                        <TableCell>Confidence</TableCell>
-                        <TableCell>Created</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {pendingFlags.map((flag) => (
-                        <TableRow key={flag.id} hover>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}
-                              sx={{ fontSize: '0.7rem' }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography
-                              sx={{
-                                fontSize: '0.85rem',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                '&:hover': { textDecoration: 'underline' },
-                              }}
-                              onClick={() => setSelectedFlag(flag)}
-                            >
-                              {flag.title}
-                            </Typography>
-                            {flag.description && (
-                              <Typography
-                                sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.25 }}
-                              >
-                                {flag.description.slice(0, 80)}
-                                {flag.description.length > 80 ? '...' : ''}
-                              </Typography>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={flag.content_type}
-                              variant="outlined"
-                              sx={{ fontSize: '0.65rem' }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={flag.severity}
-                              color={SEVERITY_COLORS[flag.severity] || 'default'}
-                              sx={{ fontSize: '0.65rem' }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            {flag.confidence != null
-                              ? `${(flag.confidence * 100).toFixed(0)}%`
-                              : '—'}
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                              {formatDistanceToNow(new Date(flag.created_at), { addSuffix: true })}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                              <Tooltip title="View details">
-                                <IconButton size="small" onClick={() => setSelectedFlag(flag)}>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Content</TableHead>
+                      <TableHead>Severity</TableHead>
+                      <TableHead>Confidence</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingFlags.map((flag) => (
+                      <TableRow key={flag.id}>
+                        <TableCell>
+                          <Badge variant="secondary" className="text-[0.7rem]">
+                            {FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <p
+                            className="text-[0.85rem] font-medium cursor-pointer hover:underline"
+                            onClick={() => setSelectedFlag(flag)}
+                          >
+                            {flag.title}
+                          </p>
+                          {flag.description && (
+                            <p className="text-[0.75rem] text-muted-foreground mt-0.5">
+                              {flag.description.slice(0, 80)}
+                              {flag.description.length > 80 ? '...' : ''}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[0.65rem]">
+                            {flag.content_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`text-[0.65rem] ${SEVERITY_CLASS[flag.severity] ?? ''}`}
+                          >
+                            {flag.severity}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {flag.confidence != null
+                            ? `${(flag.confidence * 100).toFixed(0)}%`
+                            : '—'}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.75rem] text-muted-foreground">
+                            {formatDistanceToNow(new Date(flag.created_at), { addSuffix: true })}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => setSelectedFlag(flag)}
+                                >
                                   <Eye size={14} />
-                                </IconButton>
-                              </Tooltip>
-                              {flag.suggested_value && (
-                                <Tooltip title="Approve & Apply">
-                                  <span>
-                                    <IconButton
-                                      size="small"
-                                      color="success"
-                                      disabled={isReviewing}
-                                      onClick={() =>
-                                        reviewFlag({ flagId: flag.id, action: 'approved' })
-                                      }
-                                    >
-                                      <ThumbsUp size={14} />
-                                    </IconButton>
-                                  </span>
-                                </Tooltip>
-                              )}
-                              <Tooltip title="Reject">
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    color="error"
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>View details</TooltipContent>
+                            </Tooltip>
+                            {flag.suggested_value && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 text-green-600"
                                     disabled={isReviewing}
                                     onClick={() =>
-                                      reviewFlag({ flagId: flag.id, action: 'rejected' })
+                                      reviewFlag({ flagId: flag.id, action: 'approved' })
                                     }
                                   >
-                                    <ThumbsDown size={14} />
-                                  </IconButton>
-                                </span>
+                                    <ThumbsUp size={14} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Approve & Apply</TooltipContent>
                               </Tooltip>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                            )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 text-destructive"
+                                  disabled={isReviewing}
+                                  onClick={() =>
+                                    reviewFlag({ flagId: flag.id, action: 'rejected' })
+                                  }
+                                >
+                                  <ThumbsDown size={14} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Reject</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* ── Link Health Tab ──────────────────────────────────────────────── */}
+        {/* Link Health Tab */}
         <TabsContent value="links">
           <Card>
             <CardHeader>
@@ -450,100 +418,80 @@ export function AutomationDashboard() {
             </CardHeader>
             <CardContent>
               {linksLoading ? (
-                <LinearProgress />
+                <div className="h-1 w-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary animate-pulse" />
+                </div>
               ) : deadLinks.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                <div className="text-center py-12 text-muted-foreground">
                   <Link2 size={40} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
-                  <Typography>All links are healthy!</Typography>
-                </Box>
+                  <p>All links are healthy!</p>
+                </div>
               ) : (
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Content</TableCell>
-                        <TableCell>Field</TableCell>
-                        <TableCell>URL</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Response</TableCell>
-                        <TableCell>Error</TableCell>
-                        <TableCell>Checked</TableCell>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Content</TableHead>
+                      <TableHead>Field</TableHead>
+                      <TableHead>URL</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Response</TableHead>
+                      <TableHead>Error</TableHead>
+                      <TableHead>Checked</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {deadLinks.map((link) => (
+                      <TableRow key={link.id}>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[0.65rem]">
+                            {link.content_type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.8rem]">{link.field_name}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="text-[0.75rem] font-mono truncate block max-w-[300px]"
+                            title={link.original_url}
+                          >
+                            {link.original_url}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`text-[0.65rem] ${link.http_status ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
+                          >
+                            {link.http_status || 'Timeout'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.75rem] text-muted-foreground">
+                            {link.response_time_ms ? `${link.response_time_ms}ms` : '—'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.75rem] text-destructive truncate block max-w-[200px]">
+                            {link.error_message || '—'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.75rem] text-muted-foreground">
+                            {formatDistanceToNow(new Date(link.last_checked_at), {
+                              addSuffix: true,
+                            })}
+                          </span>
+                        </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {deadLinks.map((link) => (
-                        <TableRow key={link.id} hover>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={link.content_type}
-                              variant="outlined"
-                              sx={{ fontSize: '0.65rem' }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ fontSize: '0.8rem' }}>{link.field_name}</Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography
-                              sx={{
-                                fontSize: '0.75rem',
-                                fontFamily: 'monospace',
-                                maxWidth: 300,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                              title={link.original_url}
-                            >
-                              {link.original_url}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={link.http_status || 'Timeout'}
-                              color={link.http_status ? 'warning' : 'error'}
-                              sx={{ fontSize: '0.65rem' }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                              {link.response_time_ms ? `${link.response_time_ms}ms` : '—'}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography
-                              sx={{
-                                fontSize: '0.75rem',
-                                color: 'error.main',
-                                maxWidth: 200,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {link.error_message || '—'}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                              {formatDistanceToNow(new Date(link.last_checked_at), {
-                                addSuffix: true,
-                              })}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* ── Geo Validation Tab ───────────────────────────────────────────── */}
+        {/* Geo Validation Tab */}
         <TabsContent value="geo">
           <Card>
             <CardHeader>
@@ -552,84 +500,74 @@ export function AutomationDashboard() {
             </CardHeader>
             <CardContent>
               {geoLoading ? (
-                <LinearProgress />
+                <div className="h-1 w-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary animate-pulse" />
+                </div>
               ) : geoMismatches.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+                <div className="text-center py-12 text-muted-foreground">
                   <Globe size={40} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
-                  <Typography>No geographic mismatches found!</Typography>
-                </Box>
+                  <p>No geographic mismatches found!</p>
+                </div>
               ) : (
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Content</TableCell>
-                        <TableCell>Geocoded Location</TableCell>
-                        <TableCell>Country</TableCell>
-                        <TableCell>Mismatch</TableCell>
-                        <TableCell>Confidence</TableCell>
-                        <TableCell>Validated</TableCell>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Content</TableHead>
+                      <TableHead>Geocoded Location</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Mismatch</TableHead>
+                      <TableHead>Confidence</TableHead>
+                      <TableHead>Validated</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {geoMismatches.map((geo) => (
+                      <TableRow key={geo.id}>
+                        <TableCell>
+                          <Badge variant="outline" className="text-[0.65rem]">
+                            {geo.content_type}
+                          </Badge>
+                          <span className="text-[0.7rem] text-muted-foreground font-mono block">
+                            {geo.content_id.slice(0, 8)}...
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.8rem]">
+                            {[geo.city, geo.region].filter(Boolean).join(', ')}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.8rem]">
+                            {geo.country} {geo.country_code ? `(${geo.country_code})` : ''}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.75rem] text-yellow-700 max-w-[250px] block">
+                            {geo.mismatch_details}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {geo.confidence != null
+                            ? `${(geo.confidence * 100).toFixed(0)}%`
+                            : '—'}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-[0.75rem] text-muted-foreground">
+                            {formatDistanceToNow(new Date(geo.last_validated_at), {
+                              addSuffix: true,
+                            })}
+                          </span>
+                        </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {geoMismatches.map((geo) => (
-                        <TableRow key={geo.id} hover>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={geo.content_type}
-                              variant="outlined"
-                              sx={{ fontSize: '0.65rem' }}
-                            />
-                            <Typography
-                              sx={{
-                                fontSize: '0.7rem',
-                                color: 'text.secondary',
-                                fontFamily: 'monospace',
-                              }}
-                            >
-                              {geo.content_id.slice(0, 8)}...
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ fontSize: '0.8rem' }}>
-                              {[geo.city, geo.region].filter(Boolean).join(', ')}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ fontSize: '0.8rem' }}>
-                              {geo.country} {geo.country_code ? `(${geo.country_code})` : ''}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography
-                              sx={{ fontSize: '0.75rem', color: 'warning.main', maxWidth: 250 }}
-                            >
-                              {geo.mismatch_details}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            {geo.confidence != null ? `${(geo.confidence * 100).toFixed(0)}%` : '—'}
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                              {formatDistanceToNow(new Date(geo.last_validated_at), {
-                                addSuffix: true,
-                              })}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* ── Flag Detail Dialog ──────────────────────────────────────────────── */}
       <FlagDetailDialog
         flag={selectedFlag}
         onClose={() => setSelectedFlag(null)}
@@ -644,7 +582,6 @@ export function AutomationDashboard() {
         isReviewing={isReviewing}
       />
 
-      {/* ── Module Config Dialog ───────────────────────────────────────────── */}
       <ModuleConfigDialog
         module={configModule}
         onClose={() => setConfigModule(null)}
@@ -653,11 +590,9 @@ export function AutomationDashboard() {
           setConfigModule(null);
         }}
       />
-    </Box>
+    </div>
   );
 }
-
-// ── Stat Card ───────────────────────────────────────────────────────────────
 
 function StatCard({
   icon: Icon,
@@ -675,27 +610,22 @@ function StatCard({
   return (
     <Card>
       <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{label}</Typography>
+        <div className="flex items-center justify-between">
+          <span className="text-[0.75rem] text-muted-foreground">{label}</span>
           <Icon size={14} style={{ color: color || 'var(--muted-foreground)' }} />
-        </Box>
-        <Typography sx={{ fontSize: '1.3rem', fontWeight: 'bold', color: color || 'inherit' }}>
+        </div>
+        <p className="text-[1.3rem] font-bold" style={{ color: color || 'inherit' }}>
           {value.toLocaleString()}
           {total != null && (
-            <Typography
-              component="span"
-              sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 0.5 }}
-            >
+            <span className="text-[0.75rem] text-muted-foreground ml-1 font-normal">
               / {total}
-            </Typography>
+            </span>
           )}
-        </Typography>
+        </p>
       </CardContent>
     </Card>
   );
 }
-
-// ── Flag Detail Dialog ──────────────────────────────────────────────────────
 
 function FlagDetailDialog({
   flag,
@@ -713,112 +643,86 @@ function FlagDetailDialog({
   if (!flag) return null;
 
   return (
-    <Dialog open={!!flag} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AlertTriangle size={20} />
-          {flag.title}
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Chip size="small" label={FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type} />
-            <Chip
-              size="small"
-              label={flag.severity}
-              color={SEVERITY_COLORS[flag.severity] || 'default'}
-            />
-            <Chip size="small" label={flag.content_type} variant="outlined" />
-            <Chip size="small" label={`Module: ${flag.module_name}`} variant="outlined" />
+    <Dialog open={!!flag} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={20} />
+              {flag.title}
+            </div>
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 mt-2">
+          <div className="flex gap-2 flex-wrap">
+            <Badge variant="secondary">{FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}</Badge>
+            <Badge className={SEVERITY_CLASS[flag.severity] ?? ''}>{flag.severity}</Badge>
+            <Badge variant="outline">{flag.content_type}</Badge>
+            <Badge variant="outline">Module: {flag.module_name}</Badge>
             {flag.confidence != null && (
-              <Chip
-                size="small"
-                label={`Confidence: ${(flag.confidence * 100).toFixed(0)}%`}
-                variant="outlined"
-              />
+              <Badge variant="outline">
+                Confidence: {(flag.confidence * 100).toFixed(0)}%
+              </Badge>
             )}
-          </Box>
+          </div>
 
           {flag.description && (
-            <Typography sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
-              {flag.description}
-            </Typography>
+            <p className="text-[0.9rem] text-muted-foreground">{flag.description}</p>
           )}
 
           {flag.current_value && (
-            <Box>
-              <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', mb: 0.5 }}>
-                Current Value
-              </Typography>
-              <Box
-                sx={{
-                  p: 1.5,
-                  bgcolor: '#fef2f2',
-                  borderRadius: 1,
-                  fontFamily: 'monospace',
-                  fontSize: '0.8rem',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                }}
+            <div>
+              <p className="font-semibold text-[0.85rem] mb-1">Current Value</p>
+              <div
+                className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
+                style={{ backgroundColor: '#fef2f2' }}
               >
                 {JSON.stringify(flag.current_value, null, 2)}
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
 
           {flag.suggested_value && (
-            <Box>
-              <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', mb: 0.5 }}>
-                Suggested Value
-              </Typography>
-              <Box
-                sx={{
-                  p: 1.5,
-                  bgcolor: '#f0fdf4',
-                  borderRadius: 1,
-                  fontFamily: 'monospace',
-                  fontSize: '0.8rem',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                }}
+            <div>
+              <p className="font-semibold text-[0.85rem] mb-1">Suggested Value</p>
+              <div
+                className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
+                style={{ backgroundColor: '#f0fdf4' }}
               >
                 {JSON.stringify(flag.suggested_value, null, 2)}
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
 
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+          <p className="text-[0.75rem] text-muted-foreground">
             Content ID: {flag.content_id} &middot; Created{' '}
             {formatDistanceToNow(new Date(flag.created_at), { addSuffix: true })}
-          </Typography>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button variant="outline" onClick={onClose}>
-          Close
-        </Button>
-        <Button
-          variant="outline"
-          style={{ borderColor: '#ef4444', color: '#ef4444' }}
-          disabled={isReviewing}
-          onClick={() => onReject(flag.id)}
-        >
-          <ThumbsDown size={14} style={{ marginRight: 4 }} />
-          Reject
-        </Button>
-        {flag.suggested_value && (
-          <Button disabled={isReviewing} onClick={() => onApprove(flag.id)}>
-            <ThumbsUp size={14} style={{ marginRight: 4 }} />
-            Approve & Apply
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Close
           </Button>
-        )}
-      </DialogActions>
+          <Button
+            variant="outline"
+            style={{ borderColor: '#ef4444', color: '#ef4444' }}
+            disabled={isReviewing}
+            onClick={() => onReject(flag.id)}
+          >
+            <ThumbsDown size={14} />
+            Reject
+          </Button>
+          {flag.suggested_value && (
+            <Button disabled={isReviewing} onClick={() => onApprove(flag.id)}>
+              <ThumbsUp size={14} />
+              Approve & Apply
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }
-
-// ── Module Config Dialog ────────────────────────────────────────────────────
 
 function ModuleConfigDialog({
   module: mod,
@@ -844,79 +748,79 @@ function ModuleConfigDialog({
   if (!mod) return null;
 
   return (
-    <Dialog open={!!mod} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Settings size={20} />
-          Configure: {mod.display_name}
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-          <Box>
-            <Typography sx={{ fontSize: '0.85rem', fontWeight: 500, mb: 1 }}>
+    <Dialog open={!!mod} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            <div className="flex items-center gap-2">
+              <Settings size={20} />
+              Configure: {mod.display_name}
+            </div>
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-6 mt-4">
+          <div>
+            <p className="text-[0.85rem] font-medium mb-1">
               Confidence Threshold: {threshold.toFixed(0)}%
-            </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1 }}>
+            </p>
+            <p className="text-[0.75rem] text-muted-foreground mb-2">
               Changes above this confidence level can be auto-approved
-            </Typography>
+            </p>
             <Slider
-              value={threshold}
-              onChange={(_, v) => setThreshold(v as number)}
+              value={[threshold]}
+              onValueChange={([v]) => setThreshold(v)}
               min={50}
               max={100}
               step={5}
-              marks={[
-                { value: 50, label: '50%' },
-                { value: 75, label: '75%' },
-                { value: 100, label: '100%' },
-              ]}
             />
-          </Box>
+            <div className="flex justify-between text-[0.7rem] text-muted-foreground mt-1">
+              <span>50%</span>
+              <span>75%</span>
+              <span>100%</span>
+            </div>
+          </div>
 
-          <Box>
-            <Typography sx={{ fontSize: '0.85rem', fontWeight: 500, mb: 1 }}>
-              Batch Size: {batchSize}
-            </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1 }}>
+          <div>
+            <p className="text-[0.85rem] font-medium mb-1">Batch Size: {batchSize}</p>
+            <p className="text-[0.75rem] text-muted-foreground mb-2">
               Number of items to process per run
-            </Typography>
+            </p>
             <Slider
-              value={batchSize}
-              onChange={(_, v) => setBatchSize(v as number)}
+              value={[batchSize]}
+              onValueChange={([v]) => setBatchSize(v)}
               min={10}
               max={500}
               step={10}
             />
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box>
-              <Typography sx={{ fontSize: '0.85rem', fontWeight: 500 }}>Auto-Approve</Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[0.85rem] font-medium">Auto-Approve</p>
+              <p className="text-[0.75rem] text-muted-foreground">
                 Automatically apply changes above confidence threshold
-              </Typography>
-            </Box>
-            <Switch checked={autoApprove} onChange={(e) => setAutoApprove(e.target.checked)} />
-          </Box>
-        </Box>
+              </p>
+            </div>
+            <Switch checked={autoApprove} onCheckedChange={setAutoApprove} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() =>
+              onSave(mod.id, {
+                confidence_threshold: threshold / 100,
+                batch_size: batchSize,
+                auto_approve: autoApprove,
+              })
+            }
+          >
+            Save Changes
+          </Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button
-          onClick={() =>
-            onSave(mod.id, {
-              confidence_threshold: threshold / 100,
-              batch_size: batchSize,
-              auto_approve: autoApprove,
-            })
-          }
-        >
-          Save Changes
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

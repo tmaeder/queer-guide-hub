@@ -1,7 +1,5 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -11,58 +9,58 @@ interface OptimizedLoaderProps {
   showTitle?: boolean;
 }
 
-export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
+export const OptimizedLoader = ({
   type = 'card',
   count = 1,
   showTitle = true
-}) => {
+}: OptimizedLoaderProps) => {
   if (type === 'profile') {
     return (
-      <Box sx={{ width: '100%', p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className="w-full p-6 flex flex-col gap-6">
         {showTitle && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div className="flex flex-col gap-2">
             <Skeleton />
             <Skeleton />
-          </Box>
+          </div>
         )}
 
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+            <div className="flex items-center justify-between mb-2">
               <Skeleton />
               <Skeleton />
-            </Box>
+            </div>
             <Skeleton />
           </CardContent>
         </Card>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
                 <Skeleton />
               </CardHeader>
               <CardContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   <Skeleton />
                   <Skeleton />
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Skeleton />
                   <Skeleton />
-                </Box>
+                </div>
               </CardContent>
             </Card>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   if (type === 'dashboard') {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3 }}>
+      <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
@@ -75,61 +73,61 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
               </CardContent>
             </Card>
           ))}
-        </Box>
+        </div>
 
         <Card>
           <CardHeader>
             <Skeleton />
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div className="flex flex-col gap-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <div key={i} className="flex items-center gap-4">
                   <Skeleton />
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
+                  <div className="flex flex-col gap-2 flex-1">
                     <Skeleton />
                     <Skeleton />
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               ))}
-            </Box>
+            </div>
           </CardContent>
         </Card>
-      </Box>
+      </div>
     );
   }
 
   if (type === 'list') {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div className="flex flex-col gap-4">
         {Array.from({ length: count }).map((_, i) => (
-          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
+          <div key={i} className="flex items-center gap-4 p-4">
             <Skeleton />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
+            <div className="flex flex-col gap-2 flex-1">
               <Skeleton />
               <Skeleton />
-            </Box>
+            </div>
             <Skeleton />
-          </Box>
+          </div>
         ))}
-      </Box>
+      </div>
     );
   }
 
   if (type === 'full') {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
-          <CircularProgress size={48} />
-          <Typography variant="body2" color="text.secondary">Loading your data...</Typography>
-        </Box>
-      </Box>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center flex flex-col gap-4 items-center">
+          <Loader2 className="animate-spin" size={48} aria-label="Loading" />
+          <p className="text-sm text-muted-foreground">Loading your data...</p>
+        </div>
+      </div>
     );
   }
 
   // Default card type
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: '1fr 1fr 1fr' }, gap: 3 }}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i}>
           <CardHeader>
@@ -137,14 +135,14 @@ export const OptimizedLoader: React.FC<OptimizedLoaderProps> = ({
             <Skeleton />
           </CardHeader>
           <CardContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className="flex flex-col gap-2">
               <Skeleton />
               <Skeleton />
               <Skeleton />
-            </Box>
+            </div>
           </CardContent>
         </Card>
       ))}
-    </Box>
+    </div>
   );
 };

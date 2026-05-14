@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles, Shield } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { fetchSimilarCitiesPool, fetchSameCountryCities } from '@/hooks/useSimilarCities';
 
 interface SimilarCitiesProps {
   cityId: string;
@@ -16,112 +14,94 @@ interface SimilarCitiesProps {
   limit?: number;
 }
 
-export function SimilarCities({ cityId, cityName, countryId, equalityScore, latitude, limit = 6 }: SimilarCitiesProps) {
+export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _latitude, limit = 6 }: SimilarCitiesProps) {
   const { data: cities, isLoading } = useQuery({
     queryKey: ['similar-cities', cityId, countryId, limit],
     queryFn: async () => {
-      // Find cities with similar characteristics
-      const query = supabase
-        .from('cities')
-        .select('id, name, population, countries:country_id(name, equality_score)')
-        .neq('id', cityId)
-        .gte('population', 100000)
-        .order('population', { ascending: false })
-        .limit(limit * 3); // Fetch extra to filter
-
-      // Prefer same region / similar safety
       if (countryId) {
-        // First try same country
-        const { data: sameCountry } = await supabase
-          .from('cities')
-          .select('id, name, population, countries:country_id(name, equality_score)')
-          .eq('country_id', countryId)
-          .neq('id', cityId)
-          .gte('population', 50000)
-          .order('population', { ascending: false })
-          .limit(3);
-
-        const { data: otherCities } = await query;
-
-        const all = [...(sameCountry || []), ...(otherCities || [])];
-
-        // Score and rank
-        const scored = all
-          .filter((c, i, arr) => arr.findIndex((a) => a.id === c.id) === i) // dedupe
+        const [sameCountry, otherCities] = await Promise.all([
+          fetchSameCountryCities(countryId, cityId),
+          fetchSimilarCitiesPool(cityId, limit * 3),
+        ]);
+        const all = [...sameCountry, ...otherCities];
+        return all
+          .filter((c, i, arr) => arr.findIndex((a) => a.id === c.id) === i)
           .map((c) => {
-            const country = c.countries as { name: string; equality_score: number | null } | null;
             let score = 0;
-            // Similar equality score
-            if (equalityScore != null && country?.equality_score != null) {
-              const diff = Math.abs(equalityScore - country.equality_score);
+            if (equalityScore != null && c.countries?.equality_score != null) {
+              const diff = Math.abs(equalityScore - c.countries.equality_score);
               if (diff <= 15) score += 3;
               else if (diff <= 30) score += 1;
             }
-            // Same country bonus
             if (c.country_id === countryId) score += 4;
-            return { ...c, country_name: country?.name || '', eq_score: country?.equality_score, similarity: score };
+            return {
+              ...c,
+              country_name: c.countries?.name || '',
+              eq_score: c.countries?.equality_score,
+              similarity: score,
+            };
           })
           .sort((a, b) => b.similarity - a.similarity)
           .slice(0, limit);
-
-        return scored;
       }
 
-      const { data } = await query;
-      return (data || []).slice(0, limit).map((c) => {
-        const country = c.countries as { name: string; equality_score: number | null } | null;
-        return { ...c, country_name: country?.name || '', eq_score: country?.equality_score, similarity: 0 };
-      });
+      const data = await fetchSimilarCitiesPool(cityId, limit * 3);
+      return data.slice(0, limit).map((c) => ({
+        ...c,
+        country_name: c.countries?.name || '',
+        eq_score: c.countries?.equality_score,
+        similarity: 0,
+      }));
     },
     staleTime: 30 * 60 * 1000,
   });
 
   if (isLoading) {
     return (
-      <Box>
-        <Skeleton variant="text" width={200} height={24} sx={{ mb: 1 }} />
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
-          {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={70} />)}
-        </Box>
-      </Box>
+      <div>
+        <Skeleton className="h-6 w-[200px] mb-2" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-[70px] rounded" />)}
+        </div>
+      </div>
     );
   }
 
   if (!cities || cities.length === 0) return null;
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+    <div>
+      <div className="flex items-center gap-2 mb-3">
         <Sparkles style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+        <p className="font-semibold text-[0.95rem]">
           You might also like
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {cities.map((city) => (
           <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
             <Card className="hover:shadow-sm transition-shadow">
               <CardContent style={{ padding: 12 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{city.name}</Typography>
-                    <Typography sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>{city.country_name}</Typography>
-                  </Box>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold text-sm">{city.name}</p>
+                    <p className="text-[0.7rem] text-muted-foreground">{city.country_name}</p>
+                  </div>
                   {city.eq_score != null && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                    <div className="flex items-center gap-0.5">
                       <Shield style={{
                         height: 12, width: 12,
                         color: city.eq_score >= 70 ? 'var(--success)' : city.eq_score >= 40 ? 'var(--warning)' : 'var(--destructive)',
                       }} />
-                      <Typography sx={{ fontSize: '0.65rem', fontWeight: 600 }}>{city.eq_score}</Typography>
-                    </Box>
+                      <span className="text-[0.65rem] font-semibold">{city.eq_score}</span>
+                    </div>
                   )}
-                </Box>
+                </div>
               </CardContent>
             </Card>
           </LocalizedLink>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

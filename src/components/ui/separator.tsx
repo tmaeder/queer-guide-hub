@@ -1,20 +1,23 @@
 import * as React from 'react';
-import MuiDivider from '@mui/material/Divider';
+import { cn } from '@/lib/utils';
 
-interface SeparatorProps extends React.HTMLAttributes<HTMLHRElement> {
+interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
   orientation?: 'horizontal' | 'vertical';
   decorative?: boolean;
 }
 
-const Separator = React.forwardRef<HTMLHRElement, SeparatorProps>(
-  ({ className, orientation = 'horizontal', style, ...props }, ref) => (
-    <MuiDivider
+const Separator = React.forwardRef<HTMLDivElement, SeparatorProps>(
+  ({ className, orientation = 'horizontal', decorative = true, ...props }, ref) => (
+    <div
       ref={ref}
-      orientation={orientation}
-      className={className}
-      style={style}
-      sx={orientation === 'vertical' ? { height: '100%' } : {}}
-      {...(props as Record<string, unknown>)}
+      role={decorative ? 'none' : 'separator'}
+      aria-orientation={decorative ? undefined : orientation}
+      className={cn(
+        'shrink-0 bg-border',
+        orientation === 'horizontal' ? 'h-px w-full' : 'h-full w-px',
+        className,
+      )}
+      {...props}
     />
   ),
 );

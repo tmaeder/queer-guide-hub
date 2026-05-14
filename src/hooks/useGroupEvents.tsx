@@ -20,6 +20,7 @@ export interface GroupEvent {
   is_free: boolean;
   price_min?: number;
   price_max?: number;
+  currency?: string;
   max_attendees?: number;
   ticket_url?: string;
   website?: string;
@@ -76,6 +77,7 @@ export const useGroupEvents = (groupId: string) => {
         `)
         .eq('group_id', groupId)
         .eq('status', 'active')
+        .is('duplicate_of_id', null)
         .order('start_date', { ascending: true });
 
       if (error) throw error;

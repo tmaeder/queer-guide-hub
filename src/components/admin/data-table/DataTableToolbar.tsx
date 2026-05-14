@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Search, X, RotateCcw, Columns3, Save, BookmarkCheck, Layers } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -84,11 +82,11 @@ export function DataTableToolbar({
   const hideableColumns = columns.filter((c) => c.hideable);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2 }}>
+    <div className="flex flex-col gap-3 p-4">
       {/* Top row: search + actions */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      <div className="flex items-center gap-2 flex-wrap">
         {enableSearch && (
-          <Box sx={{ position: 'relative', flex: '1 1 200px', maxWidth: 320 }}>
+          <div className="relative max-w-[320px]" style={{ flex: '1 1 200px' }}>
             <Search
               style={{
                 position: 'absolute',
@@ -126,7 +124,7 @@ export function DataTableToolbar({
                 <X style={{ height: 14, width: 14 }} />
               </button>
             )}
-          </Box>
+          </div>
         )}
 
         {/* Filter area (rendered via children) */}
@@ -143,7 +141,7 @@ export function DataTableToolbar({
           </Button>
         )}
 
-        <Box sx={{ flex: '1 1 0', minWidth: 0 }} />
+        <div style={{ flex: '1 1 0', minWidth: 0 }} />
 
         {/* Presets */}
         {presets.length > 0 && onApplyPreset && (
@@ -158,21 +156,12 @@ export function DataTableToolbar({
               <DropdownMenuLabel>Saved Presets</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {presets.map((p) => (
-                <Box
+                <div
                   key={p.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    px: 1,
-                    py: 0.5,
-                    '&:hover': { bgcolor: 'action.hover' },
-                    cursor: 'pointer',
-                    borderRadius: 1,
-                  }}
+                  className="flex items-center justify-between px-2 py-1 hover:bg-accent cursor-pointer rounded-sm"
                   onClick={() => onApplyPreset(p.id)}
                 >
-                  <Typography variant="body2">{p.name}</Typography>
+                  <p className="text-sm">{p.name}</p>
                   {onDeletePreset && (
                     <button
                       onClick={(e) => {
@@ -190,7 +179,7 @@ export function DataTableToolbar({
                       <X style={{ height: 12, width: 12 }} />
                     </button>
                   )}
-                </Box>
+                </div>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -267,10 +256,10 @@ export function DataTableToolbar({
         {toolbarActions}
 
         {/* Count + fetching indicator */}
-        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+        <p className="text-sm text-muted-foreground whitespace-nowrap">
           {isFetching ? 'Loading...' : `${totalCount.toLocaleString()} total`}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {/* Save Preset Dialog */}
       <Dialog open={presetDialogOpen} onOpenChange={setPresetDialogOpen}>
@@ -278,8 +267,8 @@ export function DataTableToolbar({
           <DialogHeader>
             <DialogTitle>Save Filter Preset</DialogTitle>
           </DialogHeader>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Box>
+          <div className="flex flex-col gap-4 pt-2">
+            <div>
               <Label htmlFor="preset-name">Name</Label>
               <Input
                 id="preset-name"
@@ -288,13 +277,13 @@ export function DataTableToolbar({
                 placeholder="e.g. Active venues in Berlin"
                 onKeyDown={(e) => e.key === 'Enter' && handleSavePreset()}
               />
-            </Box>
+            </div>
             <Button onClick={handleSavePreset} disabled={!presetName.trim()}>
               Save Preset
             </Button>
-          </Box>
+          </div>
         </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   );
 }

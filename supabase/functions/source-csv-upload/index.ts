@@ -1,10 +1,27 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import {
+  entityTypeToTable,
+  routeRows,
+  type EntityType,
+} from '../_shared/entity-type-classifier.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
-// Source: CSV File Upload — generic adapter for all entity types
-// Replaces: import-*-csv functions
+// Source: CSV File Upload — generic adapter for all entity types.
+//
+// Replaces: import-*-csv functions.
+//
+// Per-row routing (Issue #113): a previous CSV upload routed 10k
+// venues/glossary/junk into target_table=personalities because
+// target_table was a job-level constant and the AI validator only
+// checked field presence. Now each row is classified
+// (explicit _entity_type column → markers → linguistic heuristics);
+// rows are grouped by classified type and writeToStaging is called
+// once per group with the matching entity_type + target_table.
+// 'unknown' rows fall back to the job-level type so the caller
+// can still bulk-import without per-row hints.
 // ============================================================
 
 const csvUploadAdapter: SourceAdapter = {
@@ -13,7 +30,7 @@ const csvUploadAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const fileUrl = config.filters?.fileUrl as string
-    if (!fileUrl) throw new Error('fileUrl is required')
+    if (!fileUrl) throw new MissingCredentialsError('CSV_FILE_URL')
 
     const supabase = getServiceClient()
 
@@ -104,13 +121,27 @@ function parseCsvLine(line: string, delimiter: string): string[] {
   return values
 }
 
-Deno.serve(async (req) => {
+function routeRawItems(
+  rawItems: RawItem[],
+  fallback: { entityType: string; targetTable: string },
+) {
+  return routeRows(
+    rawItems,
+    raw => ({ row: raw.data, sourceId: raw.sourceId }),
+    fallback,
+  )
+}
+
+Deno.serve(withErrorReporting('source-csv-upload', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
     const body = await req.json().catch(() => ({}))
     const entityType = body.entityType || 'venue'
-    const targetTable = body.targetTable || entityTypeToTable(entityType)
+    const targetTable = body.targetTable || entityTypeToTable(entityType) || 'venues'
+    // Caller can disable per-row routing if they really want every row to go
+    // to one bucket (legacy behaviour). Default: per-row routing on.
+    const perRowRouting = body.per_row_routing !== false
 
     const config: AdapterConfig = {
       batchSize: body.batch_size || 500,
@@ -121,23 +152,79 @@ Deno.serve(async (req) => {
 
     const rawItems = await csvUploadAdapter.fetch(config)
 
-    // Inject entity type into each item
-    for (const item of rawItems) {
-      item.data._entity_type = entityType
+    if (config.dryRun) {
+      const groups = perRowRouting
+        ? routeRawItems(rawItems, { entityType, targetTable })
+        : [{
+          entityType: entityType as EntityType,
+          targetTable,
+          items: rawItems,
+          sampleReasons: [],
+        }]
+      return jsonResponse({
+        success: true,
+        items: rawItems.length,
+        dry_run: true,
+        routing: groups.map(g => ({
+          entity_type: g.entityType === 'fallback' ? entityType : g.entityType,
+          target_table: g.targetTable,
+          fallback: g.entityType === 'fallback',
+          count: g.items.length,
+          sample_reasons: g.sampleReasons,
+        })),
+      }, 200, req)
     }
 
-    if (config.dryRun) return jsonResponse({ success: true, items: rawItems.length, dry_run: true }, 200, req)
-    const written = await writeToStaging(supabase, csvUploadAdapter, rawItems, { ...config, targetTable })
-    return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
+    if (!perRowRouting) {
+      // Legacy single-bucket path: stamp all rows with the job-level type.
+      for (const item of rawItems) item.data._entity_type = entityType
+      const written = await writeToStaging(supabase, csvUploadAdapter, rawItems, {
+        ...config, targetTable, entityType,
+      })
+      return jsonResponse({
+        success: true,
+        items: written, items_total: rawItems.length,
+        items_processed: written, items_succeeded: written, items_failed: 0,
+      }, 200, req)
+    }
+
+    const groups = routeRawItems(rawItems, { entityType, targetTable })
+    let totalWritten = 0
+    const routing: Record<string, unknown>[] = []
+    for (const group of groups) {
+      const groupEntityType = group.entityType === 'fallback' ? entityType : group.entityType
+      // Stamp _entity_type so the downstream NormalizedItem.entityType reflects
+      // the per-row routing decision (used by some commit branches).
+      for (const item of group.items) item.data._entity_type = groupEntityType
+      const written = await writeToStaging(supabase, csvUploadAdapter, group.items, {
+        ...config,
+        targetTable: group.targetTable,
+        entityType: groupEntityType,
+      })
+      totalWritten += written
+      routing.push({
+        entity_type: groupEntityType,
+        target_table: group.targetTable,
+        fallback: group.entityType === 'fallback',
+        count: group.items.length,
+        written,
+        sample_reasons: group.sampleReasons,
+      })
+    }
+
+    return jsonResponse({
+      success: true,
+      items: totalWritten,
+      items_total: rawItems.length,
+      items_processed: totalWritten,
+      items_succeeded: totalWritten,
+      items_failed: rawItems.length - totalWritten,
+      routing,
+    }, 200, req)
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
     return errorResponse((error as Error).message, 500, req)
   }
-})
-
-function entityTypeToTable(type: string): string {
-  const map: Record<string, string> = {
-    venue: 'venues', event: 'events', personality: 'personalities',
-    tag: 'unified_tags', adult_model: 'personalities', news: 'news_articles',
-  }
-  return map[type] || 'venues'
-}
+}))

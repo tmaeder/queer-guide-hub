@@ -58,7 +58,7 @@ async function main() {
   for (let i = 0; i < all.length; i += batchSize) {
     const batchEntities = all.slice(i, i + batchSize);
     const batchNum = Math.floor(i / batchSize);
-    const table = 'scraper_places'; // Use scraper_places for venues, scraper_events for events
+    const _table = 'scraper_places'; // Use scraper_places for venues, scraper_events for events
 
     const sql = batchEntities
       .map((e) => {

@@ -1,0 +1,37 @@
+name: auto-rerun
+on:
+  workflow_run:
+    workflows:
+      - edge-fn-cors-check
+      - bundle-shape
+      - claude-md-drift
+      - "Lint & a11y gate"
+    types: [completed]
+
+jobs:
+  rerun:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: check for runner provisioning failure and rerun
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          if [ "$ATTEMPT" -gt 1 ]; then
+            echo "Already retried (attempt $ATTEMPT), skipping"
+            exit 0
+          fi
+
+          total_steps=$(gh api "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs" \
+            --jq '[.jobs[].steps | length] | add')
+
+          if [ "$total_steps" -eq 0 ]; then
+            echo "Runner provisioning failure detected (0 steps). Re-running..."
+            gh api -X POST "repos/${{ github.repository }}/actions/runs/${RUN_ID}/rerun-failed-jobs"
+          else
+            echo "Real failure ($total_steps steps executed), not re-running"
+          fi

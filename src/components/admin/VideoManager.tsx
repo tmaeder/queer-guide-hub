@@ -5,11 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { listWithJoinDesc, deleteRow } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { ModernVideoPlayer } from '@/components/ui/modern-video-player';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface Video {
   id: string;
@@ -47,16 +45,11 @@ export function VideoManager() {
   const loadVideos = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('videos')
-        .select(`
-          *,
-          renditions:video_renditions(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setVideos(data || []);
+      const data = await listWithJoinDesc<Video>(
+        'videos',
+        '*, renditions:video_renditions(*)',
+      );
+      setVideos(data);
     } catch (error) {
       console.error('Error loading videos:', error);
       toast.error('Failed to load videos');
@@ -69,15 +62,9 @@ export function VideoManager() {
     if (!confirm('Are you sure you want to delete this video?')) return;
 
     try {
-      // Delete from database (cascades to renditions)
-      const { error } = await supabase
-        .from('videos')
-        .delete()
-        .eq('id', videoId);
-
+      const { error } = await deleteRow('videos', videoId);
       if (error) throw error;
 
-      // TODO: Delete files from storage
       toast.success('Video deleted successfully');
       loadVideos();
     } catch (error) {
@@ -85,6 +72,7 @@ export function VideoManager() {
       toast.error('Failed to delete video');
     }
   };
+
   const formatDuration = (seconds?: number): string => {
     if (!seconds) return 'Unknown';
     const mins = Math.floor(seconds / 60);
@@ -109,75 +97,72 @@ export function VideoManager() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Box sx={{ animation: 'spin 1s linear infinite', borderRadius: '50%', height: 32, width: 32, borderBottom: 2, borderColor: 'primary.main', mx: 'auto', mb: 2 }}></Box>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
           <p>Loading videos...</p>
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h2" sx={{ fontSize: '1.5rem', fontWeight: 700 }}>Video Library</Typography>
-        <Box sx={{ position: 'relative', width: 256 }}>
-          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', height: 16, width: 16, color: 'var(--muted-foreground)' }} />
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Video Library</h2>
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search videos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-
+            className="pl-9"
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Video Grid */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredVideos.map((video) => (
           <Card key={video.id}>
-            <Box sx={{ aspectRatio: '16/9', bgcolor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div className="aspect-video bg-muted flex items-center justify-center relative">
               {video.poster_image_path ? (
-                <Box
-                  component="img"
+                <img
                   src={`https://xqeacpakadqfxjxjcewc.supabase.co/storage/v1/object/public/videos/${video.poster_image_path}`}
                   alt={video.title}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <Play style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
+                <Play className="h-12 w-12 text-muted-foreground" />
               )}
 
-              <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+              <div className="absolute top-2 right-2">
                 <Badge style={{ backgroundColor: getStatusColor(video.status), color: 'white' }}>
                   {video.status}
                 </Badge>
-              </Box>
+              </div>
 
               {video.duration_seconds && (
-                <Box sx={{ position: 'absolute', bottom: 8, right: 8, bgcolor: 'rgba(0,0,0,0.75)', color: 'white', px: 1, py: 0.5, borderRadius: 1, fontSize: '0.75rem' }}>
+                <div className="absolute bottom-2 right-2 bg-black/75 text-white px-2 py-0.5 rounded text-xs">
                   {formatDuration(video.duration_seconds)}
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
 
             <CardContent>
-              <Typography variant="h3" sx={{ fontWeight: 600, mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{video.title}</Typography>
+              <h3 className="font-semibold mb-2 line-clamp-2">{video.title}</h3>
 
               {video.description && (
-                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                   {video.description}
-                </Typography>
+                </p>
               )}
 
-              <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', mb: 1.5 }}>
+              <div className="text-xs text-muted-foreground mb-3">
                 <div>Renditions: {video.renditions.length}</div>
                 <div>Created: {new Date(video.created_at).toLocaleDateString()}</div>
-              </Box>
+              </div>
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <div className="flex gap-2">
                 {video.status === 'completed' && video.renditions.length > 0 && (
                   <Dialog>
                     <DialogTrigger asChild>
@@ -186,14 +171,14 @@ export function VideoManager() {
                         size="sm"
                         onClick={() => setSelectedVideo(video)}
                       >
-                        <Eye style={{ height: 16, width: 16 }} />
+                        <Eye className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>{video.title}</DialogTitle>
                       </DialogHeader>
-                      <Box sx={{ aspectRatio: '16/9' }}>
+                      <div className="aspect-video">
                         <ModernVideoPlayer
                           video={{
                             id: video.id,
@@ -213,9 +198,8 @@ export function VideoManager() {
                             }))
                           }}
                           controls={true}
-                          sx={{ width: '100%', height: '100%' }}
                         />
-                      </Box>
+                      </div>
                     </DialogContent>
                   </Dialog>
                 )}
@@ -224,25 +208,24 @@ export function VideoManager() {
                   variant="outline"
                   size="sm"
                   onClick={() => deleteVideo(video.id)}
-
                 >
-                  <Trash2 style={{ height: 16, width: 16 }} />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
-              </Box>
+              </div>
             </CardContent>
           </Card>
         ))}
-      </Box>
+      </div>
 
       {filteredVideos.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 6 }}>
-          <Play style={{ height: 48, width: 48, color: 'var(--muted-foreground)', margin: '0 auto 16px' }} />
-          <Typography variant="h3" sx={{ fontSize: '1.125rem', fontWeight: 600, mb: 1 }}>No videos found</Typography>
-          <p style={{ color: 'var(--muted-foreground)' }}>
+        <div className="text-center py-12">
+          <Play className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No videos found</h3>
+          <p className="text-muted-foreground">
             {searchTerm ? 'Try adjusting your search terms' : 'Upload some videos to get started'}
           </p>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

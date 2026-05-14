@@ -5,23 +5,27 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import {
-  Box,
-  Typography,
-  Stack,
-  Paper,
-  CircularProgress,
-  Alert,
-  Divider,
-  Avatar,
-  Chip,
-  Tooltip,
-  Select,
-  MenuItem,
-  Pagination,
-} from '@mui/material';
-import { History, Clock, User } from 'lucide-react';
+import { History, Clock, User, Loader2 } from 'lucide-react';
 import { useCMSAudit } from '@/hooks/useCMSAudit';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 /** Relative time formatter */
 function formatRelativeTime(dateStr: string): string {
@@ -55,16 +59,18 @@ function formatAction(action: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Color for action type chips */
-function getActionColor(
-  action: string,
-): 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' {
-  if (action.includes('publish') || action.includes('approved')) return 'success';
-  if (action.includes('archive') || action.includes('delete')) return 'error';
-  if (action.includes('review') || action.includes('change_request')) return 'warning';
-  if (action.includes('create') || action.includes('restore')) return 'info';
-  if (action.includes('workflow')) return 'primary';
-  return 'default';
+/** Tailwind classes for action type chips */
+function getActionClasses(action: string): string {
+  if (action.includes('publish') || action.includes('approved'))
+    return 'border-green-500 text-green-700';
+  if (action.includes('archive') || action.includes('delete'))
+    return 'border-destructive text-destructive';
+  if (action.includes('review') || action.includes('change_request'))
+    return 'border-yellow-500 text-yellow-700';
+  if (action.includes('create') || action.includes('restore'))
+    return 'border-blue-500 text-blue-700';
+  if (action.includes('workflow')) return 'border-primary text-primary';
+  return 'border-border text-foreground';
 }
 
 /** Extract known action values for filtering */
@@ -121,10 +127,6 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
     setPage(1);
   };
 
-  const handlePageChange = (_: React.ChangeEvent<unknown>, newPage: number) => {
-    setPage(newPage);
-  };
-
   // For content-specific mode, filter client-side
   const displayEntries =
     isContentSpecific && actionFilter !== 'all'
@@ -146,53 +148,51 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
     : KNOWN_ACTIONS;
 
   return (
-    <Box>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
+    <div>
+      <div className="flex flex-row items-center justify-between mb-2">
+        <div className="flex flex-row items-center gap-1">
           <History size={18} className="text-gray-500" />
-          <Typography variant="subtitle1" fontWeight={600}>
-            Audit Log
-          </Typography>
+          <p className="text-sm font-semibold">Audit Log</p>
           {totalCount > 0 && (
-            <Typography variant="caption" color="text.secondary">
+            <span className="text-xs text-muted-foreground">
               ({totalCount} entr{totalCount !== 1 ? 'ies' : 'y'})
-            </Typography>
+            </span>
           )}
-        </Stack>
+        </div>
 
-        <Select
-          value={actionFilter}
-          onChange={(e) => handleFilterChange(e.target.value)}
-          size="small"
-          sx={{ minWidth: 180, fontSize: '0.8rem' }}
-        >
-          <MenuItem value="all">All Actions</MenuItem>
-          {uniqueActions.map((action) => (
-            <MenuItem key={action} value={action} sx={{ fontSize: '0.8rem' }}>
-              {formatAction(action)}
-            </MenuItem>
-          ))}
+        <Select value={actionFilter} onValueChange={handleFilterChange}>
+          <SelectTrigger className="h-8 min-w-[180px] text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="text-xs">
+              All Actions
+            </SelectItem>
+            {uniqueActions.map((action) => (
+              <SelectItem key={action} value={action} className="text-xs">
+                {formatAction(action)}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
-      </Stack>
+      </div>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={24} />
-        </Box>
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin" aria-label="Loading" />
+        </div>
       ) : error ? (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load audit log: {error}
+        <Alert variant="destructive" className="mb-2">
+          <AlertDescription>Failed to load audit log: {error}</AlertDescription>
         </Alert>
       ) : paginatedEntries.length === 0 ? (
-        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+        <div className="border border-border rounded-md bg-background p-6 text-center">
           <History size={24} className="text-gray-400 mx-auto mb-2" />
-          <Typography variant="body2" color="text.secondary">
-            No audit entries found.
-          </Typography>
-        </Paper>
+          <p className="text-sm text-muted-foreground">No audit entries found.</p>
+        </div>
       ) : (
         <>
-          <Stack spacing={0} divider={<Divider />}>
+          <div className="flex flex-col divide-y divide-border">
             {paginatedEntries.map((entry) => {
               const actorName =
                 entry.actor?.display_name || entry.actor?.email || 'System';
@@ -204,73 +204,87 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
                 .join('');
 
               return (
-                <Box
+                <div
                   key={entry.id}
-                  sx={{
-                    display: 'flex',
-                    gap: 2,
-                    py: 1.5,
-                    px: 1,
-                    '&:hover': { backgroundColor: 'action.hover' },
-                    borderRadius: 1,
-                  }}
+                  className="flex gap-2 py-3 px-1 hover:bg-muted rounded"
                 >
-                  <Avatar
-                    sx={{ width: 28, height: 28, fontSize: '0.6rem', bgcolor: 'grey.400', mt: 0.25 }}
-                  >
-                    {initials || <User size={14} />}
+                  <Avatar className="w-7 h-7 mt-0.5">
+                    <AvatarFallback className="bg-gray-400 text-[0.6rem]">
+                      {initials || <User size={14} />}
+                    </AvatarFallback>
                   </Avatar>
 
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
-                      <Typography variant="body2" fontWeight={600}>
-                        {actorName}
-                      </Typography>
-                      <Chip
-                        size="small"
-                        label={formatAction(entry.action)}
-                        color={getActionColor(entry.action)}
-                        variant="outlined"
-                        sx={{ fontSize: '0.65rem', height: 20 }}
-                      />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-row items-center gap-1 flex-wrap">
+                      <p className="text-sm font-semibold">{actorName}</p>
+                      <Badge
+                        variant="outline"
+                        className={`text-[0.65rem] h-5 ${getActionClasses(entry.action)}`}
+                      >
+                        {formatAction(entry.action)}
+                      </Badge>
                       {entry.source_table && !isContentSpecific && (
-                        <Chip
-                          size="small"
-                          label={entry.source_table}
-                          variant="outlined"
-                          sx={{ fontSize: '0.65rem', height: 20 }}
-                        />
+                        <Badge variant="outline" className="text-[0.65rem] h-5">
+                          {entry.source_table}
+                        </Badge>
                       )}
-                    </Stack>
+                    </div>
 
-                    <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
+                    <div className="flex flex-row items-center gap-0.5 mt-0.5">
                       <Clock size={12} className="text-gray-400" />
-                      <Tooltip title={new Date(entry.timestamp).toLocaleString()}>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatRelativeTime(entry.timestamp)}
-                        </Typography>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs text-muted-foreground">
+                            {formatRelativeTime(entry.timestamp)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </TooltipContent>
                       </Tooltip>
-                    </Stack>
-                  </Box>
-                </Box>
+                    </div>
+                  </div>
+                </div>
               );
             })}
-          </Stack>
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                size="small"
-                color="primary"
-              />
-            </Box>
+            <div className="flex justify-center mt-2">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <PaginationItem key={p}>
+                      <PaginationLink
+                        isActive={p === page}
+                        onClick={() => setPage(p)}
+                        className="cursor-pointer"
+                      >
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      className={
+                        page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
           )}
         </>
       )}
-    </Box>
+    </div>
   );
 }

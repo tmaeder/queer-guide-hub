@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentType } from '@/config/contentTypeRegistry';
+import { validateAgainstRegistry } from '@/lib/cms/zodFromFields';
 import type { EditorState, CMSContentMetadata, FieldGroup } from '@/types/cms';
 
 interface UseCMSEditorOptions {
@@ -142,17 +143,25 @@ export function useCMSEditor({
   const save = useCallback(async (): Promise<boolean> => {
     if (!config || !user) return false;
 
-    // Run validation
+    // Run validation — Zod schema (registry-derived) + legacy custom validate
+    const errorMap: Record<string, string> = {};
+    const zodResult = validateAgainstRegistry(config, state.data);
+    if (!zodResult.ok) {
+      for (const issue of zodResult.issues) {
+        if (!errorMap[issue.field]) errorMap[issue.field] = issue.message;
+      }
+    }
     if (config.validate) {
       const result = config.validate(state.data);
       if (!result.isValid) {
-        const errorMap: Record<string, string> = {};
         result.errors.forEach((e) => {
           errorMap[e.field] = e.message;
         });
-        setState((prev) => ({ ...prev, errors: errorMap }));
-        return false;
       }
+    }
+    if (Object.keys(errorMap).length > 0) {
+      setState((prev) => ({ ...prev, errors: errorMap }));
+      return false;
     }
 
     setState((prev) => ({ ...prev, isSaving: true, errors: {} }));
@@ -193,15 +202,20 @@ export function useCMSEditor({
       saveData.updated_at = new Date().toISOString();
 
       let savedId = itemId;
+      let serverRow: Record<string, unknown> | null = null;
 
       if (itemId) {
-        // UPDATE
-        const { error } = await supabase
+        // UPDATE — select back the row so we surface any DB-side mutation
+        // (e.g. BEFORE triggers like sanitize_website_field that silently null fields).
+        const { data: updated, error } = await supabase
           .from(config.tableName as 'venues')
           .update(saveData)
-          .eq(config.primaryKey, itemId);
+          .eq(config.primaryKey, itemId)
+          .select('*')
+          .single();
 
         if (error) throw error;
+        serverRow = updated as unknown as Record<string, unknown>;
       } else {
         // INSERT
         if (user) {
@@ -210,11 +224,29 @@ export function useCMSEditor({
         const { data: inserted, error } = await supabase
           .from(config.tableName as 'venues')
           .insert(saveData)
-          .select('id')
+          .select('*')
           .single();
 
         if (error) throw error;
-        savedId = inserted.id;
+        savedId = (inserted as { id: string }).id;
+        serverRow = inserted as unknown as Record<string, unknown>;
+      }
+
+      // Detect silently-dropped fields (e.g. sanitize_website_field nulls
+      // blocked-domain URLs). Warn the user instead of pretending the save
+      // wrote what they typed.
+      const droppedFields: string[] = [];
+      if (serverRow) {
+        for (const [key, submitted] of Object.entries(saveData)) {
+          if (key === 'updated_at' || key === 'created_by') continue;
+          const server = serverRow[key];
+          const wasNonEmpty =
+            submitted !== null && submitted !== undefined && submitted !== '';
+          const isNullOnServer = server === null || server === undefined;
+          if (wasNonEmpty && isNullOnServer) {
+            droppedFields.push(key);
+          }
+        }
       }
 
       // Ensure cms_content_metadata exists for ALL content types (workflow support)
@@ -250,18 +282,36 @@ export function useCMSEditor({
         await writeAuditLog(config.tableName, savedId, itemId ? 'update' : 'create', user.id);
       }
 
-      // Update server timestamp
-      serverUpdatedAt.current = saveData.updated_at as string;
+      // Update server timestamp from the row we got back, falling back
+      // to what we sent if the select didn't return updated_at.
+      const serverUpdatedAtNext =
+        (serverRow?.updated_at as string | undefined) ??
+        (saveData.updated_at as string);
+      serverUpdatedAt.current = serverUpdatedAtNext;
+
+      // Reconcile UI with what the database actually stored. If a BEFORE
+      // trigger silently rewrote a field, the user must see that.
+      const reconciledData = serverRow ? { ...serverRow } : { ...state.data };
+
+      const dropErrors: Record<string, string> = {};
+      if (droppedFields.length > 0) {
+        for (const f of droppedFields) {
+          dropErrors[f] = 'Value was rejected by the server (e.g. blocked URL) and not saved';
+        }
+        dropErrors._save = `These fields were not saved: ${droppedFields.join(', ')}`;
+      }
 
       setState((prev) => ({
         ...prev,
         itemId: savedId,
-        originalData: { ...prev.data },
+        data: reconciledData,
+        originalData: { ...reconciledData },
         isDirty: false,
         isSaving: false,
+        errors: dropErrors,
       }));
 
-      return true;
+      return droppedFields.length === 0;
     } catch (error) {
       console.error('Error saving content:', error);
       setState((prev) => ({
@@ -425,15 +475,16 @@ async function writeAuditLog(
   action: string,
   actorId: string,
 ) {
-  try {
-    await supabase.from('cms_audit_log' as 'venues').insert({
-      source_table: sourceTable,
-      source_id: sourceId,
-      action,
-      actor_id: actorId,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Error writing audit log:', error);
+  // supabase-js does not throw on non-2xx responses; check {error} explicitly
+  // so we fail quietly without spamming the console for known RLS denials.
+  const { error } = await supabase.from('cms_audit_log' as 'venues').insert({
+    source_table: sourceTable,
+    source_id: sourceId,
+    action,
+    actor_id: actorId,
+    timestamp: new Date().toISOString(),
+  });
+  if (error) {
+    console.warn('cms_audit_log insert skipped:', error.message);
   }
 }

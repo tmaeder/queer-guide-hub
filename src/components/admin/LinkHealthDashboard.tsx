@@ -3,47 +3,51 @@ import { Link as RouterLink } from 'react-router';
 import {
   Link2, CheckCircle, ArrowRight, RefreshCw,
   ExternalLink, MoreVertical, Pencil, Trash2, EyeOff, RotateCcw, Search,
-  ShieldCheck, ShieldAlert, ShieldQuestion, Scan, Zap, Flag,
+  ShieldCheck, ShieldAlert, ShieldQuestion, Scan, Zap, Flag, Loader2,
 } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useContentLinks, type ContentLink } from '@/hooks/useContentLinks';
 import { supabase } from '@/integrations/supabase/client';
+import { countRowsWhere, fetchById } from '@/hooks/usePageFetchers';
 import { toast } from 'sonner';
 import { EditLinkDialog } from './EditLinkDialog';
 import { ConfirmBulkActionDialog } from './ConfirmBulkActionDialog';
 import { ScanResultDialog } from './ScanResultDialog';
 
-const VERDICT_CHIP: Record<string, { color: 'success' | 'error' | 'warning' | 'default'; label: string }> = {
-  benign: { color: 'success', label: 'Safe' },
-  malicious: { color: 'error', label: 'Malicious' },
-  suspicious: { color: 'warning', label: 'Suspicious' },
+const VERDICT_BADGE: Record<string, { className: string; label: string }> = {
+  benign: { className: 'bg-green-100 text-green-700 border-green-300', label: 'Safe' },
+  malicious: { className: 'bg-red-100 text-red-700 border-red-300', label: 'Malicious' },
+  suspicious: { className: 'bg-amber-100 text-amber-700 border-amber-300', label: 'Suspicious' },
 };
 
-const STATUS_COLORS: Record<string, 'success' | 'error' | 'warning' | 'default' | 'info'> = {
-  OK: 'success',
-  BROKEN: 'error',
-  REDIRECT: 'warning',
-  PENDING: 'default',
-  BLOCKED: 'error',
-  TIMEOUT: 'warning',
-  DISMISSED: 'info',
-  AUTO_REMOVED: 'default',
+const STATUS_BADGE: Record<string, string> = {
+  OK: 'bg-green-100 text-green-700 border-green-300',
+  BROKEN: 'bg-red-100 text-red-700 border-red-300',
+  REDIRECT: 'bg-amber-100 text-amber-700 border-amber-300',
+  PENDING: 'bg-muted text-muted-foreground',
+  BLOCKED: 'bg-red-100 text-red-700 border-red-300',
+  TIMEOUT: 'bg-amber-100 text-amber-700 border-amber-300',
+  DISMISSED: 'bg-blue-100 text-blue-700 border-blue-300',
+  AUTO_REMOVED: 'bg-muted text-muted-foreground',
+};
+
+const PROGRESS_COLOR: Record<string, string> = {
+  broken: 'bg-red-500',
+  malicious: 'bg-red-500',
+  ok: 'bg-green-500',
+  dismissed: 'bg-blue-500',
+  auto_removed: 'bg-blue-500',
 };
 
 const CONTENT_TYPES = ['all', 'venues', 'events', 'hotels', 'festivals', 'news_articles', 'personalities'];
@@ -58,17 +62,13 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
     scanLink, scanBulk, scanBatch,
   } = useContentLinks();
 
-  // Pending broken_link flags from automation system
   const { data: autoFlagCount = 0 } = useQuery({
     queryKey: ['broken-link-flags-count'],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from('content_flags' as const)
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-        .eq('flag_type', 'broken_link');
-      return count ?? 0;
-    },
+    queryFn: () =>
+      countRowsWhere('content_flags', [
+        { col: 'status', val: 'pending' },
+        { col: 'flag_type', val: 'broken_link' },
+      ]),
     staleTime: 60_000,
   });
 
@@ -79,17 +79,13 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
   const [validating, setValidating] = useState(false);
   const [scanning, setScanning] = useState(false);
 
-  // Selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Dialogs
   const [editLink, setEditLink] = useState<ContentLink | null>(null);
   const [bulkAction, setBulkAction] = useState<{ action: string; count: number } | null>(null);
   const [scanResultLink, setScanResultLink] = useState<ContentLink | null>(null);
   const [singleScanning, setSingleScanning] = useState(false);
 
-  // Row action menu
-  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [menuLink, setMenuLink] = useState<ContentLink | null>(null);
 
   useEffect(() => {
@@ -97,10 +93,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
     fetchLinks({ status: 'BROKEN', limit: 200 });
   }, [fetchStats, fetchLinks]);
 
-  // Clear selection when filters change
   useEffect(() => { setSelectedIds(new Set()); }, [statusFilter, typeFilter]);
 
-  // Client-side URL filter
   const filteredLinks = useMemo(() => {
     if (!urlSearch.trim()) return links;
     const q = urlSearch.toLowerCase();
@@ -187,9 +181,8 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
     try {
       await scanLink(scanResultLink.id);
       toast.success('Scan complete');
-      // Refresh the dialog link data
-      const { data } = await supabase.from('content_links').select('*').eq('id', scanResultLink.id).single();
-      if (data) setScanResultLink(data as ContentLink);
+      const data = await fetchById<ContentLink>('content_links', scanResultLink.id);
+      if (data) setScanResultLink(data);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message :'Scan failed');
     } finally {
@@ -197,7 +190,6 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
     }
   };
 
-  // --- Selection helpers ---
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -221,21 +213,19 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
 
   const allSelectedAreRedirects = selectedLinks.length > 0 && selectedLinks.every(l => l.status === 'REDIRECT' && l.final_url);
 
-  // --- Row actions ---
-  const handleRowAction = async (action: string) => {
-    if (!menuLink) return;
-    setMenuAnchor(null);
+  const handleRowAction = async (action: string, link: ContentLink) => {
+    setMenuLink(link);
     try {
       switch (action) {
         case 'edit':
-          setEditLink(menuLink);
+          setEditLink(link);
           break;
         case 'apply_redirect':
-          await applyRedirect(menuLink);
+          await applyRedirect(link);
           toast.success('Redirect applied');
           break;
         case 'recheck': {
-          const recheckResult = await recheckLink(menuLink.id) as { results?: Array<{ status?: string; http_status?: number }> };
+          const recheckResult = await recheckLink(link.id) as { results?: Array<{ status?: string; http_status?: number }> };
           const linkResult = recheckResult?.results?.[0];
           if (linkResult?.status === 'OK') {
             toast.success(`Link is OK (HTTP ${linkResult.http_status ?? '200'})`);
@@ -248,17 +238,15 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
           break;
         }
         case 'dismiss':
-          await dismissLink(menuLink.id);
+          await dismissLink(link.id);
           toast.success('Link dismissed');
           break;
         case 'remove':
           setBulkAction({ action: 'remove', count: 1 });
           break;
         case 'scan':
-          handleScanResult(menuLink);
-          break;
         case 'view_scan':
-          handleScanResult(menuLink);
+          handleScanResult(link);
           break;
       }
     } catch (e: unknown) {
@@ -266,7 +254,6 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
     }
   };
 
-  // --- Bulk actions ---
   const executeBulkAction = async () => {
     if (!bulkAction) return;
     const ids = [...selectedIds];
@@ -318,15 +305,15 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
   };
 
   return (
-    <Box sx={embedded ? {} : { p: 3, maxWidth: 1200, mx: 'auto' }}>
-      {/* Header — hidden when embedded as a tab */}
+    <div className={embedded ? '' : 'p-3 max-w-[1200px] mx-auto'}>
+      {/* Header */}
       {!embedded && (
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-          <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Link2 style={{ width: 24, height: 24 }} />
+        <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
+          <h5 className="text-2xl flex items-center gap-1">
+            <Link2 className="w-6 h-6" />
             Link Health
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          </h5>
+          <div className="flex gap-1">
             <Button variant="outline" size="sm" onClick={triggerSync} disabled={syncing}>
               <RefreshCw className={`w-4 h-4 mr-1 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Syncing...' : 'Sync Links'}
@@ -339,13 +326,12 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
               <Scan className={`w-4 h-4 mr-1 ${scanning ? 'animate-spin' : ''}`} />
               {scanning ? 'Scanning...' : 'Deep Scan'}
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
-      {/* Action buttons when embedded */}
       {embedded && (
-        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+        <div className="flex gap-1 mb-2">
           <Button variant="outline" size="sm" onClick={triggerSync} disabled={syncing}>
             <RefreshCw className={`w-4 h-4 mr-1 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Syncing...' : 'Sync Links'}
@@ -358,82 +344,66 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
             <Scan className={`w-4 h-4 mr-1 ${scanning ? 'animate-spin' : ''}`} />
             {scanning ? 'Scanning...' : 'Deep Scan'}
           </Button>
-        </Box>
+        </div>
       )}
 
-      {/* Cross-navigation: Link Sanitizer + Automation flags — hidden when embedded */}
+      {/* Cross-navigation */}
       {!embedded && (
-      <Box sx={{ display: 'flex', gap: 1.5, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-        <Chip
-          component={RouterLink}
-          to="/admin/automation"
-          icon={<Zap style={{ width: 14, height: 14 }} />}
-          label="Configure Link Sanitizer"
-          variant="outlined"
-          size="small"
-          clickable
-          sx={{ fontSize: '0.75rem' }}
-        />
-        {autoFlagCount > 0 && (
-          <Chip
-            component={RouterLink}
-            to="/admin/review?tab=automation"
-            icon={<Flag style={{ width: 14, height: 14 }} />}
-            label={`${autoFlagCount} automation flag${autoFlagCount !== 1 ? 's' : ''} pending`}
-            color="warning"
-            size="small"
-            clickable
-            sx={{ fontSize: '0.75rem' }}
-          />
-        )}
-      </Box>
+        <div className="flex gap-1.5 mb-2 flex-wrap items-center">
+          <Button asChild variant="outline" size="sm" className="text-xs h-7">
+            <RouterLink to="/admin/automation">
+              <Zap className="w-3.5 h-3.5 mr-1" />
+              Configure Link Sanitizer
+            </RouterLink>
+          </Button>
+          {autoFlagCount > 0 && (
+            <Button asChild variant="outline" size="sm" className="text-xs h-7 bg-amber-100 text-amber-800 border-amber-300">
+              <RouterLink to="/admin/review?tab=automation">
+                <Flag className="w-3.5 h-3.5 mr-1" />
+                {`${autoFlagCount} automation flag${autoFlagCount !== 1 ? 's' : ''} pending`}
+              </RouterLink>
+            </Button>
+          )}
+        </div>
       )}
 
       {/* Stats Cards */}
       {stats && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', sm: 'repeat(5, 1fr)', md: 'repeat(9, 1fr)' }, gap: 2, mb: 3 }}>
-          {STAT_KEYS.map(key => (
-            <Paper
-              key={key}
-              sx={{
-                p: 2, textAlign: 'center',
-                cursor: key !== 'total' ? 'pointer' : undefined,
-                border: statusFilter === key.toUpperCase() ? 2 : 0,
-                borderColor: 'primary.main',
-              }}
-              onClick={() => key !== 'total' && handleFilterChange(key.toUpperCase())}
-            >
-              <Typography
-                variant="h4"
-                fontWeight={700}
-                color={
-                  key === 'broken' || key === 'malicious' ? 'error.main'
-                  : key === 'ok' ? 'success.main'
-                  : key === 'dismissed' || key === 'auto_removed' ? 'info.main'
-                  : key === 'suspicious' ? 'warning.main'
-                  : 'text.primary'
-                }
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2 mb-3">
+          {STAT_KEYS.map(key => {
+            const isActive = statusFilter === key.toUpperCase();
+            const colorClass =
+              key === 'broken' || key === 'malicious' ? 'text-destructive'
+              : key === 'ok' ? 'text-green-600'
+              : key === 'dismissed' || key === 'auto_removed' ? 'text-blue-600'
+              : key === 'suspicious' ? 'text-amber-600'
+              : 'text-foreground';
+            return (
+              <div
+                key={key}
+                className={`p-2 text-center rounded-md border bg-card ${key !== 'total' ? 'cursor-pointer' : ''} ${isActive ? 'border-2 border-primary' : ''}`}
+                onClick={() => key !== 'total' && handleFilterChange(key.toUpperCase())}
               >
-                {stats[key]}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" textTransform="capitalize">
-                {key === 'auto_removed' ? 'Removed' : key}
-              </Typography>
-              {stats.total > 0 && key !== 'total' && (
-                <LinearProgress
-                  variant="determinate"
-                  value={(stats[key] / stats.total) * 100}
-                  color={key === 'broken' || key === 'malicious' ? 'error' : key === 'ok' ? 'success' : key === 'dismissed' || key === 'auto_removed' ? 'info' : 'warning'}
-                  sx={{ mt: 1, borderRadius: 1 }}
-                />
-              )}
-            </Paper>
-          ))}
-        </Box>
+                <div className={`text-3xl font-bold ${colorClass}`}>{stats[key]}</div>
+                <div className="text-xs text-muted-foreground capitalize">
+                  {key === 'auto_removed' ? 'Removed' : key}
+                </div>
+                {stats.total > 0 && key !== 'total' && (
+                  <div className="mt-1 h-1 rounded bg-muted overflow-hidden">
+                    <div
+                      className={`h-full rounded ${PROGRESS_COLOR[key] || 'bg-amber-500'}`}
+                      style={{ width: `${(stats[key] / stats.total) * 100}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
 
-      {/* Filters + Search */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* Filters */}
+      <div className="flex gap-2 mb-3 flex-wrap items-center">
         <Select value={statusFilter} onValueChange={handleFilterChange}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
@@ -456,33 +426,26 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
             ))}
           </SelectContent>
         </Select>
-        <TextField
-          size="small"
-          placeholder="Search URLs..."
-          value={urlSearch}
-          onChange={e => setUrlSearch(e.target.value)}
-          sx={{ minWidth: 240 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search style={{ width: 16, height: 16, color: '#999' }} />
-              </InputAdornment>
-            ),
-          }}
-        />
+        <div className="relative min-w-[240px]">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search URLs..."
+            value={urlSearch}
+            onChange={e => setUrlSearch(e.target.value)}
+            className="pl-8 h-9"
+          />
+        </div>
         {urlSearch && (
-          <Typography variant="caption" color="text.secondary">
+          <span className="text-xs text-muted-foreground">
             {filteredLinks.length} of {links.length} shown
-          </Typography>
+          </span>
         )}
-      </Box>
+      </div>
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <Paper sx={{ p: 1.5, mb: 2, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', bgcolor: 'action.selected' }}>
-          <Typography variant="body2" fontWeight={600} sx={{ mr: 1 }}>
-            {selectedIds.size} selected
-          </Typography>
+        <div className="p-1.5 mb-2 flex items-center gap-1 flex-wrap rounded-md border bg-muted">
+          <span className="text-sm font-semibold mr-1">{selectedIds.size} selected</span>
           <Button
             variant="outline" size="sm"
             onClick={() => setBulkAction({ action: 'dismiss', count: selectedIds.size })}
@@ -519,145 +482,139 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
           <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
             Clear
           </Button>
-        </Paper>
+        </div>
       )}
 
       {/* Links Table */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>
+        <div className="flex justify-center py-6"><Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" /></div>
       ) : filteredLinks.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography color="text.secondary">
+        <div className="p-4 text-center rounded-md border bg-card">
+          <p className="text-muted-foreground">
             {stats?.total === 0 ? 'No links synced yet. Click "Sync Links" to extract URLs from content.' : 'No links match the current filter.'}
-          </Typography>
-        </Paper>
+          </p>
+        </div>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {/* Select-all header */}
-          <Box sx={{ display: 'flex', alignItems: 'center', px: 1, gap: 1 }}>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center px-1 gap-1">
             <Checkbox
-              size="small"
               checked={selectedIds.size === filteredLinks.length && filteredLinks.length > 0}
-              indeterminate={selectedIds.size > 0 && selectedIds.size < filteredLinks.length}
-              onChange={toggleSelectAll}
+              onCheckedChange={toggleSelectAll}
             />
-            <Typography variant="caption" color="text.secondary">
+            <span className="text-xs text-muted-foreground">
               {filteredLinks.length} link{filteredLinks.length !== 1 ? 's' : ''}
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
           {filteredLinks.map(link => (
-            <Paper
+            <div
               key={link.id}
-              sx={{
-                p: 1.5, display: 'flex', alignItems: 'center', gap: 1.5,
-                bgcolor: selectedIds.has(link.id) ? 'action.selected' : undefined,
-              }}
+              className={`p-1.5 flex items-center gap-1.5 rounded-md border bg-card ${selectedIds.has(link.id) ? 'bg-muted' : ''}`}
             >
               <Checkbox
-                size="small"
                 checked={selectedIds.has(link.id)}
-                onChange={() => toggleSelect(link.id)}
+                onCheckedChange={() => toggleSelect(link.id)}
               />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
-                  <Chip size="small" label={link.status === 'AUTO_REMOVED' ? 'Removed' : link.status} color={STATUS_COLORS[link.status] ?? 'default'} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 mb-0.5 flex-wrap">
+                  <Badge className={STATUS_BADGE[link.status] ?? ''}>
+                    {link.status === 'AUTO_REMOVED' ? 'Removed' : link.status}
+                  </Badge>
                   {link.status === 'BROKEN' && (link.check_count ?? 0) >= 1 && (link.check_count ?? 0) <= 3 && (
-                    <Chip size="small" label={`Recheck ${link.check_count}/3`} variant="outlined" color="warning" sx={{ fontSize: '0.7rem' }} />
+                    <Badge variant="outline" className="text-[0.7rem] bg-amber-50 text-amber-700 border-amber-300">
+                      Recheck {link.check_count}/3
+                    </Badge>
                   )}
                   {link.status === 'AUTO_REMOVED' && link.auto_removed_at && (
-                    <Typography variant="caption" color="text.secondary">
+                    <span className="text-xs text-muted-foreground">
                       Removed {new Date(link.auto_removed_at).toLocaleDateString()}
-                    </Typography>
+                    </span>
                   )}
                   {link.http_status && (
-                    <Typography variant="caption" color="text.secondary">HTTP {link.http_status}</Typography>
+                    <span className="text-xs text-muted-foreground">HTTP {link.http_status}</span>
                   )}
-                  <Chip size="small" label={link.content_type} variant="outlined" />
-                  <Chip size="small" label={link.field_name} variant="outlined" />
-                  {link.is_social && <Chip size="small" label="Social" color="info" />}
-                  {link.is_scraped_source && <Chip size="small" label="Scraped" color="secondary" />}
+                  <Badge variant="outline">{link.content_type}</Badge>
+                  <Badge variant="outline">{link.field_name}</Badge>
+                  {link.is_social && <Badge className="bg-blue-100 text-blue-700 border-blue-300">Social</Badge>}
+                  {link.is_scraped_source && <Badge variant="secondary">Scraped</Badge>}
                   {link.scan_verdict ? (
-                    <Chip
-                      size="small"
-                      label={VERDICT_CHIP[link.scan_verdict]?.label ?? link.scan_verdict}
-                      color={VERDICT_CHIP[link.scan_verdict]?.color ?? 'default'}
-                      icon={
-                        link.scan_verdict === 'malicious' ? <ShieldAlert style={{ width: 14, height: 14 }} /> :
-                        link.scan_verdict === 'suspicious' ? <ShieldQuestion style={{ width: 14, height: 14 }} /> :
-                        <ShieldCheck style={{ width: 14, height: 14 }} />
-                      }
+                    <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); handleScanResult(link); }}
-                      sx={{ cursor: 'pointer' }}
-                    />
+                      className="cursor-pointer"
+                    >
+                      <Badge className={VERDICT_BADGE[link.scan_verdict]?.className ?? ''}>
+                        {link.scan_verdict === 'malicious' ? <ShieldAlert className="w-3.5 h-3.5 mr-1" /> :
+                         link.scan_verdict === 'suspicious' ? <ShieldQuestion className="w-3.5 h-3.5 mr-1" /> :
+                         <ShieldCheck className="w-3.5 h-3.5 mr-1" />}
+                        {VERDICT_BADGE[link.scan_verdict]?.label ?? link.scan_verdict}
+                      </Badge>
+                    </button>
                   ) : link.scanned_at ? (
-                    <Chip size="small" label="Scanned" color="default" variant="outlined"
+                    <button
+                      type="button"
                       onClick={(e) => { e.stopPropagation(); handleScanResult(link); }}
-                      sx={{ cursor: 'pointer' }}
-                    />
+                      className="cursor-pointer"
+                    >
+                      <Badge variant="outline">Scanned</Badge>
+                    </button>
                   ) : null}
-                </Box>
-                <Typography variant="body2" noWrap title={link.original_url} sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                </div>
+                <p className="text-sm font-mono text-[0.8rem] truncate" title={link.original_url}>
                   {link.original_url}
-                </Typography>
+                </p>
                 {link.final_url && link.final_url !== link.original_url && (
-                  <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                  <span className="text-xs text-muted-foreground truncate block">
                     {'→'} {link.final_url}
-                  </Typography>
+                  </span>
                 )}
-              </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+              </div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {link.last_checked_at ? new Date(link.last_checked_at).toLocaleDateString() : 'Never'}
-              </Typography>
+              </span>
               <a href={link.original_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink style={{ width: 16, height: 16, color: '#999' }} />
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
               </a>
-              <IconButton
-                size="small"
-                onClick={e => { setMenuAnchor(e.currentTarget); setMenuLink(link); }}
-              >
-                <MoreVertical style={{ width: 16, height: 16 }} />
-              </IconButton>
-            </Paper>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-7 w-7 p-0" onClick={() => setMenuLink(link)}>
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleRowAction('edit', link)}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit URL
+                  </DropdownMenuItem>
+                  {link.status === 'REDIRECT' && link.final_url && (
+                    <DropdownMenuItem onClick={() => handleRowAction('apply_redirect', link)}>
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                      Apply Redirect
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => handleRowAction('scan', link)}>
+                    <Scan className="w-4 h-4 mr-2" />
+                    {link.scan_id ? 'View Scan' : 'Scan URL'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleRowAction('recheck', link)}>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Re-check
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleRowAction('dismiss', link)}>
+                    <EyeOff className="w-4 h-4 mr-2" />
+                    Dismiss
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleRowAction('remove', link)} className="text-destructive">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
-      {/* Row Action Menu */}
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={() => { setMenuAnchor(null); setMenuLink(null); }}
-      >
-        <MenuItem onClick={() => handleRowAction('edit')}>
-          <ListItemIcon><Pencil style={{ width: 16, height: 16 }} /></ListItemIcon>
-          <ListItemText>Edit URL</ListItemText>
-        </MenuItem>
-        {menuLink?.status === 'REDIRECT' && menuLink.final_url && (
-          <MenuItem onClick={() => handleRowAction('apply_redirect')}>
-            <ListItemIcon><ArrowRight style={{ width: 16, height: 16 }} /></ListItemIcon>
-            <ListItemText>Apply Redirect</ListItemText>
-          </MenuItem>
-        )}
-        <MenuItem onClick={() => handleRowAction('scan')}>
-          <ListItemIcon><Scan style={{ width: 16, height: 16 }} /></ListItemIcon>
-          <ListItemText>{menuLink?.scan_id ? 'View Scan' : 'Scan URL'}</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => handleRowAction('recheck')}>
-          <ListItemIcon><RotateCcw style={{ width: 16, height: 16 }} /></ListItemIcon>
-          <ListItemText>Re-check</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => handleRowAction('dismiss')}>
-          <ListItemIcon><EyeOff style={{ width: 16, height: 16 }} /></ListItemIcon>
-          <ListItemText>Dismiss</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => handleRowAction('remove')} sx={{ color: 'error.main' }}>
-          <ListItemIcon><Trash2 style={{ width: 16, height: 16, color: 'inherit' }} /></ListItemIcon>
-          <ListItemText>Remove</ListItemText>
-        </MenuItem>
-      </Menu>
-
-      {/* Edit URL Dialog */}
       <EditLinkDialog
         open={!!editLink}
         link={editLink}
@@ -665,7 +622,6 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
         onSave={handleEditSave}
       />
 
-      {/* Confirm Bulk Action Dialog */}
       <ConfirmBulkActionDialog
         open={!!bulkAction}
         action={bulkAction?.action ?? ''}
@@ -674,7 +630,6 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
         onCancel={() => { setBulkAction(null); setMenuLink(null); }}
       />
 
-      {/* Scan Result Dialog */}
       <ScanResultDialog
         open={!!scanResultLink}
         link={scanResultLink}
@@ -682,7 +637,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
         onRescan={handleRescan}
         scanning={singleScanning}
       />
-    </Box>
+    </div>
   );
 }
 

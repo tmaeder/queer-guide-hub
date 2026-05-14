@@ -1,4 +1,3 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireAdmin } from '../_shared/supabase-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 
@@ -20,7 +19,7 @@ function resolveCountryName(raw: string): string {
   return COUNTRY_ALIASES[lower] || raw.trim()
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
 
   try {

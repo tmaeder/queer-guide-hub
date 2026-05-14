@@ -9,7 +9,7 @@
  * enabling transparent review decisions.
  *
  * Used by:
- *  - ingestion-pipeline (inline during import)
+ *  - pipeline-executor (inline during import via pipeline DAG nodes)
  *  - content-classifier edge function (batch automation module)
  *  - review UI (displays classification results)
  */

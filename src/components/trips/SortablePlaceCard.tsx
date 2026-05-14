@@ -1,10 +1,8 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import type { TripPlace } from '@/hooks/useTrips';
 import { getScoreRingColor } from '@/utils/equalityScore';
 import { PlaceBookableLinks } from './PlaceBookableLinks';
@@ -15,6 +13,7 @@ const categoryIcons: Record<string, typeof MapPin> = {
   event: CalendarDays,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getPlaceName(place: TripPlace): string {
   if (place.venues?.name) return place.venues.name;
   if (place.events?.title) return place.events.title;
@@ -22,6 +21,7 @@ export function getPlaceName(place: TripPlace): string {
   return place.custom_name || 'Untitled Place';
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function getPlaceCategory(place: TripPlace): string {
   if (place.venue_id) return 'venue';
   if (place.event_id) return 'event';
@@ -65,99 +65,47 @@ export function SortablePlaceCard({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          bgcolor: 'background.paper',
-          px: 1.5,
-          py: 1,
-          mb: 0.5,
-          minHeight: 44,
-          cursor: isDragging ? 'grabbing' : 'default',
-          transition: 'background-color 0.15s, border-color 0.15s',
-          '&:hover': {
-            bgcolor: 'action.hover',
-            borderColor: 'brand.main',
-          },
-          '&:hover .grip-handle, &:focus-within .grip-handle': {
-            opacity: 1,
-          },
-          '&:hover .delete-btn, &:focus-within .delete-btn': {
-            opacity: 1,
-          },
-        }}
+      <div
+        className={`group flex items-center gap-2 bg-background border border-transparent hover:border-border rounded-xl px-3 py-2 mb-1.5 min-h-[44px] transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       >
-        {/* Grip handle */}
-        <Box
+        <div
           {...attributes}
           {...listeners}
-          className="grip-handle"
           aria-label={t('trips.itinerary.dragHandleAria')}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            flexShrink: 0,
-            cursor: 'grab',
-            color: 'text.disabled',
-            opacity: 0.45,
-            transition: 'opacity 0.15s, color 0.15s',
-            touchAction: 'none',
-            '&:hover': { color: 'brand.main' },
-            '&:active': { cursor: 'grabbing' },
-          }}
+          className="flex items-center shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/45 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+          style={{ touchAction: 'none' }}
         >
-          <GripVertical style={{ width: 14, height: 14 }} />
-        </Box>
+          <GripVertical className="w-3.5 h-3.5" />
+        </div>
 
-        {/* Category icon circle */}
-        <Box
-          sx={{
-            width: 24,
-            height: 24,
-            borderRadius: '50%',
-            bgcolor: 'action.hover',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <Icon style={{ width: 13, height: 13 }} />
-        </Box>
+        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+          <Icon className="w-3 h-3" />
+        </div>
 
-        {/* Place name + time */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500, fontSize: 13 }} noWrap>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-[13px] font-medium truncate">
               {getPlaceName(place)}
-            </Typography>
+            </p>
             {eqScore !== null && (
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  bgcolor: ringColor,
-                  flexShrink: 0,
-                }}
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: ringColor }}
                 title={`Equality score: ${eqScore}`}
               />
             )}
-          </Box>
+          </div>
           {place.start_time && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
-              <Clock style={{ width: 10, height: 10 }} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+            <div className="flex items-center gap-0.5 text-muted-foreground">
+              <Clock className="w-2.5 h-2.5" />
+              <span className="text-[11px] text-muted-foreground">
                 {place.start_time.slice(0, 5)}
                 {place.end_time && ` - ${place.end_time.slice(0, 5)}`}
-              </Typography>
-            </Box>
+              </span>
+            </div>
           )}
-        </Box>
+        </div>
 
-        {/* Inline affiliate booking shortcuts */}
         <PlaceBookableLinks
           tripId={place.trip_id}
           tripPlaceId={place.id}
@@ -168,25 +116,15 @@ export function SortablePlaceCard({
           endDate={tripEndDate ?? null}
         />
 
-        {/* Delete button */}
-        <IconButton
-          className="delete-btn"
-          size="small"
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => onDelete(place.id)}
-          sx={{
-            opacity: 0,
-            transition: 'opacity 0.15s',
-            p: 0.5,
-            minHeight: 44,
-            minWidth: 44,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
-          <X style={{ width: 14, height: 14 }} />
-        </IconButton>
-      </Box>
+          <X className="w-3.5 h-3.5" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -199,47 +137,21 @@ export function PlaceCardOverlay({ place }: { place: TripPlace }) {
   const ringColor = getScoreRingColor(eqScore);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-        borderRadius: 1.5,
-        border: '2px solid',
-        borderColor: 'primary.main',
-        bgcolor: 'background.paper',
-        px: 1.5,
-        py: 1,
-        width: 320,
-        opacity: 0.95,
-        boxShadow: 4,
-      }}
-    >
-      <GripVertical style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.4 }} />
-      <Box
-        sx={{
-          width: 24,
-          height: 24,
-          borderRadius: '50%',
-          bgcolor: 'action.hover',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        <Icon style={{ width: 13, height: 13 }} />
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body2" sx={{ fontWeight: 500, fontSize: 13 }} noWrap>
+    <div className="flex items-center gap-2 rounded-xl border border-foreground bg-background px-3 py-2 w-[320px] opacity-95 shadow-xl">
+      <GripVertical className="w-3.5 h-3.5 shrink-0 opacity-40" />
+      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
+        <Icon className="w-3 h-3" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="text-[13px] font-medium truncate">
             {getPlaceName(place)}
-          </Typography>
+          </p>
           {eqScore !== null && (
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: ringColor, flexShrink: 0 }} />
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: ringColor }} />
           )}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }

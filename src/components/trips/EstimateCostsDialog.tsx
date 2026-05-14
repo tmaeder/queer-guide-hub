@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
-import { Sparkles, RefreshCw } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Sparkles, RefreshCw, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -162,33 +159,33 @@ export function EstimateCostsDialog({
         </DialogHeader>
 
         {estimate.isPending && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 4, justifyContent: 'center' }}>
-            <CircularProgress size={18} />
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex items-center gap-3 py-8 justify-center">
+            <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
+            <p className="text-sm text-muted-foreground">
               {t('trips.budget.estimate.loading', { defaultValue: 'Crunching numbers…' })}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
 
         {estimate.isError && (
-          <Typography variant="body2" color="error.main" sx={{ py: 2 }}>
+          <p className="text-sm text-destructive py-4">
             {t('trips.budget.estimate.error', {
               defaultValue: 'Estimate failed. Try again.',
             })}
-          </Typography>
+          </p>
         )}
 
         {estimate.data && estimate.data.suggestions.length === 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+          <p className="text-sm text-muted-foreground py-4">
             {t('trips.budget.estimate.empty', {
               defaultValue: 'No suggestions — add a few stops first.',
             })}
-          </Typography>
+          </p>
         )}
 
         {estimate.data && estimate.data.suggestions.length > 0 && (
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+          <div>
+            <div className="flex items-center gap-2 mb-3">
               <Badge variant="secondary">
                 {t('trips.budget.estimate.partySize', {
                   defaultValue: '{{count}} traveler(s)',
@@ -196,59 +193,46 @@ export function EstimateCostsDialog({
                 })}
               </Badge>
               <Badge variant="outline">{estimate.data.currency}</Badge>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            </div>
+            <div className="flex flex-col gap-1">
               {estimate.data.suggestions.map((s, i) => (
-                <Box
+                <div
                   key={i}
                   onClick={() => toggle(i)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 1,
-                    p: 1.25,
-                    borderTop: '1px solid',
-                    borderColor: 'divider',
-                    cursor: 'pointer',
-                    '&:hover': { bgcolor: 'action.hover' },
-                    '&:first-of-type': { borderTop: 'none' },
-                  }}
+                  className="flex items-start gap-2 p-2.5 border-t border-border cursor-pointer hover:bg-muted first-of-type:border-t-0"
                 >
                   <Checkbox
                     checked={selected.has(i)}
-                    onChange={() => toggle(i)}
-                    size="small"
-                    sx={{ p: 0.5, mt: -0.25 }}
+                    onCheckedChange={() => toggle(i)}
                     onClick={(e) => e.stopPropagation()}
+                    className="mt-0.5"
                   />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {s.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold">{s.title}</p>
+                      <p className="text-sm font-bold tabular-nums">
                         {formatAmount(s.amount, s.currency)}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25 }}>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
                       <Badge variant="outline">{s.category}</Badge>
-                      <Typography variant="caption" color="text.secondary">
+                      <span className="text-xs text-muted-foreground">
                         {t('trips.budget.estimate.perPerson', {
                           defaultValue: '{{amount}} / person',
                           amount: formatAmount(s.per_person, s.currency),
                         })}
-                      </Typography>
-                    </Box>
+                      </span>
+                    </div>
                     {s.notes && (
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+                      <span className="block text-xs text-muted-foreground mt-0.5">
                         {s.notes}
-                      </Typography>
+                      </span>
                     )}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               ))}
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
 
         <DialogFooter>

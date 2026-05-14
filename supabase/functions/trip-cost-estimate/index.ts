@@ -27,12 +27,11 @@
  * instruction. The model returns realistic mid-range estimates.
  */
 
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -58,6 +57,7 @@ interface TripDigest {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTrip(supabase: any, tripId: string): Promise<TripDigest> {
   const { data: trip, error } = await supabase
     .from('trips')
@@ -80,6 +80,7 @@ async function loadTrip(supabase: any, tripId: string): Promise<TripDigest> {
   let hotels = 0;
 
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const p of (trip.trip_places ?? []) as any[]) {
     if (p.hotels) hotels += 1;
     const cityName = p.venues?.city?.name ?? p.events?.city?.name;
@@ -148,21 +149,11 @@ Rules:
 - currency is 3-letter ISO.
 - Be realistic, not luxurious and not rock-bottom.`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 900,
-      messages: [{ role: 'user', content: prompt }],
-    }),
+  const body = await anthropicMessages({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 900,
+    messages: [{ role: 'user', content: prompt }],
   });
-  if (!res.ok) throw new Error(`anthropic ${res.status}: ${await res.text()}`);
-  const body = await res.json();
   const text: string = body?.content?.[0]?.text ?? '';
 
   // Tolerant JSON extract — strip code fences if any, find first { ... last }.
@@ -173,6 +164,7 @@ Rules:
   const parsed = JSON.parse(cleaned.slice(start, end + 1));
 
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const raw = (parsed.suggestions ?? []) as any[];
   const allowedCats = new Set(['food', 'transport', 'accommodation', 'activities', 'shopping', 'other']);
   return raw
@@ -192,7 +184,7 @@ Rules:
     });
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') {
     return new Response('method not allowed', { status: 405, headers: cors });

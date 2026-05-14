@@ -29,6 +29,12 @@ vi.mock('@/hooks/useHotels', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useHotelFilterMeta', () => ({
+  useHotelFilterMeta: () => ({
+    data: { availableTypes: new Set(['bnb', 'apartment']), priceAvailable: false },
+  }),
+}));
+
 vi.mock('@/components/hotels/HotelCard', () => ({
   HotelCard: ({ hotel, loading }: { hotel?: { id: string; name: string }; loading?: boolean }) =>
     loading ? <div data-testid="hotel-skeleton" /> : <div data-testid="hotel-card">{hotel?.name}</div>,

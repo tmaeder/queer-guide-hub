@@ -13,12 +13,11 @@
  * already, returns the cached recap without calling the LLM.
  */
 
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import { anthropicMessages } from '../_shared/anthropic-shim.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -37,6 +36,7 @@ interface Highlights {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadTrip(supabase: any, tripId: string) {
   const { data: trip, error } = await supabase
     .from('trips')
@@ -74,6 +74,7 @@ function placeName(p: {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildHighlights(trip: any, budget: { amount: number; currency: string }[]): Highlights {
   const cities = new Set<string>();
   const countries = new Set<string>();
@@ -103,6 +104,7 @@ function buildHighlights(trip: any, budget: { amount: number; currency: string }
     }
   }
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const favDay = favDayId ? (trip.trip_days ?? []).find((d: any) => d.id === favDayId) : null;
 
   const totals = new Map<string, number>();
@@ -112,6 +114,7 @@ function buildHighlights(trip: any, budget: { amount: number; currency: string }
 
   return {
     // deno-lint-ignore no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     top_places: (trip.trip_places ?? []).slice(0, 8).map((p: any) => placeName(p)),
     cities: [...cities],
     countries: [...countries],
@@ -134,29 +137,17 @@ Top places: ${highlights.top_places.join(', ')}
 
 Write 2–4 sentences in a warm, second-person voice ("your trip…"). No intro ("Here's your recap"), no hashtags, no emoji. Sound like a thoughtful friend summarizing their journey.`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 300,
-      messages: [{ role: 'user', content: prompt }],
-    }),
+  const body = await anthropicMessages({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 300,
+    messages: [{ role: 'user', content: prompt }],
   });
-  if (!res.ok) {
-    throw new Error(`anthropic ${res.status}: ${await res.text()}`);
-  }
-  const body = await res.json();
   const text = body?.content?.[0]?.text?.trim();
   if (!text) throw new Error('empty claude response');
   return text;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') {
     return new Response('method not allowed', { status: 405, headers: cors });

@@ -10,23 +10,25 @@
  * Rate limit: 20 scans/hour per user.
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { corsHeaders, jsonResponse, errorResponse } from '../_shared/supabase-client.ts'
+import { chatCompletion } from '../_shared/openai-client.ts'
 import { COUNTRY_ALIASES } from '../_shared/automation-utils.ts'
 
 const CF_ACCOUNT_ID = '7aa3765cc5f50f2b681b782eb4a8d296'
 const CF_VISION_URL = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.2-11b-vision-instruct`
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
 interface AnalyzeRequest {
   image_url?: string
+  image_urls?: string[]
   text?: string
   hint_city?: string
   hint_country?: string
 }
+
+const MAX_IMAGES_PER_SCAN = 5
 
 interface ExtractedField {
   value: unknown
@@ -178,9 +180,10 @@ Rules:
 - If you find MULTIPLE distinct events or venues, return one item per event/venue (max 10 items)
 - If only one event or venue is found, return an array with a single item
 - Do NOT merge separate events into one — each gets its own item
-- If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item.
-- Only use end_date when an event clearly spans continuously from start to end (e.g. a multi-day festival "April 5-7" or "Friday 22:00 to Saturday 06:00").
-- Recurring events (e.g. "every Friday", multiple listed dates) → separate items per occurrence.
+- CRITICAL: If a flyer shows MULTIPLE separate dates (e.g. "April 5" and "April 12", or "5. April und 12. April"), these are DIFFERENT events — create one item per date. Do NOT put them into start_date/end_date of a single item. This is the most common mistake — avoid it.
+- end_date is ONLY for events that run CONTINUOUSLY from start to end, such as: multi-day festivals ("April 5–7"), overnight events ("Friday 22:00 to Saturday 06:00"), or conferences with exact day spans. If two dates are more than 36 hours apart, they are almost certainly separate events, not a range.
+- Recurring events (e.g. "every Friday", multiple listed dates, "5. April und 12. April") → separate items, one per date.
+- When in doubt between "range" and "separate events": always prefer separate items.
 - Each item should be self-contained with its own location, dates, etc.
 - Set confidence to 0 and value to null for fields you cannot determine
 - For detected_type: "event" if there's a specific date/time; "venue" if it's a business listing/card
@@ -192,7 +195,7 @@ Rules:
 
 async function structureExtraction(
   contentText: string,
-  openaiKey: string,
+  supabase: SupabaseClient,
   isTextMode: boolean,
   hintCity?: string,
   hintCountry?: string,
@@ -206,33 +209,17 @@ async function structureExtraction(
     ? `Here is text extracted from a document:\n\n${contentText}${hintText}`
     : `Here is a detailed description of a flyer/poster image:\n\n${contentText}${hintText}`
 
-  const response = await fetch(OPENAI_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: STRUCTURING_PROMPT },
-        { role: 'user', content: userMessage },
-      ],
-      temperature: 0.1,
-      max_tokens: 4000,
-      response_format: { type: 'json_object' },
-      store: false,
-    }),
+  const result = await chatCompletion(supabase, {
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: STRUCTURING_PROMPT },
+      { role: 'user', content: userMessage },
+    ],
+    temperature: 0.1,
+    max_tokens: 4000,
+    response_format: { type: 'json_object' },
   })
-
-  if (!response.ok) {
-    const err = await response.text()
-    console.error('OpenAI structuring error:', err)
-    throw new Error(`OpenAI API error: ${response.status}`)
-  }
-
-  const data = await response.json()
-  const content = data.choices[0].message.content
+  const content = result.content
   const source = isTextMode ? 'text+refinement' : 'vision+refinement'
 
   try {
@@ -389,6 +376,7 @@ async function matchVenues(
 
     const { data: fallbackData } = await query
     // deno-lint-ignore no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (fallbackData || []).map((v: any) => ({
       ...v,
       score: v.name.toLowerCase() === name.toLowerCase() ? 1.0 : 0.5,
@@ -416,6 +404,7 @@ async function checkEventDuplicates(
     .limit(5)
 
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data || []).map((e: any) => ({
     ...e,
     score: e.title.toLowerCase() === title.toLowerCase() ? 1.0 : 0.6,
@@ -439,6 +428,7 @@ async function checkVenueDuplicates(
 
   const { data } = await query
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data || []).map((v: any) => ({ ...v, score: 0.9 }))
 }
 
@@ -491,7 +481,7 @@ async function fetchImageAsBase64(imageUrl: string): Promise<string> {
 
 // ── Main Handler ──────────────────────────────────────────────────────────
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -506,10 +496,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const cfToken = Deno.env.get('CLOUDFLARE_API_TOKEN')
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
 
     if (!cfToken) return errorResponse('CLOUDFLARE_API_TOKEN not configured', 500)
-    if (!openaiKey) return errorResponse('OPENAI_API_KEY not configured', 500)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -522,34 +510,43 @@ serve(async (req) => {
     if (!withinLimit) return errorResponse('Rate limit exceeded (20 scans/hour)', 429)
 
     // Parse request
-    const { image_url, text, hint_city, hint_country }: AnalyzeRequest = await req.json()
-    if (!image_url && !text) return errorResponse('Either image_url or text is required', 400)
+    const { image_url, image_urls, text, hint_city, hint_country }: AnalyzeRequest = await req.json()
+    const urls: string[] = (Array.isArray(image_urls) ? image_urls : [])
+      .concat(image_url ? [image_url] : [])
+      .filter((u, i, arr) => typeof u === 'string' && u.length > 0 && arr.indexOf(u) === i)
+      .slice(0, MAX_IMAGES_PER_SCAN)
+    if (urls.length === 0 && !text) return errorResponse('image_url, image_urls, or text is required', 400)
 
-    const isTextMode = !!text && !image_url
-    console.log(`Analyzing flyer for user ${user.id} (${isTextMode ? 'text' : 'image'} mode)`)
+    const isTextMode = !!text && urls.length === 0
+    console.log(`Analyzing flyer for user ${user.id} (${isTextMode ? 'text' : `image x${urls.length}`} mode)`)
 
     // Step 1: Get content for structuring
     let contentForStructuring: string
 
     if (isTextMode) {
-      // Text mode — skip vision, use extracted text directly
       contentForStructuring = text!
       console.log(`Text input length: ${contentForStructuring.length}`)
     } else {
-      // Image mode — fetch + vision
-      console.log('Fetching image...')
-      const imageBase64 = await fetchImageAsBase64(image_url!)
-      console.log(`Image fetched, base64 length: ${imageBase64.length}`)
-
       console.log('Pass 1: CF AI Vision analysis...')
       await ensureMetaLicense(cfToken)
-      contentForStructuring = await visionDescribe(imageBase64, cfToken)
-      console.log('Vision description:', contentForStructuring.slice(0, 200))
+      const descriptions: string[] = []
+      for (let i = 0; i < urls.length; i++) {
+        try {
+          const b64 = await fetchImageAsBase64(urls[i])
+          const desc = await visionDescribe(b64, cfToken)
+          descriptions.push(urls.length > 1 ? `--- IMAGE ${i + 1}/${urls.length} ---\n${desc}` : desc)
+        } catch (e) {
+          console.error(`Vision failed for image ${i + 1}:`, e)
+          descriptions.push(`--- IMAGE ${i + 1}/${urls.length} (failed) ---`)
+        }
+      }
+      contentForStructuring = descriptions.join('\n\n')
+      console.log('Combined vision description length:', contentForStructuring.length)
     }
 
     // Step 2: gpt-4o-mini — structure into JSON (multi-item)
     console.log('Pass 2: Structuring with gpt-4o-mini...')
-    const extraction = await structureExtraction(contentForStructuring, openaiKey, isTextMode, hint_city, hint_country)
+    const extraction = await structureExtraction(contentForStructuring, supabase, isTextMode, hint_city, hint_country)
     console.log(`Extracted ${extraction.items.length} item(s)`)
 
     // Step 3: Per-item entity matching
@@ -609,10 +606,11 @@ serve(async (req) => {
       .from('flyer_scans')
       .insert({
         user_id: user.id,
-        image_url: image_url || `text://${text!.slice(0, 60)}`,
+        image_url: urls[0] || `text://${text!.slice(0, 60)}`,
         detected_type: primaryItem.detected_type,
         raw_extraction: {
           vision_description: isTextMode ? null : contentForStructuring,
+          image_urls: urls,
           structured: extraction,
         },
         matched_venue_id: primaryItem.matches.venue_candidates[0]?.id || null,
@@ -627,6 +625,38 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('Failed to insert audit row:', insertError)
+    }
+
+    // Auto-create community_submissions for each extracted item so they
+    // flow through the ingestion pipeline (normalize → validate → dedup → commit).
+    if (scanRow?.id) {
+      for (const item of itemsWithMatches) {
+        const fields = item.fields as Record<string, { value: unknown; confidence: number } | unknown>
+        // Flatten fields: { fieldName: value } dropping low-confidence nulls
+        const flat: Record<string, unknown> = {}
+        for (const [k, v] of Object.entries(fields)) {
+          if (v && typeof v === 'object' && 'value' in v) {
+            const f = v as { value: unknown; confidence: number }
+            if (f.value !== null && f.value !== undefined) flat[k] = f.value
+          }
+        }
+        if (Object.keys(flat).length === 0) continue
+
+        const { error: subErr } = await supabase.from('community_submissions').insert({
+          content_type:  item.detected_type,
+          status:        'pending',
+          data:          { ...flat, _source: 'flyer_scan', _scan_id: scanRow.id },
+          submitted_by:  user.id,
+          flyer_scan_id: scanRow.id,
+          platform:      isTextMode ? 'manual' : 'flyer',
+          sub_source_type: isTextMode ? 'manual' : 'upload',
+          media_urls:    urls.length > 0 ? urls : null,
+          vision_summary: isTextMode ? null : contentForStructuring.slice(0, 8000),
+          raw_text:      extraction.raw_text || null,
+          media_processing_status: urls.length > 0 ? 'done' : 'not_applicable',
+        })
+        if (subErr) console.error('Failed to create community_submission:', subErr.message)
+      }
     }
 
     console.log(`Analysis complete in ${processingTime}ms — ${itemsWithMatches.length} item(s)`)

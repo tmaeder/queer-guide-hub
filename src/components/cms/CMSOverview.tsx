@@ -5,15 +5,9 @@
  */
 
 import { useEffect, useState, useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
-import Skeleton from '@mui/material/Skeleton';
-import { alpha } from '@mui/material/styles';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Plus,
   TrendingUp,
@@ -30,7 +24,7 @@ import {
   Newspaper,
   Layers,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { listFrom, listFromIn, countRows } from '@/hooks/usePageFetchers';
 import { useAuth } from '@/hooks/useAuth';
 import { getContentTypeIds, getContentType } from '@/config/contentTypeRegistry';
 import type { CMSView } from './CMSSidebar';
@@ -58,12 +52,22 @@ interface AuditEntry {
   actorEmail?: string;
 }
 
+// Lightweight alpha
+function alphaHex(color: string, a: number): string {
+  if (color.startsWith('#') && color.length === 7) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  return `color-mix(in srgb, ${color} ${a * 100}%, transparent)`;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function getFirstName(email: string | undefined): string {
   if (!email) return '';
   const prefix = email.split('@')[0];
-  // Turn "tobias.maeder" or "tobias_maeder" into "Tobias"
   const name = prefix.split(/[._-]/)[0];
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
@@ -85,25 +89,21 @@ function relativeTime(dateStr: string): string {
 }
 
 function formatAction(action: string): string {
-  return action
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return action.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function getActionColor(action: string): string {
   if (action.includes('create') || action.includes('insert')) return '#10b981';
   if (action.includes('update') || action.includes('edit')) return '#3b82f6';
   if (action.includes('delete') || action.includes('remove')) return '#ef4444';
-  if (action.includes('publish')) return '#DB2777';
+  if (action.includes('publish')) return 'hsl(var(--foreground))';
   return '#6b7280';
 }
-
-// ── Stat card colors ────────────────────────────────────────────────
 
 const STAT_CARDS = [
   { key: 'total', label: 'Total Items', icon: TrendingUp, color: '#3b82f6' },
   { key: 'review', label: 'In Review', icon: Clock, color: '#f59e0b' },
-  { key: 'types', label: 'Content Types', icon: Layers, color: '#DB2777' },
+  { key: 'types', label: 'Content Types', icon: Layers, color: 'hsl(var(--foreground))' },
   { key: 'queue', label: 'Review Queue', color: '#10b981', icon: AlertCircle },
 ] as const;
 
@@ -111,67 +111,56 @@ const STAT_CARDS = [
 
 function OverviewSkeleton() {
   return (
-    <Box>
-      {/* Header skeleton */}
-      <Box sx={{ mb: 3 }}>
-        <Skeleton variant="text" width={260} height={36} />
-        <Skeleton variant="text" width={320} height={20} sx={{ mt: 0.5 }} />
-      </Box>
+    <div>
+      <div className="mb-6">
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-5 w-80 mt-1" />
+      </div>
 
-      {/* Stat cards skeleton */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {[0, 1, 2, 3].map((i) => (
-          <Grid key={i} size={{ xs: 6, sm: 3 }}>
-            <Paper
-              sx={{
-                p: 2.5,
-                borderRadius: 2,
-                borderLeft: '3px solid',
-                borderColor: 'divider',
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-                <Skeleton variant="circular" width={36} height={36} />
-                <Skeleton variant="text" width={70} height={16} />
-              </Box>
-              <Skeleton variant="text" width={60} height={32} />
-            </Paper>
-          </Grid>
+          <div
+            key={i}
+            className="p-5 rounded-lg bg-background"
+            style={{ borderLeft: '3px solid', borderColor: 'hsl(var(--border))' }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <Skeleton className="rounded-full" style={{ width: 36, height: 36 }} />
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <Skeleton className="h-8 w-14" />
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      {/* Content type cards skeleton */}
-      <Skeleton variant="text" width={140} height={24} sx={{ mb: 1.5 }} />
-      <Grid container spacing={1.5} sx={{ mb: 3 }}>
+      <Skeleton className="h-6 w-32 mb-3" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
         {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <Grid key={i} size={{ xs: 6, sm: 4, md: 3 }}>
-            <Paper sx={{ p: 2, borderRadius: 2, overflow: 'hidden' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <Skeleton variant="circular" width={28} height={28} />
-                <Skeleton variant="text" width={80} height={18} />
-              </Box>
-              <Skeleton variant="text" width={50} height={28} sx={{ mb: 1.5 }} />
-              <Skeleton variant="rectangular" width="100%" height={4} sx={{ borderRadius: 1 }} />
-            </Paper>
-          </Grid>
+          <div key={i} className="p-4 rounded-lg bg-background overflow-hidden">
+            <div className="flex items-center gap-2 mb-3">
+              <Skeleton className="rounded-full" style={{ width: 28, height: 28 }} />
+              <Skeleton className="h-4 w-20" />
+            </div>
+            <Skeleton className="h-7 w-12 mb-3" />
+            <Skeleton className="h-1 w-full rounded" />
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      {/* Recent activity skeleton */}
-      <Skeleton variant="text" width={140} height={24} sx={{ mb: 1.5 }} />
-      <Paper sx={{ p: 2, borderRadius: 2 }}>
+      <Skeleton className="h-6 w-32 mb-3" />
+      <div className="p-4 rounded-lg bg-background">
         {[0, 1, 2, 3, 4].map((i) => (
-          <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.5 }}>
-            <Skeleton variant="circular" width={8} height={8} />
-            <Box sx={{ flex: 1 }}>
-              <Skeleton variant="text" width="60%" height={18} />
-              <Skeleton variant="text" width="30%" height={14} />
-            </Box>
-            <Skeleton variant="text" width={60} height={14} />
-          </Box>
+          <div key={i} className="flex items-center gap-4 py-3">
+            <Skeleton className="rounded-full" style={{ width: 8, height: 8 }} />
+            <div className="flex-1">
+              <Skeleton className="h-4 w-3/5" />
+              <Skeleton className="h-3 w-1/3 mt-1" />
+            </div>
+            <Skeleton className="h-3 w-16" />
+          </div>
         ))}
-      </Paper>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -206,43 +195,36 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         const config = getContentType(id);
         if (!config) continue;
 
-        const { count } = await supabase
-          .from(config.tableName as 'events')
-          .select('*', { count: 'exact', head: true });
+        const count = await countRows(config.tableName);
 
         results.push({
           id: config.id,
           label: config.label.plural,
-          count: count ?? 0,
+          count,
           color: config.color,
           icon: config.icon,
         });
       }
 
-      // Pages count
-      const { count: pagesCount } = await supabase
-        .from('cms_pages' as 'events')
-        .select('*', { count: 'exact', head: true });
-
+      const pagesCount = await countRows('cms_pages');
       const pagesConfig = getContentType('cms_pages');
       if (pagesConfig) {
         results.push({
           id: 'cms_pages',
           label: 'Pages',
-          count: pagesCount ?? 0,
+          count: pagesCount,
           color: pagesConfig.color,
           icon: pagesConfig.icon,
         });
       }
 
-      // Review queue count
-      const { count: revCount } = await supabase
-        .from('cms_content_metadata' as 'events')
-        .select('*', { count: 'exact', head: true })
-        .eq('workflow_state', 'review');
+      const revCount = await countRows('cms_content_metadata', {
+        col: 'workflow_state',
+        val: 'review',
+      });
 
       setCounts(results);
-      setReviewCount(revCount ?? 0);
+      setReviewCount(revCount);
     } catch (err) {
       console.error('Error loading overview counts:', err);
     } finally {
@@ -252,39 +234,30 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
 
   async function loadRecentActivity() {
     try {
-      const { data: entries, error } = await supabase
-        .from('cms_audit_log' as 'events')
-        .select('id, action, actor_id, source_table, source_id, timestamp')
-        .order('timestamp', { ascending: false })
-        .limit(5);
-
-      if (error || !entries) {
+      const entries = await listFrom<AuditEntry>(
+        'cms_audit_log',
+        'id, action, actor_id, source_table, source_id, timestamp',
+        { col: 'timestamp', ascending: false },
+        5,
+      );
+      if (entries.length === 0) {
         setRecentActivity([]);
         return;
       }
 
-      // Collect unique actor IDs
       const actorIds = [
-        ...new Set(
-          (entries as unknown as AuditEntry[])
-            .map((e) => e.actor_id)
-            .filter(Boolean) as string[]
-        ),
+        ...new Set(entries.map((e) => e.actor_id).filter(Boolean) as string[]),
       ];
 
-      // Batch-fetch actor emails
       let actorMap: Record<string, string> = {};
       if (actorIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, email')
-          .in('id', actorIds);
-
-        if (profiles) {
-          actorMap = Object.fromEntries(
-            (profiles as { id: string; email: string }[]).map((p) => [p.id, p.email]),
-          );
-        }
+        const profiles = await listFromIn<{ user_id: string; email: string }>(
+          'profiles',
+          'user_id, email',
+          'user_id',
+          actorIds,
+        );
+        actorMap = Object.fromEntries(profiles.map((p) => [p.user_id, p.email]));
       }
 
       setRecentActivity(
@@ -294,7 +267,6 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         })),
       );
     } catch (err) {
-      // Silently fail — recent activity is non-critical
       console.error('Error loading recent activity:', err);
       setRecentActivity([]);
     }
@@ -314,365 +286,250 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
   ];
 
   return (
-    <Box>
+    <div>
       {/* ── Header with greeting ────────────────────────────────── */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-1">
           {firstName ? `Welcome back, ${firstName}` : 'Dashboard'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </h1>
+        <p className="text-sm text-muted-foreground">
           Overview of all content across the platform
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {/* ── Summary stat cards ──────────────────────────────────── */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {STAT_CARDS.map((card, i) => {
           const StatIcon = card.icon;
           const isQueue = card.key === 'queue';
 
           return (
-            <Grid key={card.key} size={{ xs: 6, sm: 3 }}>
-              <Paper
-                sx={{
-                  p: 2.5,
-                  borderRadius: 2,
-                  borderLeft: `3px solid ${card.color}`,
-                  background: (theme) =>
-                    `linear-gradient(135deg, ${alpha(card.color, 0.04)} 0%, ${theme.palette.background.paper} 100%)`,
-                  cursor: isQueue ? 'pointer' : 'default',
-                  transition: 'all 0.2s ease',
-                  '&:hover': isQueue
-                    ? {
-                        transform: 'translateY(-2px)',
-                        boxShadow: (_theme) => `0 4px 12px ${alpha(card.color, 0.15)}`,
-                      }
-                    : {},
-                }}
-                onClick={isQueue ? () => onNavigate('review') : undefined}
-              >
-                {isQueue ? (
-                  /* Review queue special card */
-                  <>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: alpha(card.color, 0.12),
+            <div
+              key={card.key}
+              onClick={isQueue ? () => onNavigate('review') : undefined}
+              className="p-5 rounded-lg transition-all"
+              style={{
+                borderLeft: `3px solid ${card.color}`,
+                background: `linear-gradient(135deg, ${alphaHex(card.color, 0.04)} 0%, hsl(var(--background)) 100%)`,
+                cursor: isQueue ? 'pointer' : 'default',
+              }}
+            >
+              {isQueue ? (
+                <>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div
+                      className="rounded-full flex items-center justify-center"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        background: alphaHex(card.color, 0.12),
+                      }}
+                    >
+                      <ClipboardCheck size={18} style={{ color: card.color }} />
+                    </div>
+                    {reviewCount > 0 ? (
+                      <Badge
+                        className="h-[22px] text-[0.7rem] font-semibold"
+                        style={{
+                          background: alphaHex('#f59e0b', 0.12),
+                          color: '#d97706',
                         }}
                       >
-                        <ClipboardCheck size={18} style={{ color: card.color }} />
-                      </Box>
-                      {reviewCount > 0 ? (
-                        <Chip
-                          label="Action Needed"
-                          size="small"
-                          sx={{
-                            height: 22,
-                            fontSize: '0.7rem',
-                            fontWeight: 600,
-                            bgcolor: alpha('#f59e0b', 0.12),
-                            color: '#d97706',
-                          }}
-                        />
-                      ) : (
-                        <Chip
-                          label="All Clear"
-                          size="small"
-                          sx={{
-                            height: 22,
-                            fontSize: '0.7rem',
-                            fontWeight: 600,
-                            bgcolor: alpha('#10b981', 0.12),
-                            color: '#059669',
-                          }}
-                        />
-                      )}
-                    </Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                      Review Queue
-                    </Typography>
-                  </>
-                ) : (
-                  /* Normal stat card */
-                  <>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: alpha(card.color, 0.12),
+                        Action Needed
+                      </Badge>
+                    ) : (
+                      <Badge
+                        className="h-[22px] text-[0.7rem] font-semibold"
+                        style={{
+                          background: alphaHex('#10b981', 0.12),
+                          color: '#059669',
                         }}
                       >
-                        <StatIcon size={18} style={{ color: card.color }} />
-                      </Box>
-                      <Typography
-                        variant="caption"
-                        sx={{ fontWeight: 500, color: 'text.secondary', letterSpacing: '0.02em' }}
-                      >
-                        {card.label}
-                      </Typography>
-                    </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                      {statValues[i]}
-                    </Typography>
-                  </>
-                )}
-              </Paper>
-            </Grid>
+                        All Clear
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Review Queue</p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className="rounded-full flex items-center justify-center"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        background: alphaHex(card.color, 0.12),
+                      }}
+                    >
+                      <StatIcon size={18} style={{ color: card.color }} />
+                    </div>
+                    <span className="text-xs font-medium text-muted-foreground tracking-wide">
+                      {card.label}
+                    </span>
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">{statValues[i]}</div>
+                </>
+              )}
+            </div>
           );
         })}
-      </Grid>
+      </div>
 
       {/* ── Content type cards ──────────────────────────────────── */}
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
-        Content Types
-      </Typography>
-      <Grid container spacing={1.5} sx={{ mb: 3 }}>
+      <h2 className="text-base font-semibold mb-3">Content Types</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
         {counts.map((ct) => {
           const Icon = ct.icon;
           const barWidth = Math.max((ct.count / maxCount) * 100, 2);
 
           return (
-            <Grid key={ct.id} size={{ xs: 6, sm: 4, md: 3 }}>
-              <Paper
-                sx={{
-                  p: 2,
-                  cursor: 'pointer',
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: (_theme) => `0 4px 16px ${alpha(ct.color, 0.18)}`,
-                  },
-                }}
-                onClick={() =>
-                  ct.id === 'cms_pages'
-                    ? onNavigate('pages')
-                    : onNavigate('content', ct.id)
-                }
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                  <Box
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      bgcolor: alpha(ct.color, 0.12),
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon size={14} style={{ color: ct.color }} />
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 600,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {ct.label}
-                  </Typography>
-                </Box>
-
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
-                  {ct.count.toLocaleString()}
-                </Typography>
-
-                {/* Visual weight bar */}
-                <Box
-                  sx={{
-                    width: '100%',
-                    height: 4,
-                    borderRadius: 2,
-                    bgcolor: alpha(ct.color, 0.1),
+            <div
+              key={ct.id}
+              onClick={() =>
+                ct.id === 'cms_pages' ? onNavigate('pages') : onNavigate('content', ct.id)
+              }
+              className="p-4 cursor-pointer rounded-lg overflow-hidden bg-background border border-border transition-transform hover:-translate-y-0.5"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div
+                  className="rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: 28,
+                    height: 28,
+                    background: alphaHex(ct.color, 0.12),
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: `${barWidth}%`,
-                      height: '100%',
-                      borderRadius: 2,
-                      bgcolor: ct.color,
-                      transition: 'width 0.6s ease',
-                    }}
-                  />
-                </Box>
-              </Paper>
-            </Grid>
+                  <Icon size={14} style={{ color: ct.color }} />
+                </div>
+                <p className="text-sm font-semibold overflow-hidden whitespace-nowrap text-ellipsis">
+                  {ct.label}
+                </p>
+              </div>
+
+              <div className="text-lg font-bold mb-3">{ct.count.toLocaleString()}</div>
+
+              <div
+                className="w-full rounded-full"
+                style={{ height: 4, background: alphaHex(ct.color, 0.1) }}
+              >
+                <div
+                  className="rounded-full transition-all"
+                  style={{
+                    width: `${barWidth}%`,
+                    height: '100%',
+                    background: ct.color,
+                  }}
+                />
+              </div>
+            </div>
           );
         })}
-      </Grid>
+      </div>
 
       {/* ── Recent Activity ─────────────────────────────────────── */}
       {recentActivity.length > 0 && (
         <>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Recent Activity
-            </Typography>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold">Recent Activity</h2>
             <Button
-              size="small"
-              endIcon={<ArrowRight size={14} />}
+              variant="ghost"
+              size="sm"
               onClick={() => onNavigate('audit')}
-              sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+              className="text-xs normal-case"
             >
               View all
+              <ArrowRight size={14} className="ml-1" />
             </Button>
-          </Box>
-          <Paper sx={{ borderRadius: 2, overflow: 'hidden', mb: 3 }}>
+          </div>
+          <div className="rounded-lg overflow-hidden mb-6 bg-background border border-border">
             {recentActivity.map((entry, idx) => {
               const actionColor = getActionColor(entry.action);
               const isLast = idx === recentActivity.length - 1;
 
               return (
-                <Box
+                <div
                   key={entry.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 2,
-                    px: 2.5,
-                    py: 1.5,
-                    borderBottom: isLast ? 'none' : '1px solid',
-                    borderColor: 'divider',
-                    transition: 'background 0.15s',
-                    '&:hover': { bgcolor: 'action.hover' },
+                  className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-muted"
+                  style={{
+                    borderBottom: isLast ? 'none' : '1px solid hsl(var(--border))',
                   }}
                 >
-                  {/* Timeline dot */}
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      bgcolor: actionColor,
-                      flexShrink: 0,
-                    }}
+                  <div
+                    className="rounded-full flex-shrink-0"
+                    style={{ width: 8, height: 8, background: actionColor }}
                   />
 
-                  {/* Details */}
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.3 }}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium leading-tight">
                       {formatAction(entry.action)}
                       {entry.source_table && (
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          sx={{ color: 'text.secondary', fontWeight: 400 }}
-                        >
+                        <span className="text-muted-foreground font-normal">
                           {' '}on {entry.source_table.replace(/_/g, ' ')}
-                        </Typography>
+                        </span>
                       )}
-                    </Typography>
+                    </p>
                     {entry.actorEmail && (
-                      <Typography variant="caption" color="text.secondary">
-                        {entry.actorEmail}
-                      </Typography>
+                      <span className="text-xs text-muted-foreground">{entry.actorEmail}</span>
                     )}
-                  </Box>
+                  </div>
 
-                  {/* Timestamp */}
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
-                  >
+                  <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
                     {relativeTime(entry.timestamp)}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
               );
             })}
-          </Paper>
+          </div>
         </>
       )}
 
       {/* ── Quick Actions ───────────────────────────────────────── */}
-      <Divider sx={{ my: 2 }} />
-      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
-        Quick Actions
-      </Typography>
+      <hr className="my-4 border-border" />
+      <h2 className="text-base font-semibold mb-3">Quick Actions</h2>
 
-      <Grid container spacing={1.5}>
-        {/* Create actions */}
-        <Grid size={12}>
-          <Typography
-            variant="overline"
-            sx={{ fontSize: '0.65rem', color: 'text.secondary', letterSpacing: '0.08em' }}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="col-span-2 sm:col-span-4">
+          <span
+            className="text-muted-foreground uppercase tracking-wider"
+            style={{ fontSize: '0.65rem' }}
           >
             Create
-          </Typography>
-        </Grid>
+          </span>
+        </div>
         {[
           { label: 'New Page', icon: FileText, color: '#64748b', onClick: () => onEdit('cms_pages', null) },
-          { label: 'New Venue', icon: MapPin, color: '#DB2777', onClick: () => onEdit('venues', null) },
+          { label: 'New Venue', icon: MapPin, color: 'hsl(var(--foreground))', onClick: () => onEdit('venues', null) },
           { label: 'New Event', icon: Calendar, color: '#ec4899', onClick: () => onEdit('events', null) },
           { label: 'New Article', icon: Newspaper, color: '#3b82f6', onClick: () => onEdit('news_articles', null) },
-        ].map((action) => {
-          return (
-            <Grid key={action.label} size={{ xs: 6, sm: 3 }}>
-              <Paper
-                onClick={action.onClick}
-                sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    bgcolor: alpha(action.color, 0.06),
-                    transform: 'translateY(-1px)',
-                    boxShadow: (_theme) => `0 2px 8px ${alpha(action.color, 0.12)}`,
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: alpha(action.color, 0.1),
-                  }}
-                >
-                  <Plus size={14} style={{ color: action.color }} />
-                </Box>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {action.label}
-                </Typography>
-              </Paper>
-            </Grid>
-          );
-        })}
+        ].map((action) => (
+          <div
+            key={action.label}
+            onClick={action.onClick}
+            className="p-4 rounded-lg cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
+          >
+            <div
+              className="rounded-md flex items-center justify-center"
+              style={{
+                width: 32,
+                height: 32,
+                background: alphaHex(action.color, 0.1),
+              }}
+            >
+              <Plus size={14} style={{ color: action.color }} />
+            </div>
+            <span className="text-sm font-medium">{action.label}</span>
+          </div>
+        ))}
 
-        {/* Navigate actions */}
-        <Grid size={12} sx={{ mt: 1 }}>
-          <Typography
-            variant="overline"
-            sx={{ fontSize: '0.65rem', color: 'text.secondary', letterSpacing: '0.08em' }}
+        <div className="col-span-2 sm:col-span-4 mt-2">
+          <span
+            className="text-muted-foreground uppercase tracking-wider"
+            style={{ fontSize: '0.65rem' }}
           >
             Navigate
-          </Typography>
-        </Grid>
+          </span>
+        </div>
         {[
           { label: 'Media Library', icon: Image, color: '#14b8a6', onClick: () => onNavigate('media') },
           { label: 'Review Queue', icon: ClipboardCheck, color: '#f59e0b', onClick: () => onNavigate('review') },
@@ -681,45 +538,26 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         ].map((action) => {
           const ActionIcon = action.icon;
           return (
-            <Grid key={action.label} size={{ xs: 6, sm: 3 }}>
-              <Paper
-                onClick={action.onClick}
-                sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    bgcolor: alpha(action.color, 0.06),
-                    transform: 'translateY(-1px)',
-                    boxShadow: (_theme) => `0 2px 8px ${alpha(action.color, 0.12)}`,
-                  },
+            <div
+              key={action.label}
+              onClick={action.onClick}
+              className="p-4 rounded-lg cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
+            >
+              <div
+                className="rounded-md flex items-center justify-center"
+                style={{
+                  width: 32,
+                  height: 32,
+                  background: alphaHex(action.color, 0.1),
                 }}
               >
-                <Box
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: alpha(action.color, 0.1),
-                  }}
-                >
-                  <ActionIcon size={16} style={{ color: action.color }} />
-                </Box>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {action.label}
-                </Typography>
-              </Paper>
-            </Grid>
+                <ActionIcon size={16} style={{ color: action.color }} />
+              </div>
+              <span className="text-sm font-medium">{action.label}</span>
+            </div>
           );
         })}
-      </Grid>
-    </Box>
+      </div>
+    </div>
   );
 }

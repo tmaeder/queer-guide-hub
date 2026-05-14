@@ -7,8 +7,6 @@ import { useParams, useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Controller } from 'react-hook-form';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +16,7 @@ import { useSubmission } from '@/hooks/useSubmission';
 import { useAuth } from '@/hooks/useAuth';
 import { useFlyerScan } from '@/hooks/useFlyerScan';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchCountryNameById } from '@/hooks/usePageFetchers';
 import { FieldRenderer } from '@/components/cms/fields/FieldRenderer';
 import { FlyerScanUpload } from '@/components/submission/FlyerScanUpload';
 import { FlyerScanResults } from '@/components/submission/FlyerScanResults';
@@ -25,7 +24,7 @@ import { ArrowLeft, ArrowRight, CheckCircle, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const SubmitForm = () => {
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { contentType } = useParams<{ contentType: string }>();
   const navigate = useLocalizedNavigate();
 
@@ -34,15 +33,13 @@ const SubmitForm = () => {
   // Unknown type fallback
   if (!config) {
     return (
-      <Box sx={{ mx: 'auto', py: 6, px: 2, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-          Unknown submission type
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+      <div className="mx-auto py-12 px-4 text-center">
+        <h5 className="text-xl font-semibold mb-2">Unknown submission type</h5>
+        <p className="text-muted-foreground mb-4">
           The submission type "{contentType}" is not supported.
-        </Typography>
+        </p>
         <Button onClick={() => navigate('/submit')}>Back to Hub</Button>
-      </Box>
+      </div>
     );
   }
 
@@ -124,7 +121,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
   const cityDetectRef = useRef('');
   useEffect(() => {
     if (!titleValue || titleValue.length < 3) return;
-    if (data.city) return; // don't override existing city
+    if (data.city && data.city_id) return; // don't override when fully resolved
     if (cityDetectRef.current === titleValue) return; // already checked this value
 
     const timer = setTimeout(async () => {
@@ -135,15 +132,10 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
       const match = Array.isArray(rows) ? rows[0] : rows;
       if (!match?.id || data.city) return; // re-check city in case user filled it during delay
 
-      // Resolve country name for the country field
+      // Resolve country name for the country field (DUP-4)
       let countryName = '';
       if (match.country_id) {
-        const { data: country } = await supabase
-          .from('countries')
-          .select('name')
-          .eq('id', match.country_id)
-          .single();
-        if (country) countryName = country.name;
+        countryName = (await fetchCountryNameById(match.country_id)) ?? '';
       }
 
       setFields({
@@ -178,65 +170,59 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
   if (isSubmitted) {
     return (
-      <Box sx={{ mx: 'auto', py: 6, px: 2 }}>
+      <div className="mx-auto py-12 px-4">
         <Card>
           <CardContent>
             <CheckCircle
-              style={{ width: 48, height: 48, margin: '0 auto 16px', color: '#4caf50' }}
+              style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'hsl(var(--foreground))' }}
             />
-            <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-              Thank you!
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            <h5 className="text-xl font-semibold mb-2">Thank you!</h5>
+            <p className="text-muted-foreground mb-6">
               Your {config.label.toLowerCase()} has been submitted and will be reviewed by our team.
               It will appear on the site once approved.
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5 }}>
+            </p>
+            <div className="flex justify-center gap-3">
               <Button onClick={() => navigate('/submit')}>Submit More</Button>
               <Button variant="outline" onClick={reset}>
                 Submit Another {config.label}
               </Button>
-            </Box>
+            </div>
           </CardContent>
         </Card>
-      </Box>
+      </div>
     );
   }
 
   const Icon = config.icon;
 
   return (
-    <Box sx={{ mx: 'auto', py: 4, px: 2 }}>
+    <div className="mx-auto py-8 px-4">
       {/* Back button */}
       <Button
         variant="ghost"
         size="sm"
         onClick={() => navigate('/submit')}
-        style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}
+        className="mb-4 flex items-center gap-2"
       >
-        <ArrowLeft style={{ width: 16, height: 16 }} />
+        <ArrowLeft className="w-4 h-4" />
         All Submissions
       </Button>
 
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+      <div className="flex items-center gap-3 mb-2">
         <Icon style={{ width: 28, height: 28, color: config.color }} />
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Submit {config.label}
-        </Typography>
-      </Box>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        {config.description}
-      </Typography>
+        <h4 className="text-3xl font-bold">Submit {config.label}</h4>
+      </div>
+      <p className="text-muted-foreground mb-6">{config.description}</p>
 
       {/* Auth gate */}
       {!user && (
         <Card id="submit-auth-hint" role="status">
           <CardContent>
-            <Typography variant="body2" sx={{ mb: 1 }}>
+            <p className="text-sm mb-2">
               <strong>Sign in required.</strong> You can fill out the form now, but you'll need an
               account to submit.
-            </Typography>
+            </p>
             <Button size="sm" onClick={() => navigate('/auth')}>
               Sign in or create an account
             </Button>
@@ -268,71 +254,50 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
 
       {/* Step indicator (only for multi-step forms) */}
       {totalSteps > 1 && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+        <div className="flex items-center gap-2 mb-6">
           {config.steps.map((step, i) => (
-            <Box
+            <div
               key={step.id}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                flex: i < config.steps.length - 1 ? 1 : undefined,
-              }}
+              className="flex items-center gap-2"
+              style={{ flex: i < config.steps.length - 1 ? 1 : undefined }}
             >
               {/* Step circle */}
-              <Box
+              <div
                 onClick={() => i < currentStep && goToStep(i)}
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  transition: 'all 0.2s',
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all flex-shrink-0"
+                style={{
                   cursor: i < currentStep ? 'pointer' : 'default',
-                  flexShrink: 0,
                   ...(i === currentStep
-                    ? { bgcolor: config.color, color: '#fff' }
+                    ? { backgroundColor: config.color, color: 'hsl(var(--background))' }
                     : i < currentStep
-                      ? { bgcolor: `${config.color}25`, color: config.color }
-                      : { bgcolor: 'action.hover', color: 'text.disabled' }),
+                      ? { backgroundColor: `${config.color}25`, color: config.color }
+                      : { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }),
                 }}
               >
                 {i < currentStep ? '✓' : i + 1}
-              </Box>
+              </div>
 
               {/* Step label (hidden on mobile) */}
-              <Typography
-                variant="caption"
-                sx={{
-                  fontWeight: i === currentStep ? 600 : 400,
-                  color: i === currentStep ? 'text.primary' : 'text.secondary',
-                  display: { xs: 'none', sm: 'block' },
-                  whiteSpace: 'nowrap',
-                }}
+              <span
+                className={`text-xs whitespace-nowrap hidden sm:block ${
+                  i === currentStep ? 'font-semibold text-foreground' : 'font-normal text-muted-foreground'
+                }`}
               >
                 {step.label}
-              </Typography>
+              </span>
 
               {/* Connector line */}
               {i < config.steps.length - 1 && (
-                <Box
-                  sx={{
-                    flex: 1,
-                    height: 2,
-                    bgcolor: i < currentStep ? config.color : 'divider',
-                    borderRadius: 1,
-                    mx: 0.5,
-                    minWidth: 16,
+                <div
+                  className="flex-1 h-0.5 rounded mx-1 min-w-4"
+                  style={{
+                    backgroundColor: i < currentStep ? config.color : 'hsl(var(--border))',
                   }}
                 />
               )}
-            </Box>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
 
       {/* Step-level aria-live region for validation announcements */}
@@ -341,17 +306,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
         aria-live="polite"
         aria-atomic="true"
         data-testid="submit-form-announcer"
-        style={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          margin: -1,
-          padding: 0,
-          overflow: 'hidden',
-          clip: 'rect(0 0 0 0)',
-          whiteSpace: 'nowrap',
-          border: 0,
-        }}
+        className="sr-only"
       >
         {stepAnnouncement}
       </div>
@@ -380,22 +335,20 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
             }}
           >
             {/* Honeypot — hidden from real users */}
-            <Box
-              sx={{ position: 'absolute', left: -9999, opacity: 0, height: 0, overflow: 'hidden' }}
-            >
+            <div className="absolute -left-[9999px] opacity-0 h-0 overflow-hidden">
               <Input
                 tabIndex={-1}
                 autoComplete="off"
                 value={honeypot}
                 onChange={(e) => setHoneypot(e.target.value)}
               />
-            </Box>
+            </div>
 
             {/* Step label */}
             {totalSteps > 1 && (
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: config.color }}>
+              <p className="text-sm font-semibold mb-4" style={{ color: config.color }}>
                 Step {currentStep + 1}: {currentStepConfig?.label}
-              </Typography>
+              </p>
             )}
 
             {/* Error summary — lists fields that need fixing on this step */}
@@ -405,25 +358,22 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 .filter((e) => !!e.message);
               if (stepErrors.length === 0) return null;
               return (
-                <Box
+                <div
                   role="alert"
                   aria-live="polite"
-                  sx={{
-                    mb: 2,
-                    p: 1.5,
-                    bgcolor: 'rgba(239,68,68,0.08)',
-                    border: '1px solid rgba(239,68,68,0.35)',
-                    borderRadius: 1,
+                  className="mb-4 p-3 rounded"
+                  style={{
+                    backgroundColor: 'hsl(var(--destructive) / 0.08)',
+                    border: '1px solid hsl(var(--destructive) / 0.35)',
                   }}
                 >
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, color: '#b91c1c' }}>
+                  <p className="text-sm font-semibold mb-1 text-destructive">
                     Please fix the following to continue:
-                  </Typography>
-                  <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                  </p>
+                  <ul className="m-0 pl-4">
                     {stepErrors.map((e) => (
                       <li key={e.name}>
-                        <Box
-                          component="a"
+                        <a
                           href={`#${e.name}`}
                           onClick={(ev: React.MouseEvent) => {
                             ev.preventDefault();
@@ -433,44 +383,28 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                               el.scrollIntoView({ block: 'center', behavior: 'smooth' });
                             }
                           }}
-                          sx={{ color: '#b91c1c', textDecoration: 'underline', cursor: 'pointer' }}
+                          className="text-destructive underline cursor-pointer"
                         >
                           {e.label}: {e.message}
-                        </Box>
+                        </a>
                       </li>
                     ))}
-                  </Box>
-                </Box>
+                  </ul>
+                </div>
               );
             })()}
 
             {/* Live region for step announcements (a11y) */}
-            <Box
-              role="status"
-              aria-live="polite"
-              sx={{
-                position: 'absolute',
-                left: -9999,
-                width: 1,
-                height: 1,
-                overflow: 'hidden',
-              }}
-            >
+            <div role="status" aria-live="polite" className="sr-only">
               {stepAnnouncement}
-            </Box>
+            </div>
 
             {/* Fields */}
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                gap: 2.5,
-              }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {stepFields.map((fieldConfig) => (
-                <Box
+                <div
                   key={fieldConfig.name}
-                  sx={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
+                  style={{ gridColumn: fieldConfig.colSpan === 2 ? '1 / -1' : undefined }}
                 >
                   <Controller
                     control={control}
@@ -486,19 +420,19 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                       />
                     )}
                   />
-                </Box>
+                </div>
               ))}
-            </Box>
+            </div>
 
             {/* Navigation buttons */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, gap: 1.5 }}>
+            <div className="flex justify-between mt-6 gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={currentStep === 0 ? () => navigate('/submit') : prevStep}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                className="flex items-center gap-1.5"
               >
-                <ArrowLeft style={{ width: 16, height: 16 }} />
+                <ArrowLeft className="w-4 h-4" />
                 {currentStep === 0 ? 'Cancel' : 'Back'}
               </Button>
 
@@ -506,30 +440,26 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
                 type="submit"
                 disabled={isSubmitting}
                 aria-describedby={!user && isLastStep ? 'submit-auth-hint' : undefined}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  ...(isLastStep ? { backgroundColor: config.color, color: '#fff' } : {}),
-                }}
+                className="flex items-center gap-1.5"
+                style={isLastStep ? { backgroundColor: config.color, color: 'hsl(var(--background))' } : undefined}
               >
                 {isSubmitting ? (
                   'Submitting...'
                 ) : isLastStep ? (
                   <>
-                    Submit <Send style={{ width: 14, height: 14 }} />
+                    Submit <Send className="w-3.5 h-3.5" />
                   </>
                 ) : (
                   <>
-                    Next <ArrowRight style={{ width: 14, height: 14 }} />
+                    Next <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </Button>
-            </Box>
+            </div>
           </form>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   );
 }
 

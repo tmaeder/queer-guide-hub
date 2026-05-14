@@ -2,8 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Trash2, ExternalLink } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface SocialLink {
   platform: string;
@@ -24,39 +22,30 @@ export function SocialLinksList({
   customLinks,
   onCustomLinkChange,
   onRemoveCustomLink,
-  onValidateUrl,
+  _onValidateUrl,
 }: SocialLinksListProps) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Social Links */}
+    <div className="flex flex-col gap-6">
       {customLinks.length > 0 && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 500 }}>
-            Social Links
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="flex flex-col gap-4">
+          <h6 className="text-base font-medium">Social Links</h6>
+          <div className="flex flex-col gap-3">
             {customLinks.map((link, index) => (
-              <Box key={index} sx={{ p: 2, bgcolor: 'background.paper' }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-                        gap: 1.5,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+              <div key={index} className="p-4 bg-background">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 flex flex-col gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1">
                         <Label>Platform</Label>
                         <Input
                           value={link.platform}
                           onChange={(e) => onCustomLinkChange(index, 'platform', e.target.value)}
                           placeholder="Platform name"
                         />
-                      </Box>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      </div>
+                      <div className="flex flex-col gap-1">
                         <Label>URL</Label>
-                        <Box sx={{ display: 'flex' }}>
+                        <div className="flex">
                           <Input
                             value={link.url}
                             onChange={(e) => onCustomLinkChange(index, 'url', e.target.value)}
@@ -71,19 +60,19 @@ export function SocialLinksList({
                               <ExternalLink style={{ height: 16, width: 16 }} />
                             </Button>
                           )}
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Box>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <Button variant="ghost" size="sm" onClick={() => onRemoveCustomLink(index)}>
                     <Trash2 style={{ height: 16, width: 16 }} />
                   </Button>
-                </Box>
-              </Box>
+                </div>
+              </div>
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

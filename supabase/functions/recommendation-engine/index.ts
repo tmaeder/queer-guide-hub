@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
+import { corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
 
 /**
  * Recommendation Engine
@@ -27,7 +26,7 @@ const SIGNAL_WEIGHTS = {
   geo_location: 4,
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {

@@ -54,7 +54,7 @@ function RunColumn({
 }) {
   return (
     <div className="flex flex-col gap-2 min-w-0">
-      <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+      <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
         Run {label}
       </div>
       <Select value={run?.id || '__none__'} onValueChange={(v) => onSelect(v === '__none__' ? undefined : v)}>
@@ -76,11 +76,11 @@ function RunColumn({
       {run && (
         <div className="border border-border rounded-md bg-background p-3 text-xs space-y-1.5">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${statusClass[run.status] || ''}`}>
+            <Badge variant="outline" className={`text-2xs px-1.5 py-0 ${statusClass[run.status] || ''}`}>
               {run.status}
             </Badge>
             {run.pipeline_version != null && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">v{run.pipeline_version}</Badge>
+              <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">v{run.pipeline_version}</Badge>
             )}
           </div>
           <div className="flex items-center justify-between text-muted-foreground">
@@ -98,18 +98,18 @@ function RunColumn({
           </div>
           <div className="flex items-center justify-between text-muted-foreground">
             <span>started</span>
-            <span className="font-mono text-[11px] text-foreground" title={run.started_at || ''}>
+            <span className="font-mono text-xs2 text-foreground" title={run.started_at || ''}>
               {run.started_at ? formatDistanceToNow(new Date(run.started_at), { addSuffix: true }) : '—'}
             </span>
           </div>
           {run.triggered_by && (
             <div className="flex items-center justify-between text-muted-foreground">
               <span>trigger</span>
-              <span className="font-mono text-[11px] text-foreground">{run.triggered_by}</span>
+              <span className="font-mono text-xs2 text-foreground">{run.triggered_by}</span>
             </div>
           )}
           {run.error_message && (
-            <div className="text-[11px] text-destructive mt-2 pt-2 border-t border-border/40">
+            <div className="text-xs2 text-destructive mt-2 pt-2 border-t border-border/40">
               {run.error_message}
             </div>
           )}
@@ -118,7 +118,7 @@ function RunColumn({
 
       {run?.node_states && (
         <div className="border border-border rounded-md bg-background text-xs overflow-hidden">
-          <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/40">
+          <div className="px-3 py-1.5 text-2xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/40">
             Per-node
           </div>
           <div className="max-h-[300px] overflow-y-auto">
@@ -127,8 +127,8 @@ function RunColumn({
               return (
                 <div key={nodeId} className="flex items-center gap-2 px-3 py-1.5 border-b border-border/40 last:border-0">
                   <Icon className={`h-3 w-3 shrink-0 ${statusClass[state.status] || 'text-muted-foreground'}`} />
-                  <span className="font-mono text-[11px] truncate flex-1" title={nodeId}>{nodeId.slice(0, 24)}</span>
-                  <span className="font-mono tabular-nums text-[11px] text-muted-foreground whitespace-nowrap">
+                  <span className="font-mono text-xs2 truncate flex-1" title={nodeId}>{nodeId.slice(0, 24)}</span>
+                  <span className="font-mono tabular-nums text-xs2 text-muted-foreground whitespace-nowrap">
                     {state.items_out ?? 0}
                     {state.duration_ms && <span> · {formatDuration(state.duration_ms)}</span>}
                   </span>
@@ -189,10 +189,10 @@ export default function RunCompareDialog() {
 
         {runA && runB && (
           <div className="border-t border-border pt-3 mt-3">
-            <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Diff summary</div>
+            <div className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Diff summary</div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="border border-border rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Duration Δ</div>
+                <div className="text-2xs text-muted-foreground">Duration Δ</div>
                 <div className={`text-sm font-mono tabular-nums font-semibold ${
                   (runA.duration_ms || 0) < (runB.duration_ms || 0) ? 'text-green-600 dark:text-green-400'
                   : (runA.duration_ms || 0) > (runB.duration_ms || 0) ? 'text-destructive'
@@ -202,14 +202,14 @@ export default function RunCompareDialog() {
                 </div>
               </div>
               <div className="border border-border rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Success Δ</div>
+                <div className="text-2xs text-muted-foreground">Success Δ</div>
                 <div className="text-sm font-mono tabular-nums font-semibold">
                   {(runA.items_succeeded ?? 0) - (runB.items_succeeded ?? 0) >= 0 ? '+' : ''}
                   {(runA.items_succeeded ?? 0) - (runB.items_succeeded ?? 0)}
                 </div>
               </div>
               <div className="border border-border rounded-md p-2">
-                <div className="text-[10px] text-muted-foreground">Failures Δ</div>
+                <div className="text-2xs text-muted-foreground">Failures Δ</div>
                 <div className="text-sm font-mono tabular-nums font-semibold">
                   {(runA.items_failed ?? 0) - (runB.items_failed ?? 0) >= 0 ? '+' : ''}
                   {(runA.items_failed ?? 0) - (runB.items_failed ?? 0)}

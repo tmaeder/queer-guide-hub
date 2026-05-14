@@ -81,7 +81,16 @@ function GroupNode({ data, selected, id }: NodeProps) {
           <span
             className="flex-1 text-sm font-medium cursor-text truncate"
             style={{ color: scheme.accent }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Edit group label: ${label}`}
             onDoubleClick={() => setEditing(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setEditing(true);
+              }
+            }}
           >
             {label}
           </span>

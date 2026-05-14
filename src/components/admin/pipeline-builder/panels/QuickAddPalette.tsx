@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import * as Icons from 'lucide-react';
+import { resolvePipelineIcon } from '../icon-registry';
 import type { PipelineNodeType } from '../hooks/usePipelineBuilder';
 
 interface QuickAddPaletteProps {
@@ -58,7 +58,7 @@ export default function QuickAddPalette({ nodeTypes, onAdd }: QuickAddPalettePro
             {orderedCategories.map(cat => (
               <CommandGroup key={cat} heading={categoryLabels[cat] || cat}>
                 {grouped[cat].map(nt => {
-                  const Icon = (Icons as Record<string, unknown>)[nt.icon] as React.ComponentType<{ className?: string }> || Icons.Box;
+                  const Icon = resolvePipelineIcon(nt.icon);
                   return (
                     <CommandItem
                       key={nt.slug}
@@ -75,7 +75,7 @@ export default function QuickAddPalette({ nodeTypes, onAdd }: QuickAddPalettePro
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium">{nt.display_name}</div>
                         {nt.description && (
-                          <div className="text-[11px] text-muted-foreground truncate">{nt.description}</div>
+                          <div className="text-xs2 text-muted-foreground truncate">{nt.description}</div>
                         )}
                       </div>
                     </CommandItem>

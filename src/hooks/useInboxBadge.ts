@@ -1,5 +1,5 @@
 /**
- * Header badge count for the /trips/inbox entry.
+ * Header badge count for the /trips entry.
  *
  * Counts rows in `reservations` that are orphan (no trip_id) and still
  * open (not cancelled/completed) for the current user. Poll every 60 s

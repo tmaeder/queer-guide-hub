@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { CommandGroup, CommandItem } from '@/components/ui/command';
 import { Search, MapPin, Calendar, Store, Newspaper, Users, Tag, Briefcase } from 'lucide-react';
-import Box from '@mui/material/Box';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const searchCategories = [
   { label: 'All', value: 'all', icon: Search },
   { label: 'Venues', value: 'venues', icon: MapPin },
@@ -31,7 +31,7 @@ export function SearchCategories({ selectedCategory, onSelectCategory }: SearchC
             onSelect={() => onSelectCategory(category.value)}
             style={{ cursor: 'pointer' }}
           >
-            <Box component={Icon} sx={{ height: 16, width: 16, mr: 1 }} />
+            <Icon className="h-4 w-4 mr-2" />
             {category.label}
             {selectedCategory === category.value && (
               <Badge variant="outline" style={{ marginLeft: 'auto', fontSize: '0.75rem' }}>

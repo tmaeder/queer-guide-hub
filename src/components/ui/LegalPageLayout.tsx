@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import { Button } from '@/components/ui/button';
 import { List, ChevronDown, ChevronUp } from 'lucide-react';
-import { transition } from '@/lib/animation';
 
 interface Section {
   id: string;
@@ -19,13 +15,13 @@ interface LegalPageLayoutProps {
   children: React.ReactNode;
 }
 
-export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
+export const LegalPageLayout = ({
   title,
   subtitle,
   lastUpdated,
   sections,
   children,
-}) => {
+}: LegalPageLayoutProps) => {
   const [tocOpen, setTocOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
 
@@ -49,69 +45,50 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
   };
 
   return (
-    <Container sx={{ py: 4, maxWidth: 1100 }}>
-      {/* Header */}
-      <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
-        {title}
-      </Typography>
+    <div className="container mx-auto py-8 px-4" style={{ maxWidth: 1100 }}>
+      <h3 className="text-3xl font-bold mb-1">{title}</h3>
       {subtitle && (
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 1, maxWidth: 600 }}>
-          {subtitle}
-        </Typography>
+        <p className="text-base text-muted-foreground mb-2 max-w-xl">{subtitle}</p>
       )}
       {lastUpdated && (
-        <Typography variant="caption" color="text.disabled" sx={{ mb: 4, display: 'block' }}>
+        <span className="text-xs mb-8 block" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
           Last updated {lastUpdated}
-        </Typography>
+        </span>
       )}
 
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 0, md: 4 }, alignItems: 'flex-start', mt: 3 }}>
+      <div className="flex flex-col md:flex-row md:gap-8 items-start mt-6">
         {/* Sidebar TOC — desktop */}
-        <Box sx={{
-          display: { xs: 'none', md: 'block' },
-          position: 'sticky',
-          top: 80,
-          minWidth: 200,
-          maxWidth: 240,
-          flexShrink: 0,
-        }}>
-          <Box sx={{ bgcolor: 'background.paper', p: 1.5 }}>
-            <Typography variant="caption" sx={{ fontWeight: 600, mb: 1, px: 1, display: 'block', color: 'text.disabled', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div className="hidden md:block sticky flex-shrink-0" style={{ top: 80, minWidth: 200, maxWidth: 240 }}>
+          <div className="bg-background p-3">
+            <span className="text-xs font-semibold mb-2 px-2 block uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
               On this page
-            </Typography>
-            <Box component="nav" aria-label="Table of contents">
+            </span>
+            <nav aria-label="Table of contents">
               {sections.map((s) => (
-                <Box
+                <button
                   key={s.id}
-                  component="button"
+                  type="button"
                   onClick={() => scrollToSection(s.id)}
-                  sx={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    px: 1,
-                    py: 0.5,
+                  className="block w-full text-left px-2 py-1 transition-colors hover:text-foreground"
+                  style={{
                     border: 'none',
-                    borderLeft: 2,
-                    borderColor: activeSection === s.id ? 'brand.main' : 'transparent',
-                    bgcolor: 'transparent',
-                    color: activeSection === s.id ? 'text.primary' : 'text.secondary',
+                    borderLeft: `2px solid ${activeSection === s.id ? 'hsl(var(--foreground))' : 'transparent'}`,
+                    backgroundColor: 'transparent',
+                    color: activeSection === s.id ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
                     fontWeight: activeSection === s.id ? 600 : 400,
                     fontSize: '0.8125rem',
                     cursor: 'pointer',
-                    transition: transition.fast,
-                    '&:hover': { color: 'text.primary', borderColor: 'text.disabled' },
                   }}
                 >
                   {s.title}
-                </Box>
+                </button>
               ))}
-            </Box>
-          </Box>
-        </Box>
+            </nav>
+          </div>
+        </div>
 
         {/* Mobile TOC */}
-        <Box sx={{ display: { xs: 'block', md: 'none' }, width: '100%', mb: 3 }}>
+        <div className="block md:hidden w-full mb-6">
           <Button
             variant="outline"
             onClick={() => setTocOpen(!tocOpen)}
@@ -128,54 +105,43 @@ export const LegalPageLayout: React.FC<LegalPageLayoutProps> = ({
             {tocOpen ? <ChevronUp style={{ width: 16, height: 16 }} /> : <ChevronDown style={{ width: 16, height: 16 }} />}
           </Button>
           {tocOpen && (
-            <Box sx={{ mt: 1, bgcolor: 'background.paper', p: 1.5 }}>
+            <div className="mt-2 bg-background p-3">
               {sections.map((s) => (
-                <Box
+                <button
                   key={s.id}
-                  component="button"
+                  type="button"
                   onClick={() => scrollToSection(s.id)}
-                  sx={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    px: 1,
-                    py: 0.75,
+                  className="block w-full text-left px-2 py-1.5 transition-colors hover:text-foreground"
+                  style={{
                     border: 'none',
-                    bgcolor: 'transparent',
+                    backgroundColor: 'transparent',
                     fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    color: activeSection === s.id ? 'text.primary' : 'text.secondary',
+                    color: activeSection === s.id ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
                     fontWeight: activeSection === s.id ? 600 : 400,
-                    transition: transition.fast,
-                    '&:hover': { color: 'text.primary' },
+                    cursor: 'pointer',
                   }}
                 >
                   {s.title}
-                </Box>
+                </button>
               ))}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
 
         {/* Main Content */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+        <div className="flex-1 min-w-0">
           {children}
 
-          {/* Contact footer */}
-          <Box sx={{ mt: 6, pt: 3, borderTop: 1, borderColor: 'divider' }}>
-            <Typography variant="body2" color="text.secondary">
+          <div className="mt-12 pt-6 border-t border-border">
+            <p className="text-sm text-muted-foreground">
               Questions? We're real humans at{' '}
-              <Box
-                component="a"
-                href="mailto:legal@queer.guide"
-                sx={{ color: 'brand.main', '&:hover': { opacity: 0.85 } }}
-              >
+              <a href="mailto:legal@queer.guide" className="hover:opacity-85" style={{ color: 'hsl(var(--foreground))' }}>
                 legal@queer.guide
-              </Box>
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-    </Container>
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

@@ -73,4 +73,5 @@ export function LocaleRouter() {
   return <Outlet />;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { getLocaleFromPath };

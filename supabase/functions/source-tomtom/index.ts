@@ -1,7 +1,8 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: TomTom Search API
@@ -20,7 +21,7 @@ const tomtomAdapter: SourceAdapter = {
 
   async fetch(config: AdapterConfig): Promise<RawItem[]> {
     const apiKey = config.apiKey || Deno.env.get('TOMTOM_API_KEY')
-    if (!apiKey) throw new Error('TOMTOM_API_KEY not configured')
+    if (!apiKey) throw new MissingCredentialsError('TOMTOM_API_KEY')
 
     const supabase = getServiceClient()
     const cities = (config.filters?.cities as string[]) || ['New York']
@@ -93,7 +94,7 @@ const tomtomAdapter: SourceAdapter = {
   getSourceId(raw: RawItem): string { return raw.sourceId },
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-tomtom', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -110,6 +111,9 @@ Deno.serve(async (req) => {
     const written = await writeToStaging(supabase, tomtomAdapter, rawItems, { ...config, targetTable: 'venues' })
     return jsonResponse({ success: true, items: written, items_total: rawItems.length, items_processed: written, items_succeeded: written, items_failed: 0 }, 200, req)
   } catch (error) {
+    if (error instanceof MissingCredentialsError) {
+      return jsonResponse(skippedResponse('missing_credentials', error.missing), 200, req)
+    }
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

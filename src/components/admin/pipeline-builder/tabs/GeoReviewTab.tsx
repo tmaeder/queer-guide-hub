@@ -1,10 +1,10 @@
 import { formatDistanceToNow } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { untypedFrom } from '@/integrations/supabase/untyped';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import { resolveGeoMergeCandidate } from '@/hooks/usePipelineBuilderTabs';
 import { GitMerge, MapPin, Check, X, Loader2 } from 'lucide-react';
 
 // Geo review — surfaces city / country staging rows flagged as merge_candidate
@@ -20,7 +20,6 @@ interface StagingRow {
 }
 
 export default function GeoReviewTab() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: mergeCandidates = [], isLoading } = useQuery({
@@ -39,31 +38,21 @@ export default function GeoReviewTab() {
   });
 
   const approve = useMutation({
-    mutationFn: async (stagingId: string) => {
-      const { error } = await supabase.from('ingestion_staging')
-        .update({ review_status: 'approved', disposition: 'pending', updated_at: new Date().toISOString() })
-        .eq('id', stagingId);
-      if (error) throw error;
-    },
+    mutationFn: (stagingId: string) => resolveGeoMergeCandidate(stagingId, 'merge'),
     onSuccess: () => {
-      toast({ title: 'Approved', description: 'Will merge on next commit cycle' });
+      toast.success('Merged');
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
     },
-    onError: (e: Error) => toast({ title: 'Approve failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Merge failed: ${e.message}`),
   });
 
   const reject = useMutation({
-    mutationFn: async (stagingId: string) => {
-      const { error } = await supabase.from('ingestion_staging')
-        .update({ review_status: 'rejected', disposition: 'rejected', updated_at: new Date().toISOString() })
-        .eq('id', stagingId);
-      if (error) throw error;
-    },
+    mutationFn: (stagingId: string) => resolveGeoMergeCandidate(stagingId, 'not_duplicate'),
     onSuccess: () => {
-      toast({ title: 'Rejected' });
+      toast.success('Marked as not duplicate');
       queryClient.invalidateQueries({ queryKey: ['geo-merge-candidates'] });
     },
-    onError: (e: Error) => toast({ title: 'Reject failed', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) => toast.error(`Reject failed: ${e.message}`),
   });
 
   return (
@@ -72,7 +61,7 @@ export default function GeoReviewTab() {
         <div className="px-4 py-2.5 border-b border-border flex items-center gap-2">
           <GitMerge className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold">Geo merge candidates</span>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+          <Badge variant="outline" className="text-2xs px-1.5 py-0">
             {mergeCandidates.length}
           </Badge>
         </div>
@@ -100,23 +89,23 @@ export default function GeoReviewTab() {
                 <div key={row.id} className="p-3 hover:bg-muted/30 transition-colors grid grid-cols-[1fr_80px_120px_auto] gap-3 items-center">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">
                         {row.target_table}
                       </Badge>
                       <span className="font-medium truncate">
                         {String(n.name ?? '(unnamed)')}
                       </span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-xs2 text-muted-foreground">
                       {String(loc.country ?? loc.country_code ?? '')}
                       {loc.lat != null && loc.lng != null && (
                         <span> · <span className="font-mono">{Number(loc.lat).toFixed(2)}, {Number(loc.lng).toFixed(2)}</span></span>
                       )}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-xs2 text-muted-foreground">
                       match → <span className="font-mono">{matchType}</span>
                       {row.dedup_match_id && (
-                        <span> · <code className="bg-muted px-1 rounded text-[10px]">{String(row.dedup_match_id).slice(0, 8)}</code></span>
+                        <span> · <code className="bg-muted px-1 rounded text-2xs">{String(row.dedup_match_id).slice(0, 8)}</code></span>
                       )}
                     </div>
                   </div>
@@ -124,9 +113,9 @@ export default function GeoReviewTab() {
                     <span className={`font-mono text-sm font-semibold tabular-nums ${scoreClass}`}>
                       {score != null ? `${(score * 100).toFixed(0)}%` : '—'}
                     </span>
-                    <div className="text-[10px] text-muted-foreground">score</div>
+                    <div className="text-2xs text-muted-foreground">score</div>
                   </div>
-                  <div className="text-[11px] text-muted-foreground"
+                  <div className="text-xs2 text-muted-foreground"
                        title={new Date(row.created_at).toISOString()}>
                     {formatDistanceToNow(new Date(row.created_at), { addSuffix: true })}
                   </div>

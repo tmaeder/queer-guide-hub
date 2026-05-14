@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
+import { corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 
 /**
@@ -8,7 +7,7 @@ import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
  * Triggered after a booking is created or confirmed.
  * Sends a confirmation email to the user with booking details.
  */
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {

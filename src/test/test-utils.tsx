@@ -5,22 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import { render, type RenderOptions } from '@testing-library/react';
 import type { ReactElement, ReactNode } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-
-// Minimal MUI theme with the `brand` palette the trips components rely on.
-// Full theme lives in src/theme/muiTheme.ts but it imports animation tokens
-// which pull in GSAP — too heavy for unit tests. This stub mirrors the
-// shape just enough to satisfy `theme.palette.brand.main` references.
-const testTheme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: { main: '#222222' },
-    // @ts-expect-error — brand is a custom palette extension; see theme.d.ts
-    brand: { main: '#DB2777', light: '#F472B6', dark: '#BE185D', contrastText: '#ffffff' },
-    accent: { main: '#F59E0B', light: '#FCD34D', dark: '#D97706', contrastText: '#111111' },
-  },
-});
 
 /**
  * Create a fresh QueryClient per test — TanStack Query caches results,
@@ -52,16 +36,12 @@ interface ProviderProps {
  * Wraps children in the minimum providers trip components need:
  * - QueryClientProvider (for useQuery/useMutation)
  * - MemoryRouter (for react-router hooks)
- * - MUI ThemeProvider (for useTheme + palette.brand)
  */
 export function TestProviders({ children, route = '/', queryClient }: ProviderProps) {
   const client = queryClient ?? makeQueryClient();
   return (
     <QueryClientProvider client={client}>
-      <ThemeProvider theme={testTheme}>
-        <CssBaseline />
-        <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
-      </ThemeProvider>
+      <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
     </QueryClientProvider>
   );
 }
@@ -73,7 +53,7 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 
 /**
  * Drop-in replacement for `@testing-library/react`'s render that wraps
- * the component in QueryClient + MemoryRouter + MUI theme.
+ * the component in QueryClient + MemoryRouter.
  */
 export function renderWithProviders(
   ui: ReactElement,

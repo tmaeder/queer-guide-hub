@@ -8,23 +8,27 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAdminEdit } from '@/hooks/useAdminEdit';
 import { toast } from 'sonner';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import InputLabel from '@mui/material/InputLabel';
-import Switch from '@mui/material/Switch';
-import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import { ChevronDown, History, Check, Loader2, Sparkles } from 'lucide-react';
+import { History, Check, Loader2, Sparkles } from 'lucide-react';
 import {
   contentTypeRegistry,
   getFieldsByGroup,
@@ -56,6 +60,8 @@ interface EditLogEntry {
   created_at: string;
 }
 
+const NONE_VALUE = '__none__';
+
 export function AdminEditDialog({
   open,
   onOpenChange,
@@ -78,13 +84,11 @@ export function AdminEditDialog({
   const config = contentTypeRegistry[contentType];
   const typeLabel = config?.label?.singular || contentType;
 
-  // Get editable fields (non-hidden, non-readonly)
   const editableFields = useMemo(() => {
     if (!config) return [];
     return config.fields.filter((f) => !f.hidden);
   }, [config]);
 
-  // Get field groups for this content type
   const groups = useMemo(() => {
     if (!config) return [];
     return getFieldGroups(contentType).filter((group) => {
@@ -99,7 +103,6 @@ export function AdminEditDialog({
       for (const field of editableFields) {
         const val = currentData[field.name];
         if (field.type === 'json' || field.type === 'tags') {
-          // Serialize JSON/arrays for editing
           if (val != null && typeof val === 'object') {
             initial[field.name] = JSON.stringify(val, null, 2);
           } else {
@@ -121,14 +124,13 @@ export function AdminEditDialog({
         setLogLoading(false);
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchEditLog is stable, only re-run on open/contentType/contentId change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, contentType, contentId]);
 
   const handleChange = (key: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  /** Apply resolver results to related fields */
   const applyRelatedFields = useCallback(
     (
       field: FieldConfig,
@@ -154,7 +156,6 @@ export function AdminEditDialog({
     [],
   );
 
-  /** Handle location autocomplete selection with auto-resolution */
   const handleLocationChange = useCallback(
     async (
       field: FieldConfig,
@@ -162,11 +163,9 @@ export function AdminEditDialog({
       coordinates?: { lat: number; lng: number },
       components?: AddressComponents,
     ) => {
-      // Update the address field itself + auto-fill related fields
       setFormData((prev) => {
         const updates: Record<string, unknown> = { ...prev, [field.name]: address };
         const map = field.relatedFields || {};
-        // Auto-fill text fields from components
         if (components) {
           if (map.city && components.city) updates[map.city] = components.city;
           if (map.state && components.state) updates[map.state] = components.state;
@@ -174,7 +173,6 @@ export function AdminEditDialog({
           if (map.postal_code && components.postcode)
             updates[map.postal_code] = components.postcode;
         }
-        // Auto-populate lat/lng from coordinates
         if (coordinates) {
           const latField = map.latitude || 'latitude';
           const lngField = map.longitude || 'longitude';
@@ -184,7 +182,6 @@ export function AdminEditDialog({
         return updates;
       });
 
-      // Resolve city_id/country_id via edge function
       if (components?.country) {
         const result = await resolveAddress(
           components.city,
@@ -203,7 +200,6 @@ export function AdminEditDialog({
     [resolveAddress, applyRelatedFields],
   );
 
-  /** Handle resolver-typed text fields (nationality, birthplace) on blur */
   const handleResolverBlur = useCallback(
     async (field: FieldConfig, value: string) => {
       if (!value?.trim() || !field.resolverType) return;
@@ -224,14 +220,12 @@ export function AdminEditDialog({
     [resolveNationality, resolveBirthPlace, applyRelatedFields],
   );
 
-  // Collect hidden FK field names set by resolvers (city_id, country_id, etc.)
   const resolverFkFields = useMemo(() => {
     if (!config) return new Set<string>();
     const fkNames = new Set<string>();
     for (const field of config.fields) {
       if (field.relatedFields) {
         for (const target of Object.keys(field.relatedFields)) {
-          // Include hidden fields that are FK targets
           const targetField = config.fields.find((f) => f.name === target);
           if (targetField?.hidden) {
             fkNames.add(target);
@@ -246,7 +240,6 @@ export function AdminEditDialog({
     if (!currentData) return formData;
     const changes: Record<string, unknown> = {};
 
-    // Include resolver-set hidden FK fields (city_id, country_id)
     for (const fkName of resolverFkFields) {
       const newVal = formData[fkName];
       const oldVal = currentData[fkName];
@@ -261,7 +254,6 @@ export function AdminEditDialog({
       const oldVal = currentData[field.name];
 
       if (field.type === 'json' || field.type === 'tags') {
-        // Parse JSON/tags back
         const newStr = newVal == null ? '' : String(newVal).trim();
         const oldStr =
           oldVal != null && typeof oldVal === 'object'
@@ -271,7 +263,6 @@ export function AdminEditDialog({
               : String(oldVal);
         if (newStr !== oldStr) {
           if (field.type === 'tags' && typeof newStr === 'string') {
-            // Tags: parse comma-separated into array
             changes[field.name] = newStr
               ? newStr
                   .split(',')
@@ -282,7 +273,6 @@ export function AdminEditDialog({
             try {
               changes[field.name] = newStr ? JSON.parse(newStr) : null;
             } catch {
-              // Invalid JSON — pass as string, let DB reject if needed
               changes[field.name] = newStr || null;
             }
           } else {
@@ -335,12 +325,10 @@ export function AdminEditDialog({
       setFormData((prev) => {
         const updates = { ...prev };
         for (const [key, value] of Object.entries(suggestions)) {
-          // Only fill fields that are empty or explicitly match an editable field
-          if (key === 'suggested_tags') continue; // Handle tags separately
+          if (key === 'suggested_tags') continue;
           const field = editableFields.find((f) => f.name === key);
           if (field && !field.readOnly) {
             const currentVal = prev[key];
-            // Only suggest if current value is empty or we have a clear improvement
             if (!currentVal || String(currentVal).trim() === '') {
               updates[key] = value;
               newEnrichedFields.add(key);
@@ -349,7 +337,6 @@ export function AdminEditDialog({
               typeof currentVal === 'string' &&
               value.length > currentVal.length * 1.3
             ) {
-              // Suggest if AI version is significantly longer (30%+ more content)
               updates[key] = value;
               newEnrichedFields.add(key);
             }
@@ -395,199 +382,187 @@ export function AdminEditDialog({
     const value = formData[field.name];
     const isReadOnly = field.readOnly === true;
     const isEnriched = enrichedFields.has(field.name);
-    const enrichedSx = isEnriched
-      ? { '& .MuiOutlinedInput-root': { borderColor: 'brand.main', boxShadow: (t: { palette: { brand: { main: string } } }) => `0 0 0 1px ${t.palette.brand.main}` } }
-      : {};
+    const labelText = isEnriched ? `${field.label} ✨` : field.label;
+    const fieldId = `field-${field.name}`;
+    const enrichedClass = isEnriched ? 'border-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--foreground))]' : '';
 
     switch (field.type) {
       case 'boolean':
         return (
-          <FormControlLabel
-            key={field.name}
-            control={
-              <Switch
-                checked={Boolean(value)}
-                onChange={(e) => handleChange(field.name, e.target.checked)}
-                size="small"
-                disabled={isReadOnly}
-              />
-            }
-            label={field.label}
-          />
+          <div key={field.name} className="flex items-center gap-2">
+            <Switch
+              id={fieldId}
+              checked={Boolean(value)}
+              onCheckedChange={(c) => handleChange(field.name, c)}
+              disabled={isReadOnly}
+            />
+            <Label htmlFor={fieldId}>{field.label}</Label>
+          </div>
         );
 
       case 'select':
         return (
-          <FormControl key={field.name} fullWidth size="small">
-            <InputLabel>{field.label}</InputLabel>
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label>{field.label}</Label>
             <Select
-              value={String(value ?? '')}
-              label={field.label}
-              onChange={(e) => handleChange(field.name, e.target.value)}
+              value={value ? String(value) : NONE_VALUE}
+              onValueChange={(v) => handleChange(field.name, v === NONE_VALUE ? '' : v)}
               disabled={isReadOnly}
             >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {field.options?.map((opt) => (
-                <MenuItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </MenuItem>
-              ))}
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE_VALUE}>
+                  <em>None</em>
+                </SelectItem>
+                {field.options?.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-          </FormControl>
+          </div>
         );
 
       case 'richtext':
-        return (
-          <TextField
-            key={field.name}
-            label={isEnriched ? `${field.label} ✨` : field.label}
-            multiline
-            rows={6}
-            value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
-            inputProps={{ maxLength: field.maxLength }}
-            sx={enrichedSx}
-          />
-        );
-
       case 'textarea':
         return (
-          <TextField
-            key={field.name}
-            label={isEnriched ? `${field.label} ✨` : field.label}
-            multiline
-            rows={3}
-            value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
-            inputProps={{ maxLength: field.maxLength }}
-            sx={enrichedSx}
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{labelText}</Label>
+            <Textarea
+              id={fieldId}
+              rows={field.type === 'richtext' ? 6 : 3}
+              value={String(value ?? '')}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              disabled={isReadOnly}
+              maxLength={field.maxLength}
+              className={enrichedClass}
+            />
+            {(isEnriched || field.helpText) && (
+              <span className="text-xs text-muted-foreground">
+                {isEnriched ? 'AI-enriched — review before saving' : field.helpText}
+              </span>
+            )}
+          </div>
         );
 
       case 'json':
         return (
-          <TextField
-            key={field.name}
-            label={field.label}
-            multiline
-            rows={4}
-            value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            helperText={field.helpText || 'JSON format'}
-            sx={{ fontFamily: 'monospace' }}
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{field.label}</Label>
+            <Textarea
+              id={fieldId}
+              rows={4}
+              value={String(value ?? '')}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              disabled={isReadOnly}
+              className="font-mono"
+            />
+            <span className="text-xs text-muted-foreground">{field.helpText || 'JSON format'}</span>
+          </div>
         );
 
       case 'tags':
         return (
-          <TextField
-            key={field.name}
-            label={field.label}
-            value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            helperText={field.helpText || 'Comma-separated values'}
-            placeholder="tag1, tag2, tag3"
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{field.label}</Label>
+            <Input
+              id={fieldId}
+              value={String(value ?? '')}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              disabled={isReadOnly}
+              placeholder="tag1, tag2, tag3"
+            />
+            <span className="text-xs text-muted-foreground">
+              {field.helpText || 'Comma-separated values'}
+            </span>
+          </div>
         );
 
       case 'number':
         return (
-          <TextField
-            key={field.name}
-            label={field.label}
-            type="number"
-            value={value ?? ''}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            helperText={field.helpText}
-            inputProps={{
-              min: field.min,
-              max: field.max,
-            }}
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{field.label}</Label>
+            <Input
+              id={fieldId}
+              type="number"
+              value={(value as string | number | undefined) ?? ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              disabled={isReadOnly}
+              min={field.min}
+              max={field.max}
+            />
+            {field.helpText && (
+              <span className="text-xs text-muted-foreground">{field.helpText}</span>
+            )}
+          </div>
         );
 
       case 'date':
         return (
-          <TextField
-            key={field.name}
-            label={field.label}
-            type="date"
-            value={value ? String(value).slice(0, 10) : ''}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            InputLabelProps={{ shrink: true }}
-            helperText={field.helpText}
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{field.label}</Label>
+            <Input
+              id={fieldId}
+              type="date"
+              value={value ? String(value).slice(0, 10) : ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              disabled={isReadOnly}
+            />
+            {field.helpText && (
+              <span className="text-xs text-muted-foreground">{field.helpText}</span>
+            )}
+          </div>
         );
 
       case 'datetime':
         return (
-          <TextField
-            key={field.name}
-            label={field.label}
-            type="datetime-local"
-            value={value ? String(value).slice(0, 16) : ''}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            InputLabelProps={{ shrink: true }}
-            helperText={field.helpText}
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{field.label}</Label>
+            <Input
+              id={fieldId}
+              type="datetime-local"
+              value={value ? String(value).slice(0, 16) : ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              disabled={isReadOnly}
+            />
+            {field.helpText && (
+              <span className="text-xs text-muted-foreground">{field.helpText}</span>
+            )}
+          </div>
         );
 
       case 'image':
         return (
-          <TextField
-            key={field.name}
-            label={field.label}
-            value={String(value ?? '')}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            fullWidth
-            size="small"
-            disabled={isReadOnly}
-            placeholder="https://..."
-            helperText={field.helpText || 'Image URL'}
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{field.label}</Label>
+            <Input
+              id={fieldId}
+              value={String(value ?? '')}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              disabled={isReadOnly}
+              placeholder="https://..."
+            />
+            <span className="text-xs text-muted-foreground">{field.helpText || 'Image URL'}</span>
+          </div>
         );
 
       case 'images':
         return (
-          <TextField
-            key={field.name}
-            label={field.label}
-            value={String(value ?? '')}
-            fullWidth
-            size="small"
-            disabled
-            helperText="Image arrays are managed separately"
-          />
+          <div key={field.name} className="flex flex-col gap-2">
+            <Label htmlFor={fieldId}>{field.label}</Label>
+            <Input id={fieldId} value={String(value ?? '')} disabled />
+            <span className="text-xs text-muted-foreground">
+              Image arrays are managed separately
+            </span>
+          </div>
         );
 
       case 'location':
         return (
-          <Box key={field.name} sx={{ position: 'relative' }}>
+          <div key={field.name} className="relative">
             <LocationAutocomplete
               value={String(value ?? '')}
               onChange={(address, coordinates, components) =>
@@ -599,77 +574,64 @@ export function AdminEditDialog({
               label={field.label}
             />
             {resolvedFields[field.name] && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+              <div className="flex items-center gap-1 mt-1">
                 <Check style={{ width: 14, height: 14, color: '#22c55e' }} />
-                <Typography variant="caption" sx={{ color: '#22c55e' }}>
+                <span className="text-xs" style={{ color: '#22c55e' }}>
                   City & country linked
-                </Typography>
-              </Box>
+                </span>
+              </div>
             )}
-          </Box>
+          </div>
         );
 
-      // text, url, email, phone — all rendered as text input
       default: {
-        // For resolver-typed fields (nationality, birthplace), add onBlur resolution
         const hasResolver = field.resolverType && !isReadOnly;
         const isResolved = resolvedFields[field.name];
 
         return (
-          <Box key={field.name} sx={{ position: 'relative' }}>
-            <TextField
-              label={isEnriched ? `${field.label} ✨` : field.label}
-              value={String(value ?? '')}
-              onChange={(e) => {
-                handleChange(field.name, e.target.value);
-                if (hasResolver) setResolvedFields((prev) => ({ ...prev, [field.name]: false }));
-              }}
-              onBlur={
-                hasResolver ? () => handleResolverBlur(field, String(value ?? '')) : undefined
-              }
-              fullWidth
-              size="small"
-              disabled={isReadOnly}
-              placeholder={field.placeholder}
-              helperText={isEnriched ? 'AI-enriched — review before saving' : field.helpText}
-              inputProps={{ maxLength: field.maxLength }}
-              sx={enrichedSx}
-              InputProps={
-                hasResolver
-                  ? {
-                      endAdornment: (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          {resolving && (
-                            <Loader2
-                              style={{
-                                width: 14,
-                                height: 14,
-                                color: '#999',
-                                animation: 'spin 1s linear infinite',
-                              }}
-                            />
-                          )}
-                          {isResolved && (
-                            <Check style={{ width: 14, height: 14, color: '#22c55e' }} />
-                          )}
-                        </Box>
-                      ),
-                    }
-                  : undefined
-              }
-            />
-            {hasResolver && isResolved && (
-              <Typography variant="caption" sx={{ color: '#22c55e', mt: 0.25, display: 'block' }}>
-                {field.resolverType === 'nationality' ? 'Country linked' : 'City & country linked'}
-              </Typography>
+          <div key={field.name} className="flex flex-col gap-2 relative">
+            <Label htmlFor={fieldId}>{labelText}</Label>
+            <div className="relative">
+              <Input
+                id={fieldId}
+                value={String(value ?? '')}
+                onChange={(e) => {
+                  handleChange(field.name, e.target.value);
+                  if (hasResolver) setResolvedFields((prev) => ({ ...prev, [field.name]: false }));
+                }}
+                onBlur={
+                  hasResolver ? () => handleResolverBlur(field, String(value ?? '')) : undefined
+                }
+                disabled={isReadOnly}
+                placeholder={field.placeholder}
+                maxLength={field.maxLength}
+                className={enrichedClass}
+              />
+              {hasResolver && (
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  {resolving && (
+                    <Loader2 size={14} style={{ color: '#999' }} className="animate-spin" />
+                  )}
+                  {isResolved && <Check size={14} style={{ color: '#22c55e' }} />}
+                </div>
+              )}
+            </div>
+            {(isEnriched || field.helpText) && (
+              <span className="text-xs text-muted-foreground">
+                {isEnriched ? 'AI-enriched — review before saving' : field.helpText}
+              </span>
             )}
-          </Box>
+            {hasResolver && isResolved && (
+              <span className="text-xs block" style={{ color: '#22c55e' }}>
+                {field.resolverType === 'nationality' ? 'Country linked' : 'City & country linked'}
+              </span>
+            )}
+          </div>
         );
       }
     }
   };
 
-  // Fallback for content types not in registry
   if (!config) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -690,6 +652,8 @@ export function AdminEditDialog({
     );
   }
 
+  const defaultGroup = groups[0] ? String(groups[0]) : undefined;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent style={{ maxWidth: 680, maxHeight: '85vh', overflow: 'auto' }}>
@@ -700,69 +664,65 @@ export function AdminEditDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
-          {groups.map((group, idx) => {
-            const groupFields = getFieldsByGroup(contentType, group as FieldGroup);
-            if (groupFields.length === 0) return null;
-            const label = fieldGroupLabels[group as FieldGroup] || group;
+        <div className="flex flex-col gap-2 mt-2">
+          <Accordion type="single" collapsible defaultValue={defaultGroup}>
+            {groups.map((group) => {
+              const groupFields = getFieldsByGroup(contentType, group as FieldGroup);
+              if (groupFields.length === 0) return null;
+              const label = fieldGroupLabels[group as FieldGroup] || group;
 
-            return (
-              <Accordion key={group} defaultExpanded={idx === 0} disableGutters>
-                <AccordionSummary
-                  expandIcon={<ChevronDown style={{ width: 16, height: 16 }} />}
-                  sx={{ minHeight: 40, '& .MuiAccordionSummary-content': { margin: '8px 0' } }}
-                >
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {label}
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      sx={{ ml: 1, color: 'text.secondary' }}
-                    >
-                      ({groupFields.length})
-                    </Typography>
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 0 }}>
-                  {groupFields.map(renderField)}
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
-        </Box>
+              return (
+                <AccordionItem key={group} value={String(group)}>
+                  <AccordionTrigger>
+                    <span className="text-sm font-semibold">
+                      {label}
+                      <span className="ml-2 text-xs text-muted-foreground font-normal">
+                        ({groupFields.length})
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-4 pt-0">{groupFields.map(renderField)}</div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        </div>
 
         {editLog.length > 0 && (
-          <Accordion sx={{ mt: 2 }} disableGutters>
-            <AccordionSummary expandIcon={<ChevronDown style={{ width: 16, height: 16 }} />}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <History style={{ width: 16, height: 16 }} />
-                <Typography variant="body2">Edit History ({editLog.length})</Typography>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {editLog.map((entry) => (
-                  <Box
-                    key={entry.id}
-                    sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      {new Date(entry.created_at).toLocaleString()}
-                    </Typography>
-                    {entry.changed_fields.map((f) => (
-                      <Chip key={f} label={f} size="small" variant="outlined" />
-                    ))}
-                  </Box>
-                ))}
-              </Box>
-            </AccordionDetails>
+          <Accordion type="single" collapsible className="mt-4">
+            <AccordionItem value="history">
+              <AccordionTrigger>
+                <div className="flex items-center gap-2">
+                  <History style={{ width: 16, height: 16 }} />
+                  <span className="text-sm">Edit History ({editLog.length})</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-2">
+                  {editLog.map((entry) => (
+                    <div key={entry.id} className="flex gap-2 flex-wrap items-center">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(entry.created_at).toLocaleString()}
+                      </span>
+                      {entry.changed_fields.map((f) => (
+                        <Badge key={f} variant="outline">
+                          {f}
+                        </Badge>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
         )}
 
         {logLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-            <CircularProgress size={16} />
-          </Box>
+          <div className="flex justify-center mt-2">
+            <Loader2 size={16} className="animate-spin" aria-label="Loading" />
+          </div>
         )}
 
         <DialogFooter>
@@ -775,21 +735,14 @@ export function AdminEditDialog({
           </Button>
           <Button variant="outline" onClick={handleEnrich} disabled={loading || enriching}>
             {enriching ? (
-              <Loader2
-                style={{
-                  width: 14,
-                  height: 14,
-                  marginRight: 4,
-                  animation: 'spin 1s linear infinite',
-                }}
-              />
+              <Loader2 size={14} className="animate-spin" />
             ) : (
-              <Sparkles style={{ width: 14, height: 14, marginRight: 4 }} />
+              <Sparkles size={14} />
             )}
             {enriching ? 'Enriching...' : 'Enrich with AI'}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || changedCount === 0}>
-            {loading ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+            {loading ? <Loader2 size={16} className="animate-spin" aria-label="Loading" /> : null}
             Save{' '}
             {changedCount > 0 ? `(${changedCount} field${changedCount > 1 ? 's' : ''})` : 'Changes'}
           </Button>

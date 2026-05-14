@@ -33,6 +33,12 @@ export function useReplyToFeedback() {
         body: { submission_id: submissionId, body, notify },
       });
       if (error) throw error;
+      // Fire-and-forget mirror to GitHub — no-op if submission has no linked issue.
+      void supabase.functions
+        .invoke('push-feedback-to-github', {
+          body: { submission_id: submissionId, action: 'reply', body },
+        })
+        .catch((e) => console.warn('push-feedback-to-github failed', e));
       return data as ReplyResult;
     },
     onSuccess: () => {

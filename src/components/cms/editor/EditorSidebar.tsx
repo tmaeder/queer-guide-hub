@@ -4,15 +4,14 @@
  * Each panel is collapsible with Accordion-like UI.
  */
 
-import React, { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
-import { ChevronDown, FileText, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronDown, FileText, Clock, Loader2 } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 import { WorkflowPanel } from './WorkflowPanel';
 import { SEOPanel } from './SEOPanel';
 import { useCMSRevisions } from '@/hooks/useCMSRevisions';
@@ -26,6 +25,45 @@ interface EditorSidebarProps {
   itemId: string | null;
   metadata: CMSContentMetadata | null;
   onUpdateMetadata: (updates: Partial<CMSContentMetadata>) => Promise<void>;
+}
+
+interface PanelProps {
+  title: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  badge?: number;
+  children: React.ReactNode;
+}
+
+function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
+  return (
+    <Collapsible open={open} onOpenChange={onOpenChange}>
+      <div className="border border-border rounded-lg overflow-hidden">
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="w-full min-h-11 flex items-center justify-between px-4 py-2 hover:bg-muted text-left"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold">{title}</span>
+              {badge !== undefined && badge > 0 && (
+                <Badge variant="secondary" className="h-5 text-[0.7rem] font-semibold px-1.5">
+                  {badge}
+                </Badge>
+              )}
+            </div>
+            <ChevronDown
+              className={cn('transition-transform', open && 'rotate-180')}
+              style={{ width: 18, height: 18 }}
+            />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 pb-3 pt-0">{children}</div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
 }
 
 export function EditorSidebar({
@@ -72,214 +110,99 @@ export function EditorSidebar({
     }
   }, [expandedPanels.media, itemId, config, getAttachments]);
 
-  const handleAccordionChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedPanels((prev) => ({ ...prev, [panel]: isExpanded }));
-  };
-
-  const accordionSx = {
-    '&:before': { display: 'none' },
-    boxShadow: 'none',
-    border: '1px solid',
-    borderColor: 'divider',
-    borderRadius: '8px !important',
-    overflow: 'hidden',
-    '&.Mui-expanded': {
-      margin: 0,
-    },
-  };
-
-  const summarySx = {
-    minHeight: 44,
-    '&.Mui-expanded': { minHeight: 44 },
-    '& .MuiAccordionSummary-content': {
-      margin: '8px 0',
-      '&.Mui-expanded': { margin: '8px 0' },
-    },
+  const setPanel = (panel: string) => (open: boolean) => {
+    setExpandedPanels((prev) => ({ ...prev, [panel]: open }));
   };
 
   return (
-    <Box className="p-4 flex flex-col gap-3">
+    <div className="p-4 flex flex-col gap-3">
       {/* Workflow Panel */}
-      <Accordion
-        expanded={expandedPanels.workflow}
-        onChange={handleAccordionChange('workflow')}
-        sx={accordionSx}
-      >
-        <AccordionSummary
-          expandIcon={<ChevronDown style={{ width: 18, height: 18 }} />}
-          sx={summarySx}
-        >
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            Workflow
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails sx={{ pt: 0 }}>
-          <WorkflowPanel
-            contentType={contentType}
-            itemId={itemId}
-          />
-        </AccordionDetails>
-      </Accordion>
+      <Panel title="Workflow" open={expandedPanels.workflow} onOpenChange={setPanel('workflow')}>
+        <WorkflowPanel contentType={contentType} itemId={itemId} />
+      </Panel>
 
       {/* SEO Panel */}
-      <Accordion
-        expanded={expandedPanels.seo}
-        onChange={handleAccordionChange('seo')}
-        sx={accordionSx}
-      >
-        <AccordionSummary
-          expandIcon={<ChevronDown style={{ width: 18, height: 18 }} />}
-          sx={summarySx}
-        >
-          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-            SEO
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails sx={{ pt: 0 }}>
-          <SEOPanel
-            metadata={metadata}
-            onUpdate={onUpdateMetadata}
-          />
-        </AccordionDetails>
-      </Accordion>
+      <Panel title="SEO" open={expandedPanels.seo} onOpenChange={setPanel('seo')}>
+        <SEOPanel metadata={metadata} onUpdate={onUpdateMetadata} />
+      </Panel>
 
       {/* Media Panel */}
-      <Accordion
-        expanded={expandedPanels.media}
-        onChange={handleAccordionChange('media')}
-        sx={accordionSx}
+      <Panel
+        title="Media"
+        open={expandedPanels.media}
+        onOpenChange={setPanel('media')}
+        badge={attachments.length}
       >
-        <AccordionSummary
-          expandIcon={<ChevronDown style={{ width: 18, height: 18 }} />}
-          sx={summarySx}
-        >
-          <Box className="flex items-center gap-2">
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-              Media
-            </Typography>
-            {attachments.length > 0 && (
-              <Chip
-                label={attachments.length}
-                size="small"
-                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
-              />
-            )}
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails sx={{ pt: 0 }}>
-          {!itemId ? (
-            <Typography variant="body2" color="text.secondary">
-              Save the item first to manage media attachments.
-            </Typography>
-          ) : mediaLoading ? (
-            <Box className="flex items-center justify-center py-4">
-              <CircularProgress size={24} />
-            </Box>
-          ) : attachments.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              No media attached. Use the media fields in the editor to add images.
-            </Typography>
-          ) : (
-            <Box className="flex flex-col gap-2">
-              {attachments.map((att) => (
-                <Box
-                  key={att.id}
-                  className={cn(
-                    'flex items-center gap-2 p-2 rounded-md',
-                    'bg-gray-50 border border-gray-100',
-                  )}
-                >
-                  {att.media?.mime_type?.startsWith('image/') ? (
-                    <Box
-                      component="img"
-                      src={att.media.storage_path}
-                      alt={att.media.original_filename}
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 1,
-                        objectFit: 'cover',
-                        flexShrink: 0,
-                      }}
-                    />
-                  ) : (
-                    <Box
-                      className="flex items-center justify-center flex-shrink-0 bg-gray-200 rounded"
-                      sx={{ width: 40, height: 40 }}
-                    >
-                      <FileText style={{ width: 16, height: 16, color: '#6b7280' }} />
-                    </Box>
-                  )}
-                  <Box className="min-w-0 flex-1">
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontWeight: 500,
-                        display: 'block',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {att.media?.original_filename ?? 'Unknown'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {att.media_role}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          )}
-        </AccordionDetails>
-      </Accordion>
+        {!itemId ? (
+          <p className="text-sm text-muted-foreground">
+            Save the item first to manage media attachments.
+          </p>
+        ) : mediaLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+          </div>
+        ) : attachments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No media attached. Use the media fields in the editor to add images.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {attachments.map((att) => (
+              <div
+                key={att.id}
+                className="flex items-center gap-2 p-2 rounded-md bg-muted/40 border border-border"
+              >
+                {att.media?.mime_type?.startsWith('image/') ? (
+                  <img
+                    src={att.media.storage_path}
+                    alt={att.media.original_filename}
+                    className="w-10 h-10 rounded object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center flex-shrink-0 bg-muted rounded w-10 h-10">
+                    <FileText className="text-muted-foreground" style={{ width: 16, height: 16 }} />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium block overflow-hidden text-ellipsis whitespace-nowrap">
+                    {att.media?.original_filename ?? 'Unknown'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{att.media_role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Panel>
 
       {/* Revisions Panel */}
-      <Accordion
-        expanded={expandedPanels.revisions}
-        onChange={handleAccordionChange('revisions')}
-        sx={accordionSx}
+      <Panel
+        title="Revisions"
+        open={expandedPanels.revisions}
+        onOpenChange={setPanel('revisions')}
+        badge={revisions.length}
       >
-        <AccordionSummary
-          expandIcon={<ChevronDown style={{ width: 18, height: 18 }} />}
-          sx={summarySx}
-        >
-          <Box className="flex items-center gap-2">
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-              Revisions
-            </Typography>
-            {revisions.length > 0 && (
-              <Chip
-                label={revisions.length}
-                size="small"
-                sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
-              />
-            )}
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails sx={{ pt: 0 }}>
-          {!itemId ? (
-            <Typography variant="body2" color="text.secondary">
-              Save the item first to see revision history.
-            </Typography>
-          ) : revisionsLoading ? (
-            <Box className="flex items-center justify-center py-4">
-              <CircularProgress size={24} />
-            </Box>
-          ) : revisions.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              No revisions yet. Changes will be tracked after the first save.
-            </Typography>
-          ) : (
-            <Box className="flex flex-col gap-1.5 max-h-64 overflow-auto">
-              {revisions.map((rev) => (
-                <RevisionEntry key={rev.id} revision={rev} />
-              ))}
-            </Box>
-          )}
-        </AccordionDetails>
-      </Accordion>
-    </Box>
+        {!itemId ? (
+          <p className="text-sm text-muted-foreground">
+            Save the item first to see revision history.
+          </p>
+        ) : revisionsLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="animate-spin" size={24} aria-label="Loading" />
+          </div>
+        ) : revisions.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No revisions yet. Changes will be tracked after the first save.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-1.5 max-h-64 overflow-auto">
+            {revisions.map((rev) => (
+              <RevisionEntry key={rev.id} revision={rev} />
+            ))}
+          </div>
+        )}
+      </Panel>
+    </div>
   );
 }
 
@@ -290,46 +213,25 @@ function RevisionEntry({ revision }: { revision: CMSRevision }) {
   const authorName = revision.author?.display_name || revision.author?.email || 'System';
 
   return (
-    <Box
-      className={cn(
-        'flex items-start gap-2 p-2 rounded-md',
-        'hover:bg-gray-50 transition-colors',
-      )}
-    >
-      <Box
-        className="flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full bg-gray-100"
-        sx={{ width: 28, height: 28 }}
-      >
-        <Clock style={{ width: 14, height: 14, color: '#6b7280' }} />
-      </Box>
-      <Box className="min-w-0 flex-1">
-        <Box className="flex items-center gap-1.5">
-          <Typography variant="caption" sx={{ fontWeight: 600 }}>
-            #{revision.revision_number}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {date}
-          </Typography>
-        </Box>
+    <div className="flex items-start gap-2 p-2 rounded-md hover:bg-muted/40 transition-colors">
+      <div className="flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full bg-muted w-7 h-7">
+        <Clock className="text-muted-foreground" style={{ width: 14, height: 14 }} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-semibold">#{revision.revision_number}</span>
+          <span className="text-xs text-muted-foreground">{date}</span>
+        </div>
         {revision.change_summary && (
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{
-              display: 'block',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <p className="text-xs text-muted-foreground block overflow-hidden text-ellipsis whitespace-nowrap">
             {revision.change_summary}
-          </Typography>
+          </p>
         )}
-        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+        <p className="text-muted-foreground" style={{ fontSize: '0.65rem' }}>
           by {authorName}
-        </Typography>
-      </Box>
-    </Box>
+        </p>
+      </div>
+    </div>
   );
 }
 

@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +8,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useReservationMutations, type Reservation } from '@/hooks/useTripReservations';
 
@@ -116,7 +123,11 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
       }
       resetAndClose();
     } catch (err) {
-      toast({ title: 'Failed to save reservation', description: String(err), variant: 'destructive' });
+      toast({
+        title: 'Failed to save reservation',
+        description: String(err),
+        variant: 'destructive',
+      });
     }
   };
 
@@ -130,136 +141,148 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
           <DialogTitle>{isEdit ? 'Edit Reservation' : 'Add Reservation'}</DialogTitle>
         </DialogHeader>
 
-        <Box className="flex flex-col gap-2.5 mt-2">
-          <Box className="grid grid-cols-2 gap-3">
-            <TextField
-              label="Type"
-              select
+        <div className="flex flex-col gap-2.5 mt-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="res-type">Type</Label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger id="res-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="res-status">Status</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger id="res-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="res-title">Title</Label>
+            <Input
+              id="res-title"
               required
-              fullWidth
-              size="small"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-            >
-              {TYPES.map((t) => (
-                <MenuItem key={t} value={t}>
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label="Status"
-              select
-              fullWidth
-              size="small"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              {STATUSES.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-
-          <TextField
-            label="Title"
-            required
-            fullWidth
-            size="small"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={type === 'flight' ? 'e.g. LHR to BCN' : 'e.g. Hotel Rainbow'}
-          />
-
-          <TextField
-            label="Confirmation Code"
-            fullWidth
-            size="small"
-            value={confirmationCode}
-            onChange={(e) => setConfirmationCode(e.target.value)}
-            placeholder="e.g. ABC123"
-          />
-
-          <Box className="grid grid-cols-2 gap-3">
-            <TextField
-              label={dateLabels[0]}
-              type="datetime-local"
-              fullWidth
-              size="small"
-              value={checkIn}
-              onChange={(e) => setCheckIn(e.target.value)}
-              InputLabelProps={{ shrink: true }}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={type === 'flight' ? 'e.g. LHR to BCN' : 'e.g. Hotel Rainbow'}
             />
-            <TextField
-              label={dateLabels[1]}
-              type="datetime-local"
-              fullWidth
-              size="small"
-              value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
-              InputLabelProps={{ shrink: true }}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="res-code">Confirmation Code</Label>
+            <Input
+              id="res-code"
+              value={confirmationCode}
+              onChange={(e) => setConfirmationCode(e.target.value)}
+              placeholder="e.g. ABC123"
             />
-          </Box>
+          </div>
 
-          <TextField
-            label="Provider"
-            fullWidth
-            size="small"
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-            placeholder="e.g. Booking.com, Ryanair"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="res-checkin">{dateLabels[0]}</Label>
+              <Input
+                id="res-checkin"
+                type="datetime-local"
+                value={checkIn}
+                onChange={(e) => setCheckIn(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="res-checkout">{dateLabels[1]}</Label>
+              <Input
+                id="res-checkout"
+                type="datetime-local"
+                value={checkOut}
+                onChange={(e) => setCheckOut(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <TextField
-            label="Booking URL"
-            fullWidth
-            size="small"
-            value={bookingUrl}
-            onChange={(e) => setBookingUrl(e.target.value)}
-            placeholder="https://..."
-          />
-
-          <Box className="grid grid-cols-2 gap-3">
-            <TextField
-              label="Amount"
-              type="number"
-              fullWidth
-              size="small"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              inputProps={{ min: 0, step: '0.01' }}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="res-provider">Provider</Label>
+            <Input
+              id="res-provider"
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              placeholder="e.g. Booking.com, Ryanair"
             />
-            <TextField
-              label="Currency"
-              select
-              fullWidth
-              size="small"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-            >
-              {CURRENCIES.map((c) => (
-                <MenuItem key={c} value={c}>{c}</MenuItem>
-              ))}
-            </TextField>
-          </Box>
+          </div>
 
-          <TextField
-            label="Notes"
-            fullWidth
-            size="small"
-            multiline
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </Box>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="res-url">Booking URL</Label>
+            <Input
+              id="res-url"
+              value={bookingUrl}
+              onChange={(e) => setBookingUrl(e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="res-amount">Amount</Label>
+              <Input
+                id="res-amount"
+                type="number"
+                min={0}
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="res-currency">Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger id="res-currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="res-notes">Notes</Label>
+            <Textarea
+              id="res-notes"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+        </div>
 
         <DialogFooter className="mt-3">
-          <Button variant="outline" onClick={resetAndClose}>Cancel</Button>
+          <Button variant="outline" onClick={resetAndClose}>
+            Cancel
+          </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit || isPending}>
-            {isPending && <CircularProgress size={16} sx={{ mr: 1 }} />}
+            {isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" aria-label="Loading" />}
             {isEdit ? 'Save' : 'Add Reservation'}
           </Button>
         </DialogFooter>

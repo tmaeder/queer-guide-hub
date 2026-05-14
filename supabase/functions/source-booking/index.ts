@@ -1,7 +1,8 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import { withCircuitBreaker } from '../_shared/circuit-breaker.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
-import { writeToStaging } from '../_shared/source-adapter.ts'
+import { writeToStaging, MissingCredentialsError, skippedResponse } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: Booking.com
@@ -12,7 +13,7 @@ import { writeToStaging } from '../_shared/source-adapter.ts'
 //      hotel sitemap; needs human/scraper enrichment for full data.
 // ============================================================
 
-const SITEMAP_INDEX = 'https://www.booking.com/sitembk-hotel-index.xml'
+const _SITEMAP_INDEX = 'https://www.booking.com/sitembk-hotel-index.xml'
 const UA = 'Mozilla/5.0 (compatible; QueerGuideBot/1.0; +https://queer.guide/bot)'
 const HOTEL_RX = /\/hotel\/[a-z]{2}\/([a-z0-9-]+)\.[a-z-]+\.html/i
 
@@ -30,7 +31,7 @@ const bookingAdapter: SourceAdapter = {
     // Sitemap fallback.
     const sitemaps = (config.filters?.sitemaps as string[]) ?? []
     if (sitemaps.length === 0) {
-      throw new Error('source-booking: provide filters.sitemaps[] (sub-sitemaps from ' + SITEMAP_INDEX + ') or set BOOKING_DEMAND_API_KEY')
+      throw new MissingCredentialsError('BOOKING_DEMAND_API_KEY')
     }
 
     const items: RawItem[] = []
@@ -181,7 +182,7 @@ const DEFAULT_BOOKING_CITY_IDS = [
    -3712125, // Bangkok
 ]
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-booking', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -201,5 +202,8 @@ Deno.serve(async (req) => {
       items_processed: written, items_succeeded: written, items_failed: 0,
       mode: config.apiKey ? 'demand_api' : 'sitemap',
     }, 200, req)
-  } catch (e) { return errorResponse((e as Error).message, 500, req) }
-})
+  } catch (e) {
+    if (e instanceof MissingCredentialsError) return jsonResponse(skippedResponse('missing_credentials', e.missing), 200, req)
+    return errorResponse((e as Error).message, 500, req)
+  }
+}))

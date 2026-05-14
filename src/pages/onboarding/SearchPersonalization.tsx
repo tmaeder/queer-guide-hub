@@ -46,6 +46,7 @@ export default function SearchPersonalization() {
 	const [vibes, setVibes] = useState<string[]>([]);
 	const [cityQuery, setCityQuery] = useState("");
 	const [cityChoice, setCityChoice] = useState<{ id: string; title: string } | null>(null);
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
 	const browserLang = useMemo(() => (typeof navigator !== "undefined" ? navigator.language.slice(0, 2) : "en"), []);
 	const [langs, setLangs] = useState<string[]>([browserLang in { en: 1, de: 1, es: 1, fr: 1 } ? browserLang : "en"]);

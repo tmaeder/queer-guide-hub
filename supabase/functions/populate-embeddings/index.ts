@@ -1,5 +1,4 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, requireAdmin, errorResponse, getServiceClient } from '../_shared/supabase-client.ts';
 
 const CF_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID') || '';
@@ -58,18 +57,20 @@ function generateFallbackEmbedding(contentText: string): number[] {
   return embedding;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
+    const body = await req.json() as PopulateRequest & { pipeline_run_id?: string };
     const {
       content_types = ['venue', 'event', 'tag', 'group', 'marketplace', 'personality', 'city', 'news'],
       _force_refresh = false,
       limit: rawLimit = 100,
-      offset: rawOffset = 0
-    } = await req.json() as PopulateRequest;
+      offset: rawOffset = 0,
+      pipeline_run_id,
+    } = body;
 
     // Sanitize inputs
     const limit = Math.min(Math.max(1, rawLimit), 500);
@@ -79,9 +80,14 @@ serve(async (req) => {
 
     const supabase = getServiceClient();
 
-    // Require admin authentication
-    const authResult = await requireAdmin(req, supabase);
-    if (authResult instanceof Response) return authResult;
+    // Skip admin check for pipeline calls or service role calls
+    const authHeader = req.headers.get('Authorization');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___none___';
+    const isServiceRole = authHeader?.includes(serviceRoleKey);
+    if (!pipeline_run_id && !isServiceRole) {
+      const authResult = await requireAdmin(req, supabase);
+      if (authResult instanceof Response) return authResult;
+    }
 
     if (!cfApiToken) {
       console.log('CLOUDFLARE_API_TOKEN not found, will use fallback embeddings');

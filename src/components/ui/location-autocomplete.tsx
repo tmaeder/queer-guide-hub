@@ -340,7 +340,7 @@ export function LocationAutocomplete({
             disabled={disabled}
             style={{
               paddingRight: 80,
-              ...(isValidated ? { borderColor: '#22c55e' } : {}),
+              ...(isValidated ? { borderColor: 'hsl(var(--foreground))' } : {}),
             }}
           />
           <div style={{
@@ -353,7 +353,7 @@ export function LocationAutocomplete({
             gap: 4,
           }}>
             {isValidated && (
-              <Check style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <Check style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
             )}
             {isLoading && (
               <Loader2 style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />
@@ -397,7 +397,7 @@ export function LocationAutocomplete({
             width: '100%',
             top: '100%',
             marginTop: 4,
-            backgroundColor: '#ffffff',
+            backgroundColor: 'hsl(var(--background))',
             maxHeight: 240,
             overflowY: 'auto',
           }}
@@ -411,12 +411,12 @@ export function LocationAutocomplete({
                 textAlign: 'left',
                 padding: '8px 12px',
                 border: 'none',
-                background: index === selectedIndex ? '#f5f5f5' : 'transparent',
+                background: index === selectedIndex ? 'hsl(var(--accent))' : 'transparent',
                 cursor: 'pointer',
                 display: 'block',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = '#f5f5f5'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = index === selectedIndex ? '#f5f5f5' : 'transparent'; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'hsl(var(--accent))'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = index === selectedIndex ? 'hsl(var(--accent))' : 'transparent'; }}
               onClick={() => handleSuggestionSelect(suggestion)}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>

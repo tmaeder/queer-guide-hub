@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { getCorsHeaders, corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
+import { corsResponse, errorResponse, getServiceClient, jsonResponse } from "../_shared/supabase-client.ts";
 
 /**
  * Hotel Booking Edge Function
@@ -10,7 +9,7 @@ import { getCorsHeaders, corsResponse, errorResponse, getServiceClient, jsonResp
  * Currently: Creates a pending booking record for affiliate tracking.
  * Future: Will call Impala/Booking.com Demand API for in-app booking.
  */
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req);
 
   try {

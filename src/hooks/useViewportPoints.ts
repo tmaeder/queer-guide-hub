@@ -31,7 +31,7 @@ import {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 /** Point layer types handled by this hook */
-export const POINT_LAYER_TYPES: LayerType[] = ['venues', 'events', 'restrooms'];
+export const POINT_LAYER_TYPES: LayerType[] = ['venues', 'events', 'restrooms', 'hotels'];
 
 export interface PointFeatureProps {
   id: string;
@@ -71,6 +71,20 @@ function cacheKey(type: string, bk: string, fh: string): string {
   return `${type}|${bk}|${fh}`;
 }
 
+// ── Retry helper ─────────────────────────────────────────────────────────────
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 1, delayMs = 1000): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, delayMs));
+      return withRetry(fn, retries - 1, delayMs);
+    }
+    throw err;
+  }
+}
+
 // ── Supabase fetchers ─────────────────────────────────────────────────────────
 
 async function fetchVenuesInBbox(
@@ -79,15 +93,16 @@ async function fetchVenuesInBbox(
 ): Promise<PointFeature[]> {
   let query = supabase
     .from('venues')
-    .select('id, slug, name, category, latitude, longitude, city, country, featured')
+    .select('id, slug, name, category, latitude, longitude, city, country, is_featured')
     .neq('data_source', 'refuge_restrooms')
+    .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
     .gte('latitude', bbox.south)
     .lte('latitude', bbox.north)
     .gte('longitude', bbox.west)
     .lte('longitude', bbox.east)
-    .order('featured', { ascending: false });
+    .order('is_featured', { ascending: false });
 
   if (filters?.category) query = query.eq('category', filters.category);
   if (filters?.tags?.length) query = query.overlaps('tags', filters.tags);
@@ -114,7 +129,7 @@ async function fetchVenuesInBbox(
         city: v.city,
         country: v.country,
         category: v.category,
-        featured: v.featured,
+        featured: v.is_featured,
       }),
     },
   }));
@@ -127,11 +142,12 @@ async function fetchEventsInBbox(
   let query = supabase
     .from('events')
     .select(
-      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues(name, latitude, longitude)',
+      'id, slug, title, start_date, event_type, latitude, longitude, city, venue_id, venues!events_venue_id_fkey(name, latitude, longitude)',
     )
     .eq('status', 'active')
+    .is('duplicate_of_id', null)
     .gte('start_date', new Date().toISOString())
-    .order('featured', { ascending: false })
+    .order('is_featured', { ascending: false })
     .order('start_date', { ascending: true });
 
   if (filters?.search) {
@@ -178,6 +194,32 @@ async function fetchEventsInBbox(
       };
     })
     .filter(Boolean) as PointFeature[];
+}
+
+async function fetchHotelsInBbox(bbox: Bbox): Promise<PointFeature[]> {
+  const { data, error } = await supabase
+    .from('hotels')
+    .select('id, slug, name, hotel_type, latitude, longitude, city, country, featured')
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null)
+    .gte('latitude', bbox.south)
+    .lte('latitude', bbox.north)
+    .gte('longitude', bbox.west)
+    .lte('longitude', bbox.east);
+  if (error) throw error;
+  return (data ?? []).map((h: Record<string, unknown>) => ({
+    type: 'Feature' as const,
+    geometry: { type: 'Point' as const, coordinates: [Number(h.longitude), Number(h.latitude)] },
+    properties: {
+      id: `hotel-${h.id}`,
+      pointType: 'hotels' as const,
+      name: (h.name as string) ?? 'Hotel',
+      subtitle: (h.hotel_type as string) ?? '',
+      color: LAYER_COLORS.hotels,
+      linkTo: h.slug ? `/hotels/${h.slug}` : '',
+      meta: JSON.stringify({ city: h.city, country: h.country, hotel_type: h.hotel_type, featured: h.featured }),
+    },
+  }));
 }
 
 async function fetchRestroomsInBbox(bbox: Bbox): Promise<PointFeature[]> {
@@ -276,13 +318,16 @@ export function useViewportPoints({
           let features: PointFeature[] = [];
           switch (type) {
             case 'venues':
-              features = await fetchVenuesInBbox(quantized, filtersRef.current);
+              features = await withRetry(() => fetchVenuesInBbox(quantized, filtersRef.current));
               break;
             case 'events':
-              features = await fetchEventsInBbox(quantized, filtersRef.current);
+              features = await withRetry(() => fetchEventsInBbox(quantized, filtersRef.current));
               break;
             case 'restrooms':
-              features = await fetchRestroomsInBbox(quantized);
+              features = await withRetry(() => fetchRestroomsInBbox(quantized));
+              break;
+            case 'hotels':
+              features = await withRetry(() => fetchHotelsInBbox(quantized));
               break;
           }
           featureCache.set(ck, features);

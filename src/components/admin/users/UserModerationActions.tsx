@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { updateRowsBy } from '@/hooks/usePageFetchers';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,8 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { ShieldCheck, ShieldBan, ShieldAlert } from 'lucide-react';
 
 type ModerationStatus = 'approved' | 'suspended' | 'banned';
@@ -42,7 +41,6 @@ export function UserModerationActions({
   displayName,
   onStatusChanged,
 }: UserModerationActionsProps) {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [reason, setReason] = useState('');
   const [pendingAction, setPendingAction] = useState<ModerationStatus | null>(null);
@@ -50,20 +48,17 @@ export function UserModerationActions({
   const handleAction = async () => {
     if (!pendingAction) return;
     if (pendingAction !== 'approved' && !reason.trim()) {
-      toast({
-        title: 'Reason required',
-        description: 'Please provide a reason.',
-        variant: 'destructive',
-      });
+      toast.error('Reason required: Please provide a reason.');
       return;
     }
 
     try {
       setLoading(true);
-      const { error } = await supabase
-        .from('profiles')
-        .update({ moderation_status: pendingAction } as Record<string, unknown>)
-        .eq('user_id', userId);
+      const { error } = await updateRowsBy(
+        'profiles',
+        { col: 'user_id', val: userId },
+        { moderation_status: pendingAction },
+      );
 
       if (error) throw error;
 
@@ -82,11 +77,7 @@ export function UserModerationActions({
       toast({ title: 'Status updated', description: `User has been ${pendingAction}.` });
       onStatusChanged();
     } catch (err: unknown) {
-      toast({
-        title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to update status',
-        variant: 'destructive',
-      });
+      toast.error(`Error: ${err}`);
     } finally {
       setLoading(false);
       setPendingAction(null);
@@ -97,29 +88,27 @@ export function UserModerationActions({
   const statusCfg = STATUS_CONFIG[currentStatus] ?? STATUS_CONFIG.approved;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          Current Status
-        </Typography>
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="text-sm text-muted-foreground mb-2">Current Status</p>
         <Badge variant={statusCfg.variant} style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
           {statusCfg.label}
         </Badge>
-      </Box>
+      </div>
 
-      <Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      <div>
+        <p className="text-sm text-muted-foreground mb-2">
           Reason (required for suspend/ban)
-        </Typography>
+        </p>
         <Textarea
           placeholder="Describe the reason for this action..."
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           style={{ minHeight: 80 }}
         />
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <div className="flex gap-2 flex-wrap">
         {currentStatus !== 'approved' && (
           <Button
             variant="outline"
@@ -156,7 +145,7 @@ export function UserModerationActions({
             Ban
           </Button>
         )}
-      </Box>
+      </div>
 
       <AlertDialog
         open={!!pendingAction}
@@ -189,6 +178,6 @@ export function UserModerationActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Box>
+    </div>
   );
 }

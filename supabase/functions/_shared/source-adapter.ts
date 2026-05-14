@@ -14,6 +14,40 @@ export interface AdapterConfig {
   nodeId?: string
 }
 
+/**
+ * Thrown by source adapters when required credentials are not configured.
+ * Callers should map this to a 200-OK skipped response so a single missing
+ * key does not fail the whole pipeline DAG.
+ */
+export class MissingCredentialsError extends Error {
+  readonly missing: string[]
+  constructor(missing: string | string[]) {
+    const arr = Array.isArray(missing) ? missing : [missing]
+    super(`Missing credentials: ${arr.join(', ')}`)
+    this.name = 'MissingCredentialsError'
+    this.missing = arr
+  }
+}
+
+/**
+ * Build a 200-OK response body that signals a source was skipped because
+ * credentials were missing. Pipeline-executor treats this as a non-fatal
+ * skipped node, not a failure.
+ */
+export function skippedResponse(reason: string, missing: string[]): Record<string, unknown> {
+  return {
+    success: true,
+    skipped: true,
+    reason,
+    missing_credentials: missing,
+    items: 0,
+    items_total: 0,
+    items_processed: 0,
+    items_succeeded: 0,
+    items_failed: 0,
+  }
+}
+
 export interface RawItem {
   sourceId: string
   data: Record<string, unknown>
@@ -59,14 +93,20 @@ export interface SourceAdapter {
 /**
  * Write fetched items to ingestion_staging in batch.
  * Returns the number of rows inserted.
+ *
+ * `config.entityType` overrides `adapter.entityType` for this batch — used
+ * by source-csv-upload to write per-row classified groups to staging
+ * without spawning a separate adapter per group. (Issue #113)
  */
 export async function writeToStaging(
   supabase: SupabaseClient,
   adapter: SourceAdapter,
   rawItems: RawItem[],
-  config: AdapterConfig & { targetTable: string }
+  config: AdapterConfig & { targetTable: string; entityType?: string }
 ): Promise<number> {
   if (rawItems.length === 0) return 0
+
+  const entityType = config.entityType || adapter.entityType
 
   // Deduplicate within the batch by sourceId to prevent duplicate staging rows
   const seen = new Set<string>()
@@ -79,7 +119,7 @@ export async function writeToStaging(
       source_type: adapter.name,
       source_name: adapter.name,
       source_entity_id: sid,
-      entity_type: adapter.entityType,
+      entity_type: entityType,
       target_table: config.targetTable,
       raw_data: raw.data,
       normalized_data: normalized,
@@ -91,12 +131,28 @@ export async function writeToStaging(
 
   if (rows.length === 0) return 0
 
-  const { error } = await supabase.from('ingestion_staging').insert(rows)
-  if (error) {
-    throw new Error(`Staging write failed for ${adapter.name}: ${error.message}`)
+  // Try bulk insert first (fast path). If any row hits a uniqueness constraint
+  // (idempotency_key partial index), fall back to per-row inserts so individual
+  // duplicates are skipped without killing the entire batch.
+  const isDuplicate = (e: { code?: string; message?: string }) =>
+    e.code === '23505' || !!e.message?.includes('duplicate key')
+
+  const { error: bulkErr } = await supabase.from('ingestion_staging').insert(rows)
+  if (!bulkErr) return rows.length
+  if (!isDuplicate(bulkErr)) {
+    throw new Error(`Staging write failed for ${adapter.name}: ${bulkErr.message}`)
   }
 
-  return rows.length
+  // Fallback: insert row-by-row, skip known duplicates
+  let inserted = 0
+  for (const row of rows) {
+    const { error: rowErr } = await supabase.from('ingestion_staging').insert(row)
+    if (!rowErr) inserted++
+    else if (!isDuplicate(rowErr)) {
+      throw new Error(`Staging write failed for ${adapter.name}: ${rowErr.message}`)
+    }
+  }
+  return inserted
 }
 
 /**

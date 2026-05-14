@@ -1,15 +1,26 @@
 /**
  * github-webhook — inbound GitHub webhook receiver.
  *
- * Verifies HMAC (sha256) against `GITHUB_WEBHOOK_SECRET`, de-duplicates with
- * `x-github-delivery`, and — on `issues.closed` / `issues.reopened` /
- * `issue_comment.created` — syncs the matching `community_submissions` row
- * (feedback or api_error) so admins see status flips + comments without a
- * manual refresh.
+ * HMAC-verified (sha256) against `GITHUB_WEBHOOK_SECRET`, deduped via
+ * `x-github-delivery`, delegates issue/comment event handling to
+ * `_shared/github-sync.ts` so `github-notifications-poller` reuses it.
+ *
+ * Handles:
+ *   - issues: closed, reopened, edited, labeled, unlabeled, assigned, unassigned
+ *   - issue_comment: created, edited, deleted
+ *   - pull_request: closed (merged) with Closes #N → close linked submissions
+ *   - workflow_run: completed (api_error row create/resolve)
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
+import {
+  applyCommentAction,
+  applyIssueAction,
+  findSubmissionByIssue,
+  GhComment,
+  GhIssue,
+  linkedIssueNumbers,
+} from '../_shared/github-sync.ts';
 
 function getServiceClient(): SupabaseClient {
   return createClient(
@@ -39,21 +50,11 @@ async function hmacSha256Hex(secret: string, message: string): Promise<string> {
     .join('');
 }
 
-/** Constant-time string compare. */
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let out = 0;
   for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return out === 0;
-}
-
-interface GhIssue {
-  number: number;
-  state: 'open' | 'closed';
-  state_reason?: string | null;
-  html_url: string;
-  title: string;
-  user?: { login: string };
 }
 
 interface GhWorkflowRun {
@@ -71,16 +72,25 @@ interface GhWorkflowRun {
   updated_at: string;
 }
 
+interface GhPullRequest {
+  number: number;
+  merged: boolean;
+  merge_commit_sha: string | null;
+  body: string | null;
+  html_url: string;
+}
+
 interface GhPayload {
   action: string;
   issue?: GhIssue;
-  comment?: { body: string; user: { login: string }; html_url: string };
+  comment?: GhComment;
+  pull_request?: GhPullRequest;
   workflow_run?: GhWorkflowRun;
   repository?: { full_name: string };
   sender?: { login: string };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   const secret = Deno.env.get('GITHUB_WEBHOOK_SECRET');
@@ -101,12 +111,10 @@ serve(async (req) => {
 
   const svc = getServiceClient();
 
-  // Idempotency: if we've seen this delivery id, ack without re-processing.
   const { error: dupInsertErr } = await svc
     .from('webhook_deliveries')
     .insert({ delivery_id: deliveryId, source: 'github' });
   if (dupInsertErr) {
-    // 23505 = unique_violation — safe to treat as "already processed".
     const code = (dupInsertErr as { code?: string }).code;
     if (code === '23505') return json({ success: true, already_processed: true });
     return json({ error: `Delivery log failed: ${dupInsertErr.message}` }, 500);
@@ -119,141 +127,118 @@ serve(async (req) => {
     return json({ error: 'Invalid JSON' }, 400);
   }
 
-  if (event === 'ping') {
-    return json({ success: true, pong: true });
-  }
+  if (event === 'ping') return json({ success: true, pong: true });
 
-  // workflow_run.completed → create/bump api_error row for a failed CI run,
-  // or resolve it when the workflow eventually succeeds. So admins see the
-  // same kanban signal they see for runtime API errors.
+  // workflow_run.completed → api_error row lifecycle (unchanged).
   if (event === 'workflow_run' && payload.action === 'completed' && payload.workflow_run) {
-    const wr = payload.workflow_run;
-    const repo = payload.repository?.full_name ?? 'unknown';
-    const fingerprint = `gh-actions:${repo}:${wr.name}:${wr.head_branch}`;
+    return await handleWorkflowRun(svc, payload);
+  }
 
-    if (wr.conclusion === 'failure' || wr.conclusion === 'timed_out') {
-      const { error } = await svc.rpc('upsert_api_error', {
-        p_fingerprint: fingerprint,
-        p_data: {
-          service: 'github-actions',
-          function_name: wr.name,
-          message: `Run ${wr.conclusion}: ${wr.name} on ${wr.head_branch}`,
-          status_code: null,
-          endpoint: `${repo}@${wr.head_branch}`,
-          metadata: {
-            repo,
-            workflow: wr.name,
-            branch: wr.head_branch,
-            sha: wr.head_sha,
-            run_number: wr.run_number,
-            run_attempt: wr.run_attempt,
-            run_url: wr.html_url,
-            triggered_by: wr.event,
-            conclusion: wr.conclusion,
-            updated_at: wr.updated_at,
-          },
-          reported_at: new Date().toISOString(),
-        },
-        p_source: 'github-webhook',
-      });
-      if (error) return json({ error: error.message }, 500);
-      return json({ success: true, action: 'workflow_failure_logged', fingerprint });
-    }
-
-    // On success: if there's an open api_error row for this fingerprint, auto-resolve it.
-    if (wr.conclusion === 'success') {
-      const { data: existing } = await svc
+  // pull_request.closed (merged) → close any submissions linked via Closes #N.
+  if (event === 'pull_request' && payload.action === 'closed' && payload.pull_request?.merged) {
+    const pr = payload.pull_request;
+    const nums = linkedIssueNumbers(pr.body);
+    const closed: string[] = [];
+    for (const n of nums) {
+      const sub = await findSubmissionByIssue(svc, n);
+      if (!sub) continue;
+      await svc
         .from('community_submissions')
-        .select('id,feedback_status')
-        .eq('content_type', 'api_error')
-        .eq('fingerprint', fingerprint)
-        .maybeSingle();
-      if (existing && existing.feedback_status !== 'done') {
-        await svc
-          .from('community_submissions')
-          .update({
-            feedback_status: 'done',
-            resolution: 'fixed',
-            resolved_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id);
-        return json({ success: true, action: 'workflow_recovered', submission_id: existing.id });
-      }
-      return json({ success: true, skipped: 'workflow_success_no_open_row' });
+        .update({
+          feedback_status: 'done',
+          resolved_at: sub.resolved_at ?? new Date().toISOString(),
+          resolution: 'fixed',
+          github_last_synced_at: new Date().toISOString(),
+          data: {
+            ...sub.data,
+            github_merge_commit: pr.merge_commit_sha,
+            github_merge_pr: pr.html_url,
+            _last_source: 'github',
+          },
+        })
+        .eq('id', sub.id);
+      closed.push(sub.id);
     }
-
-    return json({ success: true, skipped: `workflow_conclusion_${wr.conclusion}` });
+    return json({ success: true, action: 'pr_merged', closed });
   }
 
-  // Find the submission by issue number (feedback or api_error).
-  const issueNumber = payload.issue?.number;
-  if (!issueNumber) {
-    return json({ success: true, skipped: 'no issue' });
+  // issue events
+  if (event === 'issues' && payload.issue) {
+    const sub = await findSubmissionByIssue(svc, payload.issue.number);
+    if (!sub) return json({ success: true, skipped: 'no matching submission' });
+    const result = await applyIssueAction(svc, payload.action, payload.issue, sub);
+    return json({ success: true, ...result });
   }
 
-  const { data: row } = await svc
-    .from('community_submissions')
-    .select('id,content_type,data,feedback_status,resolved_at')
-    .eq('github_issue_number', issueNumber)
-    .maybeSingle();
-
-  if (!row) {
-    return json({ success: true, skipped: 'no matching submission' });
-  }
-
-  const now = new Date().toISOString();
-  const data = (row.data ?? {}) as Record<string, unknown>;
-
-  // issues.closed → done + resolved_at; resolved_as 'not_planned' → wontfix.
-  if (event === 'issues' && payload.action === 'closed') {
-    const stateReason = payload.issue?.state_reason;
-    const resolution =
-      stateReason === 'not_planned' ? 'wontfix' : stateReason === 'duplicate' ? 'duplicate' : 'fixed';
-    await svc
-      .from('community_submissions')
-      .update({
-        feedback_status: 'done',
-        resolved_at: row.resolved_at ?? now,
-        resolution,
-      })
-      .eq('id', row.id);
-    return json({ success: true, action: 'closed', submission_id: row.id });
-  }
-
-  // issues.reopened → back to in_progress + clear resolved_at.
-  if (event === 'issues' && payload.action === 'reopened') {
-    await svc
-      .from('community_submissions')
-      .update({
-        feedback_status: 'in_progress',
-        resolved_at: null,
-        resolution: null,
-      })
-      .eq('id', row.id);
-    return json({ success: true, action: 'reopened', submission_id: row.id });
-  }
-
-  // issue_comment.created → append to data.replies as a 'github' reply.
-  if (event === 'issue_comment' && payload.action === 'created' && payload.comment) {
-    const replies = Array.isArray(data.replies)
-      ? (data.replies as Array<Record<string, unknown>>)
-      : [];
-    replies.push({
-      by: null,
-      by_name: `GH:${payload.comment.user.login}`,
-      body: payload.comment.body,
-      at: now,
-      emailed: false,
-      email_id: null,
-      email_error: null,
-      github_url: payload.comment.html_url,
-    });
-    await svc
-      .from('community_submissions')
-      .update({ data: { ...data, replies } })
-      .eq('id', row.id);
-    return json({ success: true, action: 'commented', submission_id: row.id });
+  // issue_comment events
+  if (event === 'issue_comment' && payload.comment && payload.issue) {
+    const action = payload.action as 'created' | 'edited' | 'deleted';
+    if (!['created', 'edited', 'deleted'].includes(action)) {
+      return json({ success: true, skipped: `issue_comment.${action}` });
+    }
+    const sub = await findSubmissionByIssue(svc, payload.issue.number);
+    if (!sub) return json({ success: true, skipped: 'no matching submission' });
+    const result = await applyCommentAction(svc, action, payload.comment, sub);
+    return json({ success: true, ...result });
   }
 
   return json({ success: true, skipped: `${event}.${payload.action}` });
 });
+
+async function handleWorkflowRun(svc: SupabaseClient, payload: GhPayload): Promise<Response> {
+  const wr = payload.workflow_run!;
+  const repo = payload.repository?.full_name ?? 'unknown';
+  const fingerprint = `gh-actions:${repo}:${wr.name}:${wr.head_branch}`;
+
+  if (wr.conclusion === 'failure' || wr.conclusion === 'timed_out') {
+    const { error } = await svc.rpc('upsert_api_error', {
+      p_fingerprint: fingerprint,
+      p_data: {
+        service: 'github-actions',
+        function_name: wr.name,
+        message: `Run ${wr.conclusion}: ${wr.name} on ${wr.head_branch}`,
+        status_code: null,
+        endpoint: `${repo}@${wr.head_branch}`,
+        metadata: {
+          repo,
+          workflow: wr.name,
+          branch: wr.head_branch,
+          sha: wr.head_sha,
+          run_number: wr.run_number,
+          run_attempt: wr.run_attempt,
+          run_url: wr.html_url,
+          triggered_by: wr.event,
+          conclusion: wr.conclusion,
+          updated_at: wr.updated_at,
+        },
+        reported_at: new Date().toISOString(),
+      },
+      p_source: 'github-webhook',
+    });
+    if (error) return json({ error: error.message }, 500);
+    return json({ success: true, action: 'workflow_failure_logged', fingerprint });
+  }
+
+  if (wr.conclusion === 'success') {
+    const { data: existing } = await svc
+      .from('community_submissions')
+      .select('id,feedback_status')
+      .eq('content_type', 'api_error')
+      .eq('fingerprint', fingerprint)
+      .maybeSingle();
+    if (existing && existing.feedback_status !== 'done') {
+      await svc
+        .from('community_submissions')
+        .update({
+          feedback_status: 'done',
+          resolution: 'fixed',
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id);
+      return json({ success: true, action: 'workflow_recovered', submission_id: existing.id });
+    }
+    return json({ success: true, skipped: 'workflow_success_no_open_row' });
+  }
+
+  return json({ success: true, skipped: `workflow_conclusion_${wr.conclusion}` });
+}

@@ -1,7 +1,6 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, getServiceClient } from '../_shared/supabase-client.ts';
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
   }
@@ -34,8 +33,7 @@ serve(async (req) => {
 
     switch (action) {
       case 'enroll': {
-        // Generate secure challenge
-        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const challenge = Array.from(crypto.getRandomValues(new Uint8Array(32)));
         
         // Store challenge temporarily in a secure way (in a database table with expiration)
         const { error: challengeError } = await supabaseClient
@@ -58,7 +56,7 @@ serve(async (req) => {
             id: "queer.guide",
           },
           user: {
-            id: new TextEncoder().encode(user.id),
+            id: Array.from(new TextEncoder().encode(user.id)),
             name: user.email,
             displayName: user.email,
           },
@@ -197,6 +195,27 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Passkey operation error:', error);
+
+    try {
+      const supabaseClient = getServiceClient();
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader) {
+        const { data: { user } } = await supabaseClient.auth.getUser(
+          authHeader.replace('Bearer ', '')
+        );
+        if (user) {
+          await supabaseClient.rpc('log_enhanced_security_event', {
+            p_event_type: 'PASSKEY_OPERATION_FAILED',
+            p_user_id: user.id,
+            p_metadata: { error: String(error), timestamp: new Date().toISOString() },
+            p_severity: 'medium'
+          });
+        }
+      }
+    } catch (_logError) {
+      // Don't let logging failures mask the original error
+    }
+
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }

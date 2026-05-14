@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders, getServiceClient, requireAdmin } from '../_shared/supabase-client.ts'
 
 // SECURITY FIX: Proper AES encryption for API keys
@@ -54,7 +53,7 @@ async function _secureDecrypt(encryptedText: string): Promise<string> {
   return new TextDecoder().decode(decrypted);
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: getCorsHeaders(req) });

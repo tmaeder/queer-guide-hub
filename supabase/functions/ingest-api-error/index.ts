@@ -5,7 +5,6 @@
  * Auth: shared secret in X-Error-Secret header.
  */
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 
 interface ErrorPayload {
@@ -43,7 +42,7 @@ async function computeFingerprint(service: string, fn: string, message: string):
     .join('')
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200 })
   }

@@ -1,9 +1,4 @@
 import { useRef, useState } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
 import { Upload, FileText, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,6 +10,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import {
   useUploadDocument,
@@ -121,7 +126,6 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
     setExtracting(true);
     try {
       const buf = await file.arrayBuffer();
-      // Chunked encode to avoid Maximum-call-stack on big base64 strings.
       let binary = '';
       const bytes = new Uint8Array(buf);
       const CHUNK = 0x8000;
@@ -151,7 +155,6 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
         });
         return;
       }
-      // Only overwrite empty fields so a user's manual edits aren't clobbered.
       if (out.title && !title) setTitle(out.title);
       if (out.doc_type && docType === (defaultType ?? (tripId === null ? 'passport' : 'visa'))) {
         setDocType(out.doc_type);
@@ -212,9 +215,9 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
           </DialogDescription>
         </DialogHeader>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+        <div className="flex flex-col gap-4 mt-2">
           {/* File picker */}
-          <Box>
+          <div>
             <input
               ref={fileRef}
               type="file"
@@ -233,12 +236,12 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
                 : t('docs.upload.pick', 'Choose file')}
             </Button>
             {file && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <FileText size={14} />
-                <Typography sx={{ fontSize: '0.875rem' }}>{file.name}</Typography>
-                <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                <span className="text-sm">{file.name}</span>
+                <span className="text-xs text-muted-foreground">
                   {(file.size / 1024 / 1024).toFixed(2)} MB
-                </Typography>
+                </span>
                 {file.type.startsWith('image/') && (
                   <Button
                     variant="ghost"
@@ -253,59 +256,61 @@ export function AddDocumentDialog({ open, onClose, tripId, defaultType }: Props)
                       : t('docs.upload.autoFill', 'Auto-fill from photo')}
                   </Button>
                 )}
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
 
-          <TextField
-            label={t('docs.upload.titleLabel', 'Title')}
-            value={title}
-            onChange={(e) => setTitle(e.target.value.slice(0, 200))}
-            disabled={upload.isPending}
-            fullWidth
-            size="small"
-          />
+          <div className="flex flex-col gap-1.5">
+            <Label>{t('docs.upload.titleLabel', 'Title')}</Label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value.slice(0, 200))}
+              disabled={upload.isPending}
+            />
+          </div>
 
-          <TextField
-            select
-            label={t('docs.upload.typeLabel', 'Document type')}
-            value={docType}
-            onChange={(e) => setDocType(e.target.value as DocType)}
-            disabled={upload.isPending}
-            fullWidth
-            size="small"
-          >
-            {DOC_TYPES.map((d) => (
-              <MenuItem key={d.value} value={d.value}>
-                {t(d.labelKey, d.defaultLabel)}
-              </MenuItem>
-            ))}
-          </TextField>
+          <div className="flex flex-col gap-1.5">
+            <Label>{t('docs.upload.typeLabel', 'Document type')}</Label>
+            <Select value={docType} onValueChange={(v) => setDocType(v as DocType)} disabled={upload.isPending}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DOC_TYPES.map((d) => (
+                  <SelectItem key={d.value} value={d.value}>
+                    {t(d.labelKey, d.defaultLabel)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <TextField
-            label={t('docs.upload.expiryLabel', 'Expiry date (optional)')}
-            type="date"
-            value={expiry}
-            onChange={(e) => setExpiry(e.target.value)}
-            disabled={upload.isPending}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-            size="small"
-          />
+          <div className="flex flex-col gap-1.5">
+            <Label>{t('docs.upload.expiryLabel', 'Expiry date (optional)')}</Label>
+            <Input
+              type="date"
+              value={expiry}
+              onChange={(e) => setExpiry(e.target.value)}
+              disabled={upload.isPending}
+            />
+          </div>
 
-          <TextField
-            label={t('docs.upload.notesLabel', 'Notes (optional)')}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value.slice(0, 500))}
-            disabled={upload.isPending}
-            multiline
-            minRows={2}
-            fullWidth
-            size="small"
-          />
+          <div className="flex flex-col gap-1.5">
+            <Label>{t('docs.upload.notesLabel', 'Notes (optional)')}</Label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value.slice(0, 500))}
+              disabled={upload.isPending}
+              rows={2}
+            />
+          </div>
 
-          {upload.isPending && <LinearProgress />}
-        </Box>
+          {upload.isPending && (
+            <div className="h-1 bg-muted overflow-hidden rounded">
+              <div className="h-full bg-primary animate-pulse" style={{ width: '100%' }} />
+            </div>
+          )}
+        </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={close} disabled={upload.isPending}>

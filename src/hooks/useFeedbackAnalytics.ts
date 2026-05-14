@@ -31,8 +31,7 @@ export function useFeedbackDailyVolume() {
     queryKey: ['admin-feedback-analytics-daily'],
     queryFn: async () => {
       const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('v_feedback_analytics_daily' as any)
+        .from('v_feedback_analytics_daily')
         .select('day,content_type,feedback_status,category,priority,n');
       if (error) throw error;
       return (data || []) as unknown as DailyVolumeRow[];
@@ -45,8 +44,7 @@ export function useFeedbackSlaStats(daysWindow = 90) {
   return useQuery<SlaStatRow[]>({
     queryKey: ['admin-feedback-sla', daysWindow],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any).rpc('feedback_sla_stats', {
+      const { data, error } = await supabase.rpc('feedback_sla_stats', {
         p_days_window: daysWindow,
       });
       if (error) throw error;
@@ -62,8 +60,7 @@ export function useApiErrorDailySeries() {
     queryKey: ['admin-api-error-daily'],
     queryFn: async () => {
       const { data, error } = await supabase
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .from('v_api_error_daily' as any)
+        .from('v_api_error_daily')
         .select('submission_id,fingerprint,day,n');
       if (error) throw error;
       return (data || []) as unknown as ApiErrorDailyRow[];

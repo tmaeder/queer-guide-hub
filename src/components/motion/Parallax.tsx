@@ -11,12 +11,12 @@ interface ParallaxProps {
 /**
  * Scroll-linked parallax transform. Wrap around an image or hero layer.
  */
-export const Parallax: React.FC<ParallaxProps> = ({
+export const Parallax = ({
   children,
   speed = 0.3,
   axis = 'y',
   className,
-}) => {
+}: ParallaxProps) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,

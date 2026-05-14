@@ -1,6 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Mail, Bell, Star, StarOff } from 'lucide-react';
@@ -18,7 +16,7 @@ const TYPE_ICON: Record<string, React.ElementType> = {
   notification: Bell,
 };
 
-export const InboxItemList: React.FC<InboxItemListProps> = ({ items, onSelect, onToggleStar }) => {
+export const InboxItemList = ({ items, onSelect, onToggleStar }: InboxItemListProps) => {
   return (
     <div className="space-y-1">
       {items.map((item) => {
@@ -31,40 +29,30 @@ export const InboxItemList: React.FC<InboxItemListProps> = ({ items, onSelect, o
             }`}
             onClick={() => onSelect(item.id)}
           >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <div className="flex items-start gap-3">
               <Icon
                 className={`h-4 w-4 mt-1 shrink-0 ${
                   !item.isRead ? 'text-primary' : 'text-muted-foreground'
                 }`}
               />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 1,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    fontWeight={item.isRead ? 400 : 700}
-                    noWrap
-                    sx={{ flex: 1 }}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p
+                    className={`flex-1 truncate text-sm ${item.isRead ? 'font-normal' : 'font-bold'}`}
                   >
                     {item.from}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" noWrap>
+                  </p>
+                  <span className="truncate text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(item.date), { addSuffix: true })}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" fontWeight={item.isRead ? 400 : 600} noWrap>
+                  </span>
+                </div>
+                <p className={`truncate text-sm ${item.isRead ? 'font-normal' : 'font-semibold'}`}>
                   {item.title}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" noWrap>
+                </p>
+                <span className="block truncate text-xs text-muted-foreground">
                   {item.snippet}
-                </Typography>
-              </Box>
+                </span>
+              </div>
               {item.type === 'email' && (
                 <Button
                   variant="ghost"
@@ -76,13 +64,13 @@ export const InboxItemList: React.FC<InboxItemListProps> = ({ items, onSelect, o
                   }}
                 >
                   {item.isStarred ? (
-                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="h-4 w-4 text-foreground fill-foreground" />
                   ) : (
                     <StarOff className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               )}
-            </Box>
+            </div>
           </Card>
         );
       })}

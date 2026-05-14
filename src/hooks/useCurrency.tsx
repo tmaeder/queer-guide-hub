@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
+import { useProfile, profileQueryKey, type Profile } from '@/hooks/useProfile';
 import { formatCurrency, formatCents, getCurrencySymbol } from '@/lib/currency';
 
 const STORAGE_KEY = 'queer-guide-currency';
@@ -58,53 +60,54 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     })();
   }, [location?.country, geoResolved]);
 
-  // Sync from profile preferences for authenticated users (on login)
+  // Sync from profile preferences for authenticated users.
+  //
+  // Reads from the same react-query cache as useProfile (shared queryKey
+  // ["profile", userId]) so we don't fire a second /profiles?select=preferences
+  // request alongside the /profiles?select=* one in useProfile. This was the
+  // duplicate-fetch bug from the QA report.
+  const { profile } = useProfile();
   useEffect(() => {
-    if (!user) return;
+    if (!user || !profile) return;
+    const saved = (profile.preferences as Record<string, unknown> | null)?.currency;
+    if (typeof saved === 'string' && saved.length === 3) {
+      const code = saved.toUpperCase();
+      setCurrencyState(code);
+      localStorage.setItem(STORAGE_KEY, code);
+    }
+  }, [user?.id, profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('preferences')
-          .eq('id', user.id)
-          .maybeSingle();
-        const saved = (data?.preferences as Record<string, unknown>)?.currency;
-        if (typeof saved === 'string' && saved.length === 3) {
-          const code = saved.toUpperCase();
-          setCurrencyState(code);
-          localStorage.setItem(STORAGE_KEY, code);
-        }
-      } catch {
-        // Profile fetch failed — keep current
-      }
-    })();
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  const queryClient = useQueryClient();
   const setCurrency = useCallback(
     (code: string) => {
       const upper = code.toUpperCase();
       setCurrencyState(upper);
       localStorage.setItem(STORAGE_KEY, upper);
 
-      // Persist to profile for authenticated users
+      // Persist to profile for authenticated users.
+      // Read existing preferences from the cached profile (no extra fetch),
+      // merge, then write. After the update, patch the cached profile so
+      // any other consumer (Header, Settings) sees the new value without a
+      // refetch.
       if (user) {
+        const cached = queryClient.getQueryData<Profile | null>(profileQueryKey(user.id));
+        const prefs = (cached?.preferences as Record<string, unknown> | null) ?? {};
+        const nextPrefs = { ...prefs, currency: upper };
         supabase
           .from('profiles')
-          .select('preferences')
-          .eq('id', user.id)
-          .maybeSingle()
-          .then(({ data }) => {
-            const prefs = (data?.preferences as Record<string, unknown>) || {};
-            supabase
-              .from('profiles')
-              .update({ preferences: { ...prefs, currency: upper } })
-              .eq('id', user.id)
-              .then(() => {});
+          .update({ preferences: nextPrefs })
+          .eq('user_id', user.id)
+          .then(() => {
+            if (cached) {
+              queryClient.setQueryData<Profile | null>(profileQueryKey(user.id), {
+                ...cached,
+                preferences: nextPrefs,
+              });
+            }
           });
       }
     },
-    [user],
+    [user, queryClient],
   );
 
   const formatPrice = useCallback(
@@ -130,6 +133,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCurrency() {
   const ctx = useContext(CurrencyContext);
   if (!ctx) throw new Error('useCurrency must be used within CurrencyProvider');

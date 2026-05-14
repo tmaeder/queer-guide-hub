@@ -18,12 +18,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useConsolidatedStats } from '@/hooks/useConsolidatedStats';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
+import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
+import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
+import { BackgroundDots } from '@/components/effects/BackgroundDots';
 
 const features = [
   {
@@ -59,61 +59,23 @@ const features = [
 ];
 
 const values = [
-  {
-    icon: Heart,
-    title: 'Inclusivity',
-    description: 'Every identity, every background, every story belongs here.',
-  },
-  {
-    icon: Shield,
-    title: 'Safety',
-    description: 'Safe spaces online and offline — always our top priority.',
-  },
-  {
-    icon: Users,
-    title: 'Community',
-    description: 'Meaningful connections between individuals and organizations worldwide.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Authenticity',
-    description: 'Be yourself. We built this place so you never have to hide.',
-  },
-  {
-    icon: HandHeart,
-    title: 'Accessibility',
-    description: 'A platform for everyone — highlighting spaces that prioritize access.',
-  },
-  {
-    icon: Globe,
-    title: 'Growth',
-    description: 'Always evolving, always listening. Built on your feedback.',
-  },
+  { icon: Heart, title: 'Inclusivity', description: 'Every identity, every background, every story belongs here.' },
+  { icon: Shield, title: 'Safety', description: 'Safe spaces online and offline — always our top priority.' },
+  { icon: Users, title: 'Community', description: 'Meaningful connections between individuals and organizations worldwide.' },
+  { icon: Sparkles, title: 'Authenticity', description: 'Be yourself. We built this place so you never have to hide.' },
+  { icon: HandHeart, title: 'Accessibility', description: 'A platform for everyone — highlighting spaces that prioritize access.' },
+  { icon: Globe, title: 'Growth', description: 'Always evolving, always listening. Built on your feedback.' },
 ];
 
 const team = [
-  {
-    name: 'Community Moderators',
-    role: 'Keeping it safe',
-    description: 'Volunteer moderators working around the clock to maintain a welcoming, respectful environment.',
-  },
-  {
-    name: 'Local Ambassadors',
-    role: 'Eyes on the ground',
-    description: 'Community leaders who surface local needs and champion inclusive spaces in their regions.',
-  },
-  {
-    name: 'Content Contributors',
-    role: 'Sharing knowledge',
-    description: 'Members who write venue reviews, post events, and build the resources that make this platform valuable.',
-  },
+  { name: 'Community Moderators', role: 'Keeping it safe', description: 'Volunteer moderators working around the clock to maintain a welcoming, respectful environment.' },
+  { name: 'Local Ambassadors', role: 'Eyes on the ground', description: 'Community leaders who surface local needs and champion inclusive spaces in their regions.' },
+  { name: 'Content Contributors', role: 'Sharing knowledge', description: 'Members who write venue reviews, post events, and build the resources that make this platform valuable.' },
 ];
 
 export default function About() {
   const { stats, loading } = useConsolidatedStats();
   const isMobile = useIsMobile();
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
 
   const statItems = useMemo(
     () => [
@@ -126,214 +88,111 @@ export default function About() {
   );
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          py: { xs: 14, sm: 18, md: 24 },
-          px: { xs: 2, sm: 3, md: 4 },
-          bgcolor: 'background.default',
-        }}
-      >
-        <Typography
-          variant="h1"
-          className="reveal-up"
-          sx={{
-            fontSize: { xs: '2.5rem', sm: '4rem', md: '5.5rem' },
-            fontWeight: 800,
-            letterSpacing: '0.02em',
-            lineHeight: 1.05,
-            mb: { xs: 3, md: 4 },
-          }}
-        >
-          Built by queers,
-          <br />
-          for{' '}
-          <Box component="span" sx={{ color: 'brand.main' }}>
-            everyone.
-          </Box>
-        </Typography>
-
-        <Typography
-          className="reveal-up reveal-delay-1"
-          sx={{
-            fontSize: { xs: '1.0625rem', sm: '1.1875rem', md: '1.375rem' },
-            color: 'text.secondary',
-            lineHeight: 1.7,
-            maxWidth: '720px',
-          }}
-        >
+    <div className="min-h-screen">
+      {/* Hero */}
+      <SpotlightEffect className="py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background">
+        <TextGenerateEffect
+          words="Built by queers, for everyone."
+          className="font-extrabold leading-[1.05] mb-6 md:mb-8 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
+          style={{ letterSpacing: '0.02em' }}
+          as="h1"
+          staggerDelay={0.07}
+        />
+        <p className="reveal-up reveal-delay-1 text-[1.0625rem] sm:text-[1.1875rem] md:text-[1.375rem] text-muted-foreground leading-[1.7] max-w-[720px]">
           The Queer Guide connects LGBTQ+ people and allies with safe venues,
           vibrant events, and communities that get you — wherever you are in the world.
-        </Typography>
-      </Box>
+        </p>
+      </SpotlightEffect>
 
-      {/* ── Stats Strip ──────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          bgcolor: 'text.primary',
-          color: 'background.default',
-          py: { xs: 5, md: 7 },
-          px: { xs: 2, sm: 3, md: 4 },
-        }}
-      >
+      {/* Stats Strip */}
+      <div className="py-10 md:py-14 px-4 sm:px-6 md:px-8 bg-foreground text-background">
         <StaggerGrid
           stagger={0.1}
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: 'repeat(2, 1fr)',
-              md: 'repeat(4, 1fr)',
-            },
-            gap: { xs: 3, md: 4 },
-          }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
         >
           {statItems.map((stat, i) => (
-            <Box key={i} sx={{ textAlign: 'center' }}>
-              <Typography
-                component="div"
-                sx={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 800,
-                  fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' },
+            <div key={i} className="text-center">
+              <div
+                className="font-extrabold leading-[1.1] text-[2.5rem] sm:text-[3rem] md:text-[4rem]"
+                style={{
                   letterSpacing: '-0.03em',
-                  lineHeight: 1.1,
-                  color: 'brand.main',
                 }}
               >
                 {loading || typeof stat.value !== 'number' || stat.value <= 0 ? (
-                  '\u2014'
+                  '—'
                 ) : (
                   <AnimatedCounter value={stat.value} suffix="+" />
                 )}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'inherit',
-                  opacity: 0.6,
-                  mt: 0.5,
-                  fontWeight: 500,
-                  letterSpacing: '0.02em',
-                  textTransform: 'uppercase',
-                  fontSize: '0.7rem',
-                }}
+              </div>
+              <p
+                className="opacity-60 mt-1 font-medium uppercase text-[0.7rem]"
+                style={{ letterSpacing: '0.02em' }}
               >
                 {stat.label}
-              </Typography>
-            </Box>
+              </p>
+            </div>
           ))}
         </StaggerGrid>
-      </Box>
+      </div>
 
-      {/* ── Our Story ────────────────────────────────────────────────── */}
+      {/* Our Story */}
       <ScrollReveal direction="up">
-        <Box
-          component="section"
-          sx={{
-            py: { xs: 8, md: 14 },
-            px: { xs: 2, sm: 3, md: 4 },
-          }}
-        >
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 800,
-              mb: { xs: 3, md: 4 },
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-            }}
-          >
-            Our Story
-          </Typography>
+        <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
+          <h2 className="font-extrabold mb-6 md:mb-8 text-[1.75rem] md:text-[2.25rem]">Our Story</h2>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-              gap: { xs: 4, md: 6 },
-            }}
-          >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: '1.0625rem' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            <div className="flex flex-col gap-5">
+              <p className="text-muted-foreground leading-[1.8] text-[1.0625rem]">
                 Finding a queer-friendly bar shouldn't require a group chat, three Reddit threads,
                 and a leap of faith. We started The Queer Guide because we were tired of guessing
                 which spaces were actually safe — and which just slapped a rainbow on their logo in June.
-              </Typography>
-              <Typography sx={{ color: 'text.secondary', lineHeight: 1.8, fontSize: '1.0625rem' }}>
+              </p>
+              <p className="text-muted-foreground leading-[1.8] text-[1.0625rem]">
                 What began as a personal list of trusted venues has grown into a global platform — verified
                 by the community, powered by real experiences, and always free to use. Whether you're
                 traveling solo, moving to a new city, or just looking for your people on a Friday night,
                 we've got you.
-              </Typography>
-            </Box>
+              </p>
+            </div>
 
-            <Box
-              sx={{
-                bgcolor: isDark ? 'background.paper' : '#f5f5f5',
-                p: { xs: 3, md: 4 },
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 3,
-              }}
+            <div
+              className="p-6 md:p-8 flex flex-col gap-6 dark:bg-background"
+              style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                What makes us different
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                  <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>Community-verified</Box>
+              <h6 className="font-bold text-lg">What makes us different</h6>
+              <div className="flex flex-col gap-4">
+                <p className="text-muted-foreground leading-[1.7]">
+                  <span className="font-semibold text-foreground">Community-verified</span>
                   {' '}— Every venue is reviewed by real LGBTQ+ people, not algorithms.
-                </Typography>
-                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                  <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>Safety-first</Box>
+                </p>
+                <p className="text-muted-foreground leading-[1.7]">
+                  <span className="font-semibold text-foreground">Safety-first</span>
                   {' '}— We flag safety info, local laws, and rights so you know before you go.
-                </Typography>
-                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                  <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>Always free</Box>
+                </p>
+                <p className="text-muted-foreground leading-[1.7]">
+                  <span className="font-semibold text-foreground">Always free</span>
                   {' '}— No paywalls, no premium tiers. This platform belongs to everyone.
-                </Typography>
-                <Typography sx={{ color: 'text.secondary', lineHeight: 1.7 }}>
-                  <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>Global reach</Box>
+                </p>
+                <p className="text-muted-foreground leading-[1.7]">
+                  <span className="font-semibold text-foreground">Global reach</span>
                   {' '}— From Berlin to Bangkok, São Paulo to Sydney — and growing every day.
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </ScrollReveal>
 
-      {/* ── What We Offer ────────────────────────────────────────────── */}
-      <Box
-        component="section"
-        sx={{
-          bgcolor: isDark ? 'background.paper' : '#f5f5f5',
-          py: { xs: 8, md: 14 },
-          px: { xs: 2, sm: 3, md: 4 },
-        }}
+      {/* What We Offer */}
+      <BackgroundDots
+        className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
+        style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
       >
-        <Typography
-          variant="h2"
-          className="reveal-up"
-          sx={{
-            fontWeight: 800,
-            mb: { xs: 4, md: 5 },
-            fontSize: { xs: '1.75rem', md: '2.25rem' },
-          }}
-        >
+        <h2 className="reveal-up font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">
           What We Offer
-        </Typography>
+        </h2>
 
-        <StaggerGrid
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-            },
-            gap: 2.5,
-          }}
-        >
+        <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -352,131 +211,58 @@ export default function About() {
                       gap: 12,
                     }}
                   >
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        fontWeight: 700,
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontSize: { xs: '1rem', md: '1.0625rem' },
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}
+                    <p
+                      className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2"
                     >
                       <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
                       {feature.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
-                      {feature.description}
-                    </Typography>
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-[1.6]">{feature.description}</p>
                   </CardContent>
                 </Card>
               </LocalizedLink>
             );
           })}
         </StaggerGrid>
-      </Box>
+      </BackgroundDots>
 
-      {/* ── Our Values ───────────────────────────────────────────────── */}
+      {/* Our Values */}
       <ScrollReveal direction="up">
-        <Box
-          component="section"
-          sx={{
-            py: { xs: 8, md: 14 },
-            px: { xs: 2, sm: 3, md: 4 },
-          }}
-        >
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 800,
-              mb: { xs: 4, md: 5 },
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-            }}
-          >
-            Our Values
-          </Typography>
+        <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
+          <h2 className="font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">Our Values</h2>
 
-          <StaggerGrid
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(3, 1fr)',
-              },
-              gap: 2.5,
-            }}
-          >
+          <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             {values.map((value) => {
               const Icon = value.icon;
               return (
-                <Box key={value.title} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
+                <div key={value.title} className="flex flex-col gap-2">
+                  <p className="font-bold flex items-center gap-2">
                     <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
                     {value.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
-                    {value.description}
-                  </Typography>
-                </Box>
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-[1.6]">{value.description}</p>
+                </div>
               );
             })}
           </StaggerGrid>
-        </Box>
+        </section>
       </ScrollReveal>
 
-      {/* ── Community ────────────────────────────────────────────────── */}
+      {/* Community */}
       <ScrollReveal direction="up">
-        <Box
-          component="section"
-          sx={{
-            bgcolor: isDark ? 'background.paper' : '#f5f5f5',
-            py: { xs: 8, md: 14 },
-            px: { xs: 2, sm: 3, md: 4 },
-          }}
+        <section
+          className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
+          style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
         >
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 800,
-              mb: { xs: 1, md: 2 },
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-            }}
-          >
+          <h2 className="font-extrabold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">
             The People Behind It
-          </Typography>
-          <Typography
-            sx={{
-              color: 'text.secondary',
-              mb: { xs: 4, md: 5 },
-              fontSize: '1.0625rem',
-              lineHeight: 1.7,
-              maxWidth: '600px',
-            }}
-          >
+          </h2>
+          <p className="text-muted-foreground mb-8 md:mb-10 text-[1.0625rem] leading-[1.7] max-w-[600px]">
             The Queer Guide isn't run by a corporation — it's powered by passionate
             community members who volunteer their time and energy.
-          </Typography>
+          </p>
 
-          <StaggerGrid
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                md: 'repeat(3, 1fr)',
-              },
-              gap: 2.5,
-            }}
-          >
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {team.map((member) => (
               <Card key={member.name} style={{ height: '100%' }}>
                 <CardContent
@@ -487,69 +273,27 @@ export default function About() {
                     gap: 8,
                   }}
                 >
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                    {member.name}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'brand.main', fontWeight: 600 }}>
+                  <p className="font-bold">{member.name}</p>
+                  <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                     {member.role}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6 }}>
-                    {member.description}
-                  </Typography>
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-[1.6]">{member.description}</p>
                 </CardContent>
               </Card>
             ))}
           </StaggerGrid>
-        </Box>
+        </section>
       </ScrollReveal>
 
-      {/* ── Get Involved CTA ─────────────────────────────────────────── */}
-      <Box
-        component="section"
-        sx={{
-          bgcolor: 'text.primary',
-          color: 'background.default',
-          py: { xs: 8, md: 14 },
-          px: { xs: 2, sm: 3, md: 4 },
-        }}
-      >
+      {/* Get Involved CTA */}
+      <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8 bg-foreground text-background">
         <ScrollReveal direction="up">
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 800,
-              mb: { xs: 1, md: 2 },
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-              color: 'inherit',
-            }}
-          >
-            Get Involved
-          </Typography>
-          <Typography
-            sx={{
-              color: 'inherit',
-              opacity: 0.6,
-              mb: { xs: 4, md: 5 },
-              fontSize: '1.0625rem',
-              lineHeight: 1.7,
-              maxWidth: '600px',
-            }}
-          >
+          <h2 className="font-extrabold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">Get Involved</h2>
+          <p className="opacity-60 mb-8 md:mb-10 text-[1.0625rem] leading-[1.7] max-w-[600px]">
             This platform grows because people like you contribute. Here's how you can help.
-          </Typography>
+          </p>
 
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(4, 1fr)',
-              },
-              gap: 2.5,
-              mb: { xs: 5, md: 6 },
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 mb-10 md:mb-12">
             {[
               { icon: MapPin, title: 'Add Venues', desc: 'Know a safe spot? Share it.', link: '/venues/new' },
               { icon: Calendar, title: 'Create Events', desc: 'Organize community gatherings.', link: '/events/new' },
@@ -558,42 +302,32 @@ export default function About() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <Box key={item.title} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      color: 'inherit',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
+                <div key={item.title} className="flex flex-col gap-2">
+                  <p className="font-bold flex items-center gap-2">
                     <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
                     {item.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'inherit', opacity: 0.5, lineHeight: 1.6 }}>
-                    {item.desc}
-                  </Typography>
-                </Box>
+                  </p>
+                  <p className="text-sm opacity-50 leading-[1.6]">{item.desc}</p>
+                </div>
               );
             })}
-          </Box>
+          </div>
 
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <div className="flex gap-4 flex-wrap">
             <LocalizedLink to="/venues" style={{ textDecoration: 'none' }}>
               <Button size="lg">
                 Explore Venues
                 <ArrowRight style={{ width: 18, height: 18, marginLeft: 8 }} aria-hidden="true" />
               </Button>
             </LocalizedLink>
-            <LocalizedLink to="/donate" style={{ textDecoration: 'none' }}>
-              <Button variant="outline" size="lg">
+            <LocalizedLink to="/donate" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Button variant="outline" size="lg" style={{ color: 'inherit' }}>
                 Support Us
               </Button>
             </LocalizedLink>
-          </Box>
+          </div>
         </ScrollReveal>
-      </Box>
-    </Box>
+      </section>
+    </div>
   );
 }

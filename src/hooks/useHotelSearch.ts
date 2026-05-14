@@ -15,6 +15,7 @@ interface UseHotelSearchOptions {
   hotelType?: HotelTypeOption;
   priceMin?: number;
   priceMax?: number;
+  lgbtqFriendlyOnly?: boolean;
 }
 
 export function useHotelSearch({
@@ -28,6 +29,7 @@ export function useHotelSearch({
   hotelType,
   priceMin,
   priceMax,
+  lgbtqFriendlyOnly,
 }: UseHotelSearchOptions) {
   return useQuery({
     queryKey: [
@@ -41,6 +43,7 @@ export function useHotelSearch({
       hotelType,
       priceMin,
       priceMax,
+      lgbtqFriendlyOnly,
     ],
     queryFn: async (): Promise<BookingResult[]> => {
       if (!city) return [];
@@ -56,6 +59,7 @@ export function useHotelSearch({
           hotelType,
           priceMin,
           priceMax,
+          lgbtqFriendlyOnly,
         },
       });
 
@@ -85,6 +89,7 @@ export function useHotelSearch({
           if (!hasValidPrice(h.price)) return false;
           if (priceMin !== undefined && h.price < priceMin) return false;
           if (priceMax !== undefined && h.price > priceMax) return false;
+          if (lgbtqFriendlyOnly && h.lgbtqFriendly !== true) return false;
           return true;
         });
     },

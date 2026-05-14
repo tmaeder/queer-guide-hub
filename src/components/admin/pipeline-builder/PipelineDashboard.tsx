@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertTriangle, CheckCircle, Database,
   Play, Shield, XCircle, Zap,
 } from 'lucide-react';
-import { usePipelineRuns, useCircuitBreakers, useStagingStats, usePipelineDefinitionsList } from './hooks/usePipelineHistory';
+import { usePipelineRuns, useCircuitBreakers, useStagingStats, usePipelineDefinitionsList, usePipelineHealthAlerts } from './hooks/usePipelineHistory';
+import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router';
 
 const statusColors: Record<string, string> = {
@@ -38,8 +39,21 @@ export default function PipelineDashboard() {
   const { data: circuitBreakers } = useCircuitBreakers();
   const { data: stagingStats } = useStagingStats();
   const { data: definitions } = usePipelineDefinitionsList();
+  const { data: healthAlerts } = usePipelineHealthAlerts();
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [runningPipelines, setRunningPipelines] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
+
+  const handleRunNow = async (pipelineName: string) => {
+    setRunningPipelines(prev => new Set(prev).add(pipelineName));
+    try {
+      await supabase.functions.invoke('pipeline-executor', {
+        body: { action: 'start', pipeline_name: pipelineName, triggered_by: 'manual' },
+      });
+    } finally {
+      setTimeout(() => setRunningPipelines(prev => { const s = new Set(prev); s.delete(pipelineName); return s; }), 3000);
+    }
+  };
 
   const selectedRun = runs?.find(r => r.id === selectedRunId);
 
@@ -172,7 +186,7 @@ export default function PipelineDashboard() {
                         <div key={nodeId} className="border rounded-md p-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-mono truncate">{nodeId}</span>
-                            <Badge variant="outline" className={`text-[10px] ${statusColors[state.status] || ''}`}>
+                            <Badge variant="outline" className={`text-2xs ${statusColors[state.status] || ''}`}>
                               {state.status}
                             </Badge>
                           </div>
@@ -287,23 +301,45 @@ export default function PipelineDashboard() {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Schedule</TableHead>
-                    <TableHead>Template</TableHead>
+                    <TableHead>Health</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {definitions?.map((def: Record<string, unknown>) => (
-                    <TableRow key={def.id as string} className="cursor-pointer hover:bg-accent" onClick={() => navigate(`/admin/pipelines`)}>
-                      <TableCell className="font-medium">{(def.display_name || def.name) as string}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{(def.schedule as string) || 'Manual'}</TableCell>
-                      <TableCell>{def.is_template ? <Badge variant="outline" className="text-xs">Template</Badge> : null}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs ${def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 text-gray-500'}`}>
-                          {def.is_enabled ? 'Enabled' : 'Disabled'}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {definitions?.map((def: Record<string, unknown>) => {
+                    const name = def.name as string;
+                    const alert = healthAlerts?.[name];
+                    const isTriggering = runningPipelines.has(name);
+                    return (
+                      <TableRow key={def.id as string} className="cursor-pointer hover:bg-accent" onClick={() => navigate('/admin/pipelines')}>
+                        <TableCell className="font-medium">{(def.display_name || def.name) as string}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{(def.schedule as string) || 'Manual'}</TableCell>
+                        <TableCell>
+                          {alert ? (
+                            <Badge variant="outline" className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              {((alert.detail as Record<string, unknown>)?.consecutive_failures as number) ?? 1}x
+                            </Badge>
+                          ) : (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-xs ${def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 text-gray-500'}`}>
+                            {def.is_template ? 'Template' : def.is_enabled ? 'Enabled' : 'Disabled'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell onClick={e => e.stopPropagation()}>
+                          {def.is_enabled && !def.is_template && (
+                            <Button size="sm" variant="outline" className="h-7 text-xs" disabled={isTriggering} onClick={() => handleRunNow(name)}>
+                              <Play className="h-3 w-3 mr-1" />{isTriggering ? 'Queued' : 'Run Now'}
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>

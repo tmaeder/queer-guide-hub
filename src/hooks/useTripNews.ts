@@ -69,6 +69,7 @@ export function useTripNews(countryIds: string[]) {
         .overlaps('country_ids', countryIds)
         .gte('published_at', sinceIso)
         .is('duplicate_of_id', null)
+        .or('quality_status.is.null,quality_status.eq.passed')
         .order('published_at', { ascending: false })
         .limit(12);
 

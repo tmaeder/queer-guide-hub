@@ -1,36 +1,30 @@
-import { Play } from 'lucide-react';
+import { Play, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ModernVideoPlayer } from '@/components/ui/modern-video-player';
 import { useVideos } from '@/hooks/useVideos';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 
 export default function Videos() {
   const { videos, loading, error } = useVideos();
 
   if (loading) {
     return (
-      <Container sx={{ py: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
-          <Box sx={{ textAlign: 'center' }}>
-            <CircularProgress size={32} sx={{ mb: 2 }} />
-            <Typography>Loading videos...</Typography>
-          </Box>
-        </Box>
-      </Container>
+      <div className="container mx-auto py-6 px-4">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 mb-4 mx-auto animate-spin" aria-label="Loading" />
+            <p>Loading videos...</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Container sx={{ py: 3 }}>
-        <Typography color="error" sx={{ textAlign: 'center' }}>
-          Error: {error}
-        </Typography>
-      </Container>
+      <div className="container mx-auto py-6 px-4">
+        <p className="text-destructive text-center">Error: {error}</p>
+      </div>
     );
   }
 
@@ -42,42 +36,45 @@ export default function Videos() {
   };
 
   return (
-    <Container sx={{ py: 3 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>Video Gallery</Typography>
-        <Typography color="text.secondary">
+    <div className="container mx-auto py-6 px-4">
+      <div className="mb-8">
+        <h4 className="text-2xl font-bold mb-2">Video Gallery</h4>
+        <p className="text-muted-foreground">
           Modern web video with AV1/VP9 &rarr; H.264 fallback and adaptive streaming
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {videos.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 6 }}>
+        <div className="text-center py-12">
           <Play style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>No videos available</Typography>
-          <Typography color="text.secondary">
+          <h6 className="text-base font-semibold mb-2">No videos available</h6>
+          <p className="text-muted-foreground">
             Videos will appear here once they're uploaded and processed
-          </Typography>
-        </Box>
+          </p>
+        </div>
       ) : (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 4 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {videos.map((video) => (
             <Card key={video.id} style={{ overflow: 'hidden' }}>
               <CardHeader>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="flex justify-between items-start">
                   <CardTitle style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{video.title}</CardTitle>
                   <Badge variant="secondary">
                     {video.renditions.length} renditions
                   </Badge>
-                </Box>
+                </div>
                 {video.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  <p
+                    className="text-sm text-muted-foreground"
+                    style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+                  >
                     {video.description}
-                  </Typography>
+                  </p>
                 )}
               </CardHeader>
 
               <CardContent style={{ padding: 0 }}>
-                <Box sx={{ aspectRatio: '16/9', bgcolor: 'black' }}>
+                <div className="bg-black" style={{ aspectRatio: '16/9' }}>
                   <ModernVideoPlayer
                     video={{
                       id: video.id,
@@ -99,19 +96,19 @@ export default function Videos() {
                       }))
                     }}
                     controls={true}
-                    sx={{ width: '100%', height: '100%' }}
+                    className="w-full h-full"
                   />
-                </Box>
+                </div>
 
-                <Box sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">Duration: {formatDuration(video.duration_seconds)}</Typography>
-                    <Typography variant="body2" color="text.secondary">Uploaded: {new Date(video.created_at).toLocaleDateString()}</Typography>
-                  </Box>
+                <div className="p-4">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">Duration: {formatDuration(video.duration_seconds)}</p>
+                    <p className="text-sm text-muted-foreground">Uploaded: {new Date(video.created_at).toLocaleDateString()}</p>
+                  </div>
 
-                  <Box sx={{ mt: 1.5 }}>
-                    <Typography variant="caption" sx={{ fontWeight: 500, mb: 0.5, display: 'block' }}>Available formats:</Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  <div className="mt-3">
+                    <span className="text-xs font-medium mb-1 block">Available formats:</span>
+                    <div className="flex flex-wrap gap-1">
                       {video.renditions.map((rendition) => (
                         <Badge
                           key={rendition.id}
@@ -121,14 +118,14 @@ export default function Videos() {
                           {rendition.resolution !== 'source' && ` ${rendition.resolution}`}
                         </Badge>
                       ))}
-                    </Box>
-                  </Box>
-                </Box>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }

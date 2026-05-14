@@ -11,7 +11,7 @@ import {
   getEntitiesForDedupe,
   linkSourceToCanonical,
   touchEntity,
-  recordNormalizeRejection,
+  recordNormalizeRejection
 } from '../db/queries.js';
 import { publishToStaging } from '../db/staging-publisher.js';
 import { findBestMatch, type DedupeCandidate } from '../utils/dedupe.js';
@@ -161,6 +161,10 @@ export async function runConnector(
               result.blockedByRobots++;
               continue;
             }
+
+            // Skip entities whose type doesn't match the job's requested type
+            // (e.g. patroc returns venues alongside events on city pages).
+            if (rawEntity.entity_type !== entityType) continue;
 
             result.parsed++;
 
@@ -333,6 +337,7 @@ export async function runConnector(
           stack: null,
           timestamp: new Date(),
         })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }
   } catch (err) {
@@ -348,6 +353,7 @@ export async function runConnector(
           stack: (err as Error).stack ?? null,
           timestamp: new Date(),
         }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }
   } finally {

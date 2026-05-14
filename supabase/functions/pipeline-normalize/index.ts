@@ -8,6 +8,7 @@ import {
 } from '../_shared/hotel-pipeline-utils.ts'
 import { computeIdempotencyKey } from '../_shared/idempotency.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline Normalize
@@ -16,13 +17,13 @@ import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 // into normalized_data for downstream dedup & commit.
 // ============================================================
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
   try {
     const body = await req.json().catch(() => ({}))
-    const pipelineRunId = body.pipeline_run_id as string
+    const _pipelineRunId = body.pipeline_run_id as string
     const entityType    = body.entityType as string
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
@@ -34,7 +35,6 @@ Deno.serve(async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
-    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (entityType)    query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
     await logPipelineError(supabase, 'pipeline-normalize', error, { severity: 'fatal' })
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))
 
 function guessEntityType(t: string | null): string {
   if (!t) return 'unknown'
@@ -163,26 +163,30 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
   n.name        = cleanText(raw.name || raw.title || raw.display_name || '')
   n.description = cleanText(raw.description || raw.body || raw.content || raw.summary || '')
 
-  // Location
+  // Location — also check raw.geo.lat/lng (outsavvy, gaycities scraper format)
   const loc = (raw.location ?? {}) as Record<string, unknown>
-  const lat = Number(raw.lat ?? raw.latitude ?? loc.lat)
-  const lng = Number(raw.lng ?? raw.longitude ?? loc.lng ?? raw.lon)
+  const geo = (raw.geo ?? {}) as Record<string, unknown>
+  const lat = Number(raw.lat ?? raw.latitude ?? loc.lat ?? geo.lat)
+  const lng = Number(raw.lng ?? raw.longitude ?? loc.lng ?? raw.lon ?? geo.lng)
   if (Number.isFinite(lat) || Number.isFinite(lng) || raw.address || raw.city || raw.country) {
+    const country = cleanText(raw.country || loc.country || '')
     n.location = {
       lat: Number.isFinite(lat) ? lat : null,
       lng: Number.isFinite(lng) ? lng : null,
       address: cleanText(raw.address || loc.address || ''),
       city:    cleanText(raw.city || loc.city || ''),
-      country: cleanText(raw.country || loc.country || ''),
-      country_code: String(raw.country_code || raw.countryCode || loc.country_code || '').toUpperCase().slice(0, 2),
+      country: country || null,
+      country_code: String(raw.country_code || raw.countryCode || loc.country_code || '').toUpperCase().slice(0, 2) || null,
     }
   }
 
-  // Dates (events)
-  if (raw.start_date || raw.date || raw.created_at || raw.published_at) {
+  // Dates (events) — also check start_datetime/end_datetime (outsavvy format)
+  const startDate = raw.start_date || raw.start_datetime || raw.date || raw.created_at || raw.published_at
+  const endDate = raw.end_date || raw.end_datetime
+  if (startDate) {
     n.dates = {
-      start: normalizeDate(raw.start_date || raw.date || raw.published_at),
-      end:   normalizeDate(raw.end_date),
+      start: normalizeDate(startDate),
+      end:   normalizeDate(endDate),
     }
   }
 
@@ -258,6 +262,12 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
     if (amenities.length)                n.amenities          = amenities
     if (bookingUrl)                      n.booking_url        = String(bookingUrl).trim()
     if (markers.length)                  n.lgbtq_markers      = markers
+
+    if (raw.is_organizer === true) n.is_organizer = true
+    const handles = raw.organizer_handles
+    if (handles && typeof handles === 'object' && !Array.isArray(handles)) {
+      n.organizer_handles = handles
+    }
   }
 
   if (entityType === 'country') {

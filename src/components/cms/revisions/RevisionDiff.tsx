@@ -4,16 +4,13 @@
  * Shows old (red) and new (green) values for each changed field.
  */
 
+import { Button } from '@/components/ui/button';
 import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Stack,
-  Divider,
-  IconButton,
   Tooltip,
-} from '@mui/material';
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from '@/components/ui/tooltip';
 import { X } from 'lucide-react';
 
 interface RevisionDiffProps {
@@ -34,11 +31,6 @@ function formatValue(value: unknown): string {
   return String(value);
 }
 
-/**
- * Compute a simple inline diff for two strings.
- * Returns an array of segments: { text, type: 'same' | 'removed' | 'added' }.
- * This is a word-level diff using a basic LCS approach.
- */
 interface DiffSegment {
   text: string;
   type: 'same' | 'removed' | 'added';
@@ -48,11 +40,9 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
   const oldWords = oldStr.split(/(\s+)/);
   const newWords = newStr.split(/(\s+)/);
 
-  // Simple LCS-based word diff
   const m = oldWords.length;
   const n = newWords.length;
 
-  // For very long strings, fall back to block diff
   if (m > 500 || n > 500) {
     const segments: DiffSegment[] = [];
     if (oldStr) segments.push({ text: oldStr, type: 'removed' });
@@ -60,7 +50,6 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
     return segments;
   }
 
-  // Build LCS table
   const dp: number[][] = Array.from({ length: m + 1 }, () =>
     Array(n + 1).fill(0)
   );
@@ -75,7 +64,6 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
     }
   }
 
-  // Backtrack to build diff
   const segments: DiffSegment[] = [];
   let i = m;
   let j = n;
@@ -95,7 +83,6 @@ function computeInlineDiff(oldStr: string, newStr: string): DiffSegment[] {
     }
   }
 
-  // Reverse and merge adjacent segments of the same type
   stack.reverse();
   for (const seg of stack) {
     if (segments.length > 0 && segments[segments.length - 1].type === seg.type) {
@@ -112,48 +99,45 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
   const segments = computeInlineDiff(oldStr, newStr);
 
   return (
-    <Typography
-      variant="body2"
-      component="div"
-      sx={{ fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
+    <div
+      className="text-sm"
+      style={{ fontFamily: 'monospace', fontSize: '0.8rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
     >
       {segments.map((seg, idx) => {
         if (seg.type === 'removed') {
           return (
-            <Box
+            <span
               key={idx}
-              component="span"
-              sx={{
+              style={{
                 backgroundColor: 'rgba(239, 68, 68, 0.15)',
                 color: '#dc2626',
                 textDecoration: 'line-through',
                 borderRadius: '2px',
-                px: 0.25,
+                padding: '0 2px',
               }}
             >
               {seg.text}
-            </Box>
+            </span>
           );
         }
         if (seg.type === 'added') {
           return (
-            <Box
+            <span
               key={idx}
-              component="span"
-              sx={{
+              style={{
                 backgroundColor: 'rgba(34, 197, 94, 0.15)',
                 color: '#16a34a',
                 borderRadius: '2px',
-                px: 0.25,
+                padding: '0 2px',
               }}
             >
               {seg.text}
-            </Box>
+            </span>
           );
         }
         return <span key={idx}>{seg.text}</span>;
       })}
-    </Typography>
+    </div>
   );
 }
 
@@ -162,36 +146,37 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
 
   if (fieldNames.length === 0) {
     return (
-      <Paper variant="outlined" sx={{ p: 3 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" fontWeight={600}>
-            Changes
-          </Typography>
-          <IconButton size="small" onClick={onClose}>
+      <div className="rounded-md border border-border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-base font-semibold">Changes</span>
+          <Button variant="ghost" className="h-7 w-7 p-0" onClick={onClose}>
             <X size={16} />
-          </IconButton>
-        </Stack>
-        <Typography variant="body2" color="text.secondary">
-          No changes detected.
-        </Typography>
-      </Paper>
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground">No changes detected.</p>
+      </div>
     );
   }
 
   return (
-    <Paper variant="outlined" sx={{ p: 3 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="subtitle1" fontWeight={600}>
+    <div className="rounded-md border border-border p-6">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-base font-semibold">
           Changes ({fieldNames.length} field{fieldNames.length !== 1 ? 's' : ''})
-        </Typography>
-        <Tooltip title="Close diff">
-          <IconButton size="small" onClick={onClose}>
-            <X size={16} />
-          </IconButton>
-        </Tooltip>
-      </Stack>
+        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" className="h-7 w-7 p-0" onClick={onClose}>
+                <X size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Close diff</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
-      <Stack spacing={2} divider={<Divider />}>
+      <div className="flex flex-col gap-4 divide-y divide-border">
         {fieldNames.map((field) => {
           const { old: oldVal, new: newVal } = changes[field];
           const oldStr = formatValue(oldVal);
@@ -200,40 +185,28 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
             typeof oldVal === 'string' && typeof newVal === 'string';
 
           return (
-            <Box key={field}>
-              <Typography
-                variant="caption"
-                fontWeight={600}
-                color="text.secondary"
-                sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1, display: 'block' }}
-              >
+            <div key={field} className="pt-4 first:pt-0">
+              <span className="block mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {field.replace(/_/g, ' ')}
-              </Typography>
+              </span>
 
               {isStringDiff ? (
                 <InlineDiff oldStr={oldStr} newStr={newStr} />
               ) : (
-                <Stack spacing={1}>
-                  {/* Old value */}
-                  <Box
-                    sx={{
+                <div className="flex flex-col gap-2">
+                  <div
+                    className="rounded p-3"
+                    style={{
                       backgroundColor: 'rgba(239, 68, 68, 0.08)',
                       border: '1px solid rgba(239, 68, 68, 0.2)',
-                      borderRadius: 1,
-                      p: 1.5,
                     }}
                   >
-                    <Typography
-                      variant="caption"
-                      color="error.main"
-                      fontWeight={600}
-                      sx={{ display: 'block', mb: 0.5 }}
-                    >
+                    <span className="block mb-1 text-xs font-semibold text-destructive">
                       Removed
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
+                    </span>
+                    <div
+                      className="text-sm"
+                      style={{
                         fontFamily: 'monospace',
                         fontSize: '0.8rem',
                         whiteSpace: 'pre-wrap',
@@ -241,29 +214,22 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                       }}
                     >
                       {oldStr}
-                    </Typography>
-                  </Box>
+                    </div>
+                  </div>
 
-                  {/* New value */}
-                  <Box
-                    sx={{
+                  <div
+                    className="rounded p-3"
+                    style={{
                       backgroundColor: 'rgba(34, 197, 94, 0.08)',
                       border: '1px solid rgba(34, 197, 94, 0.2)',
-                      borderRadius: 1,
-                      p: 1.5,
                     }}
                   >
-                    <Typography
-                      variant="caption"
-                      color="success.main"
-                      fontWeight={600}
-                      sx={{ display: 'block', mb: 0.5 }}
-                    >
+                    <span className="block mb-1 text-xs font-semibold" style={{ color: '#16a34a' }}>
                       Added
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
+                    </span>
+                    <div
+                      className="text-sm"
+                      style={{
                         fontFamily: 'monospace',
                         fontSize: '0.8rem',
                         whiteSpace: 'pre-wrap',
@@ -271,20 +237,20 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                       }}
                     >
                       {newStr}
-                    </Typography>
-                  </Box>
-                </Stack>
+                    </div>
+                  </div>
+                </div>
               )}
-            </Box>
+            </div>
           );
         })}
-      </Stack>
+      </div>
 
-      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button size="small" onClick={onClose} color="inherit">
+      <div className="mt-4 flex justify-end">
+        <Button size="sm" variant="ghost" onClick={onClose}>
           Close
         </Button>
-      </Box>
-    </Paper>
+      </div>
+    </div>
   );
 }

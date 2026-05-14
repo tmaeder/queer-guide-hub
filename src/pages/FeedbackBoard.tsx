@@ -1,9 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,28 +15,29 @@ import type { FeedbackItem } from '@/components/feedback/FeedbackCard';
 import { useFeedbackVoteCounts } from '@/hooks/useFeedbackVote';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';import { useTranslation } from 'react-i18next';
+import { fetchFeedbackBoardItems, toggleFeedbackVote } from '@/hooks/usePageFetchers';
+import { Bug, Lightbulb, Sparkles, BookOpen, ChevronUp, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 
 const columns = [
-  { id: 'new', label: 'New', color: '#f59e0b' },
-  { id: 'under_review', label: 'Under Review', color: '#3b82f6' },
-  { id: 'planned', label: 'Planned', color: '#8b5cf6' },
-  { id: 'in_progress', label: 'In Progress', color: '#f97316' },
-  { id: 'done', label: 'Done', color: '#22c55e' },
+  { id: 'new', label: 'New', color: 'hsl(var(--foreground))' },
+  { id: 'under_review', label: 'Under Review', color: 'hsl(var(--muted-foreground))' },
+  { id: 'planned', label: 'Planned', color: 'hsl(var(--muted-foreground))' },
+  { id: 'in_progress', label: 'In Progress', color: 'hsl(var(--foreground))' },
+  { id: 'done', label: 'Done', color: 'hsl(var(--foreground))' },
 ] as const;
 
 const categoryConfig: Record<string, { label: string; icon: typeof Bug; color: string }> = {
-  bug: { label: 'Bug', icon: Bug, color: '#ef4444' },
-  idea: { label: 'Idea', icon: Lightbulb, color: '#f59e0b' },
-  improvement: { label: 'Improvement', icon: Sparkles, color: '#8b5cf6' },
-  'content-idea': { label: 'Content', icon: BookOpen, color: '#0ea5e9' },
+  bug: { label: 'Bug', icon: Bug, color: 'hsl(var(--foreground))' },
+  idea: { label: 'Idea', icon: Lightbulb, color: 'hsl(var(--foreground))' },
+  improvement: { label: 'Improvement', icon: Sparkles, color: 'hsl(var(--foreground))' },
+  'content-idea': { label: 'Content', icon: BookOpen, color: 'hsl(var(--foreground))' },
 };
 
 export default function FeedbackBoard() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { _t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -49,15 +47,7 @@ export default function FeedbackBoard() {
   // Fetch all feedback submissions
   const { data: items = [], isLoading } = useQuery<FeedbackItem[]>({
     queryKey: ['feedback-board'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('community_submissions' as const)
-        .select('id,data,submitted_at,feedback_status')
-        .eq('content_type', 'feedback')
-        .order('submitted_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
+    queryFn: () => fetchFeedbackBoardItems<FeedbackItem>(),
   });
 
   // Batch vote counts
@@ -73,29 +63,17 @@ export default function FeedbackBoard() {
       if (map[status]) map[status].push(item);
       else map.new.push(item);
     }
-    // Sort each column by vote count desc
     for (const col of columns) {
       map[col.id].sort((a, b) => (votesMap[b.id]?.count ?? 0) - (votesMap[a.id]?.count ?? 0));
     }
     return map;
   }, [items, votesMap]);
 
-  // Vote mutation (for detail dialog)
   const voteMutation = useMutation({
     mutationFn: async (submissionId: string) => {
       if (!user) throw new Error('Login required');
       const voteState = votesMap[submissionId];
-      if (voteState?.hasVoted) {
-        await supabase
-          .from('feedback_votes' as const)
-          .delete()
-          .eq('submission_id', submissionId)
-          .eq('user_id', user.id);
-      } else {
-        await supabase
-          .from('feedback_votes' as const)
-          .insert({ submission_id: submissionId, user_id: user.id });
-      }
+      await toggleFeedbackVote(submissionId, user.id, !!voteState?.hasVoted);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['feedback-votes'] });
@@ -120,77 +98,45 @@ export default function FeedbackBoard() {
 
   if (isLoading) {
     return (
-      <Container sx={{ py: 6, textAlign: 'center' }}>
-        <CircularProgress />
-      </Container>
+      <div className="container mx-auto px-4 py-12 text-center">
+        <Loader2 className="animate-spin h-8 w-8 mx-auto" aria-label="Loading" />
+      </div>
     );
   }
 
   return (
-    <Container sx={{ py: { xs: 2, sm: 4 } }}>
+    <div className="container mx-auto px-4 py-4 sm:py-8">
       <PageHeader
         title="Community Feedback"
         subtitle="Ideas, bugs, and improvements from the community. Vote on what matters most."
       />
 
       {/* Kanban board */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: `repeat(${columns.length}, 1fr)` },
-          gap: 2,
-          mt: 3,
-        }}
+      <div
+        className="grid gap-4 mt-6"
+        style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}
       >
         {columns.map((col) => {
           const colItems = grouped[col.id] || [];
           return (
-            <Box key={col.id}>
+            <div key={col.id}>
               {/* Column header */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  mb: 1.5,
-                  pb: 1,
-                  borderBottom: 2,
-                  borderColor: col.color,
-                }}
+              <div
+                className="flex items-center gap-2 mb-3 pb-2 border-b-2"
+                style={{ borderColor: col.color }}
               >
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  {col.label}
-                </Typography>
+                <p className="text-sm font-bold">{col.label}</p>
                 <Badge variant="secondary" style={{ fontSize: '0.65rem' }}>
                   {colItems.length}
                 </Badge>
-              </Box>
+              </div>
 
               {/* Cards */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                  maxHeight: { md: 'calc(100vh - 280px)' },
-                  overflowY: 'auto',
-                  pr: 0.5,
-                }}
-              >
+              <div className="flex flex-col gap-2 md:max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
                 {colItems.length === 0 && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      py: 2.5,
-                      textAlign: 'center',
-                      fontSize: '0.7rem',
-                      fontStyle: 'italic',
-                      opacity: 0.6,
-                    }}
-                  >
+                  <p className="py-5 text-center text-[0.7rem] italic opacity-60 text-muted-foreground">
                     —
-                  </Typography>
+                  </p>
                 )}
                 {colItems.map((item) => (
                   <FeedbackCard
@@ -202,11 +148,11 @@ export default function FeedbackBoard() {
                     onClick={() => handleCardClick(item)}
                   />
                 ))}
-              </Box>
-            </Box>
+              </div>
+            </div>
           );
         })}
-      </Box>
+      </div>
 
       {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
@@ -217,7 +163,7 @@ export default function FeedbackBoard() {
                 <DialogTitle>{selectedItem.data.title}</DialogTitle>
               </DialogHeader>
 
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+              <div className="flex gap-2 flex-wrap mb-4">
                 {(() => {
                   const cat = categoryConfig[selectedItem.data.category];
                   if (!cat) return null;
@@ -241,18 +187,18 @@ export default function FeedbackBoard() {
                 {(() => {
                   const col = columns.find((c) => c.id === selectedItem.feedback_status);
                   return col ? (
-                    <Badge variant="secondary" style={{ backgroundColor: col.color, color: '#fff' }}>
+                    <Badge variant="secondary" style={{ backgroundColor: col.color, color: 'hsl(var(--background))' }}>
                       {col.label}
                     </Badge>
                   ) : null;
                 })()}
-              </Box>
+              </div>
 
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
+              <p className="text-sm whitespace-pre-wrap mb-4">
                 {selectedItem.data.description}
-              </Typography>
+              </p>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <div className="flex items-center gap-4">
                 <Button
                   variant={votesMap[selectedItem.id]?.hasVoted ? 'default' : 'outline'}
                   size="sm"
@@ -262,7 +208,7 @@ export default function FeedbackBoard() {
                     alignItems: 'center',
                     gap: 6,
                     ...(votesMap[selectedItem.id]?.hasVoted
-                      ? { backgroundColor: 'hsl(var(--accent-warm))', color: '#fff' }
+                      ? { backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }
                       : {}),
                   }}
                 >
@@ -270,21 +216,21 @@ export default function FeedbackBoard() {
                   {votesMap[selectedItem.id]?.count ?? 0} vote
                   {(votesMap[selectedItem.id]?.count ?? 0) !== 1 ? 's' : ''}
                 </Button>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Clock style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
-                  <Typography variant="caption" color="text.secondary">
+                <div className="flex items-center gap-1">
+                  <Clock style={{ width: 12, height: 12 }} className="text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
                     {new Date(selectedItem.submitted_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
                     })}
-                  </Typography>
-                </Box>
-              </Box>
+                  </span>
+                </div>
+              </div>
             </>
           )}
         </DialogContent>
       </Dialog>
-    </Container>
+    </div>
   );
 }

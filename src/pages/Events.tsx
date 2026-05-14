@@ -1,11 +1,16 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { TrendingByType } from '@/components/discovery/TrendingByType';
+import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
+import { FeaturedEventsRail } from '@/components/events/FeaturedEventsRail';
+import { SmartEmptyState } from '@/components/events/SmartEmptyState';
+import { PresetChips, getPresetDateRange, type EventPresetId } from '@/components/events/PresetChips';
 import { useEvents } from '@/hooks/useEvents';
 import { useMeta } from '@/hooks/useMeta';
 import { useVisitorLocation } from '@/hooks/useVisitorLocation';
 import { EventCard } from '@/components/events/EventCard';
 import { EventsCalendarView } from '@/components/events/EventsCalendarView';
+import { EventsMapView } from '@/components/events/EventsMapView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -23,7 +28,6 @@ import { Switch } from '@/components/ui/switch';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import {
   Calendar,
-  Plus,
   Loader,
   Search,
   Filter,
@@ -34,7 +38,7 @@ import {
   Grid,
   MapPin,
 } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -51,11 +55,10 @@ import { format } from 'date-fns';
 import { dateFnsLocaleFor } from '@/i18n/dateFnsLocale';
 import { displayCityName } from '@/utils/cityDisplay';
 import { dedupeCitiesByNormalized, normalizeCityLabel } from '@/utils/dateRange';
-import Box from '@mui/material/Box';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { useTheme } from '@mui/material/styles';import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useSearchParams } from 'react-router';
 
 
 type Event = Database['public']['Tables']['events']['Row'];
@@ -70,6 +73,7 @@ const eventTypes = [
   'social',
   'fundraiser',
   'performance',
+  'cruise',
 ];
 
 const PRIDE_SUBTYPES: Array<{ tag: string; label: string }> = [
@@ -85,7 +89,6 @@ const Events = () => {
   const { t, i18n } = useTranslation();
   const dfLocale = dateFnsLocaleFor(i18n.language);
   const navigate = useLocalizedNavigate();
-  const theme = useTheme();
   const { events, loading, error, hasMore, datasetTotal, fetchEvents, updateAttendance, loadingTimedOut } =
     useEvents(false);
   const { user } = useAuth();
@@ -108,7 +111,7 @@ const Events = () => {
 
   const [_selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'calendar' | 'map'>('grid');
 
   // Filter states
   const [search, setSearch] = useState('');
@@ -120,6 +123,10 @@ const Events = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [nearMe, setNearMe] = useState(false);
   const [showPast, setShowPast] = useState(false);
+  const [isFree, setIsFree] = useState(false);
+  const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [activePreset, setActivePreset] = useState<EventPresetId | null>(null);
+  const [sort, setSort] = useState<'date-asc' | 'date-desc' | 'popularity'>('date-asc');
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
@@ -152,6 +159,9 @@ const Events = () => {
       dateRange,
       nearMe: nearMe ? userLocation : undefined,
       includePast: showPast || undefined,
+      featured: featuredOnly || undefined,
+      isFree: isFree || undefined,
+      sort,
     };
     setPage(1);
     setAutoLoadedCount(0);
@@ -161,6 +171,54 @@ const Events = () => {
       append: false,
     });
   };
+  const handlePresetSelect = async (preset: EventPresetId | null) => {
+    // Clear any previously applied preset-specific state
+    setIsFree(false);
+    setFeaturedOnly(false);
+    if (preset === null || preset === activePreset) {
+      setActivePreset(null);
+      setStartDate(undefined);
+      setEndDate(undefined);
+      if (preset === 'near-me' || activePreset === 'near-me') {
+        setNearMe(false);
+        setUserLocation(null);
+      }
+      return;
+    }
+    setActivePreset(preset);
+    const range = getPresetDateRange(preset);
+    if (range) {
+      setStartDate(range.start);
+      setEndDate(range.end);
+    } else {
+      setStartDate(undefined);
+      setEndDate(undefined);
+    }
+    if (preset === 'pride') setEventType('pride');
+    if (preset === 'free') setIsFree(true);
+    if (preset === 'featured') setFeaturedOnly(true);
+    if (preset === 'near-me') {
+      await handleNearMe();
+      return;
+    }
+    setPage(1);
+    setAutoLoadedCount(0);
+    await fetchEvents(
+      {
+        search: search || undefined,
+        city: city || undefined,
+        eventType: preset === 'pride' ? 'pride' : eventType && eventType !== 'all' ? eventType : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        dateRange: range ? { start: range.start.toISOString(), end: range.end.toISOString() } : undefined,
+        featured: preset === 'featured' || undefined,
+        isFree: preset === 'free' || undefined,
+        includePast: showPast || undefined,
+        sort,
+      },
+      { page: 1, pageSize: PAGE_SIZE, append: false },
+    );
+  };
+
   const handleNearMe = async () => {
     if (!nearMe) {
       setLocationLoading(true);
@@ -216,6 +274,10 @@ const Events = () => {
     setNearMe(false);
     setUserLocation(null);
     setShowPast(false);
+    setIsFree(false);
+    setFeaturedOnly(false);
+    setActivePreset(null);
+    setSort('date-asc');
     setPage(1);
     setAutoLoadedCount(0);
     await fetchEvents(
@@ -265,7 +327,7 @@ const Events = () => {
     setSelectedEvent(event);
   };
   const hasActiveFilters =
-    search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe || showPast;
+    search || city || eventType || selectedTags.length > 0 || startDate || endDate || nearMe || showPast || isFree || featuredOnly || activePreset;
   const autoInitDone = useRef(false);
   useEffect(() => {
     if (autoInitDone.current) return;
@@ -294,24 +356,76 @@ const Events = () => {
     handleFiltersChange();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showPast]);
+
+  // Reactive city filter — fire as soon as a value is picked from the
+  // combobox. Avoids the "user picks London but list doesn't update" trap.
+  const cityMounted = useRef(false);
+  useEffect(() => {
+    if (!cityMounted.current) {
+      cityMounted.current = true;
+      return;
+    }
+    handleFiltersChange();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city]);
+
+  // Re-fetch when sort changes
+  const sortMounted = useRef(false);
+  useEffect(() => {
+    if (!sortMounted.current) {
+      sortMounted.current = true;
+      return;
+    }
+    handleFiltersChange();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort]);
+
+  // Debounced search — apply ~300ms after the user stops typing so the
+  // list filters live. Enter still flushes immediately via onKeyDown.
+  const debouncedSearch = useDebounce(search, 300);
+  const searchMounted = useRef(false);
+  useEffect(() => {
+    if (!searchMounted.current) {
+      searchMounted.current = true;
+      return;
+    }
+    handleFiltersChange();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+
+  // Sync city + search to URL params for shareable / refreshable state.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (city) next.set('city', city);
+    else next.delete('city');
+    if (debouncedSearch) next.set('q', debouncedSearch);
+    else next.delete('q');
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city, debouncedSearch]);
+
+  // Hydrate filters from URL on first mount.
+  useEffect(() => {
+    const urlCity = searchParams.get('city');
+    const urlQ = searchParams.get('q');
+    if (urlCity) setCity(urlCity);
+    if (urlQ) setSearch(urlQ);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-12 md:py-20">
         {/* Header */}
         <PageHeader
           title={t('pages.events.title', 'Events')}
           subtitle={t('pages.events.subtitle', 'Discover and join community events in your area')}
           actions={
             <>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  p: 0.5,
-                  bgcolor: 'action.hover',
-                  borderRadius: 2,
-                }}
+              <div
+                className="flex items-center gap-1 p-1 bg-muted rounded-lg"
                 role="group"
                 aria-label="View mode"
               >
@@ -321,7 +435,7 @@ const Events = () => {
                   aria-label={t('pages.events.gridView', 'Grid view')}
                   onClick={() => setViewMode('grid')}
                 >
-                  <Grid style={{ width: 16, height: 16 }} />
+                  <Grid size={16} />
                 </Button>
                 <Button
                   variant={viewMode === 'calendar' ? 'default' : 'ghost'}
@@ -329,54 +443,49 @@ const Events = () => {
                   aria-label={t('pages.events.calendarView', 'Calendar view')}
                   onClick={() => setViewMode('calendar')}
                 >
-                  <CalendarIcon style={{ width: 16, height: 16 }} />
+                  <CalendarIcon size={16} />
                 </Button>
-              </Box>
-              <Button onClick={() => navigate('/submit/event')} style={{ display: 'flex', gap: 8 }}>
-                <Plus style={{ width: 16, height: 16 }} />
-                Submit Event
-              </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="icon"
+                  aria-label={t('pages.events.mapView', 'Map view')}
+                  onClick={() => setViewMode('map')}
+                >
+                  <MapPin size={16} />
+                </Button>
+              </div>
+              {/* P4-3 — Submit CTA consolidated to header. */}
             </>
           }
         />
 
+        {/* Spotlight — next featured / pride / festival event */}
+        {!hasActiveFilters && (
+          <div className="mt-4 mb-6">
+            <EventsHeroSpotlight />
+          </div>
+        )}
+
         <TrendingByType type="event" className="mt-4 mb-6" />
 
+        {/* Featured rail — editor-picked spotlight */}
+        {!hasActiveFilters && (
+          <div className="mb-10">
+            <FeaturedEventsRail city={visitorLocation?.city ?? null} />
+          </div>
+        )}
+
+        {/* Smart entry chips — preset filter combos */}
+        <div className="mb-6">
+          <PresetChips active={activePreset} onSelect={handlePresetSelect} />
+        </div>
+
         {/* Filters */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            p: 2,
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            mb: 4,
-          }}
-        >
+        <div className="flex flex-col gap-4 p-4 bg-card rounded-lg mb-8">
           {/* Search Bar */}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap' }}>
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                borderRadius: 1,
-                px: 1.5,
-                py: 1,
-                bgcolor: 'background.default',
-              }}
-            >
-              <Search
-                style={{
-                  width: 16,
-                  height: 16,
-                  color: theme.palette.text.secondary,
-                  flexShrink: 0,
-                }}
-              />
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">
+              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
               <SearchInputTyped
                 aria-label={t('pages.events.searchLabel', 'Search events')}
                 placeholders={[
@@ -404,7 +513,7 @@ const Events = () => {
                 typingSpeed={75}
                 pauseDuration={1500}
               />
-            </Box>
+            </div>
             <Button
               onClick={handleNearMe}
               variant={nearMe ? 'default' : 'outline'}
@@ -415,11 +524,11 @@ const Events = () => {
               {locationLoading ? (
                 <Loader style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
               ) : (
-                <MapPin style={{ width: 16, height: 16 }} />
+                <MapPin size={16} />
               )}
             </Button>
             <Button onClick={handleFiltersChange} size="icon" aria-label="Search events">
-              <Search style={{ width: 16, height: 16 }} />
+              <Search size={16} />
             </Button>
             <Button
               variant="outline"
@@ -428,31 +537,40 @@ const Events = () => {
               aria-label={showFilters ? 'Hide filters' : 'Show filters'}
               aria-expanded={showFilters}
             >
-              <Filter style={{ width: 16, height: 16 }} />
+              <Filter size={16} />
             </Button>
-          </Box>
+            <Button
+              variant={showPast ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setShowPast(!showPast)}
+              aria-pressed={showPast}
+              className="hidden sm:inline-flex"
+            >
+              {t('pages.events.showPastEvents', 'Past events')}
+            </Button>
+            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+              <SelectTrigger
+                className="hidden sm:flex w-[140px]"
+                aria-label={t('pages.events.sortLabel', 'Sort events')}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
+                <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Extended Filters */}
           {showFilters && (
-            <Box
-              component="nav"
+            <nav
               aria-label="Event filters"
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-                pt: 2,
-              }}
+              className="flex flex-col gap-4 pt-4"
             >
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(4, 1fr)' },
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Label htmlFor="city">{t('pages.events.city', 'City')}</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="city">{t('pages.events.cities', 'Cities')}</Label>
                   <Popover open={cityOpen} onOpenChange={setCityOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -461,7 +579,7 @@ const Events = () => {
                         aria-expanded={cityOpen}
                         style={{ width: '100%', justifyContent: 'space-between' }}
                       >
-                        {city || 'Select city...'}
+                        {city || t('pages.events.selectCities', 'Select city…')}
                         <ChevronDown
                           style={{
                             marginLeft: 8,
@@ -510,8 +628,8 @@ const Events = () => {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="eventType">{t('pages.events.eventType', 'Event Type')}</Label>
                   <Select value={eventType} onValueChange={setEventType}>
                     <SelectTrigger>
@@ -526,19 +644,19 @@ const Events = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.startDate', 'Start Date')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        className={!startDate ? 'text-muted-foreground' : ''}
                         style={{
                           width: '100%',
                           justifyContent: 'flex-start',
                           textAlign: 'left',
                           fontWeight: 400,
-                          ...(!startDate ? { color: theme.palette.text.secondary } : {}),
                         }}
                       >
                         <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
@@ -555,19 +673,19 @@ const Events = () => {
                       />
                     </PopoverContent>
                   </Popover>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                </div>
+                <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.endDate', 'End Date')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        className={!endDate ? 'text-muted-foreground' : ''}
                         style={{
                           width: '100%',
                           justifyContent: 'flex-start',
                           textAlign: 'left',
                           fontWeight: 400,
-                          ...(!endDate ? { color: theme.palette.text.secondary } : {}),
                         }}
                       >
                         <CalendarIcon style={{ marginRight: 8, width: 16, height: 16 }} />
@@ -585,14 +703,14 @@ const Events = () => {
                       />
                     </PopoverContent>
                   </Popover>
-                </Box>
-              </Box>
+                </div>
+              </div>
 
               {/* Pride sub-kinds: Parade / Week / Festival / Party / Rally / Community */}
               {eventType === 'pride' && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <div className="flex flex-col gap-2">
                   <Label>{t('pages.events.prideSubtype', 'Pride type')}</Label>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <div className="flex flex-wrap gap-2">
                     {PRIDE_SUBTYPES.map(({ tag, label }) => {
                       const active = selectedTags.includes(tag);
                       return (
@@ -612,8 +730,8 @@ const Events = () => {
                         </Button>
                       );
                     })}
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               )}
 
               {/* Tags */}
@@ -627,15 +745,7 @@ const Events = () => {
               />
 
               {/* Past events toggle */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 2,
-                  pt: 1,
-                }}
-              >
+              <div className="flex items-center justify-between gap-4 pt-2">
                 <Label htmlFor="show-past-events" style={{ cursor: 'pointer' }}>
                   {t('pages.events.showPastEvents', 'Show past events')}
                 </Label>
@@ -645,10 +755,24 @@ const Events = () => {
                   onCheckedChange={setShowPast}
                   aria-label={t('pages.events.showPastEvents', 'Show past events')}
                 />
-              </Box>
+              </div>
+
+              {/* Sort — mobile-only access (desktop has inline sort in filter row) */}
+              <div className="flex flex-col gap-2 sm:hidden">
+                <Label htmlFor="sort-mobile">{t('pages.events.sortLabel', 'Sort events')}</Label>
+                <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+                  <SelectTrigger id="sort-mobile">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
+                    <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 1, pt: 1 }}>
+              <div className="flex gap-2 pt-2">
                 <Button onClick={handleFiltersChange}>{t('pages.events.applyFilters', 'Apply Filters')}</Button>
                 {hasActiveFilters && (
                   <Button
@@ -656,20 +780,20 @@ const Events = () => {
                     onClick={clearFilters}
                     style={{ display: 'flex', gap: 8 }}
                   >
-                    <X style={{ width: 16, height: 16 }} />
+                    <X size={16} />
                     {t('pages.events.clearAll', 'Clear All')}
                   </Button>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </nav>
           )}
 
           {/* Active Filters Display */}
           {hasActiveFilters && !showFilters && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
+            <div className="flex flex-wrap gap-2 items-center">
+              <p className="text-sm text-muted-foreground">
                 {t('pages.events.activeFilters', 'Active filters:')}
-              </Typography>
+              </p>
               {search && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4 }}>
                   {t('pages.events.filterSearch', { value: search, defaultValue: `Search: ${search}` })}
@@ -773,28 +897,28 @@ const Events = () => {
                   />
                 </Badge>
               ))}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
 
         {/* Status region for screen readers */}
-        <Box
+        <div
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+          className="sr-only"
         >
           {loading ? 'Loading events...' : error ? error : `${events.length} events found`}
-        </Box>
+        </div>
 
         {/* Error State */}
         {error && !loading && <ErrorState message={error} onRetry={() => fetchEvents()} />}
 
         {/* Loading State */}
         {loading && (
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 3 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (<EventCard key={i} loading />))}
-          </Box>
+          </div>
         )}
         {loading && loadingTimedOut && <LoadingTimeout onRetry={() => fetchEvents()} />}
 
@@ -811,55 +935,54 @@ const Events = () => {
               )}
               primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
             />
-          ) : (
+          ) : showPast ? (
             <EmptyState
               icon={Calendar}
               variant="filtered"
-              title={showPast ? t('pages.events.noPastEvents', 'No past events found') : t('pages.events.filteredEmpty.title', 'No events match your filters')}
-              description={
-                showPast
-                  ? t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')
-                  : t('pages.events.filteredEmpty.body', 'Try adjusting your filters or search to see more results.')
-              }
+              title={t('pages.events.noPastEvents', 'No past events found')}
+              description={t('pages.events.noPastEventsDesc', 'No past events match these filters. Turn off the toggle to see upcoming events.')}
               primaryAction={{ label: t('pages.events.submitAnEvent', 'Submit an Event'), onClick: () => navigate('/submit/event') }}
               secondaryAction={hasActiveFilters ? { label: t('pages.events.clearFiltersLabel', 'Clear Filters'), onClick: clearFilters, variant: 'outline' } : undefined}
+            />
+          ) : (
+            <SmartEmptyState
+              city={city || undefined}
+              dateRange={startDate && endDate ? { start: startDate.toISOString(), end: endDate.toISOString() } : undefined}
+              hasActiveFilters={!!hasActiveFilters}
+              onClearFilters={clearFilters}
+              onClearCity={city ? () => { setCity(''); setAutoLocationLabel(null); } : undefined}
+              onClearDate={startDate || endDate ? () => { setStartDate(undefined); setEndDate(undefined); handleFiltersChange(); } : undefined}
             />
           )
         )}
 
         {/* Event Content */}
-        {!loading && events.length > 0 && (
-          <>
-            {viewMode === 'grid' ? (
-              <StaggerGrid
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr', lg: 'repeat(3, 1fr)' },
-                  gap: 3,
-                }}
-              >
-                {events.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onViewDetails={handleViewDetails}
-                    onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
-                  />
-                ))}
-              </StaggerGrid>
-            ) : (
-              <EventsCalendarView
-                events={events}
-                onEventSelect={handleViewDetails}
-                onAttendanceUpdate={handleAttendanceUpdate}
+        {!loading && events.length > 0 && viewMode === 'grid' && (
+          <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onViewDetails={handleViewDetails}
+                onUpdateAttendance={user ? handleAttendanceUpdate : undefined}
               />
-            )}
-          </>
+            ))}
+          </StaggerGrid>
+        )}
+        {!loading && events.length > 0 && viewMode === 'calendar' && (
+          <EventsCalendarView
+            events={events}
+            onEventSelect={handleViewDetails}
+            onAttendanceUpdate={handleAttendanceUpdate}
+          />
+        )}
+        {!loading && events.length > 0 && viewMode === 'map' && (
+          <EventsMapView events={events} height={640} />
         )}
 
         {/* Load More */}
         {!loading && events.length > 0 && (
-          <Box sx={{ textAlign: 'center', mt: 6 }}>
+          <div className="text-center mt-12">
             {hasMore && autoLoadedCount >= 50 && (
               <Button
                 variant="outline"
@@ -881,10 +1004,10 @@ const Events = () => {
                 Load More Events
               </Button>
             )}
-          </Box>
+          </div>
         )}
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 };
 export default Events;

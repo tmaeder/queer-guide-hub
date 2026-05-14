@@ -10,8 +10,7 @@ import {
   type VisibilityState,
   type GroupingState,
 } from '@tanstack/react-table';
-import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 import { MoreVertical } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +40,7 @@ export function AdminDataTable<TData extends { id: string }>({
 }: AdminDataTableProps<TData>) {
   const {
     tableName,
+    mutationTable,
     select,
     columns,
     entityFilters = [],
@@ -49,12 +49,14 @@ export function AdminDataTable<TData extends { id: string }>({
     toolbarActions,
     defaultSort,
     defaultPageSize = 25,
+    defaultFilters,
     enableSelection = false,
     enableSearch = true,
     searchColumns = [],
     baseFilters,
+    onRowClick,
     onBulkEditSuccess,
-    onBulkDeleteSuccess,
+    _onBulkDeleteSuccess,
   } = config;
 
   // Build default column visibility from meta
@@ -90,6 +92,7 @@ export function AdminDataTable<TData extends { id: string }>({
     defaultSort,
     defaultPageSize,
     defaultColumnVisibility,
+    defaultFilters,
   });
 
   const {
@@ -184,10 +187,7 @@ export function AdminDataTable<TData extends { id: string }>({
     onBulkEditSuccess?.();
   };
   return (
-    <Paper
-      elevation={0}
-      sx={{ border: '1px solid var(--border, #e4e4e7)', borderRadius: 2, overflow: 'hidden' }}
-    >
+    <div className="border border-border rounded-md overflow-hidden bg-background">
       <DataTableToolbar
         search={state.search}
         onSearchChange={setSearch}
@@ -217,7 +217,7 @@ export function AdminDataTable<TData extends { id: string }>({
         <DataTableBulkActions
           selectedCount={state.selectedIds.size}
           selectedIds={state.selectedIds}
-          tableName={tableName}
+          tableName={mutationTable ?? tableName}
           onClearSelection={clearSelection}
           onSuccess={handleRefetch}
           bulkEditFields={bulkEditFields}
@@ -234,17 +234,16 @@ export function AdminDataTable<TData extends { id: string }>({
       ) : (
         <Table>
           <TableHeader>
-            <TableRow style={{ backgroundColor: 'var(--muted, #f4f4f5)' }}>
+            <TableRow className="bg-muted">
               {enableSelection && (
                 <th style={{ width: 44, padding: '0 8px' }}>
                   <Checkbox
-                    checked={allSelected}
-                    indeterminate={someSelected}
-                    onChange={() => {
+                    aria-label="Select all rows"
+                    checked={someSelected ? 'indeterminate' : allSelected}
+                    onCheckedChange={() => {
                       if (allSelected) clearSelection();
                       else selectAll(allRowIds);
                     }}
-                    size="small"
                   />
                 </th>
               )}
@@ -262,18 +261,19 @@ export function AdminDataTable<TData extends { id: string }>({
               return (
                 <TableRow
                   key={row.id}
-                  className="content-enter"
+                  className={`content-enter ${isSelected ? 'bg-muted' : ''}`}
                   style={{
-                    backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.04)' : undefined,
                     transition: 'background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+                    cursor: onRowClick ? 'pointer' : undefined,
                   }}
+                  onClick={onRowClick ? () => onRowClick(row.original) : undefined}
                 >
                   {enableSelection && (
-                    <TableCell style={{ width: 44, padding: '0 8px' }}>
+                    <TableCell style={{ width: 44, padding: '0 8px' }} onClick={(e) => e.stopPropagation()}>
                       <Checkbox
+                        aria-label="Select row"
                         checked={isSelected}
-                        onChange={() => toggleRow(row.original.id)}
-                        size="small"
+                        onCheckedChange={() => toggleRow(row.original.id)}
                       />
                     </TableCell>
                   )}
@@ -283,14 +283,14 @@ export function AdminDataTable<TData extends { id: string }>({
                     </TableCell>
                   ))}
                   {rowActions && rowActions.length > 0 && (
-                    <TableCell style={{ width: 48, padding: '0 8px' }}>
+                    <TableCell style={{ width: 48, padding: '0 8px' }} onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" style={{ height: 28, width: 28 }}>
+                          <Button variant="ghost" size="icon" aria-label="Row actions" style={{ height: 28, width: 28 }}>
                             <MoreVertical style={{ height: 14, width: 14 }} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" side="bottom" avoidCollisions>
                           {rowActions
                             .filter((action) => !action.visible || action.visible(row.original))
                             .map((action) => (
@@ -328,6 +328,6 @@ export function AdminDataTable<TData extends { id: string }>({
         onPageSizeChange={setPageSize}
         selectedCount={state.selectedIds.size}
       />
-    </Paper>
+    </div>
   );
 }

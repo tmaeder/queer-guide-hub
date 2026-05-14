@@ -16,21 +16,14 @@
  *   - SEO meta via useMeta hook
  */
 
-import { useEffect, useState } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Chip from '@mui/material/Chip';
-import Skeleton from '@mui/material/Skeleton';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { ChevronRight, FileText, Shield, Cookie, Scale } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useCMSPage } from '@/hooks/useCMSPage';
 import DOMPurify from 'dompurify';
 import { useMeta } from '@/hooks/useMeta';
 import { LegalPageLayout } from '@/components/ui/LegalPageLayout';
-import { transition } from '@/lib/animation';
 import type { CMSPage } from '@/types/cms';
 import type { LucideIcon } from 'lucide-react';
 
@@ -63,107 +56,70 @@ function extractSections(html: string): { sections: { id: string; title: string 
   return { sections, htmlWithIds: div.innerHTML };
 }
 
+// Body HTML styling — applied via a scoped CSS class (descendant selectors).
+const HTML_BODY_CSS = `
+.qg-cms-body h1 { font-size: 2rem; font-weight: 700; margin-top: 0; margin-bottom: 1rem; line-height: 1.2; }
+.qg-cms-body h2 { font-size: 1.5rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; line-height: 1.25; }
+.qg-cms-body h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; line-height: 1.3; }
+.qg-cms-body p { font-size: 1rem; line-height: 1.8; margin-bottom: 1rem; }
+.qg-cms-body ul, .qg-cms-body ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.qg-cms-body li { margin-bottom: 0.375rem; line-height: 1.7; }
+.qg-cms-body blockquote { border-left: 3px solid hsl(var(--border)); padding-left: 1rem; margin-left: 0; font-style: italic; color: hsl(var(--muted-foreground)); margin: 1rem 0; }
+.qg-cms-body a { color: inherit; text-decoration: underline; }
+.qg-cms-body a:hover { opacity: 0.85; }
+.qg-cms-body img { max-width: 100%; height: auto; margin: 1rem 0; }
+.qg-cms-body pre { background-color: #111; color: #f5f5f5; padding: 1rem; overflow: auto; margin: 1rem 0; font-size: 0.875rem; }
+.qg-cms-body code { background-color: hsl(var(--accent)); padding: 0.125rem 0.375rem; font-size: 0.875em; }
+.qg-cms-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+.qg-cms-body th, .qg-cms-body td { border: 1px solid hsl(var(--border)); padding: 0.5rem 0.75rem; text-align: left; }
+.qg-cms-body th { background-color: hsl(var(--accent)); font-weight: 600; }
+.qg-cms-body hr { border-color: hsl(var(--border)); margin: 1.5rem 0; }
+.qg-cms-body strong { font-weight: 600; }
+.qg-cms-body .legal-intro { font-size: 1.0625rem; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem; }
+.qg-cms-body--legal h1 { display: none; }
+`;
+
+function CmsBodyStyles() {
+  return <style dangerouslySetInnerHTML={{ __html: HTML_BODY_CSS }} />;
+}
+
 // ── Skeleton ────────────────────────────────────────────────────────────────
 function PageSkeleton() {
   return (
-    <Container sx={{ py: 4 }}>
-      <Skeleton variant="text" width={120} height={24} sx={{ mb: 2 }} />
-      <Skeleton variant="text" width="70%" height={48} sx={{ mb: 1 }} />
-      <Skeleton variant="text" width="50%" height={28} sx={{ mb: 4 }} />
-      <Skeleton variant="rounded" height={200} sx={{ mb: 2 }} />
-      <Skeleton variant="text" width="100%" height={20} />
-      <Skeleton variant="text" width="90%" height={20} />
-      <Skeleton variant="text" width="95%" height={20} />
-      <Skeleton variant="text" width="80%" height={20} />
-    </Container>
+    <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
+      <Skeleton className="mb-4 h-6 w-32" />
+      <Skeleton className="mb-2 h-12 w-[70%]" />
+      <Skeleton className="mb-8 h-7 w-1/2" />
+      <Skeleton className="mb-4 h-[200px] w-full rounded-md" />
+      <Skeleton className="mb-2 h-5 w-full" />
+      <Skeleton className="mb-2 h-5 w-[90%]" />
+      <Skeleton className="mb-2 h-5 w-[95%]" />
+      <Skeleton className="h-5 w-[80%]" />
+    </div>
   );
 }
-
-// ── Shared HTML body styles ─────────────────────────────────────────────────
-const htmlBodySx = {
-  '& h1': { fontSize: '2rem', fontWeight: 700, mt: 0, mb: 2, lineHeight: 1.2 },
-  '& h2': { fontSize: '1.5rem', fontWeight: 700, mt: 4, mb: 1.5, lineHeight: 1.25 },
-  '& h3': { fontSize: '1.25rem', fontWeight: 600, mt: 3, mb: 1, lineHeight: 1.3 },
-  '& p': { fontSize: '1rem', lineHeight: 1.8, mb: 2 },
-  '& ul, & ol': { pl: 3, mb: 2 },
-  '& li': { mb: 0.75, lineHeight: 1.7 },
-  '& blockquote': {
-    borderLeft: 3,
-    borderColor: 'divider',
-    pl: 2,
-    ml: 0,
-    fontStyle: 'italic',
-    color: 'text.secondary',
-    my: 2,
-  },
-  '& a': { color: 'brand.main', '&:hover': { opacity: 0.85 } },
-  '& img': { maxWidth: '100%', height: 'auto', my: 2 },
-  '& pre': {
-    bgcolor: 'grey.900',
-    color: 'grey.100',
-    p: 2,
-    overflow: 'auto',
-    my: 2,
-    fontSize: '0.875rem',
-  },
-  '& code': {
-    bgcolor: 'action.hover',
-    px: 0.75,
-    py: 0.25,
-    fontSize: '0.875em',
-  },
-  '& table': { borderCollapse: 'collapse', width: '100%', my: 2 },
-  '& th, & td': { border: 1, borderColor: 'divider', px: 1.5, py: 1, textAlign: 'left' },
-  '& th': { bgcolor: 'action.hover', fontWeight: 600 },
-  '& hr': { borderColor: 'divider', my: 3 },
-  '& strong': { fontWeight: 600 },
-  '& .legal-intro': { fontSize: '1.0625rem', color: 'text.secondary', mb: 3 },
-} as const;
 
 // ── Generic child page card (non-legal) ─────────────────────────────────────
 function ChildPageCard({ page }: { page: CMSPage }) {
   return (
-    <Box
-      component={LocalizedLink}
+    <LocalizedLink
       to={`/${page.slug}`}
-      sx={{
-        p: 2.5,
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 2,
-        transition: transition.fast,
-        bgcolor: 'background.paper',
-        '&:hover': { opacity: 0.85 },
-      }}
+      className="flex items-start gap-4 bg-card p-5 text-foreground no-underline transition-opacity hover:opacity-85"
     >
-      <Box
-        sx={{
-          width: 40,
-          height: 40,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center bg-primary text-primary-foreground">
         <FileText size={20} />
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.25 }}>
-          {page.title}
-        </Typography>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="mb-0.5 text-base font-semibold">{page.title}</p>
         {page.subtitle && (
-          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
-            {page.subtitle}
-          </Typography>
+          <p className="text-sm leading-normal text-muted-foreground">{page.subtitle}</p>
         )}
-      </Box>
-      <ChevronRight size={18} style={{ flexShrink: 0, marginTop: 2, color: '#94a3b8' }} />
-    </Box>
+      </div>
+      <ChevronRight
+        size={18}
+        style={{ flexShrink: 0, marginTop: 2, color: 'hsl(var(--muted-foreground))' }}
+      />
+    </LocalizedLink>
   );
 }
 
@@ -172,49 +128,49 @@ function LegalHubCard({ page }: { page: CMSPage }) {
   const Icon = legalPageIcons[page.slug] || FileText;
 
   return (
-    <Box
-      component={LocalizedLink}
+    <LocalizedLink
       to={`/${page.slug}`}
-      sx={{
-        p: 3,
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 2,
-        bgcolor: 'background.paper',
-        transition: transition.fast,
-        '&:hover': {
-          opacity: 0.85,
-          '& .legal-icon': { color: 'brand.main' },
-        },
-      }}
+      className="group flex items-start gap-4 bg-card p-6 text-foreground no-underline transition-opacity hover:opacity-85"
     >
-      <Box className="legal-icon" sx={{ color: 'text.secondary', transition: transition.fast, mt: 0.25 }}>
+      <div className="mt-0.5 text-muted-foreground transition-colors group-hover:text-foreground">
         <Icon size={22} />
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.25 }}>
-          {page.title}
-        </Typography>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="mb-0.5 text-base font-semibold">{page.title}</p>
         {page.subtitle && (
-          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5 }}>
-            {page.subtitle}
-          </Typography>
+          <p className="text-sm leading-normal text-muted-foreground">{page.subtitle}</p>
         )}
-      </Box>
-      <ChevronRight size={16} style={{ flexShrink: 0, marginTop: 4, color: '#94a3b8' }} />
-    </Box>
+      </div>
+      <ChevronRight
+        size={16}
+        style={{ flexShrink: 0, marginTop: 4, color: 'hsl(var(--muted-foreground))' }}
+      />
+    </LocalizedLink>
+  );
+}
+
+function Breadcrumb({ parent, current }: { parent: CMSPage; current: CMSPage }) {
+  return (
+    <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm">
+      <LocalizedLink
+        to={`/${parent.slug}`}
+        className="font-medium text-muted-foreground hover:underline"
+      >
+        {parent.title}
+      </LocalizedLink>
+      <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
+      <span className="font-semibold text-foreground">{current.title}</span>
+    </nav>
   );
 }
 
 // ── Main component ──────────────────────────────────────────────────────────
 export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
-  const [page, setPage] = useState<CMSPage | null>(null);
-  const [parentPage, setParentPage] = useState<CMSPage | null>(null);
-  const [childPages, setChildPages] = useState<CMSPage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { data, isLoading: loading } = useCMSPage(slug);
+  const page = data?.page ?? null;
+  const parentPage = data?.parent ?? null;
+  const childPages = data?.children ?? [];
+  const notFound = !!data && data.notFound;
 
   const isLegalHub = slug === 'legal';
   const isLegalChild = page?.parent_slug === 'legal';
@@ -226,70 +182,16 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
     canonicalPath: `/${slug}`,
   });
 
-  useEffect(() => {
-    loadPage(slug);
-  }, [slug]);
-
-  async function loadPage(pageSlug: string) {
-    setLoading(true);
-    setNotFound(false);
-    setParentPage(null);
-    setChildPages([]);
-
-    try {
-      const { data, error } = await supabase
-        .from('cms_pages' as const)
-        .select('*')
-        .eq('slug', pageSlug)
-        .eq('workflow_state', 'published')
-        .single();
-
-      if (error || !data) {
-        setNotFound(true);
-        return;
-      }
-
-      const pageData = data as CMSPage;
-      setPage(pageData);
-
-      if (pageData.parent_slug) {
-        const { data: parent } = await supabase
-          .from('cms_pages' as const)
-          .select('slug, title, subtitle')
-          .eq('slug', pageData.parent_slug)
-          .eq('workflow_state', 'published')
-          .single();
-
-        if (parent) setParentPage(parent as CMSPage);
-      }
-
-      const { data: children } = await supabase
-        .from('cms_pages' as const)
-        .select('slug, title, subtitle, excerpt, category')
-        .eq('parent_slug', pageSlug)
-        .eq('workflow_state', 'published')
-        .order('title');
-
-      if (children && children.length > 0) setChildPages(children as CMSPage[]);
-    } catch {
-      setNotFound(true);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   if (loading) return <PageSkeleton />;
 
   if (notFound || !page) {
     return (
-      <Container sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-          Page Not Found
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
+      <div className="mx-auto w-full max-w-screen-lg px-4 py-16 text-center sm:px-6">
+        <h1 className="mb-2 text-3xl font-bold">Page Not Found</h1>
+        <p className="text-muted-foreground">
           The page you're looking for doesn't exist or hasn't been published yet.
-        </Typography>
-      </Container>
+        </p>
+      </div>
     );
   }
 
@@ -301,35 +203,28 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
   // ── Legal hub layout ────────────────────────────────────────────────────
   if (isLegalHub) {
     return (
-      <Container sx={{ py: { xs: 4, md: 6 }, maxWidth: 900 }}>
-        <Typography variant="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
-          The Legal Stuff
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 600 }}>
+      <div className="mx-auto w-full max-w-[900px] px-4 py-8 sm:px-6 md:py-12">
+        <h1 className="mb-1 text-3xl font-bold md:text-4xl">The Legal Stuff</h1>
+        <p className="mb-8 max-w-[600px] text-base text-muted-foreground">
           Transparency matters. Here's everything about how we operate, protect your data, and keep this space safe.
-        </Typography>
+        </p>
 
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-          gap: 1.5,
-        }}>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {childPages.map((child) => (
             <LegalHubCard key={child.slug} page={child} />
           ))}
-        </Box>
+        </div>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 5 }}>
+        <p className="mt-10 text-sm text-muted-foreground">
           Questions? Reach out at{' '}
-          <Box
-            component="a"
+          <a
             href="mailto:legal@queer.guide"
-            sx={{ color: 'brand.main', '&:hover': { opacity: 0.85 } }}
+            className="text-foreground underline hover:opacity-85"
           >
             legal@queer.guide
-          </Box>
-        </Typography>
-      </Container>
+          </a>
+        </p>
+      </div>
     );
   }
 
@@ -344,25 +239,11 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
     return (
       <>
+        <CmsBodyStyles />
         {parentPage && (
-          <Container sx={{ pt: 2, maxWidth: 1100 }}>
-            <Breadcrumbs
-              separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
-            >
-              <Link
-                component={LocalizedLink}
-                to={`/${parentPage.slug}`}
-                underline="hover"
-                color="text.secondary"
-                sx={{ fontSize: '0.875rem', fontWeight: 500 }}
-              >
-                {parentPage.title}
-              </Link>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                {page.title}
-              </Typography>
-            </Breadcrumbs>
-          </Container>
+          <div className="mx-auto w-full max-w-[1100px] px-4 pt-4 sm:px-6">
+            <Breadcrumb parent={parentPage} current={page} />
+          </div>
         )}
         <LegalPageLayout
           title={page.title}
@@ -370,12 +251,9 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
           lastUpdated={page.updated_at ? formatDate(page.updated_at) : undefined}
           sections={sections}
         >
-          <Box
+          <div
+            className="qg-cms-body qg-cms-body--legal"
             dangerouslySetInnerHTML={{ __html: htmlWithIds }}
-            sx={{
-              ...htmlBodySx,
-              '& h1': { display: 'none' },
-            }}
           />
         </LegalPageLayout>
       </>
@@ -384,60 +262,46 @@ export default function CMSRoutePage({ slug }: CMSRoutePageProps) {
 
   // ── Default CMS page layout ─────────────────────────────────────────────
   return (
-    <Container sx={{ py: 4 }}>
+    <div className="mx-auto w-full max-w-screen-lg px-4 py-8 sm:px-6">
+      <CmsBodyStyles />
       {parentPage && (
-        <Breadcrumbs
-          separator={<ChevronRight size={14} style={{ color: '#94a3b8' }} />}
-          sx={{ mb: 2 }}
-        >
-          <Link
-            component={LocalizedLink}
-            to={`/${parentPage.slug}`}
-            underline="hover"
-            color="text.secondary"
-            sx={{ fontSize: '0.875rem', fontWeight: 500 }}
-          >
-            {parentPage.title}
-          </Link>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            {page.title}
-          </Typography>
-        </Breadcrumbs>
+        <div className="mb-4">
+          <Breadcrumb parent={parentPage} current={page} />
+        </div>
       )}
 
       {page.cover_image_url && (
-        <Box
-          component="img"
+        <img
           src={page.cover_image_url}
           alt={page.cover_image_alt || page.title}
-          sx={{ width: '100%', maxHeight: 400, objectFit: 'cover', mb: 3 }}
+          className="mb-6 max-h-[400px] w-full object-cover"
         />
       )}
 
       {sanitizedHtml && (
-        <Box dangerouslySetInnerHTML={{ __html: sanitizedHtml }} sx={htmlBodySx} />
+        <div className="qg-cms-body" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
       )}
 
       {childPages.length > 0 && (
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-            Related Pages
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <div className="mt-8">
+          <h2 className="mb-4 text-xl font-bold">Related Pages</h2>
+          <div className="flex flex-col gap-3">
             {childPages.map((child) => (
               <ChildPageCard key={child.slug} page={child} />
             ))}
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {!isLegalSection && page.tags && page.tags.length > 0 && (
-        <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+        <div className="mt-8 flex flex-wrap gap-2 border-t pt-4">
           {page.tags.map((tag) => (
-            <Chip key={tag} label={tag} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
           ))}
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }

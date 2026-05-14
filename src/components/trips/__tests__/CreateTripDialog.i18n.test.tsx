@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 // Use the real i18n instance (bundled JSON resources, synchronous init).
 import i18n from '@/i18n';
+import { renderWithProviders } from '@/test/test-utils';
 
 // Stub the geo autocomplete so the test doesn't hit Supabase.
 vi.mock('@/components/trips/create/CityCountryAutocomplete', () => ({
@@ -29,27 +27,11 @@ vi.mock('@/utils/tripTracking', () => ({ trackTripEvent: vi.fn() }));
 
 import { CreateTripDialog } from '../CreateTripDialog';
 
-const theme = createTheme({
-  palette: {
-    // @ts-expect-error brand palette extension
-    brand: { main: '#DB2777', contrastText: '#fff' },
-  },
-});
-
 function renderDialog() {
-  const qc = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  return render(
-    <QueryClientProvider client={qc}>
-      <MemoryRouter>
-        <ThemeProvider theme={theme}>
-          <I18nextProvider i18n={i18n}>
-            <CreateTripDialog open={true} onClose={() => {}} />
-          </I18nextProvider>
-        </ThemeProvider>
-      </MemoryRouter>
-    </QueryClientProvider>,
+  return renderWithProviders(
+    <I18nextProvider i18n={i18n}>
+      <CreateTripDialog open={true} onClose={() => {}} />
+    </I18nextProvider>,
   );
 }
 

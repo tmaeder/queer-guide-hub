@@ -1,27 +1,64 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { Hotel as HotelIcon, Plus } from 'lucide-react';
+import { Hotel as HotelIcon, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HotelCard } from '@/components/hotels/HotelCard';
 import { HotelFilters } from '@/components/hotels/HotelFilters';
+import { HOTEL_TYPE_LABEL, HOTEL_PRICE_LABEL } from '@/components/hotels/hotelFilterOptions';
 import { useHotels, type HotelFilters as HotelFilterType } from '@/hooks/useHotels';
+import { useHotelFilterMeta } from '@/hooks/useHotelFilterMeta';
+import { useDebounce } from '@/hooks/useDebounce';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import { useTranslation } from 'react-i18next';
 
 export default function Hotels() {
   const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { hotels, loading, hasMore, datasetTotal, fetchHotels } = useHotels(false);
-  const [search, setSearch] = useState('');
-  const [hotelType, setHotelType] = useState('all');
-  const [priceRange, setPriceRange] = useState('all');
+  const { data: filterMeta } = useHotelFilterMeta();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '');
+  const [hotelType, setHotelType] = useState(() => searchParams.get('type') ?? 'all');
+  const [priceRange, setPriceRange] = useState(() => searchParams.get('price') ?? 'all');
   const [page, setPage] = useState(1);
 
-  const hasActiveFilters = Boolean(search) || hotelType !== 'all' || priceRange !== 'all';
+  // Hydrate state from URL when the URL changes externally (back button, paste).
+  const lastSyncedRef = useRef('');
+  useEffect(() => {
+    const key = `${searchParams.get('q') ?? ''}|${searchParams.get('type') ?? 'all'}|${
+      searchParams.get('price') ?? 'all'
+    }`;
+    if (key === lastSyncedRef.current) return;
+    setSearch(searchParams.get('q') ?? '');
+    setHotelType(searchParams.get('type') ?? 'all');
+    setPriceRange(searchParams.get('price') ?? 'all');
+  }, [searchParams]);
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Reflect debounced state into the URL.
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (debouncedSearch) next.set('q', debouncedSearch);
+    if (hotelType !== 'all') next.set('type', hotelType);
+    if (priceRange !== 'all' && filterMeta?.priceAvailable) next.set('price', priceRange);
+    const nextStr = next.toString();
+    const currentStr = searchParams.toString();
+    const key = `${debouncedSearch}|${hotelType}|${
+      filterMeta?.priceAvailable ? priceRange : 'all'
+    }`;
+    lastSyncedRef.current = key;
+    if (nextStr !== currentStr) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [debouncedSearch, hotelType, priceRange, filterMeta?.priceAvailable, searchParams, setSearchParams]);
+
+  const effectivePriceRange = filterMeta?.priceAvailable ? priceRange : 'all';
+  const hasActiveFilters =
+    Boolean(search) || hotelType !== 'all' || effectivePriceRange !== 'all';
 
   const resetFilters = useCallback(() => {
     setSearch('');
@@ -32,27 +69,37 @@ export default function Hotels() {
   const activeFilterChips = useMemo<EmptyStateFilterChip[]>(() => {
     const chips: EmptyStateFilterChip[] = [];
     if (search) chips.push({ label: `“${search}”`, onRemove: () => setSearch('') });
-    if (hotelType !== 'all') chips.push({ label: hotelType, onRemove: () => setHotelType('all') });
-    if (priceRange !== 'all') {
-      chips.push({ label: '$'.repeat(Number(priceRange)), onRemove: () => setPriceRange('all') });
+    if (hotelType !== 'all') {
+      chips.push({
+        label: HOTEL_TYPE_LABEL[hotelType] ?? hotelType,
+        onRemove: () => setHotelType('all'),
+      });
+    }
+    if (effectivePriceRange !== 'all') {
+      chips.push({
+        label:
+          HOTEL_PRICE_LABEL[effectivePriceRange] ??
+          '$'.repeat(Number(effectivePriceRange) || 0),
+        onRemove: () => setPriceRange('all'),
+      });
     }
     return chips;
-  }, [search, hotelType, priceRange]);
+  }, [search, hotelType, effectivePriceRange]);
 
   const isModuleEmpty = datasetTotal === 0 || (datasetTotal === null && !hasActiveFilters);
 
   const buildFilters = useCallback((): HotelFilterType => {
     const filters: HotelFilterType = {};
-    if (search) filters.search = search;
+    if (debouncedSearch) filters.search = debouncedSearch;
     if (hotelType !== 'all') filters.hotel_type = hotelType;
-    if (priceRange !== 'all') filters.price_range = Number(priceRange);
+    if (effectivePriceRange !== 'all') filters.price_range = Number(effectivePriceRange);
     return filters;
-  }, [search, hotelType, priceRange]);
+  }, [debouncedSearch, hotelType, effectivePriceRange]);
 
   useEffect(() => {
     setPage(1);
     fetchHotels(buildFilters(), { page: 1 });
-  }, [search, hotelType, priceRange, buildFilters, fetchHotels]);
+  }, [debouncedSearch, hotelType, effectivePriceRange, buildFilters, fetchHotels]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -61,21 +108,21 @@ export default function Hotels() {
   };
 
   return (
-    <Container sx={{ py: { xs: 6, md: 10 } }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            {t('pages.hotels.title', 'Hotels & BnBs')}
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+    <div className="container mx-auto py-12 md:py-20 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h4 className="text-2xl font-bold">
+            {t('pages.hotels.title', 'Stays')}
+          </h4>
+          <p className="text-muted-foreground mt-1">
             {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         <Button onClick={() => navigate('/submit/hotel')} variant="outline" size="sm">
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Plus size={16} />
           {t('pages.hotels.submitHotel', 'Submit Hotel')}
         </Button>
-      </Box>
+      </div>
 
       <HotelFilters
         search={search}
@@ -87,9 +134,9 @@ export default function Hotels() {
       />
 
       {loading && hotels.length === 0 ? (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (<HotelCard key={i} loading />))}
-        </Box>
+        </div>
       ) : hotels.length === 0 ? (
         isModuleEmpty ? (
           <EmptyState
@@ -132,33 +179,22 @@ export default function Hotels() {
         )
       ) : (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(3, 1fr)',
-                lg: 'repeat(4, 1fr)',
-              },
-              gap: 2,
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {hotels.map((hotel) => (
               <HotelCard key={hotel.id} hotel={hotel} />
             ))}
-          </Box>
+          </div>
 
           {hasMore && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <div className="flex justify-center mt-8">
               <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
-                {loading ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-label="Loading" /> : null}
                 {t('common.loadMore', 'Load More')}
               </Button>
-            </Box>
+            </div>
           )}
         </>
       )}
-    </Container>
+    </div>
   );
 }

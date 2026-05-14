@@ -6,25 +6,15 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import {
-  Box,
-  Typography,
-  Button,
-  CircularProgress,
-  Stack,
-  Alert,
-  IconButton,
-} from '@mui/material';
-import { Upload, X, FileText } from 'lucide-react';
+import { Upload, X, FileText, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCMSMedia } from '@/hooks/useCMSMedia';
 import type { CMSMedia } from '@/types/cms';
 
 interface MediaUploaderProps {
-  /** Called after a file is successfully uploaded */
   onUploaded: (media: CMSMedia) => void;
-  /** Supabase storage bucket (defaults to 'cms-media') */
   bucket?: string;
-  /** Accept filter string, e.g. "image/*" */
   accept?: string;
 }
 
@@ -40,7 +30,6 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
       const file = acceptedFiles[0];
       setErrorMsg(null);
 
-      // Build preview URL for images
       let previewUrl: string | null = null;
       if (file.type.startsWith('image/')) {
         previewUrl = URL.createObjectURL(file);
@@ -58,7 +47,6 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
     try {
       const result = await uploadMedia(preview.file, bucket);
       if (result) {
-        // Clean up preview URL
         if (preview.url) URL.revokeObjectURL(preview.url);
         setPreview(null);
         onUploaded(result);
@@ -78,7 +66,6 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
     setErrorMsg(null);
   };
 
-  // Parse accept string into dropzone accept format
   const dropzoneAccept: Record<string, string[]> | undefined = accept
     ? { [accept]: [] }
     : undefined;
@@ -90,148 +77,107 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
     disabled: uploading,
   });
 
-  // If we already have a file selected, show preview instead of dropzone
   if (preview) {
     return (
-      <Box
-        sx={{
-          border: 1,
-          borderColor: 'divider',
-          borderRadius: 1,
-          p: 2,
-          bgcolor: 'grey.50',
-        }}
-      >
+      <div className="border border-border rounded-sm p-4 bg-muted/30">
         {errorMsg && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setErrorMsg(null)}>
-            {errorMsg}
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{errorMsg}</AlertDescription>
           </Alert>
         )}
 
-        <Stack direction="row" spacing={2} alignItems="center">
+        <div className="flex flex-row gap-4 items-center">
           {preview.url ? (
-            <Box
-              component="img"
+            <img
               src={preview.url}
               alt="Preview"
-              sx={{
-                width: 80,
-                height: 80,
-                objectFit: 'cover',
-                borderRadius: 1,
-                border: 1,
-                borderColor: 'divider',
-              }}
+              className="w-20 h-20 object-cover rounded-sm border border-border"
             />
           ) : (
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'grey.200',
-                borderRadius: 1,
-              }}
-            >
-              <FileText size={32} className="text-gray-400" />
-            </Box>
+            <div className="w-20 h-20 flex items-center justify-center bg-muted rounded-sm">
+              <FileText size={32} className="text-muted-foreground" />
+            </div>
           )}
 
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={500} noWrap>
-              {preview.file.name}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{preview.file.name}</p>
+            <span className="text-xs text-muted-foreground">
               {preview.file.type || 'Unknown type'} &middot;{' '}
               {(preview.file.size / 1024).toFixed(1)} KB
-            </Typography>
-          </Box>
+            </span>
+          </div>
 
           {!uploading && (
-            <IconButton size="small" onClick={handleClearPreview}>
+            <Button variant="ghost" size="sm" onClick={handleClearPreview} className="h-7 w-7 p-0">
               <X size={16} />
-            </IconButton>
+            </Button>
           )}
-        </Stack>
+        </div>
 
-        <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 2 }}>
+        <div className="flex flex-row gap-2 justify-end mt-4">
           <Button
-            size="small"
-            color="inherit"
+            size="sm"
+            variant="ghost"
             onClick={handleClearPreview}
             disabled={uploading}
           >
             Cancel
           </Button>
           <Button
-            size="small"
-            variant="contained"
+            size="sm"
             onClick={handleUpload}
             disabled={uploading}
-            startIcon={
-              uploading ? <CircularProgress size={16} color="inherit" /> : <Upload size={16} />
-            }
           >
+            {uploading ? (
+              <Loader2 size={16} className="mr-2 animate-spin" />
+            ) : (
+              <Upload size={16} className="mr-2" />
+            )}
             {uploading ? 'Uploading...' : 'Upload'}
           </Button>
-        </Stack>
-      </Box>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box>
+    <div>
       {errorMsg && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setErrorMsg(null)}>
-          {errorMsg}
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{errorMsg}</AlertDescription>
         </Alert>
       )}
 
-      <Box
+      <div
         {...getRootProps()}
-        sx={{
-          border: 2,
-          borderStyle: 'dashed',
-          borderColor: isDragActive ? 'primary.main' : 'divider',
-          borderRadius: 1,
-          p: 4,
-          textAlign: 'center',
-          cursor: 'pointer',
-          bgcolor: isDragActive ? 'primary.50' : 'grey.50',
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            borderColor: 'primary.light',
-            bgcolor: 'grey.100',
-          },
-        }}
+        className={`border-2 border-dashed rounded-sm p-8 text-center cursor-pointer transition-all ${
+          isDragActive
+            ? 'border-primary bg-primary/5'
+            : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted'
+        }`}
       >
         <input {...getInputProps()} />
 
         <Upload
           size={32}
-          className={isDragActive ? 'text-blue-500 mb-2' : 'text-gray-400 mb-2'}
-          style={{ margin: '0 auto 8px auto', display: 'block' }}
+          className={`mx-auto mb-2 ${isDragActive ? 'text-primary' : 'text-muted-foreground'}`}
         />
 
         {isDragActive ? (
-          <Typography variant="body2" color="primary.main" fontWeight={500}>
-            Drop the file here
-          </Typography>
+          <p className="text-sm text-primary font-medium">Drop the file here</p>
         ) : (
           <>
-            <Typography variant="body2" color="text.secondary">
+            <p className="text-sm text-muted-foreground">
               Drag and drop a file here, or click to browse
-            </Typography>
+            </p>
             {accept && (
-              <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5 }}>
+              <span className="text-xs text-muted-foreground/70 mt-1 block">
                 Accepted: {accept}
-              </Typography>
+              </span>
             )}
           </>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

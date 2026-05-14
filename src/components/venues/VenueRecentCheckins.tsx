@@ -3,8 +3,6 @@ import { BarChart3, Clock, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useVenueCheckins } from '@/hooks/useVenueCheckins';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 interface VenueRecentCheckinsProps {
   venueId: string;
@@ -49,19 +47,19 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
       <Card>
         {header}
         <CardContent>
-          <Box
+          <div
             role="status"
             aria-label="Loading venue activity"
             aria-busy="true"
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+            className="flex flex-col gap-3 animate-pulse"
           >
             {[1, 2, 3].map((i) => (
-              <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: '50%' }} />
-                <Box sx={{ height: 16, bgcolor: 'action.hover', borderRadius: 1, width: 64 }} />
-              </Box>
+              <div key={i} className="flex items-center justify-between">
+                <div className="h-4 bg-muted w-1/2" />
+                <div className="h-4 bg-muted w-16" />
+              </div>
             ))}
-          </Box>
+          </div>
         </CardContent>
       </Card>
     );
@@ -72,13 +70,11 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
       <Card>
         {header}
         <CardContent>
-          <Box role="alert" sx={{ textAlign: 'center', py: 3 }}>
-            <Typography sx={{ fontWeight: 600, mb: 1 }}>Couldn't load recent activity</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Please try again in a moment.
-            </Typography>
+          <div role="alert" className="text-center py-6">
+            <p className="font-semibold mb-2">Couldn't load recent activity</p>
+            <p className="text-sm text-muted-foreground mb-4">Please try again in a moment.</p>
             <Button variant="outline" onClick={fetchStats}>Retry</Button>
-          </Box>
+          </div>
         </CardContent>
       </Card>
     );
@@ -89,11 +85,11 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
       <Card>
         {header}
         <CardContent>
-          <Box sx={{ textAlign: 'center', py: 3, color: 'text.secondary' }}>
+          <div className="text-center py-6 text-muted-foreground">
             <TrendingUp style={{ width: 32, height: 32, margin: '0 auto 8px', opacity: 0.5 }} />
-            <Typography>No recent activity</Typography>
-            <Typography variant="body2">Check-in data is private and anonymized</Typography>
-          </Box>
+            <p>No recent activity</p>
+            <p className="text-sm">Check-in data is private and anonymized</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -109,35 +105,35 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
     <Card>
       {header}
       <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'rgba(var(--primary-rgb), 0.05)', borderRadius: 2, border: 1, borderColor: 'divider' }}>
-            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: 'primary.main' }}>{totalCheckins}</Typography>
-            <Typography variant="body2" color="text.secondary">Total visits (30 days)</Typography>
-          </Box>
+        <div className="flex flex-col gap-4">
+          <div className="text-center p-4 border border-border" style={{ backgroundColor: 'hsl(var(--primary) / 0.05)' }}>
+            <p className="text-2xl font-bold text-primary">{totalCheckins}</p>
+            <p className="text-sm text-muted-foreground">Total visits (30 days)</p>
+          </div>
 
           {recentActivity.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium flex items-center gap-2">
                 <Clock style={{ width: 16, height: 16 }} />
                 Recent Activity Hours
-              </Typography>
+              </p>
               {recentActivity.map((stat, index) => {
                 const hour = stat.checkin_hour as string | undefined;
                 const count = Number(stat.total_checkins) || 0;
                 return (
-                  <Box key={index} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1, px: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
-                    <Typography variant="body2">
+                  <div key={index} className="flex items-center justify-between py-2 px-3 bg-muted">
+                    <p className="text-sm">
                       {hour ? new Date(hour).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' }) : ''}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    </p>
+                    <p className="text-sm font-medium">
                       {count} visit{count !== 1 ? 's' : ''}
-                    </Typography>
-                  </Box>
+                    </p>
+                  </div>
                 );
               })}
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
       </CardContent>
     </Card>
   );

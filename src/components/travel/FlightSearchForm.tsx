@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { Plane, Search, ArrowRightLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,7 +65,7 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
           <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -76,8 +74,8 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr auto 1fr' }, gap: 2, alignItems: 'end' }}>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
               <AirportAutocomplete
                 value={origin}
                 displayLabel={originLabel}
@@ -100,48 +98,46 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
                 placeholder="To..."
                 label="To"
               />
-            </Box>
+            </div>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr auto' }, gap: 2, alignItems: 'end' }}>
-              <Box>
-                <Typography component="label" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5, display: 'block' }}>
-                  Departure
-                </Typography>
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+              <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- shadcn Input forwards id; htmlFor pattern not yet wired */}
+                <label className="text-sm font-medium mb-1 block">Departure</label>
                 <Input
                   type="date"
                   value={departureDate}
                   onChange={(e) => setDepartureDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                 />
-              </Box>
-              <Box>
-                <Typography component="label" sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 0.5, display: 'block' }}>
-                  Return (optional)
-                </Typography>
+              </div>
+              <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control -- shadcn Input forwards id; htmlFor pattern not yet wired */}
+                <label className="text-sm font-medium mb-1 block">Return (optional)</label>
                 <Input
                   type="date"
                   value={returnDate}
                   onChange={(e) => setReturnDate(e.target.value)}
                   min={departureDate || new Date().toISOString().split('T')[0]}
                 />
-              </Box>
+              </div>
               <Button onClick={handleSearch} disabled={!origin} style={{ alignSelf: 'end' }}>
                 <Search style={{ height: 16, width: 16, marginRight: 6 }} />
                 Search
               </Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       {searchTriggered && (
-        <Box>
+        <div>
           {isLoading ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography sx={{ color: 'text.secondary' }}>Searching for deals...</Typography>
-            </Box>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Searching for deals...</p>
+            </div>
           ) : deals && deals.length > 0 ? (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {deals.map((deal, i) => (
                 <TravelDealCard
                   key={`${deal.origin}-${deal.destination}-${deal.departure_date}-${i}`}
@@ -150,16 +146,16 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
                   destinationCity={destinationLabel.split(' (')[0] || undefined}
                 />
               ))}
-            </Box>
+            </div>
           ) : (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography sx={{ color: 'text.secondary' }}>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
                 No deals found for this route. Try different dates or destinations.
-              </Typography>
-            </Box>
+              </p>
+            </div>
           )}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

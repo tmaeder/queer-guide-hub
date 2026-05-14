@@ -25,6 +25,7 @@ const PWAContext = createContext<PWAContextValue>({
   promptInstall: async () => false,
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePWA = () => useContext(PWAContext);
 
 export function PWAProvider({ children }: { children: ReactNode }) {

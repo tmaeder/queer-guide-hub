@@ -1,6 +1,7 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
 import type { SourceAdapter, RawItem, NormalizedItem, AdapterConfig } from '../_shared/source-adapter.ts'
 import { writeToStaging } from '../_shared/source-adapter.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Source: GayCities/gaytravel4u.com (web scraper)
@@ -139,7 +140,7 @@ function normalizeDate(val: unknown): string | null {
   try { const d = new Date(String(val)); return isNaN(d.getTime()) ? null : d.toISOString() } catch { return null }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('source-gaycities', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
   try {
@@ -157,4 +158,4 @@ Deno.serve(async (req) => {
   } catch (error) {
     return errorResponse((error as Error).message, 500, req)
   }
-})
+}))

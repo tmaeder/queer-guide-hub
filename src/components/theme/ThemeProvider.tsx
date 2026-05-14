@@ -1,11 +1,4 @@
 import * as React from "react";
-import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import GlobalStyles from "@mui/material/GlobalStyles";
-import { useTranslation } from "react-i18next";
-import { createAppTheme, brandColors } from "@/theme/muiTheme";
-import { RTL_LOCALES, isSupportedLocale } from "@/i18n/languages";
-import type { Direction } from "@mui/material/styles";
 
 type Theme = "dark" | "light" | "system";
 
@@ -72,10 +65,6 @@ export function ThemeProvider({
       });
   }, [resolvedMode]);
 
-  const { i18n } = useTranslation();
-  const direction: Direction = isSupportedLocale(i18n.language) && RTL_LOCALES.includes(i18n.language as any) ? 'rtl' : 'ltr';
-  const muiTheme = React.useMemo(() => createAppTheme(resolvedMode, direction), [resolvedMode, direction]);
-
   const value = React.useMemo(() => ({
     theme,
     setTheme: (newTheme: Theme) => {
@@ -88,22 +77,12 @@ export function ThemeProvider({
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
-      <MuiThemeProvider theme={muiTheme}>
-        <CssBaseline />
-        <GlobalStyles styles={{
-          'a, a:link, a:visited': {
-            color: brandColors.main,
-            textDecoration: 'none',
-            transition: 'color 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
-          },
-          'a:hover': { color: brandColors.dark },
-        }} />
-        {children}
-      </MuiThemeProvider>
+      {children}
     </ThemeProviderContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = React.useContext(ThemeProviderContext);
 

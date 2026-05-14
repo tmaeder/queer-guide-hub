@@ -1,7 +1,5 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Check, X } from 'lucide-react';
 
 interface FieldDef {
@@ -89,12 +87,10 @@ const FIELD_DEFINITIONS: Record<string, FieldDef[]> = {
   ],
 };
 
-// Generic fallback: render any key from the data as a text field
 function getFieldsForEntity(entityType: string, data: Record<string, unknown>): FieldDef[] {
   const defined = FIELD_DEFINITIONS[entityType];
   if (defined) return defined;
 
-  // Build field defs dynamically from data keys
   return Object.keys(data)
     .filter((k) => !['id', 'created_at', 'updated_at'].includes(k))
     .slice(0, 20)
@@ -115,73 +111,62 @@ function isUrl(value: unknown): boolean {
 
 function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
   if (value === null || value === undefined || value === '') {
-    return (
-      <Typography variant="body2" sx={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>
-        —
-      </Typography>
-    );
+    return <span className="text-sm italic text-muted-foreground">—</span>;
   }
 
   switch (type) {
     case 'boolean':
       return value ? (
-        <Chip
-          icon={<Check style={{ width: 12, height: 12 }} />}
-          label="Yes"
-          size="small"
-          color="success"
-          variant="outlined"
-        />
+        <Badge variant="outline" className="gap-1 text-green-600 border-green-600">
+          <Check style={{ width: 12, height: 12 }} />
+          Yes
+        </Badge>
       ) : (
-        <Chip
-          icon={<X style={{ width: 12, height: 12 }} />}
-          label="No"
-          size="small"
-          variant="outlined"
-        />
+        <Badge variant="outline" className="gap-1">
+          <X style={{ width: 12, height: 12 }} />
+          No
+        </Badge>
       );
 
     case 'date':
       try {
-        return (
-          <Typography variant="body2">{new Date(String(value)).toLocaleDateString()}</Typography>
-        );
+        return <span className="text-sm">{new Date(String(value)).toLocaleDateString()}</span>;
       } catch {
-        return <Typography variant="body2">{String(value)}</Typography>;
+        return <span className="text-sm">{String(value)}</span>;
       }
 
     case 'datetime':
       try {
-        return <Typography variant="body2">{new Date(String(value)).toLocaleString()}</Typography>;
+        return <span className="text-sm">{new Date(String(value)).toLocaleString()}</span>;
       } catch {
-        return <Typography variant="body2">{String(value)}</Typography>;
+        return <span className="text-sm">{String(value)}</span>;
       }
 
     case 'number':
       return (
-        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+        <span className="text-sm" style={{ fontFamily: 'monospace' }}>
           {String(value)}
-        </Typography>
+        </span>
       );
 
     case 'textarea':
       return (
-        <Typography
-          variant="body2"
-          sx={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', lineHeight: 1.4 }}
+        <p
+          className="text-sm"
+          style={{ whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'auto', lineHeight: 1.4 }}
         >
           {String(value).slice(0, 500)}
           {String(value).length > 500 ? '...' : ''}
-        </Typography>
+        </p>
       );
 
     default:
       if (isUrl(value)) {
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="body2" sx={{ color: '#3b82f6', wordBreak: 'break-all' }}>
+          <span className="flex items-center gap-1">
+            <span className="text-sm" style={{ color: '#3b82f6', wordBreak: 'break-all' }}>
               {String(value)}
-            </Typography>
+            </span>
             <a
               href={String(value)}
               target="_blank"
@@ -190,13 +175,13 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
             >
               <ExternalLink style={{ width: 12, height: 12, color: '#3b82f6' }} />
             </a>
-          </Box>
+          </span>
         );
       }
       return (
-        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+        <span className="text-sm" style={{ wordBreak: 'break-word' }}>
           {String(value)}
-        </Typography>
+        </span>
       );
   }
 }
@@ -217,75 +202,58 @@ export function StructuredFieldDisplay({
   const fields = getFieldsForEntity(entityType, data);
 
   if (compact) {
-    // Single-line badges for key fields (name, city, country, etc.)
     const keyFields = fields.slice(0, 5);
     return (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <div className="flex flex-wrap gap-2">
         {keyFields.map((field) => {
           const val = data[field.key];
           if (val === null || val === undefined || val === '') return null;
           return (
-            <Box key={field.key} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography
-                variant="caption"
-                sx={{ color: 'var(--muted-foreground)', fontWeight: 500 }}
-              >
-                {field.label}:
-              </Typography>
-              <Typography variant="caption">{String(val).slice(0, 60)}</Typography>
-            </Box>
+            <div key={field.key} className="flex items-center gap-1">
+              <span className="text-xs font-medium text-muted-foreground">{field.label}:</span>
+              <span className="text-xs">{String(val).slice(0, 60)}</span>
+            </div>
           );
         })}
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', sm: '140px 1fr' },
-        gap: 1,
-        alignItems: 'start',
-      }}
+    <div
+      className="grid gap-2 items-start"
+      style={{ gridTemplateColumns: '140px 1fr' }}
     >
       {fields.map((field) => {
         const val = data[field.key];
         const isHighlighted = highlightFields?.includes(field.key);
         return (
           <React.Fragment key={field.key}>
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--muted-foreground)',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                fontSize: '0.65rem',
-                letterSpacing: 0.5,
-                pt: 0.3,
-              }}
+            <span
+              className="text-muted-foreground font-semibold uppercase"
+              style={{ fontSize: '0.65rem', letterSpacing: 0.5, paddingTop: '2.4px' }}
             >
               {field.label}
-            </Typography>
-            <Box
-              sx={{
-                px: 1,
-                py: 0.3,
-                borderRadius: 0.5,
-                bgcolor: isHighlighted ? 'rgba(250, 204, 21, 0.15)' : 'transparent',
+            </span>
+            <div
+              className="rounded-sm"
+              style={{
+                padding: '2.4px 8px',
+                backgroundColor: isHighlighted ? 'rgba(250, 204, 21, 0.15)' : 'transparent',
                 border: isHighlighted
                   ? '1px solid rgba(250, 204, 21, 0.3)'
                   : '1px solid transparent',
               }}
             >
               {formatValue(val, field.type)}
-            </Box>
+            </div>
           </React.Fragment>
         );
       })}
-    </Box>
+    </div>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { FIELD_DEFINITIONS, getFieldsForEntity };
 export type { FieldDef };

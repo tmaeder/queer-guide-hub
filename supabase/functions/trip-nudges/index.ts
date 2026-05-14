@@ -14,8 +14,7 @@
  *  - news_alert: recent (<7d) LGBTQ+-flagged news in trip countries
  */
 
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -46,6 +45,7 @@ interface NudgeRow {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function activeTrips(admin: any, tripId?: string): Promise<TripRow[]> {
   const today = new Date().toISOString().slice(0, 10);
   const ninetyDaysOut = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
@@ -67,6 +67,7 @@ async function activeTrips(admin: any, tripId?: string): Promise<TripRow[]> {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function tripScope(admin: any, tripId: string) {
   const { data: places } = await admin
     .from('trip_places')
@@ -90,6 +91,7 @@ async function tripScope(admin: any, tripId: string) {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
   if (!trip.start_date || !trip.end_date) return [];
   const { countryIds, cityIds } = await tripScope(admin, trip.id);
@@ -97,7 +99,7 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
 
   let q = admin
     .from('events')
-    .select('id, title, start_date, end_date, city_id, country_id, featured, status')
+    .select('id, title, start_date, end_date, city_id, country_id, is_featured, status')
     .eq('status', 'active')
     .lte('start_date', `${trip.end_date}T23:59:59Z`)
     .gte('end_date', `${trip.start_date}T00:00:00Z`)
@@ -115,9 +117,9 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
     id: string;
     title: string;
     start_date: string;
-    featured: boolean | null;
+    is_featured: boolean | null;
   }[])) {
-    if (!e.featured) continue; // only surface featured events at launch
+    if (!e.is_featured) continue; // only surface featured events at launch
     rows.push({
       trip_id: trip.id,
       kind: 'event_overlap',
@@ -133,6 +135,7 @@ async function eventOverlapNudges(admin: any, trip: TripRow): Promise<NudgeRow[]
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function newsAlertNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
   const { countryIds } = await tripScope(admin, trip.id);
   if (countryIds.length === 0) return [];
@@ -171,6 +174,7 @@ async function newsAlertNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function bookingReminderNudges(admin: any, trip: TripRow): Promise<NudgeRow[]> {
   if (!trip.start_date) return [];
   const daysUntilStart = Math.floor(
@@ -191,6 +195,7 @@ async function bookingReminderNudges(admin: any, trip: TripRow): Promise<NudgeRo
 }
 
 // deno-lint-ignore no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function scanOne(admin: any, trip: TripRow): Promise<number> {
   const [evs, news, book] = await Promise.all([
     eventOverlapNudges(admin, trip).catch(() => [] as NudgeRow[]),
@@ -207,7 +212,7 @@ async function scanOne(admin: any, trip: TripRow): Promise<number> {
   return rows.length;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);

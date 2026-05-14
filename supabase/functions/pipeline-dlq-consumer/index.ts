@@ -1,4 +1,5 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { withErrorReporting } from '../_shared/report-api-error.ts'
 
 // ============================================================
 // Pipeline DLQ Consumer
@@ -30,7 +31,7 @@ interface DlqRow {
   payload: Record<string, unknown> | null
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withErrorReporting('pipeline-dlq-consumer', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   const supabase = getServiceClient()
 
@@ -129,4 +130,4 @@ Deno.serve(async (req) => {
     console.error('pipeline-dlq-consumer:', e)
     return errorResponse((e as Error).message, 500, req)
   }
-})
+}))

@@ -1,0 +1,33 @@
+name: Pipeline Health Check
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Verify pipeline runs (last 24h)
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run Deno unit tests
+        working-directory: supabase/functions/_tests
+        run: deno test --allow-net --allow-env --allow-read source-adapter.test.ts pipeline-nodes.test.ts
+
+      - name: Check pipeline health
+        if: ${{ env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/check-pipeline-health.mjs
+
+      - name: Skip health check (missing secrets)
+        if: ${{ env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' }}
+        run: echo "::warning::SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — skipping pipeline health check. Configure repo secrets to enable."

@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const adminStorageState = process.env.E2E_STORAGE_STATE || 'playwright/.auth/admin.json';
+const hasAdminCreds = Boolean(process.env.E2E_ADMIN_EMAIL && process.env.E2E_ADMIN_PASSWORD);
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -14,8 +17,30 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts$/,
+    },
+    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(hasAdminCreds || process.env.E2E_STORAGE_STATE
+          ? { storageState: adminStorageState }
+          : {}),
+      },
+      dependencies: hasAdminCreds ? ['setup'] : [],
+    },
+    // P2-3 — mobile viewport project. Run with `--project=mobile`.
+    // Uses Chromium (already installed for the main suite) at iPhone 13's
+    // viewport + DPR, so we don't need to download WebKit just for screenshots.
+    {
+      name: 'mobile',
+      testMatch: /visual-mobile\.spec\.ts$/,
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 3,
+      },
     },
   ],
 });

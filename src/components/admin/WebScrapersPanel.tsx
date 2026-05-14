@@ -3,10 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Globe, MapPin, Calendar, Play, RefreshCw, AlertTriangle } from 'lucide-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { supabase } from '@/integrations/supabase/client';
 
 const SCRAPER_API = import.meta.env.DEV
@@ -53,7 +51,6 @@ const NODE_SCRAPERS = [
 ] as const;
 
 export const WebScrapersPanel = () => {
-  const { toast } = useToast();
   const [online, setOnline] = useState<boolean | null>(null);
   const [running, setRunning] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, { count: number; inserted: number }>>({});
@@ -163,94 +160,52 @@ export const WebScrapersPanel = () => {
             </AlertDescription>
           </Alert>
         )}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {NODE_SCRAPERS.map((s) => (
-            <Box
-              key={s.key}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                p: 1.5,
-                border: 1,
-                borderColor: 'divider',
-                borderRadius: 1,
-              }}
-            >
-              <s.icon
-                style={{ height: 16, width: 16, flexShrink: 0, color: 'var(--muted-foreground)' }}
-              />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: '0.85rem', fontWeight: 600 }}>{s.label}</Typography>
-                <Typography
-                  sx={{
-                    fontSize: '0.7rem',
-                    color: 'text.secondary',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
+            <div key={s.key} className="flex items-center gap-3 p-3 border border-border rounded-sm">
+              <s.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[0.85rem] font-semibold">{s.label}</p>
+                <p className="text-[0.7rem] text-muted-foreground truncate">
                   {s.types} &middot; {s.url}
-                </Typography>
+                </p>
                 {results[s.key] && (
-                  <Typography sx={{ fontSize: '0.65rem', color: 'success.main' }}>
+                  <p className="text-[0.65rem] text-green-600">
                     {results[s.key].count} scraped, {results[s.key].inserted} saved
-                  </Typography>
+                  </p>
                 )}
-              </Box>
+              </div>
               <Button
                 size="sm"
                 variant={running[s.key] ? 'secondary' : 'default'}
-
                 disabled={online !== true || running[s.key]}
                 onClick={() => trigger(s.key)}
               >
                 {running[s.key] ? (
                   <>
-                    <RefreshCw
-                      style={{
-                        height: 12,
-                        width: 12,
-                        animation: 'spin 1s linear infinite',
-                        marginRight: 4,
-                      }}
-                    />{' '}
+                    <RefreshCw className="h-3 w-3 animate-spin mr-1" />
                     Running
                   </>
                 ) : (
                   <>
-                    <Play style={{ height: 12, width: 12, marginRight: 4 }} /> Run
+                    <Play className="h-3 w-3 mr-1" /> Run
                   </>
                 )}
               </Button>
-            </Box>
+            </div>
           ))}
-          {/* Run all */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              p: 1.5,
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              borderStyle: 'dashed',
-            }}
-          >
+          <div className="flex items-center justify-center p-3 border border-dashed border-border rounded-sm">
             <Button
               size="sm"
               variant="outline"
-
               disabled={online !== true || Object.values(running).some(Boolean)}
               onClick={() => triggerAll()}
             >
-              <Play style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Play className="h-3 w-3 mr-1" />
               Run All Scrapers
             </Button>
-          </Box>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

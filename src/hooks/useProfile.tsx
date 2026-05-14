@@ -1,43 +1,58 @@
-import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "./useAuth";
 
 export type Profile = Tables<"profiles">;
 
+export type ProfileUpdateResult = {
+  data?: Profile | null;
+  error: string | null;
+  errorKind: "auth" | "transient" | null;
+};
+
+/** Shared query key so other hooks (e.g. useCurrency) can share the cache. */
+export const profileQueryKey = (userId: string | null | undefined) =>
+  ["profile", userId] as const;
+
 export const useProfile = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchProfile = async () => {
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
+  // react-query dedupes parallel callers via the shared queryKey, so multiple
+  // mounts of useProfile (Header, Settings, etc.) coalesce into one network
+  // request. useCurrency can read the same cache via queryClient.getQueryData
+  // without an additional /profiles?select=preferences round-trip.
+  const {
+    data: profile = null,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: profileQueryKey(user?.id),
+    queryFn: async (): Promise<Profile | null> => {
+      if (!user) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-
       if (error) throw error;
-      setProfile(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data;
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 
-  const updateProfile = async (updates: Partial<Profile>) => {
+  const setProfile = (next: Profile | null) =>
+    queryClient.setQueryData(profileQueryKey(user?.id), next);
+
+  const updateProfile = async (
+    updates: Partial<Profile>,
+  ): Promise<ProfileUpdateResult> => {
     if (!user) {
-      return { error: "No user found" };
+      return { error: "No user found", errorKind: "auth" };
     }
 
     // Coerce empty strings to null so CHECK-constrained enum columns
@@ -63,11 +78,15 @@ export const useProfile = () => {
 
       if (error) throw error;
       setProfile(data);
-      return { data, error: null };
+      return { data, error: null, errorKind: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
-      setError(errorMessage);
-      return { data: null, error: errorMessage };
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const errorKind = session ? "transient" : "auth";
+      return { data: null, error: errorMessage, errorKind };
     }
   };
 
@@ -81,8 +100,8 @@ export const useProfile = () => {
         .from("profiles")
         .update({
           avatar_config: avatarConfig,
-          avatar_url: null, // Clear uploaded avatar when using generated one
-          updated_at: new Date().toISOString()
+          avatar_url: null,
+          updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id)
         .select()
@@ -92,8 +111,8 @@ export const useProfile = () => {
       setProfile(data);
       return { data, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
-      setError(errorMessage);
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
       return { data: null, error: errorMessage };
     }
   };
@@ -104,56 +123,42 @@ export const useProfile = () => {
     }
 
     try {
-      // Create a unique filename
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload the file
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from("avatars")
         .upload(filePath, file);
-
       if (uploadError) throw uploadError;
 
-      // Get the public URL
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ 
+        .update({
           avatar_url: data.publicUrl,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id);
-
       if (updateError) throw updateError;
 
-      // Refresh profile data
-      await fetchProfile();
+      await refetch();
       return { data: data.publicUrl, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
-      setError(errorMessage);
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
       return { data: null, error: errorMessage };
     }
   };
 
-  useEffect(() => {
-    fetchProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProfile defined above, re-run on user change
-  }, [user]);
-
   return {
     profile,
     loading,
-    error,
+    error: queryError instanceof Error ? queryError.message : null,
     updateProfile,
     uploadAvatar,
     saveAvatarConfig,
-    refetchProfile: fetchProfile
+    refetchProfile: refetch,
   };
 };

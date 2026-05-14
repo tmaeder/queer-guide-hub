@@ -116,27 +116,31 @@ async function handleStart(
     return errorResponse(`Failed to create run: ${runError?.message}`, 500, req)
   }
 
-  // Topologically sort nodes and find the first one(s)
+  // Find all initial nodes (in-degree = 0) — support parallel fan-out at start
   const sorted = topologicalSort(nodes, edges)
-  const firstNodeId = sorted[0]
+  const targetIds = new Set(edges.map(e => e.target))
+  const initialNodeIds = nodes.map(n => n.id).filter(id => !targetIds.has(id))
+  if (initialNodeIds.length === 0) initialNodeIds.push(sorted[0])
 
-  // Enqueue the first step
-  await enqueueStep(supabase, {
-    pipeline_run_id: run.id,
-    pipeline_id: pipeline.id,
-    pipeline_name: pipeline.name,
-    current_node_id: firstNodeId,
-    current_step: 0,
-    total_steps: sorted.length,
-    context,
-  })
+  // Enqueue all initial nodes in parallel
+  for (const nodeId of initialNodeIds) {
+    await enqueueStep(supabase, {
+      pipeline_run_id: run.id,
+      pipeline_id: pipeline.id,
+      pipeline_name: pipeline.name,
+      current_node_id: nodeId,
+      current_step: 0,
+      total_steps: sorted.length,
+      context,
+    })
+  }
 
   return jsonResponse({
     success: true,
     pipeline_run_id: run.id,
     pipeline_name: pipeline.name,
     total_steps: sorted.length,
-    first_node: firstNodeId,
+    initial_nodes: initialNodeIds,
   }, 200, req)
 }
 
@@ -167,7 +171,7 @@ async function handleContinue(
     return errorResponse(`Run not found: ${runId}`, 404, req)
   }
 
-  if (run.status === 'cancelled' || run.status === 'paused') {
+  if (run.status === 'cancelled' || run.status === 'paused' || run.status === 'failed' || run.status === 'completed') {
     return jsonResponse({ success: true, message: `Run is ${run.status}, skipping` }, 200, req)
   }
 
@@ -181,6 +185,12 @@ async function handleContinue(
   const currentNode = nodes.find(n => n.id === currentNodeId)
   if (!currentNode) {
     return errorResponse(`Node ${currentNodeId} not found in pipeline`, 400, req)
+  }
+
+  // Guard: skip if already processed (prevents duplicate queue messages from re-running nodes)
+  const currentNodeState = nodeStates[currentNodeId]
+  if (currentNodeState?.status === 'completed' || currentNodeState?.status === 'skipped') {
+    return jsonResponse({ success: true, message: `Node ${currentNodeId} already ${currentNodeState.status}` }, 200, req)
   }
 
   // Check if upstream nodes are all completed (with advisory lock for fan-in safety)
@@ -221,7 +231,7 @@ async function handleContinue(
       if (!evaluateCondition(edge.condition, condCtx)) {
         // Condition not met — skip this node
         nodeStates[currentNodeId] = { status: 'skipped', items_in: 0, items_out: 0 }
-        await updateNodeStates(supabase, runId, nodeStates)
+        await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
         await advanceToNextNodes(supabase, run, nodes, edges, currentNodeId, nodeStates)
         return jsonResponse({ success: true, message: `Node ${currentNodeId} skipped (condition)` }, 200, req)
       }
@@ -234,7 +244,7 @@ async function handleContinue(
     status: 'running',
     started_at: new Date().toISOString(),
   }
-  await updateNodeStates(supabase, runId, nodeStates)
+  await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
 
   // Look up node type to find the edge function to invoke
   const { data: nodeType } = await supabase
@@ -254,7 +264,7 @@ async function handleContinue(
       items_out: result.items_out,
       duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
     }
-    await updateNodeStates(supabase, runId, nodeStates)
+    await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
     await advanceToNextNodes(supabase, run, nodes, edges, currentNodeId, nodeStates)
     return jsonResponse({ success: true, node: currentNodeId, status: 'completed', ...result }, 200, req)
   }
@@ -265,11 +275,11 @@ async function handleContinue(
     const nodeConfig = currentNode.data?.config || {}
 
     const payload = {
+      dry_run: (context as Record<string, boolean>).dry_run || false,
+      batch_size: (context as Record<string, number>).batch_size || 50,
       ...nodeConfig,
       pipeline_run_id: runId,
       node_id: currentNodeId,
-      dry_run: (context as Record<string, boolean>).dry_run || false,
-      batch_size: (context as Record<string, number>).batch_size || 50,
     }
 
     const controller = new AbortController()
@@ -302,7 +312,7 @@ async function handleContinue(
         items_out: itemsOut,
         duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
       }
-      await updateNodeStates(supabase, runId, nodeStates)
+      await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
 
       // Update run counters
       await supabase
@@ -332,7 +342,7 @@ async function handleContinue(
         error: errorMsg,
         duration_ms: (() => { const s = new Date(nodeStates[currentNodeId].started_at!).getTime(); return Number.isFinite(s) ? Date.now() - s : 0; })(),
       }
-      await updateNodeStates(supabase, runId, nodeStates)
+      await updateNodeStates(supabase, runId, { [currentNodeId]: nodeStates[currentNodeId] })
 
       // Mark the entire run as failed
       await supabase
@@ -440,7 +450,7 @@ async function enqueueStep(
   message: PipelineMessage | Record<string, unknown>,
   delaySec = 0
 ): Promise<void> {
-  await supabase.rpc('pgmq_send', {
+  const { error } = await supabase.rpc('pgmq_send', {
     p_queue: 'pipeline_steps',
     p_msg: {
       workflow: 'pipeline-executor',
@@ -449,6 +459,10 @@ async function enqueueStep(
     },
     p_delay: delaySec,
   })
+  if (error) {
+    console.error(`[pipeline-executor] enqueueStep failed for node ${(message as PipelineMessage).current_node_id}:`, error)
+    throw new Error(`enqueueStep failed: ${error.message}`)
+  }
 }
 
 /** Find and enqueue next nodes after current completes */
@@ -473,7 +487,7 @@ async function advanceToNextNodes(
       const hasFailed = nodes.some(n => nodeStates[n.id]?.status === 'failed')
       await supabase
         .from('pipeline_runs')
-        .update({ status: hasFailed ? 'failed' : 'completed' })
+        .update({ status: hasFailed ? 'failed' : 'completed', completed_at: new Date().toISOString() })
         .eq('id', run.id as string)
     }
     return
@@ -532,7 +546,7 @@ function skipDescendants(
 async function handleBuiltInNode(
   supabase: SupabaseClient,
   node: PipelineNode,
-  _run: Record<string, unknown>,
+  run: Record<string, unknown>,
   _nodeStates: Record<string, NodeState>
 ): Promise<{ items_out: number }> {
   const config = node.data?.config || {}
@@ -565,6 +579,24 @@ async function handleBuiltInNode(
         }
       }
       return { items_out: 0 }
+    }
+    case 'source-personality-staging': {
+      // Adopt pending personality staging rows into this pipeline run so
+      // downstream nodes (normalize, validate, etc.) can filter by pipeline_run_id.
+      const entityType = (config as Record<string, string>).entity_type || 'personality'
+      const batchSize = (config as Record<string, number>).batch_size || 500
+      const runId = run.id as string
+      const { data: items } = await supabase
+        .from('ingestion_staging')
+        .select('id')
+        .eq('entity_type', entityType)
+        .is('normalized_data', null)
+        .eq('disposition', 'pending')
+        .limit(batchSize)
+      if (!items || items.length === 0) return { items_out: 0 }
+      const ids = items.map((r: Record<string, string>) => r.id)
+      await supabase.from('ingestion_staging').update({ pipeline_run_id: runId }).in('id', ids)
+      return { items_out: ids.length }
     }
     default:
       console.warn(`Unknown built-in node type: ${node.type}`)

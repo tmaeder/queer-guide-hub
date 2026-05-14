@@ -14,7 +14,7 @@ interface DirectoryCardProps {
 export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps) => {
   const [countryImage, setCountryImage] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
-  const [imageKey, setImageKey] = useState(0); // Force refresh mechanism
+  const [imageKey, _setImageKey] = useState(0); // Force refresh mechanism
 
   // City images hook
   const { fetchCityImage, loading: cityImageLoading } = useCityImages();

@@ -1,48 +1,18 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
-import { useTheme } from '@mui/material/styles';
-import { Plus, MapPin, Star, Shield, Calendar } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Plus, MapPin, Star, Shield, Calendar, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useTripMutations, type TripPlace, type TripDay } from '@/hooks/useTrips';
-
-interface SuggestedVenue {
-  id: string;
-  name: string;
-  category: string | null;
-  address: string | null;
-  foursquare_rating: number | null;
-  featured: boolean | null;
-  latitude: number | null;
-  longitude: number | null;
-  city_id: string | null;
-  country_id: string | null;
-}
-
-interface SuggestedEvent {
-  id: string;
-  title: string;
-  event_type: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  city_id: string | null;
-  country_id: string | null;
-}
-
-interface CityInfo {
-  id: string;
-  name: string;
-  country_id: string | null;
-  countries?: { equality_score: number | null; name: string } | null;
-}
+import {
+  fetchTripSuggestionCities,
+  fetchTripSuggestionVenues,
+  fetchTripSuggestionEvents,
+  type TripSuggestionVenue as SuggestedVenue,
+  type TripSuggestionEvent as SuggestedEvent,
+} from '@/hooks/useTripSuggestions';
 
 const NIGHTLIFE_CATEGORIES = ['bar', 'club', 'nightclub', 'pub', 'lounge', 'nightlife'];
 const DINING_CATEGORIES = ['restaurant', 'cafe', 'coffee', 'food', 'bakery', 'dining'];
@@ -75,7 +45,6 @@ interface Props {
 }
 
 export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
-  const theme = useTheme();
   const { toast } = useToast();
   const { addPlace } = useTripMutations();
   const [filter, setFilter] = useState('all');
@@ -94,54 +63,21 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
 
   const { data: cities } = useQuery({
     queryKey: ['trip-suggestion-cities', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('cities')
-        .select('id, name, country_id, countries:country_id(equality_score, name)')
-        .in('id', cityIds);
-      if (error) throw error;
-      return (data || []) as CityInfo[];
-    },
+    queryFn: () => fetchTripSuggestionCities(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: venues, isLoading: venuesLoading } = useQuery({
     queryKey: ['trip-suggestion-venues', cityIds],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from('venues')
-        .select(
-          'id, name, category, address, foursquare_rating, featured, latitude, longitude, city_id, country_id',
-        )
-        .in('city_id', cityIds)
-        .order('foursquare_rating', { ascending: false, nullsFirst: false })
-        .limit(30);
-      if (error) throw error;
-      return (data || []) as SuggestedVenue[];
-    },
+    queryFn: () => fetchTripSuggestionVenues(cityIds),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
 
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ['trip-suggestion-events', cityIds, startDate, endDate],
-    queryFn: async () => {
-      if (cityIds.length === 0) return [];
-      let query = supabase
-        .from('events')
-        .select(
-          'id, title, event_type, start_date, end_date, latitude, longitude, city_id, country_id',
-        )
-        .in('city_id', cityIds);
-      if (startDate) query = query.gte('start_date', startDate);
-      if (endDate) query = query.lte('start_date', endDate);
-      const { data, error } = await query.order('start_date', { ascending: true }).limit(20);
-      if (error) throw error;
-      return (data || []) as SuggestedEvent[];
-    },
+    queryFn: () => fetchTripSuggestionEvents(cityIds, startDate, endDate),
     enabled: cityIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
@@ -215,9 +151,9 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
     return (
       <Card>
         <CardContent>
-          <Typography variant="body2" color="text.secondary" className="text-center">
+          <p className="text-sm text-muted-foreground text-center">
             Add cities to see suggestions
-          </Typography>
+          </p>
         </CardContent>
       </Card>
     );
@@ -244,25 +180,22 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
       {unsafeCities.map((city) => (
         <Card key={city.id} className="mb-2">
           <CardContent>
-            <Box
-              className="flex items-start gap-2"
-              sx={{ bgcolor: 'warning.light', mx: -2, mt: -1, mb: -1, p: 2, borderRadius: 1 }}
-            >
+            <div className="flex items-start gap-2 -mx-2 -mt-1 -mb-1 p-2 bg-muted">
               <Shield
                 size={16}
-                style={{ color: theme.palette.warning?.main, flexShrink: 0, marginTop: 2 }}
+                className="text-foreground shrink-0 mt-0.5"
               />
-              <Typography variant="body2">
+              <p className="text-sm">
                 <strong>{city.name}</strong> ({city.countries?.name}) has a lower equality score (
                 {city.countries?.equality_score}). Check the Safety tab for local tips.
-              </Typography>
-            </Box>
+              </p>
+            </div>
           </CardContent>
         </Card>
       ))}
 
       {/* Category filter */}
-      <Box className="flex flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-wrap gap-1.5 mb-3">
         {filters.map((label, i) => (
           <Badge
             key={label}
@@ -272,12 +205,12 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
             {label}
           </Badge>
         ))}
-      </Box>
+      </div>
 
       {isLoading && (
-        <Box className="flex justify-center py-8">
-          <CircularProgress size={24} />
-        </Box>
+        <div className="flex justify-center py-8">
+          <Loader2 size={24} className="animate-spin" aria-label="Loading" />
+        </div>
       )}
 
       {/* Suggestions by city */}
@@ -290,41 +223,28 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
           if (cityVenues.length === 0 && cityEvents.length === 0) return null;
 
           return (
-            <Box key={cityId} sx={{ mb: 2 }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                sx={{ mb: 0.5, display: 'block' }}
-              >
+            <div key={cityId} className="mb-4">
+              <span className="text-xs text-muted-foreground font-semibold mb-1 block">
                 Suggested for {city?.name || 'Unknown City'}
-              </Typography>
+              </span>
 
               {cityVenues.map((venue) => (
-                <Box
+                <div
                   key={venue.id}
-                  className="flex items-center gap-2 py-1.5"
-                  sx={{ borderBottom: '1px solid', borderColor: 'divider', minHeight: 44 }}
+                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
                 >
-                  <MapPin
-                    size={13}
-                    style={{ color: theme.palette.text.secondary, flexShrink: 0 }}
-                  />
+                  <MapPin size={13} className="text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <Typography variant="body2" noWrap fontWeight={500}>
-                      {venue.name}
-                    </Typography>
-                    <Box className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium truncate">{venue.name}</p>
+                    <div className="flex items-center gap-1.5">
                       {venue.category && <Badge variant="outline">{venue.category}</Badge>}
                       {venue.foursquare_rating && (
-                        <Box className="flex items-center gap-0.5">
-                          <Star size={10} style={{ color: theme.palette.warning?.main }} />
-                          <Typography variant="caption" sx={{ fontSize: 11 }}>
-                            {venue.foursquare_rating}
-                          </Typography>
-                        </Box>
+                        <div className="flex items-center gap-0.5">
+                          <Star size={10} className="text-foreground" />
+                          <span className="text-[11px]">{venue.foursquare_rating}</span>
+                        </div>
                       )}
-                    </Box>
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
@@ -332,37 +252,35 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                     onClick={() => handleAddVenue(venue)}
                     disabled={addingId === venue.id}
                   >
-                    {addingId === venue.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                    {addingId === venue.id ? (
+                      <Loader2 size={12} className="animate-spin" aria-label="Loading" />
+                    ) : (
+                      <Plus size={12} />
+                    )}
                     Add
                   </Button>
-                </Box>
+                </div>
               ))}
 
               {cityEvents.map((event) => (
-                <Box
+                <div
                   key={event.id}
-                  className="flex items-center gap-2 py-1.5"
-                  sx={{ borderBottom: '1px solid', borderColor: 'divider', minHeight: 44 }}
+                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
                 >
-                  <Calendar
-                    size={13}
-                    style={{ color: theme.palette.text.secondary, flexShrink: 0 }}
-                  />
+                  <Calendar size={13} className="text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <Typography variant="body2" noWrap fontWeight={500}>
-                      {event.title}
-                    </Typography>
-                    <Box className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium truncate">{event.title}</p>
+                    <div className="flex items-center gap-1.5">
                       {event.event_type && <Badge variant="outline">{event.event_type}</Badge>}
                       {event.start_date && (
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+                        <span className="text-[11px] text-muted-foreground">
                           {new Date(event.start_date).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',
                           })}
-                        </Typography>
+                        </span>
                       )}
-                    </Box>
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
@@ -370,19 +288,23 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                     onClick={() => handleAddEvent(event)}
                     disabled={addingId === event.id}
                   >
-                    {addingId === event.id ? <CircularProgress size={12} /> : <Plus size={12} />}
+                    {addingId === event.id ? (
+                      <Loader2 size={12} className="animate-spin" aria-label="Loading" />
+                    ) : (
+                      <Plus size={12} />
+                    )}
                     Add
                   </Button>
-                </Box>
+                </div>
               ))}
-            </Box>
+            </div>
           );
         })}
 
       {!isLoading && filteredVenues.length === 0 && filteredEvents.length === 0 && (
-        <Typography variant="body2" color="text.secondary" className="text-center py-4">
+        <p className="text-sm text-muted-foreground text-center py-4">
           No suggestions for this filter. Try another category.
-        </Typography>
+        </p>
       )}
     </div>
   );

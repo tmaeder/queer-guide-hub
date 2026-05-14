@@ -156,6 +156,6 @@ export function validateFile(file: File, accepted: (f: File) => boolean): Upload
 
 /** Log the technical detail without exposing it to the UI. */
 export function logUploadError(err: UploadError, context: Record<string, unknown> = {}): void {
-  // eslint-disable-next-line no-console
+   
   console.error('[flyer-scan]', err.technical, { code: err.code, ...context });
 }

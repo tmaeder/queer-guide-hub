@@ -8,7 +8,7 @@ test.describe('Header a11y', () => {
 
   test('no serious/critical violations inside header', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
     const results = await new AxeBuilder({ page })
       .include('header')
       .disableRules(['link-in-text-block'])
@@ -27,10 +27,14 @@ test.describe('Header mobile a11y', () => {
   test('hamburger opens drawer dialog with proper aria state + 44+ target', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
     const hamburger = page.locator('button[aria-label="Open menu"]').first();
     await expect(hamburger).toBeVisible();
+    // React hydration can lag — wait until the click handler is bound
+    // (aria-expanded should already be present, but the actual handler attach
+    // happens after Suspense boundaries resolve).
+    await page.waitForTimeout(500);
 
     const box = await hamburger.boundingBox();
     expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
