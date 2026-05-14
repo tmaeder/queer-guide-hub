@@ -29,6 +29,13 @@ vi.mock('@/hooks/useLocalizedNavigate', () => ({
   useLocalizedNavigate: () => vi.fn(),
 }));
 
+// EmailVerificationScreen calls useLocalizedNavigate via a separate import
+// path and the alias-based mock above doesn't reach it under vitest. Stub
+// the component entirely — this test is about Signup, not verification UX.
+vi.mock('../EmailVerificationScreen', () => ({
+  EmailVerificationScreen: () => <div data-testid="email-verification" />,
+}));
+
 // PasswordStrengthMeter lazy-loads zxcvbn; stub it to call onScoreChange immediately.
 vi.mock('../PasswordStrengthMeter', () => ({
   PasswordStrengthMeter: ({ password, onScoreChange }: { password: string; onScoreChange?: (s: 0 | 1 | 2 | 3 | 4) => void }) => {
