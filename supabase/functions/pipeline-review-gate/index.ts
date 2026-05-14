@@ -19,7 +19,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const _pipelineRunId = body.pipeline_run_id as string
+    const pipelineRunId = body.pipeline_run_id as string | undefined
     const minConfidence = body.minConfidence ?? 0.7
     const autoApproveAbove = body.autoApproveAbove ?? 0.9
     const batchSize = body.batch_size || 50
@@ -30,7 +30,7 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
 
     // Process both 'auto' items (first pass) and 'pending_review' items that
     // now have a quality_score and can be re-evaluated for auto-approval.
-    const query = supabase
+    let query = supabase
       .from('ingestion_staging')
       .select('id, ai_confidence_score, ai_validation_status, review_status, enriched_data, target_table, source_name, entity_type')
       .eq('ai_validation_status', 'approved')
@@ -38,6 +38,8 @@ Deno.serve(withErrorReporting('pipeline-review-gate', async (req) => {
       .eq('disposition', 'pending')
       .order('created_at', { ascending: true })
       .limit(batchSize)
+
+    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
 
     const { data: items, error } = await query
     if (error) return errorResponse(`Failed to load items: ${error.message}`, 500, req)

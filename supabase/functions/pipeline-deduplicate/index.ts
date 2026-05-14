@@ -44,6 +44,7 @@ Deno.serve(withErrorReporting('pipeline-deduplicate', async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
+    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (entityType) query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query

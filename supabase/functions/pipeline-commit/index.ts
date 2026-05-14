@@ -36,6 +36,33 @@ Deno.serve(async (req) => {
       const rows = (data ?? []) as Array<{ staging_id: string, venue_id: string, action: string }>
       const inserted = rows.filter((r) => r.action === 'inserted').length
       const updated  = rows.filter((r) => r.action === 'updated').length
+
+      // Post-commit: flag venues from social/community submissions where
+      // normalized_data.is_organizer=true. Read staging back to find them.
+      if (rows.length) {
+        const stagingIds = rows.map((r) => r.staging_id)
+        const { data: orgRows } = await supabase
+          .from('ingestion_staging')
+          .select('id, normalized_data')
+          .in('id', stagingIds)
+        const stagingById = new Map<string, Record<string, unknown>>()
+        for (const s of orgRows ?? []) stagingById.set(s.id, (s.normalized_data ?? {}) as Record<string, unknown>)
+        const organizerUpdates = rows.filter((r) => {
+          const n = stagingById.get(r.staging_id) ?? {}
+          return n.is_organizer === true
+        })
+        for (const r of organizerUpdates) {
+          const n = stagingById.get(r.staging_id) ?? {}
+          await supabase
+            .from('venues')
+            .update({
+              is_organizer: true,
+              organizer_handles: (n.organizer_handles as Record<string, unknown>) ?? null,
+            })
+            .eq('id', r.venue_id)
+        }
+      }
+
       return jsonResponse({
         success: true,
         items: rows.length,
