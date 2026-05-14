@@ -21,7 +21,6 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 // status, permission, force_review) and writes a hit row.
 // ============================================================
 
-Deno.serve(async (req) => {
 Deno.serve(withErrorReporting('pipeline-apply-rules', async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
   if (req.method !== 'POST') return errorResponse('POST only', 405, req)

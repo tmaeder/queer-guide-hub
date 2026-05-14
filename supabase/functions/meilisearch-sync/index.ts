@@ -144,6 +144,23 @@ Deno.serve(async (req) => {
             sortableAttributes: ['title', '_geo'],
             displayedAttributes: ['*'],
           },
+          hotels: {
+            searchableAttributes: ['title', 'description', 'address', 'city', 'country', 'hotel_type', 'tags'],
+            filterableAttributes: ['city', 'city_id', 'country', 'hotel_type', 'featured', 'lgbtq_friendly', 'price_range', 'tags', 'type', '_geo'],
+            sortableAttributes: ['title', 'star_rating', 'price_range', '_geo'],
+            displayedAttributes: ['*'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
+          festivals: {
+            searchableAttributes: ['title', 'description', 'city', 'country', 'festival_type'],
+            filterableAttributes: ['city', 'city_id', 'country', 'festival_type', 'featured', 'start_date', 'tags', 'type', '_geo'],
+            sortableAttributes: ['start_date', 'title', '_geo'],
+            displayedAttributes: ['*'],
+            rankingRules: ['words', 'typo', 'exactness', 'proximity', 'attribute', 'sort', 'start_date:asc'],
+            stopWords: STOP_WORDS,
+            typoTolerance: TIGHT_TYPO,
+          },
         }
         const configResults: Record<string, { ok: boolean; error?: string }> = {}
         for (const [idx, settings] of Object.entries(INDEX_SETTINGS)) {
@@ -452,6 +469,8 @@ const TYPE_FETCHERS: Record<string, (sb: any, limit: number, offset: number) => 
   personalities: fetchPersonalities,
   tags: fetchTags,
   queer_villages: fetchQueerVillages,
+  hotels: fetchHotels,
+  festivals: fetchFestivals,
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -465,6 +484,8 @@ const SINGLE_FETCHERS: Record<string, (sb: any, id: string) => Promise<any | nul
   personalities: fetchPersonality,
   tags: fetchTag,
   queer_villages: fetchQueerVillage,
+  hotels: fetchHotel,
+  festivals: fetchFestival,
 }
 
 // --- Venues ---
@@ -845,6 +866,97 @@ async function fetchQueerVillage(sb: any, id: string) {
     .single()
   if (error || !data) return null
   return mapQueerVillage(data)
+}
+
+// --- Hotels ---
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapHotel(h: any) {
+  return {
+    id: h.id,
+    title: h.name,
+    description: h.description,
+    type: 'hotel',
+    hotel_type: h.hotel_type,
+    address: h.address,
+    city: h.city,
+    city_id: h.city_id,
+    country: h.country,
+    tags: h.tags || [],
+    amenities: h.amenities || [],
+    price_range: h.price_range,
+    star_rating: h.star_rating ? Number(h.star_rating) : null,
+    lgbtq_friendly: h.lgbtq_friendly !== false,
+    featured: h.featured || false,
+    slug: h.slug,
+    image_url: Array.isArray(h.images) ? h.images[0] : h.images,
+    ...(h.latitude && h.longitude ? { _geo: { lat: Number(h.latitude), lng: Number(h.longitude) } } : {}),
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchHotels(sb: any, limit: number, offset: number) {
+  const { data, error } = await sb
+    .from('hotels')
+    .select('id, name, description, hotel_type, address, city, city_id, country, latitude, longitude, images, tags, amenities, price_range, star_rating, lgbtq_friendly, featured, slug')
+    .range(offset, offset + limit - 1)
+  if (error) throw error
+  return (data || []).map(mapHotel)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchHotel(sb: any, id: string) {
+  const { data, error } = await sb
+    .from('hotels')
+    .select('id, name, description, hotel_type, address, city, city_id, country, latitude, longitude, images, tags, amenities, price_range, star_rating, lgbtq_friendly, featured, slug')
+    .eq('id', id)
+    .single()
+  if (error || !data) return null
+  return mapHotel(data)
+}
+
+// --- Festivals ---
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapFestival(f: any) {
+  return {
+    id: f.id,
+    title: f.name,
+    description: f.description,
+    type: 'festival',
+    festival_type: f.festival_type,
+    city: f.city,
+    city_id: f.city_id,
+    country: f.country,
+    start_date: f.start_date,
+    end_date: f.end_date,
+    tags: f.tags || [],
+    featured: f.featured || false,
+    slug: f.slug,
+    image_url: Array.isArray(f.images) ? f.images[0] : f.images,
+    ...(f.latitude && f.longitude ? { _geo: { lat: Number(f.latitude), lng: Number(f.longitude) } } : {}),
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchFestivals(sb: any, limit: number, offset: number) {
+  const { data, error } = await sb
+    .from('festivals')
+    .select('id, name, description, festival_type, city, city_id, country, latitude, longitude, start_date, end_date, images, tags, featured, slug')
+    .range(offset, offset + limit - 1)
+  if (error) throw error
+  return (data || []).map(mapFestival)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchFestival(sb: any, id: string) {
+  const { data, error } = await sb
+    .from('festivals')
+    .select('id, name, description, festival_type, city, city_id, country, latitude, longitude, start_date, end_date, images, tags, featured, slug')
+    .eq('id', id)
+    .single()
+  if (error || !data) return null
+  return mapFestival(data)
 }
 
 // --- Tombstone reconciliation -----------------------------------

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import {
   isValidIata,
   extractDDMM,
@@ -8,6 +8,16 @@ import {
   getAffiliateUrl,
   AFFILIATE_MARKER,
 } from '../aviasalesUrl';
+
+// Freeze time so depart-date validation (isPastDate uses real `new Date()`)
+// stays deterministic regardless of when the suite is run.
+beforeAll(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-05-01T00:00:00Z'));
+});
+afterAll(() => {
+  vi.useRealTimers();
+});
 
 describe('aviasalesUrl', () => {
   // ── isValidIata ──

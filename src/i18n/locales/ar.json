@@ -1687,7 +1687,22 @@
       "clearAll": "مسح الكل",
       "emptyTitle": "لا توجد شخصيات تطابق فلاترك",
       "emptyDescription": "حاول إزالة فلتر أو البحث باسم مختلف.",
-      "loadingMore": "جارٍ تحميل المزيد…"
+      "loadingMore": "جارٍ تحميل المزيد…",
+      "view": {
+        "grid": "[AR] Grid",
+        "timeline": "[AR] Timeline",
+        "map": "[AR] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[AR] Born this week",
+        "diedThisWeek": "[AR] Remembered this week",
+        "browseByEra": "[AR] Browse by era",
+        "browseByField": "[AR] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[AR] In the news",
+        "relatedEvents": "[AR] Related events"
+      }
     },
     "groups": {
       "title": "مجموعات المجتمع",
