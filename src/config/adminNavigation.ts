@@ -35,6 +35,7 @@ import {
   History,
   MessageSquarePlus,
   Search,
+  Flag,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -164,6 +165,13 @@ export const adminNavSections: AdminNavSection[] = [
         icon: UsersRound,
         route: '/admin/content/community_groups',
         countTable: 'community_groups',
+      },
+      {
+        id: 'quests',
+        label: 'Editorial Quests',
+        icon: Flag,
+        route: '/admin/quests',
+        countTable: 'quests',
       },
       {
         id: 'tags',
