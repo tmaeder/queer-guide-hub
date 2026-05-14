@@ -1092,7 +1092,7 @@
       "travel": "Travel",
       "personalities": "Personalities",
       "hotels": "Hotels",
-      "help": "Help"
+      "help": "Crisis support"
     },
     "userMenu": {
       "myTrips": "My Trips",
@@ -1117,7 +1117,7 @@
     },
     "legal": {
       "about": "About",
-      "help": "Help",
+      "help": "Crisis support",
       "accessibility": "Accessibility",
       "legal": "Legal",
       "contact": "Contact"

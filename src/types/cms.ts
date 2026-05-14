@@ -390,6 +390,49 @@ export interface CMSPage {
   parent_slug?: string;
 }
 
+// ── Help / Crisis Hotlines ─────────────────────────────────────────
+
+export type HotlineChannelKind = 'phone' | 'sms' | 'whatsapp' | 'chat' | 'email';
+
+export interface HotlineChannel {
+  kind: HotlineChannelKind;
+  /** tel: number digits, https URL, or mailto: address */
+  value: string;
+  label?: string;
+  /** Per-channel hours (chat often differs from phone) */
+  hours?: string;
+}
+
+export type HotlineAffiliation = 'secular' | 'religious' | 'state' | 'ngo';
+
+export interface Hotline {
+  id: string;
+  name: string;
+  /** ISO country code, or 'INT' for international */
+  country: string;
+  /** Primary phone — kept for backward compat. Authoritative list is `channels`. */
+  phone: string | null;
+  channels?: HotlineChannel[];
+  topics: string[];
+  /** Finer-grained populations: trans-youth, asylum, sex-work, hiv, elders, deaf, … */
+  intersections?: string[];
+  languages: string[];
+  hours: string;
+  description: string;
+  /** 2–3 sentence reassurance shown in card expand + as the per-hotline override of the generic block */
+  what_to_expect?: string;
+  free?: boolean;
+  anonymous?: boolean;
+  reports_to_police?: boolean;
+  operator?: string;
+  affiliation?: HotlineAffiliation;
+  /** ISO date — required for any newly-edited entry */
+  verified_at?: string;
+  verified_by?: string;
+  source_url?: string;
+  url?: string;
+}
+
 // ── Audit Log ──────────────────────────────────────────────────────
 
 export interface CMSAuditEntry {
