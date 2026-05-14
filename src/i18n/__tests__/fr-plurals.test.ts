@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import i18n from '@/i18n';
+import fr from '../locales/fr.json';
 
 beforeAll(async () => {
+  // Inject fr directly — the http backend can't load /locales/fr.json under jsdom in CI.
+  i18n.addResourceBundle('fr', 'translation', fr, true, true);
   await i18n.changeLanguage('fr');
 }, 30000);
 
