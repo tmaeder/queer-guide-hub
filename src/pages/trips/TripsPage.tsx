@@ -9,6 +9,9 @@ import { CreateTripDialog } from '@/components/trips/CreateTripDialog';
 import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { TripsInboxSection } from '@/components/trips/TripsInboxSection';
+import { EmptyTripsHero } from '@/components/trips/EmptyTripsHero';
+import { NextTripStrip } from '@/components/trips/NextTripStrip';
+import { InspiredByYourTrips } from '@/components/trips/InspiredByYourTrips';
 import {
   TripsToolbar,
   type TripSortKey,
@@ -76,6 +79,8 @@ export default function TripsPage() {
         }
       />
 
+      {hasAnyTrips && !isFiltered && <NextTripStrip trips={trips ?? []} />}
+
       {/* Travel inbox */}
       <TripsInboxSection />
 
@@ -109,20 +114,7 @@ export default function TripsPage() {
       )}
 
       {!isLoading && !error && !hasAnyTrips && (
-        <div className="mt-4">
-          <EmptyState
-            icon={Map}
-            title={t('trips.empty.title')}
-            description={t('trips.empty.description')}
-            mood="encouraging"
-            primaryAction={{
-              label: t('trips.empty.cta'),
-              onClick: () => setCreateOpen(true),
-              variant: 'brand',
-            }}
-          />
-          <TripTemplates />
-        </div>
+        <EmptyTripsHero onCreate={() => setCreateOpen(true)} />
       )}
 
       {!isLoading &&
@@ -153,9 +145,12 @@ export default function TripsPage() {
       )}
 
       {!isLoading && !error && hasAnyTrips && !isFiltered && (
-        <div className="mt-12 pt-10 border-t border-border">
-          <TripTemplates />
-        </div>
+        <>
+          <InspiredByYourTrips ownTrips={trips ?? []} />
+          <div className="mt-12 pt-10 border-t border-border">
+            <TripTemplates />
+          </div>
+        </>
       )}
 
       <CreateTripDialog open={createOpen} onClose={() => setCreateOpen(false)} />
