@@ -140,7 +140,31 @@
     "empty": {
       "title": "规划你的第一次行程",
       "description": "创建行程表，查看每个目的地的 LGBTQ+ 安全信息，把一切都集中在一处。",
-      "cta": "创建第一次行程"
+      "cta": "创建第一次行程",
+      "hero": {
+        "title": "[ZH] Plan a trip you'll feel safe on.",
+        "subtitle": "[ZH] Three ways to start — pick whichever fits."
+      },
+      "paths": {
+        "scratch": {
+          "title": "[ZH] Start from scratch",
+          "description": "[ZH] Empty itinerary, your destinations, your pace.",
+          "cta": "[ZH] Create trip"
+        },
+        "template": {
+          "title": "[ZH] Use a template",
+          "description": "[ZH] Pre-built itineraries you can fork and edit.",
+          "cta": "[ZH] Browse templates"
+        },
+        "discover": {
+          "title": "[ZH] Fork a public trip",
+          "description": "[ZH] Real itineraries from other QG travelers.",
+          "cta": "[ZH] Open Discover"
+        }
+      },
+      "discoverEyebrow": "[ZH] From real travelers",
+      "discoverTitle": "[ZH] Recent public trips",
+      "discoverCta": "[ZH] Open Discover"
     },
     "filteredEmpty": {
       "title": "没有匹配的行程",
@@ -163,7 +187,8 @@
         "planning": "规划中",
         "active": "进行中",
         "completed": "已完成",
-        "archived": "已归档"
+        "archived": "已归档",
+        "saved": "[ZH] Saved"
       },
       "sort": {
         "recent": "最近更新",
@@ -556,7 +581,91 @@
     },
     "discover": {
       "title": "发现地点",
-      "button": "浏览市场"
+      "button": "浏览市场",
+      "eyebrow": "[ZH] Real travelers",
+      "subtitle": "[ZH] Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.",
+      "searchPlaceholder": "[ZH] Filter by city…",
+      "aria": "[ZH] Discover public trips",
+      "sortAria": "[ZH] Sort trips",
+      "viewAria": "[ZH] View mode",
+      "filterAria": "[ZH] Filter trips",
+      "filtersAria": "[ZH] Open filters",
+      "filters": {
+        "title": "[ZH] undefined",
+        "travelerType": "[ZH] undefined",
+        "duration": "[ZH] undefined",
+        "minEquality": "[ZH] undefined",
+        "minEqualityAria": "[ZH] undefined",
+        "minEqualityHint": "[ZH] undefined",
+        "noMin": "[ZH] undefined",
+        "quality": "[ZH] undefined",
+        "hasCover": "[ZH] undefined",
+        "hasOwnerProfile": "[ZH] undefined",
+        "clear": "[ZH] undefined"
+      },
+      "activeCountAria": "[ZH] {{count}} active",
+      "view": {
+        "list": "[ZH] List view",
+        "map": "[ZH] Map view"
+      },
+      "sort": {
+        "recent": "[ZH] Most recent",
+        "trending": "[ZH] Trending",
+        "most_places": "[ZH] Most places",
+        "longest": "[ZH] Longest",
+        "safest": "[ZH] Safest"
+      },
+      "filter": {
+        "dated": "[ZH] Has dates",
+        "multiday": "[ZH] Multi-day",
+        "safe": "[ZH] Safe destinations"
+      },
+      "travelerType": {
+        "any": "[ZH] Any",
+        "solo": "[ZH] Solo",
+        "couple": "[ZH] Couple",
+        "group": "[ZH] Group",
+        "family": "[ZH] Family"
+      },
+      "duration": {
+        "any": "[ZH] Any length",
+        "weekend": "[ZH] Weekend (1–3 days)",
+        "week": "[ZH] Week (4–9 days)",
+        "long": "[ZH] Long (10+ days)"
+      },
+      "region": {
+        "europe": "[ZH] Europe",
+        "north_america": "[ZH] North America",
+        "latin_america": "[ZH] Latin America",
+        "asia": "[ZH] Asia",
+        "oceania": "[ZH] Oceania",
+        "africa": "[ZH] Africa",
+        "middle_east": "[ZH] Middle East",
+        "other": "[ZH] Other"
+      },
+      "staffPicks": {
+        "eyebrow": "[ZH] Staff picks",
+        "title": "[ZH] Trips worth copying"
+      },
+      "all": "[ZH] All public trips",
+      "moreInspiration": "[ZH] More inspiration",
+      "moreInspirationDescription": "[ZH] Few public trips match. Start from a template instead.",
+      "emptyTitle": "[ZH] No public trips yet",
+      "emptyFiltered": "[ZH] No public trips match that city. Try a different one.",
+      "emptyDescription": "[ZH] Be the first — make any of your trips public from the Share dialog.",
+      "anonymous": "[ZH] A QG traveler",
+      "placeCount": "[ZH] {{count}} places",
+      "fork": "[ZH] Fork into my trips",
+      "forkAria": "[ZH] Fork this trip",
+      "forking": "[ZH] Forking…",
+      "forked": "[ZH] Trip forked",
+      "forkedDescription": "[ZH] Your copy is ready — edit days and places freely.",
+      "forkError": "[ZH] Could not create trip",
+      "inspiredTitle": "[ZH] Inspired by: {{title}}",
+      "signalsAria": "[ZH] Trip activity",
+      "forkCount": "[ZH] {{count}} forks",
+      "saveCount": "[ZH] {{count}} saves",
+      "filtersButton": "[ZH] Filters"
     },
     "polls": {
       "createdToast": "Poll created",
@@ -679,6 +788,26 @@
       "pin": "Pin",
       "deleteTitle": "Delete Note",
       "deleteConfirm": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "next": {
+      "live": "[ZH] Active now",
+      "countdown": "[ZH] Coming up",
+      "upcoming": "[ZH] Upcoming",
+      "open": "[ZH] Open trip",
+      "openLive": "[ZH] Open today's plan",
+      "today": "[ZH] Today's view"
+    },
+    "inspired": {
+      "eyebrow": "[ZH] Inspired by your trips",
+      "title": "[ZH] Public trips you might like",
+      "cta": "[ZH] See all"
+    },
+    "save": {
+      "save": "[ZH] Save",
+      "saved": "[ZH] Saved",
+      "saveAria": "[ZH] Save trip",
+      "unsaveAria": "[ZH] Unsave trip",
+      "error": "[ZH] Could not update save"
     }
   },
   "auth": {
@@ -1524,7 +1653,14 @@
       "filterSearch": "[ZH] Search",
       "filterCategory": "[ZH] Category",
       "filterSource": "[ZH] Source",
-      "filterFeatured": "[ZH] Featured only"
+      "filterFeatured": "[ZH] Featured only",
+      "trendingTags": "[ZH] Trending",
+      "minRead": "[ZH] min read",
+      "share": "[ZH] Share",
+      "linkCopied": "[ZH] Link copied",
+      "density": "[ZH] Density",
+      "comfortable": "[ZH] Comfortable",
+      "compact": "[ZH] Compact"
     },
     "newsDetail": {
       "notFound": "未找到文章",
