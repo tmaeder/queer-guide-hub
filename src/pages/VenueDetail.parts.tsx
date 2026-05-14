@@ -21,6 +21,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { VenueEvents } from '@/components/venues/VenueEvents';
 import { VenueCheckInButton } from '@/components/venues/VenueCheckInButton';
 import { VenueRecentCheckins } from '@/components/venues/VenueRecentCheckins';
+import { VenueSafetySignalDisplay } from '@/components/venues/VenueSafetySignalDisplay';
 import EqualityScoreBadge from '@/components/country/EqualityScoreBadge';
 import { EntityMap } from '@/components/map/EntityMap';
 import SafetyAlertBanner from '@/components/country/SafetyAlertBanner';
@@ -357,6 +358,8 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               </CardContent>
             </Card>
           )}
+
+          <VenueSafetySignalDisplay venueId={venue.id} />
 
           {/* Recent Check-ins (mobile only, shown inline) */}
           <div className="block lg:hidden">
