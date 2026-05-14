@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Command,
   CommandEmpty,
@@ -518,21 +519,46 @@ export function VenueFilters({
         </div>
       )}
 
-      {/* Advanced Filters Panel */}
+      {/* Advanced Filters Panel — inline on desktop, bottom-sheet on mobile */}
       {showAdvanced && (
-        <nav
-          aria-label="Venue filters"
-          className="flex flex-col gap-6 pt-5 mt-1 border-t border-border"
-        >
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
-              Refine
-            </span>
-          </div>
+        <>
+          {/* Mobile: bottom sheet */}
+          <Sheet
+            open={showAdvanced}
+            onOpenChange={(o) => !o && setShowAdvanced(false)}
+          >
+            <SheetContent side="bottom" className="md:hidden max-h-[85dvh] overflow-y-auto p-4">
+              <SheetHeader>
+                <SheetTitle>Refine</SheetTitle>
+              </SheetHeader>
+              {renderAdvancedPanel()}
+            </SheetContent>
+          </Sheet>
 
-          {/* City input */}
-          <div className="max-w-[400px] flex flex-col gap-1.5">
+          {/* Desktop: inline */}
+          <nav
+            aria-label="Venue filters"
+            className="hidden md:flex flex-col gap-6 pt-5 mt-1 border-t border-border"
+          >
+            {renderAdvancedPanel()}
+          </nav>
+        </>
+      )}
+    </div>
+  );
+
+  function renderAdvancedPanel() {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
+            Refine
+          </span>
+        </div>
+
+        {/* City input */}
+        <div className="max-w-[400px] flex flex-col gap-1.5">
             <Label htmlFor="city" className="text-[11px] uppercase tracking-wider text-muted-foreground">City</Label>
             <Input
               id="city"
@@ -624,10 +650,9 @@ export function VenueFilters({
               </Button>
             </div>
           )}
-        </nav>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
 }
 
 // Extracted filter dropdown component to reduce repetition
