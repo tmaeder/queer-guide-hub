@@ -234,9 +234,10 @@ jobs:
           until lighthouse "${BASE_URL}${ROUTE}" \
             --only-categories=accessibility \
             --output=json --output-path="lh/${slug}.json" \
-            --chrome-flags="--no-sandbox --disable-gpu --disable-dev-shm-usage --disable-software-rasterizer --headless=new --window-size=1350,940" \
+            --chrome-flags="--no-sandbox --disable-gpu --disable-dev-shm-usage --headless=new" \
             --preset=desktop \
-            --max-wait-for-load=90000 \
+            --throttling-method=provided \
+            --max-wait-for-load=120000 \
             --quiet; do
             if [ "$attempt" -ge 3 ]; then
               echo "::error::Lighthouse failed after 3 attempts for $ROUTE"
@@ -269,6 +270,13 @@ jobs:
             echo "::error::Lighthouse a11y score $score < 95 for $ROUTE"
             exit 1
           fi
+      - name: Dump serve log on failure
+        if: failure()
+        run: |
+          echo "---- serve.log ----"
+          cat serve.log || true
+          echo "---- curl ${BASE_URL}${ROUTE} ----"
+          curl -sv "${BASE_URL}${ROUTE}" | head -80 || true
       - if: always()
         uses: actions/upload-artifact@v4
         with:
