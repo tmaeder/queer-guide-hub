@@ -23,7 +23,7 @@ Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}))
-    const _pipelineRunId = body.pipeline_run_id as string
+    const pipelineRunId = body.pipeline_run_id as string | undefined
     const entityType    = body.entityType as string
     const batchSize     = body.batch_size || 50
     const dryRun        = body.dry_run || false
@@ -35,6 +35,9 @@ Deno.serve(withErrorReporting('pipeline-normalize', async (req) => {
       .order('created_at', { ascending: true })
       .limit(batchSize)
 
+    // Scope to current pipeline run when provided so executor invocations
+    // don't get starved behind legacy backlog.
+    if (pipelineRunId) query = query.eq('pipeline_run_id', pipelineRunId)
     if (entityType)    query = query.eq('entity_type', entityType)
 
     const { data: items, error } = await query
@@ -158,6 +161,14 @@ function normalizeItem(raw: Record<string, unknown>, entityType: string): Record
   const n: Record<string, unknown> = {
     entity_type: entityType,
     source_id: raw.id ?? raw.source_id ?? raw.external_id ?? null,
+  }
+
+  // Social ingestion rows come from community_submissions and surface their
+  // signals as `_*` keys on raw_data (set by source-community-submissions).
+  // Hydrate them into the standard slots before the normal field mapping
+  // runs, so vision_summary / ocr_text / raw_text actually flow through.
+  if (typeof raw._platform === 'string') {
+    hydrateSocialSignalsIntoRaw(raw)
   }
 
   n.name        = cleanText(raw.name || raw.title || raw.display_name || '')
@@ -412,6 +423,70 @@ function normalizeBirthDate(v: unknown): string | null {
   const d = new Date(stripped)
   if (isNaN(d.getTime())) return null
   return d.toISOString().slice(0, 10)
+}
+
+/**
+ * Heuristic extractor for social submissions. Reads vision_summary + ocr_text
+ * + raw_text + transcript_text and populates title/description/dates/location/url
+ * on raw, so the standard normalizer below can pick them up. Idempotent —
+ * existing fields on raw are preserved.
+ */
+function hydrateSocialSignalsIntoRaw(raw: Record<string, unknown>): void {
+  const text = [
+    raw._raw_text, raw._vision_summary, raw._ocr_text, raw._transcript_text,
+  ].map((v) => (typeof v === 'string' ? v : '')).join('\n').trim()
+  if (!text) return
+
+  // Title: prefer "called \"X\"" or first quoted phrase in vision_summary.
+  if (!raw.title && !raw.name) {
+    const m = text.match(/called\s+"([^"]{2,80})"/i)
+      ?? text.match(/"([^"]{3,80})"\s+(?:is\s+)?prominently/i)
+      ?? text.match(/title\s+"([^"]{3,80})"/i)
+    if (m) raw.title = m[1].trim()
+  }
+
+  // Description: take first paragraph of vision_summary, stripped of markdown.
+  if (!raw.description) {
+    const vs = typeof raw._vision_summary === 'string' ? raw._vision_summary : ''
+    const cleaned = vs
+      .replace(/\*\*[^*]+\*\*/g, '')
+      .replace(/[*+#]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (cleaned) raw.description = cleaned.slice(0, 2000)
+  }
+
+  // Event dates: "Month DD, YYYY" → ISO. Picks earliest as start_date.
+  const months = '(?:january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)'
+  const dateRe = new RegExp(`${months}\\s+\\d{1,2},?\\s+\\d{4}`, 'gi')
+  const matches = text.match(dateRe) ?? []
+  const parsedDates = matches
+    .map((s) => new Date(s).getTime())
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b)
+  if (parsedDates.length && !raw.start_date) {
+    raw.start_date = new Date(parsedDates[0]).toISOString()
+    if (parsedDates.length > 1 && !raw.end_date) {
+      raw.end_date = new Date(parsedDates[parsedDates.length - 1]).toISOString()
+    }
+  }
+
+  // Location: capture city after "Month DD, YYYY: <City>" patterns. Prefer
+  // first occurrence (matches first date row).
+  if (!raw.city) {
+    const cityRe = new RegExp(`${months}\\s+\\d{1,2},?\\s+\\d{4}\\s*[:\\-–]\\s*([A-Z][A-Za-zÀ-ÿ' .-]{2,40})`, 'i')
+    const cm = text.match(cityRe)
+    if (cm) raw.city = cm[1].trim().replace(/\s+/g, ' ')
+  }
+
+  // URL: first http(s) or www.X link in text → normalize to https://.
+  if (!raw.url && !raw.website) {
+    const um = text.match(/https?:\/\/[^\s"<>)]+/i) ?? text.match(/\bwww\.[A-Za-z0-9.-]+\.[a-z]{2,}\b/i)
+    if (um) {
+      const u = um[0]
+      raw.url = u.startsWith('http') ? u : `https://${u}`
+    }
+  }
 }
 
 /** Forward-geocode a free-form address via Photon (komoot). Returns null on any failure. */
