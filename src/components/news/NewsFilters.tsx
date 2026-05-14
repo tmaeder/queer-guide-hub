@@ -42,6 +42,7 @@ interface NewsFiltersProps {
     userLocation?: { lat: number; lng: number };
     dateRange?: { from?: string; to?: string };
     featured?: boolean;
+    inStory?: boolean;
     category?: string;
   }) => void;
   trendingTags?: { tag: string; count: number }[];
@@ -66,6 +67,7 @@ export const NewsFilters = ({
   const [locationLoading, setLocationLoading] = useState(false);
   const [dateRange, setDateRange] = useState<string>('');
   const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [inStoryOnly, setInStoryOnly] = useState(false);
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
 
@@ -101,6 +103,7 @@ export const NewsFilters = ({
         userLocation: overrides.userLocation !== undefined ? overrides.userLocation : userLocation,
         dateRange: overrides.dateRange !== undefined ? overrides.dateRange : dateRange,
         featuredOnly: overrides.featuredOnly !== undefined ? overrides.featuredOnly : featuredOnly,
+        inStoryOnly: overrides.inStoryOnly !== undefined ? overrides.inStoryOnly : inStoryOnly,
         category:
           overrides.selectedCategory !== undefined ? overrides.selectedCategory : selectedCategory,
       };
@@ -116,6 +119,7 @@ export const NewsFilters = ({
         filters.userLocation = current.userLocation;
       }
       if (current.featuredOnly) filters.featured = true;
+      if (current.inStoryOnly) filters.inStory = true;
       if (current.category) filters.category = current.category;
 
       // Convert date range string to from/to
@@ -173,6 +177,7 @@ export const NewsFilters = ({
       userLocation,
       dateRange,
       featuredOnly,
+      inStoryOnly,
       sources,
       onFiltersChange,
     ],
@@ -260,6 +265,12 @@ export const NewsFilters = ({
     emitFilters({ featuredOnly: newVal });
   };
 
+  const handleInStoryToggle = () => {
+    const newVal = !inStoryOnly;
+    setInStoryOnly(newVal);
+    emitFilters({ inStoryOnly: newVal });
+  };
+
   const clearFilters = () => {
     setSource('');
     setSelectedCategory('');
@@ -270,6 +281,7 @@ export const NewsFilters = ({
     setUserLocation(null);
     setDateRange('');
     setFeaturedOnly(false);
+    setInStoryOnly(false);
     onFiltersChange({});
   };
 
@@ -298,6 +310,14 @@ export const NewsFilters = ({
             Featured Only
           </span>
           <Switch checked={featuredOnly} onCheckedChange={handleFeaturedToggle} />
+        </div>
+
+        {/* Multi-article stories only */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">
+            Multi-article stories only
+          </span>
+          <Switch checked={inStoryOnly} onCheckedChange={handleInStoryToggle} />
         </div>
 
         <Separator />

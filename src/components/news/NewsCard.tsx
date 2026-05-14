@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Eye, Clock, MapPin, Tag, Lock } from 'lucide-react';
+import { ExternalLink, Eye, Clock, MapPin, Tag, Lock, Share2, BookOpen } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { shareOrCopy, articleShareUrl, estimateReadingTime } from '@/lib/share';
 import type { Tables } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
@@ -57,7 +58,14 @@ interface NewsCardProps {
   variant?: 'default' | 'headline' | 'featured' | 'compact';
   priority?: boolean;
   hideDate?: boolean;
+  density?: 'comfortable' | 'compact';
 }
+
+const buildShareHandler = (slug: string, title: string) => (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  void shareOrCopy({ title, url: articleShareUrl(slug) });
+};
 
 export const NewsCard = ({
   article,
@@ -76,6 +84,7 @@ export const NewsCard = ({
   variant = 'default',
   priority = false,
   hideDate = false,
+  density = 'comfortable',
 }: NewsCardProps) => {
   const navigate = useLocalizedNavigate();
   const [imgFailed, setImgFailed] = useState(false);
@@ -135,6 +144,9 @@ export const NewsCard = ({
   const fallbackCategoryFromTag = !displayCategory && firstUsableTag ? firstUsableTag : null;
   const effectiveImage = (article.image_url && !imgFailed) ? article.image_url : fallbackSrc;
   const hasImage = true;
+
+  const readingTime = estimateReadingTime(article.content as string | null | undefined, article.excerpt);
+  const onShare = buildShareHandler(article.slug, safeTitle);
 
   const linkedCities = (article.city_ids || [])
     .map((id: string) => ({ id, name: cityNames[id] }))
@@ -237,9 +249,23 @@ export const NewsCard = ({
                 {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
               </span>
             )}
+            {readingTime !== null && (
+              <span className="text-xs inline-flex items-center gap-1">
+                <BookOpen style={{ height: 12, width: 12 }} aria-hidden="true" /> {readingTime} min read
+              </span>
+            )}
             {hideDate && article.is_featured && (
               <span className="text-xs uppercase tracking-wide">Featured</span>
             )}
+            <button
+              type="button"
+              onClick={onShare}
+              aria-label={`Share ${safeTitle}`}
+              className="ml-auto inline-flex items-center justify-center rounded-md p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ height: 28, width: 28 }}
+            >
+              <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />
+            </button>
           </div>
         </div>
       </LocalizedLink>
@@ -294,6 +320,16 @@ export const NewsCard = ({
             {!hideDate && article.published_at && (
               <span>{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
             )}
+            {readingTime !== null && <span>· {readingTime} min</span>}
+            <button
+              type="button"
+              onClick={onShare}
+              aria-label={`Share ${safeTitle}`}
+              className="ml-auto inline-flex items-center justify-center rounded-md p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ height: 24, width: 24 }}
+            >
+              <Share2 style={{ height: 12, width: 12 }} aria-hidden="true" />
+            </button>
           </div>
         </div>
       </LocalizedLink>
@@ -324,7 +360,7 @@ export const NewsCard = ({
               alt={safeTitle}
               width={400}
               height={192}
-              style={{ width: '100%', height: 192, objectFit: 'cover', transition: 'transform 0.3s' }}
+              style={{ width: '100%', height: density === 'compact' ? 140 : 192, objectFit: 'cover', transition: 'transform 0.3s' }}
               onError={() => setImgFailed(true)}
             />
             {(article as Record<string, unknown>).is_premium === true && (
@@ -433,6 +469,12 @@ export const NewsCard = ({
               </span>
             </div>
           )}
+          {readingTime !== null && (
+            <div className="flex items-center gap-1">
+              <BookOpen style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} aria-hidden="true" />
+              <span className="text-xs text-muted-foreground">{readingTime} min read</span>
+            </div>
+          )}
           {typeof article.views_count === 'number' && article.views_count > 0 && (
             <div className="flex items-center gap-1">
               <Eye style={{ height: 14, width: 14, color: 'var(--muted-foreground)' }} />
@@ -511,9 +553,18 @@ export const NewsCard = ({
           </div>
         )}
 
-        {/* Favorite button */}
-        <div className="flex items-center pt-1" onClick={(e) => e.stopPropagation()}>
+        {/* Favorite + share */}
+        <div className="flex items-center gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
           <FavoriteButton itemId={article.id} type="news" />
+          <button
+            type="button"
+            onClick={onShare}
+            aria-label={`Share ${safeTitle}`}
+            className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            style={{ height: 28, width: 28 }}
+          >
+            <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />
+          </button>
         </div>
       </CardContent>
     </Card>

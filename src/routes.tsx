@@ -130,6 +130,7 @@ const CloudflareDashboard = lazy(() =>
 const ProfessionDetail = lazyRetry(() => import('./pages/ProfessionDetail'));
 const News = lazyRetry(() => import('./pages/News'));
 const NewsDetail = lazyRetry(() => import('./pages/NewsDetail'));
+const NewsStoryDetail = lazyRetry(() => import('./pages/NewsStoryDetail'));
 
 const ProfileSettings = lazyRetry(() => import('./pages/ProfileSettings'));
 const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
@@ -428,6 +429,7 @@ export const AppRoutes = () => {
                 <Route path="cookies" element={<CMSRoutePage slug="cookies" />} />
                 <Route path="dmca" element={<CMSRoutePage slug="dmca" />} />
                 <Route path="news" element={<News />} />
+                <Route path="news/story/:slug" element={<NewsStoryDetail />} />
                 <Route path="news/:slug" element={<NewsDetail />} />
                 <Route path="search" element={<SearchResults />} />
                 <Route path="groups" element={<Groups />} />
@@ -447,6 +449,7 @@ export const AppRoutes = () => {
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />
                 <Route path="help" element={<HelpHotlines />} />
+                <Route path="help/:country" element={<HelpHotlines />} />
                 <Route path="submit" element={<SubmitHub />} />
                 <Route path="submit/:contentType" element={<SubmitForm />} />
                 <Route path="p/:slug" element={<CMSPage />} />
