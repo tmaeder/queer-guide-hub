@@ -1687,7 +1687,22 @@
       "clearAll": "全部清除",
       "emptyTitle": "没有符合你筛选条件的人物",
       "emptyDescription": "尝试清除筛选条件或搜索其他名字。",
-      "loadingMore": "加载更多中…"
+      "loadingMore": "加载更多中…",
+      "view": {
+        "grid": "[ZH] Grid",
+        "timeline": "[ZH] Timeline",
+        "map": "[ZH] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[ZH] Born this week",
+        "diedThisWeek": "[ZH] Remembered this week",
+        "browseByEra": "[ZH] Browse by era",
+        "browseByField": "[ZH] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[ZH] In the news",
+        "relatedEvents": "[ZH] Related events"
+      }
     },
     "groups": {
       "title": "社区小组",

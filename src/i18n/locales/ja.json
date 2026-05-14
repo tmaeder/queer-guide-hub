@@ -1687,7 +1687,22 @@
       "clearAll": "すべてクリア",
       "emptyTitle": "フィルターに一致する人物がいません",
       "emptyDescription": "フィルターを解除するか、別の名前で検索してみてください。",
-      "loadingMore": "読み込み中…"
+      "loadingMore": "読み込み中…",
+      "view": {
+        "grid": "[JA] Grid",
+        "timeline": "[JA] Timeline",
+        "map": "[JA] Map"
+      },
+      "editorial": {
+        "bornThisWeek": "[JA] Born this week",
+        "diedThisWeek": "[JA] Remembered this week",
+        "browseByEra": "[JA] Browse by era",
+        "browseByField": "[JA] Browse by field"
+      },
+      "detail": {
+        "inTheNews": "[JA] In the news",
+        "relatedEvents": "[JA] Related events"
+      }
     },
     "groups": {
       "title": "コミュニティグループ",
