@@ -10,6 +10,7 @@ import { Luggage } from 'lucide-react';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { useToast } from '@/hooks/use-toast';
+import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/languages';
 
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -126,7 +127,14 @@ export function VenueCard({
     e.preventDefault();
     e.stopPropagation();
     if (!venue) return;
-    const url = `${window.location.origin}/venues/${venue.slug}`;
+    // Preserve the current locale prefix in the shared URL so the recipient
+    // lands on the same language. Default locale ('en') has no prefix.
+    const firstSeg = window.location.pathname.split('/')[1] ?? '';
+    const prefix =
+      firstSeg && isSupportedLocale(firstSeg) && firstSeg !== DEFAULT_LOCALE
+        ? `/${firstSeg}`
+        : '';
+    const url = `${window.location.origin}${prefix}/venues/${venue.slug}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: venue.name, url });
