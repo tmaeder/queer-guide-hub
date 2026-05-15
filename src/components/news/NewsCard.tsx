@@ -11,6 +11,8 @@ import { FavoriteButton } from '@/components/ui/favorite-button';
 import { useState, useMemo } from 'react';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt } from '@/utils/htmlDecode';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import { safeText } from '@/utils/safeDisplay';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
@@ -59,6 +61,7 @@ interface NewsCardProps {
   priority?: boolean;
   hideDate?: boolean;
   density?: 'comfortable' | 'compact';
+  imageAsset?: EntityImageAsset;
 }
 
 const buildShareHandler = (slug: string, title: string) => (e: React.MouseEvent) => {
@@ -85,6 +88,7 @@ export const NewsCard = ({
   priority = false,
   hideDate = false,
   density = 'comfortable',
+  imageAsset,
 }: NewsCardProps) => {
   const navigate = useLocalizedNavigate();
   const [imgFailed, setImgFailed] = useState(false);
@@ -142,7 +146,12 @@ export const NewsCard = ({
       : null;
   const firstUsableTag = tags.find((t) => !isHiddenCategory(t));
   const fallbackCategoryFromTag = !displayCategory && firstUsableTag ? firstUsableTag : null;
-  const effectiveImage = (article.image_url && !imgFailed) ? article.image_url : fallbackSrc;
+  const resolvedSrc = resolveImageUrl({
+    imageUrl: article.image_url,
+    optimizedUrl: imageAsset?.optimized_url ?? null,
+    thumbnailUrl: imageAsset?.thumbnail_url ?? null,
+  });
+  const effectiveImage = (resolvedSrc && !imgFailed) ? resolvedSrc : fallbackSrc;
   const hasImage = true;
 
   const readingTime = estimateReadingTime(article.content as string | null | undefined, article.excerpt);

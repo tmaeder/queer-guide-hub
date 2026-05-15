@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useMarketplace, type MarketplaceSort, type MarketplaceFiltersInput } from '@/hooks/useMarketplace';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { useMeta } from '@/hooks/useMeta';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { MarketplaceFilters } from '@/components/marketplace/MarketplaceFilters';
@@ -144,6 +145,12 @@ const Marketplace = () => {
       });
     }
   }, [listings, page]);
+
+  const visibleListingIds = useMemo(
+    () => accumulated.map((l) => l.id),
+    [accumulated],
+  );
+  const { assets: listingAssets } = useEntityImageAssets('marketplace_listing', visibleListingIds);
 
   const handleFiltersChange = (next: Record<string, unknown>) => {
     setFilters(next as MarketplaceFiltersInput);
@@ -372,6 +379,7 @@ const Marketplace = () => {
                         onToggleFavorite={user ? handleToggleFavorite : undefined}
                         showFavoriteButton={!!user}
                         searchQuery={filters.search}
+                        imageAsset={listingAssets.get(listing.id)}
                       />
                     </div>
                   ))}
