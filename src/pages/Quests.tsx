@@ -96,8 +96,7 @@ function QuestCard({ quest, highlight, muted }: { quest: Quest; highlight?: bool
   return (
     <Link
       to={`/quests/${quest.slug}`}
-      className={`group block rounded-container border border-border bg-card p-6 transition hover:border-foreground ${
-      className={`group flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition-colors duration-300 hover:border-foreground/40 ${
+      className={`group flex h-full flex-col rounded-container border border-border bg-card p-6 transition-colors duration-300 hover:border-foreground/40 ${
         muted ? 'opacity-80' : ''
       }`}
     >

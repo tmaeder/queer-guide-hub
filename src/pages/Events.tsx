@@ -425,47 +425,6 @@ const Events = () => {
   }, []);
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-12 md:py-20">
-        {/* Header */}
-        <PageHeader
-          title={t('pages.events.title', 'Events')}
-          subtitle={t('pages.events.subtitle', 'Discover and join community events in your area')}
-          actions={
-            <>
-              <div
-                className="flex items-center gap-1 p-1 bg-muted rounded-element"
-                role="group"
-                aria-label="View mode"
-              >
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="icon"
-                  aria-label={t('pages.events.gridView', 'Grid view')}
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid size={16} />
-                </Button>
-                <Button
-                  variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                  size="icon"
-                  aria-label={t('pages.events.calendarView', 'Calendar view')}
-                  onClick={() => setViewMode('calendar')}
-                >
-                  <CalendarIcon size={16} />
-                </Button>
-                <Button
-                  variant={viewMode === 'map' ? 'default' : 'ghost'}
-                  size="icon"
-                  aria-label={t('pages.events.mapView', 'Map view')}
-                  onClick={() => setViewMode('map')}
-                >
-                  <MapPin size={16} />
-                </Button>
-              </div>
-              {/* P4-3 — Submit CTA consolidated to header. */}
-            </>
-          }
-        />
       <PageHero
         eyebrow={t('pages.events.eyebrow', 'Happening')}
         title={t('pages.events.title', 'Events.')}
@@ -477,7 +436,7 @@ const Events = () => {
         {/* View mode toggle */}
         <div className="mb-6 flex justify-end">
           <div
-            className="flex items-center gap-1 p-1 bg-muted rounded-lg"
+            className="flex items-center gap-1 p-1 bg-muted rounded-element"
             role="group"
             aria-label="View mode"
           >
@@ -1058,6 +1017,7 @@ const Events = () => {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
