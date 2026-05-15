@@ -56,27 +56,6 @@ function CellTitle({
 }) {
   const navigate = useNavigate();
   return (
-    <div className="border border-border rounded-element bg-background p-5 flex flex-col gap-4 h-full">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-7 h-7 rounded-element flex items-center justify-center bg-muted text-muted-foreground"
-          >
-            <Icon size={15} />
-          </div>
-          <h3 className="text-sm font-semibold">{title}</h3>
-        </div>
-        {action && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(action.route)}
-            className="text-xs font-medium normal-case"
-          >
-            {action.label}
-            <ArrowRight size={14} className="ml-1" />
-          </Button>
-        )}
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-2">
         <Icon size={14} className="text-muted-foreground" aria-hidden />
@@ -138,22 +117,6 @@ function SystemStatusCell({ data }: { data: CockpitData }) {
         <Metric label="DB Latency" value={`${system.dbLatencyMs}ms`} ok={system.dbLatencyMs < 200} />
         <Metric label="Errors" value={system.recentErrors.toString()} ok={system.recentErrors === 0} />
       </div>
-    </QuadrantCard>
-  );
-}
-
-function MetricBox({ label, value, good }: { label: string; value: string; good: boolean }) {
-  return (
-    <div
-      className="p-3 rounded-element text-center bg-muted"
-    >
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
-      <div
-        className={`text-base font-bold ${good ? '' : 'text-destructive'}`}
-      >
-        {value}
-      </div>
-    </div>
     </BentoCell>
   );
 }
@@ -292,20 +255,6 @@ function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
   const total = Object.values(stats).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="border border-border rounded-element bg-background p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold">Content Overview</h3>
-        <span className="text-xs text-muted-foreground">
-          {Object.values(stats)
-            .reduce((a, b) => a + b, 0)
-            .toLocaleString()}{' '}
-          total items
-        </span>
-      </div>
-      <StaggerGrid
-        stagger={0.04}
-        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3"
-      >
     <BentoCell
       span={12}
       title={
@@ -325,7 +274,6 @@ function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
             key={key}
             type="button"
             onClick={() => navigate(route)}
-            className="flex flex-col items-center gap-1 p-3 rounded-element cursor-pointer transition-all hover:-translate-y-px hover:bg-muted"
             className="flex flex-col items-center gap-1 p-3 bg-background hover:bg-muted/30 text-center"
           >
             <Icon size={16} className="text-muted-foreground" aria-hidden />
@@ -385,6 +333,7 @@ function CockpitSkeleton() {
           style={{ gridColumn: `span ${span} / span ${span}`, height: span === 12 ? 160 : 200 }}
         />
       ))}
+    </div>
     </div>
   );
 }

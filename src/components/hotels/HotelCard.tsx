@@ -81,7 +81,6 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
     <LocalizedLink to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
       <CardHoverEffect>
-      <div className="overflow-hidden rounded-container transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col bg-card border shadow-sm">
       <div className="group overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-foreground/40 h-full flex flex-col">
         {/* Image */}
         <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
