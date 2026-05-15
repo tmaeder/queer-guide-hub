@@ -24,7 +24,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
       to={`/news/story/${story.slug}`}
       aria-label={title}
       className="flex flex-col gap-3 rounded-element border border-border bg-background overflow-hidden hover:bg-muted/40 transition-colors no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      className="group flex flex-col gap-3 rounded-lg border border-border bg-background overflow-hidden transition-colors duration-300 hover:border-foreground/40 no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex flex-col gap-3 rounded-element border border-border bg-background overflow-hidden transition-colors duration-300 hover:border-foreground/40 no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative overflow-hidden">
         <img
