@@ -15,9 +15,7 @@ import { useSafeMode } from '@/providers/SafeModeProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Network } from 'lucide-react';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
+import { PageHero } from '@/components/discovery';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { ResourceTagDetail } from '@/pages/resources/ResourceTagDetail';
@@ -425,13 +423,13 @@ export default function Ressources() {
 
   return (
     <div className="relative">
-      <SpotlightV2 anchor="top-center" intensity={0.10} />
-      <div className="container mx-auto py-8 md:py-16 px-4 relative">
-      <PageHeader
-        title={<ColourfulText text="Help & Resources" />}
-        subtitle="Crisis support, practical guides, and the people and organisations behind them."
-        center
+      <PageHero
+        eyebrow="Support"
+        title="Help & resources."
+        lede="Crisis support, practical guides, and the people and organisations behind them."
+        size="md"
       />
+      <div className="container mx-auto py-8 md:py-12 px-4 relative">
 
       {viewMode === 'overview' && !showFilteredResults && (
         <div className="flex flex-col gap-10 mb-10">

@@ -8,9 +8,15 @@ import { useEntityImageAssets } from "@/hooks/useEntityImageAssets";
 import { useMeta } from "@/hooks/useMeta";
 import { NewsCard } from "@/components/news/NewsCard";
 import { NewsFilters } from "@/components/news/NewsFilters";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { SpotlightV2 } from "@/components/effects/SpotlightV2";
-import { ColourfulText } from "@/components/effects/ColourfulText";
+import { PageHero, spansForPreset } from "@/components/discovery";
+
+const NEWS_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 md:col-span-6 xl:col-span-4',
+  md: 'col-span-12 md:col-span-6 xl:col-span-4',
+  lg: 'col-span-12 md:col-span-6 xl:col-span-6',
+  wide: 'col-span-12 xl:col-span-8',
+  tall: 'col-span-12 md:col-span-6 xl:col-span-4 row-span-2',
+};
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -453,24 +459,19 @@ export default function News() {
 
   return (
     <div className="min-h-screen relative">
-      <SpotlightV2 anchor="top-center" intensity={0.12} />
+      <PageHero
+        eyebrow={t('pages.news.eyebrow', 'Latest')}
+        title={t('pages.news.title', 'News.')}
+        lede={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
+        size="md"
+      >
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5"><Newspaper size={16} />{articles.length} articles</span>
+          <span className="flex items-center gap-1.5"><TrendingUp size={16} />{sources.length} sources</span>
+        </div>
+      </PageHero>
       {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
-      <div className="container mx-auto py-12 md:py-20 px-4 pb-24 relative">
-        <PageHeader
-          title={<ColourfulText text={t('pages.news.title', 'News')} />}
-          subtitle={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Newspaper size={16} />
-              <p className="text-sm text-muted-foreground">{articles.length} articles</p>
-            </div>
-            <div className="flex items-center gap-1">
-              <TrendingUp size={16} />
-              <p className="text-sm text-muted-foreground">{sources.length} sources</p>
-            </div>
-          </div>
-        </PageHeader>
+      <div className="container mx-auto py-8 md:py-12 px-4 pb-24 relative">
 
         {/* Category Tabs (sticky) */}
         {categories.length > 0 && (
@@ -874,10 +875,17 @@ export default function News() {
                 {/* Grid / List View */}
                 {(viewMode === 'grid' || viewMode === 'list') && (
                   <motion.div key={viewMode} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                  <StaggerGrid className={viewMode === 'grid'
-                    ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
-                    : 'flex flex-col gap-3'
-                  }>
+                  <StaggerGrid
+                    className={viewMode === 'grid'
+                      ? 'grid grid-cols-12 gap-4 md:gap-6'
+                      : 'flex flex-col gap-3'
+                    }
+                    itemClassName={
+                      viewMode === 'grid'
+                        ? (i: number) => NEWS_SPAN_CLASS[spansForPreset('mosaic', i, paginatedArticles.length)]
+                        : undefined
+                    }
+                  >
                     {paginatedArticles.map((article) => (
                       <NewsCard
                         key={article.id}

@@ -23,8 +23,6 @@ import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
 import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
-import { MovingBorder } from '@/components/effects/MovingBorder';
-import { MagneticButton } from '@/components/motion';
 import { GrainOverlay } from '@/components/effects/GrainOverlay';
 import { Sparkles } from '@/components/effects/Sparkles';
 import { Beams } from '@/components/effects/Beams';
@@ -187,18 +185,22 @@ const Index = React.memo(() => {
           </p>
 
           <div className="reveal-up reveal-delay-2 flex gap-3 flex-wrap">
-            <MagneticButton>
-              <MovingBorder onClick={() => navigate('/venues')}>
-                <MapPin size={16} aria-hidden="true" />
-                {t('home.browseVenues', 'Browse Venues')}
-              </MovingBorder>
-            </MagneticButton>
-            <MagneticButton>
-              <MovingBorder onClick={() => navigate('/events')} duration={4}>
-                <Calendar size={16} aria-hidden="true" />
-                {t('home.viewEvents', 'View Events')}
-              </MovingBorder>
-            </MagneticButton>
+            <button
+              type="button"
+              onClick={() => navigate('/travel')}
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+            >
+              <MapPin size={16} aria-hidden="true" />
+              {t('home.planTrip', 'Plan a trip')}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/directory')}
+              className="inline-flex items-center gap-2 rounded-full border border-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors"
+            >
+              <Calendar size={16} aria-hidden="true" />
+              {t('home.browseDirectory', 'Browse the directory')}
+            </button>
           </div>
         </SpotlightEffect>
 
