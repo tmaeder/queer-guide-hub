@@ -10,6 +10,8 @@ import { Mail, Clock, MessageCircle, Shield, Bug, HelpCircle, ChevronDown, Chevr
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { ColourfulText } from "@/components/effects/ColourfulText";
+import { WordRotate } from "@/components/effects/WordRotate";
 
 const categories = [
   { value: "support", label: "Email Support", icon: Mail, email: "support@queer.guide", responseTime: "24 hours" },
@@ -67,10 +69,17 @@ export default function Contact() {
     <div>
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-2">Contact Us</h1>
-          <p className="text-muted-foreground">
-            Questions, feedback, or need support? Reach out to our community team.
-          </p>
+          <h1 className="text-4xl font-bold mb-2">
+            <ColourfulText text="Contact Us" />
+          </h1>
+          <div className="text-muted-foreground">
+            <span className="mr-1.5">Send us a</span>
+            <WordRotate
+              className="text-foreground font-semibold"
+              words={['question', 'bug report', 'partnership', 'kind word']}
+            />
+            <span className="ml-1.5">— we read everything.</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">

@@ -22,6 +22,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useMeta } from '@/hooks/useMeta';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 
 // Map view is heavy (maplibre-gl ~200kb). Only load when toggled.
 const HotelsMap = lazy(() =>
@@ -187,11 +189,13 @@ export default function Hotels() {
   const { cities: topCities } = useTopHotelCities(8);
 
   return (
-    <div className="container mx-auto py-12 md:py-16 px-4 space-y-10">
+    <div className="relative">
+      <SpotlightV2 anchor="top-center" intensity={0.12} />
+      <div className="container mx-auto py-12 md:py-16 px-4 space-y-10 relative">
       <div className="flex justify-between items-start gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            {t('pages.hotels.title', 'Stays')}
+            <ColourfulText text={t('pages.hotels.title', 'Stays')} />
           </h1>
           <p className="text-muted-foreground mt-1">
             {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
@@ -348,6 +352,7 @@ export default function Hotels() {
           </>
         )}
       </section>
+      </div>
     </div>
   );
 }

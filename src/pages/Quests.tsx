@@ -1,6 +1,8 @@
 import { Link } from 'react-router';
 import { Flag } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMeta } from '@/hooks/useMeta';
@@ -38,11 +40,12 @@ export default function Quests() {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8 md:py-16">
+    <div className="min-h-screen relative">
+      <SpotlightV2 anchor="top-center" intensity={0.10} />
+      <div className="container mx-auto px-4 py-8 md:py-16 relative">
         <PageHeader
           eyebrow="Editorial Quests"
-          title="Participate in the project"
+          title={<ColourfulText text="Participate in the project" />}
           subtitle="One month, one theme. Add what's missing, mark what you've seen, and earn a named credit in the recap article."
           center
         />

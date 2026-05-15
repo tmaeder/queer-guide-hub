@@ -5,22 +5,23 @@ import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none text-sm font-semibold uppercase tracking-wide ring-offset-background transition-[background,color,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "group relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold tracking-tight ring-offset-background transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        // Solid black / white-on-dark — the default editorial CTA.
-        default: "bg-foreground text-background hover:opacity-85 active:opacity-70",
-        // 1px hairline, transparent fill.
-        outline: "border border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-background",
-        // No chrome until hover.
+        // Solid foreground CTA with subtle lift on hover.
+        default: "bg-foreground text-background shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] hover:-translate-y-px",
+        // Hairline border, transparent fill — fills on hover.
+        outline: "border border-foreground/15 bg-transparent text-foreground hover:bg-foreground hover:text-background hover:border-foreground",
+        // No chrome until hover — useful in headers / menus.
         ghost: "bg-transparent text-foreground hover:bg-muted",
-        // Inline link styling — underline always for anchor affordance.
+        // Inline link styling.
         link: "bg-transparent text-foreground underline underline-offset-4 hover:opacity-70",
         // Single chromatic exception: irreversible / destructive actions.
-        destructive: "bg-destructive text-destructive-foreground hover:opacity-85 active:opacity-70",
-        // Legacy aliases — both collapse to default. Retained for compat
-        // while callsites are migrated.
+        destructive: "bg-destructive text-destructive-foreground hover:opacity-90",
+        // Aceternity-style soft surface — subtle bg, hairline border.
+        soft: "bg-muted text-foreground border border-border/60 hover:bg-accent hover:-translate-y-px",
+        // Legacy aliases retained for compat.
         secondary: "bg-foreground text-background hover:opacity-85",
         brand: "bg-foreground text-background hover:opacity-85",
       },

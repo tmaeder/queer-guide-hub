@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Network } from 'lucide-react';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { ResourceTagDetail } from '@/pages/resources/ResourceTagDetail';
@@ -422,9 +424,11 @@ export default function Ressources() {
       (searchQuery || filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter));
 
   return (
-    <div className="container mx-auto py-8 md:py-16 px-4">
+    <div className="relative">
+      <SpotlightV2 anchor="top-center" intensity={0.10} />
+      <div className="container mx-auto py-8 md:py-16 px-4 relative">
       <PageHeader
-        title="Help & Resources"
+        title={<ColourfulText text="Help & Resources" />}
         subtitle="Crisis support, practical guides, and the people and organisations behind them."
         center
       />
@@ -554,6 +558,7 @@ export default function Ressources() {
           onTagClick={handleTagClick}
         />
       )}
+      </div>
     </div>
   );
 }

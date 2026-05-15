@@ -18,6 +18,8 @@ import {
   type View,
 } from '@/lib/personalitiesFilters';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -347,12 +349,13 @@ export default function Personalities() {
   const loadedCount = personalities.length;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <SpotlightV2 anchor="top-center" intensity={0.12} />
       <BackgroundDots className="border-b border-border" dotSpacing={24}>
         <GrainOverlay opacity={0.025} />
         <div className="container mx-auto px-4 pt-12 pb-8 md:pt-20 md:pb-12 relative">
           <PageHeader
-            title={t('pages.personalities.title', 'Personalities')}
+            title={<ColourfulText text={t('pages.personalities.title', 'Personalities')} />}
             subtitle={
               loading && totalCount === 0
                 ? 'Loading personalities…'
