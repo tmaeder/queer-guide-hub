@@ -13,6 +13,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { OAuthButtons } from './OAuthButtons';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { EmailVerificationScreen } from './EmailVerificationScreen';
+import { UsernameSelector } from './UsernameSelector';
 
 interface Props {
   onBack: () => void;
@@ -33,6 +34,8 @@ export default function Signup({ onBack }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
+  const [step, setStep] = useState<'form' | 'username'>('form');
+  const [pendingUsername, setPendingUsername] = useState<string | null>(null);
 
   useEffect(() => {
     emit('signup_landing_view');
@@ -61,33 +64,31 @@ export default function Signup({ onBack }: Props) {
       emit('signup_validation_error', { metadata: { error: err } });
       return;
     }
+    setError(null);
+    setStep('username');
+  };
+
+  const performSignup = async (username: string) => {
     setIsLoading(true);
     setError(null);
-
     const now = new Date().toISOString();
     const { error: signUpError } = await signUp(email, password, {
       display_name: email.split('@')[0],
+      username,
       preferred_language: i18n.language,
       terms_accepted_at: now,
       privacy_accepted_at: now,
       age_confirmed_at: now,
     });
-
     setIsLoading(false);
-
     if (signUpError) {
       const msg = signUpError instanceof Error
         ? signUpError.message
         : (signUpError as { message?: string })?.message ?? '';
-      if (msg.includes('User already registered')) {
-        setError(t('auth.errors.alreadyRegistered', 'An account with this email already exists. Try signing in.'));
-      } else {
-        setError(msg || t('auth.errors.unexpected', 'An unexpected error occurred. Please try again.'));
-      }
-      emit('signup_validation_error', { metadata: { error: msg } });
+      setError(msg || t('auth.errors.unexpected', 'An unexpected error occurred. Please try again.'));
+      setStep('form');
       return;
     }
-
     emit('signup_completed', { provider: 'email' });
     setVerificationEmail(email);
     resetFunnel();
@@ -95,6 +96,46 @@ export default function Signup({ onBack }: Props) {
 
   if (verificationEmail) {
     return <EmailVerificationScreen email={verificationEmail} onBackToLogin={onBack} />;
+  }
+
+  if (step === 'username') {
+    return (
+      <Card className="max-w-md mx-auto rounded-3xl shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold tracking-tight text-center text-balance">
+            Pick your username
+          </CardTitle>
+          <CardDescription className="text-center text-sm">
+            Your unique queer.guide identity.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          {error && (
+            <Alert variant="destructive" role="alert">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <UsernameSelector value={pendingUsername} onChange={setPendingUsername} />
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => setStep('form')}
+              disabled={isLoading}
+            >
+              Back
+            </Button>
+            <Button
+              className="flex-1"
+              disabled={!pendingUsername || isLoading}
+              onClick={() => pendingUsername && performSignup(pendingUsername)}
+            >
+              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Create account
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

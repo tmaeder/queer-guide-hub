@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown } from "lucide-react";
+import { PageHero } from "@/components/discovery";
 
 const ExploreMap = lazy(() => import("@/components/map/ExploreMap"));
 
@@ -181,51 +182,49 @@ export default function Directory() {
       style={{ opacity: isTransitioning ? 0.5 : 1 }}
     >
       {/* Hero */}
-      <div className="relative overflow-hidden">
-        <div className="container mx-auto px-3 py-6 lg:py-10">
-          <div className="mb-4">
-            {viewMode !== "overview" && (
-              <div>
-                <Button
-                  variant="ghost"
-                  onClick={handleBack}
-                  className="mb-2 transition-all duration-200"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  {t('directory.back')}
-                </Button>
-              </div>
-            )}
-
+      {viewMode === "overview" ? (
+        <PageHero
+          eyebrow={t('directory.eyebrow', 'Atlas')}
+          title={t('directory.title', 'Directory.')}
+          lede={t('directory.lede', 'Countries, cities, and regions — the full atlas of queer life around the world.')}
+          primaryCta={{ label: t('directory.planTrip', 'Plan a trip'), href: '/travel' }}
+          size="md"
+        />
+      ) : (
+        <div className="relative overflow-hidden border-b border-border">
+          <div className="container mx-auto px-3 py-6 lg:py-10">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="mb-2 transition-all duration-200"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('directory.back')}
+            </Button>
             <div className="flex flex-col gap-1.5">
-              <h3 className="font-bold text-4xl lg:text-5xl tracking-tight">
-                {viewMode === "overview" && t('directory.title')}
-                {viewMode === "country" && selectedCountry && (
-                  <>Explore {selectedCountry.name}</>
-                )}
-                {viewMode === "city" && selectedCity && (
-                  <>Discover {selectedCity.name}</>
-                )}
+              <h1 className="font-extrabold text-4xl lg:text-5xl tracking-tight">
+                {viewMode === "country" && selectedCountry && <>Explore {selectedCountry.name}</>}
+                {viewMode === "city" && selectedCity && <>Discover {selectedCity.name}</>}
                 {viewMode === "search" && "Search Results"}
-              </h3>
-
+              </h1>
               <p className="text-lg text-muted-foreground max-w-[42rem]">
-                {viewMode === "overview" && "Discover amazing places around the world. Find countries, cities, and locations that match your interests."}
-                {viewMode === "country" && selectedCountry && `Explore cities and regions in ${selectedCountry.name}. Find the perfect destination for your next adventure.`}
-                {viewMode === "city" && selectedCity && `Everything you need to know about ${selectedCity.name}. Weather, demographics, and local insights.`}
-                {viewMode === "search" && "Find exactly what you're looking for with our powerful search and filtering tools."}
+                {viewMode === "country" && selectedCountry && `Cities and regions in ${selectedCountry.name}.`}
+                {viewMode === "city" && selectedCity && `Everything you need to know about ${selectedCity.name}.`}
+                {viewMode === "search" && "Find exactly what you're looking for."}
               </p>
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="mb-4">
-            <DirectorySearch
-              onSearch={handleSearch}
-              onFiltersChange={handleFiltersChange}
-              onNearMeSearch={handleNearMeSearch}
-              placeholder="Search countries, cities, or regions..."
-            />
-          </div>
+      <div className="container mx-auto px-3 py-6 lg:py-8">
+        <div className="mb-4">
+          <DirectorySearch
+            onSearch={handleSearch}
+            onFiltersChange={handleFiltersChange}
+            onNearMeSearch={handleNearMeSearch}
+            placeholder="Search countries, cities, or regions..."
+          />
         </div>
       </div>
 

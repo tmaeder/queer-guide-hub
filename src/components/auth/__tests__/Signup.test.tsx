@@ -35,6 +35,16 @@ vi.mock('../EmailVerificationScreen', () => ({
   EmailVerificationScreen: () => <div data-testid="email-verification" />,
 }));
 
+// UsernameSelector hits supabase.functions.invoke; stub it with a button that
+// picks a fixed username so tests can drive the two-step flow.
+vi.mock('../UsernameSelector', () => ({
+  UsernameSelector: ({ onChange }: { value: string | null; onChange: (u: string) => void }) => (
+    <button data-testid="pick-username" onClick={() => onChange('TravelKinkArt')}>
+      pick
+    </button>
+  ),
+}));
+
 // PasswordStrengthMeter lazy-loads zxcvbn; stub it to call onScoreChange immediately.
 vi.mock('../PasswordStrengthMeter', () => ({
   PasswordStrengthMeter: ({ password, onScoreChange }: { password: string; onScoreChange?: (s: 0 | 1 | 2 | 3 | 4) => void }) => {
@@ -82,11 +92,15 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
-  it('submits with only email + password + consent and defaults display_name to email local-part', async () => {
+  it('submits with email + password + consent + username and defaults display_name to email local-part', async () => {
     render(<Signup onBack={onBack} />);
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'alice@example.com' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
     fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
+
+    // Now on username step
+    fireEvent.click(await screen.findByTestId('pick-username'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
     await waitFor(() => expect(mockSignUp).toHaveBeenCalled());
@@ -94,13 +108,11 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     expect(args[0]).toBe('alice@example.com');
     expect(args[1]).toBe('mypassword-strong');
     expect(args[2].display_name).toBe('alice');
+    expect(args[2].username).toBe('TravelKinkArt');
     expect(args[2].preferred_language).toBe('en');
-    expect(args[2].pronouns).toBeUndefined();
-    expect(args[2].location).toBeUndefined();
-    expect(args[2].interests).toBeUndefined();
   });
 
-  it('shows already-registered error when signUp rejects with that message', async () => {
+  it('shows error and returns to form when signUp rejects', async () => {
     mockSignUp.mockResolvedValue({ error: { message: 'User already registered' } });
     render(<Signup onBack={onBack} />);
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
@@ -108,8 +120,11 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     fireEvent.click(screen.getByRole('checkbox'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
+    fireEvent.click(await screen.findByTestId('pick-username'));
+    fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
+
     await waitFor(() =>
-      expect(screen.getByRole('alert').textContent).toMatch(/already exists/i),
+      expect(screen.getByRole('alert').textContent).toMatch(/already registered/i),
     );
   });
 
@@ -120,6 +135,9 @@ describe('Signup (single-screen)', { timeout: 20000 }, () => {
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.co' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'mypassword-strong' } });
     fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
+
+    fireEvent.click(await screen.findByTestId('pick-username'));
     fireEvent.click(screen.getByRole('button', { name: /Create account/i }));
 
     await waitFor(() =>

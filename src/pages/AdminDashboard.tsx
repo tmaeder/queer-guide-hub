@@ -1,15 +1,15 @@
 /**
- * AdminDashboard — Unified Cockpit Dashboard.
- * Four-quadrant layout: System Status, Review Queue, Import Status, Quality Index.
- * Plus content stats grid and quick actions.
+ * AdminDashboard — Unified Cockpit.
+ * Static Bento Grid: 12-col layout, zero motion, hairline cell separation.
+ * Cluster 3 refactor (Cockpit) — see docs / plan refactoring-fr-cluster-3.
  */
 
 import { useNavigate } from 'react-router';
-import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { BentoGrid, BentoCell } from '@/components/ui/bento-grid';
 import {
   LayoutDashboard,
   Activity,
@@ -43,18 +43,15 @@ import {
 import { useAdminCockpit } from '@/hooks/useAdminCockpit';
 import type { CockpitData } from '@/hooks/useAdminCockpit';
 
+// ── Cell heading helper ─────────────────────────────────────────────
 
-// ── Quadrant Card ──────────────────────────────────────────────────
-
-function QuadrantCard({
-  title,
+function CellTitle({
   icon: Icon,
-  children,
+  label,
   action,
 }: {
-  title: string;
   icon: React.ElementType;
-  children: React.ReactNode;
+  label: string;
   action?: { label: string; route: string };
 }) {
   const navigate = useNavigate();
@@ -80,21 +77,50 @@ function QuadrantCard({
             <ArrowRight size={14} className="ml-1" />
           </Button>
         )}
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-2">
+        <Icon size={14} className="text-muted-foreground" aria-hidden />
+        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </h3>
       </div>
-      {children}
+      {action && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(action.route)}
+          className="h-6 px-1 text-xs font-medium rounded-element"
+        >
+          {action.label}
+          <ArrowRight size={12} className="ml-1" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function Metric({ label, value, ok }: { label: string; value: string; ok: boolean }) {
+  return (
+    <div className="p-2 bg-muted">
+      <div className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+      <div className={`text-base font-bold leading-none mt-1 ${ok ? '' : 'text-destructive'}`}>
+        {value}
+      </div>
     </div>
   );
 }
 
 // ── System Status ───────────────────────────────────────────────────
 
-function SystemStatus({ data }: { data: CockpitData }) {
+function SystemStatusCell({ data }: { data: CockpitData }) {
   const { system } = data;
   const statusLabels = {
     healthy: 'All Systems Operational',
     degraded: 'Degraded Performance',
     error: 'System Issues',
-  };
+  } as const;
   const StatusIcon =
     system.status === 'healthy'
       ? CheckCircle2
@@ -103,26 +129,14 @@ function SystemStatus({ data }: { data: CockpitData }) {
         : AlertCircle;
 
   return (
-    <QuadrantCard title="System Status" icon={Activity}>
-      <div className="flex items-center gap-3 mb-2">
-        <StatusIcon size={20} className="text-muted-foreground" />
-        <span
-          className="text-sm font-semibold"
-        >
-          {statusLabels[system.status]}
-        </span>
+    <BentoCell span={3} title={<CellTitle icon={Activity} label="System Status" />}>
+      <div className="flex items-center gap-2 mb-3">
+        <StatusIcon size={16} className="text-muted-foreground" aria-hidden />
+        <span className="text-sm font-semibold">{statusLabels[system.status]}</span>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <MetricBox
-          label="DB Latency"
-          value={`${system.dbLatencyMs}ms`}
-          good={system.dbLatencyMs < 200}
-        />
-        <MetricBox
-          label="Errors"
-          value={system.recentErrors.toString()}
-          good={system.recentErrors === 0}
-        />
+      <div className="grid grid-cols-2 gap-px bg-border">
+        <Metric label="DB Latency" value={`${system.dbLatencyMs}ms`} ok={system.dbLatencyMs < 200} />
+        <Metric label="Errors" value={system.recentErrors.toString()} ok={system.recentErrors === 0} />
       </div>
     </QuadrantCard>
   );
@@ -140,153 +154,123 @@ function MetricBox({ label, value, good }: { label: string; value: string; good:
         {value}
       </div>
     </div>
+    </BentoCell>
   );
 }
 
 // ── Review Queue ────────────────────────────────────────────────────
 
-function ReviewQueueWidget({ data }: { data: CockpitData }) {
+function ReviewQueueCell({ data }: { data: CockpitData }) {
   const navigate = useNavigate();
   const { review } = data;
   const queues = [
     { label: 'Staging', count: review.staging, icon: Inbox, tab: 'staging' },
-    {
-      label: 'Moderation',
-      count: review.moderation,
-      icon: Flag,
-      tab: 'moderation',
-    },
-    {
-      label: 'Automation',
-      count: review.automation,
-      icon: Bot,
-      tab: 'automation',
-    },
-    {
-      label: 'Content',
-      count: review.cmsReview,
-      icon: FileCheck,
-      tab: 'content',
-    },
+    { label: 'Moderation', count: review.moderation, icon: Flag, tab: 'moderation' },
+    { label: 'Automation', count: review.automation, icon: Bot, tab: 'automation' },
+    { label: 'Content', count: review.cmsReview, icon: FileCheck, tab: 'content' },
     { label: 'Tags', count: review.tagSuggestions, icon: Tag, tab: 'tags' },
   ];
 
   return (
-    <QuadrantCard
-      title="Review Queue"
-      icon={ClipboardCheck}
-     
-      action={{ label: 'All Reviews', route: '/admin/review' }}
+    <BentoCell
+      span={3}
+      title={
+        <CellTitle
+          icon={ClipboardCheck}
+          label="Review Queue"
+          action={{ label: 'All Reviews', route: '/admin/review' }}
+        />
+      }
     >
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col">
         {queues.map((q) => (
-          <div
+          <button
             key={q.label}
+            type="button"
             onClick={() => navigate(`/admin/review?tab=${q.tab}`)}
-            className="flex items-center justify-between px-3 py-1.5 rounded cursor-pointer transition-colors hover:bg-muted"
+            className="flex items-center justify-between px-2 py-1 text-left hover:bg-muted/50"
           >
-            <div className="flex items-center gap-2">
-              <q.icon size={14} className="text-muted-foreground" />
+            <span className="flex items-center gap-2">
+              <q.icon size={13} className="text-muted-foreground" aria-hidden />
               <span className="text-sm font-medium">{q.label}</span>
-            </div>
-            <Badge
-              variant="secondary"
-              className="h-5 text-[0.7rem] font-bold"
-            >
-              {q.count > 0 ? q.count.toLocaleString() : '0'}
+            </span>
+            <Badge variant="secondary" className="h-5 text-[0.7rem] font-bold rounded-element">
+              {q.count.toLocaleString()}
             </Badge>
-          </div>
+          </button>
         ))}
       </div>
       {review.total > 0 && (
-        <div className="text-xs font-semibold mt-1 text-muted-foreground">
-          {review.total.toLocaleString()} total items need attention
+        <div className="text-[0.7rem] font-semibold mt-2 text-muted-foreground">
+          {review.total.toLocaleString()} total items
         </div>
       )}
-    </QuadrantCard>
+    </BentoCell>
   );
 }
 
 // ── Import Status ───────────────────────────────────────────────────
 
-function ImportStatus({ data }: { data: CockpitData }) {
+function ImportStatusCell({ data }: { data: CockpitData }) {
   const { imports } = data;
-
   return (
-    <QuadrantCard
-      title="Import Status"
-      icon={Download}
-     
-      action={{ label: 'Imports', route: '/admin/imports' }}
+    <BentoCell
+      span={3}
+      title={
+        <CellTitle
+          icon={Download}
+          label="Import Status"
+          action={{ label: 'Imports', route: '/admin/imports' }}
+        />
+      }
     >
-      <div className="grid grid-cols-2 gap-3">
-        <MetricBox
-          label="Active Jobs"
-          value={imports.activeJobs.toString()}
-          good={imports.activeJobs < 5}
-        />
-        <MetricBox label="Completed Today" value={imports.completedToday.toString()} good={true} />
-        <MetricBox
-          label="Failed Today"
-          value={imports.failedToday.toString()}
-          good={imports.failedToday === 0}
-        />
-        <MetricBox
-          label="Error Rate"
-          value={`${imports.errorRate}%`}
-          good={imports.errorRate < 10}
-        />
+      <div className="grid grid-cols-2 gap-px bg-border">
+        <Metric label="Active Jobs" value={imports.activeJobs.toString()} ok={imports.activeJobs < 5} />
+        <Metric label="Completed" value={imports.completedToday.toString()} ok />
+        <Metric label="Failed" value={imports.failedToday.toString()} ok={imports.failedToday === 0} />
+        <Metric label="Error Rate" value={`${imports.errorRate}%`} ok={imports.errorRate < 10} />
       </div>
-    </QuadrantCard>
+    </BentoCell>
   );
 }
 
 // ── Quality Index ───────────────────────────────────────────────────
 
-function QualityWidget({ data }: { data: CockpitData }) {
+function QualityCell({ data }: { data: CockpitData }) {
   const { quality } = data;
-
   return (
-    <QuadrantCard
-      title="Quality Index"
-      icon={ShieldCheck}
-     
-      action={{ label: 'Details', route: '/admin/imports/enrichment' }}
-    >
-      <div className="text-center py-2">
-        <div
-          className="text-5xl font-extrabold leading-none"
-        >
-          {quality.overallScore}%
-        </div>
-        <div className="text-xs font-medium text-muted-foreground mt-1">
-          Overall Quality Score
-        </div>
-      </div>
-      <div
-        className="rounded-full overflow-hidden bg-muted"
-        style={{ height: 6 }}
-      >
-        <div
-          className="h-full rounded-full transition-all bg-foreground"
-          style={{ width: `${quality.overallScore}%` }}
+    <BentoCell
+      span={3}
+      title={
+        <CellTitle
+          icon={ShieldCheck}
+          label="Quality Index"
+          action={{ label: 'Details', route: '/admin/imports/enrichment' }}
         />
+      }
+    >
+      <div className="text-center py-1">
+        <div className="text-4xl font-extrabold leading-none">{quality.overallScore}%</div>
+        <div className="text-[0.7rem] font-medium text-muted-foreground mt-1">Overall Score</div>
       </div>
-      <div className="flex justify-center gap-6 mt-2">
-        <div className="flex items-center gap-1">
-          <AlertTriangle size={12} className="text-muted-foreground" />
-          <span className="text-xs font-medium">{quality.warnings} warnings</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <AlertCircle size={12} className="text-muted-foreground" />
-          <span className="text-xs font-medium">{quality.critical} critical</span>
-        </div>
+      <div className="bg-muted mt-2" style={{ height: 4 }}>
+        <div className="h-full bg-foreground" style={{ width: `${quality.overallScore}%` }} />
       </div>
-    </QuadrantCard>
+      <div className="flex justify-center gap-4 mt-2">
+        <span className="flex items-center gap-1">
+          <AlertTriangle size={11} className="text-muted-foreground" aria-hidden />
+          <span className="text-[0.7rem] font-medium">{quality.warnings} warn</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <AlertCircle size={11} className="text-muted-foreground" aria-hidden />
+          <span className="text-[0.7rem] font-medium">{quality.critical} critical</span>
+        </span>
+      </div>
+    </BentoCell>
   );
 }
 
-// ── Content Stats Grid ──────────────────────────────────────────────
+// ── Content Overview ────────────────────────────────────────────────
 
 const contentStatItems = [
   { key: 'venues', label: 'Venues', icon: Building, route: '/admin/content/venues' },
@@ -303,8 +287,9 @@ const contentStatItems = [
   { key: 'pages', label: 'Pages', icon: FileText, route: '/admin/content/cms_pages' },
 ] as const;
 
-function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
+function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
   const navigate = useNavigate();
+  const total = Object.values(stats).reduce((a, b) => a + b, 0);
 
   return (
     <div className="border border-border rounded-element bg-background p-5">
@@ -321,27 +306,37 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
         stagger={0.04}
         className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3"
       >
+    <BentoCell
+      span={12}
+      title={
+        <div className="flex items-center justify-between w-full">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Content Overview
+          </h3>
+          <span className="text-[0.7rem] text-muted-foreground">
+            {total.toLocaleString()} total items
+          </span>
+        </div>
+      }
+    >
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-px bg-border">
         {contentStatItems.map(({ key, label, icon: Icon, route }) => (
           <button
             key={key}
             type="button"
             onClick={() => navigate(route)}
             className="flex flex-col items-center gap-1 p-3 rounded-element cursor-pointer transition-all hover:-translate-y-px hover:bg-muted"
+            className="flex flex-col items-center gap-1 p-3 bg-background hover:bg-muted/30 text-center"
           >
-            <Icon size={18} className="text-muted-foreground" />
-            <div className="text-lg font-bold leading-none">
+            <Icon size={16} className="text-muted-foreground" aria-hidden />
+            <div className="text-base font-bold leading-none">
               {(stats[key as keyof typeof stats] ?? 0).toLocaleString()}
             </div>
-            <div
-              className="font-medium text-muted-foreground"
-              style={{ fontSize: '0.65rem' }}
-            >
-              {label}
-            </div>
+            <div className="font-medium text-muted-foreground text-[0.65rem]">{label}</div>
           </button>
         ))}
-      </StaggerGrid>
-    </div>
+      </div>
+    </BentoCell>
   );
 }
 
@@ -355,7 +350,6 @@ function QuickActionsBar() {
     { label: 'Review Queue', icon: ClipboardCheck, route: '/admin/review' },
     { label: 'Automation', icon: Zap, route: '/admin/automation' },
   ];
-
   return (
     <div className="flex gap-2 flex-wrap">
       {actions.map((a) => (
@@ -364,17 +358,15 @@ function QuickActionsBar() {
           variant="outline"
           size="sm"
           onClick={() => navigate(a.route)}
-          className="hidden sm:inline-flex normal-case font-medium"
+          className="hidden sm:inline-flex normal-case font-medium rounded-element"
         >
-          <a.icon size={15} className="mr-1.5" />
+          <a.icon size={14} className="mr-1.5" aria-hidden />
           {a.label}
         </Button>
       ))}
     </div>
   );
 }
-
-// ── Loading Skeleton ────────────────────────────────────────────────
 
 function CockpitSkeleton() {
   return (
@@ -385,6 +377,14 @@ function CockpitSkeleton() {
         ))}
       </div>
       <Skeleton className="rounded-element" style={{ height: 160 }} />
+    <div className="grid grid-cols-12 gap-px bg-border">
+      {[3, 3, 3, 3, 12].map((span, i) => (
+        <Skeleton
+          key={i}
+          className="rounded-none"
+          style={{ gridColumn: `span ${span} / span ${span}`, height: span === 12 ? 160 : 200 }}
+        />
+      ))}
     </div>
   );
 }
@@ -396,11 +396,10 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <LayoutDashboard size={24} className="text-muted-foreground" />
-          <h1 className="text-xl font-bold">Cockpit</h1>
+          <LayoutDashboard size={22} className="text-muted-foreground" aria-hidden />
+          <h1 className="text-lg font-bold">Cockpit</h1>
         </div>
         <div className="flex items-center gap-2">
           <QuickActionsBar />
@@ -409,10 +408,11 @@ export default function AdminDashboard() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 rounded-element"
                 onClick={() => refetch()}
+                aria-label="Refresh"
               >
-                <RefreshCw size={16} />
+                <RefreshCw size={15} aria-hidden />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Refresh</TooltipContent>
@@ -423,18 +423,13 @@ export default function AdminDashboard() {
       {isLoading || !data ? (
         <CockpitSkeleton />
       ) : (
-        <div className="flex flex-col gap-5">
-          {/* Four quadrants */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SystemStatus data={data} />
-            <ReviewQueueWidget data={data} />
-            <ImportStatus data={data} />
-            <QualityWidget data={data} />
-          </div>
-
-          {/* Content stats */}
-          <ContentStatsGrid stats={data.stats} />
-        </div>
+        <BentoGrid>
+          <SystemStatusCell data={data} />
+          <ReviewQueueCell data={data} />
+          <ImportStatusCell data={data} />
+          <QualityCell data={data} />
+          <ContentOverviewCell stats={data.stats} />
+        </BentoGrid>
       )}
     </div>
   );

@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import {
   useMyIntimateProfile,
   useOptOutIntimateProfile,
 } from '@/hooks/useIntimateProfile';
+import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 
 export function IntimateTab() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export function IntimateTab() {
   const { data: me, isLoading } = useMyIntimateProfile();
   const optOut = useOptOutIntimateProfile();
 
-  if (isLoading) return <p>Loading…</p>;
+  if (isLoading) return <p className="text-muted-foreground py-4">Loading…</p>;
 
   const enabled = !!me?.opted_in_at;
 
@@ -29,40 +29,61 @@ export function IntimateTab() {
   };
 
   return (
-    <Card>
-      <CardContent className="p-6 space-y-4">
-        <header>
-          <h2 className="text-lg font-semibold">Intimate profile</h2>
-          <p className="text-sm text-muted-foreground">
-            Optional add-on. Hidden by default. Visible only to other users who have also opted in.
+    <FlatFieldGroup
+      title="Intimate profile"
+      description="Optional add-on. Hidden by default. Visible only to other users who have also opted in."
+      noTopBorder
+    >
+      {!enabled ? (
+        <>
+          <p className="text-sm leading-relaxed text-foreground">
+            Enable an explicit, pictogram-based profile to connect with other opted-in users
+            for travel hookups, local cruising, kink, or a privacy-preserving alternative to
+            photo-based apps.
           </p>
-        </header>
-
-        {!enabled ? (
-          <>
-            <p className="text-sm">
-              Enable an explicit, pictogram-based profile to connect with other opted-in users
-              for travel hookups, local cruising, kink, or a privacy-preserving alternative to
-              photo-based apps.
-            </p>
-            <Button onClick={() => navigate('/intimate/onboard')}>Enable intimate profile</Button>
-          </>
-        ) : (
-          <>
-            <p className="text-sm">Your intimate profile is active.</p>
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={() => navigate('/intimate/onboard')}>Edit</Button>
-              <Button variant="outline" onClick={() => navigate('/intimate')}>Open discovery</Button>
-              <Button variant="outline" onClick={handleDisable} disabled={optOut.isPending}>
-                Hide (keep data)
-              </Button>
-              <Button variant="destructive" onClick={handleDelete} disabled={optOut.isPending}>
-                Delete intimate profile
-              </Button>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          <Button
+            onClick={() => navigate('/intimate/onboard')}
+            className="rounded-element"
+          >
+            Enable intimate profile
+          </Button>
+        </>
+      ) : (
+        <>
+          <p className="text-sm">Your intimate profile is active.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => navigate('/intimate/onboard')}
+              className="rounded-element"
+            >
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/intimate')}
+              className="rounded-element"
+            >
+              Open discovery
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleDisable}
+              disabled={optOut.isPending}
+              className="rounded-element"
+            >
+              Hide (keep data)
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={optOut.isPending}
+              className="rounded-element"
+            >
+              Delete intimate profile
+            </Button>
+          </div>
+        </>
+      )}
+    </FlatFieldGroup>
   );
 }

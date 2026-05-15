@@ -29,7 +29,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import { MagneticButton } from '@/components/motion';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
@@ -219,13 +218,15 @@ export function VenueHero({
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onAddToTrip}
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            <Luggage style={{ width: 14, height: 14 }} aria-hidden="true" />
+            Add to trip
+          </button>
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
-          <MagneticButton>
-            <Button variant="outline" size="sm" onClick={onAddToTrip}>
-              <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
-              Add to Trip
-            </Button>
-          </MagneticButton>
           {isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}

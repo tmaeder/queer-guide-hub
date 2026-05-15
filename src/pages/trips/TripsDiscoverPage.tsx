@@ -225,7 +225,7 @@ export default function TripsDiscoverPage() {
           </DropdownMenu>
           <DiscoverFilters value={advancedFilters} onChange={setAdvancedFilters} />
           <div
-            className="inline-flex p-1 border border-border rounded-full bg-muted/50 gap-0.5"
+            className="inline-flex p-0 border border-border rounded-element bg-background gap-0 divide-x divide-border"
             role="group"
             aria-label={t('trips.discover.viewAria', 'View mode')}
           >
@@ -234,7 +234,7 @@ export default function TripsDiscoverPage() {
               onClick={() => setViewMode('list')}
               aria-pressed={viewMode === 'list'}
               aria-label={t('trips.discover.view.list', 'List view')}
-              className={`inline-flex items-center justify-center h-8 w-8 rounded-full transition-colors ${
+              className={`inline-flex items-center justify-center h-9 w-9 rounded-none transition-colors ${
                 viewMode === 'list'
                   ? 'bg-foreground text-background'
                   : 'text-muted-foreground hover:text-foreground'
@@ -247,7 +247,7 @@ export default function TripsDiscoverPage() {
               onClick={() => setViewMode('map')}
               aria-pressed={viewMode === 'map'}
               aria-label={t('trips.discover.view.map', 'Map view')}
-              className={`inline-flex items-center justify-center h-8 w-8 rounded-full transition-colors ${
+              className={`inline-flex items-center justify-center h-9 w-9 rounded-none transition-colors ${
                 viewMode === 'map'
                   ? 'bg-foreground text-background'
                   : 'text-muted-foreground hover:text-foreground'

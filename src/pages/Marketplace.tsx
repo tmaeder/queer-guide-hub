@@ -26,11 +26,17 @@ import { EmptyState, ErrorState, LoadingTimeout } from '@/components/ui/EmptySta
 import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { PageHero, spansForPreset } from '@/components/discovery';
+
+const MARKETPLACE_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 sm:col-span-6 lg:col-span-4 2xl:col-span-3',
+  md: 'col-span-12 sm:col-span-6 lg:col-span-4',
+  lg: 'col-span-12 sm:col-span-6 lg:col-span-6',
+  wide: 'col-span-12 lg:col-span-8',
+  tall: 'col-span-12 sm:col-span-6 lg:col-span-4 row-span-2',
+};
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
-import { ColourfulText } from '@/components/effects/ColourfulText';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -209,36 +215,29 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen relative">
-      <SpotlightV2 anchor="top-center" intensity={0.14} />
-      <div className="container mx-auto py-12 md:py-20 px-4 relative">
-        <PageHeader
-          title={
-            <>
-              <ColourfulText text={t('pages.marketplace.title', 'Marketplace')} />
-            </>
-          }
-          subtitle={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
-          actions={
-            <Button
-              style={{ display: 'flex', gap: 8 }}
-              onClick={() => {
-                if (!user) {
-                  toast({
-                    title: 'Sign in required',
-                    description: t('pages.marketplace.signInList', 'Create a free account to list your business.'),
-                    variant: 'default',
-                  });
-                  navigate('/auth');
-                  return;
-                }
-                navigate('/marketplace/submit');
-              }}
-            >
-              <Plus style={{ width: 16, height: 16 }} aria-hidden="true" />
-              List Your Business
-            </Button>
-          }
-        />
+      <PageHero
+        eyebrow={t('pages.marketplace.eyebrow', 'Shop')}
+        title={t('pages.marketplace.title', 'Marketplace.')}
+        lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
+        primaryCta={{
+          label: t('pages.marketplace.listBusiness', 'List your business'),
+          icon: <Plus style={{ width: 16, height: 16 }} aria-hidden="true" />,
+          onClick: () => {
+            if (!user) {
+              toast({
+                title: 'Sign in required',
+                description: t('pages.marketplace.signInList', 'Create a free account to list your business.'),
+                variant: 'default',
+              });
+              navigate('/auth');
+              return;
+            }
+            navigate('/marketplace/submit');
+          },
+        }}
+        size="md"
+      />
+      <div className="container mx-auto py-8 md:py-12 px-4 relative">
 
         {!hasActiveFilters && (
           <>
@@ -374,8 +373,13 @@ const Marketplace = () => {
                 <StaggerGrid
                   className={
                     viewMode === 'grid'
-                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6'
+                      ? 'grid grid-cols-12 gap-3 md:gap-4'
                       : 'flex flex-col gap-3'
+                  }
+                  itemClassName={
+                    viewMode === 'grid'
+                      ? (i: number) => MARKETPLACE_SPAN_CLASS[spansForPreset('mosaic', i, accumulated.length)]
+                      : undefined
                   }
                 >
                   {accumulated.map((listing) => (

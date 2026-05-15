@@ -56,8 +56,8 @@ queer-guide-hub/
 
 ## Repo stats
 
-- **Edge functions:** 178
-- **Migrations:** 310
+- **Edge functions:** 179
+- **Migrations:** 311
 
 ## Infrastructure
 
@@ -133,6 +133,8 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - **`--destructive`** token for error/warning semantics (near-black with contextual meaning).
 - **Admin chromatic palette** (`--cat-*` tokens, content-type accents, data-viz) — the only place where multiple hues appear. Files in `src/components/admin/`, `src/components/cms/`, `src/pages/Admin*`, `src/pages/admin/` are exempt from the color-literal ESLint rule. Stay monochrome anywhere a normal user can see.
 - **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
+- **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Aceternity Showcase (`/aceternity` → §A11y exemption) documents the canonical static pattern.
+- **Semantic radius tokens.** Prefer `rounded-container` (cards, sheets, dialogs), `rounded-element` (buttons, inputs, image frames), `rounded-badge` (chips/pills) over `rounded-(sm|md|lg|xl|2xl|3xl)` literals. All resolve to `0` today; the tokens give us a single point of change. `rounded-full` remains permitted for avatars/dots only.
 
 ### Design System Files
 - Tokens: `src/index.css` (CSS variables)

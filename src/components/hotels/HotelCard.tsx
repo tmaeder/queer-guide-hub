@@ -82,6 +82,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
     <LocalizedLink to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
       <CardHoverEffect>
       <div className="overflow-hidden rounded-container transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col bg-card border shadow-sm">
+      <div className="group overflow-hidden rounded-xl border border-border bg-card transition-colors duration-300 hover:border-foreground/40 h-full flex flex-col">
         {/* Image */}
         <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
           <img
@@ -90,6 +91,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             loading="lazy"
             decoding="async"
+            className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
           />
           {/*
             Featured badge is now driven by the curated `featured_priority`

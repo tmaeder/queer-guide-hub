@@ -22,8 +22,15 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useMeta } from '@/hooks/useMeta';
 import { EmptyState, type EmptyStateFilterChip } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
+import { PageHero, BentoSection, spansForPreset } from '@/components/discovery';
+
+const HOTEL_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3',
+  md: 'col-span-12 sm:col-span-6 md:col-span-4',
+  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
+  wide: 'col-span-12 md:col-span-8',
+  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
+};
 
 // Map view is heavy (maplibre-gl ~200kb). Only load when toggled.
 const HotelsMap = lazy(() =>
@@ -190,22 +197,19 @@ export default function Hotels() {
 
   return (
     <div className="relative">
-      <SpotlightV2 anchor="top-center" intensity={0.12} />
-      <div className="container mx-auto py-12 md:py-16 px-4 space-y-10 relative">
-      <div className="flex justify-between items-start gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            <ColourfulText text={t('pages.hotels.title', 'Stays')} />
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
-          </p>
-        </div>
-        <Button onClick={() => navigate('/submit/hotel')} variant="outline" size="sm">
-          <Plus size={16} />
-          {t('pages.hotels.submitHotel', 'Submit Hotel')}
-        </Button>
-      </div>
+      <PageHero
+        eyebrow={t('pages.hotels.eyebrow', 'Where to sleep')}
+        title={t('pages.hotels.title', 'Stays.')}
+        lede={t('pages.hotels.subtitle', 'LGBTQ+ friendly accommodations worldwide')}
+        primaryCta={{ label: t('pages.hotels.planTrip', 'Plan a trip'), href: '/travel' }}
+        secondaryCta={{
+          label: t('pages.hotels.submitHotel', 'Submit hotel'),
+          icon: <Plus size={16} />,
+          onClick: () => navigate('/submit/hotel'),
+        }}
+        size="md"
+      />
+      <div className="container mx-auto py-8 md:py-12 px-4 space-y-10 relative">
 
       {showDiscovery && featuredHotel && (
         <HotelHero hotel={featuredHotel} />
@@ -335,11 +339,13 @@ export default function Hotels() {
           )
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {hotels.map((hotel) => (
-                <HotelCard key={hotel.id} hotel={hotel} />
+            <BentoSection preset="mosaic">
+              {hotels.map((hotel, i) => (
+                <div key={hotel.id} className={HOTEL_SPAN_CLASS[spansForPreset('mosaic', i, hotels.length)]}>
+                  <HotelCard hotel={hotel} />
+                </div>
               ))}
-            </div>
+            </BentoSection>
 
             {hasMore && (
               <div className="flex justify-center mt-8">

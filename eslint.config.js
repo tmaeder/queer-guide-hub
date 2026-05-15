@@ -221,6 +221,29 @@ export default tseslint.config(
             "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
           message:
             "Use semantic radius: rounded-container (cards/modals), rounded-element (buttons/inputs), or rounded-badge (chips/tags). See src/index.css @theme.",
+
+  // Cluster 3 — admin tree must stay motion-free. Aceternity effect
+  // components and direct framer-motion / motion imports inside admin
+  // pages and components would re-introduce the very animations the
+  // refactor removed.
+  {
+    files: [
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**/*.{ts,tsx}",
+      "src/components/admin/**/*.{ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "warn",
+        {
+          paths: [
+            { name: "framer-motion", message: "Admin tree is motion-free (Cluster 3). Remove decorative motion." },
+            { name: "motion/react", message: "Admin tree is motion-free (Cluster 3). Remove decorative motion." },
+          ],
+          patterns: [
+            { group: ["@/components/effects/*"], message: "Aceternity effect components are not allowed in the admin tree (Cluster 3)." },
+            { group: ["@/components/animation/*"], message: "Decorative animation wrappers are not allowed in the admin tree (Cluster 3)." },
+          ],
         },
       ],
     },

@@ -349,9 +349,8 @@ export const NewsCard = ({
   return (
     <CardHoverEffect>
     <Card
+      className="group transition-colors duration-300 hover:border-foreground/40"
       style={{
-        boxShadow: 'var(--shadow-card)',
-        transition: 'all 0.3s',
         borderColor: 'hsl(var(--border))',
         cursor: 'pointer',
       }}
@@ -369,7 +368,8 @@ export const NewsCard = ({
               alt={safeTitle}
               width={400}
               height={192}
-              style={{ width: '100%', height: density === 'compact' ? 140 : 192, objectFit: 'cover', transition: 'transform 0.3s' }}
+              style={{ width: '100%', height: density === 'compact' ? 140 : 192, objectFit: 'cover' }}
+              className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
               onError={() => setImgFailed(true)}
             />
             {(article as Record<string, unknown>).is_premium === true && (

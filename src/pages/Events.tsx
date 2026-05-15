@@ -13,7 +13,15 @@ import { EventsCalendarView } from '@/components/events/EventsCalendarView';
 import { EventsMapView } from '@/components/events/EventsMapView';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/layout/PageHeader';
+import { PageHero, spansForPreset } from '@/components/discovery';
+
+const EVENT_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 sm:col-span-6 md:col-span-4',
+  md: 'col-span-12 sm:col-span-6 md:col-span-4',
+  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
+  wide: 'col-span-12 md:col-span-8',
+  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
+};
 import { SearchInputTyped } from '@/components/ui/search-input-typed';
 import { Label } from '@/components/ui/label';
 import {
@@ -458,6 +466,47 @@ const Events = () => {
             </>
           }
         />
+      <PageHero
+        eyebrow={t('pages.events.eyebrow', 'Happening')}
+        title={t('pages.events.title', 'Events.')}
+        lede={t('pages.events.subtitle', 'Discover and join community events in your area')}
+        primaryCta={{ label: t('pages.events.planTrip', 'Plan a trip'), href: '/travel' }}
+        size="md"
+      />
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        {/* View mode toggle */}
+        <div className="mb-6 flex justify-end">
+          <div
+            className="flex items-center gap-1 p-1 bg-muted rounded-lg"
+            role="group"
+            aria-label="View mode"
+          >
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="icon"
+              aria-label={t('pages.events.gridView', 'Grid view')}
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid size={16} />
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+              size="icon"
+              aria-label={t('pages.events.calendarView', 'Calendar view')}
+              onClick={() => setViewMode('calendar')}
+            >
+              <CalendarIcon size={16} />
+            </Button>
+            <Button
+              variant={viewMode === 'map' ? 'default' : 'ghost'}
+              size="icon"
+              aria-label={t('pages.events.mapView', 'Map view')}
+              onClick={() => setViewMode('map')}
+            >
+              <MapPin size={16} />
+            </Button>
+          </div>
+        </div>
 
         {/* Spotlight — next featured / pride / festival event */}
         {!hasActiveFilters && (
@@ -958,7 +1007,10 @@ const Events = () => {
 
         {/* Event Content */}
         {!loading && events.length > 0 && viewMode === 'grid' && (
-          <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerGrid
+            className="grid grid-cols-12 gap-3 md:gap-4"
+            itemClassName={(i) => EVENT_SPAN_CLASS[spansForPreset('mosaic', i, events.length)]}
+          >
             {events.map((event) => (
               <EventCard
                 key={event.id}

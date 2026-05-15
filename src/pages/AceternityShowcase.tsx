@@ -156,8 +156,9 @@ export default function AceternityShowcase() {
             ['interactive', 'Interactive'],
             ['layout', 'Layout'],
             ['cta', 'CTA'],
+            ['exemption', 'A11y exemption'],
           ].map(([id, label]) => (
-            <a key={id} href={`#${id}`} className="px-3 py-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <a key={id} href={`#${id}`} className="px-3 py-1.5 rounded-badge hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
               {label}
             </a>
           ))}
@@ -451,7 +452,7 @@ export default function AceternityShowcase() {
           <ShineButton onClick={() => setModalOpen(true)}>ShineButton</ShineButton>
           <HoverBorderGradient onClick={() => setLoaderOpen(true)}>HoverBorderGradient</HoverBorderGradient>
           <MovingBorder onClick={() => {}} duration={4}>MovingBorder</MovingBorder>
-          <button className="shine-on-hover px-5 py-2.5 rounded-full bg-foreground text-background text-sm font-medium">.shine-on-hover</button>
+          <button className="shine-on-hover px-5 py-2.5 rounded-element bg-foreground text-background text-sm font-medium">.shine-on-hover</button>
         </div>
         <div className="mt-8 p-6 rounded-container border border-border/60 bg-card">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">NavbarMenu</p>
@@ -482,6 +483,72 @@ export default function AceternityShowcase() {
             ]}
           />
         </div>
+      </Section>
+
+      {/* ── §10 Animation exemption — crisis & safety pages ───────── */}
+      <Section id="exemption" title="A11y exemption — animation-free pages" kicker="Source of truth">
+        <div role="note" aria-labelledby="exemption-policy" className="border-2 border-foreground p-6 mb-8 bg-card">
+          <p id="exemption-policy" className="text-xs font-semibold uppercase tracking-wider mb-2">Policy</p>
+          <p className="text-sm leading-relaxed">
+            <strong>Crisis & safety pages are animation-free.</strong>{' '}
+            <a href="https://github.com/" className="underline">src/pages/HelpHotlines.tsx</a>{' '}
+            (and any future <code>/help/*</code>, <code>/safety/*</code>, <code>/report-*</code> routes) must not consume
+            Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only
+            (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload
+            and respects <code>prefers-reduced-motion</code> (WCAG 2.3.3).
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Left: a typical animated showcase card */}
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+              ✗ Showcase pattern — do NOT use on crisis pages
+            </p>
+            <div className="relative h-60 rounded-container border border-border/60 overflow-hidden">
+              <SpotlightEffect className="h-full flex items-center justify-center">
+                <span className="text-sm font-medium uppercase tracking-wider">Animated card</span>
+              </SpotlightEffect>
+            </div>
+            <ul className="mt-3 text-xs text-muted-foreground space-y-1">
+              <li>• Spotlight follows cursor</li>
+              <li>• Hover-driven motion</li>
+              <li>• Decorative effects layered</li>
+            </ul>
+          </div>
+
+          {/* Right: a static, high-contrast hotline card matching HelpHotlines */}
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+              ✓ Crisis card — match this on /help, /safety, /report-*
+            </p>
+            <article
+              className="h-60 rounded-container border-2 border-foreground bg-background p-6 flex flex-col justify-between"
+              aria-label="Example crisis hotline (static)"
+            >
+              <div>
+                <h3 className="text-lg font-bold tracking-tight">Trans Lifeline</h3>
+                <p className="text-sm text-muted-foreground mt-1">24/7 peer support, by and for trans people.</p>
+              </div>
+              <a
+                href="tel:+18005655463"
+                className="inline-flex items-center justify-center rounded-element bg-foreground text-background px-4 py-3 text-sm font-semibold underline-offset-2"
+              >
+                Call +1 (877) 565-8860
+              </a>
+            </article>
+            <ul className="mt-3 text-xs text-muted-foreground space-y-1">
+              <li>• Zero animation</li>
+              <li>• Maximum contrast (2px foreground border)</li>
+              <li>• Phone number is the primary affordance</li>
+            </ul>
+          </div>
+        </div>
+
+        <p className="mt-8 text-xs text-muted-foreground max-w-prose">
+          Reference: <code>CLAUDE.md → Design → Documented exceptions</code>. PRs that introduce Aceternity
+          components, scroll reveals, or decorative animations on crisis routes must be rejected.
+        </p>
       </Section>
 
       {/* Modals & overlays */}

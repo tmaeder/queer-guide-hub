@@ -242,16 +242,26 @@ export default function UserProfile() {
           </CardContent>
         </Card>
 
-        {/* Profile Content */}
+        {/* Profile Content — line tabs */}
         <Tabs defaultValue="about" style={{ width: '100%' }}>
-          <TabsList
-            style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(5, 1fr)' }}
-          >
-            <TabsTrigger value="about">About</TabsTrigger>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="photos">Photos</TabsTrigger>
-            <TabsTrigger value="identity">Identity</TabsTrigger>
-            <TabsTrigger value="contact">Contact</TabsTrigger>
+          <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start">
+            {(
+              [
+                ['about', 'About'],
+                ['posts', 'Posts'],
+                ['photos', 'Photos'],
+                ['identity', 'Identity'],
+                ['contact', 'Contact'],
+              ] as const
+            ).map(([v, l]) => (
+              <TabsTrigger
+                key={v}
+                value={v}
+                className="h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none"
+              >
+                {l}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value="about">

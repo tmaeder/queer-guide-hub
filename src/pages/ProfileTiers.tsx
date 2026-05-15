@@ -1,5 +1,6 @@
 import { Eye, MapPin, Compass, Shield, ShieldCheck, Lock } from "lucide-react";
 import { Navigate } from "react-router";
+import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +12,7 @@ import {
   type TrustTier,
 } from "@/hooks/useTrustTier";
 import { TrustTierBadge } from "@/components/profile/TrustTierBadge";
+import { AnimatedBeamConnector } from "@/components/ui/AnimatedBeamConnector";
 
 const ICONS: Record<TrustTier, typeof Eye> = {
   visitor: Eye,
@@ -141,10 +143,12 @@ export default function ProfileTiers() {
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">The ladder</h2>
-        <div className="space-y-3">
-          {TIER_ORDER.map((t) => {
+        <ol className="relative">
+          {TIER_ORDER.map((t, i) => {
             const Icon = ICONS[t];
             const active = t === tier;
+            const reached = TIER_ORDER.indexOf(tier) >= i;
+            const isLast = i === TIER_ORDER.length - 1;
             return (
               <div
                 key={t}
@@ -157,15 +161,58 @@ export default function ProfileTiers() {
                 <div className="space-y-1">
                   <div className="font-medium">{LABEL[t]}</div>
                   <ul className="list-disc space-y-0.5 pl-5 text-sm text-muted-foreground">
+              <li key={t} className="relative flex gap-4 pb-6 last:pb-0">
+                {!isLast && (
+                  <AnimatedBeamConnector
+                    active={reached && TIER_ORDER.indexOf(tier) > i}
+                    className="absolute left-[19px] top-10 h-[calc(100%-1.5rem)] w-px"
+                  />
+                )}
+                <motion.span
+                  aria-hidden
+                  className={
+                    "relative z-10 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 " +
+                    (reached
+                      ? "bg-foreground border-foreground text-background"
+                      : "bg-background border-border text-muted-foreground")
+                  }
+                  animate={
+                    active
+                      ? { scale: [1, 1.04, 1] }
+                      : { scale: 1 }
+                  }
+                  transition={
+                    active
+                      ? { duration: 2.4, repeat: Infinity, ease: "easeInOut" }
+                      : undefined
+                  }
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                </motion.span>
+                <div
+                  className={
+                    "flex-1 rounded-element border p-4 " +
+                    (active ? "border-foreground" : "border-border")
+                  }
+                >
+                  <div className="font-medium flex items-center gap-2">
+                    {LABEL[t]}
+                    {active && (
+                      <span className="text-[10px] tracking-widest uppercase text-muted-foreground">
+                        current
+                      </span>
+                    )}
+                  </div>
+                  <ul className="list-disc space-y-0.5 pl-5 text-sm text-muted-foreground mt-1">
                     {PRIVILEGES[t].map((p) => (
                       <li key={p}>{p}</li>
                     ))}
                   </ul>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
       </section>
     </div>
   );
