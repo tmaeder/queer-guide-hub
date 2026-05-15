@@ -21,6 +21,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
       'ResizeObserver loop completed with undelivered notifications',
       /Loading chunk .* failed/,
       /Failed to fetch dynamically imported module/,
+      'Lock was stolen by another request',
+      'AbortError: Lock was stolen by another request',
     ],
   });
 }
