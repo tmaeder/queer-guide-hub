@@ -39,6 +39,7 @@ import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
 import { fetchStoryForArticle } from '@/hooks/useNewsStories';
 import { Layers } from 'lucide-react';
+import { TracingBeam } from '@/components/effects/TracingBeam';
 
 interface NewsArticle {
   id: string;
@@ -278,7 +279,7 @@ export default function NewsDetail() {
   const hasLocation = linkedCities.length > 0 || linkedCountries.length > 0;
 
   return (
-    <div className="container mx-auto py-8 px-4 pb-24">
+    <TracingBeam className="container mx-auto py-8 px-4 pb-24">
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 mb-4 flex-wrap">
         <LocalizedLink
@@ -662,6 +663,6 @@ export default function NewsDetail() {
       </div>
       <SimilarItems entity={{ type: 'news', id: article.id }} className="mt-8" title="Related news" />
       <MarketplaceRelated className="mt-10" />
-    </div>
+    </TracingBeam>
   );
 }

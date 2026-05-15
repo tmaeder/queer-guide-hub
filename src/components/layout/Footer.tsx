@@ -21,8 +21,8 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-background mt-auto">
-      <div className="w-full px-4 sm:px-6 md:px-8 py-2 flex flex-col md:flex-row items-center justify-center md:justify-between gap-1 md:gap-2">
+    <footer className="bg-background/70 backdrop-blur-xl border-t border-border/50 mt-auto">
+      <div className="w-full px-4 sm:px-6 md:px-8 py-3 flex flex-col md:flex-row items-center justify-center md:justify-between gap-2">
         <div className="flex flex-col items-center gap-0.5 order-2 md:order-1 md:flex-1">
           <nav
             aria-label="Footer navigation"

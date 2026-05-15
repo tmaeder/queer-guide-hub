@@ -57,6 +57,7 @@ import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { HeaderNavWithFlyouts } from './HeaderNavWithFlyouts';
 import { useNotifications } from '@/hooks/useNotifications';
 const NotificationList = lazy(() =>
   import('@/components/notifications/NotificationList').then((m) => ({
@@ -438,7 +439,7 @@ export function Header() {
 
   return (
     <header
-      className="bg-background sticky top-0"
+      className="sticky top-0 bg-background/70 backdrop-blur-xl border-b border-border/50 transition-all duration-300"
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">
@@ -739,50 +740,8 @@ export function Header() {
           )}
         </div>
 
-        {/* P4-1 — desktop primary nav row, hidden on mobile (burger drawer covers it). */}
-        {!isMobile && (
-          <nav
-            aria-label={t('header.primaryNav', 'Primary navigation')}
-            className="hidden md:flex items-center"
-            style={{
-              gap: 4,
-              height: 40,
-              borderTop: 'none',
-              overflowX: 'auto',
-            }}
-          >
-            {[
-              { to: '/venues', labelKey: 'header.nav.venues' },
-              { to: '/events', labelKey: 'header.nav.events' },
-              { to: '/news', labelKey: 'header.nav.news' },
-              { to: '/marketplace', labelKey: 'header.nav.marketplace' },
-              { to: '/hotels', labelKey: 'header.nav.hotels' },
-              { to: '/travel', labelKey: 'header.nav.travel' },
-              { to: '/groups', labelKey: 'header.nav.groups' },
-              { to: '/resources', labelKey: 'header.nav.resources' },
-            ].map((item) => {
-              const active = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  style={{
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    padding: '6px 10px',
-                    fontSize: '0.875rem',
-                    fontWeight: active ? 700 : 500,
-                    opacity: active ? 1 : 0.75,
-                    borderBottom: active ? '2px solid currentColor' : '2px solid transparent',
-                    transition: 'opacity 0.2s',
-                  }}
-                >
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
+        {/* Desktop primary nav row with Aceternity-style hover flyouts. */}
+        {!isMobile && <HeaderNavWithFlyouts pathname={location.pathname} />}
       </div>
 
       {/* Mobile drawer */}

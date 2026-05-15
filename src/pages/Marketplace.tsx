@@ -29,6 +29,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { useTranslation } from 'react-i18next';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
+import { ColourfulText } from '@/components/effects/ColourfulText';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
@@ -206,10 +208,15 @@ const Marketplace = () => {
   ];
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto py-12 md:py-20 px-4">
+    <div className="min-h-screen relative">
+      <SpotlightV2 anchor="top-center" intensity={0.14} />
+      <div className="container mx-auto py-12 md:py-20 px-4 relative">
         <PageHeader
-          title={t('pages.marketplace.title', 'Marketplace')}
+          title={
+            <>
+              <ColourfulText text={t('pages.marketplace.title', 'Marketplace')} />
+            </>
+          }
           subtitle={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
           actions={
             <Button

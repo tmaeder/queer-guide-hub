@@ -361,7 +361,7 @@ const Venues = () => {
                 size="icon"
                 onClick={() => setViewMode('grid')}
                 className={cn(
-                  'h-9 w-9 rounded-none px-2',
+                  'h-9 w-9 rounded-md px-2',
                   viewMode === 'grid' && 'bg-accent',
                 )}
                 aria-label={t('pages.venues.gridView', 'Grid view')}
@@ -374,7 +374,7 @@ const Venues = () => {
                 size="icon"
                 onClick={() => setViewMode('map')}
                 className={cn(
-                  'h-9 w-9 rounded-none px-2',
+                  'h-9 w-9 rounded-md px-2',
                   viewMode === 'map' && 'bg-accent',
                 )}
                 aria-label={t('pages.venues.mapView', 'Map view')}

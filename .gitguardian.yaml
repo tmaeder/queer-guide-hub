@@ -1,0 +1,19 @@
+# GitGuardian config — exclude paths that legitimately contain
+# email/password vocabulary (form-field copy) but no actual secrets.
+
+paths-ignore:
+  # i18n translation bundles — every locale has matching "email" / "password"
+  # form-field labels and example placeholders (e.g. "tu@ejemplo.com" next to
+  # "Mínimo 10 caracteres"). Generic-credential detectors heuristically flag
+  # the email-near-password proximity as "Company Email Password". These are
+  # translation strings for empty form placeholders — no real secrets.
+  - public/locales/*.json
+  - src/i18n/**
+
+  # Edge function URL imports look like generic-credential URLs to some
+  # detectors (esm.sh, deno.land/std). Already-public package CDNs.
+  # Comment out if you want to scan them anyway.
+  # - supabase/functions/**
+
+secret:
+  show-secrets: false

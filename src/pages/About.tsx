@@ -24,6 +24,12 @@ import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
 import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 import { BackgroundDots } from '@/components/effects/BackgroundDots';
+import { Timeline } from '@/components/effects/Timeline';
+import { LampEffect } from '@/components/effects/LampEffect';
+import { WordRotate } from '@/components/effects/WordRotate';
+import { ShineButton } from '@/components/effects/ShineButton';
+import { HoverBorderGradient } from '@/components/effects/HoverBorderGradient';
+import { Sparkles as SparklesEffect } from '@/components/effects/Sparkles';
 
 const features = [
   {
@@ -90,18 +96,31 @@ export default function About() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <SpotlightEffect className="py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background">
-        <TextGenerateEffect
-          words="Built by queers, for everyone."
-          className="font-extrabold leading-[1.05] mb-6 md:mb-8 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
-          style={{ letterSpacing: '0.02em' }}
-          as="h1"
-          staggerDelay={0.07}
-        />
-        <p className="reveal-up reveal-delay-1 text-[1.0625rem] sm:text-[1.1875rem] md:text-[1.375rem] text-muted-foreground leading-[1.7] max-w-[720px]">
-          The Queer Guide connects LGBTQ+ people and allies with safe venues,
-          vibrant events, and communities that get you — wherever you are in the world.
-        </p>
+      <SpotlightEffect className="relative py-14 sm:py-[72px] md:py-24 px-4 sm:px-6 md:px-8 bg-background overflow-hidden">
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+          <SparklesEffect density={50} />
+          <div className="absolute inset-0 spotlight-radial" />
+        </div>
+        <div className="relative">
+          <TextGenerateEffect
+            words="Built by queers, for everyone."
+            className="font-extrabold leading-[1.05] mb-4 md:mb-6 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
+            style={{ letterSpacing: '0.02em' }}
+            as="h1"
+            staggerDelay={0.07}
+          />
+          <div className="reveal-up reveal-delay-1 text-[1.125rem] md:text-[1.375rem] text-muted-foreground mb-3">
+            <span className="mr-1.5">A guide for queer</span>
+            <WordRotate
+              className="text-foreground font-semibold"
+              words={['travellers', 'locals', 'activists', 'researchers', 'allies']}
+            />
+          </div>
+          <p className="reveal-up reveal-delay-2 text-[1.0625rem] sm:text-[1.1875rem] md:text-[1.375rem] text-muted-foreground leading-[1.7] max-w-[720px]">
+            The Queer Guide connects LGBTQ+ people and allies with safe venues,
+            vibrant events, and communities that get you — wherever you are in the world.
+          </p>
+        </div>
       </SpotlightEffect>
 
       {/* Stats Strip */}
@@ -328,6 +347,72 @@ export default function About() {
           </div>
         </ScrollReveal>
       </section>
+
+      {/* Timeline — How we got here */}
+      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="font-extrabold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">How we got here</h2>
+          <p className="text-muted-foreground mb-8 max-w-2xl">A side-project that became a global directory.</p>
+        </div>
+        <Timeline
+          data={[
+            {
+              title: '2021',
+              content: (
+                <p className="text-muted-foreground leading-relaxed">
+                  A side-project. Three contributors, one spreadsheet, big ambitions. We started with a list of safe
+                  bars across five European cities — shared on a Telegram group.
+                </p>
+              ),
+            },
+            {
+              title: '2023',
+              content: (
+                <p className="text-muted-foreground leading-relaxed">
+                  1,000 venues, 80 cities. First Pride season survived without falling over. We launched the events
+                  pipeline and the community submissions extension.
+                </p>
+              ),
+            },
+            {
+              title: '2025',
+              content: (
+                <p className="text-muted-foreground leading-relaxed">
+                  21,000 venues, 180 countries, 2,300 contributors. Marketplace and trip planner shipped. We added
+                  safety briefings, country-by-country rights, and weekly news digests.
+                </p>
+              ),
+            },
+            {
+              title: '2026',
+              content: (
+                <p className="text-muted-foreground leading-relaxed">
+                  You are here. Help us write the next chapter — submit a venue, organise an event, or join the
+                  contributor circle.
+                </p>
+              ),
+            },
+          ]}
+        />
+      </section>
+
+      {/* Lamp CTA */}
+      <LampEffect className="min-h-[26rem] py-12">
+        <h2 className="bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-center text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-transparent">
+          Help us write the next chapter.
+        </h2>
+        <p className="mt-3 text-center text-muted-foreground max-w-xl">
+          Every verified entry has a story behind it. Add yours.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3 justify-center">
+          <LocalizedLink to="/submit" style={{ textDecoration: 'none' }}>
+            <ShineButton>Submit a venue</ShineButton>
+          </LocalizedLink>
+          <LocalizedLink to="/donate" style={{ textDecoration: 'none' }}>
+            <HoverBorderGradient>Support us</HoverBorderGradient>
+          </LocalizedLink>
+        </div>
+      </LampEffect>
     </div>
   );
 }

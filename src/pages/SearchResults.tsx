@@ -44,6 +44,8 @@ import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons
 import { SearchPagination } from '@/components/search/SearchPagination';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useTranslation } from 'react-i18next';
 import { CONTENT_TYPES, supportsPriceSort, resolveType } from '@/lib/searchTaxonomy';
@@ -553,10 +555,12 @@ export default function SearchResults() {
   const listClass = 'flex flex-col gap-4';
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="relative">
+      <SpotlightV2 anchor="top-center" intensity={0.10} />
+      <div className="container mx-auto px-4 py-8 relative">
       {/* Header */}
       <PageHeader
-        title="Search Results"
+        title={<ColourfulText text="Search Results" />}
         subtitle={
           loading
             ? 'Searching across all content...'
@@ -911,6 +915,7 @@ export default function SearchResults() {
           ))}
         </Tabs>
       )}
+      </div>
     </div>
   );
 }

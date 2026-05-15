@@ -15,6 +15,8 @@ import { CreatePostDialog } from '@/components/posts/CreatePostDialog';
 import { useCommunityPosts } from '@/hooks/useCommunityPosts';
 import { AuthGate } from '@/components/layout/AuthGate';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useTranslation } from 'react-i18next';
@@ -51,9 +53,11 @@ export default function Feed() {
       title="Feed"
       description="Sign in to share posts, connect with the community, and discover what's happening around you."
     >
-      <div className="container mx-auto py-8 px-4">
+      <div className="relative">
+        <SpotlightV2 anchor="top-center" intensity={0.10} />
+      <div className="container mx-auto py-8 px-4 relative">
         <PageHeader
-          title="Feed"
+          title={<ColourfulText text="Feed" />}
           subtitle="Stay connected with the latest posts, stories, and conversations from the LGBTQ+ community. Share your thoughts and discover what's happening around you."
           center
         />
@@ -171,6 +175,7 @@ export default function Feed() {
             </div>
           </>
         )}
+      </div>
       </div>
     </AuthGate>
   );
