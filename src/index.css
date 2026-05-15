@@ -16,16 +16,16 @@
   --text-xs2: 0.6875rem;
   --text-xs2--line-height: 1rem;
 
-  /* ── Border radius — editorial flat (all zero) ─────────────────── */
+  /* ── Border radius — Aceternity-inspired soft scale ─────────────── */
   --radius-none: 0;
-  --radius-xs: 0;
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius-2xl: 0;
-  --radius-3xl: 0;
-  --radius-4xl: 0;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-4xl: 2.5rem;
   --radius-full: 9999px;
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
@@ -65,9 +65,13 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* ── Box shadow — flat, hairline divider only ──────────────────── */
+  /* ── Box shadow — monochrome Aceternity-style depth ───────────── */
   --shadow-none: none;
   --shadow-hairline: 0 1px 0 hsl(var(--border));
+  --shadow-aceternity-sm: 0 0 0 1px hsl(0 0% 0% / 0.05), 0 2px 8px hsl(0 0% 0% / 0.04);
+  --shadow-aceternity: 0 0 0 1px hsl(0 0% 0% / 0.05), 0 8px 30px hsl(0 0% 0% / 0.06);
+  --shadow-aceternity-lg: 0 0 0 1px hsl(0 0% 0% / 0.06), 0 24px 60px hsl(0 0% 0% / 0.10);
+  --shadow-glow: 0 0 0 1px hsl(0 0% 100% / 0.08), 0 0 40px hsl(0 0% 0% / 0.04);
 }
 
 /* ── Self-hosted fonts (Inter only) ───────────────────────────────────
@@ -173,8 +177,9 @@
   --sidebar-border: 0 0% 88%;
   --sidebar-ring: 0 0% 4%;
 
-  --radius: 0;
-  --transition-smooth: all 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+  --radius: 0.625rem;
+  --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-spring: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Surface tonal layering (light) — five neutral steps. */
   --surface: 0 0% 100%;
@@ -265,15 +270,20 @@
   --cat-travel:      var(--foreground);
   --cat-news:        var(--foreground);
   --cat-community:   var(--foreground);
+
+  /* Dark mode shadow overrides — soft glow on dark surfaces. */
+  --shadow-aceternity-sm: 0 0 0 1px hsl(0 0% 100% / 0.06), 0 2px 10px hsl(0 0% 0% / 0.35);
+  --shadow-aceternity: 0 0 0 1px hsl(0 0% 100% / 0.06), 0 8px 30px hsl(0 0% 0% / 0.50);
+  --shadow-aceternity-lg: 0 0 0 1px hsl(0 0% 100% / 0.08), 0 24px 60px hsl(0 0% 0% / 0.60);
 }
 
-/* ── MapLibre popup theme (flat, monochrome) ───────────────────────── */
+/* ── MapLibre popup theme (Aceternity card vibe) ───────────────────── */
 .maplibregl-popup-content {
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
   border: 1px solid hsl(var(--border)) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-aceternity) !important;
 }
 .maplibregl-popup-anchor-top .maplibregl-popup-tip,
 .maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
@@ -352,7 +362,6 @@ body {
 [role="menuitem"]:focus-visible {
   outline: 2px solid hsl(var(--foreground)) !important;
   outline-offset: 2px !important;
-  border-radius: 0;
 }
 
 :focus:not(:focus-visible) {
@@ -510,6 +519,183 @@ h1, h2, h3, h4, h5, h6 {
 
 .slide-up-in { animation: slide-up-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .slide-down-in { animation: slide-down-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ── Utility helpers ───────────────────────────────────────────────── */
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Aceternity-style monochrome backgrounds ───────────────────────── */
+
+/* Subtle SVG noise — turbulence-based, neutral, transparency-modulated. */
+.bg-noise {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.dark .bg-noise {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Aceternity-style dotted grid background (monochrome). */
+.bg-grid-dots {
+  background-image: radial-gradient(hsl(var(--foreground) / 0.10) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .bg-grid-dots {
+  background-image: radial-gradient(hsl(var(--foreground) / 0.14) 1px, transparent 1px);
+}
+
+/* Aceternity-style line grid (monochrome). */
+.bg-grid-lines {
+  background-image:
+    linear-gradient(to right, hsl(var(--foreground) / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--foreground) / 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Aceternity "spotlight" radial overlay — neutral. */
+.spotlight-radial {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, hsl(var(--foreground) / 0.06), transparent 70%);
+}
+.dark .spotlight-radial {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, hsl(var(--foreground) / 0.10), transparent 70%);
+}
+
+/* Soft scrim — for readable text over imagery. */
+.scrim-bottom {
+  background: linear-gradient(to top, hsl(0 0% 0% / 0.70) 0%, hsl(0 0% 0% / 0.30) 50%, transparent 100%);
+}
+
+/* Aceternity glow ring on hover (monochrome). */
+.glow-ring {
+  position: relative;
+  transition: box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.glow-ring:hover {
+  box-shadow: var(--shadow-aceternity);
+}
+
+/* Animated border-conic for "moving border" cards (monochrome). */
+@keyframes border-rotate {
+  to { transform: rotate(360deg); }
+}
+.moving-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, transparent 0%, hsl(var(--foreground) / 0.40) 12%, transparent 25%);
+  animation: border-rotate 6s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+.moving-border > * { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .moving-border::before { animation: none; }
+}
+
+/* Meteor streak — diagonal trail with fading tail. */
+@keyframes meteor {
+  0% { transform: rotate(215deg) translateX(0); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: rotate(215deg) translateX(-500px); opacity: 0; }
+}
+.meteor {
+  animation: meteor 5s linear infinite;
+}
+.meteor::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 1px;
+  background: linear-gradient(to right, hsl(var(--foreground)), transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .meteor { animation: none; opacity: 0; }
+}
+
+/* Pulsing beam — vertical, soft falloff. */
+@keyframes beam-pulse {
+  0%, 100% { opacity: 0.0; transform: translateY(-100%); }
+  50%      { opacity: 0.8; transform: translateY(100%); }
+}
+.beam {
+  position: absolute;
+  inset-block: -10%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, hsl(var(--foreground) / 0.7), transparent);
+  animation: beam-pulse 6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .beam { animation: none; opacity: 0.2; }
+}
+
+/* Button shine sweep. */
+@keyframes shine-sweep {
+  0%   { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(250%) skewX(-12deg); }
+}
+.shine-on-hover { position: relative; overflow: hidden; }
+.shine-on-hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, hsl(var(--background) / 0.45), transparent);
+  transform: translateX(-100%) skewX(-12deg);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.shine-on-hover:hover::after {
+  animation: shine-sweep 0.9s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shine-on-hover:hover::after { animation: none; transform: translateX(0); }
+}
+
+/* Conic moving border — for hover-border-gradient effect. */
+@keyframes hover-border-spin {
+  to { --hover-angle: 360deg; }
+}
+@property --hover-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.hover-border-gradient {
+  --hover-angle: 0deg;
+  background: conic-gradient(from var(--hover-angle), hsl(var(--foreground) / 0.0), hsl(var(--foreground) / 0.8) 25%, hsl(var(--foreground) / 0.0) 50%);
+}
+.hover-border-gradient.active {
+  animation: hover-border-spin 2s linear infinite;
+}
+
+/* Marquee — horizontal infinite scroll. */
+@keyframes marquee-fwd { from { transform: translateX(0); } to { transform: translateX(calc(-100% - var(--gap))); } }
+@keyframes marquee-rev { from { transform: translateX(calc(-100% - var(--gap))); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) {
+  [style*="marquee-fwd"], [style*="marquee-rev"] { animation: none !important; }
+}
+
+/* Aurora replacement — slow, soft, monochrome luminance shift. */
+@keyframes aurora-pan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.aurora-mono {
+  background:
+    radial-gradient(ellipse at 20% 30%, hsl(var(--foreground) / 0.08), transparent 50%),
+    radial-gradient(ellipse at 80% 60%, hsl(var(--foreground) / 0.06), transparent 50%),
+    radial-gradient(ellipse at 50% 90%, hsl(var(--foreground) / 0.05), transparent 50%);
+  background-size: 200% 200%;
+  animation: aurora-pan 20s ease infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-mono { animation: none; }
+}
 
 /* ── Image lazy-load fade ─────────────────────────────────────────── */
 

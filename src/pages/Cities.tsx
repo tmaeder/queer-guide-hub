@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoading } from '@/components/ui/loading';
 import { Building2 } from 'lucide-react';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 
 export default function Cities() {
   const { t } = useTranslation();
@@ -43,10 +45,12 @@ export default function Cities() {
   }, [cities, search]);
 
   return (
-    <div className="container mx-auto py-8 md:py-12 px-4">
+    <div className="relative">
+      <SpotlightV2 anchor="top-center" intensity={0.12} />
+      <div className="container mx-auto py-8 md:py-12 px-4 relative">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-          {t('cities.title', 'Cities')}
+          <ColourfulText text={t('cities.title', 'Cities')} />
         </h1>
         <p className="text-muted-foreground">
           {t('cities.subtitle', 'Explore LGBTQ+ friendly cities around the world.')}
@@ -93,6 +97,7 @@ export default function Cities() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

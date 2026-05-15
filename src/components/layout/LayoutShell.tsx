@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { useLocation } from 'react-router';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TripContextBar } from '@/components/trips/TripContextBar';
@@ -34,21 +35,30 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
   // Match /map and /:locale/map (locale prefix is optional in the router).
   const isFullBleedMap = /^\/(?:[a-z]{2}\/)?map\/?$/.test(pathname);
+  const reduced = useReducedMotion();
+
+  // Key route transitions by the first non-locale segment so detail-page
+  // tab switches don't trigger a full fade (only true route changes do).
+  const transitionKey = pathname.replace(/^\/(?:[a-z]{2}\/)?/, '/').split('/').slice(0, 3).join('/');
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Skip link for keyboard users (a11y: WCAG 2.4.1) */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:font-semibold focus:text-sm focus:no-underline focus:outline focus:outline-[3px] focus:outline-primary focus:outline-offset-2"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:bg-card focus:text-foreground focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:font-semibold focus:text-sm focus:no-underline focus:outline focus:outline-[3px] focus:outline-primary focus:outline-offset-2"
       >
         Skip to main content
       </a>
 
-      {/* Background — solid color, no decorative effects */}
+      {/* Aceternity-style ambient backdrop: solid + dot grid overlay. */}
       <div
         aria-hidden="true"
         className="fixed inset-0 z-0 pointer-events-none bg-background"
+      />
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 z-0 pointer-events-none bg-grid-dots opacity-50"
       />
       <AnalyticsTracker />
       <div className="relative z-10">
@@ -56,7 +66,18 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
         <EmailVerifyBanner />
         <TripContextBar />
       </div>
-      {children}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={transitionKey}
+          initial={reduced ? false : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduced ? undefined : { opacity: 0, y: -4 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 flex-1 flex flex-col"
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
       {!isFullBleedMap && (
         <div className="relative z-10">
           <Footer />

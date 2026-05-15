@@ -13,6 +13,8 @@ import { TripsSignedOutHero } from '@/components/trips/TripsSignedOutHero';
 import { TripTemplates } from '@/components/trips/TripTemplates';
 import { TripsInboxSection } from '@/components/trips/TripsInboxSection';
 import { EmptyTripsHero } from '@/components/trips/EmptyTripsHero';
+import { ColourfulText } from '@/components/effects/ColourfulText';
+import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { NextTripStrip } from '@/components/trips/NextTripStrip';
 import { InspiredByYourTrips } from '@/components/trips/InspiredByYourTrips';
 import {
@@ -84,12 +86,14 @@ export default function TripsPage() {
   const isFiltered = search.trim() !== '' || statusFilter !== 'all';
 
   return (
-    <div className="container mx-auto py-8 md:py-12 px-4">
+    <div className="relative">
+      <SpotlightV2 anchor="top-center" intensity={0.10} />
+      <div className="container mx-auto py-8 md:py-12 px-4 relative">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h3 className="text-3xl md:text-4xl mb-1">
-            {t('trips.title')}
+            <ColourfulText text={t('trips.title')} />
             {hasAnyTrips && (
               <span
                 className="ml-3 text-muted-foreground font-medium tabular-nums"
@@ -219,6 +223,7 @@ export default function TripsPage() {
         initialStart={seedStart}
         initialEnd={seedEnd}
       />
+      </div>
     </div>
   );
 }

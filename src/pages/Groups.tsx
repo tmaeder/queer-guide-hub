@@ -8,6 +8,8 @@ import { useGroups } from "@/hooks/useGroups";
 import { Users, Search, TrendingUp } from "lucide-react";
 import { AuthGate } from "@/components/layout/AuthGate";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ColourfulText } from "@/components/effects/ColourfulText";
+import { SpotlightV2 } from "@/components/effects/SpotlightV2";
 import { EmptyState } from "@/components/ui/EmptyState";import { useTranslation } from 'react-i18next';
 
 
@@ -65,9 +67,11 @@ export default function Groups() {
 
   return (
     <AuthGate title={t('pages.groups.title', 'Community Groups')} description="Please sign in to view and join community groups.">
-      <div className="container mx-auto py-12 md:py-20 px-4 flex flex-col gap-6">
+      <div className="relative">
+        <SpotlightV2 anchor="top-center" intensity={0.10} />
+      <div className="container mx-auto py-12 md:py-20 px-4 flex flex-col gap-6 relative">
         <PageHeader
-          title={t('pages.groups.title', 'Community Groups')}
+          title={<ColourfulText text={t('pages.groups.title', 'Community Groups')} />}
           subtitle={t('pages.groups.subtitle', 'Connect with like-minded people, share experiences, and build meaningful relationships in safe and inclusive spaces.')}
           center
           actions={<CreateGroupDialog onCreateGroup={createGroup} isCreating={isCreating} />}
@@ -176,6 +180,7 @@ export default function Groups() {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
       </div>
     </AuthGate>
   );

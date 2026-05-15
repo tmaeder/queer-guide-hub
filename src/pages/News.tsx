@@ -8,6 +8,8 @@ import { useMeta } from "@/hooks/useMeta";
 import { NewsCard } from "@/components/news/NewsCard";
 import { NewsFilters } from "@/components/news/NewsFilters";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SpotlightV2 } from "@/components/effects/SpotlightV2";
+import { ColourfulText } from "@/components/effects/ColourfulText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -441,11 +443,12 @@ export default function News() {
   const showFeatured = currentPage === 1 && !activeCategory && !quickSearch && featuredArticles.length > 0;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      <SpotlightV2 anchor="top-center" intensity={0.12} />
       {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
-      <div className="container mx-auto py-12 md:py-20 px-4 pb-24">
+      <div className="container mx-auto py-12 md:py-20 px-4 pb-24 relative">
         <PageHeader
-          title={t('pages.news.title', 'News')}
+          title={<ColourfulText text={t('pages.news.title', 'News')} />}
           subtitle={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
         >
           <div className="flex items-center gap-4">
