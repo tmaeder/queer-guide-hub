@@ -7,8 +7,16 @@ import { Input } from '@/components/ui/input';
 import { EmptyState, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoading } from '@/components/ui/loading';
 import { Building2 } from 'lucide-react';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
+import { PageHero, BentoSection, spansForPreset } from '@/components/discovery';
+import { cn } from '@/lib/utils';
+
+const BENTO_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3',
+  md: 'col-span-12 sm:col-span-6 md:col-span-4',
+  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
+  wide: 'col-span-12 md:col-span-8',
+  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
+};
 
 export default function Cities() {
   const { t } = useTranslation();
@@ -46,17 +54,15 @@ export default function Cities() {
 
   return (
     <div className="relative">
-      <SpotlightV2 anchor="top-center" intensity={0.12} />
+      <PageHero
+        eyebrow={t('cities.eyebrow', 'Destinations')}
+        title={t('cities.title', 'Cities.')}
+        lede={t('cities.subtitle', 'Explore LGBTQ+ friendly cities around the world.')}
+        primaryCta={{ label: t('cities.planTrip', 'Plan a trip'), href: '/travel' }}
+        secondaryCta={{ label: t('cities.openDirectory', 'Open the directory'), href: '/directory' }}
+        size="md"
+      />
       <div className="container mx-auto py-8 md:py-12 px-4 relative">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-          <ColourfulText text={t('cities.title', 'Cities')} />
-        </h1>
-        <p className="text-muted-foreground">
-          {t('cities.subtitle', 'Explore LGBTQ+ friendly cities around the world.')}
-        </p>
-      </div>
-
       <div className="mb-8 max-w-[480px]">
         <Input
           aria-label={t('cities.searchAriaLabel', 'Search cities')}
@@ -81,11 +87,11 @@ export default function Cities() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filtered.map((city) => (
+        <BentoSection preset="mosaic">
+          {filtered.map((city, i) => (
             <div
               key={city.id}
-              className="cursor-pointer transition-transform hover:scale-[1.03]"
+              className={cn(BENTO_SPAN_CLASS[spansForPreset('mosaic', i, filtered.length)], 'cursor-pointer')}
             >
               <DirectoryCard
                 type="city"
@@ -95,7 +101,7 @@ export default function Cities() {
               />
             </div>
           ))}
-        </div>
+        </BentoSection>
       )}
       </div>
     </div>

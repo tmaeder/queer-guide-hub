@@ -1,9 +1,15 @@
 import { Link } from 'react-router';
 import { Flag } from 'lucide-react';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { ColourfulText } from '@/components/effects/ColourfulText';
-import { SpotlightV2 } from '@/components/effects/SpotlightV2';
+import { PageHero, BentoSection, spansForPreset } from '@/components/discovery';
 import { Badge } from '@/components/ui/badge';
+
+const QUEST_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 sm:col-span-6 md:col-span-4',
+  md: 'col-span-12 sm:col-span-6 md:col-span-4',
+  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
+  wide: 'col-span-12 md:col-span-8',
+  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
+};
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMeta } from '@/hooks/useMeta';
 import { useQuests, type Quest } from '@/hooks/useQuests';
@@ -40,16 +46,14 @@ export default function Quests() {
   };
 
   return (
-    <div className="min-h-screen relative">
-      <SpotlightV2 anchor="top-center" intensity={0.10} />
-      <div className="container mx-auto px-4 py-8 md:py-16 relative">
-        <PageHeader
-          eyebrow="Editorial Quests"
-          title={<ColourfulText text="Participate in the project" />}
-          subtitle="One month, one theme. Add what's missing, mark what you've seen, and earn a named credit in the recap article."
-          center
-        />
-
+    <div className="min-h-screen">
+      <PageHero
+        eyebrow="Editorial Quests"
+        title="Participate in the project."
+        lede="One month, one theme. Add what's missing, mark what you've seen, and earn a named credit in the recap article."
+        size="md"
+      />
+      <div className="container mx-auto px-4 py-8 md:py-12 relative">
         {isLoading ? (
           <p className="text-center text-muted-foreground">Loading quests…</p>
         ) : list.length === 0 ? (
@@ -73,11 +77,16 @@ function Section({ title, quests, highlight, muted }: { title: string; quests: Q
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         {title}
       </h2>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {quests.map((q) => (
-          <QuestCard key={q.id} quest={q} highlight={highlight} muted={muted} />
-        ))}
-      </div>
+      <BentoSection preset={highlight ? 'featured' : 'mosaic'}>
+        {quests.map((q, i) => {
+          const span = highlight ? spansForPreset('featured', i, quests.length) : spansForPreset('mosaic', i, quests.length);
+          return (
+            <div key={q.id} className={QUEST_SPAN_CLASS[span]}>
+              <QuestCard quest={q} highlight={highlight} muted={muted} />
+            </div>
+          );
+        })}
+      </BentoSection>
     </section>
   );
 }
@@ -87,7 +96,7 @@ function QuestCard({ quest, highlight, muted }: { quest: Quest; highlight?: bool
   return (
     <Link
       to={`/quests/${quest.slug}`}
-      className={`group block rounded-2xl border border-border bg-card p-6 transition hover:border-foreground ${
+      className={`group flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition-colors duration-300 hover:border-foreground/40 ${
         muted ? 'opacity-80' : ''
       }`}
     >

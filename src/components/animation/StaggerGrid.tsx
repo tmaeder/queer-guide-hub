@@ -10,6 +10,9 @@ interface StaggerGridProps {
   childSelector?: string;
   className?: string;
   style?: React.CSSProperties;
+  /** Per-child class applied to each motion item wrapper. Either a single string
+   *  for all items, or a function receiving the child index. */
+  itemClassName?: string | ((index: number) => string);
 }
 
 /**
@@ -22,6 +25,7 @@ export const StaggerGrid = ({
   stagger = staggerTokens.normal,
   className,
   style,
+  itemClassName,
 }: StaggerGridProps) => {
   const variants: Variants = React.useMemo(
     () => staggerContainerVariants(stagger),
@@ -37,18 +41,20 @@ export const StaggerGrid = ({
       whileInView="visible"
       viewport={{ once: true, amount: 0.05, margin: '0px 0px -20px 0px' }}
     >
-      {React.Children.map(children, (child, i) =>
-        React.isValidElement(child) ? (
+      {React.Children.map(children, (child, i) => {
+        if (!React.isValidElement(child)) return child;
+        const itemCls =
+          typeof itemClassName === 'function' ? itemClassName(i) : itemClassName;
+        return (
           <motion.div
             key={(child.key as React.Key | null | undefined) ?? i}
             variants={staggerItem}
+            className={itemCls}
           >
             {child}
           </motion.div>
-        ) : (
-          child
-        ),
-      )}
+        );
+      })}
     </motion.div>
   );
 };

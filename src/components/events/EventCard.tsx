@@ -176,7 +176,7 @@ export const EventCard = memo(function EventCard({
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
           <CardHoverEffect>
-          <Card hoverable>
+          <Card hoverable className="group">
             {/* Image */}
             {hasImage && (
               <div className="relative h-[200px] overflow-hidden">
@@ -186,8 +186,7 @@ export const EventCard = memo(function EventCard({
                   loading="lazy"
                   decoding="async"
                   onError={() => setImageError(true)}
-                  className="w-full h-full object-cover transition-transform duration-300"
-                  style={{ transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
+                  className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
                 />
                 <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
                   <div className="flex gap-1">

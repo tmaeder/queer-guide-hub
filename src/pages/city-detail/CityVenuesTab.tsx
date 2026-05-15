@@ -5,7 +5,16 @@ import { VenueCard } from '@/components/venues/VenueCard';
 import { InlineLoading } from '@/components/ui/loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
+import { BentoSection, spansForPreset } from '@/components/discovery';
 import type { CityRelation, VenueRelation } from './types';
+
+const VENUE_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 sm:col-span-6 md:col-span-4',
+  md: 'col-span-12 sm:col-span-6 md:col-span-4',
+  lg: 'col-span-12 sm:col-span-6 md:col-span-6',
+  wide: 'col-span-12 md:col-span-8',
+  tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
+};
 
 export interface CityVenuesTabProps {
   city: CityRelation;
@@ -43,11 +52,13 @@ export function CityVenuesTab({
       {venuesLoading ? (
         <InlineLoading text="Loading venues..." size="md" />
       ) : venues.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {venues.map((venue: VenueRelation) => (
-            <VenueCard key={venue.id} venue={venue} />
+        <BentoSection preset="featured">
+          {venues.map((venue: VenueRelation, i: number) => (
+            <div key={venue.id} className={VENUE_SPAN_CLASS[spansForPreset('featured', i, venues.length)]}>
+              <VenueCard venue={venue} />
+            </div>
           ))}
-        </div>
+        </BentoSection>
       ) : (
         <EmptyState
           icon={Building}

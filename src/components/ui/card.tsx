@@ -62,6 +62,7 @@ interface CardImageProps {
   height?: number;
   fallbackIcon?: LucideIcon;
   children?: React.ReactNode;
+  className?: string;
 }
 
 /**
@@ -94,6 +95,7 @@ const CardImage = ({
   height = 200,
   fallbackIcon: _FallbackIcon,
   children,
+  className,
 }: CardImageProps) => {
   const [error, setError] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
@@ -115,7 +117,7 @@ const CardImage = ({
           // Avoid the fallback-loops-to-itself case: only flip once.
           if (!error) setError(true);
         }}
-        className={`img-lazy-fade${loaded ? ' loaded' : ''} w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]`}
+        className={`img-lazy-fade${loaded ? ' loaded' : ''} w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] ${className ?? ''}`}
       />
       {children}
     </div>
