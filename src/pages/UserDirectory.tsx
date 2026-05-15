@@ -109,7 +109,7 @@ const UserDirectory = () => {
       <div className="border border-border p-6 md:p-8 text-center flex flex-col gap-4 bg-background">
         <h3 className="text-3xl md:text-4xl font-bold text-foreground">Members</h3>
         <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Discover amazing people, build meaningful connections, and grow your network within our
+          People, connections, and networks within the
           inclusive LGBTQ+ community.
         </p>
         <div className="flex flex-wrap justify-center gap-3 text-sm">

@@ -37,7 +37,6 @@ const ExtensionInstall = lazyRetry(() => import('./pages/ExtensionInstall'));
 const OnboardingWelcome = lazyRetry(() => import('./pages/onboarding/Welcome'));
 const SearchPersonalization = lazyRetry(() => import('./pages/onboarding/SearchPersonalization'));
 const PatternLibrary = lazyRetry(() => import('./pages/PatternLibrary'));
-const AceternityShowcase = lazyRetry(() => import('./pages/AceternityShowcase'));
 
 // Unified Admin Shell (wraps all /admin/* routes)
 const AdminShell = lazy(() =>
@@ -230,7 +229,6 @@ export const AppRoutes = () => {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/extension" element={<ExtensionInstall />} />
               <Route path="/pattern-library" element={<PatternLibrary />} />
-              <Route path="/aceternity" element={<AceternityShowcase />} />
               <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
               <Route path="/onboarding/search" element={<SearchPersonalization />} />
               <Route path="/contributors" element={<Contributors />} />

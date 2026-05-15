@@ -332,7 +332,7 @@ export function CountryCitiesTab({ country, cities, citiesLoading }: CountryCiti
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Major Cities</h2>
           <p className="text-muted-foreground mt-1">
-            Explore the most important cities in {country.name}
+            Major cities in {country.name}
           </p>
         </div>
         <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
@@ -382,7 +382,7 @@ export function CountryVenuesTab({ country, venues, loading }: CountryVenuesTabP
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Local Venues</h2>
           <p className="text-muted-foreground mt-1">
-            Discover amazing places to visit in {country.name}
+            Places to visit in {country.name}
           </p>
         </div>
         <Badge variant="secondary" style={{ fontSize: '0.875rem', padding: '4px 12px' }}>
@@ -484,7 +484,7 @@ export function CountryTravelTab({ country }: CountryTravelTabProps) {
             <Activity style={{ height: 20, width: 20 }} />
             Activities & Tours
           </CardTitle>
-          <CardDescription>Discover amazing experiences in {country.name}</CardDescription>
+          <CardDescription>Experiences in {country.name}</CardDescription>
         </CardHeader>
         <CardContent>
           <ActivitiesWidget

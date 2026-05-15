@@ -293,7 +293,7 @@ export default function Directory() {
               <TabsContent value="countries" className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <h5 className="text-2xl">Explore Countries</h5>
+                    <h5 className="text-2xl">Countries</h5>
                     <Badge variant="secondary" className="px-3 py-1 font-medium">
                       {filteredCountries.length} found
                     </Badge>
@@ -324,7 +324,7 @@ export default function Directory() {
                               </div>
                               <div>
                                 <h6 className="font-semibold text-lg">{continent.name}</h6>
-                                <p className="text-sm text-muted-foreground">{continentCountries.length} countries to explore</p>
+                                <p className="text-sm text-muted-foreground">{continentCountries.length} countries</p>
                               </div>
                             </div>
                           </div>
@@ -364,7 +364,7 @@ export default function Directory() {
               <TabsContent value="cities" className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <h5 className="text-2xl">Discover Cities</h5>
+                    <h5 className="text-2xl">Cities</h5>
                     <Badge variant="secondary" className="px-3 py-1 font-medium">
                       {filteredCities.length} found
                     </Badge>
@@ -392,7 +392,7 @@ export default function Directory() {
                             </div>
                             <div>
                               <h6 className="font-semibold text-lg">{continent.name}</h6>
-                              <p className="text-sm text-muted-foreground">{continentCities.length} cities to discover</p>
+                              <p className="text-sm text-muted-foreground">{continentCities.length} cities</p>
                             </div>
                           </div>
                         </div>
@@ -498,7 +498,7 @@ export default function Directory() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h5 className="text-2xl font-semibold">Cities to Explore</h5>
+                <h5 className="text-2xl font-semibold">Cities</h5>
                 <div className={GRID_COLS}>
                   {countryCities.map((city, index) => (
                     <div key={city.id} style={{ animationDelay: `${index * 50}ms` }}>

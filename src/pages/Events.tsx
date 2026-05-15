@@ -105,13 +105,13 @@ const Events = () => {
   useMeta({
     title: 'Events',
     description:
-      'Discover and join LGBTQ+ community events — parties, meetups, pride marches, workshops, and more.',
+      'LGBTQ+ community events — parties, meetups, pride marches, workshops, and more.',
     canonicalPath: '/events',
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
       name: 'LGBTQ+ Events',
-      description: 'Discover and join LGBTQ+ community events worldwide.',
+      description: 'LGBTQ+ community events worldwide.',
       url: 'https://queer.guide/events',
       isPartOf: { '@type': 'WebSite', name: 'Queer Guide', url: 'https://queer.guide' },
     },
@@ -428,7 +428,7 @@ const Events = () => {
       <PageHero
         eyebrow={t('pages.events.eyebrow', 'Happening')}
         title={t('pages.events.title', 'Events.')}
-        lede={t('pages.events.subtitle', 'Discover and join community events in your area')}
+        lede={t('pages.events.subtitle', 'Community events in your area')}
         primaryCta={{ label: t('pages.events.planTrip', 'Plan a trip'), href: '/travel' }}
         size="md"
       />
@@ -499,7 +499,7 @@ const Events = () => {
                 placeholders={[
                   'Search for events...',
                   'Find parties near you...',
-                  'Discover LGBTQ+ meetups...',
+                  'Find LGBTQ+ meetups...',
                   'Look for workshops...',
                   'Search pride events...',
                   'Find social gatherings...',
