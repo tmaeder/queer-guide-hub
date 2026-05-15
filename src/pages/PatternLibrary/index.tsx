@@ -169,6 +169,14 @@ export default function PatternLibrary() {
         <header className="qg-pl-header">
           <h1>Querra · Pattern Library</h1>
           <p>LGBTQ+ travel & community platform — one representative layout per feature area, desktop + mobile. Sourced from the Claude Design handoff.</p>
+          <p style={{ marginTop: '0.5rem' }}>
+            <a href="/aceternity" style={{ textDecoration: 'underline', fontWeight: 600 }}>
+              Interaction patterns & motion tokens →
+            </a>
+            <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>
+              (single source of truth for radii, monochrome effects, and the HelpHotlines animation exemption)
+            </span>
+          </p>
         </header>
 
         <nav className="qg-pl-toc" aria-label="Sections">

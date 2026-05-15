@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface SignUpMetadata {
   display_name?: string;
+  username?: string;
   first_name?: string;
   last_name?: string;
   location?: string;

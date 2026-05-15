@@ -32,6 +32,14 @@
      Used by AdminFilterBar, AdminTableShell, DestructiveAction. */
   --radius-element: 0.25rem;
 
+  /* Semantic radius tokens — single source of truth for the strict-monochrome
+     B&W system. All resolve to 0 today; one change here re-themes product
+     surfaces site-wide. New code SHOULD prefer these over rounded-* literals.
+     `rounded-full` is the only legacy literal kept (avatars, dots). */
+  --radius-container: 0;
+  --radius-element:   0;
+  --radius-badge:     0;
+
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
