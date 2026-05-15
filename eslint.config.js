@@ -221,6 +221,10 @@ export default tseslint.config(
             "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
           message:
             "Use semantic radius: rounded-container (cards/modals), rounded-element (buttons/inputs), or rounded-badge (chips/tags). See src/index.css @theme.",
+        },
+      ],
+    },
+  },
 
   // Cluster 3 — admin tree must stay motion-free. Aceternity effect
   // components and direct framer-motion / motion imports inside admin
