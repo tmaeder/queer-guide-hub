@@ -13,6 +13,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ScrollReveal } from "@/components/animation/ScrollReveal";
 import { SkeletonCrossfade } from "@/components/effects";
 import { getRandomFallbackImage } from "@/utils/fallbackImages";
+import { isValidImageUrl } from "@/lib/images/resolveEntityImage";
 
 interface Props {
 	entity: Entity;
@@ -121,10 +122,11 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 										>
 											<Card className="h-40 overflow-hidden transition">
 												<img
-														src={it.metadata?.image_url || getRandomFallbackImage()}
+														src={isValidImageUrl(it.metadata?.image_url) ? (it.metadata!.image_url as string) : getRandomFallbackImage()}
 														alt=""
 														loading="lazy"
 														className="h-24 w-full object-cover"
+														onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
 													/>
 												<CardContent className="p-2">
 													<div className="text-sm font-medium truncate">
