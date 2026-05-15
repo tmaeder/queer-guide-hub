@@ -150,17 +150,6 @@ export default function ProfileTiers() {
             const reached = TIER_ORDER.indexOf(tier) >= i;
             const isLast = i === TIER_ORDER.length - 1;
             return (
-              <div
-                key={t}
-                className={
-                  "flex gap-4 rounded-element border p-4 " +
-                  (active ? "border-foreground" : "border-border")
-                }
-              >
-                <Icon className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-                <div className="space-y-1">
-                  <div className="font-medium">{LABEL[t]}</div>
-                  <ul className="list-disc space-y-0.5 pl-5 text-sm text-muted-foreground">
               <li key={t} className="relative flex gap-4 pb-6 last:pb-0">
                 {!isLast && (
                   <AnimatedBeamConnector

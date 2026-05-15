@@ -54,7 +54,7 @@ export function EntityCard({
       to={href}
       className={cn(
         SPAN_CLASSES[span],
-        'group relative isolate flex flex-col overflow-hidden rounded-2xl border border-border bg-background no-underline transition-colors duration-300 hover:border-foreground/40',
+        'group relative isolate flex flex-col overflow-hidden rounded-container border border-border bg-background no-underline transition-colors duration-300 hover:border-foreground/40',
         className,
       )}
     >

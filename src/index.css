@@ -35,26 +35,14 @@
   --radius-3xl: 2rem;
   --radius-4xl: 2.5rem;
   --radius-full: 9999px;
-  /* Admin-only input/control radius. Stays minimal (4px) to read as
-     "form control" without breaking the monochrome flat aesthetic.
-     Used by AdminFilterBar, AdminTableShell, DestructiveAction. */
-  --radius-element: 0.25rem;
-
-  /* Semantic radius tokens — single source of truth for the strict-monochrome
-     B&W system. All resolve to 0 today; one change here re-themes product
-     surfaces site-wide. New code SHOULD prefer these over rounded-* literals.
-     `rounded-full` is the only legacy literal kept (avatars, dots). */
-  --radius-container: 0;
-  --radius-element:   0;
-  --radius-badge:     0;
-
-  /* ── Sensitive-control radius — minimal corner softening for Intimate/Privacy */
-  --radius-element: 2px;
 
   /* ── Semantic radius — 3-tier system (container / element / badge) ──
-     Source of truth for Aceternity + shadcn alignment. New components
-     MUST pick one of these three; the t-shirt scale above is retained
-     only for migration. */
+     Source of truth for Aceternity + shadcn alignment. Single declaration
+     each — prior versions of this file had 3 overlapping --radius-element
+     declarations (admin 0.25rem, strict-flat 0, sensitive 2px) all at
+     global @theme scope, fighting via CSS last-wins. Scoped variants are
+     now expressed via class selectors below (.admin-shell, .sensitive-
+     controls), not @theme overrides. */
   --radius-container: 1rem;     /* 16px — Bento grids, large cards, hero blocks */
   --radius-element:   0.5rem;   /* 8px  — buttons, inputs, list rows, nested cards */
   --radius-badge:     0.25rem;  /* 4px  — tags, chips, status pills, metadata */
@@ -224,11 +212,6 @@
   --text-secondary:  0 0% 32%;
   --text-muted:      0 0% 56%;
   --border-hairline: 0 0% 88%;
-  --radius: 0.625rem;
-  /* Admin-only input/control radius (Cluster 3). Exposed at :root so the
-     .rounded-element utility resolves even when Tailwind's @theme scan
-     hasn't picked up the token yet. */
-  --radius-element: 0.25rem;
   --transition-smooth: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
   --transition-spring: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 
@@ -258,13 +241,6 @@
   --z-skip-link: 2000;
   --sidebar-width: 260px;
   --admin-content-min-h: calc(100vh - 100px);
-}
-
-/* Admin-only utility (Cluster 3) — explicit rule so the class works
-   regardless of Tailwind v4 token scanning. Used on inputs, selects,
-   and DestructiveAction triggers across admin pages. */
-.rounded-element {
-  border-radius: var(--radius-element);
 }
 
 .dark {
