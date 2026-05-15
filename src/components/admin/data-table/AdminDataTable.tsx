@@ -297,9 +297,9 @@ export function AdminDataTable<TData extends { id: string }>({
                               <DropdownMenuItem
                                 key={action.key}
                                 onClick={() => action.onClick(row.original)}
-                                style={
+                                className={
                                   action.variant === 'destructive'
-                                    ? { color: 'var(--destructive)' }
+                                    ? 'border-l-2 border-l-foreground font-medium'
                                     : undefined
                                 }
                               >
