@@ -330,7 +330,7 @@ export function Header() {
           {/* Navigation sections */}
           {navigationSections.map((section) => (
             <div key={section.titleKey}>
-              {section.items.map((item, itemIdx) => {
+              {section.items.map((item) => {
                 const active = isActiveRoute(item.to);
                 return (
                   <div key={item.to}>
@@ -696,7 +696,7 @@ export function Header() {
                   }}
                 >
                   {navigationSections.map((section) =>
-                    section.items.map((item, idx) => {
+                    section.items.map((item) => {
                       const active = isActiveRoute(item.to);
                       return (
                         <Button
