@@ -37,12 +37,12 @@ test.describe('Travel hub (/travel)', () => {
     await expect(page.getByRole('button', { name: /book now/i }).first()).toBeVisible({
       timeout: 15000,
     });
-    await expect(page.locator('button:has-text("Flights")')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Flights', exact: true })).toHaveCount(0);
 
     await page.getByRole('button', { name: /book now/i }).first().click();
-    await expect(page.locator('button:has-text("Flights")')).toBeVisible();
-    await expect(page.locator('button:has-text("Hotels")')).toBeVisible();
-    await expect(page.locator('button:has-text("Activities")')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Flights', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Hotels', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Activities', exact: true })).toBeVisible();
   });
 
   test('?intent=book opens Book now expanded and hides the hero', async ({ page }) => {
@@ -52,7 +52,9 @@ test.describe('Travel hub (/travel)', () => {
     await expect(page.getByRole('heading', { name: /plan a trip/i })).toHaveCount(0);
 
     // Booking tabs are visible.
-    await expect(page.locator('button:has-text("Flights")')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('button', { name: 'Flights', exact: true })).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test('Hotels tab shows the LGBTQ+ friendly filter checkbox', async ({ page }) => {

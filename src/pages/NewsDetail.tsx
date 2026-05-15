@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { SimilarItems } from '@/components/discovery/SimilarItems';
 import { MarketplaceRelated } from '@/components/marketplace/MarketplaceRelated';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ExternalLink,
@@ -32,6 +32,8 @@ import {
   fetchNamesByIds,
 } from '@/hooks/usePageFetchers';
 import { decodeHtmlEntities, cleanAuthor, cleanExcerpt, cleanContent } from '@/utils/htmlDecode';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { useMeta } from '@/hooks/useMeta';
@@ -89,6 +91,16 @@ export default function NewsDetail() {
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
   const [story, setStory] = useState<{ slug: string; title: string; article_count: number } | null>(null);
   const [dbCategories, setDbCategories] = useState<DbCategory[]>([]);
+
+  const articleIds = useMemo(() => (article ? [article.id] : []), [article]);
+  const { assets: articleAssets } = useEntityImageAssets('news_article', articleIds);
+  const heroSrc = article
+    ? resolveImageUrl({
+        imageUrl: article.image_url,
+        optimizedUrl: articleAssets.get(article.id)?.optimized_url ?? null,
+        thumbnailUrl: articleAssets.get(article.id)?.thumbnail_url ?? null,
+      })
+    : null;
 
   // Per-article SEO tags (client-side; edge-rendered tags are tracked separately for crawlers).
   const articleTitle = article ? decodeHtmlEntities(article.title) : undefined;
@@ -301,12 +313,14 @@ export default function NewsDetail() {
       </div>
 
       {/* Hero image */}
-      {article.image_url && (
+      {heroSrc && (
         <div className="w-full h-40 md:h-60 rounded-2xl overflow-hidden mb-6">
           <img
-            src={article.image_url}
+            src={heroSrc}
             alt={decodeHtmlEntities(article.title)}
             referrerPolicy="no-referrer"
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';

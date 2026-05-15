@@ -9,6 +9,8 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
 import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import type { EntityImageAsset } from '@/hooks/useEntityImageAssets';
 import {
   formatListingPrice,
   getOutboundLink,
@@ -39,6 +41,7 @@ interface MarketplaceCardProps {
   showFavoriteButton?: boolean;
   loading?: boolean;
   searchQuery?: string;
+  imageAsset?: EntityImageAsset;
 }
 
 function HighlightedText({ text, query }: { text: string; query?: string }) {
@@ -63,6 +66,7 @@ export function MarketplaceCard({
   loading = false,
   showFavoriteButton = false,
   searchQuery,
+  imageAsset,
 }: MarketplaceCardProps) {
   if (loading || !listing) {
     return (
@@ -78,7 +82,11 @@ export function MarketplaceCard({
     : 0;
 
   const price = formatListingPrice(listing);
-  const listingImage = listing.images?.[0] ?? null;
+  const listingImage = resolveImageUrl({
+    imageUrl: listing.images?.[0] ?? null,
+    optimizedUrl: imageAsset?.optimized_url ?? null,
+    thumbnailUrl: imageAsset?.thumbnail_url ?? null,
+  });
   const outbound = getOutboundLink(listing);
   const pills = trustPillsFor(listing);
   const provenance = sourceProvenanceLine(listing);

@@ -5,6 +5,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+import { resolveImageUrl } from '@/utils/resolveImageUrl';
+import { useEntityImageAssets } from '@/hooks/useEntityImageAssets';
 
 type Article = {
   id: string;
@@ -48,6 +50,8 @@ const LatestNewsSlider = React.memo(() => {
   const latest = useMemo<Article[]>(() => {
     return articles.slice(0, 6) as unknown as Article[];
   }, [articles]);
+
+  const { assets } = useEntityImageAssets('news_article', useMemo(() => latest.map((a) => a.id), [latest]));
 
   if (loading && latest.length === 0) {
     return (
@@ -99,8 +103,17 @@ const LatestNewsSlider = React.memo(() => {
         >
           <div className="mb-4 aspect-[3/2] w-full overflow-hidden bg-muted">
               <img
-                src={feature.image_url || getRandomFallbackImage()}
+                src={
+                  resolveImageUrl({
+                    imageUrl: feature.image_url,
+                    optimizedUrl: assets.get(feature.id)?.optimized_url ?? null,
+                    thumbnailUrl: assets.get(feature.id)?.thumbnail_url ?? null,
+                  }) || getRandomFallbackImage()
+                }
                 alt=""
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
                 className="block h-full w-full object-cover"
               />
             </div>

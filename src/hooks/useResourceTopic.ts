@@ -63,15 +63,24 @@ export function useTopicNews(tagCluster: string[] | undefined) {
   });
 }
 
-export function useSupportOrgs(supportOrgTags: string[]) {
+/**
+ * Support organisations on /resources. The data lives in `venues` keyed by
+ * `category` (e.g. `community_center`, `organization`), not via tags — the
+ * tag-based approach returned zero rows in prod because no venues are tagged
+ * with the support-org marker tags. Query by category instead.
+ */
+export function useSupportOrgs(categories: string[] = ['community_center', 'organization']) {
   return useQuery({
-    queryKey: ['resources-support-orgs'],
+    queryKey: ['resources-support-orgs', categories],
     staleTime: STALE,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_venues_by_tag', {
-        tag_values: supportOrgTags,
-        max_results: 200,
-      });
+      const { data, error } = await supabase
+        .from('venues')
+        .select('*')
+        .in('category', categories)
+        .order('is_featured', { ascending: false })
+        .order('name')
+        .limit(200);
       if (error) throw error;
       return (data ?? []) as Venue[];
     },

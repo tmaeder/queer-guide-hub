@@ -64,6 +64,30 @@ interface CardImageProps {
   children?: React.ReactNode;
 }
 
+/**
+ * Strip the Referer header for cross-origin hotlinks. Some publisher CDNs
+ * (Guardian, etc.) return 401 when Referer is set to a non-allowed origin.
+ * Internal hosts get the default policy so analytics still works.
+ */
+const TRUSTED_HOSTS = new Set([
+  'queer.guide',
+  'www.queer.guide',
+  'img.queer.guide',
+]);
+
+function isTrustedSrc(src: string): boolean {
+  try {
+    const host = new URL(src, 'https://queer.guide').hostname;
+    return (
+      TRUSTED_HOSTS.has(host) ||
+      host.endsWith('.supabase.co') ||
+      host.endsWith('.supabase.in')
+    );
+  } catch {
+    return true;
+  }
+}
+
 const CardImage = ({
   src,
   alt,
@@ -76,6 +100,7 @@ const CardImage = ({
   const fallbackSrc = React.useMemo(() => getRandomFallbackImage(), []);
 
   const effectiveSrc = (!src || error) ? fallbackSrc : src;
+  const referrerPolicy = isTrustedSrc(effectiveSrc) ? undefined : 'no-referrer';
 
   return (
     <div className="relative overflow-hidden rounded-t-xl" style={{ height }}>
@@ -83,8 +108,13 @@ const CardImage = ({
         src={effectiveSrc}
         alt={alt}
         loading="lazy"
+        decoding="async"
+        referrerPolicy={referrerPolicy}
         onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
+        onError={() => {
+          // Avoid the fallback-loops-to-itself case: only flip once.
+          if (!error) setError(true);
+        }}
         className={`img-lazy-fade${loaded ? ' loaded' : ''} w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]`}
       />
       {children}

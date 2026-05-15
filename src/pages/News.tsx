@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router";
 import { useLocalizedNavigate } from "@/hooks/useLocalizedNavigate";
 import { useNews } from "@/hooks/useNews";
 import type { NewsCategory } from "@/hooks/useNews";
+import { useEntityImageAssets } from "@/hooks/useEntityImageAssets";
 import { useMeta } from "@/hooks/useMeta";
 import { NewsCard } from "@/components/news/NewsCard";
 import { NewsFilters } from "@/components/news/NewsFilters";
@@ -404,6 +405,14 @@ export default function News() {
     currentPage * ARTICLES_PER_PAGE
   );
 
+  const visibleArticleIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const a of paginatedArticles as Array<{ id: string }>) ids.add(a.id);
+    for (const a of featuredArticles) ids.add(a.id);
+    return Array.from(ids);
+  }, [paginatedArticles, featuredArticles]);
+  const { assets: articleAssets } = useEntityImageAssets('news_article', visibleArticleIds);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -531,6 +540,7 @@ export default function News() {
                   sourcesMap={sourcesMap}
                   categoriesMap={categoriesMap}
                   tags={articleTags[featuredArticles[0].id] || []}
+                  imageAsset={articleAssets.get(featuredArticles[0].id)}
                 />
               )}
               {/* Secondary featured articles */}
@@ -545,6 +555,7 @@ export default function News() {
                     sourcesMap={sourcesMap}
                     categoriesMap={categoriesMap}
                     tags={articleTags[fa.id] || []}
+                    imageAsset={articleAssets.get(fa.id)}
                   />
                 ))}
               </div>
@@ -784,6 +795,7 @@ export default function News() {
                         sourcesMap={sourcesMap}
                         categoriesMap={categoriesMap}
                         tags={articleTags[article.id] || []}
+                        imageAsset={articleAssets.get(article.id)}
                       />
                     ))}
                   </div>
@@ -809,6 +821,7 @@ export default function News() {
                         sourcesMap={sourcesMap}
                         categoriesMap={categoriesMap}
                         tags={articleTags[paginatedArticles[0].id] || []}
+                        imageAsset={articleAssets.get(paginatedArticles[0].id)}
                       />
                     )}
                     {/* Next 2 as medium cards */}
@@ -881,6 +894,7 @@ export default function News() {
                         sourcesMap={sourcesMap}
                         categoriesMap={categoriesMap}
                         tags={articleTags[article.id] || []}
+                        imageAsset={articleAssets.get(article.id)}
                       />
                     ))}
                   </StaggerGrid>

@@ -1,7 +1,6 @@
 /**
- * OrgsDirectory — Support organisations on /resources. Pulls venues tagged
- * as community centres, NGOs, legal aid, health clinics, etc. via the
- * existing get_venues_by_tag RPC. Country filter is client-side.
+ * OrgsDirectory — Support organisations on /resources. Queries venues by
+ * `category` (community_center / organization). Country filter is client-side.
  */
 
 import { useMemo } from 'react';
@@ -17,7 +16,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useUserCountry, SUPPORTED_COUNTRIES, countryLabel } from '@/hooks/useUserCountry';
-import { SUPPORT_ORG_TAGS } from '@/pages/resources/topics.config';
 import { ChevronRight, Building2 } from 'lucide-react';
 
 const COUNTRY_CODE_TO_NAME: Record<string, string> = {
@@ -31,7 +29,7 @@ const MAX = 8;
 export function OrgsDirectory() {
   const { country, setCountry } = useUserCountry();
 
-  const { data: venues = [], isLoading } = useSupportOrgs(SUPPORT_ORG_TAGS);
+  const { data: venues = [], isLoading } = useSupportOrgs();
 
   const filtered = useMemo(() => {
     if (country === 'INT') return venues.slice(0, MAX);
@@ -84,7 +82,7 @@ export function OrgsDirectory() {
       )}
 
       <LocalizedLink
-        to="/venues?tag=Support+Organization"
+        to="/venues?category=community_center"
         className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
       >
         Browse all organisations
