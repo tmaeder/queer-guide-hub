@@ -167,3 +167,109 @@ export async function popularEntities(env: Env, contentTypes: string[], limit = 
 function formatVec(v: number[]): string {
 	return `[${v.join(",")}]`;
 }
+
+// Per-content-type table + image-source spec for image enrichment.
+// `content_embeddings.metadata` doesn't carry image_url, so /similar and the
+// pgvector half of /search came back imageless. We backfill by batching one
+// PostgREST select per type and picking the first non-null URL.
+const IMAGE_SOURCES: Record<
+	string,
+	{ table: string; columns: string[]; pick: (r: Record<string, unknown>) => string | null }
+> = {
+	venue: {
+		table: "venues",
+		columns: ["id", "logo_url", "images"],
+		pick: (r) => firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url),
+	},
+	event: {
+		table: "events",
+		columns: ["id", "logo_url", "images"],
+		pick: (r) => firstStr((r.images as unknown[])?.[0]) ?? firstStr(r.logo_url),
+	},
+	city: {
+		table: "cities",
+		columns: ["id", "curated_image_url", "image_url"],
+		pick: (r) => firstStr(r.curated_image_url) ?? firstStr(r.image_url),
+	},
+	country: {
+		table: "countries",
+		columns: ["id", "curated_image_url", "image_url"],
+		pick: (r) => firstStr(r.curated_image_url) ?? firstStr(r.image_url),
+	},
+	personality: {
+		table: "personalities",
+		columns: ["id", "image_url"],
+		pick: (r) => firstStr(r.image_url),
+	},
+	news: {
+		table: "news_articles",
+		columns: ["id", "image_url"],
+		pick: (r) => firstStr(r.image_url),
+	},
+	marketplace: {
+		table: "marketplace_listings",
+		columns: ["id", "image_url"],
+		pick: (r) => firstStr(r.image_url),
+	},
+};
+
+function firstStr(v: unknown): string | null {
+	return typeof v === "string" && v.length > 0 ? v : null;
+}
+
+/**
+ * Batch-fetch image URLs for a set of (content_type, content_id) hits.
+ * Returns Map keyed by `${type}:${id}`. Fail-soft: any per-type error yields
+ * an empty contribution rather than throwing.
+ */
+export async function fetchImageMap(
+	env: Env,
+	hits: Array<{ content_type: string; content_id: string }>,
+): Promise<Map<string, string>> {
+	const out = new Map<string, string>();
+	if (!hits.length) return out;
+	const byType = new Map<string, Set<string>>();
+	for (const h of hits) {
+		if (!h.content_id || !h.content_type) continue;
+		const set = byType.get(h.content_type) ?? new Set<string>();
+		set.add(h.content_id);
+		byType.set(h.content_type, set);
+	}
+	await Promise.all(
+		Array.from(byType.entries()).map(async ([type, ids]) => {
+			const spec = IMAGE_SOURCES[type];
+			if (!spec) return;
+			const idList = Array.from(ids);
+			// PostgREST `in.(...)` accepts up to a few thousand uuids comfortably.
+			const inList = idList.map((id) => `"${id}"`).join(",");
+			const url =
+				`${env.SUPABASE_URL}/rest/v1/${spec.table}` +
+				`?id=in.(${encodeURIComponent(inList)})` +
+				`&select=${spec.columns.join(",")}`;
+			const controller = new AbortController();
+			const timer = setTimeout(() => controller.abort("img-enrich-timeout"), RPC_TIMEOUT_MS);
+			try {
+				const res = await fetch(url, {
+					headers: {
+						apikey: env.SUPABASE_SERVICE_KEY,
+						authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+					},
+					signal: controller.signal,
+				});
+				if (!res.ok) return;
+				const rows = (await res.json()) as Array<Record<string, unknown>>;
+				for (const r of rows) {
+					const id = String(r.id ?? "");
+					if (!id) continue;
+					const pick = spec.pick(r);
+					if (pick) out.set(`${type}:${id}`, pick);
+				}
+			} catch (e) {
+				console.warn("fetchImageMap", type, (e as Error).message);
+			} finally {
+				clearTimeout(timer);
+			}
+		}),
+	);
+	return out;
+}
