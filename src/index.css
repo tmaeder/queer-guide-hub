@@ -28,6 +28,9 @@
   --radius-4xl: 2.5rem;
   --radius-full: 9999px;
 
+  /* ── Sensitive-control radius — minimal corner softening for Intimate/Privacy */
+  --radius-element: 2px;
+
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));

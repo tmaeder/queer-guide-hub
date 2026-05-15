@@ -511,24 +511,34 @@ export default function Favorites() {
         ) : (
           <div className="bg-background rounded-md p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all">All ({getTabCount('all')})</TabsTrigger>
-                <TabsTrigger value="venue">
-                  <MapPin style={{ height: 12, width: 12 }} />
-                  Venues ({getTabCount('venue')})
-                </TabsTrigger>
-                <TabsTrigger value="event">
-                  <Calendar style={{ height: 12, width: 12 }} />
-                  Events ({getTabCount('event')})
-                </TabsTrigger>
-                <TabsTrigger value="marketplace">
-                  <ShoppingBag style={{ height: 12, width: 12 }} />
-                  Marketplace ({getTabCount('marketplace')})
-                </TabsTrigger>
-                <TabsTrigger value="news">
-                  <Newspaper style={{ height: 12, width: 12 }} />
-                  News ({getTabCount('news')})
-                </TabsTrigger>
+              <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
+                {(() => {
+                  const lineTab =
+                    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none flex items-center gap-2';
+                  return (
+                    <>
+                      <TabsTrigger value="all" className={lineTab}>
+                        All ({getTabCount('all')})
+                      </TabsTrigger>
+                      <TabsTrigger value="venue" className={lineTab}>
+                        <MapPin style={{ height: 12, width: 12 }} />
+                        Venues ({getTabCount('venue')})
+                      </TabsTrigger>
+                      <TabsTrigger value="event" className={lineTab}>
+                        <Calendar style={{ height: 12, width: 12 }} />
+                        Events ({getTabCount('event')})
+                      </TabsTrigger>
+                      <TabsTrigger value="marketplace" className={lineTab}>
+                        <ShoppingBag style={{ height: 12, width: 12 }} />
+                        Marketplace ({getTabCount('marketplace')})
+                      </TabsTrigger>
+                      <TabsTrigger value="news" className={lineTab}>
+                        <Newspaper style={{ height: 12, width: 12 }} />
+                        News ({getTabCount('news')})
+                      </TabsTrigger>
+                    </>
+                  );
+                })()}
               </TabsList>
 
               <TabsContent value="all">
