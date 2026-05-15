@@ -33,7 +33,7 @@ function fmtRange(starts: string, ends: string) {
 export default function Quests() {
   useMeta({
     title: 'Editorial Quests · queer.guide',
-    description: 'Time-bounded curated community challenges. Help us preserve queer history, document spaces, and close gaps in coverage.',
+    description: 'Time-bounded community challenges. Help us preserve queer history, document spaces, and close gaps in coverage.',
   });
 
   const { data: quests, isLoading } = useQuests();

@@ -276,7 +276,7 @@ export default function Places() {
 
               <p className="text-lg text-muted-foreground">
                 {viewMode === 'overview' &&
-                  'Discover amazing places around the world. Find countries, cities, and locations that match your interests.'}
+                  'Countries, cities, and locations worldwide.'}
                 {viewMode === 'country' &&
                   selectedCountry &&
                   `Explore cities and regions in ${selectedCountry.name}. Find the perfect destination for your next adventure.`}
@@ -396,7 +396,7 @@ export default function Places() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <h5 className="text-2xl font-semibold">Explore Countries</h5>
+                    <h5 className="text-2xl font-semibold">Countries</h5>
                     <Badge
                       variant="secondary"
                       style={BADGE_STYLE}
@@ -439,7 +439,7 @@ export default function Places() {
                               <div>
                                 <p className="text-lg font-semibold">{continent.name}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {continentCountries.length} countries to explore
+                                  {continentCountries.length} countries
                                 </p>
                               </div>
                             </div>
@@ -486,7 +486,7 @@ export default function Places() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <h5 className="text-2xl font-semibold">Discover Cities</h5>
+                    <h5 className="text-2xl font-semibold">Cities</h5>
                     <Badge
                       variant="secondary"
                       style={BADGE_STYLE}

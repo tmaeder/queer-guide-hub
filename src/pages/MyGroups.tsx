@@ -74,7 +74,7 @@ export default function MyGroups() {
               <Button variant="outline" asChild>
                 <LocalizedLink to="/groups">
                   <Users className="h-4 w-4 mr-2" />
-                  Discover Groups
+                  Browse Groups
                 </LocalizedLink>
               </Button>
             </>
