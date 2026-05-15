@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { motion, AnimatePresence } from 'motion/react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -101,7 +102,17 @@ export default function Auth() {
     return (
       <div className="min-h-screen bg-background py-12">
         <div className="container mx-auto px-4">
-          <Signup onBack={() => setMode('signin')} />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="signup"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Signup onBack={() => setMode('signin')} />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     );
@@ -111,6 +122,14 @@ export default function Auth() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-12">
         <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 6rem)' }}>
+        <AnimatePresence mode="wait">
+        <motion.div
+          key={mode}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+        >
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-4">
@@ -167,6 +186,7 @@ export default function Auth() {
                         value={loginData.email}
                         onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                         disabled={isLoading}
+                        className="rounded-element"
                         required
                       />
 
@@ -194,6 +214,7 @@ export default function Auth() {
                               value={loginData.password}
                               onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                               disabled={isLoading}
+                              className="rounded-element"
                               required
                             />
                             <Button
@@ -245,6 +266,8 @@ export default function Auth() {
               </div>
             </CardContent>
           </Card>
+        </motion.div>
+        </AnimatePresence>
         </div>
       </div>
     </div>
