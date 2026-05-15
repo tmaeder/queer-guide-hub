@@ -56,7 +56,7 @@ export function FollowingPointer({ children, className, title = 'View' }: Follow
             </svg>
             <motion.span
               layout
-              className="absolute left-3 top-3 inline-flex items-center whitespace-nowrap rounded-md bg-foreground text-background px-2 py-0.5 text-xs font-medium shadow-[var(--shadow-aceternity-sm)]"
+              className="absolute left-3 top-3 inline-flex items-center whitespace-nowrap rounded-element bg-foreground text-background px-2 py-0.5 text-xs font-medium shadow-[var(--shadow-aceternity-sm)]"
             >
               {title}
             </motion.span>

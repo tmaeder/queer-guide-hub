@@ -84,7 +84,7 @@ export function InstallBanner() {
       <img
         src="/icons/icon-96.png"
         alt=""
-        className="w-10 h-10 rounded-md shrink-0 mt-0.5"
+        className="w-10 h-10 rounded-element shrink-0 mt-0.5"
       />
       <div className="flex-1 min-w-0">
         {showIOSHint ? (
@@ -106,7 +106,7 @@ export function InstallBanner() {
           <Button
             size="sm"
             onClick={handleInstall}
-            className="mt-2 font-semibold rounded-lg"
+            className="mt-2 font-semibold rounded-element"
           >
             <Download size={16} className="mr-2" />
             Install

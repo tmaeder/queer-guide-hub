@@ -2,6 +2,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Force-generate the semantic 3-tier radius + text-hierarchy utilities even
+   before they appear in source files — they're the public API of the design
+   system and must be applicable to any Aceternity / shadcn component. */
+@source inline("{,hover:,focus:,dark:}rounded-{container,element,badge}");
+@source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge}");
+@source inline("{,hover:,dark:}{text,bg,border}-text-{primary,secondary,muted}");
+@source inline("{,dark:}border-border-hairline");
+
 @theme {
   /* ── Font families ─────────────────────────────────────────────── */
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -43,6 +51,14 @@
   /* ── Sensitive-control radius — minimal corner softening for Intimate/Privacy */
   --radius-element: 2px;
 
+  /* ── Semantic radius — 3-tier system (container / element / badge) ──
+     Source of truth for Aceternity + shadcn alignment. New components
+     MUST pick one of these three; the t-shirt scale above is retained
+     only for migration. */
+  --radius-container: 1rem;     /* 16px — Bento grids, large cards, hero blocks */
+  --radius-element:   0.5rem;   /* 8px  — buttons, inputs, list rows, nested cards */
+  --radius-badge:     0.25rem;  /* 4px  — tags, chips, status pills, metadata */
+
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -70,6 +86,12 @@
 
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  /* ── Semantic text hierarchy + hairline border ─────────────────── */
+  --color-text-primary:    hsl(var(--text-primary));
+  --color-text-secondary:  hsl(var(--text-secondary));
+  --color-text-muted:      hsl(var(--text-muted));
+  --color-border-hairline: hsl(var(--border-hairline));
 
   --color-sidebar: hsl(var(--sidebar-background));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
@@ -192,6 +214,16 @@
   --sidebar-border: 0 0% 88%;
   --sidebar-ring: 0 0% 4%;
 
+  --radius: var(--radius-element);
+
+  /* ── Semantic text hierarchy (light) ─────────────────────────────
+     primary  = body, headings
+     secondary = supporting copy
+     muted    = captions, hints, disabled */
+  --text-primary:    0 0% 4%;
+  --text-secondary:  0 0% 32%;
+  --text-muted:      0 0% 56%;
+  --border-hairline: 0 0% 88%;
   --radius: 0.625rem;
   /* Admin-only input/control radius (Cluster 3). Exposed at :root so the
      .rounded-element utility resolves even when Tailwind's @theme scan
@@ -278,6 +310,12 @@
   --sidebar-accent-foreground: 0 0% 96%;
   --sidebar-border: 0 0% 18%;
   --sidebar-ring: 0 0% 96%;
+
+  /* ── Semantic text hierarchy (dark) ──────────────────────────── */
+  --text-primary:    0 0% 98%;
+  --text-secondary:  0 0% 64%;
+  --text-muted:      0 0% 40%;
+  --border-hairline: 0 0% 18%;
 
   --surface: 0 0% 4%;
   --surface-container-lowest: 0 0% 2%;

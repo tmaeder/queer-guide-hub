@@ -154,7 +154,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
         </div>
 
         {suggestion && (
-          <div className="border border-border rounded-md bg-background p-3 space-y-2 max-h-[320px] overflow-y-auto">
+          <div className="border border-border rounded-element bg-background p-3 space-y-2 max-h-[320px] overflow-y-auto">
             {suggestion.rationale && (
               <div className="text-xs text-muted-foreground italic">
                 <Wand2 className="h-3 w-3 inline mr-1" />

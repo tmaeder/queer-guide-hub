@@ -50,7 +50,7 @@ export function Compare({ firstImage, secondImage, firstAlt, secondAlt, classNam
   return (
     <div
       ref={ref}
-      className={cn('relative w-full rounded-2xl overflow-hidden select-none', className)}
+      className={cn('relative w-full rounded-container overflow-hidden select-none', className)}
       onMouseDown={(e) => {
         setDragging(true);
         onMove(e.clientX);

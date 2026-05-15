@@ -236,7 +236,7 @@ export function VenueCard({
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="absolute bottom-2 right-2 w-7 h-7 rounded-md bg-background object-contain shadow p-0.5"
+                  className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain shadow p-0.5"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}

@@ -16,7 +16,7 @@ export function MarketplaceSpotlight() {
   return (
     <section
       aria-label="Featured listing"
-      className="mb-10 rounded-3xl border border-border overflow-hidden grid grid-cols-1 md:grid-cols-5 bg-gradient-to-br from-foreground/[0.03] to-transparent"
+      className="mb-10 rounded-container border border-border overflow-hidden grid grid-cols-1 md:grid-cols-5 bg-gradient-to-br from-foreground/[0.03] to-transparent"
     >
       <div className="md:col-span-3 relative bg-muted aspect-[16/10] md:aspect-auto md:min-h-[360px]">
         <img
@@ -55,7 +55,7 @@ export function MarketplaceSpotlight() {
               href={outbound.url}
               target="_blank"
               rel={outbound.rel}
-              className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-4 py-2.5 text-sm font-medium hover:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-4 py-2.5 text-sm font-medium hover:opacity-90"
             >
               {outbound.label}
               <ExternalLink style={{ width: 14, height: 14 }} aria-hidden="true" />

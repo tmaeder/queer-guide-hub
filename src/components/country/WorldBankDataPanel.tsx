@@ -36,7 +36,7 @@ const DataRow = ({
 }) => {
   if (value == null || value === '') return null;
   return (
-    <div className="flex justify-between items-center p-3 rounded-lg bg-muted">
+    <div className="flex justify-between items-center p-3 rounded-element bg-muted">
       <div className="flex items-center gap-2">
         {Icon && <Icon className="h-3.5 w-3.5 text-muted-foreground" />}
         <span className="text-sm font-medium">{label}</span>

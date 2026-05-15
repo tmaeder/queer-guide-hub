@@ -98,7 +98,7 @@ export const ExploreMapFiltersPanel = ({
   };
 
   return (
-    <div className="absolute top-3 left-16 right-3 z-20 rounded-2xl border border-border bg-background/85 backdrop-blur-md shadow-md px-3 py-2">
+    <div className="absolute top-3 left-16 right-3 z-20 rounded-container border border-border bg-background/85 backdrop-blur-md shadow-md px-3 py-2">
       <div className="flex gap-2 items-center">
         <Popover open={popoverOpen && (loading || suggestions.length > 0 || query.length >= 2)} onOpenChange={setPopoverOpen}>
           <PopoverTrigger asChild>
@@ -124,7 +124,7 @@ export const ExploreMapFiltersPanel = ({
                 }}
                 onFocus={() => setPopoverOpen(true)}
                 onKeyDown={handleEnter}
-                className="pl-8 pr-8 h-9 text-sm rounded-xl"
+                className="pl-8 pr-8 h-9 text-sm rounded-element"
               />
               {loading && (
                 <Loader2
@@ -154,7 +154,7 @@ export const ExploreMapFiltersPanel = ({
           <PopoverContent
             id="map-search-listbox"
             align="start"
-            className="p-0 w-[--radix-popover-trigger-width] rounded-xl border-border shadow-lg"
+            className="p-0 w-[--radix-popover-trigger-width] border-border shadow-lg"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Command shouldFilter={false}>
@@ -194,7 +194,7 @@ export const ExploreMapFiltersPanel = ({
             aria-label={filtersOpen ? 'Hide filters' : 'Show filters'}
             aria-expanded={filtersOpen}
             onClick={() => setFiltersOpen((o) => !o)}
-            className="h-9 w-9 p-0 rounded-xl border border-border"
+            className="h-9 w-9 p-0 rounded-element border border-border"
           >
             <SlidersHorizontal size={16} />
           </Button>
@@ -209,7 +209,7 @@ export const ExploreMapFiltersPanel = ({
                   id="category-filter"
                   value={filters.category ?? ''}
                   onChange={(e) => updateFilter('category', e.target.value || undefined)}
-                  className="h-9 text-sm rounded-xl"
+                  className="h-9 text-sm rounded-element"
                 />
               </div>
 

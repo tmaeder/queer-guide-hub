@@ -223,7 +223,7 @@ function StoryCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-block rounded-sm flex-shrink-0"
+                className="inline-block rounded-badge flex-shrink-0"
                 style={{
                   paddingLeft: 3, paddingRight: 3,
                   backgroundColor: prio.color,
@@ -305,7 +305,7 @@ function StoryCard({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="bg-muted text-muted-foreground rounded-sm flex-shrink-0 truncate"
+                className="bg-muted text-muted-foreground rounded-badge flex-shrink-0 truncate"
                 style={{
                   paddingLeft: 4, paddingRight: 4, paddingTop: 1, paddingBottom: 1,
                   fontSize: '0.55rem',
@@ -339,7 +339,7 @@ function StoryCard({
               <span
                 data-testid="story-phase-chip"
                 data-phase={phase}
-                className="font-bold flex-shrink-0 whitespace-nowrap rounded-sm"
+                className="font-bold flex-shrink-0 whitespace-nowrap rounded-badge"
                 style={{
                   paddingLeft: 4, paddingRight: 4, paddingTop: 1, paddingBottom: 1,
                   fontSize: '0.55rem',

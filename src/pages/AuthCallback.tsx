@@ -92,7 +92,7 @@ export default function AuthCallback() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-card border rounded-lg p-6 space-y-3">
+      <div className="max-w-md w-full bg-card border rounded-element p-6 space-y-3">
         {status === "working" && <p>Signing you in…</p>}
         {status === "ok" && <p>Signed in. Redirecting…</p>}
         {status === "ext-ok" && (

@@ -70,11 +70,11 @@ const EventCardFixture = () => (
     <CardHeader>
       <CardTitle>Sample Event Title</CardTitle>
       <div className="flex gap-1.5">
-        <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+        <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
           <Calendar className="h-4 w-4" />
           <span className="text-sm font-medium">Jun 15, 2026</span>
         </div>
-        <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+        <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
           <Clock className="h-4 w-4" />
           <span className="text-sm">8:00 PM</span>
         </div>
@@ -82,7 +82,7 @@ const EventCardFixture = () => (
     </CardHeader>
     <CardContent>
       <p className="text-sm text-muted-foreground">A sample event description spanning a couple of lines.</p>
-      <div className="flex items-start gap-1 p-1.5 bg-muted rounded-lg">
+      <div className="flex items-start gap-1 p-1.5 bg-muted rounded-element">
         <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
         <div className="flex-1">
           <p className="text-sm font-medium">Sample Venue</p>
@@ -235,7 +235,7 @@ export const EventCard = memo(function EventCard({
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="absolute bottom-3 left-3 w-8 h-8 rounded-lg bg-background object-contain shadow-sm z-20 p-0.5"
+                    className="absolute bottom-3 left-3 w-8 h-8 rounded-element bg-background object-contain shadow-sm z-20 p-0.5"
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
@@ -297,13 +297,13 @@ export const EventCard = memo(function EventCard({
               </CardTitle>
 
               <div className="flex flex-wrap gap-1.5 mt-1">
-                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
                   <Calendar className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">
                     {formatEventDate(event.start_date, event.end_date)}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+                <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{formatEventTime(event.start_date, event.end_date)}</span>
                 </div>
@@ -322,7 +322,7 @@ export const EventCard = memo(function EventCard({
 
               {hasLocation && (
                 <div
-                  className={`flex gap-1 p-1.5 bg-muted rounded-lg ${event.venues?.address ? 'items-start' : 'items-center'}`}
+                  className={`flex gap-1 p-1.5 bg-muted rounded-element ${event.venues?.address ? 'items-start' : 'items-center'}`}
                 >
                   <MapPin
                     className="h-4 w-4 text-primary flex-shrink-0"
@@ -353,7 +353,7 @@ export const EventCard = memo(function EventCard({
                 <div className="flex items-center gap-2">
                   {attendeeCount > 0 && (
                     <div className="flex items-center gap-1">
-                      <div className="p-1 bg-muted rounded-lg">
+                      <div className="p-1 bg-muted rounded-element">
                         <Users className="h-3.5 w-3.5 text-primary" />
                       </div>
                       <p className="text-sm font-medium">{attendeeCount} attending</p>

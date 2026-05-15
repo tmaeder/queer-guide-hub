@@ -46,7 +46,7 @@ export function ImageField({ field, value, onChange, error, disabled }: FieldPro
   return (
     <FieldWrapper field={field} error={error}>
       {/* Image preview */}
-      <div className="rounded-lg border border-input bg-muted/30 overflow-hidden">
+      <div className="rounded-element border border-input bg-muted/30 overflow-hidden">
         {imageUrl && !imgError ? (
           <div className="relative group">
             <img

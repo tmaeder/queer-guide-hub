@@ -280,7 +280,7 @@ interface FactRowProps {
 
 function FactRow({ icon: Icon, label, value, alignRight }: FactRowProps) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+    <div className="flex items-center justify-between p-3 rounded-element bg-muted">
       <div className="flex items-center gap-2">
         <Icon style={{ height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
         <span className="text-sm font-medium">{label}</span>

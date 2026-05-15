@@ -146,7 +146,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
 
   if (fieldNames.length === 0) {
     return (
-      <div className="rounded-md border border-border p-6">
+      <div className="rounded-element border border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <span className="text-base font-semibold">Changes</span>
           <Button variant="ghost" className="h-7 w-7 p-0" onClick={onClose}>
@@ -159,7 +159,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
   }
 
   return (
-    <div className="rounded-md border border-border p-6">
+    <div className="rounded-element border border-border p-6">
       <div className="flex items-center justify-between mb-4">
         <span className="text-base font-semibold">
           Changes ({fieldNames.length} field{fieldNames.length !== 1 ? 's' : ''})

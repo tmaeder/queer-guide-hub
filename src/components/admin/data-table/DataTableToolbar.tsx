@@ -158,7 +158,7 @@ export function DataTableToolbar({
               {presets.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between px-2 py-1 hover:bg-accent cursor-pointer rounded-sm"
+                  className="flex items-center justify-between px-2 py-1 hover:bg-accent cursor-pointer rounded-badge"
                   onClick={() => onApplyPreset(p.id)}
                 >
                   <p className="text-sm">{p.name}</p>

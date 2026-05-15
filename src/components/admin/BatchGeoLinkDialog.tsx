@@ -134,7 +134,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
         <div className="flex flex-col gap-5 mt-2">
           {/* Unlinked counts */}
           {unlinkedCounts && (
-            <div className="border border-border rounded-lg p-3 flex flex-col gap-1">
+            <div className="border border-border rounded-element p-3 flex flex-col gap-1">
               <span className="text-xs font-semibold mb-1">Unlinked Items</span>
               <div className="grid grid-cols-2 gap-1">
                 {[
@@ -219,7 +219,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
 
           {/* Results */}
           {totals && !loading && (
-            <div className="border border-border rounded-lg p-4 flex flex-col gap-3">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
                 <span className="text-sm font-semibold">Geo-Link Complete</span>

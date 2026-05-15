@@ -272,8 +272,8 @@ export const UmamiAnalyticsDashboard = () => {
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
               <CardHeader>
-                <div className="h-4 bg-accent rounded-sm w-3/4" />
-                <div className="h-8 bg-accent rounded-sm w-1/2" />
+                <div className="h-4 bg-accent rounded-badge w-3/4" />
+                <div className="h-8 bg-accent rounded-badge w-1/2" />
               </CardHeader>
             </Card>
           ))}
@@ -288,7 +288,7 @@ export const UmamiAnalyticsDashboard = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-destructive/10 rounded-md">
+              <div className="p-2 bg-destructive/10 rounded-element">
                 <Activity style={{ height: 24, width: 24 }} />
               </div>
               <div>
@@ -678,7 +678,7 @@ export const UmamiAnalyticsDashboard = () => {
                 {stats.topCountries.map((country, index) => (
                   <div
                     key={country.country}
-                    className="flex items-center justify-between p-3 rounded-md border"
+                    className="flex items-center justify-between p-3 rounded-element border"
                   >
                     <div className="flex items-center gap-3">
                       <Badge variant="outline">{index + 1}</Badge>

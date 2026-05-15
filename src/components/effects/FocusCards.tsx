@@ -29,7 +29,7 @@ export function FocusCards({ cards, className }: FocusCardsProps) {
           onMouseEnter={() => setHovered(i)}
           onMouseLeave={() => setHovered(null)}
           className={cn(
-            'group relative rounded-xl overflow-hidden h-60 md:h-72 transition-all duration-300 ease-out',
+            'group relative rounded-container overflow-hidden h-60 md:h-72 transition-all duration-300 ease-out',
             hovered !== null && hovered !== i && 'blur-[2px] scale-[0.98] opacity-70',
           )}
         >

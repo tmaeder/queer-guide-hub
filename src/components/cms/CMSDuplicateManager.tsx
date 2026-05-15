@@ -549,7 +549,7 @@ export function CMSDuplicateManager() {
                       <p>"{Object.values(candidate.content_2.title)[0] as string}"</p>
                     </div>
                     {candidate.decision_reason && (
-                      <div className="mt-3 p-3 bg-muted rounded-lg">
+                      <div className="mt-3 p-3 bg-muted rounded-element">
                         <p className="text-sm text-muted-foreground">Decision Reason:</p>
                         <p className="text-sm">{candidate.decision_reason}</p>
                       </div>

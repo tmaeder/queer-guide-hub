@@ -48,7 +48,7 @@ export const UserDirectoryGrid = ({
     <>
       <div className="flex flex-col gap-6">
         {profiles && profiles.length > 0 && (
-          <div className="flex items-center justify-between p-4 bg-muted rounded-lg border border-border">
+          <div className="flex items-center justify-between p-4 bg-muted rounded-element border border-border">
             <div className="flex items-center gap-2">
               <Users style={{ height: 20, width: 20 }} />
               <span className="font-medium">

@@ -147,7 +147,7 @@ export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogP
             </Button>
           </div>
 
-          <div className="border border-border rounded-md bg-background overflow-hidden max-h-[300px] overflow-y-auto">
+          <div className="border border-border rounded-element bg-background overflow-hidden max-h-[300px] overflow-y-auto">
             {isLoading ? (
               <div className="p-4 text-center text-muted-foreground text-xs">Loading…</div>
             ) : grants.length === 0 ? (

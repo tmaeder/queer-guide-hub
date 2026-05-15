@@ -45,7 +45,7 @@ export function AutomationStats({ stats }: Props) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
       {CARDS.map(({ key, label, icon: Icon, color, format }) => (
-        <div key={key} className="p-4 rounded-2xl border border-border bg-card">
+        <div key={key} className="p-4 rounded-container border border-border bg-card">
           <div className="flex items-center gap-2 mb-2">
             <Icon size={16} style={{ color }} />
             <p className="text-xs text-muted-foreground truncate">{label}</p>

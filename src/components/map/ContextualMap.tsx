@@ -104,12 +104,12 @@ export const ContextualMap = ({
     <Suspense
       fallback={
         <Skeleton
-          className="rounded-lg w-full"
+          className="rounded-element w-full"
           style={{ height: typeof mapHeight === 'number' ? mapHeight : 400 }}
         />
       }
     >
-      <div className={`rounded-lg overflow-hidden ${className ?? ''}`}>
+      <div className={`rounded-element overflow-hidden ${className ?? ''}`}>
         <ExploreMap
           height={mapHeight}
           initialCenter={center}

@@ -34,7 +34,7 @@ export function BackgroundGradient({
         transition={animate ? { duration: 6, ease: 'linear', repeat: Infinity } : undefined}
         style={{ backgroundSize: animate ? '400% 400%' : undefined }}
         className={cn(
-          'absolute inset-0 rounded-3xl opacity-60 group-hover:opacity-100 blur-xl transition duration-500 will-change-transform',
+          'absolute inset-0 rounded-container opacity-60 group-hover:opacity-100 blur-xl transition duration-500 will-change-transform',
           'bg-[radial-gradient(circle_farthest-side_at_0_100%,hsl(var(--foreground)/0.4),transparent),radial-gradient(circle_farthest-side_at_100%_0,hsl(var(--foreground)/0.3),transparent),radial-gradient(circle_farthest-side_at_100%_100%,hsl(var(--foreground)/0.35),transparent),radial-gradient(circle_farthest-side_at_0_0,hsl(var(--foreground)/0.25),hsl(var(--background)))]',
         )}
       />
@@ -45,11 +45,11 @@ export function BackgroundGradient({
         transition={animate ? { duration: 6, ease: 'linear', repeat: Infinity } : undefined}
         style={{ backgroundSize: animate ? '400% 400%' : undefined }}
         className={cn(
-          'absolute inset-0 rounded-3xl will-change-transform',
+          'absolute inset-0 rounded-container will-change-transform',
           'bg-[radial-gradient(circle_farthest-side_at_0_100%,hsl(var(--foreground)/0.4),transparent),radial-gradient(circle_farthest-side_at_100%_0,hsl(var(--foreground)/0.3),transparent),radial-gradient(circle_farthest-side_at_100%_100%,hsl(var(--foreground)/0.35),transparent),radial-gradient(circle_farthest-side_at_0_0,hsl(var(--foreground)/0.25),hsl(var(--background)))]',
         )}
       />
-      <div className={cn('relative z-10 rounded-3xl bg-card', className)}>{children}</div>
+      <div className={cn('relative z-10 rounded-container bg-card', className)}>{children}</div>
     </div>
   );
 }

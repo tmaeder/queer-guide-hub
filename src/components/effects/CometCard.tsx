@@ -48,7 +48,7 @@ export function CometCard({ children, className, aspect = 'auto' }: CometCardPro
         }}
         style={reduced ? undefined : { rotateX, rotateY, transformStyle: 'preserve-3d' }}
         className={cn(
-          'relative rounded-2xl overflow-hidden bg-card border border-border/60 shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] transition-shadow',
+          'relative rounded-container overflow-hidden bg-card border border-border/60 shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] transition-shadow',
           aspectClass,
           className,
         )}

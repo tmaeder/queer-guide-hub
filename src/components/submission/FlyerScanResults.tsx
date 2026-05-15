@@ -125,7 +125,7 @@ function ItemDetail({
           <img
             src={imageUrl}
             alt="Scanned flyer"
-            className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+            className="w-12 h-12 rounded-element object-cover flex-shrink-0"
           />
         )}
         <div className="flex gap-1.5 items-center">
@@ -163,7 +163,7 @@ function ItemDetail({
       {/* Duplicate warning */}
       {hasDuplicates && (
         <div
-          className="flex items-center gap-2 p-3 mb-4 rounded-md"
+          className="flex items-center gap-2 p-3 mb-4 rounded-element"
           style={{ backgroundColor: '#fef3c7' }}
         >
           <AlertTriangle style={{ width: 16, height: 16, color: '#d97706', flexShrink: 0 }} />

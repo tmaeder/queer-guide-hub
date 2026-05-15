@@ -15,7 +15,7 @@ export function MarketplacePriceHistory({ listingId }: { listingId: string }) {
   const deltaPct = earliest > 0 ? (delta / earliest) * 100 : 0;
 
   return (
-    <div className="rounded-xl border border-border p-4 bg-card">
+    <div className="rounded-container border border-border p-4 bg-card">
       <div className="flex items-baseline justify-between mb-2">
         <p className="text-sm font-semibold">Price (90 days)</p>
         <p className={`text-xs ${delta < 0 ? 'text-foreground' : 'text-muted-foreground'}`}>

@@ -34,7 +34,7 @@ export function SearchFeedbackButtons({ entity, query, size = 14 }: Props) {
               type="button"
               onClick={cast('up')}
               aria-label="Thumbs up"
-              className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted transition"
+              className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted transition"
               style={{
                 color: voted === 'up' ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                 opacity: voted && voted !== 'up' ? 0.4 : 1,
@@ -51,7 +51,7 @@ export function SearchFeedbackButtons({ entity, query, size = 14 }: Props) {
               type="button"
               onClick={cast('down')}
               aria-label="Thumbs down"
-              className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted transition"
+              className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted transition"
               style={{
                 color: voted === 'down' ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
                 opacity: voted && voted !== 'down' ? 0.4 : 1,

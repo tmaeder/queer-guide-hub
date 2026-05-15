@@ -95,7 +95,7 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
   const nonDefaultLocales = SUPPORTED_LOCALES.filter((l) => l !== DEFAULT_LOCALE);
 
   return (
-    <div className="sticky bottom-4 z-[5] mx-auto max-w-[720px] bg-background border border-primary rounded-lg shadow-lg p-3 flex items-center gap-3 flex-wrap">
+    <div className="sticky bottom-4 z-[5] mx-auto max-w-[720px] bg-background border border-primary rounded-element shadow-lg p-3 flex items-center gap-3 flex-wrap">
       <p className="text-sm font-semibold">{selections.length} selected</p>
       <div className="flex-1 min-w-0">
         {progress && <span className="text-xs text-muted-foreground">{progress}</span>}

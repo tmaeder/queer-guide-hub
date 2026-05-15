@@ -111,13 +111,13 @@ export function HeaderNavWithFlyouts({ pathname }: HeaderNavWithFlyoutsProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.96 }}
                   transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+0.5rem)] z-50 min-w-[14rem] rounded-2xl border border-border/60 bg-background/95 backdrop-blur-md shadow-[var(--shadow-aceternity)] p-2"
+                  className="absolute left-1/2 -translate-x-1/2 top-[calc(100%+0.5rem)] z-50 min-w-[14rem] rounded-container border border-border/60 bg-background/95 backdrop-blur-md shadow-[var(--shadow-aceternity)] p-2"
                 >
                   {item.flyout.map((sub) => (
                     <Link
                       key={sub.to}
                       to={sub.to}
-                      className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+                      className="block rounded-element px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
                     >
                       {t(sub.labelKey, sub.labelKey.split('.').pop())}
                     </Link>

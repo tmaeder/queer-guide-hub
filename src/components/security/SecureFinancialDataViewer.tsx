@@ -165,7 +165,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
             ) : (
               <div className="flex flex-col gap-4">
                 {financialData.map((item) => (
-                  <div key={item.id} className="p-4 border border-border rounded-lg">
+                  <div key={item.id} className="p-4 border border-border rounded-element">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium">
@@ -301,7 +301,7 @@ export function SecureFinancialDataViewer({ userId, children }: SecureFinancialD
             ) : (
               <div className="flex flex-col gap-4">
                 {financialData.map((item) => (
-                  <div key={item.id} className="p-4 border border-border rounded-lg bg-muted">
+                  <div key={item.id} className="p-4 border border-border rounded-element bg-muted">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium">

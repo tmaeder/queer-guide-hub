@@ -448,7 +448,7 @@ function ResultsGrid({ children }: { children: React.ReactNode }) {
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-center py-8 bg-muted rounded-md">
+    <div className="text-center py-8 bg-muted rounded-element">
       <div className="text-muted-foreground">{children}</div>
     </div>
   );

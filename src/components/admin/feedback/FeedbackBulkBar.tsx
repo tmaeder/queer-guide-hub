@@ -91,7 +91,7 @@ export function FeedbackBulkBar({
   return (
     <>
       <div
-        className="sticky bottom-4 mx-auto px-4 py-2 flex items-center gap-2 rounded-lg z-50 flex-wrap max-w-[1200px] bg-background border border-border shadow-lg"
+        className="sticky bottom-4 mx-auto px-4 py-2 flex items-center gap-2 rounded-element z-50 flex-wrap max-w-[1200px] bg-background border border-border shadow-lg"
       >
         <Badge>{selectedCount} selected</Badge>
         {selectedCount < totalCount && (

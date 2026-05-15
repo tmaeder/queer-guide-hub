@@ -65,7 +65,7 @@ export function MultiSelectField({ field, value, onChange, error, disabled }: Fi
       )}
 
       {/* Checkbox list */}
-      <div className="rounded-lg border border-input bg-muted/30 p-2 max-h-48 overflow-y-auto space-y-1">
+      <div className="rounded-element border border-input bg-muted/30 p-2 max-h-48 overflow-y-auto space-y-1">
         {options.length === 0 && (
           <p className="text-xs text-muted-foreground py-1 px-1">No options available</p>
         )}

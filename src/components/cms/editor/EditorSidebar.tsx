@@ -38,7 +38,7 @@ interface PanelProps {
 function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
   return (
     <Collapsible open={open} onOpenChange={onOpenChange}>
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-element overflow-hidden">
         <CollapsibleTrigger asChild>
           <button
             type="button"
@@ -150,7 +150,7 @@ export function EditorSidebar({
             {attachments.map((att) => (
               <div
                 key={att.id}
-                className="flex items-center gap-2 p-2 rounded-md bg-muted/40 border border-border"
+                className="flex items-center gap-2 p-2 rounded-element bg-muted/40 border border-border"
               >
                 {att.media?.mime_type?.startsWith('image/') ? (
                   <img
@@ -213,7 +213,7 @@ function RevisionEntry({ revision }: { revision: CMSRevision }) {
   const authorName = revision.author?.display_name || revision.author?.email || 'System';
 
   return (
-    <div className="flex items-start gap-2 p-2 rounded-md hover:bg-muted/40 transition-colors">
+    <div className="flex items-start gap-2 p-2 rounded-element hover:bg-muted/40 transition-colors">
       <div className="flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full bg-muted w-7 h-7">
         <Clock className="text-muted-foreground" style={{ width: 14, height: 14 }} />
       </div>

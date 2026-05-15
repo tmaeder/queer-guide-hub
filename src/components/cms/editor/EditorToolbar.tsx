@@ -54,7 +54,7 @@ function ToolbarButton({ icon, label, isActive, disabled, onClick }: TBProps) {
           type="button"
           disabled={disabled}
           onClick={onClick}
-          className={`inline-flex items-center justify-center w-8 h-8 rounded-md border-0 transition-all duration-150 [&_svg]:w-4 [&_svg]:h-4 [&_svg]:flex-shrink-0 ${
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-element border-0 transition-all duration-150 [&_svg]:w-4 [&_svg]:h-4 [&_svg]:flex-shrink-0 ${
             disabled ? 'opacity-40 cursor-default' : 'cursor-pointer'
           } ${
             isActive

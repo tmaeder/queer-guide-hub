@@ -314,6 +314,8 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         </Tabs>
 
         {/* Search personalization entry point */}
+        <div className="mt-8 p-6 rounded-element bg-muted">
+          <p className="font-semibold mb-2">Personalize your search</p>
         <section className="mt-10 border-t border-border pt-6">
           <p className="font-semibold mb-1">Personalize your search</p>
           <p className="text-sm mb-4 text-muted-foreground">

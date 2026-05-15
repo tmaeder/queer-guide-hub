@@ -28,7 +28,7 @@ function RichTextFallback({
 }) {
   return (
     <textarea
-      className="w-full min-h-[200px] rounded-lg border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      className="w-full min-h-[200px] rounded-element border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}

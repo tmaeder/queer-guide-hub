@@ -196,7 +196,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
         <CardContent>
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'}`}
+            className={`border-2 border-dashed rounded-element p-8 text-center cursor-pointer transition-all ${isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary'}`}
           >
             <input {...getInputProps()} />
             <Upload style={{ width: 48, height: 48, margin: '0 auto 16px', color: 'var(--muted-foreground)' }} />
@@ -224,7 +224,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
               <CardContent>
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                    <div className="w-16 h-16 bg-muted rounded-element flex items-center justify-center">
                       <Music style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                     </div>
 
                     {/* Processing Options */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-element">
                       <div>
                         <p className="text-sm font-medium">Quality</p>
                         <Select

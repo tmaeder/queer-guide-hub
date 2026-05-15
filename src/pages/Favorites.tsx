@@ -283,7 +283,7 @@ export default function Favorites() {
                 <img
                   src={item.image_url}
                   alt={item.title}
-                  className="w-20 h-20 object-cover rounded-md transition-transform duration-200 group-hover:scale-105"
+                  className="w-20 h-20 object-cover rounded-element transition-transform duration-200 group-hover:scale-105"
                 />
               </div>
             )}
@@ -359,7 +359,7 @@ export default function Favorites() {
         )}
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">View:</span>
-          <div className="flex items-center rounded-md">
+          <div className="flex items-center rounded-element">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
@@ -404,10 +404,10 @@ export default function Favorites() {
             </DialogHeader>
 
             <div className="flex flex-col gap-4">
-              <div className="p-4 bg-accent rounded-md">
+              <div className="p-4 bg-accent rounded-element">
                 <p className="font-medium mb-2">Calendar Subscription URL:</p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 p-2 bg-background rounded-sm text-sm font-mono break-all">
+                  <code className="flex-1 p-2 bg-background rounded-badge text-sm font-mono break-all">
                     {calendarUrl}
                   </code>
                   <Button
@@ -509,7 +509,7 @@ export default function Favorites() {
             }}
           />
         ) : (
-          <div className="bg-background rounded-md p-6">
+          <div className="bg-background rounded-container p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
                 {(() => {

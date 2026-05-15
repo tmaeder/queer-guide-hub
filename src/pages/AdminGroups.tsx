@@ -46,7 +46,7 @@ export default function AdminGroups() {
         cell: (info) => (
           <div className="flex items-center gap-3">
             <div
-              className="flex items-center justify-center rounded-lg shrink-0 text-white font-semibold"
+              className="flex items-center justify-center rounded-element shrink-0 text-white font-semibold"
               style={{
                 height: 36,
                 width: 36,

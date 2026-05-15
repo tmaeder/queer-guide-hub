@@ -297,23 +297,23 @@ export const VenueImportQuickActions = () => {
       <Card>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#eff6ff' }}>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#eff6ff' }}>
               <div className="text-xl font-semibold" style={{ color: '#2563eb' }}>{totalVenues.toLocaleString()}</div>
               <div className="text-xs" style={{ color: '#2563eb' }}>Total Venues</div>
             </div>
-            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#f0fdf4' }}>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#f0fdf4' }}>
               <div className="text-xl font-semibold" style={{ color: '#16a34a' }}>{(manualCount + nullCount).toLocaleString()}</div>
               <div className="text-xs" style={{ color: '#16a34a' }}>Manual / Other</div>
             </div>
-            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#fff7ed' }}>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#fff7ed' }}>
               <div className="text-xl font-semibold" style={{ color: '#ea580c' }}>{importedCount.toLocaleString()}</div>
               <div className="text-xs" style={{ color: '#ea580c' }}>Imported</div>
             </div>
-            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#faf5ff' }}>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#faf5ff' }}>
               <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{activeSources}</div>
               <div className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>Active Sources</div>
             </div>
-            <div className="text-center p-3 rounded-md" style={{ backgroundColor: '#fef2f2' }}>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#fef2f2' }}>
               <div className="text-xl font-semibold" style={{ color: '#dc2626' }}>{venueSources.length}</div>
               <div className="text-xs" style={{ color: '#dc2626' }}>Registered Sources</div>
             </div>
@@ -337,7 +337,7 @@ export const VenueImportQuickActions = () => {
             <Card key={source.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div className="p-2 rounded-md text-white" style={{ backgroundColor: color }}>
+                  <div className="p-2 rounded-element text-white" style={{ backgroundColor: color }}>
                     {icon}
                   </div>
                   <div className="flex items-center gap-1">
@@ -437,7 +437,7 @@ export const VenueImportQuickActions = () => {
                   </p>
                   <div className="flex items-center gap-2">
                     <div
-                      className="rounded-md"
+                      className="rounded-element"
                       style={{
                         width: Math.max(4, (count / totalVenues) * 200),
                         height: 8,

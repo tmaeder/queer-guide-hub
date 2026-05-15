@@ -229,20 +229,20 @@ export default function NewsDetail() {
       <div className="container mx-auto py-8 px-4">
         <div className="animate-pulse">
           <div className="h-6 bg-muted rounded w-2/5 mb-4" />
-          <div className="h-48 bg-muted rounded-2xl mb-6" />
+          <div className="h-48 bg-muted rounded-container mb-6" />
           <div className="h-8 bg-muted rounded w-3/5 mb-4" />
           <div className="flex gap-2 mb-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-7 w-20 bg-muted rounded-2xl" />
+              <div key={i} className="h-7 w-20 bg-muted rounded-badge" />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
             <div className="flex flex-col gap-6">
-              <div className="h-64 bg-muted rounded-lg" />
+              <div className="h-64 bg-muted rounded-element" />
             </div>
             <div className="flex flex-col gap-6">
-              <div className="h-40 bg-muted rounded-lg" />
-              <div className="h-32 bg-muted rounded-lg" />
+              <div className="h-40 bg-muted rounded-element" />
+              <div className="h-32 bg-muted rounded-element" />
             </div>
           </div>
         </div>
@@ -314,7 +314,7 @@ export default function NewsDetail() {
 
       {/* Hero image */}
       {heroSrc && (
-        <div className="w-full h-40 md:h-60 rounded-2xl overflow-hidden mb-6">
+        <div className="w-full h-40 md:h-60 rounded-container overflow-hidden mb-6">
           <img
             src={heroSrc}
             alt={decodeHtmlEntities(article.title)}

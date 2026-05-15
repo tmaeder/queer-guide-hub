@@ -115,7 +115,7 @@ export function TripChat({ tripId }: Props) {
                 </div>
 
                 {replyMsg && (
-                  <div className="border-l-2 border-primary/40 pl-2 mb-1 rounded-sm bg-muted py-1 px-2">
+                  <div className="border-l-2 border-primary/40 pl-2 mb-1 rounded-badge bg-muted py-1 px-2">
                     <span className="block text-[10px] text-muted-foreground">
                       {replyMsg.sender?.display_name || 'Unknown'}
                     </span>
@@ -127,7 +127,7 @@ export function TripChat({ tripId }: Props) {
 
                 <div
                   className={cn(
-                    'rounded-lg p-3',
+                    'rounded-element p-3',
                     isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                   )}
                 >

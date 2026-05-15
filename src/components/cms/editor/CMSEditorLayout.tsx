@@ -297,7 +297,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
       <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* ── Main Column ─────────────────────────────────── */}
         <div className="flex-1 overflow-auto lg:w-[70%] lg:max-w-[70%]">
-          <div className="border border-border rounded-lg bg-background m-3 mb-1 lg:mb-3 overflow-hidden">
+          <div className="border border-border rounded-element bg-background m-3 mb-1 lg:mb-3 overflow-hidden">
             {/* Group tabs */}
             <Tabs
               value={state.activeGroup}
@@ -344,7 +344,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                     }}
                   >
                     <div
-                      className={`p-3 rounded-md border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
+                      className={`p-3 rounded-element border bg-background transition-colors focus-within:border-primary focus-within:shadow-[0_0_0_2px_hsl(var(--primary)/0.2)] ${
                         state.errors[field.name] ? 'border-destructive' : 'border-border'
                       }`}
                     >

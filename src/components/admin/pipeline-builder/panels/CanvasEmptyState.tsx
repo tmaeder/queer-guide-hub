@@ -24,7 +24,7 @@ export default function CanvasEmptyState({ onOpenCommandPalette, onOpenTemplateL
         <div className="grid grid-cols-1 gap-2 text-left">
           <button
             onClick={onOpenCommandPalette}
-            className="flex items-center gap-3 p-3 rounded-md border border-border bg-background hover:bg-accent transition-colors"
+            className="flex items-center gap-3 p-3 rounded-element border border-border bg-background hover:bg-accent transition-colors"
           >
             <CommandIcon className="h-4 w-4 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
@@ -36,7 +36,7 @@ export default function CanvasEmptyState({ onOpenCommandPalette, onOpenTemplateL
 
           <button
             onClick={onOpenTemplateLibrary}
-            className="flex items-center gap-3 p-3 rounded-md border border-border bg-background hover:bg-accent transition-colors"
+            className="flex items-center gap-3 p-3 rounded-element border border-border bg-background hover:bg-accent transition-colors"
           >
             <Boxes className="h-4 w-4 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
@@ -47,7 +47,7 @@ export default function CanvasEmptyState({ onOpenCommandPalette, onOpenTemplateL
 
           <button
             onClick={onImport}
-            className="flex items-center gap-3 p-3 rounded-md border border-border bg-background hover:bg-accent transition-colors"
+            className="flex items-center gap-3 p-3 rounded-element border border-border bg-background hover:bg-accent transition-colors"
           >
             <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">

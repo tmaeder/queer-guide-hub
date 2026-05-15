@@ -35,7 +35,7 @@ export function DateField({ field, value, onChange, error, disabled }: FieldProp
         disabled={disabled}
         aria-invalid={!!error}
         className={`
-          w-full h-10 px-3 py-2 rounded-lg text-sm
+          w-full h-10 px-3 py-2 rounded-element text-sm
           bg-muted/50 border-0
           focus:outline-none focus:ring-2 focus:ring-ring
           disabled:cursor-not-allowed disabled:opacity-50

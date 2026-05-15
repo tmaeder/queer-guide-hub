@@ -64,7 +64,7 @@ export function OrgsDirectory() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 w-full rounded-xl" />)}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 w-full rounded-container" />)}
         </div>
       ) : filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground">

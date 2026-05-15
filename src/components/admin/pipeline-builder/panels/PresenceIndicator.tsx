@@ -95,7 +95,7 @@ export default function PresenceIndicator({ pipelineId, isDirty }: PresenceIndic
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-1 border border-border rounded-md px-1.5 py-0.5 bg-background h-8 cursor-help">
+          <div className="flex items-center gap-1 border border-border rounded-element px-1.5 py-0.5 bg-background h-8 cursor-help">
             <Users className="h-3 w-3 text-muted-foreground" />
             <div className="flex -space-x-1">
               {others.slice(0, 3).map(p => (

@@ -281,7 +281,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardHeader>
             <CardContent>
               <ScrollArea>
-                <pre className="text-xs bg-accent p-2 rounded-md overflow-auto">
+                <pre className="text-xs bg-accent p-2 rounded-element overflow-auto">
                   {JSON.stringify(content, null, 2)}
                 </pre>
               </ScrollArea>

@@ -116,7 +116,7 @@ export const VenueImageUpload = ({
     <div className="flex flex-col gap-4">
       <Label>Venue Images (Optional)</Label>
 
-      <div className="border-2 border-dashed border-border hover:border-primary/50 transition-colors rounded-md">
+      <div className="border-2 border-dashed border-border hover:border-primary/50 transition-colors rounded-element">
         <div className="p-6">
           <input
             ref={fileInputRef}
@@ -154,7 +154,7 @@ export const VenueImageUpload = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {images.map((imageUrl, index) => (
             <div key={index} className="relative">
-              <div className="aspect-square rounded-md overflow-hidden bg-muted">
+              <div className="aspect-square rounded-element overflow-hidden bg-muted">
                 <img
                   src={imageUrl}
                   alt={`Venue image ${index + 1}`}

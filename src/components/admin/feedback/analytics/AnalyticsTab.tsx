@@ -91,7 +91,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
 
   return (
     <div className="grid gap-6 grid-cols-1 md:grid-cols-[2fr_1fr]">
-      <div className="border border-border rounded-md bg-background p-4">
+      <div className="border border-border rounded-element bg-background p-4">
         <p className="text-sm font-bold mb-2">Volume by category (90d)</p>
         <div className="h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -117,7 +117,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
         </div>
       </div>
 
-      <div className="border border-border rounded-md bg-background p-4">
+      <div className="border border-border rounded-element bg-background p-4">
         <p className="text-sm font-bold mb-2">Status funnel</p>
         <div className="h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -132,7 +132,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
         </div>
       </div>
 
-      <div className="border border-border rounded-md bg-background p-4 col-span-1 md:col-auto">
+      <div className="border border-border rounded-element bg-background p-4 col-span-1 md:col-auto">
         <p className="text-sm font-bold mb-2">Time to resolve (90d, resolved items only)</p>
         {sla.length === 0 ? (
           <p className="text-xs text-muted-foreground">No resolved items yet.</p>
@@ -172,7 +172,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
         )}
       </div>
 
-      <div className="border border-border rounded-md bg-background p-4">
+      <div className="border border-border rounded-element bg-background p-4">
         <p className="text-sm font-bold mb-2">Top voted</p>
         {topVoted.length === 0 ? (
           <p className="text-xs text-muted-foreground">No votes yet.</p>

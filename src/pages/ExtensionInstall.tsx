@@ -290,7 +290,7 @@ function Step({
 
 function Highlight({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <div className="border rounded-lg p-4">
+    <div className="border rounded-element p-4">
       <div className="flex items-center gap-2 mb-1 font-semibold">{icon}{title}</div>
       <p className="text-sm text-muted-foreground">{children}</p>
     </div>

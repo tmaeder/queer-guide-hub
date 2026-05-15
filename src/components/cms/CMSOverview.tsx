@@ -121,7 +121,7 @@ function OverviewSkeleton() {
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="p-5 rounded-lg bg-background"
+            className="p-5 rounded-element bg-background"
             style={{ borderLeft: '3px solid', borderColor: 'hsl(var(--border))' }}
           >
             <div className="flex items-center gap-3 mb-3">
@@ -136,7 +136,7 @@ function OverviewSkeleton() {
       <Skeleton className="h-6 w-32 mb-3" />
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
         {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <div key={i} className="p-4 rounded-lg bg-background overflow-hidden">
+          <div key={i} className="p-4 rounded-element bg-background overflow-hidden">
             <div className="flex items-center gap-2 mb-3">
               <Skeleton className="rounded-full" style={{ width: 28, height: 28 }} />
               <Skeleton className="h-4 w-20" />
@@ -148,7 +148,7 @@ function OverviewSkeleton() {
       </div>
 
       <Skeleton className="h-6 w-32 mb-3" />
-      <div className="p-4 rounded-lg bg-background">
+      <div className="p-4 rounded-element bg-background">
         {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className="flex items-center gap-4 py-3">
             <Skeleton className="rounded-full" style={{ width: 8, height: 8 }} />
@@ -307,7 +307,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
             <div
               key={card.key}
               onClick={isQueue ? () => onNavigate('review') : undefined}
-              className="p-5 rounded-lg transition-all"
+              className="p-5 rounded-element transition-all"
               style={{
                 borderLeft: `3px solid ${card.color}`,
                 background: `linear-gradient(135deg, ${alphaHex(card.color, 0.04)} 0%, hsl(var(--background)) 100%)`,
@@ -389,7 +389,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               onClick={() =>
                 ct.id === 'cms_pages' ? onNavigate('pages') : onNavigate('content', ct.id)
               }
-              className="p-4 cursor-pointer rounded-lg overflow-hidden bg-background border border-border transition-transform hover:-translate-y-0.5"
+              className="p-4 cursor-pointer rounded-element overflow-hidden bg-background border border-border transition-transform hover:-translate-y-0.5"
             >
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -442,7 +442,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               <ArrowRight size={14} className="ml-1" />
             </Button>
           </div>
-          <div className="rounded-lg overflow-hidden mb-6 bg-background border border-border">
+          <div className="rounded-element overflow-hidden mb-6 bg-background border border-border">
             {recentActivity.map((entry, idx) => {
               const actionColor = getActionColor(entry.action);
               const isLast = idx === recentActivity.length - 1;
@@ -506,10 +506,10 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           <div
             key={action.label}
             onClick={action.onClick}
-            className="p-4 rounded-lg cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
+            className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
           >
             <div
-              className="rounded-md flex items-center justify-center"
+              className="rounded-element flex items-center justify-center"
               style={{
                 width: 32,
                 height: 32,
@@ -541,10 +541,10 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
             <div
               key={action.label}
               onClick={action.onClick}
-              className="p-4 rounded-lg cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
+              className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
             >
               <div
-                className="rounded-md flex items-center justify-center"
+                className="rounded-element flex items-center justify-center"
                 style={{
                   width: 32,
                   height: 32,

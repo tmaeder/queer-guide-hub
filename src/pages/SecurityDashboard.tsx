@@ -161,7 +161,7 @@ export default function SecurityDashboard() {
                 })}
               </div>
 
-              <div className="mt-8 p-6 bg-muted rounded-lg">
+              <div className="mt-8 p-6 bg-muted rounded-element">
                 <h6 className="text-base font-semibold mb-4">Security Implementation Summary</h6>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>

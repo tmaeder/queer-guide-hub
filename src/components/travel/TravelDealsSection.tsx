@@ -91,7 +91,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
           ))}
         </div>
       ) : (
-        <div className="text-center py-6 bg-muted rounded-lg">
+        <div className="text-center py-6 bg-muted rounded-element">
           <Plane
             style={{
               height: 24,

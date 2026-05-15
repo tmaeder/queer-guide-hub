@@ -137,7 +137,7 @@ export function LocationPrivacyManager() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
-            <div className="p-4 border border-border rounded-md">
+            <div className="p-4 border border-border rounded-element">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-sm">Anonymize All Location Data</p>
@@ -165,19 +165,19 @@ export function LocationPrivacyManager() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 border border-border rounded-md">
+            <div className="text-center p-4 border border-border rounded-element">
               <p className="text-xl font-bold mb-2">
                 {locationSettings.preciseLocation ? "Visible" : "Hidden"}
               </p>
               <p className="text-sm text-muted-foreground">Precise Location</p>
             </div>
-            <div className="text-center p-4 border border-border rounded-md">
+            <div className="text-center p-4 border border-border rounded-element">
               <p className="text-xl font-bold mb-2">
                 {locationSettings.anonymizationDays}d
               </p>
               <p className="text-sm text-muted-foreground">Auto-Anonymize After</p>
             </div>
-            <div className="text-center p-4 border border-border rounded-md">
+            <div className="text-center p-4 border border-border rounded-element">
               <p className="text-xl font-bold mb-2">
                 {locationSettings.autoAnonymize ? "On" : "Off"}
               </p>

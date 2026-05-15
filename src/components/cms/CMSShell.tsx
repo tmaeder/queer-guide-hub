@@ -63,11 +63,11 @@ function ShellSkeleton() {
         className="hidden md:block flex-shrink-0 border-r border-border bg-background p-4"
         style={{ width: 260 }}
       >
-        <Skeleton className="rounded-md mb-1" style={{ width: 160, height: 24 }} />
+        <Skeleton className="rounded-element mb-1" style={{ width: 160, height: 24 }} />
         <Skeleton className="mb-6" style={{ width: 100, height: 16 }} />
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 mb-2">
-            <Skeleton className="rounded-lg" style={{ width: 28, height: 28 }} />
+            <Skeleton className="rounded-element" style={{ width: 28, height: 28 }} />
             <Skeleton style={{ width: 80 + Math.random() * 60, height: 20 }} />
           </div>
         ))}
@@ -79,7 +79,7 @@ function ShellSkeleton() {
         <Skeleton className="mb-6" style={{ width: 300, height: 20 }} />
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="rounded-xl" style={{ height: 120 }} />
+            <Skeleton key={i} className="rounded-container" style={{ height: 120 }} />
           ))}
         </div>
       </div>
@@ -405,7 +405,7 @@ function CMSSettingsPanel() {
       <p className="text-sm text-muted-foreground mb-6">CMS configuration</p>
 
       <div className="flex flex-col gap-4">
-        <div className="border border-border rounded-xl p-5">
+        <div className="border border-border rounded-container p-5">
           <p className="text-sm font-semibold mb-3">Content Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Auto-save drafts" />
@@ -414,7 +414,7 @@ function CMSSettingsPanel() {
           </div>
         </div>
 
-        <div className="border border-border rounded-xl p-5">
+        <div className="border border-border rounded-container p-5">
           <p className="text-sm font-semibold mb-3">Media Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Compress images on upload" />
@@ -422,7 +422,7 @@ function CMSSettingsPanel() {
           </div>
         </div>
 
-        <div className="border border-border rounded-xl p-5">
+        <div className="border border-border rounded-container p-5">
           <p className="text-sm font-semibold mb-3">SEO Settings</p>
           <div className="flex flex-col gap-2">
             <SettingRow defaultChecked label="Auto-generate meta descriptions" />

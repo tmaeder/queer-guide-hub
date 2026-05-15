@@ -104,7 +104,7 @@ export default function AlertsTab() {
       </div>
 
       {/* Alerts table */}
-      <div className="border border-border rounded-md bg-background overflow-hidden max-h-[600px] overflow-y-auto">
+      <div className="border border-border rounded-element bg-background overflow-hidden max-h-[600px] overflow-y-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 sticky top-0">
             <tr className="border-b border-border">

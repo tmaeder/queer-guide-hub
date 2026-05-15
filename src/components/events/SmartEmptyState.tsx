@@ -45,7 +45,7 @@ export function SmartEmptyState({
           : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 sm:p-10 space-y-6">
+    <div className="rounded-container border border-border bg-card p-6 sm:p-10 space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-semibold tracking-tight">
           {t('pages.events.smartEmpty.title', 'No events match your filters')}
@@ -108,7 +108,7 @@ function SuggestionRow({ event, dfLocale }: SuggestionRowProps) {
     <li>
       <LocalizedLink
         to={`/events/${event.slug}`}
-        className="group flex items-center gap-3 rounded-xl border border-border bg-background px-3 py-2.5 transition-colors hover:bg-muted/50"
+        className="group flex items-center gap-3 rounded-container border border-border bg-background px-3 py-2.5 transition-colors hover:bg-muted/50"
         style={{ textDecoration: 'none', color: 'inherit' }}
       >
         <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />

@@ -238,7 +238,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
                 {village.notable_landmarks.map((landmark, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-2 rounded-lg bg-accent p-3"
+                    className="flex items-center gap-2 rounded-element bg-accent p-3"
                   >
                     <Landmark
                       className="text-muted-foreground"
@@ -389,7 +389,7 @@ export function VillagePhotosTab({ village }: { village: VillageWithRelations })
       {village.images && village.images.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           {village.images.map((img, i) => (
-            <div key={i} className="h-[200px] overflow-hidden rounded-lg bg-accent">
+            <div key={i} className="h-[200px] overflow-hidden rounded-element bg-accent">
               <img
                 src={img}
                 alt={`${village.name} ${i + 1}`}

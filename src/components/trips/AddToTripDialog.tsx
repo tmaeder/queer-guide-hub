@@ -222,7 +222,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                       setSelectedDayId('');
                     }}
                     className={cn(
-                      'flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-colors',
+                      'flex items-center justify-between p-3 rounded-element border-2 cursor-pointer transition-colors',
                       selectedTripId === trip.id
                         ? 'border-primary'
                         : 'border-border hover:border-muted-foreground',

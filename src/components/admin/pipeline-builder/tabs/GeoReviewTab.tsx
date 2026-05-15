@@ -57,7 +57,7 @@ export default function GeoReviewTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="border border-border rounded-md bg-background overflow-hidden">
+      <div className="border border-border rounded-element bg-background overflow-hidden">
         <div className="px-4 py-2.5 border-b border-border flex items-center gap-2">
           <GitMerge className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold">Geo merge candidates</span>

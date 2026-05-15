@@ -425,6 +425,47 @@ const Events = () => {
   }, []);
   return (
     <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-12 md:py-20">
+        {/* Header */}
+        <PageHeader
+          title={t('pages.events.title', 'Events')}
+          subtitle={t('pages.events.subtitle', 'Discover and join community events in your area')}
+          actions={
+            <>
+              <div
+                className="flex items-center gap-1 p-1 bg-muted rounded-element"
+                role="group"
+                aria-label="View mode"
+              >
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="icon"
+                  aria-label={t('pages.events.gridView', 'Grid view')}
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid size={16} />
+                </Button>
+                <Button
+                  variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                  size="icon"
+                  aria-label={t('pages.events.calendarView', 'Calendar view')}
+                  onClick={() => setViewMode('calendar')}
+                >
+                  <CalendarIcon size={16} />
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="icon"
+                  aria-label={t('pages.events.mapView', 'Map view')}
+                  onClick={() => setViewMode('map')}
+                >
+                  <MapPin size={16} />
+                </Button>
+              </div>
+              {/* P4-3 — Submit CTA consolidated to header. */}
+            </>
+          }
+        />
       <PageHero
         eyebrow={t('pages.events.eyebrow', 'Happening')}
         title={t('pages.events.title', 'Events.')}
@@ -489,7 +530,7 @@ const Events = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col gap-4 p-4 bg-card rounded-lg mb-8">
+        <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-8">
           {/* Search Bar */}
           <div className="flex flex-wrap gap-2 items-center">
             <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">

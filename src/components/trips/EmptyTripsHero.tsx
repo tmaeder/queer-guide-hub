@@ -85,7 +85,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
             <CardContent className="flex flex-col items-start gap-4 p-6 w-full">
               <span
                 aria-hidden="true"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background shadow-sm"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-container border border-border bg-background shadow-sm"
               >
                 <Icon style={{ width: 20, height: 20 }} />
               </span>

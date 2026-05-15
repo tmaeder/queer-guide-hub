@@ -69,7 +69,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
   }, [pipelineName]);
 
   return (
-    <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 bg-popover border border-border rounded-lg shadow-lg p-1">
+    <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1 bg-popover border border-border rounded-element shadow-lg p-1">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => zoomIn({ duration: 150 })}>

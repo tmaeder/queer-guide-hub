@@ -148,7 +148,7 @@ export default function TripsPage() {
       {isLoading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-60 rounded-md" />
+            <Skeleton key={i} className="h-60 rounded-element" />
           ))}
         </div>
       )}

@@ -82,7 +82,7 @@ export const UserDirectoryFilters = ({
   isAuthed,
 }: UserDirectoryFiltersProps) => {
   return (
-    <div className="border border-border rounded-md bg-background">
+    <div className="border border-border rounded-element bg-background">
       <CardContent style={{ padding: 20 }}>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -480,7 +480,7 @@ export const UserDirectoryFilters = ({
 
           {activeFiltersCount > 0 && !showFilters && (
             <div>
-              <div className="flex flex-wrap gap-2 items-center justify-center p-4 bg-muted rounded-lg">
+              <div className="flex flex-wrap gap-2 items-center justify-center p-4 bg-muted rounded-element">
                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Filter style={{ height: 16, width: 16 }} />
                   Active filters:

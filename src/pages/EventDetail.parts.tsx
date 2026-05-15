@@ -191,7 +191,7 @@ export function EventHero({
   const { t } = useTranslation();
   return (
     <>
-      <ParallaxHero className="w-full h-40 md:h-48 rounded-2xl mb-6">
+      <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={event.title}
@@ -394,7 +394,7 @@ export function EventHero({
           .filter(Boolean)
           .join(' and ');
         return (
-          <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-muted rounded-lg">
+          <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-muted rounded-element">
             <p className="text-sm text-muted-foreground">
               {missing.charAt(0).toUpperCase() + missing.slice(1)} not listed yet —
               check the source for the latest info.

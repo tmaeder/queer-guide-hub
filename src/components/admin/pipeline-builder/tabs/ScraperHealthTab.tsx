@@ -100,7 +100,7 @@ export default function ScraperHealthTab() {
   return (
     <div className="flex flex-col gap-5">
       {/* Orphans */}
-      <div className="border border-border rounded-md bg-background overflow-hidden">
+      <div className="border border-border rounded-element bg-background overflow-hidden">
         <SectionHeader
           icon={AlertTriangle}
           title="Orphan mappings"
@@ -159,7 +159,7 @@ export default function ScraperHealthTab() {
       </div>
 
       {/* Field coverage */}
-      <div className="border border-border rounded-md bg-background overflow-hidden">
+      <div className="border border-border rounded-element bg-background overflow-hidden">
         <SectionHeader icon={Activity} title="Field coverage per recent run" />
         <div className="max-h-[400px] overflow-auto">
           {covLoading ? (
@@ -201,7 +201,7 @@ export default function ScraperHealthTab() {
       </div>
 
       {/* Quality score distribution */}
-      <div className="border border-border rounded-md bg-background overflow-hidden">
+      <div className="border border-border rounded-element bg-background overflow-hidden">
         <SectionHeader icon={BarChart3} title="Quality score distribution" badge={<Badge variant="outline" className="text-2xs px-1.5 py-0">30-day · per source × type</Badge>} />
         <div className="max-h-[400px] overflow-auto">
           {quality.length === 0 ? (

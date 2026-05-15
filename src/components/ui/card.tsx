@@ -14,7 +14,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'bg-card text-card-foreground rounded-xl border border-border/60 transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'bg-card text-card-foreground rounded-container border border-border/60 transition-all duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
         hoverable && 'cursor-pointer hover:-translate-y-0.5 hover:shadow-[var(--shadow-aceternity)]',
         className,
       )}
@@ -41,7 +41,7 @@ const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
       <motion.div
         ref={ref}
         className={cn(
-          'bg-card text-card-foreground rounded-xl border border-border/60 transition-shadow hover:shadow-[var(--shadow-aceternity)]',
+          'bg-card text-card-foreground rounded-container border border-border/60 transition-shadow hover:shadow-[var(--shadow-aceternity)]',
           className,
         )}
         {...hover}

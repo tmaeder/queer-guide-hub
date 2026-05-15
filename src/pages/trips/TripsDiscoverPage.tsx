@@ -178,7 +178,7 @@ export default function TripsDiscoverPage() {
           'Real itineraries from QG travelers — copy ideas, find queer-friendly stops, plan your own.',
         )}
         actions={
-          <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-element border border-border bg-background shadow-sm">
             <Compass size={20} />
           </div>
         }
@@ -317,7 +317,7 @@ export default function TripsDiscoverPage() {
       {!isLoading && sorted.length > 0 && viewMode === 'map' && (
         <Suspense
           fallback={
-            <Skeleton className="h-[480px] w-full rounded-lg" />
+            <Skeleton className="h-[480px] w-full rounded-container" />
           }
         >
           <DiscoverMap trips={sorted} />

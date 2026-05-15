@@ -147,7 +147,7 @@ const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
           data-state={open ? 'open' : 'closed'}
           className={cn(
             'fixed bg-background p-6 border border-border/60 shadow-[var(--shadow-aceternity-lg)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-auto',
-            side === 'left' || side === 'right' ? 'rounded-none' : 'rounded-t-2xl',
+            side === 'left' || side === 'right' ? 'rounded-none' : 'rounded-t-container',
             sideClasses[side],
             className,
           )}

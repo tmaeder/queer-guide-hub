@@ -186,7 +186,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
           <AlertDescription>Failed to load audit log: {error}</AlertDescription>
         </Alert>
       ) : paginatedEntries.length === 0 ? (
-        <div className="border border-border rounded-md bg-background p-6 text-center">
+        <div className="border border-border rounded-element bg-background p-6 text-center">
           <History size={24} className="text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">No audit entries found.</p>
         </div>

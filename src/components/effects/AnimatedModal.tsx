@@ -50,7 +50,7 @@ export function AnimatedModal({ open, onClose, children, className, hideCloseBut
             transition={{ type: 'spring', stiffness: 240, damping: 26, mass: 0.7 }}
             style={{ perspective: 1000 }}
             className={cn(
-              'relative z-10 max-w-lg w-full bg-card border border-border/60 rounded-2xl shadow-[var(--shadow-aceternity-lg)] p-6',
+              'relative z-10 max-w-lg w-full bg-card border border-border/60 rounded-container shadow-[var(--shadow-aceternity-lg)] p-6',
               className,
             )}
           >

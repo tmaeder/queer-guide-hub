@@ -37,7 +37,7 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
 
   return (
     <div
-      className={`p-5 rounded-md border bg-background transition-all ${module.is_enabled ? 'border-border opacity-100' : 'border-muted opacity-70'}`}
+      className={`p-5 rounded-element border bg-background transition-all ${module.is_enabled ? 'border-border opacity-100' : 'border-muted opacity-70'}`}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">

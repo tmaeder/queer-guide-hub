@@ -249,7 +249,7 @@ export default function Places() {
     <div className="w-full">
       {/* Hero Section */}
       <div className="container mx-auto pt-12 md:pt-20 pb-4 px-4">
-        <div className="bg-background rounded-lg p-6 lg:p-8 mb-6">
+        <div className="bg-background rounded-container p-6 lg:p-8 mb-6">
           {/* Navigation Header */}
           <div className="mb-6">
             {viewMode !== 'overview' && (
@@ -412,7 +412,7 @@ export default function Places() {
                       {Array.from({ length: 12 }).map((_, i) => (
                         <div
                           key={i}
-                          className="h-32 bg-muted rounded-lg animate-pulse"
+                          className="h-32 bg-muted rounded-element animate-pulse"
                         />
                       ))}
                     </div>
@@ -591,7 +591,7 @@ export default function Places() {
                 {villagesLoading && villages.length === 0 ? (
                   <div className={GRID_4_COLS}>
                     {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="h-60 bg-muted rounded-lg" />
+                      <div key={i} className="h-60 bg-muted rounded-element" />
                     ))}
                   </div>
                 ) : villages.length > 0 ? (
@@ -620,10 +620,10 @@ export default function Places() {
                         <div key={continent.id} className="flex flex-col gap-6">
                           <div
                             onClick={() => toggleContinent(villageKey)}
-                            className="flex items-center justify-between gap-4 p-4 rounded-lg bg-muted cursor-pointer hover:opacity-85"
+                            className="flex items-center justify-between gap-4 p-4 rounded-element bg-muted cursor-pointer hover:opacity-85"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-muted-foreground/10">
+                              <div className="p-2 rounded-element bg-muted-foreground/10">
                                 <Globe style={ICON_MD} />
                               </div>
                               <div>
@@ -694,7 +694,7 @@ export default function Places() {
               <TabsContent value="map">
                 <Suspense
                   fallback={
-                    <div className="h-[600px] bg-muted rounded-lg animate-pulse flex items-center justify-center">
+                    <div className="h-[600px] bg-muted rounded-container animate-pulse flex items-center justify-center">
                       <div className="text-center flex flex-col gap-2">
                         <MapIcon style={MAP_ICON_STYLE} />
                         <p className="text-sm text-muted-foreground">Loading map...</p>
