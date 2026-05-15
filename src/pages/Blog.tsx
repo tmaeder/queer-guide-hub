@@ -45,7 +45,7 @@ export default function Blog() {
                 </p>
                 <div className="flex justify-center gap-4 flex-wrap">
                   <Button variant="outline" onClick={() => navigate('/news')}>Browse News</Button>
-                  <Button variant="outline" onClick={() => navigate('/resources')}>Explore Resources</Button>
+                  <Button variant="outline" onClick={() => navigate('/resources')}>Browse Resources</Button>
                 </div>
               </Card>
             </div>

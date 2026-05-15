@@ -57,7 +57,7 @@ export default function Cities() {
       <PageHero
         eyebrow={t('cities.eyebrow', 'Destinations')}
         title={t('cities.title', 'Cities.')}
-        lede={t('cities.subtitle', 'Explore LGBTQ+ friendly cities around the world.')}
+        lede={t('cities.subtitle', 'LGBTQ+ friendly cities around the world.')}
         primaryCta={{ label: t('cities.planTrip', 'Plan a trip'), href: '/travel' }}
         secondaryCta={{ label: t('cities.openDirectory', 'Open the directory'), href: '/directory' }}
         size="md"

@@ -54,7 +54,7 @@ export default function Travel() {
 
       <div className="border border-border bg-background text-center py-6 px-6 rounded">
         <p className="font-semibold mb-2">
-          {t('pages.travel.exploreCta', 'Explore LGBTQ+ friendly destinations')}
+          {t('pages.travel.exploreCta', 'LGBTQ+ friendly destinations')}
         </p>
         <p className="text-muted-foreground text-sm mb-4">
           {t(

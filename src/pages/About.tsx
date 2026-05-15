@@ -35,7 +35,7 @@ const features = [
   {
     icon: MapPin,
     title: 'Venues',
-    description: 'Verified queer-friendly bars, cafés, clubs, and businesses — curated by the community, for the community.',
+    description: 'Verified queer-friendly bars, cafés, clubs, and businesses — built by the community, for the community.',
     link: '/venues',
   },
   {
@@ -47,7 +47,7 @@ const features = [
   {
     icon: ShoppingBag,
     title: 'Marketplace',
-    description: 'Support LGBTQ+ owned businesses and creators. Shop with purpose, discover with pride.',
+    description: 'Support LGBTQ+ owned businesses and creators. Shop with purpose.',
     link: '/marketplace',
   },
   {
