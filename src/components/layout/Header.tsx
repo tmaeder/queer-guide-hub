@@ -1,5 +1,4 @@
 import { useState, useCallback, Suspense, lazy } from 'react';
-import { motion } from 'motion/react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
@@ -331,15 +330,10 @@ export function Header() {
           {/* Navigation sections */}
           {navigationSections.map((section) => (
             <div key={section.titleKey}>
-              {section.items.map((item, itemIdx) => {
+              {section.items.map((item) => {
                 const active = isActiveRoute(item.to);
                 return (
-                  <motion.div
-                    key={item.to}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: itemIdx * 0.04 }}
-                  >
+                  <div key={item.to}>
                     <button
                       onClick={() => handleDrawerNav(item.to)}
                       className={`w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
@@ -350,7 +344,7 @@ export function Header() {
                         {t(item.labelKey)}
                       </span>
                     </button>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
@@ -455,16 +449,13 @@ export function Header() {
               textDecoration: 'none',
             }}
           >
-            <motion.img
+            <img
               src="/images/logo.png"
               alt=""
               aria-hidden="true"
               tabIndex={-1}
-              className="brightness-0 dark:invert"
+              className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
               style={{ height: 32, width: 32 }}
-              whileHover={{ rotate: -6, scale: 1.08 }}
-              whileTap={{ scale: 0.92 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 18 }}
             />
             <span
               className="absolute"
@@ -705,32 +696,26 @@ export function Header() {
                   }}
                 >
                   {navigationSections.map((section) =>
-                    section.items.map((item, idx) => {
+                    section.items.map((item) => {
                       const active = isActiveRoute(item.to);
                       return (
-                        <motion.div
+                        <Button
                           key={item.to}
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.15, delay: idx * 0.03 }}
+                          variant={active ? 'default' : 'ghost'}
+                          size="sm"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            width: '100%',
+                            gap: 8,
+                            padding: '8px 12px',
+                          }}
+                          onClick={() => handleMenuItemClick(item.to)}
                         >
-                          <Button
-                            variant={active ? 'default' : 'ghost'}
-                            size="sm"
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'flex-start',
-                              width: '100%',
-                              gap: 8,
-                              padding: '8px 12px',
-                            }}
-                            onClick={() => handleMenuItemClick(item.to)}
-                          >
-                            <item.icon style={{ width: 16, height: 16 }} />
-                            <span className="text-sm">{t(item.labelKey)}</span>
-                          </Button>
-                        </motion.div>
+                          <item.icon style={{ width: 16, height: 16 }} />
+                          <span className="text-sm">{t(item.labelKey)}</span>
+                        </Button>
                       );
                     })
                   )}

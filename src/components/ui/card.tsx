@@ -1,9 +1,12 @@
 import * as React from 'react';
-import { motion, useReducedMotion } from 'motion/react';
 import type { LucideIcon } from 'lucide-react';
-import { springs } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
+
+// MotionCard lives in a sibling file so importing Card doesn't drag
+// framer-motion into the consumer's bundle. Re-exported below for the
+// few call sites that opt into the hover-lift variant.
+export { MotionCard } from './MotionCard';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hoverable?: boolean;
@@ -25,34 +28,6 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ),
 );
 Card.displayName = 'Card';
-
-/* ── MotionCard — opt-in hover-lift card powered by motion ────────── */
-
-const MotionCard = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, children, ...props }, ref) => {
-    const reduced = useReducedMotion();
-    const hover = reduced
-      ? {}
-      : {
-          whileHover: { y: -3 },
-          transition: springs.snappy,
-        };
-    return (
-      <motion.div
-        ref={ref}
-        className={cn(
-          'bg-card text-card-foreground rounded-container border border-border/60 transition-shadow hover:shadow-[var(--shadow-aceternity)]',
-          className,
-        )}
-        {...hover}
-        {...(props as Record<string, unknown>)}
-      >
-        {children}
-      </motion.div>
-    );
-  },
-);
-MotionCard.displayName = 'MotionCard';
 
 /* ── CardImage ──────────────────────────────────────────────────────── */
 
@@ -193,7 +168,6 @@ CardFooter.displayName = 'CardFooter';
 
 export {
   Card,
-  MotionCard,
   CardImage,
   CardHeaderCompat as CardHeader,
   CardFooter,

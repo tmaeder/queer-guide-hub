@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
-import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { useLocation } from 'react-router';
@@ -166,10 +165,13 @@ export const UniversalSearchBar = () => {
     <div className="flex-1 min-w-0">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverAnchor asChild>
-          <motion.div
-            className="relative"
-            animate={isOpen ? { scale: 1.02, backdropFilter: 'blur(8px)' } : { scale: 1, backdropFilter: 'blur(0px)' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+          <div
+            className="relative transition-transform duration-200 ease-out"
+            style={{
+              transform: isOpen ? 'scale(1.02)' : 'scale(1)',
+              backdropFilter: isOpen ? 'blur(8px)' : 'blur(0px)',
+              transition: 'transform 200ms ease-out, backdrop-filter 200ms ease-out',
+            }}
           >
             <div role="search" aria-label="Site search" className="flex items-center cursor-text bg-background transition-all"
               onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}>
@@ -204,7 +206,7 @@ export const UniversalSearchBar = () => {
                 {activeFiltersCount > 0 && <Badge variant="destructive">{activeFiltersCount}</Badge>}
               </Button>
             </div>
-          </motion.div>
+          </div>
         </PopoverAnchor>
         <PopoverContent
           style={isMobile ? { position: 'fixed', inset: 0, width: '100vw', height: '100dvh', maxHeight: '100dvh', borderRadius: 0, padding: 0, zIndex: 50 } : { width: 600, padding: 0, zIndex: 50 }}
