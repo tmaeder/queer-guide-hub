@@ -4,6 +4,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TripContextBar } from '@/components/trips/TripContextBar';
 import { EmailVerifyBanner } from '@/components/auth/EmailVerifyBanner';
+import { ClaimUsernameBanner } from '@/components/auth/ClaimUsernameBanner';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 
 // Peripheral chrome — banners and the feedback FAB. None of these are
@@ -54,6 +55,7 @@ export const LayoutShell = ({ children }: { children: React.ReactNode }) => {
       <div className="relative z-10">
         <Header />
         <EmailVerifyBanner />
+        <ClaimUsernameBanner />
         <TripContextBar />
       </div>
       {children}

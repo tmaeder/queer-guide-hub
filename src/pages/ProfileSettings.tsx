@@ -38,6 +38,7 @@ import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export default function ProfileSettings() {
@@ -269,6 +270,20 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
           </TabsList>
 
           <TabsContent value="basic">
+            <Card className="mb-6">
+              <CardContent className="pt-6 flex flex-col gap-4">
+                <div>
+                  <p className="font-semibold">Username</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your unique queer.guide handle.
+                  </p>
+                </div>
+                <UsernameSelector
+                  value={(profile as Profile & { username?: string | null })?.username ?? null}
+                  onChange={(username) => updateProfile({ username } as Partial<Profile>)}
+                />
+              </CardContent>
+            </Card>
             <BasicInfoTab formData={formData} profile={profile} user={user} onChange={handleInputChange} onAvatarSave={handleAvatarSave} />
           </TabsContent>
 
