@@ -327,6 +327,7 @@ function CockpitSkeleton() {
         />
       ))}
     </div>
+    </div>
   );
 }
 
