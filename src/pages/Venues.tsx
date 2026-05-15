@@ -354,14 +354,14 @@ const Venues = () => {
               </SelectContent>
             </Select>
 
-            <div className="flex overflow-hidden rounded-md">
+            <div className="flex overflow-hidden rounded-element">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => setViewMode('grid')}
                 className={cn(
-                  'h-9 w-9 rounded-md px-2',
+                  'h-9 w-9 rounded-element px-2',
                   viewMode === 'grid' && 'bg-accent',
                 )}
                 aria-label={t('pages.venues.gridView', 'Grid view')}
@@ -374,7 +374,7 @@ const Venues = () => {
                 size="icon"
                 onClick={() => setViewMode('map')}
                 className={cn(
-                  'h-9 w-9 rounded-md px-2',
+                  'h-9 w-9 rounded-element px-2',
                   viewMode === 'map' && 'bg-accent',
                 )}
                 aria-label={t('pages.venues.mapView', 'Map view')}
@@ -559,7 +559,7 @@ const Venues = () => {
         ) : (
           <motion.div
             key="map"
-            className="relative h-[calc(100dvh-12rem)] sm:h-[700px] w-full overflow-hidden rounded-lg"
+            className="relative h-[calc(100dvh-12rem)] sm:h-[700px] w-full overflow-hidden rounded-container"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
@@ -575,7 +575,7 @@ const Venues = () => {
             />
             {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
-                <div className="pointer-events-auto rounded-lg bg-background p-6 text-center shadow-lg">
+                <div className="pointer-events-auto rounded-element bg-background p-6 text-center shadow-lg">
                   <MapPin className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                   <p className="text-sm font-medium">{t('pages.venues.filteredEmpty.title', 'No venues match your filters')}</p>
                   <Button

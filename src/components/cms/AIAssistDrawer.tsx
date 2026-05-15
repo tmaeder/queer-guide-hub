@@ -198,7 +198,7 @@ export function AIAssistDrawer({
             return (
               <div
                 key={op}
-                className="border border-border rounded-lg p-3 bg-background"
+                className="border border-border rounded-element p-3 bg-background"
               >
                 <div className="flex items-center mb-1">
                   <Icon size={14} />

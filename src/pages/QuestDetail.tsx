@@ -90,7 +90,7 @@ export default function QuestDetail() {
               ))}
             </article>
 
-            <section className="rounded-2xl border border-border bg-card p-6">
+            <section className="rounded-container border border-border bg-card p-6">
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Criteria</h3>
               <ul className="space-y-2 text-sm">
                 {quest.criteria_json.entity_type && (
@@ -117,7 +117,7 @@ export default function QuestDetail() {
             </section>
 
             {isCompleted && quest.recap_article_id && (
-              <div className="rounded-2xl border border-border bg-card p-6">
+              <div className="rounded-container border border-border bg-card p-6">
                 <h3 className="mb-2 text-base font-semibold">Recap published</h3>
                 <p className="text-sm text-muted-foreground">
                   Read the editorial recap with named contributor credits in the News section.
@@ -127,7 +127,7 @@ export default function QuestDetail() {
           </div>
 
           <aside className="space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="rounded-container border border-border bg-card p-6">
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Progress</h3>
               <div className="text-3xl font-semibold">
                 {accepted}
@@ -142,7 +142,7 @@ export default function QuestDetail() {
             </div>
 
             {isActive && (
-              <div className="rounded-2xl border border-border bg-card p-6">
+              <div className="rounded-container border border-border bg-card p-6">
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">Join</h3>
                 {!user ? (
                   <p className="text-sm text-muted-foreground">
@@ -198,7 +198,7 @@ export default function QuestDetail() {
               </div>
             )}
 
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="rounded-container border border-border bg-card p-6">
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Contributors
               </h3>

@@ -61,7 +61,7 @@ export function LinkPreview({
             className="absolute left-1/2 -top-[160px] -translate-x-1/2 pointer-events-none z-50"
           >
             <div
-              className="overflow-hidden rounded-xl bg-card border border-border/60 shadow-[var(--shadow-aceternity)]"
+              className="overflow-hidden rounded-container bg-card border border-border/60 shadow-[var(--shadow-aceternity)]"
               style={{ width, height }}
             >
               {imageSrc ? (

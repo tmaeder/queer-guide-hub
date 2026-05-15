@@ -17,7 +17,7 @@ export function DataTableEmptyState({
       <div className="p-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex gap-4 py-3 border-b border-border">
-            <Skeleton className="h-5 w-5 rounded-sm" />
+            <Skeleton className="h-5 w-5 rounded-badge" />
             {Array.from({ length: Math.min(columnCount, 5) }).map((_, j) => (
               <Skeleton key={j} className="h-5" style={{ width: j === 0 ? 180 : 100 }} />
             ))}

@@ -39,7 +39,7 @@ function GroupNode({ data, selected, id }: NodeProps) {
 
   return (
     <div
-      className={`rounded-lg w-full h-full min-w-[200px] min-h-[120px] transition-all pointer-events-auto ${
+      className={`rounded-element w-full h-full min-w-[200px] min-h-[120px] transition-all pointer-events-auto ${
         selected ? 'ring-2' : ''
       }`}
       style={{

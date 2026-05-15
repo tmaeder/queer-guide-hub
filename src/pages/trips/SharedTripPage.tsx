@@ -238,7 +238,7 @@ function SharedTripPage() {
     <div className="mx-auto pb-6">
       {/* Branded cover band */}
       <div
-        className="relative rounded-none sm:rounded-xl overflow-hidden mb-3 sm:mx-2 sm:mt-2 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
+        className="relative rounded-none sm:rounded-container overflow-hidden mb-3 sm:mx-2 sm:mt-2 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
         style={{
           background: hasCover ? undefined : fallbackGradient,
           backgroundImage: hasCover ? `url(${trip.cover_image_url})` : undefined,
@@ -311,7 +311,7 @@ function SharedTripPage() {
 
         {/* Map */}
         {mapPlaces.some((p) => p.latitude && p.longitude) && (
-          <div className="h-[300px] mb-3 rounded-lg overflow-hidden">
+          <div className="h-[300px] mb-3 rounded-container overflow-hidden">
             <TripMap places={mapPlaces as never} days={mapDays} />
           </div>
         )}
@@ -446,7 +446,7 @@ function SharedTripPage() {
           <CardContent>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
+                className="w-12 h-12 rounded-element flex items-center justify-center flex-shrink-0 text-white"
                 style={{
                   background: 'hsl(var(--foreground))',
                 }}

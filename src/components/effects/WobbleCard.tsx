@@ -41,7 +41,7 @@ export function WobbleCard({ children, className, containerClassName, ...rest }:
         transition: 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)',
       }}
       className={cn(
-        'group relative rounded-2xl overflow-hidden bg-card border border-border/60 shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)]',
+        'group relative rounded-container overflow-hidden bg-card border border-border/60 shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)]',
         containerClassName,
       )}
       {...(rest as Record<string, unknown>)}

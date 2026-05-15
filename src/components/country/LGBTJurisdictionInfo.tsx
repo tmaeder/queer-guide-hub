@@ -128,7 +128,7 @@ function ProtectionRow({
             <div
               key={dim}
               title={`${dim}: ${val}`}
-              className="flex h-5 w-6 items-center justify-center rounded-sm text-[0.625rem] font-semibold"
+              className="flex h-5 w-6 items-center justify-center rounded-badge text-[0.625rem] font-semibold"
               style={{
                 backgroundColor: isYes ? '#dcfce7' : isNo ? '#fee2e2' : '#f3f4f6',
                 color: isYes ? '#166534' : isNo ? '#991b1b' : '#9ca3af',

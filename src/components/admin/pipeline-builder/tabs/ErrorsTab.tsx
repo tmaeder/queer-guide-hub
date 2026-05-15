@@ -88,7 +88,7 @@ export default function ErrorsTab() {
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
           {summary.length === 0 ? (
-            <div className="col-span-full border border-border rounded-md bg-background p-6 text-center text-sm">
+            <div className="col-span-full border border-border rounded-element bg-background p-6 text-center text-sm">
               <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
               <span className="text-green-600 dark:text-green-400 font-medium">No errors in the last 7 days</span>
             </div>
@@ -96,7 +96,7 @@ export default function ErrorsTab() {
             const sc = sevConfig[s.severity as Severity] ?? sevConfig.info;
             const SIcon = sc.icon;
             return (
-              <div key={`${s.function_name}-${s.severity}`} className="border border-border rounded-md bg-background px-3 py-2.5 hover:bg-muted/30 transition-colors">
+              <div key={`${s.function_name}-${s.severity}`} className="border border-border rounded-element bg-background px-3 py-2.5 hover:bg-muted/30 transition-colors">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <SIcon className={`h-3.5 w-3.5 ${sc.className}`} />
                   <span className="text-xs2 font-mono truncate flex-1" title={s.function_name}>
@@ -121,7 +121,7 @@ export default function ErrorsTab() {
       </div>
 
       {/* Filter + recent error table */}
-      <div className="border border-border rounded-md bg-background overflow-hidden">
+      <div className="border border-border rounded-element bg-background overflow-hidden">
         <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm">Recent errors</span>
 
@@ -217,7 +217,7 @@ export default function ErrorsTab() {
                 {selected.context && (
                   <div>
                     <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Context</div>
-                    <pre className="text-xs2 bg-muted/40 p-2 rounded-md overflow-auto">
+                    <pre className="text-xs2 bg-muted/40 p-2 rounded-element overflow-auto">
                       {JSON.stringify(selected.context, null, 2)}
                     </pre>
                   </div>
@@ -225,7 +225,7 @@ export default function ErrorsTab() {
                 {selected.stack && (
                   <div>
                     <div className="text-2xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Stack</div>
-                    <pre className="text-2xs bg-muted/40 p-2 rounded-md overflow-auto max-h-60 whitespace-pre-wrap">
+                    <pre className="text-2xs bg-muted/40 p-2 rounded-element overflow-auto max-h-60 whitespace-pre-wrap">
                       {selected.stack}
                     </pre>
                   </div>

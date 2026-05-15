@@ -199,7 +199,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
 
           {/* Results */}
           {result && !loading && (
-            <div className="border border-border rounded-lg p-4 flex flex-col gap-3">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
                 <span className="text-sm font-semibold">Processing Complete</span>

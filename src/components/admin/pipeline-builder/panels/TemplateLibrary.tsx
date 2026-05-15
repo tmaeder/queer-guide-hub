@@ -168,7 +168,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
               </Select>
             </div>
 
-            <div className="flex-1 overflow-y-auto border border-border rounded-md">
+            <div className="flex-1 overflow-y-auto border border-border rounded-element">
               {isLoading && <div className="p-4 text-xs text-muted-foreground text-center">Loading...</div>}
               {!isLoading && filtered.length === 0 && (
                 <div className="p-8 text-xs text-muted-foreground text-center">
@@ -209,7 +209,7 @@ export default function TemplateLibrary({ selectedNodes, selectedEdges, onApply 
           <>
             <div className="space-y-3 flex-1">
               {selectedNodes.length === 0 ? (
-                <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border rounded-md">
+                <div className="p-6 text-center text-xs text-muted-foreground border border-dashed border-border rounded-element">
                   Select one or more nodes on the canvas first (click to select, shift-click to add).
                 </div>
               ) : (

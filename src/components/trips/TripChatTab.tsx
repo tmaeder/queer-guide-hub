@@ -148,7 +148,7 @@ export function TripChatTab({ tripId }: Props) {
               </Avatar>
               <div
                 className={cn(
-                  'max-w-[78%] p-2.5 rounded-lg',
+                  'max-w-[78%] p-2.5 rounded-element',
                   mine ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                 )}
               >

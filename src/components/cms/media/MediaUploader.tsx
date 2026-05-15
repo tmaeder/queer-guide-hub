@@ -79,7 +79,7 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
 
   if (preview) {
     return (
-      <div className="border border-border rounded-sm p-4 bg-muted/30">
+      <div className="border border-border rounded-badge p-4 bg-muted/30">
         {errorMsg && (
           <Alert variant="destructive" className="mb-4">
             <AlertDescription>{errorMsg}</AlertDescription>
@@ -91,10 +91,10 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
             <img
               src={preview.url}
               alt="Preview"
-              className="w-20 h-20 object-cover rounded-sm border border-border"
+              className="w-20 h-20 object-cover rounded-badge border border-border"
             />
           ) : (
-            <div className="w-20 h-20 flex items-center justify-center bg-muted rounded-sm">
+            <div className="w-20 h-20 flex items-center justify-center bg-muted rounded-badge">
               <FileText size={32} className="text-muted-foreground" />
             </div>
           )}
@@ -150,7 +150,7 @@ export default function MediaUploader({ onUploaded, bucket, accept }: MediaUploa
 
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-sm p-8 text-center cursor-pointer transition-all ${
+        className={`border-2 border-dashed rounded-badge p-8 text-center cursor-pointer transition-all ${
           isDragActive
             ? 'border-primary bg-primary/5'
             : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted'

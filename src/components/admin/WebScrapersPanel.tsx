@@ -162,7 +162,7 @@ export const WebScrapersPanel = () => {
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {NODE_SCRAPERS.map((s) => (
-            <div key={s.key} className="flex items-center gap-3 p-3 border border-border rounded-sm">
+            <div key={s.key} className="flex items-center gap-3 p-3 border border-border rounded-badge">
               <s.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="flex-1 min-w-0">
                 <p className="text-[0.85rem] font-semibold">{s.label}</p>
@@ -194,7 +194,7 @@ export const WebScrapersPanel = () => {
               </Button>
             </div>
           ))}
-          <div className="flex items-center justify-center p-3 border border-dashed border-border rounded-sm">
+          <div className="flex items-center justify-center p-3 border border-dashed border-border rounded-badge">
             <Button
               size="sm"
               variant="outline"

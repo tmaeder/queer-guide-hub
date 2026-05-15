@@ -51,7 +51,7 @@ export default function QuickAddPalette({ nodeTypes, onAdd }: QuickAddPalettePro
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="p-0 max-w-xl gap-0">
-        <Command className="rounded-lg">
+        <Command className="rounded-element">
           <CommandInput placeholder="Type to search nodes... (Esc to close)" autoFocus />
           <CommandList className="max-h-[400px]">
             <CommandEmpty>No nodes found</CommandEmpty>

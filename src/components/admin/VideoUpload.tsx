@@ -174,7 +174,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
         <CardContent>
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all hover:border-primary ${
+            className={`border-2 border-dashed rounded-element p-8 text-center cursor-pointer transition-all hover:border-primary ${
               isDragActive ? 'border-primary bg-primary/10' : 'border-border'
             }`}
           >
@@ -204,7 +204,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
               <CardContent>
                 <div className="flex items-start gap-4">
                   <div className="shrink-0">
-                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                    <div className="w-16 h-16 bg-muted rounded-element flex items-center justify-center">
                       <Video style={{ width: 32, height: 32, color: 'var(--muted-foreground)' }} />
                     </div>
                   </div>

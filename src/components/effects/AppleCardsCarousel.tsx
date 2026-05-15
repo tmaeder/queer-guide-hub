@@ -57,7 +57,7 @@ export function AppleCardsCarousel({ items, className }: AppleCardsCarouselProps
           <a
             key={i}
             href={card.href ?? '#'}
-            className="snap-start shrink-0 w-64 h-80 md:w-80 md:h-96 relative rounded-2xl overflow-hidden group ring-1 ring-border/60 shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] transition-shadow"
+            className="snap-start shrink-0 w-64 h-80 md:w-80 md:h-96 relative rounded-container overflow-hidden group ring-1 ring-border/60 shadow-[var(--shadow-aceternity-sm)] hover:shadow-[var(--shadow-aceternity)] transition-shadow"
           >
             <motion.img
               src={card.src}

@@ -128,7 +128,7 @@ export default function AdminVenueCategories() {
         cell: (info) => (
           <div className="flex items-center gap-2">
             <div
-              className="w-4 h-4 rounded-sm flex-shrink-0"
+              className="w-4 h-4 rounded-badge flex-shrink-0"
               style={{ backgroundColor: info.row.original.color || '#6366f1' }}
             />
             <div>

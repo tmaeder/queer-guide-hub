@@ -74,7 +74,7 @@ export default function ResourceTopic() {
           </h2>
           {guidesLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-container" />)}
             </div>
           ) : guides.length === 0 ? (
             <p className="text-sm text-muted-foreground">No guides published yet for this topic.</p>
@@ -84,7 +84,7 @@ export default function ResourceTopic() {
                 <li key={g.slug}>
                   <LocalizedLink
                     to={`/p/${g.slug}`}
-                    className="block rounded-xl border border-border p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
+                    className="block rounded-container border border-border p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
                   >
                     <p className="font-semibold text-sm">{g.title}</p>
                     {(g.excerpt || g.subtitle) && (
@@ -103,7 +103,7 @@ export default function ResourceTopic() {
           <h2 id="topic-orgs-heading" className="text-base font-semibold mb-4">Organisations</h2>
           {orgsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 rounded-xl" />)}
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 rounded-container" />)}
             </div>
           ) : orgs.length === 0 ? (
             <p className="text-sm text-muted-foreground">No organisations indexed for this topic yet.</p>
@@ -122,7 +122,7 @@ export default function ResourceTopic() {
           </h2>
           {newsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-container" />)}
             </div>
           ) : news.length === 0 ? (
             <p className="text-sm text-muted-foreground">No recent articles tagged for this topic.</p>
@@ -132,7 +132,7 @@ export default function ResourceTopic() {
                 <li key={n.id}>
                   <LocalizedLink
                     to={`/news/${n.slug}`}
-                    className="block rounded-xl border border-border p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
+                    className="block rounded-container border border-border p-4 hover:bg-foreground/[0.03] no-underline text-inherit"
                   >
                     <p className="font-semibold text-sm line-clamp-2">{n.title}</p>
                     {n.publisher_name && (

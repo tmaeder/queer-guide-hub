@@ -94,9 +94,9 @@ export function MarketplaceCard({
 
   return (
     <CardHoverEffect>
-      <Card>
+      <Card className="group transition-colors duration-300 hover:border-foreground/40">
         <div className="relative">
-          <CardImage src={listingImage} alt={listing.title} fallbackIcon={Store} height={160} />
+          <CardImage src={listingImage} alt={listing.title} fallbackIcon={Store} height={160} className="grayscale-[0.15] group-hover:grayscale-0" />
           {listing.featured && (
             <div className="absolute top-2 left-2 z-10">
               <Badge>Featured</Badge>
@@ -245,7 +245,7 @@ export function MarketplaceCard({
                     rel={outbound.rel}
                     onClick={(e) => e.stopPropagation()}
                     data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                     aria-label={`${outbound.label} (opens in new tab)`}
                   >
                     {outbound.label}

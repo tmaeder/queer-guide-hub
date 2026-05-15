@@ -44,7 +44,7 @@ export default function Page() {
         <img
           src={page.cover_image_url}
           alt={page.cover_image_alt || page.title}
-          className="w-full max-h-[400px] object-cover rounded-md mb-6"
+          className="w-full max-h-[400px] object-cover rounded-element mb-6"
         />
       )}
 

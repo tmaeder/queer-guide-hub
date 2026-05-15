@@ -153,7 +153,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                     type="button"
                     onClick={() => onChange({ ...value, duration: d })}
                     aria-pressed={selected}
-                    className={`text-left text-sm font-medium px-3 py-2 rounded-md border transition-colors ${
+                    className={`text-left text-sm font-medium px-3 py-2 rounded-element border transition-colors ${
                       selected
                         ? 'bg-foreground text-background border-transparent'
                         : 'bg-background text-foreground border-border hover:border-foreground/40'

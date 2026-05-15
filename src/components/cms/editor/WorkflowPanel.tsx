@@ -215,7 +215,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {commentTarget && (
         <>
           <hr className="border-border" />
-          <div className="rounded-lg p-3 bg-gray-50 border border-gray-200">
+          <div className="rounded-element p-3 bg-gray-50 border border-gray-200">
             <p className="text-sm font-semibold mb-1">{commentTarget.label}</p>
             {commentTarget.description && (
               <p className="text-xs text-muted-foreground block mb-1.5">

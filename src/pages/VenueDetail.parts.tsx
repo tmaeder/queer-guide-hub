@@ -29,7 +29,6 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
-import { MagneticButton } from '@/components/motion';
 import { SocialSignalBadges } from '@/components/trips/SocialSignalBadges';
 import type { useVenueSocialSignals } from '@/hooks/useVenueSocialSignals';
 import type { Database } from '@/integrations/supabase/types';
@@ -122,7 +121,7 @@ export function VenueHero({
   return (
     <>
       {/* Hero Image */}
-      <ParallaxHero className="w-full h-40 md:h-48 rounded-2xl mb-6">
+      <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={venue.name}
@@ -219,13 +218,15 @@ export function VenueHero({
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onAddToTrip}
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            <Luggage style={{ width: 14, height: 14 }} aria-hidden="true" />
+            Add to trip
+          </button>
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
-          <MagneticButton>
-            <Button variant="outline" size="sm" onClick={onAddToTrip}>
-              <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
-              Add to Trip
-            </Button>
-          </MagneticButton>
           {isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}
@@ -544,7 +545,7 @@ export function VenuePhotos({ venue, t }: VenuePhotosProps) {
       {venue.images.map((imageUrl, index) => (
         <div
           key={index}
-          className="aspect-square rounded-lg overflow-hidden bg-muted"
+          className="aspect-square rounded-element overflow-hidden bg-muted"
         >
           <img
             src={imageUrl}

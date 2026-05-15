@@ -120,7 +120,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
 
   if (revisions.length === 0) {
     return (
-      <div className="border border-border rounded-md p-6 text-center">
+      <div className="border border-border rounded-element p-6 text-center">
         <History size={24} className="text-gray-400 mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">
           No revisions yet. Changes will be tracked once the content is saved.

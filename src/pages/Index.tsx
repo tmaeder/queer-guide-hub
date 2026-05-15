@@ -23,8 +23,6 @@ import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
 import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
 import { BackgroundDots } from '@/components/effects/BackgroundDots';
 import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
-import { MovingBorder } from '@/components/effects/MovingBorder';
-import { MagneticButton } from '@/components/motion';
 import { GrainOverlay } from '@/components/effects/GrainOverlay';
 import { Sparkles } from '@/components/effects/Sparkles';
 import { Beams } from '@/components/effects/Beams';
@@ -187,18 +185,22 @@ const Index = React.memo(() => {
           </p>
 
           <div className="reveal-up reveal-delay-2 flex gap-3 flex-wrap">
-            <MagneticButton>
-              <MovingBorder onClick={() => navigate('/venues')}>
-                <MapPin size={16} aria-hidden="true" />
-                {t('home.browseVenues', 'Browse Venues')}
-              </MovingBorder>
-            </MagneticButton>
-            <MagneticButton>
-              <MovingBorder onClick={() => navigate('/events')} duration={4}>
-                <Calendar size={16} aria-hidden="true" />
-                {t('home.viewEvents', 'View Events')}
-              </MovingBorder>
-            </MagneticButton>
+            <button
+              type="button"
+              onClick={() => navigate('/travel')}
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+            >
+              <MapPin size={16} aria-hidden="true" />
+              {t('home.planTrip', 'Plan a trip')}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/directory')}
+              className="inline-flex items-center gap-2 rounded-full border border-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors"
+            >
+              <Calendar size={16} aria-hidden="true" />
+              {t('home.browseDirectory', 'Browse the directory')}
+            </button>
           </div>
         </SpotlightEffect>
 
@@ -453,11 +455,11 @@ const Index = React.memo(() => {
               type="email"
               required
               placeholder="you@example.com"
-              className="flex-1 h-10 rounded-md border border-input bg-background px-3.5 text-sm focus:outline-none focus:border-foreground focus:ring-2 focus:ring-foreground/15 transition"
+              className="flex-1 h-10 rounded-element border border-input bg-background px-3.5 text-sm focus:outline-none focus:border-foreground focus:ring-2 focus:ring-foreground/15 transition"
             />
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-md bg-foreground text-background px-4 text-sm font-semibold hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-element bg-foreground text-background px-4 text-sm font-semibold hover:opacity-90"
             >
               {t('home.newsletter.cta', 'Subscribe')}
             </button>

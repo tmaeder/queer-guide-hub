@@ -32,4 +32,4 @@ export function isRealTagImage(url: string | null | undefined): boolean {
 
 // ─────────────── Shared hover-card class ───────────────
 export const hoverCardCls =
-  'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer bg-background text-left text-inherit w-full transition-all duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary border-0';
+  'flex items-center gap-3 px-4 py-3 rounded-element cursor-pointer bg-background text-left text-inherit w-full transition-all duration-150 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary border-0';

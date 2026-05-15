@@ -101,7 +101,7 @@ export function AffiliatePartnersManager() {
   if (fetchError) {
     return (
       <div className="p-6 max-w-[1000px] mx-auto">
-        <div className="rounded-md border bg-card p-8 text-center">
+        <div className="rounded-element border bg-card p-8 text-center">
           <AlertCircle style={{ width: 32, height: 32, color: '#ef4444', margin: '0 auto 12px' }} />
           <h6 className="text-lg font-medium mb-1">Failed to load affiliate partners</h6>
           <p className="text-muted-foreground mb-4">{fetchError}</p>
@@ -125,13 +125,13 @@ export function AffiliatePartnersManager() {
       </div>
 
       {partners.length === 0 ? (
-        <div className="rounded-md border bg-card p-8 text-center">
+        <div className="rounded-element border bg-card p-8 text-center">
           <p className="text-muted-foreground">No affiliate partners configured yet.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
           {partners.map(p => (
-            <div key={p.id} className="rounded-md border bg-card p-5 flex items-center gap-4">
+            <div key={p.id} className="rounded-element border bg-card p-5 flex items-center gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base font-semibold">{p.partner_name}</span>

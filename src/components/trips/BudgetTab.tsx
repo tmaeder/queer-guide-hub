@@ -121,9 +121,9 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
   if (items.length === 0) {
     return (
       <>
-        <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-xl">
+        <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-container">
           <div
-            className="w-14 h-14 rounded-lg flex items-center justify-center mx-auto mb-1.5"
+            className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-1.5"
             style={{ backgroundColor: `${brand}1a` }}
           >
             <Wallet size={26} style={{ color: brand }} />

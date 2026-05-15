@@ -81,7 +81,7 @@ function formatMs(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-const cardCls = 'border border-border rounded-lg bg-background p-5';
+const cardCls = 'border border-border rounded-element bg-background p-5';
 
 // ── Pipeline Health Card ────────────────────────────────────────────────
 
@@ -95,7 +95,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
     <div className={cardCls}>
       <div className="flex items-center gap-2 mb-4">
         <div
-          className="w-7 h-7 rounded-md flex items-center justify-center"
+          className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <Activity size={15} style={{ color: 'hsl(var(--foreground))' }} />
@@ -167,7 +167,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
 function MetricBox({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div
-      className="p-3 rounded-md text-center"
+      className="p-3 rounded-element text-center"
       style={{ background: 'hsl(var(--muted))' }}
     >
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
@@ -185,7 +185,7 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
     <div className={cardCls}>
       <div className="flex items-center gap-2 mb-4">
         <div
-          className="w-7 h-7 rounded-md flex items-center justify-center"
+          className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <BarChart3 size={15} style={{ color: 'hsl(var(--foreground))' }} />
@@ -298,7 +298,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
     <div className={cardCls}>
       <div className="flex items-center gap-2 mb-4">
         <div
-          className="w-7 h-7 rounded-md flex items-center justify-center"
+          className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <AlertTriangle size={15} style={{ color: 'hsl(var(--foreground))' }} />
@@ -316,7 +316,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
 
       {needsAttention.total === 0 ? (
         <div
-          className="flex items-center gap-2 p-4 rounded-md"
+          className="flex items-center gap-2 p-4 rounded-element"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
@@ -333,7 +333,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
             return (
               <div
                 key={type}
-                className="p-3 rounded-md text-center"
+                className="p-3 rounded-element text-center"
                 style={{
                   background:
                     count > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
@@ -384,7 +384,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
     <div className={cardCls}>
       <div className="flex items-center gap-2 mb-4">
         <div
-          className="w-7 h-7 rounded-md flex items-center justify-center"
+          className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <Inbox size={15} style={{ color: 'hsl(var(--foreground))' }} />
@@ -403,7 +403,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
 
       {items.length === 0 ? (
         <div
-          className="flex items-center gap-2 p-4 rounded-md"
+          className="flex items-center gap-2 p-4 rounded-element"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
@@ -526,7 +526,7 @@ function FailedEnrichmentsCard() {
   const retry = useRetryEnrichment();
 
   if (isLoading) {
-    return <Skeleton className="rounded-lg" style={{ height: 200 }} />;
+    return <Skeleton className="rounded-element" style={{ height: 200 }} />;
   }
 
   const items = failures ?? [];
@@ -535,7 +535,7 @@ function FailedEnrichmentsCard() {
     <div className={cardCls}>
       <div className="flex items-center gap-2 mb-4">
         <div
-          className="w-7 h-7 rounded-md flex items-center justify-center"
+          className="w-7 h-7 rounded-element flex items-center justify-center"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <XCircle size={15} style={{ color: 'hsl(var(--foreground))' }} />
@@ -554,7 +554,7 @@ function FailedEnrichmentsCard() {
 
       {items.length === 0 ? (
         <div
-          className="flex items-center gap-2 p-4 rounded-md"
+          className="flex items-center gap-2 p-4 rounded-element"
           style={{ background: 'hsl(var(--muted))' }}
         >
           <CheckCircle2 size={16} style={{ color: 'hsl(var(--foreground))' }} />
@@ -648,7 +648,7 @@ function DashboardSkeleton() {
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="rounded-lg" style={{ height: 200 }} />
+          <Skeleton key={i} className="rounded-element" style={{ height: 200 }} />
         ))}
       </div>
     </div>

@@ -79,7 +79,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
           {images.map((url, index) => (
             <div
               key={`${url}-${index}`}
-              className="relative group rounded-lg border border-input overflow-hidden bg-muted/30"
+              className="relative group rounded-element border border-input overflow-hidden bg-muted/30"
             >
               {failedImages.has(url) ? (
                 <div className="w-full h-24 flex items-center justify-center text-muted-foreground">
@@ -143,7 +143,7 @@ export function ImagesField({ field, value, onChange, error, disabled }: FieldPr
 
       {/* Empty state */}
       {images.length === 0 && !showInput && (
-        <div className="rounded-lg border border-dashed border-input bg-muted/20 p-6 flex flex-col items-center justify-center text-muted-foreground">
+        <div className="rounded-element border border-dashed border-input bg-muted/20 p-6 flex flex-col items-center justify-center text-muted-foreground">
           <ImageIcon className="w-8 h-8 mb-2 opacity-40" />
           <span className="text-xs mb-2">No images added</span>
           {!disabled && (

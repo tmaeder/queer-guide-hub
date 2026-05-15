@@ -152,7 +152,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
   };
 
   return (
-    <div className="border border-border rounded-md bg-background">
+    <div className="border border-border rounded-element bg-background">
       {/* Header */}
       <div className="flex flex-row items-center justify-between px-4 py-3 border-b border-border">
         <div className="flex flex-row items-center gap-1">
@@ -225,10 +225,10 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
                     <img
                       src={getThumbnailUrl(media.storage_path, media.external_source)}
                       alt={media.alt_text?.en || media.filename}
-                      className="w-12 h-12 object-cover rounded-sm flex-shrink-0"
+                      className="w-12 h-12 object-cover rounded-badge flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-sm flex-shrink-0">
+                    <div className="w-12 h-12 flex items-center justify-center bg-gray-200 rounded-badge flex-shrink-0">
                       {getMimeIcon(media.mime_type)}
                     </div>
                   )}

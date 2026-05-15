@@ -47,7 +47,7 @@ export function CardStack({
       {cards.map((card, i) => (
         <motion.div
           key={card.id}
-          className="absolute inset-0 rounded-2xl bg-card border border-border/60 shadow-[var(--shadow-aceternity)] p-6 flex flex-col justify-between"
+          className="absolute inset-0 rounded-container bg-card border border-border/60 shadow-[var(--shadow-aceternity)] p-6 flex flex-col justify-between"
           style={{ transformOrigin: 'top center' }}
           animate={{
             top: i * -offset,

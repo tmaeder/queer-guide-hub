@@ -209,7 +209,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {remainingImages.map((image, index) => (
-                <div key={index} className="bg-muted rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                <div key={index} className="bg-muted rounded-element overflow-hidden" style={{ aspectRatio: '16/9' }}>
                   <img
                     src={image}
                     alt={`${listing.title} - Image ${index + 2}`}

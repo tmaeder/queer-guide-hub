@@ -188,7 +188,7 @@ export const ScrapeSourcesDashboard = () => {
       )}
 
       {/* Sources table */}
-      <div className="border border-border rounded-md mb-8 overflow-x-auto">
+      <div className="border border-border rounded-element mb-8 overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -311,7 +311,7 @@ export const ScrapeSourcesDashboard = () => {
 
       {/* Recent runs */}
       <h6 className="text-lg font-semibold mb-4">Recent Scrape Runs</h6>
-      <div className="border border-border rounded-md overflow-x-auto">
+      <div className="border border-border rounded-element overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

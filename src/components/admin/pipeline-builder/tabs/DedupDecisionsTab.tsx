@@ -98,7 +98,7 @@ export default function DedupDecisionsTab() {
       </div>
 
       {/* Table */}
-      <div className="border border-border rounded-md bg-background overflow-hidden">
+      <div className="border border-border rounded-element bg-background overflow-hidden">
         {isLoading ? (
           <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
         ) : rows.length === 0 ? (

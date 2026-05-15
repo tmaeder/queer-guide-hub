@@ -73,7 +73,7 @@ function IconBadge({
 }) {
   return (
     <div
-      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+      className="w-7 h-7 rounded-element flex items-center justify-center flex-shrink-0 transition-colors"
       style={{ backgroundColor: color + '18', color: color }}
     >
       <Icon size={size} />
@@ -95,7 +95,7 @@ function NavItem({ isActive, accentColor, onClick, className, children }: NavIte
       type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center w-full text-left rounded-lg mx-1 mb-0.5 py-1.5 px-3 relative transition-all hover:translate-x-0.5',
+        'flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-3 relative transition-all hover:translate-x-0.5',
         className,
       )}
       style={{
@@ -241,7 +241,7 @@ export function CMSSidebar({
           <button
             type="button"
             onClick={() => setContentOpen(!contentOpen)}
-            className="flex items-center w-full text-left rounded-lg mx-1 mb-0.5 py-1.5 px-3 transition-all hover:translate-x-0.5"
+            className="flex items-center w-full text-left rounded-element mx-1 mb-0.5 py-1.5 px-3 transition-all hover:translate-x-0.5"
           >
             <span className="min-w-9 mr-2 flex">
               <span
@@ -452,7 +452,7 @@ export function CMSSidebar({
               <button
                 type="button"
                 onClick={() => supabase.auth.signOut()}
-                className="p-1 rounded-md border-0 bg-transparent text-muted-foreground/60 cursor-pointer flex items-center justify-center flex-shrink-0 transition-all hover:bg-muted hover:text-muted-foreground"
+                className="p-1 rounded-element border-0 bg-transparent text-muted-foreground/60 cursor-pointer flex items-center justify-center flex-shrink-0 transition-all hover:bg-muted hover:text-muted-foreground"
               >
                 <LogOut size={14} />
               </button>

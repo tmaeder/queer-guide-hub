@@ -160,13 +160,14 @@ export function VenueCard({
           style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
         >
           <CardHoverEffect>
-          <Card hoverable style={{ overflow: 'hidden' }}>
-            <div className="relative">
+          <Card hoverable className="group" style={{ overflow: 'hidden' }}>
+            <div className="relative overflow-hidden">
               <CardImage
                 src={venueImage}
                 alt={venue.name}
                 fallbackIcon={MapPin}
                 height={160}
+                className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
               />
 
               {/* Category label — top left */}
@@ -235,7 +236,7 @@ export function VenueCard({
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="absolute bottom-2 right-2 w-7 h-7 rounded-md bg-background object-contain shadow p-0.5"
+                  className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain shadow p-0.5"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}

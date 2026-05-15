@@ -322,7 +322,7 @@ export function ContentListTable({
   const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-background">
+    <div className="overflow-hidden rounded-element border border-border bg-background">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

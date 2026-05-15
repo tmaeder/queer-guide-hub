@@ -517,7 +517,7 @@ export default function EmailTemplates() {
 
                   <div className="flex flex-col gap-2">
                     <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Subject Line</Label>
-                    <div className="rounded-md bg-muted" style={{ padding: 12 }}>
+                    <div className="rounded-element bg-muted" style={{ padding: 12 }}>
                       <code style={{ fontSize: '0.875rem' }}>{selectedTemplate.subject}</code>
                     </div>
                   </div>
@@ -572,7 +572,7 @@ export default function EmailTemplates() {
                         </TabsList>
 
                         <TabsContent value="html-preview">
-                          <div className="border border-border rounded-md p-4 bg-background">
+                          <div className="border border-border rounded-element p-4 bg-background">
                             <div className="border-b border-border pb-2 mb-4">
                               <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
                             </div>
@@ -588,7 +588,7 @@ export default function EmailTemplates() {
                         </TabsContent>
 
                         <TabsContent value="html-code">
-                          <div className="rounded-md bg-muted p-4">
+                          <div className="rounded-element bg-muted p-4">
                             <pre style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
                               {generatePreview(selectedTemplate, previewData).htmlContent}
                             </pre>
@@ -597,7 +597,7 @@ export default function EmailTemplates() {
 
                         {selectedTemplate.text_content && (
                           <TabsContent value="text-preview">
-                            <div className="rounded-md bg-muted p-4">
+                            <div className="rounded-element bg-muted p-4">
                               <div className="border-b border-border pb-2 mb-4">
                                 <strong>Subject:</strong> {generatePreview(selectedTemplate, previewData).subject}
                               </div>

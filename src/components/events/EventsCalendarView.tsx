@@ -108,7 +108,7 @@ export const EventsCalendarView = ({
           <Card>
             <CardContent>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-muted rounded-lg relative">
+                <div className="p-2 bg-muted rounded-element relative">
                   <CalendarIcon className="h-5 w-5" />
                 </div>
                 <div>
@@ -140,7 +140,7 @@ export const EventsCalendarView = ({
           <Card>
             <CardContent>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-muted relative">
+                <div className="p-2 rounded-element bg-muted relative">
                   <Star className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
@@ -163,7 +163,7 @@ export const EventsCalendarView = ({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>
-                  <div className="p-2 bg-muted rounded-lg relative">
+                  <div className="p-2 bg-muted rounded-element relative">
                     <CalendarIcon className="h-5 w-5" />
                   </div>
                   {format(currentMonth, 'MMMM yyyy')}
@@ -246,7 +246,7 @@ export const EventsCalendarView = ({
                   <div className="flex flex-col gap-4">
                     {eventsForSelectedDate.map((event) => (
                       <div key={event.id} className="relative">
-                        <div className="p-4 transition-all border-2 border-transparent rounded-lg hover:border-primary hover:shadow-lg hover:scale-[1.02] bg-card">
+                        <div className="p-4 transition-all border-2 border-transparent rounded-element hover:border-primary hover:shadow-lg hover:scale-[1.02] bg-card">
                           {/* Event Header */}
                           <div className="flex items-start justify-between gap-3 mb-3">
                             <p

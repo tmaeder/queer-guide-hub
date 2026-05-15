@@ -8,9 +8,15 @@ import { useEntityImageAssets } from "@/hooks/useEntityImageAssets";
 import { useMeta } from "@/hooks/useMeta";
 import { NewsCard } from "@/components/news/NewsCard";
 import { NewsFilters } from "@/components/news/NewsFilters";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { SpotlightV2 } from "@/components/effects/SpotlightV2";
-import { ColourfulText } from "@/components/effects/ColourfulText";
+import { PageHero, spansForPreset } from "@/components/discovery";
+
+const NEWS_SPAN_CLASS: Record<string, string> = {
+  sm: 'col-span-12 md:col-span-6 xl:col-span-4',
+  md: 'col-span-12 md:col-span-6 xl:col-span-4',
+  lg: 'col-span-12 md:col-span-6 xl:col-span-6',
+  wide: 'col-span-12 xl:col-span-8',
+  tall: 'col-span-12 md:col-span-6 xl:col-span-4 row-span-2',
+};
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -453,24 +459,19 @@ export default function News() {
 
   return (
     <div className="min-h-screen relative">
-      <SpotlightV2 anchor="top-center" intensity={0.12} />
+      <PageHero
+        eyebrow={t('pages.news.eyebrow', 'Latest')}
+        title={t('pages.news.title', 'News.')}
+        lede={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
+        size="md"
+      >
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5"><Newspaper size={16} />{articles.length} articles</span>
+          <span className="flex items-center gap-1.5"><TrendingUp size={16} />{sources.length} sources</span>
+        </div>
+      </PageHero>
       {/* pb-24 reserves space for the fixed bottom-right Feedback FAB so it doesn't overlap the last row of cards / pagination. */}
-      <div className="container mx-auto py-12 md:py-20 px-4 pb-24 relative">
-        <PageHeader
-          title={<ColourfulText text={t('pages.news.title', 'News')} />}
-          subtitle={t('pages.news.subtitle', 'Stay informed with the latest news and stories from the LGBTQ+ community worldwide')}
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Newspaper size={16} />
-              <p className="text-sm text-muted-foreground">{articles.length} articles</p>
-            </div>
-            <div className="flex items-center gap-1">
-              <TrendingUp size={16} />
-              <p className="text-sm text-muted-foreground">{sources.length} sources</p>
-            </div>
-          </div>
-        </PageHeader>
+      <div className="container mx-auto py-8 md:py-12 px-4 pb-24 relative">
 
         {/* Category Tabs (sticky) */}
         {categories.length > 0 && (
@@ -485,7 +486,7 @@ export default function News() {
               role="tab"
               aria-current={activeCategory === null ? 'true' : undefined}
               aria-selected={activeCategory === null}
-              className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              className={`whitespace-nowrap rounded-element border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 activeCategory === null
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-transparent text-foreground border-border hover:bg-muted'
@@ -504,7 +505,7 @@ export default function News() {
                   role="tab"
                   aria-current={selected ? 'true' : undefined}
                   aria-selected={selected}
-                  className={`whitespace-nowrap rounded-md border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  className={`whitespace-nowrap rounded-element border text-xs font-medium px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     selected
                       ? 'border-transparent'
                       : 'bg-transparent text-foreground border-border hover:bg-muted'
@@ -521,7 +522,7 @@ export default function News() {
 
         {/* Featured Section */}
         {showFeatured && (
-          <section className="border border-border rounded-lg p-6 mb-6 bg-background" aria-labelledby="featured-stories-heading">
+          <section className="border border-border rounded-container p-6 mb-6 bg-background" aria-labelledby="featured-stories-heading">
             <h2
               id="featured-stories-heading"
               className="font-bold tracking-widest mb-4 text-muted-foreground uppercase text-xs"
@@ -564,7 +565,7 @@ export default function News() {
         )}
 
         {/* Quick Search & Controls */}
-        <div className="border border-border rounded-lg p-4 mb-6 bg-background">
+        <div className="border border-border rounded-element p-4 mb-6 bg-background">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1 max-w-md">
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
@@ -590,7 +591,7 @@ export default function News() {
               </Select>
 
               {/* View Mode Buttons */}
-              <div className="flex items-center rounded-lg p-1">
+              <div className="flex items-center rounded-element p-1">
                 <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view" title="Grid">
                   <Grid3X3 size={16} />
                 </Button>
@@ -609,7 +610,7 @@ export default function News() {
               </div>
 
               {/* Density toggle */}
-              <div className="hidden md:flex items-center rounded-lg p-1 border border-border" role="group" aria-label="Card density">
+              <div className="hidden md:flex items-center rounded-element p-1 border border-border" role="group" aria-label="Card density">
                 <Button
                   variant={density === 'comfortable' ? 'default' : 'ghost'}
                   size="sm"
@@ -666,7 +667,7 @@ export default function News() {
 
         {/* Active Filters Summary */}
         {hasActiveFilters && sortedArticles.length > 0 && (
-          <div className="flex items-center justify-between mb-6 p-4 border border-border rounded-lg bg-background">
+          <div className="flex items-center justify-between mb-6 p-4 border border-border rounded-element bg-background">
             <div className="flex items-center gap-2 flex-wrap">
               <Filter size={16} />
               <p className="text-sm text-muted-foreground">{t('pages.news.activeFilters', 'Active filters')}</p>
@@ -779,7 +780,7 @@ export default function News() {
                 {/* Headlines View */}
                 {viewMode === 'headlines' && (
                   <motion.div key="headlines" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                  <div className="border border-border rounded-lg overflow-hidden">
+                  <div className="border border-border rounded-container overflow-hidden">
                     {paginatedArticles.map((article) => (
                       <NewsCard
                         key={article.id}
@@ -874,10 +875,17 @@ export default function News() {
                 {/* Grid / List View */}
                 {(viewMode === 'grid' || viewMode === 'list') && (
                   <motion.div key={viewMode} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                  <StaggerGrid className={viewMode === 'grid'
-                    ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
-                    : 'flex flex-col gap-3'
-                  }>
+                  <StaggerGrid
+                    className={viewMode === 'grid'
+                      ? 'grid grid-cols-12 gap-4 md:gap-6'
+                      : 'flex flex-col gap-3'
+                    }
+                    itemClassName={
+                      viewMode === 'grid'
+                        ? (i: number) => NEWS_SPAN_CLASS[spansForPreset('mosaic', i, paginatedArticles.length)]
+                        : undefined
+                    }
+                  >
                     {paginatedArticles.map((article) => (
                       <NewsCard
                         key={article.id}

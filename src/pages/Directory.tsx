@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Globe, MapPin, Building2, Users, Map, Crown } from "lucide-react";
+import { PageHero } from "@/components/discovery";
 
 const ExploreMap = lazy(() => import("@/components/map/ExploreMap"));
 
@@ -181,51 +182,49 @@ export default function Directory() {
       style={{ opacity: isTransitioning ? 0.5 : 1 }}
     >
       {/* Hero */}
-      <div className="relative overflow-hidden">
-        <div className="container mx-auto px-3 py-6 lg:py-10">
-          <div className="mb-4">
-            {viewMode !== "overview" && (
-              <div>
-                <Button
-                  variant="ghost"
-                  onClick={handleBack}
-                  className="mb-2 transition-all duration-200"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  {t('directory.back')}
-                </Button>
-              </div>
-            )}
-
+      {viewMode === "overview" ? (
+        <PageHero
+          eyebrow={t('directory.eyebrow', 'Atlas')}
+          title={t('directory.title', 'Directory.')}
+          lede={t('directory.lede', 'Countries, cities, and regions — the full atlas of queer life around the world.')}
+          primaryCta={{ label: t('directory.planTrip', 'Plan a trip'), href: '/travel' }}
+          size="md"
+        />
+      ) : (
+        <div className="relative overflow-hidden border-b border-border">
+          <div className="container mx-auto px-3 py-6 lg:py-10">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="mb-2 transition-all duration-200"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('directory.back')}
+            </Button>
             <div className="flex flex-col gap-1.5">
-              <h3 className="font-bold text-4xl lg:text-5xl tracking-tight">
-                {viewMode === "overview" && t('directory.title')}
-                {viewMode === "country" && selectedCountry && (
-                  <>Explore {selectedCountry.name}</>
-                )}
-                {viewMode === "city" && selectedCity && (
-                  <>Discover {selectedCity.name}</>
-                )}
+              <h1 className="font-extrabold text-4xl lg:text-5xl tracking-tight">
+                {viewMode === "country" && selectedCountry && <>Explore {selectedCountry.name}</>}
+                {viewMode === "city" && selectedCity && <>Discover {selectedCity.name}</>}
                 {viewMode === "search" && "Search Results"}
-              </h3>
-
+              </h1>
               <p className="text-lg text-muted-foreground max-w-[42rem]">
-                {viewMode === "overview" && "Discover amazing places around the world. Find countries, cities, and locations that match your interests."}
-                {viewMode === "country" && selectedCountry && `Explore cities and regions in ${selectedCountry.name}. Find the perfect destination for your next adventure.`}
-                {viewMode === "city" && selectedCity && `Everything you need to know about ${selectedCity.name}. Weather, demographics, and local insights.`}
-                {viewMode === "search" && "Find exactly what you're looking for with our powerful search and filtering tools."}
+                {viewMode === "country" && selectedCountry && `Cities and regions in ${selectedCountry.name}.`}
+                {viewMode === "city" && selectedCity && `Everything you need to know about ${selectedCity.name}.`}
+                {viewMode === "search" && "Find exactly what you're looking for."}
               </p>
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="mb-4">
-            <DirectorySearch
-              onSearch={handleSearch}
-              onFiltersChange={handleFiltersChange}
-              onNearMeSearch={handleNearMeSearch}
-              placeholder="Search countries, cities, or regions..."
-            />
-          </div>
+      <div className="container mx-auto px-3 py-6 lg:py-8">
+        <div className="mb-4">
+          <DirectorySearch
+            onSearch={handleSearch}
+            onFiltersChange={handleFiltersChange}
+            onNearMeSearch={handleNearMeSearch}
+            placeholder="Search countries, cities, or regions..."
+          />
         </div>
       </div>
 
@@ -235,7 +234,7 @@ export default function Directory() {
             <nav className="flex items-center gap-1 text-sm">
               <button
                 onClick={() => setViewMode("overview")}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-1 py-0.5 rounded-md cursor-pointer border-0 bg-transparent"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-1 py-0.5 rounded-badge cursor-pointer border-0 bg-transparent"
               >
                 Directory
               </button>
@@ -244,7 +243,7 @@ export default function Directory() {
                   <span className="text-muted-foreground/50">/</span>
                   <button
                     onClick={() => setViewMode("country")}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-1 py-0.5 rounded-md cursor-pointer border-0 bg-transparent"
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors px-1 py-0.5 rounded-badge cursor-pointer border-0 bg-transparent"
                   >
                     {selectedCountry.name}
                   </button>
@@ -305,7 +304,7 @@ export default function Directory() {
                   {loading ? (
                     <div className={GRID_COLS}>
                       {Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className="h-32 bg-muted rounded-lg animate-pulse" />
+                        <div key={i} className="h-32 bg-muted rounded-element animate-pulse" />
                       ))}
                     </div>
                   ) : continents.length > 0 ? (
@@ -318,9 +317,9 @@ export default function Directory() {
 
                       return (
                         <div key={continent.id} className="flex flex-col gap-3">
-                          <div className="flex items-center gap-2 p-2 rounded-lg bg-muted">
+                          <div className="flex items-center gap-2 p-2 rounded-element bg-muted">
                             <div className="flex items-center gap-1.5">
-                              <div className="p-1 rounded-lg bg-muted">
+                              <div className="p-1 rounded-element bg-muted">
                                 <Globe className="w-5 h-5" style={{ color: 'hsl(var(--foreground))' }} />
                               </div>
                               <div>
@@ -386,9 +385,9 @@ export default function Directory() {
 
                     return (
                       <div key={continent.id} className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2 p-2 rounded-lg bg-muted">
+                        <div className="flex items-center gap-2 p-2 rounded-element bg-muted">
                           <div className="flex items-center gap-1.5">
-                            <div className="p-1 rounded-lg bg-muted">
+                            <div className="p-1 rounded-element bg-muted">
                               <Globe className="w-5 h-5" style={{ color: 'hsl(var(--foreground))' }} />
                             </div>
                             <div>
@@ -408,7 +407,7 @@ export default function Directory() {
 
                             return (
                               <div key={country.id} className="flex flex-col gap-2">
-                                <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-muted">
+                                <div className="flex items-center gap-1.5 p-1.5 rounded-element bg-muted">
                                   <MapPin className="w-4 h-4 text-muted-foreground" />
                                   <p className="font-medium">{country.name}</p>
                                   <Badge variant="outline" className="text-xs">
@@ -448,7 +447,7 @@ export default function Directory() {
                   </div>
                 </div>
 
-                <div className="rounded-xl overflow-hidden">
+                <div className="rounded-container overflow-hidden">
                   <Suspense
                     fallback={
                       <div className="flex items-center justify-center h-96 bg-muted">
@@ -543,19 +542,19 @@ export default function Directory() {
 
                 <div className="flex items-center justify-center gap-3 flex-wrap text-sm">
                   {selectedCity?.region_name && (
-                    <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+                    <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">{selectedCity.region_name}</span>
                     </div>
                   )}
                   {selectedCity?.population && (
-                    <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+                    <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">{selectedCity.population.toLocaleString()} people</span>
                     </div>
                   )}
                   {selectedCity?.timezone && (
-                    <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-lg">
+                    <div className="flex items-center gap-1 px-1.5 py-1 bg-muted rounded-element">
                       <Globe className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">{selectedCity.timezone}</span>
                     </div>

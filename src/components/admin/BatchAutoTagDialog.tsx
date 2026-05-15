@@ -137,7 +137,7 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
             </div>
           </div>
 
-          <div className="bg-muted rounded-sm p-3">
+          <div className="bg-muted rounded-badge p-3">
             <span className="text-xs text-muted-foreground">
               <strong>Estimated cost:</strong> ~${(batchLimit * 0.0003).toFixed(4)} USD
               ({batchLimit} items × $0.0003/item with GPT-4o-mini)
@@ -150,7 +150,7 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <p className="text-sm">Processing…</p>
               </div>
-              <div className="h-1 w-full bg-muted rounded-sm overflow-hidden">
+              <div className="h-1 w-full bg-muted rounded-badge overflow-hidden">
                 <div className="h-full bg-primary animate-pulse" style={{ width: '30%' }} />
               </div>
               <span className="text-xs text-muted-foreground">
@@ -160,7 +160,7 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
           )}
 
           {result && !loading && (
-            <div className="border border-border rounded-md p-4 flex flex-col gap-3">
+            <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" style={{ color: '#16a34a' }} />
                 <p className="text-sm font-semibold">Batch Complete</p>

@@ -417,7 +417,7 @@ export default function Personalities() {
           <div
             role="tablist"
             aria-label="View mode"
-            className="inline-flex border border-border rounded-md overflow-hidden"
+            className="inline-flex border border-border rounded-element overflow-hidden"
           >
             <button
               type="button"

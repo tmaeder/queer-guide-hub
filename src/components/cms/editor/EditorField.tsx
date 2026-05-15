@@ -26,7 +26,7 @@ export function EditorField({ field, value, onChange }: EditorFieldProps) {
           {label}
           <Badge variant="secondary">Read-only</Badge>
         </Label>
-        <div className="px-3 py-2 bg-accent rounded-md text-sm">
+        <div className="px-3 py-2 bg-accent rounded-element text-sm">
           {value != null ? String(value) : 'N/A'}
         </div>
       </div>

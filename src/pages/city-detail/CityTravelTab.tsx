@@ -47,7 +47,7 @@ export function CityTravelTab({
           </CardHeader>
           <CardContent>
             {city.major_airport_code && (
-              <div className="p-3 rounded-lg bg-muted mb-4">
+              <div className="p-3 rounded-element bg-muted mb-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Plane style={{ height: 16, width: 16 }} />
                   <span className="text-sm font-medium">Major Airport</span>
@@ -56,7 +56,7 @@ export function CityTravelTab({
               </div>
             )}
             {!hasAirport && nearestAirport && (
-              <div className="p-3 rounded-lg bg-muted mb-4">
+              <div className="p-3 rounded-element bg-muted mb-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Plane style={{ height: 16, width: 16 }} />
                   <span className="text-sm font-medium">Nearest Airport</span>
@@ -94,7 +94,7 @@ export function CityTravelTab({
             {city.transportation_info && Object.keys(city.transportation_info).length > 0 ? (
               <div className="flex flex-col gap-3">
                 {Object.entries(city.transportation_info).map(([key, value]) => (
-                  <div key={key} className="p-3 rounded-lg bg-muted">
+                  <div key={key} className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
                       <Bus style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <span className="text-sm font-medium capitalize">

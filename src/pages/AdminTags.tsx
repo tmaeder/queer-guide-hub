@@ -457,7 +457,7 @@ export default function AdminTags() {
                 const tag = tags.find((t) => t.id === tagId);
                 if (!tag) return null;
                 return (
-                  <div key={tagId} className="border border-border rounded-lg p-4">
+                  <div key={tagId} className="border border-border rounded-element p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-medium">{tag.name}</span>
                       <Badge variant="outline">{tag.category}</Badge>

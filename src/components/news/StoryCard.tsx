@@ -23,9 +23,10 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
     <LocalizedLink
       to={`/news/story/${story.slug}`}
       aria-label={title}
-      className="flex flex-col gap-3 rounded-lg border border-border bg-background overflow-hidden hover:bg-muted/40 transition-colors no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex flex-col gap-3 rounded-element border border-border bg-background overflow-hidden hover:bg-muted/40 transition-colors no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex flex-col gap-3 rounded-element border border-border bg-background overflow-hidden transition-colors duration-300 hover:border-foreground/40 no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <img
           loading="lazy"
           decoding="async"
@@ -35,6 +36,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           width={400}
           height={200}
           style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}
+          className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
           onError={() => setImgFailed(true)}
         />
         <Badge

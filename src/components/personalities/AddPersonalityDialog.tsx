@@ -619,7 +619,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         <img
                           src={formData.image_url}
                           alt="Preview"
-                          className="w-32 h-32 object-cover rounded-md border border-border"
+                          className="w-32 h-32 object-cover rounded-element border border-border"
                         />
                         <Button
                           type="button"
@@ -631,7 +631,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
                         </Button>
                       </div>
                     ) : (
-                      <div className="border-2 border-dashed border-muted-foreground rounded-md p-6 text-center">
+                      <div className="border-2 border-dashed border-muted-foreground rounded-element p-6 text-center">
                         <ImageIcon />
                         <p className="text-sm text-muted-foreground">No image uploaded</p>
                       </div>
@@ -770,7 +770,7 @@ export function AddPersonalityDialog({ onSuccess }: AddPersonalityDialogProps) {
               {formData.achievements.length > 0 && (
                 <div className="flex flex-col gap-2">
                   {formData.achievements.map((achievement, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 bg-accent rounded-md">
+                    <div key={index} className="flex items-center gap-2 p-2 bg-accent rounded-element">
                       <span className="flex-1 text-sm">{achievement}</span>
                       <Button
                         type="button"

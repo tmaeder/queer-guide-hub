@@ -173,7 +173,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                   <button
                     type="button"
                     aria-expanded={isOpen}
-                    className="w-full rounded-lg mx-1.5 mb-px py-1 px-2 inline-flex items-center gap-2 hover:translate-x-0.5 transition-transform"
+                    className="w-full rounded-element mx-1.5 mb-px py-1 px-2 inline-flex items-center gap-2 hover:translate-x-0.5 transition-transform"
                     style={{ marginTop: sectionIdx === 0 ? 4 : 0, width: 'calc(100% - 12px)' }}
                   >
                     <span className={`flex items-center transition-transform ${isOpen ? '' : '-rotate-90'}`}>
@@ -200,7 +200,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                           key={item.id}
                           type="button"
                           onClick={() => navigate(item.route)}
-                          className={`rounded-lg mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 ${active ? 'bg-muted font-semibold border-l-2 border-foreground pl-3' : 'pl-3.5 border-l-2 border-transparent'}`}
+                          className={`rounded-element mx-1.5 mb-px py-1.5 inline-flex items-center gap-2 transition-all hover:translate-x-0.5 ${active ? 'bg-muted font-semibold border-l-2 border-foreground pl-3' : 'pl-3.5 border-l-2 border-transparent'}`}
                         >
                           <span className="min-w-9 flex">
                             <IconBadge icon={item.icon} size={15} />
@@ -246,7 +246,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
             <button
               type="button"
               onClick={() => supabase.auth.signOut()}
-              className="p-1 rounded-md text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
+              className="p-1 rounded-element text-muted-foreground/70 hover:bg-muted hover:text-muted-foreground transition-colors flex items-center justify-center flex-shrink-0"
             >
               <LogOut size={14} />
             </button>

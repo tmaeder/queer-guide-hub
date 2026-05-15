@@ -33,7 +33,7 @@ export function StickyLetterBar({ letter, onChange, stickyTop = 64 }: Props) {
               onClick={() => onChange(value)}
               aria-pressed={active}
               aria-label={value ? `Filter by ${label}` : 'Show all letters'}
-              className={`min-w-9 h-9 px-2 inline-flex items-center justify-center rounded-md border-none cursor-pointer text-sm transition-all ${
+              className={`min-w-9 h-9 px-2 inline-flex items-center justify-center rounded-element border-none cursor-pointer text-sm transition-all ${
                 active
                   ? 'bg-primary text-primary-foreground font-bold hover:bg-primary'
                   : 'bg-transparent text-foreground font-medium hover:bg-muted/40'

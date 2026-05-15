@@ -363,14 +363,14 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
 
   if (places.length === 0 && cityIds.length === 0) {
     return (
-      <div className="h-full w-full min-h-[300px] rounded-lg overflow-hidden flex items-center justify-center bg-muted">
+      <div className="h-full w-full min-h-[300px] rounded-element overflow-hidden flex items-center justify-center bg-muted">
         <p className="text-muted-foreground">{t('trips.map.emptyNoPlaces')}</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full rounded-lg overflow-hidden relative h-[calc(100dvh-360px)] md:h-[calc(100dvh-320px)] min-h-[360px] md:min-h-[520px]">
+    <div className="w-full rounded-element overflow-hidden relative h-[calc(100dvh-360px)] md:h-[calc(100dvh-320px)] min-h-[360px] md:min-h-[520px]">
       {/* Day filter + layer toggle chips */}
       <div
         className="absolute top-3 left-3 right-24 z-[2] flex gap-1.5 overflow-x-auto pb-1"

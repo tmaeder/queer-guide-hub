@@ -208,7 +208,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
           <CardDescription>Visitor locations worldwide</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-96 bg-muted rounded-md flex items-center justify-center animate-pulse">
+          <div className="h-96 bg-muted rounded-element flex items-center justify-center animate-pulse">
             <p className="text-muted-foreground">Loading map...</p>
           </div>
         </CardContent>
@@ -230,7 +230,7 @@ export const UmamiMap = ({ countryData, loading = false }: UmamiMapProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div ref={mapContainer} className="h-96 rounded-md overflow-hidden border border-border" />
+        <div ref={mapContainer} className="h-96 rounded-element overflow-hidden border border-border" />
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
           <p className="text-sm text-muted-foreground">Showing top {countryData.length} countries</p>
           <div className="flex items-center gap-4">

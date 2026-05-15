@@ -160,7 +160,7 @@ export default function AdminQuests() {
       {isLoading ? (
         <p className="text-muted-foreground">Loading…</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-element border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
               <tr>

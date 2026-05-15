@@ -234,7 +234,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
-      <DialogContent className="rounded-2xl">
+      <DialogContent className="rounded-container">
         <DialogHeader>
           <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
@@ -275,7 +275,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10 pr-10 h-11 rounded-xl"
+                className="pl-10 pr-10 h-11 rounded-container"
               />
               {searching && (
                 <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" aria-label="Loading" />
@@ -354,7 +354,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                       <button
                         type="button"
                         onClick={() => setSelected(r)}
-                        className={`w-full text-left min-h-[52px] px-3 py-2.5 rounded-xl border transition-all ${isSelected ? 'bg-muted border-foreground/40 shadow-sm' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
+                        className={`w-full text-left min-h-[52px] px-3 py-2.5 rounded-container border transition-all ${isSelected ? 'bg-muted border-foreground/40 shadow-sm' : 'border-transparent hover:bg-muted/60 hover:border-border'}`}
                       >
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium">{r.name}</span>

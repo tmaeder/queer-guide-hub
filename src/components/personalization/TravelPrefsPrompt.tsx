@@ -31,7 +31,7 @@ export function TravelPrefsPrompt() {
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 mb-6 bg-muted/40 rounded-lg">
+    <div className="flex items-center gap-4 p-4 mb-6 bg-muted/40 rounded-element">
       <Sparkles className="h-5 w-5 text-primary shrink-0" />
       <div className="flex-1">
         <p className="font-semibold text-sm">Personalize your travel</p>

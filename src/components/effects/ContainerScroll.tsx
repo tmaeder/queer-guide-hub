@@ -41,7 +41,7 @@ export function ContainerScroll({ titleComponent, children, className }: Contain
           }}
           className="max-w-5xl -mt-12 mx-auto h-[30rem] md:h-[40rem] w-full border border-border/60 bg-muted/40 rounded-[30px] backdrop-blur-md p-2 md:p-6 shadow-[var(--shadow-aceternity-lg)]"
         >
-          <div className="h-full w-full overflow-hidden rounded-2xl bg-background md:rounded-2xl md:p-4">
+          <div className="h-full w-full overflow-hidden rounded-container bg-background md:rounded-container md:p-4">
             {children}
           </div>
         </motion.div>

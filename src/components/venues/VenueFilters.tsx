@@ -372,7 +372,7 @@ export function VenueFilters({
   const xStyle = { width: 12, height: 12, cursor: 'pointer', padding: 8, margin: -8, boxSizing: 'content-box' as const };
 
   return (
-    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-2xl border border-border bg-card/60 backdrop-blur-sm">
+    <div className="flex flex-col gap-4 w-full min-w-0 overflow-hidden p-4 rounded-container border border-border bg-card/60 backdrop-blur-sm">
       {/* Search Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -394,7 +394,7 @@ export function VenueFilters({
             value={search}
             onChange={(e) => handleSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-11 h-11 rounded-xl"
+            className="pl-11 h-11 rounded-element"
           />
         </div>
         <div className="flex gap-2">
@@ -403,7 +403,7 @@ export function VenueFilters({
             onClick={handleNearMeToggle}
             disabled={isDetectingLocation}
             size="icon"
-            className="h-11 w-11 rounded-xl"
+            className="h-11 w-11 rounded-element"
             aria-label="Find near me"
           >
             {isDetectingLocation ? (
@@ -415,7 +415,7 @@ export function VenueFilters({
           <Button
             onClick={handleSearch}
             size="icon"
-            className="h-11 w-11 rounded-xl"
+            className="h-11 w-11 rounded-element"
             aria-label="Search"
           >
             <Search style={{ width: 16, height: 16 }} />
@@ -423,7 +423,7 @@ export function VenueFilters({
           <Button
             variant={showAdvanced ? 'default' : 'outline'}
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="h-11 rounded-xl gap-2"
+            className="h-11 rounded-element gap-2"
             aria-label="Toggle filters"
           >
             <Filter style={{ width: 16, height: 16 }} />
@@ -566,7 +566,7 @@ export function VenueFilters({
               value={city}
               onChange={(e) => setCity(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="h-11 rounded-xl"
+              className="h-11 rounded-element"
             />
           </div>
 
@@ -700,7 +700,7 @@ function FilterDropdown({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="h-11 w-full justify-between rounded-xl font-normal"
+            className="h-11 w-full justify-between rounded-element font-normal"
           >
             <span className="truncate text-sm">
               {selected.length > 0
@@ -712,7 +712,7 @@ function FilterDropdown({
             />
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="rounded-xl border-border shadow-lg p-0">
+        <PopoverContent align="start" className="border-border shadow-lg p-0">
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>

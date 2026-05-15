@@ -132,9 +132,9 @@ export default function TripPlannerPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-6 md:py-10">
-        <Skeleton className="h-[220px] rounded-2xl mb-6" />
+        <Skeleton className="h-[220px] rounded-container mb-6" />
         <Skeleton className="h-7 w-60" />
-        <Skeleton className="h-[400px] mt-6 rounded-md" />
+        <Skeleton className="h-[400px] mt-6 rounded-container" />
       </div>
     );
   }

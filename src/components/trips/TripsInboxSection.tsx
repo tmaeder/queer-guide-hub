@@ -127,7 +127,7 @@ export function TripsInboxSection() {
       {isLoading && (
         <div className="flex flex-col gap-3">
           {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-24 rounded-md" />
+            <Skeleton key={i} className="h-24 rounded-element" />
           ))}
         </div>
       )}
@@ -269,7 +269,7 @@ function OrphanRow({
   const amount = formatAmount(reservation.total_amount, reservation.currency);
 
   return (
-    <div className="p-4 bg-background flex items-start gap-4 border border-border rounded-md">
+    <div className="p-4 bg-background flex items-start gap-4 border border-border rounded-element">
       <div className="p-2 bg-muted rounded">
         <Icon style={{ width: 22, height: 22, color: 'var(--primary)' }} />
       </div>

@@ -128,8 +128,8 @@ export function ReservationsTab({ tripId }: Props) {
         <div className="mb-6">
           <ReservationSuggestionsPanel tripId={tripId} />
         </div>
-        <div className="rounded-3xl border border-dashed border-muted px-6 py-12 text-center md:py-20">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-[hsl(var(--foreground)/0.1)]">
+        <div className="rounded-container border border-dashed border-muted px-6 py-12 text-center md:py-20">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-element bg-[hsl(var(--foreground)/0.1)]">
             <Ticket size={26} style={{ color: 'hsl(var(--foreground))' }} />
           </div>
           <h3 className="mb-1 text-lg font-bold">
@@ -167,7 +167,7 @@ export function ReservationsTab({ tripId }: Props) {
       {/* Next up card */}
       {nextUp && (
         <div className="flex items-center gap-3 bg-[hsl(var(--foreground)/0.08)] p-4">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-[hsl(var(--foreground))] text-[hsl(var(--background))]">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-element bg-[hsl(var(--foreground))] text-[hsl(var(--background))]">
             <CalendarClock size={18} />
           </div>
           <div className="min-w-0 flex-1">
@@ -195,7 +195,7 @@ export function ReservationsTab({ tripId }: Props) {
         return (
           <div key={type}>
             <div className="mb-3 flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent">
+              <div className="flex h-7 w-7 items-center justify-center rounded-badge bg-accent">
                 <Icon size={14} />
               </div>
               <h4

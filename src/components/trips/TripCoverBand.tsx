@@ -52,7 +52,7 @@ export function TripCoverBand({
 
   return (
     <div
-      className="relative rounded-3xl overflow-hidden mb-6 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
+      className="relative rounded-container overflow-hidden mb-6 min-h-[180px] md:min-h-[220px] flex items-end bg-cover bg-center"
       style={{
         background: coverImage ? undefined : fallbackGradient,
         backgroundImage: coverImage ? `url(${coverImage})` : undefined,

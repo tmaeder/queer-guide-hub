@@ -103,7 +103,7 @@ function Card({
     <motion.div
       style={translate ? { x: translate } : undefined}
       whileHover={{ y: -20 }}
-      className="group/product h-72 w-[24rem] relative shrink-0 rounded-xl overflow-hidden"
+      className="group/product h-72 w-[24rem] relative shrink-0 rounded-container overflow-hidden"
     >
       <a href={product.link} className="block">
         <img

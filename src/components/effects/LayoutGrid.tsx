@@ -30,7 +30,7 @@ export function LayoutGrid({ cards, className }: LayoutGridProps) {
           onClick={() => setSelected(card)}
           layoutId={`grid-${card.id}`}
           className={cn(
-            'relative overflow-hidden cursor-pointer rounded-xl ring-1 ring-border/60 bg-card',
+            'relative overflow-hidden cursor-pointer rounded-container ring-1 ring-border/60 bg-card',
             card.className,
           )}
         >
@@ -57,7 +57,7 @@ export function LayoutGrid({ cards, className }: LayoutGridProps) {
             />
             <motion.div
               layoutId={`grid-${selected.id}`}
-              className="fixed inset-x-4 top-10 bottom-10 md:inset-x-20 md:top-20 md:bottom-20 z-[1201] rounded-2xl overflow-hidden bg-card border border-border/60 shadow-[var(--shadow-aceternity-lg)] flex flex-col"
+              className="fixed inset-x-4 top-10 bottom-10 md:inset-x-20 md:top-20 md:bottom-20 z-[1201] rounded-container overflow-hidden bg-card border border-border/60 shadow-[var(--shadow-aceternity-lg)] flex flex-col"
               onClick={() => setSelected(null)}
             >
               <motion.img

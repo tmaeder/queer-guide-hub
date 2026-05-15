@@ -213,7 +213,7 @@ export function FeedbackButton() {
                       <div
                         key={cat.value}
                         onClick={() => setForm((f) => ({ ...f, category: cat.value }))}
-                        className="flex items-center gap-2 cursor-pointer rounded-md transition-all"
+                        className="flex items-center gap-2 cursor-pointer rounded-element transition-all"
                         style={{
                           padding: 12,
                           borderWidth: 2,

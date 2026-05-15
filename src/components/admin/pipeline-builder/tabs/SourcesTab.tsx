@@ -113,7 +113,7 @@ export default function SourcesTab() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-col gap-4">
-        <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="border border-border rounded-element bg-background overflow-hidden">
           <div className="px-4 py-2.5 border-b border-border flex items-center gap-2 flex-wrap">
             <div className="font-semibold text-sm">Ingest Sources</div>
             <Badge variant="outline" className="text-2xs px-1.5 py-0">

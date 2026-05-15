@@ -32,7 +32,7 @@ export function DraggableCardBody({ children, className }: DraggableCardBodyProp
       style={reduced ? undefined : { x, y, rotateX, rotateY, transformStyle: 'preserve-3d' }}
       whileTap={{ scale: 0.97 }}
       className={cn(
-        'relative cursor-grab active:cursor-grabbing rounded-2xl bg-card border border-border/60 shadow-[var(--shadow-aceternity)] select-none',
+        'relative cursor-grab active:cursor-grabbing rounded-container bg-card border border-border/60 shadow-[var(--shadow-aceternity)] select-none',
         className,
       )}
     >

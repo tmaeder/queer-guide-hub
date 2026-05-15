@@ -268,7 +268,7 @@ export function EnhancedSecurityDashboard() {
               </div>
             ) : (
               securityEvents.map((event) => (
-                <div key={event.id} className="flex items-start gap-4 p-4 border border-border rounded-lg">
+                <div key={event.id} className="flex items-start gap-4 p-4 border border-border rounded-element">
                   <div className="flex-shrink-0">
                     {getSeverityIcon(event)}
                   </div>

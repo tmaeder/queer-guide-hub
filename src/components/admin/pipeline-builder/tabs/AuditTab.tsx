@@ -174,7 +174,7 @@ export default function AuditTab() {
         </div>
 
         {/* Timeline */}
-        <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="border border-border rounded-element bg-background overflow-hidden">
           <div className="max-h-[650px] overflow-auto">
             {filtered.length === 0 ? (
               <div className="p-6 text-center text-muted-foreground text-xs">

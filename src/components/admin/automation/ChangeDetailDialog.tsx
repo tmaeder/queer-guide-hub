@@ -82,7 +82,7 @@ export function ChangeDetailDialog({
           {change.reasoning && (
             <div className="mb-6">
               <span className="text-xs text-muted-foreground">Reasoning</span>
-              <p className="text-sm mt-1 p-3 bg-muted rounded-sm">{change.reasoning}</p>
+              <p className="text-sm mt-1 p-3 bg-muted rounded-badge">{change.reasoning}</p>
             </div>
           )}
 
@@ -90,13 +90,13 @@ export function ChangeDetailDialog({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-xs text-muted-foreground mb-1 block">Old Value</span>
-                <div className="p-3 rounded-sm font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
+                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
                   {formatValue(change.old_value)}
                 </div>
               </div>
               <div>
                 <span className="text-xs text-muted-foreground mb-1 block">New Value</span>
-                <div className="p-3 rounded-sm font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
                   {formatValue(change.new_value)}
                 </div>
               </div>
@@ -104,7 +104,7 @@ export function ChangeDetailDialog({
           )}
 
           {isFlag && (
-            <div className="p-4 rounded-sm" style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a' }}>
+            <div className="p-4 rounded-badge" style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a' }}>
               <p className="text-sm">
                 This is a <strong>flag-only</strong> change. No data modification proposed — review
                 the issue described above.

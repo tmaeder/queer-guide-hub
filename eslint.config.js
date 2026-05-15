@@ -201,6 +201,30 @@ export default tseslint.config(
   // P5 RETIRED — rounded / shadow / gradient classes are allowed again
   // in non-admin code as part of the Aceternity-inspired UI overhaul.
   // Color-literal ban above still enforces strict monochrome.
+  //
+  // P6 — semantic 3-tier radius. New code should pick from the semantic
+  // trio (rounded-container / rounded-element / rounded-badge); the
+  // t-shirt scale is retained only for migration. `rounded-full` and
+  // `rounded-none` remain allowed (avatars, dots, explicit override).
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/integrations/supabase/types.ts",
+      "src/**/__tests__/**",
+      "src/test/**",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector:
+            "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
+          message:
+            "Use semantic radius: rounded-container (cards/modals), rounded-element (buttons/inputs), or rounded-badge (chips/tags). See src/index.css @theme.",
+        },
+      ],
+    },
+  },
 
   // Cluster 3 — admin tree must stay motion-free. Aceternity effect
   // components and direct framer-motion / motion imports inside admin

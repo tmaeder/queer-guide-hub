@@ -40,7 +40,7 @@ export function StickyScroll({ content, className }: StickyScrollProps) {
   return (
     <motion.div
       ref={ref}
-      className={cn('h-[30rem] overflow-y-auto flex justify-center relative space-x-10 rounded-2xl p-10 border border-border/60 bg-background no-scrollbar', className)}
+      className={cn('h-[30rem] overflow-y-auto flex justify-center relative space-x-10 rounded-container p-10 border border-border/60 bg-background no-scrollbar', className)}
     >
       <div className="relative flex items-start px-4">
         <div className="max-w-2xl">
@@ -67,7 +67,7 @@ export function StickyScroll({ content, className }: StickyScrollProps) {
           <div className="h-32" />
         </div>
       </div>
-      <div className="hidden lg:block h-60 w-80 rounded-xl bg-muted sticky top-10 overflow-hidden ring-1 ring-border/60">
+      <div className="hidden lg:block h-60 w-80 rounded-container bg-muted sticky top-10 overflow-hidden ring-1 ring-border/60">
         {content[active]?.content}
       </div>
     </motion.div>

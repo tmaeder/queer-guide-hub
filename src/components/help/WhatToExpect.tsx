@@ -12,7 +12,7 @@ export function WhatToExpect() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mb-6 rounded-lg border bg-muted/40">
+    <div className="mb-6 rounded-element border bg-muted/40">
       <button
         type="button"
         className="flex w-full items-center justify-between px-4 py-3 text-left"
