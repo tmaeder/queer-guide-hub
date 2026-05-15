@@ -113,7 +113,7 @@ export function TrendingStrip({
 				skeleton={
 					<div className="flex gap-3 pb-3">
 						{Array.from({ length: limit }).map((_, i) => (
-							<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-lg" />
+							<Skeleton key={i} className="h-40 w-56 shrink-0 rounded-element" />
 						))}
 					</div>
 				}

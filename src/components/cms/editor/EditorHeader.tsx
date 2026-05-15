@@ -101,7 +101,7 @@ export function EditorHeader({
       {/* Left side */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div
-          className="flex items-center justify-center flex-shrink-0 rounded-lg w-10 h-10"
+          className="flex items-center justify-center flex-shrink-0 rounded-element w-10 h-10"
           style={{ backgroundColor: contentType.color + '18', color: contentType.color }}
         >
           <Icon style={{ width: 20, height: 20 }} />
@@ -127,7 +127,7 @@ export function EditorHeader({
           ) : (
             <div
               onClick={handleStartEditing}
-              className="group flex items-center gap-1.5 cursor-pointer border-b border-dashed border-transparent hover:border-muted-foreground/40 rounded-sm transition-colors"
+              className="group flex items-center gap-1.5 cursor-pointer border-b border-dashed border-transparent hover:border-muted-foreground/40 rounded-badge transition-colors"
             >
               <p
                 className={cn(

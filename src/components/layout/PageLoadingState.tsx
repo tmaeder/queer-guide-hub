@@ -22,16 +22,16 @@ export const PageLoadingState = ({
         {Array.from({ length: count }).map((_, i) => (
           <Card key={i}>
             <CardContent className="flex items-center gap-3">
-              <Skeleton className="w-20 h-15 rounded-lg shrink-0" style={{ height: 60 }} />
+              <Skeleton className="w-20 h-15 rounded-element shrink-0" style={{ height: 60 }} />
               <div className="flex-1">
                 <Skeleton className="h-6 w-3/5" />
                 <Skeleton className="h-[18px] w-2/5 mt-2" />
                 <div className="flex gap-2 mt-1">
-                  <Skeleton className="h-5 w-12 rounded-md" />
-                  <Skeleton className="h-5 w-16 rounded-md" />
+                  <Skeleton className="h-5 w-12 rounded-badge" />
+                  <Skeleton className="h-5 w-16 rounded-badge" />
                 </div>
               </div>
-              <Skeleton className="h-8 w-16 rounded-md" />
+              <Skeleton className="h-8 w-16 rounded-element" />
             </CardContent>
           </Card>
         ))}
@@ -54,8 +54,8 @@ export const PageLoadingState = ({
             <Skeleton className="h-4 w-full mt-3" />
             <Skeleton className="h-4 w-3/5 mt-2" />
             <div className="flex gap-2 mt-2">
-              <Skeleton className="h-6 w-16 rounded-md" />
-              <Skeleton className="h-6 w-20 rounded-md" />
+              <Skeleton className="h-6 w-16 rounded-badge" />
+              <Skeleton className="h-6 w-20 rounded-badge" />
             </div>
           </CardContent>
         </Card>

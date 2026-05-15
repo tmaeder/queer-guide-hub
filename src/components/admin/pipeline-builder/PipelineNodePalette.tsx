@@ -42,7 +42,7 @@ export default function PipelineNodePalette({
             value={paletteSearch}
             onChange={(e) => setPaletteSearch(e.target.value)}
             placeholder="Search nodes..."
-            className="w-full h-7 pl-6 pr-2 text-xs border border-border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full h-7 pl-6 pr-2 text-xs border border-border rounded-element bg-background focus:outline-none focus:ring-1 focus:ring-ring"
           />
           {paletteSearch && (
             <button
@@ -78,7 +78,7 @@ export default function PipelineNodePalette({
                             role="button"
                             tabIndex={0}
                             aria-label={`Add ${nt.display_name} node`}
-                            className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-grab text-sm hover:bg-accent focus:bg-accent focus:outline-none focus:ring-1 focus:ring-ring transition-colors active:cursor-grabbing"
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-element cursor-grab text-sm hover:bg-accent focus:bg-accent focus:outline-none focus:ring-1 focus:ring-ring transition-colors active:cursor-grabbing"
                             draggable
                             onDragStart={(e) => onDragStart(e as unknown as DragEvent<HTMLDivElement>, nt)}
                             onKeyDown={(e) => {

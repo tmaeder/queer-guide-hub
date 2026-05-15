@@ -257,7 +257,7 @@ const Marketplace = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={handleTabChange} style={{ marginBottom: 24 }}>
-          <div className="sticky top-0 z-20 border border-border rounded-lg p-4 mb-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="sticky top-0 z-20 border border-border rounded-element p-4 mb-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <div className="mb-4">
               <MarketplaceFilters initialSearch={qParam} onFiltersChange={handleFiltersChange} />
             </div>

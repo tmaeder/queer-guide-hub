@@ -204,7 +204,7 @@ export function FlyerScanUpload({
         />
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+            className="w-10 h-10 rounded-element flex items-center justify-center shrink-0"
             style={{ backgroundColor: '#ec489915' }}
           >
             {isMobile ? (

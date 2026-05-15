@@ -328,7 +328,7 @@ export const ApiKeysManager = () => {
           {/* Status Summary */}
           {requiredKeys.length > 0 && (
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-lg" style={{ background: '#f0fdf4' }}>
+              <div className="text-center p-4 rounded-element" style={{ background: '#f0fdf4' }}>
                 <div className="text-2xl font-semibold" style={{ color: '#16a34a' }}>
                   {configuredCount}
                 </div>
@@ -336,7 +336,7 @@ export const ApiKeysManager = () => {
                   Configured
                 </div>
               </div>
-              <div className="text-center p-4 rounded-lg" style={{ background: '#fef2f2' }}>
+              <div className="text-center p-4 rounded-element" style={{ background: '#fef2f2' }}>
                 <div className="text-2xl font-semibold" style={{ color: '#dc2626' }}>
                   {missingCount}
                 </div>
@@ -344,7 +344,7 @@ export const ApiKeysManager = () => {
                   Missing
                 </div>
               </div>
-              <div className="text-center p-4 rounded-lg" style={{ background: '#fffbeb' }}>
+              <div className="text-center p-4 rounded-element" style={{ background: '#fffbeb' }}>
                 <div className="text-2xl font-semibold" style={{ color: '#d97706' }}>
                   {errorCount}
                 </div>

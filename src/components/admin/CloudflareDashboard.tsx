@@ -102,7 +102,7 @@ export function CloudflareDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg" style={{ backgroundColor: '#f97316' }}>
+          <div className="p-2 rounded-element" style={{ backgroundColor: '#f97316' }}>
             <Cloud style={{ height: 24, width: 24, color: 'white' }} />
           </div>
           <div>
@@ -461,7 +461,7 @@ export function CloudflareDashboard() {
                   </div>
                   {!stats.zoneInfo && (
                     <div
-                      className="mt-4 p-4 rounded-lg"
+                      className="mt-4 p-4 rounded-element"
                       style={{ backgroundColor: '#fefce8', border: '1px solid #fde047' }}
                     >
                       <h5 className="font-medium mb-2" style={{ color: '#854d0e' }}>

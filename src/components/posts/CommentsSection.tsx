@@ -278,8 +278,8 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
               <div key={i} className="flex gap-3 animate-pulse">
                 <div className="h-8 w-8 bg-accent rounded-full" />
                 <div className="flex-1 flex flex-col gap-2">
-                  <div className="h-3 bg-accent rounded-sm w-1/4" />
-                  <div className="h-4 bg-accent rounded-sm w-3/4" />
+                  <div className="h-3 bg-accent rounded-badge w-1/4" />
+                  <div className="h-4 bg-accent rounded-badge w-3/4" />
                 </div>
               </div>
             ))}
@@ -304,7 +304,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         {user && (
           <div className="p-4 border-b">
             {replyingTo && (
-              <div className="mb-2 p-2 bg-accent rounded-sm text-xs text-muted-foreground">
+              <div className="mb-2 p-2 bg-accent rounded-badge text-xs text-muted-foreground">
                 Replying to <span className="font-medium">{replyingTo.username}</span>
                 <Button
                   variant="ghost"

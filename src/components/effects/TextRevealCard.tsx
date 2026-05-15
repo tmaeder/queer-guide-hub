@@ -35,7 +35,7 @@ export function TextRevealCard({ text, revealText, className, children }: TextRe
       }}
       onTouchMove={(e) => onMove(e.touches[0].clientX)}
       className={cn(
-        'relative w-full overflow-hidden rounded-2xl bg-card border border-border/60 p-8 select-none cursor-ew-resize',
+        'relative w-full overflow-hidden rounded-container bg-card border border-border/60 p-8 select-none cursor-ew-resize',
         className,
       )}
     >

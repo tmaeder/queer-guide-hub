@@ -474,7 +474,7 @@ export function UniversalContentDashboard() {
       {/* Simple modals - removing for now to fix build errors */}
       {isCreatorOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-md max-w-md w-full mx-4">
+          <div className="bg-background p-6 rounded-element max-w-md w-full mx-4">
             <h3 className="text-xl font-semibold mb-4">
               Create Content
             </h3>
@@ -488,7 +488,7 @@ export function UniversalContentDashboard() {
 
       {isEditorOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background p-6 rounded-md max-w-md w-full mx-4">
+          <div className="bg-background p-6 rounded-element max-w-md w-full mx-4">
             <h3 className="text-xl font-semibold mb-4">
               Edit Content
             </h3>

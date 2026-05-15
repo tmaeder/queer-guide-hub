@@ -66,7 +66,7 @@ export function SortablePlaceCard({
   return (
     <div ref={setNodeRef} style={style}>
       <div
-        className={`group flex items-center gap-2 bg-background border border-transparent hover:border-border rounded-xl px-3 py-2 mb-1.5 min-h-[44px] transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
+        className={`group flex items-center gap-2 bg-background border border-transparent hover:border-border rounded-container px-3 py-2 mb-1.5 min-h-[44px] transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       >
         <div
           {...attributes}
@@ -137,7 +137,7 @@ export function PlaceCardOverlay({ place }: { place: TripPlace }) {
   const ringColor = getScoreRingColor(eqScore);
 
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-foreground bg-background px-3 py-2 w-[320px] opacity-95 shadow-xl">
+    <div className="flex items-center gap-2 rounded-container border border-foreground bg-background px-3 py-2 w-[320px] opacity-95 shadow-xl">
       <GripVertical className="w-3.5 h-3.5 shrink-0 opacity-40" />
       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
         <Icon className="w-3 h-3" />

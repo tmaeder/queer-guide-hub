@@ -110,7 +110,7 @@ export function AutomationDashboard() {
               </span>
             )}
           </div>
-          <div className="h-1 w-full bg-muted overflow-hidden rounded-sm">
+          <div className="h-1 w-full bg-muted overflow-hidden rounded-badge">
             <div
               className={modulesCompleted > 0 ? 'h-full bg-primary transition-all' : 'h-full bg-primary animate-pulse'}
               style={modulesCompleted > 0 ? { width: `${progressValue}%` } : { width: '50%' }}
@@ -234,7 +234,7 @@ function SettingsTab({
       {modules.map((mod) => (
         <div
           key={mod.id}
-          className="p-4 rounded-lg border border-border flex items-center gap-4"
+          className="p-4 rounded-element border border-border flex items-center gap-4"
         >
           <div className="flex-1">
             <p className="text-sm font-bold">

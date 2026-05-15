@@ -135,7 +135,7 @@ export function TripPolls({ tripId }: Props) {
                         onClick={() => {
                           if (!isClosed && user) handleVote(poll.id, opt.id);
                         }}
-                        className={`relative bg-muted rounded-md px-3 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
+                        className={`relative bg-muted rounded-element px-3 h-8 flex items-center overflow-hidden transition-colors ${isClosed ? 'cursor-default' : 'cursor-pointer hover:bg-accent'}`}
                         style={hasVoted ? { outline: '2px solid hsl(var(--foreground))', outlineOffset: -2 } : undefined}
                       >
                         <div

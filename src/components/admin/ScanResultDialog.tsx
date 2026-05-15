@@ -72,13 +72,13 @@ export function ScanResultDialog({ open, link, onClose, onRescan, scanning }: Sc
                   {score}/100
                 </span>
               </div>
-              <div className="w-full h-2 rounded-sm bg-muted overflow-hidden">
+              <div className="w-full h-2 rounded-badge bg-muted overflow-hidden">
                 <div className={`h-full ${barColor}`} style={{ width: `${Math.min(100, score)}%` }} />
               </div>
             </div>
 
             {screenshotUrl && (
-              <div className="mb-4 rounded-sm overflow-hidden border border-border">
+              <div className="mb-4 rounded-badge overflow-hidden border border-border">
                 <img
                   src={screenshotUrl}
                   alt="Page screenshot"

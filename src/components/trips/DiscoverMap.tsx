@@ -146,7 +146,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
 
   return (
     <div className="relative" style={{ height }}>
-      <div ref={mapContainer} className="absolute inset-0 rounded-lg overflow-hidden border border-border" />
+      <div ref={mapContainer} className="absolute inset-0 rounded-element overflow-hidden border border-border" />
       {selectedTrip && (
         <div className="absolute top-3 right-3 w-[320px] max-w-[calc(100%-24px)] z-10">
           <div className="relative">
@@ -164,7 +164,7 @@ export function DiscoverMap({ trips, height = 480 }: Props) {
       )}
       {geocoded.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-sm text-muted-foreground bg-background/85 backdrop-blur-sm px-4 py-2 rounded-md border border-border">
+          <p className="text-sm text-muted-foreground bg-background/85 backdrop-blur-sm px-4 py-2 rounded-element border border-border">
             No trips with mapped destinations yet.
           </p>
         </div>

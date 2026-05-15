@@ -425,11 +425,11 @@ export function FeedbackCard({
                       background:
                         story.status === 'resolved'
                           ? 'hsl(var(--muted))'
-                          : 'hsl(var(--accent-warm) / 0.15)',
+                          : 'hsl(var(--foreground) / 0.08)',
                       color:
                         story.status === 'resolved'
                           ? 'hsl(var(--muted-foreground))'
-                          : 'hsl(var(--accent-warm))',
+                          : 'hsl(var(--foreground))',
                       borderRadius: 4,
                       maxWidth: 90,
                       textOverflow: 'ellipsis',

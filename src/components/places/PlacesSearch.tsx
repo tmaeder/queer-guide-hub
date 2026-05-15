@@ -174,7 +174,7 @@ export const PlacesSearch = ({
 
       <Collapsible open={showFilters} onOpenChange={setShowFilters}>
         <CollapsibleContent className="flex flex-col gap-4">
-          <div className="bg-muted p-4 rounded-lg flex flex-col gap-4">
+          <div className="bg-muted p-4 rounded-element flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">Advanced Filters</p>
               {getActiveFilterCount() > 0 && (

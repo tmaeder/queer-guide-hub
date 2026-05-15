@@ -90,7 +90,7 @@ export default function NewsStoryDetail() {
           <li key={a.id}>
             <LocalizedLink
               to={`/news/${a.slug}`}
-              className="flex gap-4 p-3 rounded-md border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex gap-4 p-3 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {a.image_url && (
                 <img

@@ -187,7 +187,7 @@ export function AdminDataTable<TData extends { id: string }>({
     onBulkEditSuccess?.();
   };
   return (
-    <div className="border border-border rounded-md overflow-hidden bg-background">
+    <div className="border border-border rounded-element overflow-hidden bg-background">
       <DataTableToolbar
         search={state.search}
         onSearchChange={setSearch}

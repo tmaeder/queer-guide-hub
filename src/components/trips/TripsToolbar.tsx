@@ -47,7 +47,7 @@ export function TripsToolbar({
   return (
     <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-6">
       {/* Search */}
-      <div className="flex items-center gap-2 bg-muted rounded-md px-3 h-10 min-w-full md:min-w-[260px] md:flex-none transition-colors focus-within:bg-accent">
+      <div className="flex items-center gap-2 bg-muted rounded-element px-3 h-10 min-w-full md:min-w-[260px] md:flex-none transition-colors focus-within:bg-accent">
         <Search
           style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }}
           aria-hidden="true"
@@ -65,7 +65,7 @@ export function TripsToolbar({
       {/* Status filter (scrollable chip row on mobile) */}
       <div className="flex-1 min-w-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
         <div
-          className="inline-flex border border-border rounded-md"
+          className="inline-flex border border-border rounded-element"
           role="group"
           aria-label={t('trips.toolbar.statusAria')}
         >

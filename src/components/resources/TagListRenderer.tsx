@@ -43,7 +43,7 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex flex-col overflow-hidden rounded-lg bg-background border border-border cursor-pointer text-left p-0 transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
+              className="flex flex-col overflow-hidden rounded-element bg-background border border-border cursor-pointer text-left p-0 transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
               style={{ font: 'inherit', color: 'inherit' }}
             >
               <div className="relative w-full bg-muted" style={{ aspectRatio: '4 / 3' }}>
@@ -100,10 +100,10 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
+              className="flex items-center gap-3 px-3 py-2 rounded-element cursor-pointer bg-background border border-border text-left transition-all hover:border-primary hover:bg-muted focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary"
               style={{ minHeight: 44, font: 'inherit', color: 'inherit' }}
             >
-              <div className="rounded-md overflow-hidden shrink-0 bg-muted" style={{ width: 40, height: 40 }}>
+              <div className="rounded-element overflow-hidden shrink-0 bg-muted" style={{ width: 40, height: 40 }}>
                 <img
                   src={tag.image_url || getRandomFallbackImage()}
                   alt={tag.name}

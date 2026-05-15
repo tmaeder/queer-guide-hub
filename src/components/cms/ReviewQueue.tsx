@@ -392,7 +392,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
 
                 {/* Card */}
                 <div
-                  className={`p-2 rounded-lg border bg-card transition-[border-color,box-shadow] duration-150 cursor-pointer hover:border-primary hover:shadow-sm ${selectedIds.has(item.metadata.id) ? 'border-primary' : 'border-border'}`}
+                  className={`p-2 rounded-element border bg-card transition-[border-color,box-shadow] duration-150 cursor-pointer hover:border-primary hover:shadow-sm ${selectedIds.has(item.metadata.id) ? 'border-primary' : 'border-border'}`}
                   onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
                 >
                   {/* Top row */}

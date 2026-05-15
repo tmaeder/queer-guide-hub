@@ -192,7 +192,7 @@ export function AutomatedSecurityScheduler() {
       <CardContent>
         <div className="flex flex-col gap-4">
           {tasks.map((task) => (
-            <div key={task.id} className="border border-border rounded-lg p-4">
+            <div key={task.id} className="border border-border rounded-element p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   {getStatusIcon(task.status)}
@@ -242,7 +242,7 @@ export function AutomatedSecurityScheduler() {
           ))}
         </div>
 
-        <div className="mt-6 p-4 bg-muted rounded-lg">
+        <div className="mt-6 p-4 bg-muted rounded-element">
           <p className="font-medium mb-2 flex items-center">
             <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
             Security Automation Status

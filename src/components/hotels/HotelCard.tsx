@@ -38,7 +38,7 @@ function PriceIndicator({ range }: { range: number | null }) {
 }
 
 const HotelCardFixture = () => (
-  <div className="overflow-hidden rounded-xl h-full flex flex-col bg-card border shadow-sm">
+  <div className="overflow-hidden rounded-container h-full flex flex-col bg-card border shadow-sm">
     <div className="bg-accent flex items-center justify-center" style={{ height: 180 }}>
       <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
     </div>
@@ -81,7 +81,7 @@ export function HotelCard({ hotel, loading = false }: HotelCardProps) {
     <Skeleton name="hotel-card" loading={false} fixture={<HotelCardFixture />}>
     <LocalizedLink to={`/hotels/${hotel.slug}`} style={{ textDecoration: 'none' }}>
       <CardHoverEffect>
-      <div className="overflow-hidden rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col bg-card border shadow-sm">
+      <div className="overflow-hidden rounded-container transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col bg-card border shadow-sm">
         {/* Image */}
         <div className="relative overflow-hidden bg-accent" style={{ height: 180 }}>
           <img

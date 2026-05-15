@@ -88,7 +88,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
 
   if (report.countries.length === 0) {
     return (
-      <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-xl">
+      <div className="text-center py-6 md:py-10 px-3 border-[1.5px] border-dashed border-border rounded-container">
         <Shield
           className="w-10 h-10 mx-auto mb-3 opacity-30"
           aria-hidden="true"
@@ -140,7 +140,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
 
       <TripNewsSection countryIds={countryIds} />
 
-      <div className="mt-3 p-2 rounded-lg bg-muted flex items-start gap-[0.3125rem]">
+      <div className="mt-3 p-2 rounded-element bg-muted flex items-start gap-[0.3125rem]">
         <Info
           className="w-4 h-4 mt-0.5 flex-shrink-0 opacity-70"
           aria-hidden="true"
@@ -297,7 +297,7 @@ function CountryAccordion({
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {/* Score chip */}
               <div
-                className="flex-shrink-0 w-12 h-12 rounded-lg flex flex-col items-center justify-center"
+                className="flex-shrink-0 w-12 h-12 rounded-element flex flex-col items-center justify-center"
                 style={{ backgroundColor: scoreInfo.bgColor, color: scoreInfo.color }}
                 aria-hidden="true"
               >
@@ -376,7 +376,7 @@ function CountryAccordion({
                 value={protectionStatus.so}
               />
 
-              <div className="mt-0.5 p-1.5 rounded-md bg-muted flex items-start gap-1">
+              <div className="mt-0.5 p-1.5 rounded-badge bg-muted flex items-start gap-1">
                 <Info
                   className="w-3.5 h-3.5 mt-0.5 opacity-60 flex-shrink-0"
                   aria-hidden="true"

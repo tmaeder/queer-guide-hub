@@ -132,9 +132,9 @@ export function PackingTab({ tripId }: Props) {
 
   if (totalCount === 0) {
     return (
-      <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-2xl">
+      <div className="text-center py-12 md:py-20 px-6 border-[1.5px] border-dashed border-border rounded-container">
         <div
-          className="w-14 h-14 rounded-lg flex items-center justify-center mx-auto mb-3"
+          className="w-14 h-14 rounded-element flex items-center justify-center mx-auto mb-3"
           style={{ background: 'hsl(var(--foreground) / 0.1)' }}
         >
           <CheckSquare size={26} style={{ color: 'hsl(var(--foreground))' }} />

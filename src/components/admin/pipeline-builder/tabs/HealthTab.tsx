@@ -32,7 +32,7 @@ function SectionCard({ icon: Icon, title, extra, children }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-border rounded-md bg-background overflow-hidden">
+    <div className="border border-border rounded-element bg-background overflow-hidden">
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
         {Icon && <Icon className="h-3.5 w-3.5" />}
         <span>{title}</span>
@@ -209,13 +209,13 @@ export default function HealthTab() {
             )}
           </div>
           {circuitBreakers.length === 0 ? (
-            <div className="border border-border rounded-md bg-background p-4 text-center text-xs text-muted-foreground">
+            <div className="border border-border rounded-element bg-background p-4 text-center text-xs text-muted-foreground">
               No circuit breakers configured
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
               {circuitBreakers.map(cb => (
-                <div key={cb.id} className="border border-border rounded-md bg-background p-3 hover:bg-muted/30 transition-colors">
+                <div key={cb.id} className="border border-border rounded-element bg-background p-3 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="font-medium text-sm truncate">{cb.api_name}</span>
                     <span className={`text-3xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${cbClass[cb.state] || 'bg-muted'}`}>
@@ -254,7 +254,7 @@ export default function HealthTab() {
               { label: 'Countries · duplicates', value: geoHealth?.countries_duplicates },
               { label: 'Merge candidates',       value: geoHealth?.geo_merge_candidates },
             ].map(({ label, value }) => (
-              <div key={label} className="border border-border rounded-md p-3">
+              <div key={label} className="border border-border rounded-element p-3">
                 <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-green-600 dark:text-green-400'}`}>
                   {value ?? '–'}
                 </div>
@@ -313,7 +313,7 @@ export default function HealthTab() {
                 </div>
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-2">
                   {stagingStats.map(s => (
-                    <div key={s.status} className="text-center p-2 border border-border rounded-md">
+                    <div key={s.status} className="text-center p-2 border border-border rounded-element">
                       <div className="text-lg font-bold tabular-nums">{s.count.toLocaleString()}</div>
                       <div className="text-2xs text-muted-foreground capitalize mt-0.5">{s.status}</div>
                     </div>
@@ -330,7 +330,7 @@ export default function HealthTab() {
         </Suspense>
 
         {/* Definitions */}
-        <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="border border-border rounded-element bg-background overflow-hidden">
           <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">All Definitions</span>
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate('/admin/pipelines')}>

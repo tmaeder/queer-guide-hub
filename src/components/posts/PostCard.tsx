@@ -167,7 +167,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
             {post.images.slice(0, 4).map((image, index) => (
               <div
                 key={index}
-                className="relative bg-muted rounded-md overflow-hidden"
+                className="relative bg-muted rounded-element overflow-hidden"
                 style={{ aspectRatio: '16/9' }}
               >
                 <img
@@ -183,7 +183,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
             ))}
             {post.images.length > 4 && (
               <div
-                className="bg-muted rounded-md flex items-center justify-center text-muted-foreground"
+                className="bg-muted rounded-element flex items-center justify-center text-muted-foreground"
                 style={{ aspectRatio: '16/9' }}
               >
                 +{post.images.length - 4} more
@@ -200,7 +200,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 href={post.link_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block -m-2 p-4 rounded-md transition-colors hover:bg-muted no-underline text-foreground"
+                className="block -m-2 p-4 rounded-element transition-colors hover:bg-muted no-underline text-foreground"
               >
                 <div className="flex items-start gap-3">
                   <ExternalLink

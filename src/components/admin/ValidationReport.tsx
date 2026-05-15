@@ -219,7 +219,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
             <Card>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' }}>
+                  <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' }}>
                     <TrendingUp style={{ height: 16, width: 16, color: 'var(--success)' }} />
                   </div>
                   <div>
@@ -234,7 +234,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
             <Card>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.1)' }}>
+                  <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.1)' }}>
                     <TrendingDown style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
                   </div>
                   <div>
@@ -249,7 +249,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
             <Card>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-lg" style={{ backgroundColor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.1)' }}>
+                  <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.1)' }}>
                     <AlertTriangle style={{ height: 16, width: 16, color: 'var(--warning)' }} />
                   </div>
                   <div>
@@ -280,19 +280,19 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                 <CardContent>
                   <div className="flex flex-col gap-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 border border-border rounded-lg">
+                      <div className="text-center p-4 border border-border rounded-element">
                         <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{job.total_records}</p>
                         <p className="text-sm text-muted-foreground">Total Records</p>
                       </div>
-                      <div className="text-center p-4 border border-border rounded-lg" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
+                      <div className="text-center p-4 border border-border rounded-element" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
                         <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>{job.successful_records}</p>
                         <p className="text-sm text-muted-foreground">Successful</p>
                       </div>
-                      <div className="text-center p-4 border border-border rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
+                      <div className="text-center p-4 border border-border rounded-element" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
                         <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.failed_records}</p>
                         <p className="text-sm text-muted-foreground">Failed</p>
                       </div>
-                      <div className="text-center p-4 border border-border rounded-lg" style={{ backgroundColor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.05)' }}>
+                      <div className="text-center p-4 border border-border rounded-element" style={{ backgroundColor: 'rgba(var(--warning-rgb, 234, 179, 8), 0.05)' }}>
                         <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--warning)' }}>{job.duplicate_records}</p>
                         <p className="text-sm text-muted-foreground">Duplicates</p>
                       </div>
@@ -301,7 +301,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     {job.import_summary && Object.keys(job.import_summary).length > 0 && (
                       <div>
                         <p className="font-medium mb-2">Import Details</p>
-                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
+                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
                           {JSON.stringify(job.import_summary, null, 2)}
                         </pre>
                       </div>
@@ -320,21 +320,21 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                 <CardContent>
                   {loading ? (
                     <div className="text-center py-8">
-                      <div className="rounded-lg bg-primary mx-auto mb-4" style={{ animation: 'spin 1s linear infinite', height: 32, width: 32 }} />
+                      <div className="rounded-element bg-primary mx-auto mb-4" style={{ animation: 'spin 1s linear infinite', height: 32, width: 32 }} />
                       <p>Loading validation results...</p>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-4">
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
+                        <div className="text-center p-4 rounded-element" style={{ backgroundColor: 'rgba(var(--success-rgb, 34, 197, 94), 0.05)' }}>
                           <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success)' }}>{job.valid_records}</p>
                           <p className="text-sm text-muted-foreground">Valid Records</p>
                         </div>
-                        <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
+                        <div className="text-center p-4 rounded-element" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
                           <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--destructive)' }}>{job.invalid_records}</p>
                           <p className="text-sm text-muted-foreground">Invalid Records</p>
                         </div>
-                        <div className="text-center p-4 rounded-lg">
+                        <div className="text-center p-4 rounded-element">
                           <p style={{ fontSize: '1.25rem', fontWeight: 700 }}>{validationResults.length}</p>
                           <p className="text-sm text-muted-foreground">Validation Details</p>
                         </div>
@@ -343,7 +343,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                       {job.validation_report && Object.keys(job.validation_report).length > 0 && (
                         <div>
                           <p className="font-medium mb-2">Validation Summary</p>
-                          <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto" style={{ maxHeight: 160 }}>
+                          <pre className="text-sm bg-muted p-3 rounded-element overflow-auto" style={{ maxHeight: 160 }}>
                             {JSON.stringify(job.validation_report, null, 2)}
                           </pre>
                         </div>
@@ -384,7 +384,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                         .filter(r => !r.is_valid)
                         .slice(0, 20)
                         .map((result, index) => (
-                          <div key={index} className="rounded-lg p-3">
+                          <div key={index} className="rounded-element p-3">
                             <div className="flex items-center justify-between mb-2">
                               <Badge variant="destructive">Record {result.record_index}</Badge>
                               <p className="text-sm text-muted-foreground">
@@ -416,7 +416,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
 
                             <details style={{ marginTop: 8 }}>
                               <summary style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)', cursor: 'pointer' }}>View record data</summary>
-                              <pre className="text-xs bg-muted p-2 mt-1 rounded-lg overflow-x-auto">
+                              <pre className="text-xs bg-muted p-2 mt-1 rounded-element overflow-x-auto">
                                 {JSON.stringify(result.record_data, null, 2)}
                               </pre>
                             </details>
@@ -428,8 +428,8 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                   {job.error_report && Object.keys(job.error_report).length > 0 && (
                     <div className="mt-6">
                       <p className="font-medium mb-2">Error Summary</p>
-                      <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
-                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
+                      <div className="p-3 rounded-element" style={{ backgroundColor: 'rgba(var(--destructive-rgb, 239, 68, 68), 0.05)' }}>
+                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
                           {JSON.stringify(job.error_report, null, 2)}
                         </pre>
                       </div>
@@ -450,7 +450,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     {job.validation_rules && Object.keys(job.validation_rules).length > 0 && (
                       <div>
                         <p className="font-medium mb-2">Validation Rules</p>
-                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
+                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
                           {JSON.stringify(job.validation_rules, null, 2)}
                         </pre>
                       </div>
@@ -459,7 +459,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     {job.filters && Object.keys(job.filters).length > 0 && (
                       <div>
                         <p className="font-medium mb-2">Applied Filters</p>
-                        <pre className="text-sm bg-muted p-3 rounded-lg overflow-auto">
+                        <pre className="text-sm bg-muted p-3 rounded-element overflow-auto">
                           {JSON.stringify(job.filters, null, 2)}
                         </pre>
                       </div>

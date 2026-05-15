@@ -245,7 +245,7 @@ export function MarketplaceCard({
                     rel={outbound.rel}
                     onClick={(e) => e.stopPropagation()}
                     data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                    className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                     aria-label={`${outbound.label} (opens in new tab)`}
                   >
                     {outbound.label}

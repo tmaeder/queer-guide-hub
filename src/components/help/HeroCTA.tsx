@@ -73,7 +73,7 @@ export function HeroCTA({ hotlines, country }: { hotlines: Hotline[]; country: s
   const secondary = (hero.channels ?? []).filter((c) => c.kind !== 'phone');
 
   return (
-    <div className="mb-6 rounded-xl border bg-card p-5 shadow-sm">
+    <div className="mb-6 rounded-container border bg-card p-5 shadow-sm">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('help.hero_label', 'Recommended right now')}

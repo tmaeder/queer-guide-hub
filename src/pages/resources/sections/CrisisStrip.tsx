@@ -92,7 +92,7 @@ export function CrisisStrip() {
   const emergency = EMERGENCY_NUMBERS[country] ?? EMERGENCY_NUMBERS.INT;
 
   return (
-    <section aria-labelledby="crisis-heading" className="rounded-xl bg-foreground/[0.03] border border-border/60 p-5 sm:p-6">
+    <section aria-labelledby="crisis-heading" className="rounded-container bg-foreground/[0.03] border border-border/60 p-5 sm:p-6">
       <header className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
           <AlertTriangle aria-hidden style={{ width: 18, height: 18 }} />
@@ -127,7 +127,7 @@ export function CrisisStrip() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-lg" />)}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-element" />)}
         </div>
       ) : visible.length === 0 ? (
         <p className="text-sm text-muted-foreground">No hotlines loaded yet.</p>

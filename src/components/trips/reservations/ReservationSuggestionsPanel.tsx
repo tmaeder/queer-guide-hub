@@ -151,7 +151,7 @@ export function ReservationSuggestionsPanel({ tripId }: Props) {
 function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
     <div className="flex items-center gap-2 mb-3">
-      <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center">
+      <div className="w-7 h-7 rounded-element bg-muted flex items-center justify-center">
         {icon}
       </div>
       <p className="text-sm font-bold">

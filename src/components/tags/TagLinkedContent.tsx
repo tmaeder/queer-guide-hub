@@ -26,7 +26,7 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
       <CardImage src={v.image_url} alt={v.name} fallbackIcon={MapPin} height={160}>
         {v.foursquare_rating && (
           <div
-            className="absolute flex items-center gap-1 text-white rounded-md px-1.5 py-0.5"
+            className="absolute flex items-center gap-1 text-white rounded-element px-1.5 py-0.5"
             style={{
               top: 8,
               right: 8,
@@ -77,7 +77,7 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
       <CardImage src={e.image_url} alt={e.title} fallbackIcon={Calendar} height={140}>
         {e.event_type && (
           <div
-            className="absolute text-white rounded-md px-2 py-0.5 capitalize"
+            className="absolute text-white rounded-element px-2 py-0.5 capitalize"
             style={{
               top: 8,
               left: 8,
@@ -95,7 +95,7 @@ function EventCard({ e, onClick }: { e: TagContentResult['events'][number]; onCl
         <div className="flex items-start gap-3">
           {date && (
             <div
-              className="rounded-md bg-muted flex flex-col items-center justify-center py-1.5 flex-shrink-0"
+              className="rounded-element bg-muted flex flex-col items-center justify-center py-1.5 flex-shrink-0"
               style={{ width: 48 }}
             >
               <span className="uppercase" style={{ fontSize: '0.6rem', fontWeight: 700, color: 'hsl(var(--primary))', lineHeight: 1 }}>

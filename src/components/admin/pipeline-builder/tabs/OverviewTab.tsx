@@ -54,7 +54,7 @@ function StatusDots({ statuses }: { statuses: string[] }) {
         return (
           <Tooltip key={i}>
             <TooltipTrigger asChild>
-              <div className={`w-[8px] h-[14px] rounded-sm ${bg}`} />
+              <div className={`w-[8px] h-[14px] rounded-badge ${bg}`} />
             </TooltipTrigger>
             <TooltipContent className="text-xs">{s || 'no run'}</TooltipContent>
           </Tooltip>
@@ -68,7 +68,7 @@ function StatCard({ icon: Icon, color, value, label, alert }: {
   icon: React.ComponentType<{ className?: string }>; color: string; value: React.ReactNode; label: string; alert?: boolean;
 }) {
   return (
-    <div className="border border-border rounded-md bg-background p-4">
+    <div className="border border-border rounded-element bg-background p-4">
       <div className="flex items-center gap-2">
         <Icon className={`h-4 w-4 ${color}`} />
         <span className={`text-2xl font-bold tabular-nums ${alert ? 'text-destructive' : ''}`}>{value}</span>
@@ -197,7 +197,7 @@ export default function OverviewTab() {
         </div>
 
         {/* Table */}
-        <div className="border border-border rounded-md bg-background overflow-hidden">
+        <div className="border border-border rounded-element bg-background overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/40">
               <tr className="border-b border-border">

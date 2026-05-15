@@ -80,7 +80,7 @@ export function RevisionPanel({ sourceTable, sourceId }: RevisionPanelProps) {
             {recentRevisions.map((revision) => (
               <div
                 key={revision.id}
-                className="py-2 px-1 hover:bg-accent rounded-sm"
+                className="py-2 px-1 hover:bg-accent rounded-badge"
               >
                 <div className="flex flex-row items-center justify-between">
                   <span className="text-xs font-semibold">

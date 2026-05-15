@@ -65,7 +65,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
         {buckets.map((b) => (
           <div
             key={b.label}
-            className="flex-shrink-0 w-56 border border-border rounded-md bg-background"
+            className="flex-shrink-0 w-56 border border-border rounded-element bg-background"
           >
             <div className="px-3 py-2 border-b border-border sticky top-0 bg-background">
               <div className="text-sm font-semibold">{b.label}</div>

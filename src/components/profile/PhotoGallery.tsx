@@ -204,7 +204,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
             {photos.map((photo) => (
               <div key={photo.id} className="relative group">
                 <div
-                  className="aspect-square overflow-hidden rounded-lg bg-muted cursor-pointer"
+                  className="aspect-square overflow-hidden rounded-element bg-muted cursor-pointer"
                   onClick={async () => {
                     const existing = signedUrls[photo.storage_path];
                     if (existing) {

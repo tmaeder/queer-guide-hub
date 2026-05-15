@@ -71,7 +71,7 @@ export function MemoryRecapCard({ tripId }: Props) {
         <CardContent>
           <div className="flex items-center gap-3 flex-wrap">
             <div
-              className="flex items-center justify-center w-10 h-10 rounded-md text-primary-foreground"
+              className="flex items-center justify-center w-10 h-10 rounded-element text-primary-foreground"
               style={{ backgroundColor: 'hsl(var(--foreground))' }}
             >
               <Sparkles size={20} />

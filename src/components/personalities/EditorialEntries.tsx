@@ -56,7 +56,7 @@ export function EditorialEntries({
               to={`/personalities/${p.slug ?? p.id}`}
               className="block no-underline text-inherit group"
             >
-              <div className="w-32 h-32 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+              <div className="w-32 h-32 rounded-element overflow-hidden bg-muted flex items-center justify-center">
                 {p.image_url ? (
                   <img
                     src={p.image_url}
@@ -145,7 +145,7 @@ export function EditorialEntries({
                   }
                   aria-pressed={active}
                   className={
-                    'flex items-center justify-between text-left px-3 py-2.5 border rounded-md transition-colors hover:bg-accent ' +
+                    'flex items-center justify-between text-left px-3 py-2.5 border rounded-element transition-colors hover:bg-accent ' +
                     (active ? 'border-foreground bg-accent' : 'border-border')
                   }
                 >

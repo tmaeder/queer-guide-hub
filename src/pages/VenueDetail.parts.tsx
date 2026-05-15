@@ -122,7 +122,7 @@ export function VenueHero({
   return (
     <>
       {/* Hero Image */}
-      <ParallaxHero className="w-full h-40 md:h-48 rounded-2xl mb-6">
+      <ParallaxHero className="w-full h-40 md:h-48 rounded-container mb-6">
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={venue.name}
@@ -544,7 +544,7 @@ export function VenuePhotos({ venue, t }: VenuePhotosProps) {
       {venue.images.map((imageUrl, index) => (
         <div
           key={index}
-          className="aspect-square rounded-lg overflow-hidden bg-muted"
+          className="aspect-square rounded-element overflow-hidden bg-muted"
         >
           <img
             src={imageUrl}

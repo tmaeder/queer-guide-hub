@@ -299,7 +299,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         </Tabs>
 
         {/* Search personalization entry point */}
-        <div className="mt-8 p-6 rounded-lg bg-muted">
+        <div className="mt-8 p-6 rounded-element bg-muted">
           <p className="font-semibold mb-2">Personalize your search</p>
           <p className="text-sm mb-4 text-muted-foreground">
             Pick vibes, home city, and languages so search results learn what you like.

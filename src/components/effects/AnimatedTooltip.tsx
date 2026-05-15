@@ -48,7 +48,7 @@ export function AnimatedTooltip({ items, className }: AnimatedTooltipProps) {
                 animate={{ opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 10 } }}
                 exit={{ opacity: 0, y: 10, scale: 0.6 }}
                 style={{ translateX, rotate, whiteSpace: 'nowrap' }}
-                className="absolute -top-14 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center justify-center rounded-xl bg-foreground text-background px-3 py-1.5 shadow-[var(--shadow-aceternity)]"
+                className="absolute -top-14 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center justify-center rounded-container bg-foreground text-background px-3 py-1.5 shadow-[var(--shadow-aceternity)]"
               >
                 <div className="text-xs font-semibold">{item.name}</div>
                 {item.designation && <div className="text-[0.6875rem] opacity-70">{item.designation}</div>}

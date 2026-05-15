@@ -123,7 +123,7 @@ export function JsonField({ field, value, onChange, error, disabled }: FieldProp
         spellCheck={false}
         aria-invalid={!!displayError}
         className={`
-          w-full min-h-[160px] px-3 py-2 rounded-lg text-sm font-mono
+          w-full min-h-[160px] px-3 py-2 rounded-element text-sm font-mono
           bg-muted/50 border-0 resize-y
           focus:outline-none focus:ring-2 focus:ring-ring
           disabled:cursor-not-allowed disabled:opacity-50

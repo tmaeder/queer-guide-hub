@@ -110,7 +110,7 @@ export function SecurityMonitoringDashboard() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-muted rounded-md">
+            <div className="p-2 bg-muted rounded-element">
               <Activity style={{ height: 16, width: 16 }} />
             </div>
             <div>
@@ -123,7 +123,7 @@ export function SecurityMonitoringDashboard() {
 
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md" style={{ backgroundColor: 'rgba(var(--destructive-rgb), 0.1)' }}>
+            <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--destructive-rgb), 0.1)' }}>
               <AlertTriangle style={{ height: 16, width: 16, color: 'var(--destructive)' }} />
             </div>
             <div>
@@ -136,7 +136,7 @@ export function SecurityMonitoringDashboard() {
 
         <Card>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md" style={{ backgroundColor: 'rgba(var(--success-rgb), 0.1)' }}>
+            <div className="p-2 rounded-element" style={{ backgroundColor: 'rgba(var(--success-rgb), 0.1)' }}>
               <Shield style={{ height: 16, width: 16, color: 'var(--success)' }} />
             </div>
             <div>
@@ -159,7 +159,7 @@ export function SecurityMonitoringDashboard() {
               {recentEvents.slice(0, 10).map((event) => {
                 const det = event.details as { severity?: string } | undefined;
                 return (
-                <div key={event.id} className="flex items-start gap-3 p-3 border border-border rounded-md">
+                <div key={event.id} className="flex items-start gap-3 p-3 border border-border rounded-element">
                   <div className="mt-1">{getEventIcon(event.event_type)}</div>
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center justify-between">
@@ -198,7 +198,7 @@ export function SecurityMonitoringDashboard() {
           <CardContent>
             <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
               {auditLogs.map((log: Record<string, unknown>) => (
-                <div key={log.id as string} className="flex items-start gap-3 p-3 border border-border rounded-md">
+                <div key={log.id as string} className="flex items-start gap-3 p-3 border border-border rounded-element">
                   <Users style={{ height: 16, width: 16, marginTop: 4 }} />
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center justify-between">
@@ -232,7 +232,7 @@ export function SecurityMonitoringDashboard() {
           <CardContent>
             <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
               {recentFailedLogins.map((attempt: Record<string, unknown>) => (
-                <div key={attempt.id as string} className="flex items-start gap-3 p-3 border border-border rounded-md">
+                <div key={attempt.id as string} className="flex items-start gap-3 p-3 border border-border rounded-element">
                   <AlertTriangle style={{ height: 16, width: 16, marginTop: 4, color: 'var(--destructive)' }} />
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center justify-between">

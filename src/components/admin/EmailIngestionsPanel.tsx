@@ -103,7 +103,7 @@ export const EmailIngestionsPanel = () => {
           <p>No email ingestions found</p>
         </div>
       ) : (
-        <div className="rounded-md border bg-card">
+        <div className="rounded-element border bg-card">
           <Table>
             <TableHeader>
               <TableRow>

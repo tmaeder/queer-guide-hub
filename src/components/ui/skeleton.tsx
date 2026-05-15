@@ -12,8 +12,8 @@ function Skeleton({ className, variant = "rounded", width, height, animation = "
   const variantClass =
     variant === "circular" ? "rounded-full"
     : variant === "rectangular" ? "rounded-none"
-    : variant === "text" ? "rounded-sm h-4"
-    : "rounded-md"
+    : variant === "text" ? "rounded-badge h-4"
+    : "rounded-element"
   const animClass = animation === false ? "" : "animate-pulse"
   return (
     <div

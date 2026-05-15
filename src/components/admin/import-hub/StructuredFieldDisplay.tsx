@@ -236,7 +236,7 @@ export function StructuredFieldDisplay({
               {field.label}
             </span>
             <div
-              className="rounded-sm"
+              className="rounded-badge"
               style={{
                 padding: '2.4px 8px',
                 backgroundColor: isHighlighted ? 'rgba(250, 204, 21, 0.15)' : 'transparent',

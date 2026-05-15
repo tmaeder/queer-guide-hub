@@ -216,7 +216,7 @@ export const NewsCard = ({
         style={{ textDecoration: 'none', color: 'inherit' }}
       >
         {hasImage && (
-          <div className="md:flex-[0_0_45%] rounded-lg overflow-hidden">
+          <div className="md:flex-[0_0_45%] rounded-element overflow-hidden">
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onError is a non-interactive image lifecycle event */}
             <img
               loading={priority ? 'eager' : 'lazy'}
@@ -270,7 +270,7 @@ export const NewsCard = ({
               type="button"
               onClick={onShare}
               aria-label={`Share ${safeTitle}`}
-              className="ml-auto inline-flex items-center justify-center rounded-md p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 28, width: 28 }}
             >
               <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />
@@ -287,7 +287,7 @@ export const NewsCard = ({
       <LocalizedLink
         to={`/news/${article.slug}`}
         aria-label={safeTitle}
-        className="flex gap-3 p-3 rounded-md border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex gap-3 p-3 rounded-element border border-border hover:bg-muted no-underline text-inherit focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <img
           loading="lazy"
@@ -334,7 +334,7 @@ export const NewsCard = ({
               type="button"
               onClick={onShare}
               aria-label={`Share ${safeTitle}`}
-              className="ml-auto inline-flex items-center justify-center rounded-md p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 24, width: 24 }}
             >
               <Share2 style={{ height: 12, width: 12 }} aria-hidden="true" />
@@ -359,7 +359,7 @@ export const NewsCard = ({
     >
       <CardHeader style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {hasImage && (
-          <div className="relative overflow-hidden rounded-lg">
+          <div className="relative overflow-hidden rounded-element">
             <img
               loading="lazy"
               decoding="async"
@@ -426,7 +426,7 @@ export const NewsCard = ({
           {displaySource && (
             <button
               type="button"
-              className="inline-flex items-center gap-1 text-xs border border-border rounded-md px-2 py-0.5 bg-transparent hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center gap-1 text-xs border border-border rounded-badge px-2 py-0.5 bg-transparent hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ cursor: onFilterBySource ? 'pointer' : 'default' }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -446,7 +446,7 @@ export const NewsCard = ({
               e.stopPropagation();
               onViewArticle?.(article.id);
             }}
-            className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+            className="inline-flex items-center text-muted-foreground opacity-50 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-badge"
             aria-label={displaySource ? `Open original article on ${displaySource} (opens in new tab)` : 'Open original article (opens in new tab)'}
             title="Open original article"
           >
@@ -569,7 +569,7 @@ export const NewsCard = ({
             type="button"
             onClick={onShare}
             aria-label={`Share ${safeTitle}`}
-            className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{ height: 28, width: 28 }}
           >
             <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />

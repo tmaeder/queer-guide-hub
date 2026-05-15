@@ -81,7 +81,7 @@ function totalsFor(sources: Array<[string, Agg]>) {
 
 function StatCard({ icon: Icon, color, value, label }: { icon: React.ComponentType<{ className?: string }>; color: string; value: number | string; label: string }) {
   return (
-    <div className="border border-border rounded-md bg-background px-4 py-3">
+    <div className="border border-border rounded-element bg-background px-4 py-3">
       <div className="flex items-center gap-2">
         <Icon className={`h-4 w-4 ${color}`} />
         <span className="text-2xl font-bold tabular-nums">{value}</span>
@@ -93,7 +93,7 @@ function StatCard({ icon: Icon, color, value, label }: { icon: React.ComponentTy
 
 function IngestTable({ label, sources, totals }: { label: string; sources: Array<[string, Agg]>; totals: ReturnType<typeof totalsFor> }) {
   return (
-    <div className="border border-border rounded-md bg-background overflow-hidden">
+    <div className="border border-border rounded-element bg-background overflow-hidden">
       <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
         <div className="font-semibold text-sm">{label} Ingest</div>
         <div className="text-xs text-muted-foreground flex items-center gap-3">
@@ -225,7 +225,7 @@ export default function MonitorTab() {
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          <div className="border border-border rounded-md bg-background overflow-hidden">
+          <div className="border border-border rounded-element bg-background overflow-hidden">
             <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <BarChart3 className="h-3.5 w-3.5" />
               Run duration distribution
@@ -246,7 +246,7 @@ export default function MonitorTab() {
             </div>
           </div>
 
-          <div className="border border-border rounded-md bg-background overflow-hidden">
+          <div className="border border-border rounded-element bg-background overflow-hidden">
             <div className="px-4 py-2 border-b border-border flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <TrendingUp className="h-3.5 w-3.5" />
               Throughput (last 24h)
@@ -276,7 +276,7 @@ export default function MonitorTab() {
         {/* Runs table + detail panel */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Runs table */}
-          <div className="lg:col-span-2 border border-border rounded-md bg-background overflow-hidden flex flex-col">
+          <div className="lg:col-span-2 border border-border rounded-element bg-background overflow-hidden flex flex-col">
             <div className="px-4 py-2.5 border-b border-border flex items-center gap-2">
               <div className="font-semibold text-sm mr-2">Recent Runs</div>
               <RunCompareDialog />
@@ -380,7 +380,7 @@ export default function MonitorTab() {
           </div>
 
           {/* Detail panel */}
-          <div className="border border-border rounded-md bg-background overflow-hidden flex flex-col">
+          <div className="border border-border rounded-element bg-background overflow-hidden flex flex-col">
             <div className="px-4 py-2.5 border-b border-border font-semibold text-sm">
               {selectedRun ? 'Run Details' : 'Select a run'}
             </div>
@@ -395,14 +395,14 @@ export default function MonitorTab() {
                     </div>
                   </div>
                   {selectedRun.error_message && (
-                    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+                    <div className="rounded-element border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
                       {selectedRun.error_message}
                     </div>
                   )}
                   {selectedRun.node_states && Object.entries(selectedRun.node_states as Record<string, Record<string, unknown>>).map(([nodeId, state]) => {
                     const NodeIcon = statusIcon[state.status as string] || Clock;
                     return (
-                      <div key={nodeId} className="border border-border rounded-md p-2 hover:bg-muted/30 transition-colors">
+                      <div key={nodeId} className="border border-border rounded-element p-2 hover:bg-muted/30 transition-colors">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs2 font-mono truncate" title={nodeId}>{nodeId}</span>
                           <span className={`inline-flex items-center gap-1 text-2xs px-1.5 py-0 rounded ${statusClass[state.status as string] || 'bg-muted'}`}>
@@ -430,7 +430,7 @@ export default function MonitorTab() {
                   {selectedRun.output_result && (
                     <details className="text-xs">
                       <summary className="cursor-pointer text-muted-foreground hover:text-foreground py-1">Raw output</summary>
-                      <pre className="text-2xs bg-muted/40 p-2 rounded-md overflow-auto max-h-56 mt-1">
+                      <pre className="text-2xs bg-muted/40 p-2 rounded-element overflow-auto max-h-56 mt-1">
                         {JSON.stringify(selectedRun.output_result, null, 2)}
                       </pre>
                     </details>

@@ -101,7 +101,7 @@ export function ResourceTagDetail({
       {/* Hero — only show image box when tag has an image */}
       {selectedTag.image_url ? (
         <div
-          className="w-full rounded-2xl overflow-hidden mb-6 relative bg-muted"
+          className="w-full rounded-container overflow-hidden mb-6 relative bg-muted"
           style={{ aspectRatio: '16 / 9' }}
         >
           <img

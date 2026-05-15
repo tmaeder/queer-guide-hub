@@ -362,7 +362,7 @@ export default function HelpHotlines() {
 
       {/* Sticky emergency banner — renders synchronously, never blocked on i18n/CMS */}
       <div className="sticky top-16 z-10 my-6">
-        <Alert variant="destructive" className="rounded-lg">
+        <Alert variant="destructive" className="rounded-container">
           <AlertTriangle className="h-6 w-6" />
           <AlertTitle className="font-bold">
             {t('help.emergency_title', 'In acute danger?')}
@@ -397,8 +397,8 @@ export default function HelpHotlines() {
 
       {loading || !ready ? (
         <>
-          <Skeleton className="mb-4 h-36 w-full rounded-md" />
-          <Skeleton className="mb-4 h-36 w-full rounded-md" />
+          <Skeleton className="mb-4 h-36 w-full rounded-element" />
+          <Skeleton className="mb-4 h-36 w-full rounded-element" />
         </>
       ) : error || !page ? (
         <div className="py-8 text-center">
@@ -656,7 +656,7 @@ function HotlineCard({
         <p className="text-sm leading-relaxed text-muted-foreground">{hotline.description}</p>
 
         {hotline.what_to_expect && (
-          <details className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
+          <details className="rounded-element border bg-muted/30 px-3 py-2 text-sm">
             <summary className="cursor-pointer font-medium">
               {t('help.expect_short', 'What to expect')}
             </summary>

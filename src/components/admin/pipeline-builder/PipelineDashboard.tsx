@@ -183,7 +183,7 @@ export default function PipelineDashboard() {
                   <ScrollArea className="h-[460px]">
                     <div className="space-y-2">
                       {Object.entries(selectedRun.node_states || {}).map(([nodeId, state]) => (
-                        <div key={nodeId} className="border rounded-md p-2">
+                        <div key={nodeId} className="border rounded-element p-2">
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-mono truncate">{nodeId}</span>
                             <Badge variant="outline" className={`text-2xs ${statusColors[state.status] || ''}`}>
@@ -198,7 +198,7 @@ export default function PipelineDashboard() {
                         </div>
                       ))}
                       {selectedRun.error_message && (
-                        <div className="border border-red-200 dark:border-red-900 rounded-md p-2 bg-red-50 dark:bg-red-950/30">
+                        <div className="border border-red-200 dark:border-red-900 rounded-element p-2 bg-red-50 dark:bg-red-950/30">
                           <p className="text-xs text-red-700 dark:text-red-300">{selectedRun.error_message}</p>
                         </div>
                       )}

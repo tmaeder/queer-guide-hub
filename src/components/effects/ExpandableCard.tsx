@@ -65,7 +65,7 @@ export function ExpandableCard({ items, className }: ExpandableCardProps) {
               </motion.button>
               <motion.div
                 layoutId={reduced ? undefined : `card-${active.id}`}
-                className="w-full max-w-lg bg-card rounded-2xl border border-border/60 shadow-[var(--shadow-aceternity-lg)] overflow-hidden flex flex-col max-h-[90vh]"
+                className="w-full max-w-lg bg-card rounded-container border border-border/60 shadow-[var(--shadow-aceternity-lg)] overflow-hidden flex flex-col max-h-[90vh]"
               >
                 <motion.div layoutId={reduced ? undefined : `image-${active.id}`}>
                   <img src={active.src} alt={active.title} className="w-full h-72 object-cover" />
@@ -108,7 +108,7 @@ export function ExpandableCard({ items, className }: ExpandableCardProps) {
             key={card.id}
             layoutId={reduced ? undefined : `card-${card.id}`}
             onClick={() => setActive(card)}
-            className="cursor-pointer bg-card rounded-2xl border border-border/60 overflow-hidden hover:-translate-y-0.5 hover:shadow-[var(--shadow-aceternity)] transition-all"
+            className="cursor-pointer bg-card rounded-container border border-border/60 overflow-hidden hover:-translate-y-0.5 hover:shadow-[var(--shadow-aceternity)] transition-all"
           >
             <motion.div layoutId={reduced ? undefined : `image-${card.id}`}>
               <img src={card.src} alt={card.title} className="w-full h-40 object-cover" />

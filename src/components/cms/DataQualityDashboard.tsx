@@ -95,7 +95,7 @@ export function DataQualityDashboard() {
           <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" aria-label="Loading" />
         </div>
       ) : (
-        <div className="border border-border rounded-lg overflow-hidden bg-background">
+        <div className="border border-border rounded-element overflow-hidden bg-background">
           <div
             className="grid px-4 py-2.5 bg-muted border-b border-border text-[0.7rem] font-bold uppercase tracking-wider text-muted-foreground"
             style={{ gridTemplateColumns: '2fr repeat(6, 1fr)' }}
@@ -143,7 +143,7 @@ function SummaryTile({
   color: string;
 }) {
   return (
-    <div className="p-3 border border-border rounded-lg bg-background flex flex-col gap-1">
+    <div className="p-3 border border-border rounded-element bg-background flex flex-col gap-1">
       <div className="flex items-center gap-1.5">
         <Icon size={14} color={color} />
         <p className="text-[0.7rem] text-muted-foreground">{label}</p>

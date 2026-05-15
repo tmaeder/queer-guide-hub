@@ -75,7 +75,7 @@ export function FieldRenderer({
 
   if (!Component) {
     return (
-      <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
+      <div className="p-3 rounded-element bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
         Unknown field type: <code>{field.type}</code> for field "{field.name}"
       </div>
     );

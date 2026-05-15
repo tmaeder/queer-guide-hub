@@ -59,11 +59,11 @@ function QuadrantCard({
 }) {
   const navigate = useNavigate();
   return (
-    <div className="border border-border rounded-lg bg-background p-5 flex flex-col gap-4 h-full">
+    <div className="border border-border rounded-element bg-background p-5 flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div
-            className="w-7 h-7 rounded-md flex items-center justify-center bg-muted text-muted-foreground"
+            className="w-7 h-7 rounded-element flex items-center justify-center bg-muted text-muted-foreground"
           >
             <Icon size={15} />
           </div>
@@ -131,7 +131,7 @@ function SystemStatus({ data }: { data: CockpitData }) {
 function MetricBox({ label, value, good }: { label: string; value: string; good: boolean }) {
   return (
     <div
-      className="p-3 rounded-md text-center bg-muted"
+      className="p-3 rounded-element text-center bg-muted"
     >
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div
@@ -307,7 +307,7 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
   const navigate = useNavigate();
 
   return (
-    <div className="border border-border rounded-lg bg-background p-5">
+    <div className="border border-border rounded-element bg-background p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold">Content Overview</h3>
         <span className="text-xs text-muted-foreground">
@@ -326,7 +326,7 @@ function ContentStatsGrid({ stats }: { stats: CockpitData['stats'] }) {
             key={key}
             type="button"
             onClick={() => navigate(route)}
-            className="flex flex-col items-center gap-1 p-3 rounded-md cursor-pointer transition-all hover:-translate-y-px hover:bg-muted"
+            className="flex flex-col items-center gap-1 p-3 rounded-element cursor-pointer transition-all hover:-translate-y-px hover:bg-muted"
           >
             <Icon size={18} className="text-muted-foreground" />
             <div className="text-lg font-bold leading-none">
@@ -381,10 +381,10 @@ function CockpitSkeleton() {
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="rounded-lg" style={{ height: 220 }} />
+          <Skeleton key={i} className="rounded-element" style={{ height: 220 }} />
         ))}
       </div>
-      <Skeleton className="rounded-lg" style={{ height: 160 }} />
+      <Skeleton className="rounded-element" style={{ height: 160 }} />
     </div>
   );
 }

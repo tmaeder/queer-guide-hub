@@ -78,7 +78,7 @@ export const GroupPostCard = ({
     const totalVotes = post.poll_data.options.reduce((sum: number) => sum + 0, 0);
 
     return (
-      <div className="mt-4 p-4 rounded-md bg-muted">
+      <div className="mt-4 p-4 rounded-element bg-muted">
         <div className="flex items-center gap-2 mb-3">
           <BarChart3 style={{ width: 16, height: 16 }} color="var(--primary)" />
           <p className="text-sm font-medium">{post.poll_data.question}</p>

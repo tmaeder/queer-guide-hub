@@ -175,7 +175,7 @@ export function ModerationQueue() {
             return (
               <div
                 key={item.id}
-                className={`border rounded-lg bg-background overflow-hidden ${
+                className={`border rounded-element bg-background overflow-hidden ${
                   item.is_spam ? 'border-destructive/50' : 'border-border'
                 }`}
               >

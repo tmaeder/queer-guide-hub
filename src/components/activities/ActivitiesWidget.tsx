@@ -12,7 +12,7 @@ export function ActivitiesWidget({ destination }: ActivitiesWidgetProps) {
   const searchUrl = `https://www.getyourguide.com/s/?q=${encodeURIComponent(destination + ' LGBTQ')}&partner_id=${GYG_PARTNER_ID}`;
 
   return (
-    <div className="text-center py-12 px-6 bg-muted/40 rounded-2xl border-2 border-dashed border-border">
+    <div className="text-center py-12 px-6 bg-muted/40 rounded-container border-2 border-dashed border-border">
       <div className="p-4 bg-muted rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
         <Activity className="h-8 w-8 text-muted-foreground" />
       </div>

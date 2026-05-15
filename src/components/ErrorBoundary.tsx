@@ -75,7 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
               An unexpected error occurred. Please try refreshing the page.
             </p>
             {import.meta.env.DEV && this.state.error && (
-              <pre className="text-xs font-mono text-left p-3 bg-muted rounded-lg max-h-40 overflow-auto break-all">
+              <pre className="text-xs font-mono text-left p-3 bg-muted rounded-element max-h-40 overflow-auto break-all">
                 {this.state.error.name}: {this.state.error.message}
               </pre>
             )}

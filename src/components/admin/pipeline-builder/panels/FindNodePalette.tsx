@@ -44,7 +44,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="p-0 max-w-lg gap-0">
-        <Command className="rounded-lg">
+        <Command className="rounded-element">
           <CommandInput placeholder="Find node on canvas... (Esc to close)" autoFocus />
           <CommandList className="max-h-[400px]">
             <CommandEmpty>No nodes match</CommandEmpty>

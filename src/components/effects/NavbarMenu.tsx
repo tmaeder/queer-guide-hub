@@ -65,7 +65,7 @@ export function MenuItem({ item, children }: MenuItemProps) {
             <motion.div
               layoutId="navbar-menu-panel"
               transition={TRANSITION}
-              className="bg-background/95 backdrop-blur-md rounded-2xl overflow-hidden border border-border/60 shadow-[var(--shadow-aceternity)]"
+              className="bg-background/95 backdrop-blur-md rounded-container overflow-hidden border border-border/60 shadow-[var(--shadow-aceternity)]"
             >
               <motion.div layout className="w-max h-full p-4">
                 {children}
@@ -92,7 +92,7 @@ export function HoveredLink({ href, children, className, description, onClick }:
       href={href}
       onClick={onClick}
       className={cn(
-        'block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
+        'block rounded-element px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors',
         className,
       )}
     >

@@ -46,7 +46,7 @@ interface FactRowProps {
 
 function FactRow({ icon: Icon, label, value, valueSize }: FactRowProps) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+    <div className="flex items-center justify-between p-3 rounded-element bg-muted">
       <div className="flex items-center gap-2">
         <Icon style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
         <span className="text-sm font-medium">{label}</span>
@@ -171,7 +171,7 @@ export function CityOverviewTab({
               </CardHeader>
               <CardContent style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {city.climate_type && (
-                  <div className="p-3 rounded-lg bg-muted">
+                  <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
                       <Thermometer style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <span className="text-sm font-medium">Climate</span>
@@ -180,7 +180,7 @@ export function CityOverviewTab({
                   </div>
                 )}
                 {city.latitude && city.longitude && (
-                  <div className="p-3 rounded-lg bg-muted">
+                  <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <span className="text-sm font-medium">Coordinates</span>
@@ -232,7 +232,7 @@ export function CityOverviewTab({
                   </div>
                 )}
                 {effectiveIata && (
-                  <div className="p-3 rounded-lg bg-muted">
+                  <div className="p-3 rounded-element bg-muted">
                     <div className="flex items-center gap-2 mb-1">
                       <Plane style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />
                       <span className="text-sm font-medium">
@@ -261,7 +261,7 @@ export function CityOverviewTab({
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {Object.entries(city.demographics).map(([key, value]) => (
-                      <div key={key} className="p-3 rounded-lg bg-muted">
+                      <div key={key} className="p-3 rounded-element bg-muted">
                         <span className="text-sm font-medium capitalize block mb-1">
                           {key.replace(/_/g, ' ')}
                         </span>
@@ -306,7 +306,7 @@ export function CityOverviewTab({
                       {Object.entries(city.cost_of_living).map(([key, value]) => (
                         <div
                           key={key}
-                          className="flex items-center justify-between p-3 rounded-lg bg-muted"
+                          className="flex items-center justify-between p-3 rounded-element bg-muted"
                         >
                           <span className="text-sm font-medium capitalize">
                             {key.replace(/_/g, ' ')}
@@ -331,7 +331,7 @@ export function CityOverviewTab({
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {city.universities.map((university: string, index: number) => (
-                      <div key={index} className="p-3 rounded-lg bg-muted">
+                      <div key={index} className="p-3 rounded-element bg-muted">
                         <div className="flex items-center gap-2">
                           <GraduationCap style={{ height: 16, width: 16 }} />
                           <span className="font-medium text-sm">{university}</span>
@@ -355,7 +355,7 @@ export function CityOverviewTab({
                   <CardContent>
                     <div className="grid gap-3">
                       {city.notable_landmarks.map((landmark: string, index: number) => (
-                        <div key={index} className="p-3 rounded-lg bg-muted">
+                        <div key={index} className="p-3 rounded-element bg-muted">
                           <div className="flex items-center gap-2">
                             <Landmark style={{ height: 16, width: 16 }} />
                             <span className="font-medium">{landmark}</span>
@@ -377,7 +377,7 @@ export function CityOverviewTab({
                   <CardContent>
                     <div className="grid gap-3">
                       {city.sister_cities.map((sisterCity: string, index: number) => (
-                        <div key={index} className="p-3 rounded-lg bg-muted">
+                        <div key={index} className="p-3 rounded-element bg-muted">
                           <div className="flex items-center gap-2">
                             <Globe style={{ height: 16, width: 16 }} />
                             <span className="font-medium">{sisterCity}</span>

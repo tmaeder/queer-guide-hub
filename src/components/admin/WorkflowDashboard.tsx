@@ -281,7 +281,7 @@ function OverviewTab({
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
         {statCards.map((s) => (
-          <div key={s.label} className="rounded-lg border bg-card p-4">
+          <div key={s.label} className="rounded-element border bg-card p-4">
             <span className="mb-1 block text-xs text-muted-foreground">{s.label}</span>
             <div className="text-lg font-bold" style={{ color: s.color }}>
               {typeof s.value === 'number' ? s.value.toLocaleString() : s.value}
@@ -292,7 +292,7 @@ function OverviewTab({
 
       {/* Active runs */}
       {activeRuns.length > 0 && (
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-element border bg-card p-4">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-bold">
             <Loader2 size={14} className="animate-spin" />
             Active Runs ({activeRuns.length})
@@ -323,7 +323,7 @@ function OverviewTab({
 
       {/* Queue metrics */}
       {metrics?.queues && metrics.queues.length > 0 && (
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-element border bg-card p-4">
           <h3 className="mb-3 text-sm font-bold">Queue Depths</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             {metrics.queues.map((q) => (
@@ -391,7 +391,7 @@ function RunsTab({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border bg-card">
+      <div className="rounded-element border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
@@ -571,7 +571,7 @@ function DefinitionsTab({
   isEnqueuing: boolean;
 }) {
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="rounded-element border bg-card">
       <Table>
         <TableHeader>
           <TableRow>
@@ -668,7 +668,7 @@ function DeadLetterTab({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 rounded-lg bg-red-600 p-4 text-white">
+      <div className="flex items-center gap-2 rounded-element bg-red-600 p-4 text-white">
         <AlertTriangle size={18} />
         <p className="text-sm font-semibold">
           {runs.length} workflow{runs.length !== 1 ? 's' : ''} in dead letter queue — review and
@@ -678,7 +678,7 @@ function DeadLetterTab({
       {runs.map((run) => (
         <div
           key={run.id}
-          className="rounded-lg border border-red-300 bg-card p-4"
+          className="rounded-element border border-red-300 bg-card p-4"
         >
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">

@@ -196,22 +196,22 @@ export default function AceternityShowcase() {
       {/* ── Backgrounds ───────────────────────────────────────────── */}
       <Section id="backgrounds" title="Backgrounds" kicker="11 effects">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative h-60 rounded-xl border border-border/60 overflow-hidden">
+          <div className="relative h-60 rounded-container border border-border/60 overflow-hidden">
             <Vortex />
             <div className="absolute inset-0 flex items-center justify-center text-sm font-medium uppercase tracking-wider">Vortex</div>
           </div>
-          <div className="relative h-60 rounded-xl border border-border/60 overflow-hidden">
+          <div className="relative h-60 rounded-container border border-border/60 overflow-hidden">
             <WavyBackground />
             <div className="absolute inset-0 flex items-center justify-center text-sm font-medium uppercase tracking-wider">WavyBackground</div>
           </div>
-          <div className="relative h-60 rounded-xl border border-border/60 overflow-hidden bg-grid-dots">
+          <div className="relative h-60 rounded-container border border-border/60 overflow-hidden bg-grid-dots">
             <div className="absolute inset-0 flex items-center justify-center text-sm font-medium uppercase tracking-wider">bg-grid-dots</div>
           </div>
-          <div className="relative h-60 rounded-xl border border-border/60 overflow-hidden">
+          <div className="relative h-60 rounded-container border border-border/60 overflow-hidden">
             <BackgroundLines className="opacity-100" />
             <div className="absolute inset-0 flex items-center justify-center text-sm font-medium uppercase tracking-wider">BackgroundLines</div>
           </div>
-          <div className="relative h-60 rounded-xl border border-border/60 overflow-hidden md:col-span-2">
+          <div className="relative h-60 rounded-container border border-border/60 overflow-hidden md:col-span-2">
             <div className="absolute inset-0 [mask-image:radial-gradient(transparent,white)] pointer-events-none">
               <Boxes />
             </div>
@@ -219,12 +219,12 @@ export default function AceternityShowcase() {
               <div className="h-20"><TextHoverEffect text="BOXES" /></div>
             </div>
           </div>
-          <div className="relative h-60 rounded-xl border border-border/60 overflow-hidden">
+          <div className="relative h-60 rounded-container border border-border/60 overflow-hidden">
             <LampEffect className="h-full">
               <span className="text-sm font-semibold tracking-tight">LampEffect</span>
             </LampEffect>
           </div>
-          <div className="relative h-60 rounded-xl border border-border/60 overflow-hidden">
+          <div className="relative h-60 rounded-container border border-border/60 overflow-hidden">
             <SpotlightEffect className="h-full flex items-center justify-center">
               <span className="text-sm font-medium uppercase tracking-wider">SpotlightEffect</span>
             </SpotlightEffect>
@@ -291,7 +291,7 @@ export default function AceternityShowcase() {
         <div className="mt-12 mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">InfiniteMovingCards</div>
         <InfiniteMovingCards direction="left" speed="slow">
           {stackItems.map((s) => (
-            <div key={s.id} className="w-72 shrink-0 rounded-2xl border border-border/60 bg-card p-5">
+            <div key={s.id} className="w-72 shrink-0 rounded-container border border-border/60 bg-card p-5">
               <p className="text-sm leading-relaxed">{s.content}</p>
               <p className="mt-3 text-xs font-semibold">{s.name}</p>
               <p className="text-xs text-muted-foreground">{s.designation}</p>
@@ -299,7 +299,7 @@ export default function AceternityShowcase() {
           ))}
         </InfiniteMovingCards>
         <div className="mt-12 mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">Marquee</div>
-        <div className="border-y border-border/60 py-4 bg-muted/30 rounded-xl">
+        <div className="border-y border-border/60 py-4 bg-muted/30 rounded-container">
           <Marquee speed={45}>
             {['VERIFIED SAFE SPACES', 'BUILT BY THE COMMUNITY', 'NO PAYWALLS', 'WORLDWIDE', '180+ COUNTRIES'].map((t) => (
               <span key={t} className="inline-flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
@@ -310,7 +310,7 @@ export default function AceternityShowcase() {
           </Marquee>
         </div>
         <div className="mt-12 mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">ImagesSlider</div>
-        <div className="relative h-72 rounded-2xl overflow-hidden border border-border/60">
+        <div className="relative h-72 rounded-container overflow-hidden border border-border/60">
           <ImagesSlider images={slideImages}>
             <div className="h-full flex items-center justify-center">
               <p className="text-background text-3xl md:text-4xl font-extrabold tracking-tight">Auto-rotating.</p>
@@ -322,17 +322,17 @@ export default function AceternityShowcase() {
       {/* ── Text effects ──────────────────────────────────────────── */}
       <Section id="text" title="Text effects" kicker="4 patterns">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-8 rounded-2xl bg-card border border-border/60">
+          <div className="p-8 rounded-container bg-card border border-border/60">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">TextGenerateEffect</p>
             <TextGenerateEffect words="A field guide for queer travellers." className="text-2xl font-bold tracking-tight" />
           </div>
-          <div className="p-8 rounded-2xl bg-card border border-border/60">
+          <div className="p-8 rounded-container bg-card border border-border/60">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">WordRotate</p>
             <div className="text-2xl font-semibold">
               Find queer <WordRotate className="text-foreground" words={['venues', 'events', 'community']} />
             </div>
           </div>
-          <div className="p-2 rounded-2xl bg-card border border-border/60 h-40 overflow-hidden">
+          <div className="p-2 rounded-container bg-card border border-border/60 h-40 overflow-hidden">
             <TextHoverEffect text="HOVER" />
           </div>
           <TextRevealCard text="Move the handle." revealText="Reveal me." />
@@ -382,21 +382,21 @@ export default function AceternityShowcase() {
       {/* ── Interactive ───────────────────────────────────────────── */}
       <Section id="interactive" title="Interactive" kicker="11 effects">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-border/60 p-6">
+          <div className="rounded-container border border-border/60 p-6">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">FollowingPointer</p>
             <FollowingPointer title="Open">
-              <div className="h-40 rounded-xl bg-grid-dots flex items-center justify-center text-muted-foreground">
+              <div className="h-40 rounded-container bg-grid-dots flex items-center justify-center text-muted-foreground">
                 Hover inside this card.
               </div>
             </FollowingPointer>
           </div>
 
-          <div className="rounded-2xl border border-border/60 p-6">
+          <div className="rounded-container border border-border/60 p-6">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">AnimatedTooltip</p>
             <AnimatedTooltip items={tooltips} />
           </div>
 
-          <div className="rounded-2xl border border-border/60 p-6 md:col-span-2">
+          <div className="rounded-container border border-border/60 p-6 md:col-span-2">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">LinkPreview</p>
             <p className="text-sm">
               The Queer Guide team publishes a monthly{' '}
@@ -404,7 +404,7 @@ export default function AceternityShowcase() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border/60 p-6">
+          <div className="rounded-container border border-border/60 p-6">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">DraggableCardBody</p>
             <DraggableCardContainer className="h-40 flex items-center justify-center">
               <DraggableCardBody className="px-6 py-4">
@@ -414,19 +414,19 @@ export default function AceternityShowcase() {
             </DraggableCardContainer>
           </div>
 
-          <div className="rounded-2xl border border-border/60 p-6 overflow-hidden">
+          <div className="rounded-container border border-border/60 p-6 overflow-hidden">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">Lens</p>
-            <Lens className="h-40 rounded-xl">
+            <Lens className="h-40 rounded-container">
               <img src={IMG()} alt="" className="w-full h-full object-cover" />
             </Lens>
           </div>
 
-          <div className="rounded-2xl border border-border/60 p-6 md:col-span-2">
+          <div className="rounded-container border border-border/60 p-6 md:col-span-2">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">Compare</p>
             <Compare firstImage={IMG()} secondImage={IMG()} firstAlt="Before" secondAlt="After" className="h-60" />
           </div>
 
-          <div ref={containerRef} className="relative rounded-2xl border border-border/60 p-8 md:col-span-2 h-60 flex items-center justify-between">
+          <div ref={containerRef} className="relative rounded-container border border-border/60 p-8 md:col-span-2 h-60 flex items-center justify-between">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground absolute top-4 left-4">AnimatedBeam</p>
             <div ref={fromRef} className="h-14 w-14 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold relative z-10">A</div>
             <div ref={toRef} className="h-14 w-14 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-semibold relative z-10">B</div>
@@ -453,7 +453,7 @@ export default function AceternityShowcase() {
           <MovingBorder onClick={() => {}} duration={4}>MovingBorder</MovingBorder>
           <button className="shine-on-hover px-5 py-2.5 rounded-full bg-foreground text-background text-sm font-medium">.shine-on-hover</button>
         </div>
-        <div className="mt-8 p-6 rounded-2xl border border-border/60 bg-card">
+        <div className="mt-8 p-6 rounded-container border border-border/60 bg-card">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">NavbarMenu</p>
           <NavbarMenu>
             <NavbarMenuItem item="Venues">
@@ -491,7 +491,7 @@ export default function AceternityShowcase() {
           <p className="text-sm text-muted-foreground mt-1">Door-opening 3D rotateX with backdrop blur.</p>
           <button
             onClick={() => setModalOpen(false)}
-            className="mt-5 inline-flex items-center justify-center rounded-md bg-foreground text-background px-4 py-2 text-sm font-semibold hover:opacity-90"
+            className="mt-5 inline-flex items-center justify-center rounded-element bg-foreground text-background px-4 py-2 text-sm font-semibold hover:opacity-90"
           >
             Close
           </button>

@@ -49,7 +49,7 @@ export function PinContainer({ children, title, href, className, containerClassN
         animate={{ rotateY: hovered ? -3 : 0, rotateX: hovered ? 3 : 0, scale: hovered ? 1.02 : 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 22 }}
         className={cn(
-          'relative rounded-2xl border border-border/60 bg-card overflow-hidden',
+          'relative rounded-container border border-border/60 bg-card overflow-hidden',
           className,
         )}
       >

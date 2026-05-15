@@ -90,7 +90,7 @@ function PageSkeleton() {
       <Skeleton className="mb-4 h-6 w-32" />
       <Skeleton className="mb-2 h-12 w-[70%]" />
       <Skeleton className="mb-8 h-7 w-1/2" />
-      <Skeleton className="mb-4 h-[200px] w-full rounded-md" />
+      <Skeleton className="mb-4 h-[200px] w-full rounded-element" />
       <Skeleton className="mb-2 h-5 w-full" />
       <Skeleton className="mb-2 h-5 w-[90%]" />
       <Skeleton className="mb-2 h-5 w-[95%]" />

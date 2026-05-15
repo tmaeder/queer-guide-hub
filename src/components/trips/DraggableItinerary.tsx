@@ -205,7 +205,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
     >
       {/* Unassigned places */}
       {unassigned.length > 0 && (
-        <div className="border border-dashed border-border rounded-2xl p-5 mb-4 bg-muted/40 backdrop-blur-sm">
+        <div className="border border-dashed border-border rounded-container p-5 mb-4 bg-muted/40 backdrop-blur-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
@@ -241,7 +241,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
 
       {/* Empty state */}
       {itineraryIsEmpty && (
-        <div className="text-center py-16 md:py-24 px-6 border border-dashed border-border rounded-3xl bg-muted/30 backdrop-blur-sm">
+        <div className="text-center py-16 md:py-24 px-6 border border-dashed border-border rounded-container bg-muted/30 backdrop-blur-sm">
           <div className="relative w-16 h-16 mx-auto mb-5">
             <div
               className="absolute inset-0 rounded-full opacity-[0.08]"
@@ -269,12 +269,12 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
       {sortedDays.map(({ day, dayNumber }) => {
         const dayPlaces = placesByContainer[day.id] || [];
         return (
-          <Card key={day.id} className="mb-3 rounded-2xl border-border/70 overflow-hidden">
+          <Card key={day.id} className="mb-3 rounded-container border-border/70 overflow-hidden">
             <CardContent>
               <div className="flex items-center justify-between mb-4 gap-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div
-                    className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-2xl"
+                    className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element"
                     style={{
                       backgroundColor: 'hsl(var(--foreground))',
                       color: 'hsl(var(--background))',
@@ -354,7 +354,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
               >
                 {dayPlaces.length === 0 ? (
                   <div
-                    className="border border-dashed rounded-2xl py-6 text-center min-h-[56px] transition-colors bg-muted/20"
+                    className="border border-dashed rounded-container py-6 text-center min-h-[56px] transition-colors bg-muted/20"
                     style={{
                       borderColor: activeDragId ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
                     }}
@@ -379,7 +379,7 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
       })}
 
       {!itineraryIsEmpty && (
-        <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-3 rounded-2xl border-dashed h-12">
+        <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-3 rounded-element border-dashed h-12">
           <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
           {t('trips.itinerary.addPlace')}
         </Button>

@@ -754,7 +754,7 @@ export const ExploreMap = ({
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden border border-border ${className ?? ''}`}
+      className={`relative rounded-container overflow-hidden border border-border ${className ?? ''}`}
       style={{ height }}
     >
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />

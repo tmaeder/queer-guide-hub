@@ -27,14 +27,14 @@ export function MarketplaceCategoryTiles() {
               <div
                 key={i}
                 aria-hidden="true"
-                className="rounded-2xl border border-border bg-muted/30 min-h-[120px] animate-pulse"
+                className="rounded-container border border-border bg-muted/30 min-h-[120px] animate-pulse"
               />
             ))
           : tiles.map((tile) => (
               <LocalizedLink
                 key={tile.slug}
                 to={`/marketplace/category/${tile.slug}`}
-                className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card p-4 sm:p-5 min-h-[120px] hover:bg-muted transition-colors"
+                className="group relative flex flex-col justify-between rounded-container border border-border bg-card p-4 sm:p-5 min-h-[120px] hover:bg-muted transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-sm font-semibold leading-tight text-balance">{prettify(tile.slug)}</span>

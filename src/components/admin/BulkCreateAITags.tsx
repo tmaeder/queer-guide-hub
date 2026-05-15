@@ -135,10 +135,10 @@ const BulkCreateAITags = ({ onComplete }: BulkCreateAITagsProps) => {
           {results.length > 0 && (
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-medium mb-2">Results:</p>
-              <div className="border border-border rounded-sm overflow-auto max-h-64">
+              <div className="border border-border rounded-badge overflow-auto max-h-64">
                 <div className="flex flex-col gap-2 p-3">
                   {results.map((result, index) => (
-                    <div key={index} className="flex items-start justify-between gap-3 p-2 bg-muted rounded-sm">
+                    <div key={index} className="flex items-start justify-between gap-3 p-2 bg-muted rounded-badge">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           {getStatusIcon(result.status)}

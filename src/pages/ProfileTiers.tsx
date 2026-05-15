@@ -67,7 +67,7 @@ export default function ProfileTiers() {
   if (isLoading || !data) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
-        <div className="h-8 w-40 animate-pulse rounded-md bg-muted" />
+        <div className="h-8 w-40 animate-pulse rounded-element bg-muted" />
       </div>
     );
   }
@@ -149,7 +149,7 @@ export default function ProfileTiers() {
               <div
                 key={t}
                 className={
-                  "flex gap-4 rounded-lg border p-4 " +
+                  "flex gap-4 rounded-element border p-4 " +
                   (active ? "border-foreground" : "border-border")
                 }
               >

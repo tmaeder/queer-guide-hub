@@ -453,11 +453,11 @@ const Index = React.memo(() => {
               type="email"
               required
               placeholder="you@example.com"
-              className="flex-1 h-10 rounded-md border border-input bg-background px-3.5 text-sm focus:outline-none focus:border-foreground focus:ring-2 focus:ring-foreground/15 transition"
+              className="flex-1 h-10 rounded-element border border-input bg-background px-3.5 text-sm focus:outline-none focus:border-foreground focus:ring-2 focus:ring-foreground/15 transition"
             />
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-md bg-foreground text-background px-4 text-sm font-semibold hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-element bg-foreground text-background px-4 text-sm font-semibold hover:opacity-90"
             >
               {t('home.newsletter.cta', 'Subscribe')}
             </button>

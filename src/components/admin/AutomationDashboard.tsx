@@ -176,7 +176,7 @@ export function AutomationDashboard() {
                   <CardContent>
                     <div className="flex items-center gap-4">
                       <div
-                        className="p-2 rounded-lg flex"
+                        className="p-2 rounded-element flex"
                         style={{ backgroundColor: mod.is_enabled ? '#dcfce7' : '#f3f4f6' }}
                       >
                         <CategoryIcon

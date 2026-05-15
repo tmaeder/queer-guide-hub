@@ -53,7 +53,7 @@ export const ExploreMapLayers = ({
         aria-label={expanded ? 'Hide map layers' : 'Show map layers'}
         aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
-        className="rounded-2xl border border-border bg-background/85 backdrop-blur-md shadow-md hover:bg-background h-10 w-10 p-0"
+        className="rounded-container border border-border bg-background/85 backdrop-blur-md shadow-md hover:bg-background h-10 w-10 p-0"
       >
         <Layers size={18} />
       </Button>
@@ -61,7 +61,7 @@ export const ExploreMapLayers = ({
       {/* Chip grid */}
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         <CollapsibleContent>
-          <div className="flex flex-wrap gap-1.5 max-w-[240px] rounded-2xl border border-border bg-background/85 backdrop-blur-md shadow-md p-2">
+          <div className="flex flex-wrap gap-1.5 max-w-[240px] rounded-container border border-border bg-background/85 backdrop-blur-md shadow-md p-2">
             {LAYER_DEFS.map(({ type, label, icon: Icon, comingSoon }) => {
               const enabled = enabledLayers.includes(type);
               const count = layerCounts[type];

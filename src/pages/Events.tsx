@@ -425,7 +425,7 @@ const Events = () => {
           actions={
             <>
               <div
-                className="flex items-center gap-1 p-1 bg-muted rounded-lg"
+                className="flex items-center gap-1 p-1 bg-muted rounded-element"
                 role="group"
                 aria-label="View mode"
               >
@@ -481,7 +481,7 @@ const Events = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col gap-4 p-4 bg-card rounded-lg mb-8">
+        <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-8">
           {/* Search Bar */}
           <div className="flex flex-wrap gap-2 items-center">
             <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">

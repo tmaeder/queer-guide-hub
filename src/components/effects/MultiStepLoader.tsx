@@ -60,7 +60,7 @@ export function MultiStepLoader({
           exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
           className={cn('fixed inset-0 z-[1200] flex items-center justify-center bg-black/60', className)}
         >
-          <div className="bg-card border border-border/60 rounded-2xl p-8 shadow-[var(--shadow-aceternity-lg)] min-w-[20rem] max-w-md">
+          <div className="bg-card border border-border/60 rounded-container p-8 shadow-[var(--shadow-aceternity-lg)] min-w-[20rem] max-w-md">
             <ul className="space-y-3">
               {loadingStates.map((state, i) => {
                 const status = i < current ? 'done' : i === current ? 'active' : 'pending';

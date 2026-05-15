@@ -48,7 +48,7 @@ export function Sidebar({
           <a
             key={l.href}
             href={l.href}
-            className="group flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
+            className="group flex items-center gap-3 rounded-element px-2 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors whitespace-nowrap"
           >
             <span className="flex h-6 w-6 shrink-0 items-center justify-center">{l.icon}</span>
             <AnimatePresence initial={false}>

@@ -381,7 +381,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
             return (
               <div
                 key={key}
-                className={`p-2 text-center rounded-md border bg-card ${key !== 'total' ? 'cursor-pointer' : ''} ${isActive ? 'border-2 border-primary' : ''}`}
+                className={`p-2 text-center rounded-element border bg-card ${key !== 'total' ? 'cursor-pointer' : ''} ${isActive ? 'border-2 border-primary' : ''}`}
                 onClick={() => key !== 'total' && handleFilterChange(key.toUpperCase())}
               >
                 <div className={`text-3xl font-bold ${colorClass}`}>{stats[key]}</div>
@@ -444,7 +444,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="p-1.5 mb-2 flex items-center gap-1 flex-wrap rounded-md border bg-muted">
+        <div className="p-1.5 mb-2 flex items-center gap-1 flex-wrap rounded-element border bg-muted">
           <span className="text-sm font-semibold mr-1">{selectedIds.size} selected</span>
           <Button
             variant="outline" size="sm"
@@ -489,7 +489,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
       {loading ? (
         <div className="flex justify-center py-6"><Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" /></div>
       ) : filteredLinks.length === 0 ? (
-        <div className="p-4 text-center rounded-md border bg-card">
+        <div className="p-4 text-center rounded-element border bg-card">
           <p className="text-muted-foreground">
             {stats?.total === 0 ? 'No links synced yet. Click "Sync Links" to extract URLs from content.' : 'No links match the current filter.'}
           </p>
@@ -509,7 +509,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
           {filteredLinks.map(link => (
             <div
               key={link.id}
-              className={`p-1.5 flex items-center gap-1.5 rounded-md border bg-card ${selectedIds.has(link.id) ? 'bg-muted' : ''}`}
+              className={`p-1.5 flex items-center gap-1.5 rounded-element border bg-card ${selectedIds.has(link.id) ? 'bg-muted' : ''}`}
             >
               <Checkbox
                 checked={selectedIds.has(link.id)}

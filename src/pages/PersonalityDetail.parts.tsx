@@ -278,7 +278,7 @@ function RelatedContent({ personality }: { personality: Personality }) {
                         src={n.image_url}
                         alt=""
                         loading="lazy"
-                        className="w-16 h-16 rounded-md object-cover flex-shrink-0 bg-muted"
+                        className="w-16 h-16 rounded-element object-cover flex-shrink-0 bg-muted"
                       />
                     )}
                     <div className="min-w-0 flex-1">
@@ -320,7 +320,7 @@ function RelatedContent({ personality }: { personality: Personality }) {
                         src={e.image_url}
                         alt=""
                         loading="lazy"
-                        className="w-14 h-14 rounded-md object-cover flex-shrink-0 bg-muted"
+                        className="w-14 h-14 rounded-element object-cover flex-shrink-0 bg-muted"
                       />
                     )}
                     <div className="min-w-0 flex-1">

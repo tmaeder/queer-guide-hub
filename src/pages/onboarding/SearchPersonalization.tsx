@@ -129,7 +129,7 @@ export default function SearchPersonalization() {
 								}}
 							/>
 							{citySuggestions.length > 0 && !cityChoice && (
-								<div className="border rounded-md divide-y">
+								<div className="border rounded-element divide-y">
 									{citySuggestions.map((c) => (
 										<button
 											key={c.id}

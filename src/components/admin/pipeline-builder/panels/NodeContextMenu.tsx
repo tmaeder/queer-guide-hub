@@ -81,7 +81,7 @@ export default function NodeContextMenu({
     <div
       ref={menuRef}
       role="menu"
-      className="fixed z-50 bg-popover text-popover-foreground border border-border rounded-md shadow-lg py-1 text-sm"
+      className="fixed z-50 bg-popover text-popover-foreground border border-border rounded-element shadow-lg py-1 text-sm"
       style={{ left, top, minWidth: width }}
     >
       {entries.map((entry, i) => {

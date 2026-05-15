@@ -98,7 +98,7 @@ export default function Signup({ onBack }: Props) {
   }
 
   return (
-    <Card className="max-w-md mx-auto rounded-3xl shadow-xl">
+    <Card className="max-w-md mx-auto rounded-container shadow-xl">
       <CardHeader>
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-center gap-2">

@@ -86,7 +86,7 @@ export function TripsSignedOutHero() {
               {bullets.map(({ icon: Icon, titleKey, bodyKey }) => (
                 <li key={titleKey} className="flex gap-3 items-start">
                   <div
-                    className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center"
+                    className="flex-shrink-0 w-9 h-9 rounded-element flex items-center justify-center"
                     style={{ backgroundColor: `${brand}12` }}
                   >
                     <Icon style={{ width: 18, height: 18, color: brand }} />

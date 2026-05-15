@@ -75,7 +75,7 @@ export function TagsField({ field, value, onChange, error, disabled }: FieldProp
         role="button"
         tabIndex={0}
         className={`
-          rounded-lg border border-input bg-muted/30 p-2 min-h-[42px]
+          rounded-element border border-input bg-muted/30 p-2 min-h-[42px]
           flex flex-wrap items-center gap-1.5
           focus-within:ring-2 focus-within:ring-ring
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text'}

@@ -215,7 +215,7 @@ https://www.pornhub.com/model/example2,https://example.com/photo2.jpg,Example Mo
                     <p className="text-sm font-medium">Errors:</p>
                     <div className="max-h-32 overflow-y-auto flex flex-col gap-1">
                       {importResult.errors.map((error, index) => (
-                        <div key={index} className="text-sm text-destructive bg-destructive/10 p-2 rounded-sm">
+                        <div key={index} className="text-sm text-destructive bg-destructive/10 p-2 rounded-badge">
                           {error}
                         </div>
                       ))}

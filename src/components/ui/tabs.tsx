@@ -19,7 +19,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-11 items-center justify-start gap-2 rounded-full border border-border/60 bg-muted/40 p-1 text-muted-foreground backdrop-blur-sm",
+      "inline-flex h-11 items-center justify-start gap-2 rounded-element border border-border/60 bg-muted/40 p-1 text-muted-foreground backdrop-blur-sm",
       className
     )}
     {...props}
@@ -34,7 +34,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full px-4 text-sm font-medium tracking-tight transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:text-foreground data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-[var(--shadow-aceternity-sm)]",
+      "relative inline-flex h-9 items-center justify-center whitespace-nowrap rounded-badge px-4 text-sm font-medium tracking-tight transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:text-foreground data-[state=active]:bg-foreground data-[state=active]:text-background data-[state=active]:shadow-[var(--shadow-aceternity-sm)]",
       className
     )}
     {...props}

@@ -52,7 +52,7 @@ function BaseNode({ data, selected }: NodeProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <div
-        className={`rounded-lg border-2 bg-background shadow-sm min-w-[200px] max-w-[280px] transition-all ${
+        className={`rounded-element border-2 bg-background shadow-sm min-w-[200px] max-w-[280px] transition-all ${
           selected ? 'ring-2 ring-ring shadow-md scale-[1.02]' : 'hover:shadow-md'
         } ${status === 'failed' ? 'border-destructive' : ''}`}
         style={{ borderColor: status === 'failed' ? undefined : color }}
