@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useMyIntimateProfile, useIntimateDiscovery } from '@/hooks/useIntimateProfile';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { AGE_BANDS, BODY_TYPES, INTO_TAGS, ROLES } from '@/assets/intimate/options';
 
 export default function IntimateDiscovery() {
@@ -49,37 +48,45 @@ export default function IntimateDiscovery() {
       </section>
 
       {loadingDisc ? (
-        <p>Loading…</p>
+        <p className="text-muted-foreground">Loading…</p>
       ) : !cards?.length ? (
         <p className="text-muted-foreground">No matches yet. Try widening filters.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="border-t border-border">
           {cards.map((c) => (
-            <Link to={`/intimate/u/${c.user_id}`} key={c.user_id}>
-              <Card className="hover:bg-muted">
-                <CardContent className="p-4">
-                  <div className="mb-2 flex items-center gap-3">
-                    {c.avatar_url ? (
-                      <img src={c.avatar_url} alt="" className="h-12 w-12 object-cover" />
-                    ) : (
-                      <div className="h-12 w-12 bg-muted" />
-                    )}
-                    <div>
-                      <div>{c.display_name ?? 'Anon'}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {[c.age_band, c.body_type, c.height_cm ? `${c.height_cm}cm` : null]
-                          .filter(Boolean).join(' · ')}
-                      </div>
-                    </div>
+            <li key={c.user_id} className="border-b border-border">
+              <Link
+                to={`/intimate/u/${c.user_id}`}
+                className="flex items-center gap-4 py-4 transition-colors hover:bg-muted/40"
+              >
+                {c.avatar_url ? (
+                  <img
+                    src={c.avatar_url}
+                    alt=""
+                    className="h-12 w-12 object-cover rounded-element"
+                  />
+                ) : (
+                  <div className="h-12 w-12 bg-muted rounded-element" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">
+                    {c.display_name ?? 'Anon'}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {[c.age_band, c.body_type, c.height_cm ? `${c.height_cm}cm` : null]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </div>
                   {c.role?.length ? (
-                    <div className="text-xs text-muted-foreground">{c.role.join(', ')}</div>
+                    <div className="text-xs text-muted-foreground truncate mt-0.5">
+                      {c.role.join(', ')}
+                    </div>
                   ) : null}
-                </CardContent>
-              </Card>
-            </Link>
+                </div>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
@@ -106,6 +113,7 @@ function FilterRow({
               size="sm"
               variant={on ? 'default' : 'outline'}
               onClick={() => onToggle(o)}
+              className="rounded-element"
             >{o.replace(/_/g, ' ')}</Button>
           );
         })}

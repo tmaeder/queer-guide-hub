@@ -40,6 +40,9 @@
   --radius-element:   0;
   --radius-badge:     0;
 
+  /* ── Sensitive-control radius — minimal corner softening for Intimate/Privacy */
+  --radius-element: 2px;
+
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
