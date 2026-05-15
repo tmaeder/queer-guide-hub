@@ -187,7 +187,8 @@ export default defineConfig(({ mode }) => ({
     // every page wastes ~600 KB on first paint.
     modulePreload: {
       resolveDependencies(_filename, deps) {
-        const skip = /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|gsap|hls)-[A-Za-z0-9_-]+\.js$/;
+        const skip =
+          /\b(recharts|graph|exceljs|pdfjs|mammoth|tiptap|maplibre|gsap|hls|framer-motion|boneyard)-[A-Za-z0-9_-]+\.js$/;
         return deps.filter((d) => !skip.test(d));
       },
     },
