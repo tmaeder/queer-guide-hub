@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,6 +37,7 @@ import { initFormData, calculateCompletion } from '@/types/profileForm';
 import type { ProfileFormData, ComingOutStatus } from '@/types/profileForm';
 import type { Profile, ProfileUpdateResult } from '@/hooks/useProfile';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { UsernameSelector } from '@/components/auth/UsernameSelector';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export default function ProfileSettings() {
@@ -217,58 +217,73 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
     return () => clearTimeout(id);
   }, [formData, hasUnsavedChanges, handleSave, saveStatus]);
 
+  const lineTab =
+    'h-10 rounded-none border-b-2 border-transparent bg-transparent px-3 shadow-none data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-foreground data-[state=active]:shadow-none';
+
   return (
-    <div className="container mx-auto py-8 px-4 flex flex-col gap-6">
+    <div className="container mx-auto py-8 px-4 flex flex-col gap-6 pb-24">
       {/* Header */}
       <PageHeader
         title="Profile Settings"
         subtitle="Manage your account information and privacy settings"
         actions={
-          <Button variant="outline" onClick={() => navigate(-1)}>
+          <Button variant="outline" onClick={() => navigate(-1)} className="rounded-element">
             <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
             Back
           </Button>
         }
       >
-        <Card>
-          <CardContent>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium">Profile Completion</p>
-              <p className="text-sm text-muted-foreground">{profileCompletion}%</p>
-            </div>
-            <Progress value={profileCompletion} style={{ height: 8 }} />
-            <p className="text-xs text-muted-foreground mt-2 block">
-              Complete your profile to connect better with the community
-            </p>
-          </CardContent>
-        </Card>
+        <div className="border-t border-border pt-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-medium">Profile Completion</p>
+            <p className="text-sm text-muted-foreground">{profileCompletion}%</p>
+          </div>
+          <Progress value={profileCompletion} className="h-1" />
+          <p className="text-xs text-muted-foreground mt-2 block">
+            Complete your profile to connect better with the community
+          </p>
+        </div>
       </PageHeader>
 
-      {/* Tabs */}
-      <div className="bg-background p-6">
+      {/* Tabs — line style */}
+      <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
-          <TabsList>
-            <TabsTrigger value="basic">
+          <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
+            <TabsTrigger value="basic" className={lineTab}>
               <span className="flex items-center gap-2"><User style={{ width: 16, height: 16 }} /> Basic</span>
             </TabsTrigger>
-            <TabsTrigger value="identity">
+            <TabsTrigger value="identity" className={lineTab}>
               <span className="flex items-center gap-2"><Heart style={{ width: 16, height: 16 }} /> Identity</span>
             </TabsTrigger>
-            <TabsTrigger value="travel">
+            <TabsTrigger value="travel" className={lineTab}>
               <span className="flex items-center gap-2"><Plane style={{ width: 16, height: 16 }} /> Travel</span>
             </TabsTrigger>
-            <TabsTrigger value="relationships">
+            <TabsTrigger value="relationships" className={lineTab}>
               <span className="flex items-center gap-2"><Users style={{ width: 16, height: 16 }} /> Relationships</span>
             </TabsTrigger>
-            <TabsTrigger value="privacy">
+            <TabsTrigger value="privacy" className={lineTab}>
               <span className="flex items-center gap-2"><Lock style={{ width: 16, height: 16 }} /> Privacy</span>
             </TabsTrigger>
-            <TabsTrigger value="intimate">
+            <TabsTrigger value="intimate" className={lineTab}>
               <span className="flex items-center gap-2">Intimate</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="basic">
+            <Card className="mb-6">
+              <CardContent className="pt-6 flex flex-col gap-4">
+                <div>
+                  <p className="font-semibold">Username</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your unique queer.guide handle.
+                  </p>
+                </div>
+                <UsernameSelector
+                  value={(profile as Profile & { username?: string | null })?.username ?? null}
+                  onChange={(username) => updateProfile({ username } as Partial<Profile>)}
+                />
+              </CardContent>
+            </Card>
             <BasicInfoTab formData={formData} profile={profile} user={user} onChange={handleInputChange} onAvatarSave={handleAvatarSave} />
           </TabsContent>
 
@@ -299,45 +314,47 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         </Tabs>
 
         {/* Search personalization entry point */}
-        <div className="mt-8 p-6 rounded-lg bg-muted">
-          <p className="font-semibold mb-2">Personalize your search</p>
+        <section className="mt-10 border-t border-border pt-6">
+          <p className="font-semibold mb-1">Personalize your search</p>
           <p className="text-sm mb-4 text-muted-foreground">
             Pick vibes, home city, and languages so search results learn what you like.
           </p>
-          <LocalizedLink to="/onboarding/search" style={{ color: 'inherit', fontWeight: 500 }}>
+          <LocalizedLink to="/onboarding/search" className="text-sm underline underline-offset-4">
             Personalize →
           </LocalizedLink>
-        </div>
+        </section>
       </div>
 
-      {/* Auto-save status bar */}
-      <div className="bg-background p-4 flex justify-center items-center gap-2">
-        {saveStatus === 'saving' && (
-          <>
-            <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
-            <p className="text-sm text-muted-foreground">Saving...</p>
-          </>
-        )}
-        {saveStatus === 'saved' && (
-          <>
-            <Check style={{ width: 14, height: 14 }} />
-            <p className="text-sm text-muted-foreground">All changes saved</p>
-          </>
-        )}
-        {saveStatus === 'unsaved' && (
-          <Badge variant="outline">Unsaved changes</Badge>
-        )}
-        {saveStatus === 'error' && (
-          <Badge variant="destructive">Save failed</Badge>
-        )}
-        {saveStatus === 'auth-error' && (
-          <div className="flex items-center gap-3">
-            <Badge variant="destructive">Session expired</Badge>
-            <Button variant="outline" size="sm" onClick={() => navigate('/auth')}>
-              Sign in
-            </Button>
-          </div>
-        )}
+      {/* Sticky auto-save status bar */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-center gap-2 text-sm">
+          {saveStatus === 'saving' && (
+            <>
+              <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+              <span className="text-muted-foreground">Saving…</span>
+            </>
+          )}
+          {saveStatus === 'saved' && (
+            <>
+              <Check style={{ width: 14, height: 14 }} />
+              <span className="text-muted-foreground">All changes saved</span>
+            </>
+          )}
+          {saveStatus === 'unsaved' && (
+            <Badge variant="outline" className="rounded-element">Unsaved changes</Badge>
+          )}
+          {saveStatus === 'error' && (
+            <Badge variant="destructive" className="rounded-element">Save failed</Badge>
+          )}
+          {saveStatus === 'auth-error' && (
+            <div className="flex items-center gap-3">
+              <Badge variant="destructive" className="rounded-element">Session expired</Badge>
+              <Button variant="outline" size="sm" onClick={() => navigate('/auth')} className="rounded-element">
+                Sign in
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

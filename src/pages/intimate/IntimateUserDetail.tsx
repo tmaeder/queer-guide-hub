@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIntimateProfile, useMyIntimateProfile, useReportIntimateProfile } from '@/hooks/useIntimateProfile';
 import { useBlockUser, useProfileDisplay, useSendFriendRequest } from '@/hooks/useIntimateActions';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { FlatFieldGroup } from '@/components/ui/FlatFieldGroup';
 import { useToast } from '@/hooks/use-toast';
 import { getGenitalPictogramSet, bodyPictograms, angleOptions } from '@/assets/intimate/pictograms';
 import { useState } from 'react';
@@ -75,16 +75,31 @@ export default function IntimateUserDetail() {
     ? angleOptions.find((a) => a.deg === profile.erection_angle_deg)?.Picto
     : null;
 
+  function Row({ k, v }: { k: string; v: string }) {
+    return (
+      <div className="flex justify-between gap-4 border-t border-border pt-3">
+        <dt className="text-muted-foreground shrink-0">{k}</dt>
+        <dd className="text-right">{v}</dd>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <header className="mb-6 flex items-center gap-4">
+    <div className="mx-auto max-w-2xl px-6 py-8">
+      <header className="flex items-center gap-4 pb-6 border-b border-border">
         {displayProfile?.avatar_url ? (
-          <img src={displayProfile.avatar_url} alt="" className="h-16 w-16 object-cover" />
+          <img
+            src={displayProfile.avatar_url}
+            alt=""
+            className="h-16 w-16 object-cover rounded-element"
+          />
         ) : (
-          <div className="h-16 w-16 bg-muted" />
+          <div className="h-16 w-16 bg-muted rounded-element" />
         )}
         <div>
-          <h1 className="text-2xl">{displayProfile?.display_name ?? 'Anon'}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {displayProfile?.display_name ?? 'Anon'}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {[profile.age_band, profile.body_type, profile.height_cm ? `${profile.height_cm}cm` : null]
               .filter(Boolean).join(' · ')}
@@ -92,49 +107,52 @@ export default function IntimateUserDetail() {
         </div>
       </header>
 
-      <Card className="mb-4">
-        <CardContent className="p-6">
-          <h2 className="mb-3 text-sm uppercase text-muted-foreground">Body & anatomy</h2>
-          <div className="flex flex-wrap gap-4">
-            {GPicto && <GPicto width={80} height={80} />}
-            {BPicto && <BPicto width={80} height={80} />}
-            {Angle && <Angle width={80} height={80} />}
-          </div>
-          {profile.size_cm && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Size: {profile.size_cm} cm
-              {profile.erection_angle_deg !== null ? ` · ${profile.erection_angle_deg}°` : ''}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <FlatFieldGroup title="Body & anatomy">
+        <div className="flex flex-wrap gap-4">
+          {GPicto && <GPicto width={80} height={80} />}
+          {BPicto && <BPicto width={80} height={80} />}
+          {Angle && <Angle width={80} height={80} />}
+        </div>
+        {profile.size_cm && (
+          <p className="text-sm text-muted-foreground">
+            Size: {profile.size_cm} cm
+            {profile.erection_angle_deg !== null ? ` · ${profile.erection_angle_deg}°` : ''}
+          </p>
+        )}
+      </FlatFieldGroup>
 
-      <Card className="mb-4">
-        <CardContent className="p-6 space-y-2 text-sm">
-          {profile.role?.length ? <p><b>Role:</b> {profile.role.join(', ')}</p> : null}
-          {profile.into_tags?.length ? <p><b>Into:</b> {profile.into_tags.join(', ')}</p> : null}
-          {profile.limits?.length ? <p><b>Limits:</b> {profile.limits.join(', ')}</p> : null}
-          {profile.safer_sex_prefs?.length ? <p><b>Safer sex:</b> {profile.safer_sex_prefs.join(', ')}</p> : null}
-        </CardContent>
-      </Card>
+      <FlatFieldGroup title="Profile">
+        <dl className="space-y-3 text-sm">
+          {profile.role?.length ? <Row k="Role" v={profile.role.join(', ')} /> : null}
+          {profile.into_tags?.length ? <Row k="Into" v={profile.into_tags.join(', ')} /> : null}
+          {profile.limits?.length ? <Row k="Limits" v={profile.limits.join(', ')} /> : null}
+          {profile.safer_sex_prefs?.length ? <Row k="Safer sex" v={profile.safer_sex_prefs.join(', ')} /> : null}
+        </dl>
+      </FlatFieldGroup>
 
-      <div className="flex flex-wrap gap-2">
-        <Button onClick={sendRequest}>Send friend request</Button>
-        <Button variant="outline" onClick={() => setReportOpen((v) => !v)}>Report</Button>
-        <Button variant="outline" onClick={block}>Block</Button>
+      <div className="border-t border-border pt-6 flex flex-wrap gap-2">
+        <Button onClick={sendRequest} className="rounded-element">Send friend request</Button>
+        <Button variant="outline" onClick={() => setReportOpen((v) => !v)} className="rounded-element">Report</Button>
+        <Button variant="outline" onClick={block} className="rounded-element">Block</Button>
       </div>
 
       {reportOpen && (
-        <Card className="mt-4">
-          <CardContent className="p-4 space-y-2">
-            <p className="text-sm">Reason for report</p>
+        <div className="mt-6 border-t border-border pt-6">
+          <p className="text-sm font-medium mb-3">Reason for report</p>
+          <div className="flex flex-wrap gap-2">
             {['underage','spam','impersonation','hateful','illegal','other'].map((r) => (
-              <Button key={r} size="sm" variant="outline" onClick={() => submitReport(r)}>
+              <Button
+                key={r}
+                size="sm"
+                variant="outline"
+                onClick={() => submitReport(r)}
+                className="rounded-element"
+              >
                 {r}
               </Button>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );
