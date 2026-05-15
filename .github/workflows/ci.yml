@@ -48,4 +48,16 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci --prefer-offline --no-audit
-      - run: npm test
+      # Coverage is report-only (Phase 1). Once baseline is established,
+      # promote to enforced thresholds in vite.config.ts test.coverage.
+      - run: npm run test:coverage
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage/coverage-summary.json
+            coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 14
