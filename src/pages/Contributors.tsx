@@ -47,7 +47,7 @@ function ContributorCard({ row }: ContributorCardProps) {
 
   return (
     <motion.article
-      className="group relative h-44 overflow-hidden rounded-xl border border-border bg-card focus-within:ring-2 focus-within:ring-foreground/40"
+      className="group relative h-44 overflow-hidden rounded-container border border-border bg-card focus-within:ring-2 focus-within:ring-foreground/40"
       initial="rest"
       animate="rest"
       whileHover="hover"
@@ -85,7 +85,7 @@ function ContributorCard({ row }: ContributorCardProps) {
         <motion.div
           variants={{ rest: detailRest, hover: detailHover }}
           transition={{ duration: reduced ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 flex items-end rounded-xl bg-background/95 p-5 backdrop-blur-sm pointer-events-none"
+          className="absolute inset-0 flex items-end rounded-container bg-background/95 p-5 backdrop-blur-sm pointer-events-none"
           aria-hidden="true"
         >
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">

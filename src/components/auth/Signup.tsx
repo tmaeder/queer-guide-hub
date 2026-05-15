@@ -100,7 +100,7 @@ export default function Signup({ onBack }: Props) {
 
   if (step === 'username') {
     return (
-      <Card className="max-w-md mx-auto rounded-3xl shadow-xl">
+      <Card className="max-w-md mx-auto rounded-container shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold tracking-tight text-center text-balance">
             Pick your username

@@ -318,13 +318,6 @@ function QuickActionsBar() {
 
 function CockpitSkeleton() {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="rounded-element" style={{ height: 220 }} />
-        ))}
-      </div>
-      <Skeleton className="rounded-element" style={{ height: 160 }} />
     <div className="grid grid-cols-12 gap-px bg-border">
       {[3, 3, 3, 3, 12].map((span, i) => (
         <Skeleton
