@@ -1059,6 +1059,7 @@ const Events = () => {
           </div>
         )}
       </div>
+      </div>
     </div>
   );
 };
