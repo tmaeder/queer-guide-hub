@@ -76,27 +76,21 @@ function ContributorCard({ row }: ContributorCardProps) {
         </div>
         <div className="flex flex-col gap-1">
           <span className="text-base font-medium leading-tight">{row.display_name}</span>
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">
-            {CATEGORY_LABELS[row.category] ?? row.category}
-          </span>
+          {hasDetail && (
+            <span className="text-xs text-muted-foreground">Hover for details</span>
+          )}
         </div>
       </motion.div>
       {hasDetail && (
         <motion.div
           variants={{ rest: detailRest, hover: detailHover }}
           transition={{ duration: reduced ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 flex flex-col justify-between rounded-xl bg-background/95 p-5 backdrop-blur-sm pointer-events-none"
-          aria-hidden={!hasDetail}
+          className="absolute inset-0 flex items-end rounded-xl bg-background/95 p-5 backdrop-blur-sm pointer-events-none"
+          aria-hidden="true"
         >
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">
-            {CATEGORY_LABELS[row.category] ?? row.category}
-          </span>
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-semibold">{row.display_name}</span>
-            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4">
-              {row.blurb_md}
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">
+            {row.blurb_md}
+          </p>
         </motion.div>
       )}
     </motion.article>
