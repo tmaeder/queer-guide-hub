@@ -201,4 +201,31 @@ export default tseslint.config(
   // P5 RETIRED — rounded / shadow / gradient classes are allowed again
   // in non-admin code as part of the Aceternity-inspired UI overhaul.
   // Color-literal ban above still enforces strict monochrome.
+
+  // Cluster 3 — admin tree must stay motion-free. Aceternity effect
+  // components and direct framer-motion / motion imports inside admin
+  // pages and components would re-introduce the very animations the
+  // refactor removed.
+  {
+    files: [
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**/*.{ts,tsx}",
+      "src/components/admin/**/*.{ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "warn",
+        {
+          paths: [
+            { name: "framer-motion", message: "Admin tree is motion-free (Cluster 3). Remove decorative motion." },
+            { name: "motion/react", message: "Admin tree is motion-free (Cluster 3). Remove decorative motion." },
+          ],
+          patterns: [
+            { group: ["@/components/effects/*"], message: "Aceternity effect components are not allowed in the admin tree (Cluster 3)." },
+            { group: ["@/components/animation/*"], message: "Decorative animation wrappers are not allowed in the admin tree (Cluster 3)." },
+          ],
+        },
+      ],
+    },
+  },
 );
