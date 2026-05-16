@@ -383,6 +383,19 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
                 key={key}
                 className={`p-2 text-center rounded-element border bg-card ${key !== 'total' ? 'cursor-pointer' : ''} ${isActive ? 'border-2 border-primary' : ''}`}
                 onClick={() => key !== 'total' && handleFilterChange(key.toUpperCase())}
+                onKeyDown={
+                  key !== 'total'
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleFilterChange(key.toUpperCase());
+                        }
+                      }
+                    : undefined
+                }
+                role={key !== 'total' ? 'button' : undefined}
+                tabIndex={key !== 'total' ? 0 : undefined}
+                aria-pressed={key !== 'total' ? isActive : undefined}
               >
                 <div className={`text-3xl font-bold ${colorClass}`}>{stats[key]}</div>
                 <div className="text-xs text-muted-foreground capitalize">

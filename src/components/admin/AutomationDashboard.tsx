@@ -314,12 +314,13 @@ export function AutomationDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <p
-                            className="text-[0.85rem] font-medium cursor-pointer hover:underline"
+                          <button
+                            type="button"
+                            className="text-[0.85rem] font-medium cursor-pointer hover:underline text-left bg-transparent border-0 p-0"
                             onClick={() => setSelectedFlag(flag)}
                           >
                             {flag.title}
-                          </p>
+                          </button>
                           {flag.description && (
                             <p className="text-[0.75rem] text-muted-foreground mt-0.5">
                               {flag.description.slice(0, 80)}

@@ -392,6 +392,14 @@ export default function NewsQualityReviewTab() {
             key={r.id}
             className="cursor-pointer border p-4 hover:bg-accent"
             onClick={() => setSelected(r)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setSelected(r);
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
