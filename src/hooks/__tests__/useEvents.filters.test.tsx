@@ -93,7 +93,7 @@ describe('useEvents filters → search_events RPC', () => {
   });
 
   it('unwraps {total,event} rows into plain events', async () => {
-    const event = { id: '1', title: 'Pride', city: 'Zürich' };
+    const event = { id: '1', title: 'Pride', city: 'Zürich', attendee_count: 0 };
     rpcMock.mockResolvedValue({ data: [{ total: 1, event }], error: null });
     const { result } = renderHook(() => useEvents(false));
     await act(async () => {

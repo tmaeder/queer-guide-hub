@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useMeta', () => ({ useMeta: vi.fn() }));
 vi.mock('@/hooks/useCMSPage', () => ({ useCMSPage: () => ({ data: null, isLoading: false }) }));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
 import HelpHotlines from '../HelpHotlines';
 

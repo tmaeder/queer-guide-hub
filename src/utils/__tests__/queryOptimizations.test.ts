@@ -36,7 +36,7 @@ describe('createOptimizedQueryClient', () => {
 
     expect(defaults.queries?.staleTime).toBe(5 * 60 * 1000);
     expect(defaults.queries?.gcTime).toBe(15 * 60 * 1000);
-    expect(defaults.queries?.refetchOnMount).toBe('always');
+    expect(defaults.queries?.refetchOnMount).toBe(true);
     expect(defaults.queries?.refetchOnReconnect).toBe(true);
   });
 

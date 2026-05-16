@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { performQuickExit } from './quickExit';
+import { performQuickExit } from './perform-quick-exit';
 
 export function QuickExit() {
   const { t } = useTranslation();
