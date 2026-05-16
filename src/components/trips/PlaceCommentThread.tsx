@@ -86,7 +86,12 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
       </Button>
 
       {open && (
-        <div className="mt-1 pl-2" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="mt-1 pl-2"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          role="presentation"
+        >
           {comments && comments.length > 0 && (
             <div className="flex flex-col gap-1 mb-2">
               {comments.map((c) => (
