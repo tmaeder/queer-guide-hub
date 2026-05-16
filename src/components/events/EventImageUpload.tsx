@@ -129,9 +129,11 @@ export const EventImageUpload = ({
             disabled={uploading || images.length >= maxImages}
           />
 
-          <div
-            className="flex flex-col items-center justify-center cursor-pointer"
+          <button
+            type="button"
+            className="flex flex-col items-center justify-center cursor-pointer w-full bg-transparent border-0 p-0"
             onClick={triggerFileInput}
+            disabled={uploading || images.length >= maxImages}
           >
             <div className="mb-4">
               <ImagePlus style={{ height: 48, width: 48, color: 'var(--muted-foreground)' }} />
@@ -147,7 +149,7 @@ export const EventImageUpload = ({
                 {images.length}/{maxImages} images uploaded
               </span>
             </div>
-          </div>
+          </button>
         </CardContent>
       </Card>
 
@@ -158,7 +160,8 @@ export const EventImageUpload = ({
               <div className="bg-muted overflow-hidden" style={{ aspectRatio: '16/9' }}>
                 <img
                   src={imageUrl}
-                  alt={`Event image ${index + 1}`}
+                  alt={`Event ${index + 1}`}
+                  role="presentation"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     (e.target as HTMLImageElement).src = '/placeholder.svg';
