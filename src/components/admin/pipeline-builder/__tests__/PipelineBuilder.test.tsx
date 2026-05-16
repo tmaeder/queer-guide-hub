@@ -58,6 +58,11 @@ vi.mock('@xyflow/react', () => ({
   useNodesState: (initial: unknown[]) => [initial, vi.fn(), vi.fn()],
   useEdgesState: (initial: unknown[]) => [initial, vi.fn(), vi.fn()],
   MarkerType: { ArrowClosed: 'arrowclosed' },
+  ConnectionLineType: { Bezier: 'bezier', Straight: 'straight', Step: 'step', SmoothStep: 'smoothstep', SimpleBezier: 'simplebezier' },
+  ConnectionMode: { Strict: 'strict', Loose: 'loose' },
+  PanOnScrollMode: { Free: 'free', Vertical: 'vertical', Horizontal: 'horizontal' },
+  SelectionMode: { Partial: 'partial', Full: 'full' },
+  BackgroundVariant: { Lines: 'lines', Dots: 'dots', Cross: 'cross' },
 }));
 
 import PipelineBuilder from '../PipelineBuilder';
