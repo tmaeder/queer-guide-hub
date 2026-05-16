@@ -13,6 +13,13 @@ const { useAuthMock, buildLinksMock, logClickMock } = vi.hoisted(() => ({
 vi.mock('@/hooks/useAuth', () => ({ useAuth: useAuthMock }));
 vi.mock('@/hooks/useBundledCheckout', () => ({ logTripBookingClick: logClickMock }));
 vi.mock('@/lib/booking/placeLinks', () => ({ buildPlaceBookableLinks: buildLinksMock }));
+vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock('@/hooks/useTrips', () => ({
+  useTripMutations: () => ({ updatePlace: { mutateAsync: vi.fn().mockResolvedValue({}) } }),
+}));
+vi.mock('@/hooks/useTripReservations', () => ({
+  useTripReservations: () => ({ data: [], refetch: vi.fn().mockResolvedValue({ data: [] }) }),
+}));
 
 import { PlaceBookableLinks } from '../PlaceBookableLinks';
 

@@ -5,7 +5,7 @@
  * no viewport-based fetching, no filters panel.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -15,6 +15,8 @@ import { mapStyle } from '@/config/mapStyle';
 import { LAYER_COLORS, type MapMarker } from '@/hooks/useExploreMapData';
 import { renderPopupHTML } from '@/components/map/ExploreMapPopup';
 import { useMapBoundaryLayers, type BoundaryLayerConfig } from '@/hooks/useMapBoundaryLayers';
+import type { VisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import type { PlaceMarkEntity } from '@/hooks/usePlaceMarks';
 
 export interface EntityMapMarker {
   id: string;
@@ -28,7 +30,16 @@ export interface EntityMapMarker {
   meta?: Record<string, unknown>;
   /** Whether this is the primary/focused marker */
   primary?: boolean;
+  /**
+   * Optional entity reference used by visitedLookup to check whether the
+   * current user has visited this marker. Supply both to opt in.
+   */
+  entityType?: PlaceMarkEntity;
+  entityId?: string;
 }
+
+const FOOTPRINT_FILTER_STORAGE_KEY = 'qg.map.footprintFilter';
+type FootprintFilter = 'all' | 'only-visited' | 'hide-visited';
 
 export interface EntityMapBoundary {
   geojson: GeoJSON.FeatureCollection;
@@ -51,6 +62,12 @@ export interface EntityMapProps {
   className?: string;
   /** Whether to allow scroll zoom */
   scrollZoom?: boolean;
+  /**
+   * Optional lookup for "have I visited this?". When provided, matching
+   * markers render at reduced opacity and a toggle button lets the user
+   * filter "only visited" / "hide visited" (persisted in localStorage).
+   */
+  visitedLookup?: VisitedPlaceLookup;
 }
 
 const PRIMARY_MARKER_SOURCE = 'entity-primary';
@@ -67,6 +84,7 @@ export const EntityMap = ({
   boundary,
   className,
   scrollZoom = false,
+  visitedLookup,
 }) => {
   const navigate = useLocalizedNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -76,8 +94,41 @@ export const EntityMap = ({
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
 
-  const primary = markers.filter((m) => m.primary);
-  const nearby = markers.filter((m) => !m.primary);
+  const [footprintFilter, setFootprintFilter] = useState<FootprintFilter>(() => {
+    if (typeof window === 'undefined') return 'all';
+    const raw = window.localStorage.getItem(FOOTPRINT_FILTER_STORAGE_KEY);
+    return raw === 'only-visited' || raw === 'hide-visited' ? raw : 'all';
+  });
+
+  const cycleFootprintFilter = useCallback(() => {
+    setFootprintFilter((prev) => {
+      const next: FootprintFilter =
+        prev === 'all' ? 'only-visited' : prev === 'only-visited' ? 'hide-visited' : 'all';
+      try {
+        window.localStorage.setItem(FOOTPRINT_FILTER_STORAGE_KEY, next);
+      } catch {
+        /* localStorage may be unavailable */
+      }
+      return next;
+    });
+  }, []);
+
+  const isVisitedMarker = useCallback(
+    (m: EntityMapMarker) =>
+      !!(visitedLookup && m.entityType && m.entityId && visitedLookup.has(m.entityType, m.entityId)),
+    [visitedLookup],
+  );
+
+  const visibleMarkers = useMemo(() => {
+    if (!visitedLookup || footprintFilter === 'all') return markers;
+    return markers.filter((m) => {
+      const visited = isVisitedMarker(m);
+      return footprintFilter === 'only-visited' ? visited : !visited;
+    });
+  }, [markers, visitedLookup, footprintFilter, isVisitedMarker]);
+
+  const primary = visibleMarkers.filter((m) => m.primary);
+  const nearby = visibleMarkers.filter((m) => !m.primary);
 
   const showPopup = useCallback(
     (map: maplibregl.Map, lngLat: maplibregl.LngLat, marker: MapMarker) => {
@@ -224,6 +275,7 @@ export const EntityMap = ({
             linkTo: m.linkTo ?? '',
             pointType: m.type ?? 'venues',
             meta: JSON.stringify(m.meta ?? {}),
+            visited: isVisitedMarker(m) ? 1 : 0,
           },
         })),
       };
@@ -231,6 +283,14 @@ export const EntityMap = ({
       const existingNearby = map.getSource(NEARBY_SOURCE) as GeoJSONSource | undefined;
       if (existingNearby) {
         existingNearby.setData(nearbyGeoJSON);
+        if (map.getLayer(NEARBY_LAYER)) {
+          map.setPaintProperty(NEARBY_LAYER, 'circle-opacity', [
+            'case',
+            ['==', ['get', 'visited'], 1],
+            0.3,
+            0.8,
+          ]);
+        }
       } else {
         map.addSource(NEARBY_SOURCE, { type: 'geojson', data: nearbyGeoJSON });
 
@@ -243,12 +303,29 @@ export const EntityMap = ({
             'circle-color': ['get', 'color'],
             'circle-stroke-width': 1.5,
             'circle-stroke-color': '#ffffff',
-            'circle-opacity': 0.8,
+            'circle-opacity': ['case', ['==', ['get', 'visited'], 1], 0.3, 0.8],
           },
         });
 
-        map.on('mouseenter', NEARBY_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-        map.on('mouseleave', NEARBY_LAYER, () => { map.getCanvas().style.cursor = ''; });
+        map.on('mouseenter', NEARBY_LAYER, (e) => {
+          map.getCanvas().style.cursor = 'pointer';
+          const feat = e.features?.[0];
+          const tip = tooltipRef.current;
+          if (feat && tip && (feat.properties as { visited?: number })?.visited === 1) {
+            tip.textContent = '✓ Visited';
+            tip.style.display = 'block';
+          }
+        });
+        map.on('mousemove', NEARBY_LAYER, (e) => {
+          const tip = tooltipRef.current;
+          if (!tip || tip.style.display !== 'block') return;
+          tip.style.left = `${e.point.x + 12}px`;
+          tip.style.top = `${e.point.y + 12}px`;
+        });
+        map.on('mouseleave', NEARBY_LAYER, () => {
+          map.getCanvas().style.cursor = '';
+          if (tooltipRef.current) tooltipRef.current.style.display = 'none';
+        });
         map.on('click', NEARBY_LAYER, (e) => {
           const feat = e.features?.[0];
           if (!feat || feat.geometry.type !== 'Point') return;
@@ -283,6 +360,22 @@ export const EntityMap = ({
   return (
     <div className={className} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
       <div ref={containerRef} style={{ height, width: '100%' }} />
+
+      {visitedLookup && !visitedLookup.isEmpty && (
+        <button
+          type="button"
+          onClick={cycleFootprintFilter}
+          className="absolute top-3 left-3 z-[2] inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold bg-background border border-border"
+          aria-pressed={footprintFilter !== 'all'}
+          title="Toggle visited filter"
+        >
+          {footprintFilter === 'all'
+            ? 'Show only places I’ve visited'
+            : footprintFilter === 'only-visited'
+              ? 'Hide visited'
+              : 'Show all'}
+        </button>
+      )}
 
       <div
         ref={tooltipRef}

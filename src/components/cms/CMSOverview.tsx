@@ -307,6 +307,18 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
             <div
               key={card.key}
               onClick={isQueue ? () => onNavigate('review') : undefined}
+              onKeyDown={
+                isQueue
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onNavigate('review');
+                      }
+                    }
+                  : undefined
+              }
+              role={isQueue ? 'button' : undefined}
+              tabIndex={isQueue ? 0 : undefined}
               className="p-5 rounded-element transition-all"
               style={{
                 borderLeft: `3px solid ${card.color}`,
@@ -384,12 +396,13 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           const barWidth = Math.max((ct.count / maxCount) * 100, 2);
 
           return (
-            <div
+            <button
+              type="button"
               key={ct.id}
               onClick={() =>
                 ct.id === 'cms_pages' ? onNavigate('pages') : onNavigate('content', ct.id)
               }
-              className="p-4 cursor-pointer rounded-element overflow-hidden bg-background border border-border transition-transform hover:-translate-y-0.5"
+              className="text-left p-4 cursor-pointer rounded-element overflow-hidden bg-background border border-border transition-transform hover:-translate-y-0.5"
             >
               <div className="flex items-center gap-2 mb-3">
                 <div
@@ -422,7 +435,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                   }}
                 />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -503,10 +516,11 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           { label: 'New Event', icon: Calendar, color: '#ec4899', onClick: () => onEdit('events', null) },
           { label: 'New Article', icon: Newspaper, color: '#3b82f6', onClick: () => onEdit('news_articles', null) },
         ].map((action) => (
-          <div
+          <button
+            type="button"
             key={action.label}
             onClick={action.onClick}
-            className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
+            className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px text-left"
           >
             <div
               className="rounded-element flex items-center justify-center"
@@ -519,7 +533,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               <Plus size={14} style={{ color: action.color }} />
             </div>
             <span className="text-sm font-medium">{action.label}</span>
-          </div>
+          </button>
         ))}
 
         <div className="col-span-2 sm:col-span-4 mt-2">
@@ -538,10 +552,11 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
         ].map((action) => {
           const ActionIcon = action.icon;
           return (
-            <div
+            <button
+              type="button"
               key={action.label}
               onClick={action.onClick}
-              className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px"
+              className="p-4 rounded-element cursor-pointer flex items-center gap-3 bg-background border border-border transition-transform hover:-translate-y-px text-left"
             >
               <div
                 className="rounded-element flex items-center justify-center"
@@ -554,7 +569,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                 <ActionIcon size={16} style={{ color: action.color }} />
               </div>
               <span className="text-sm font-medium">{action.label}</span>
-            </div>
+            </button>
           );
         })}
       </div>

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { mapStyle } from '@/config/mapStyle';
 import { cn } from '@/lib/utils';
 import type { TripPlace, TripDay } from '@/hooks/useTrips';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 
 function dayColor(index: number): string {
   const hue = (330 + index * 47) % 360;
@@ -71,6 +72,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
   const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [showAttractions, setShowAttractions] = useState(true);
   const [showEvents, setShowEvents] = useState(true);
+  const visitedLookup = useVisitedPlaceLookup();
 
   const sortedDays = useMemo(
     () => [...days].sort((a, b) => a.date.localeCompare(b.date)),
@@ -229,6 +231,10 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
           ? t('trips.map.dayLabel', { number: dayIdx + 1 })
           : t('trips.itinerary.unassigned');
 
+      const visited =
+        (place.venue_id && visitedLookup.has('venue', place.venue_id)) ||
+        (place.event_id && visitedLookup.has('event', place.event_id));
+
       const el = document.createElement('div');
       el.style.width = '14px';
       el.style.height = '14px';
@@ -237,6 +243,10 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       el.style.border = '2px solid white';
       el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
       el.style.cursor = 'pointer';
+      if (visited) {
+        el.style.opacity = '0.3';
+        el.title = '✓ Visited';
+      }
 
       const popupEl = document.createElement('div');
       const root = createRoot(popupEl);
@@ -266,9 +276,10 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       el.style.height = '10px';
       el.style.borderRadius = '50%';
       el.style.backgroundColor = attractionColor;
-      el.style.opacity = '0.85';
+      el.style.opacity = visitedLookup.has('venue', venue.id) ? '0.3' : '0.85';
       el.style.border = `1px solid ${paperColor}`;
       el.style.cursor = 'pointer';
+      if (visitedLookup.has('venue', venue.id)) el.title = '✓ Visited';
 
       const popupEl = document.createElement('div');
       createRoot(popupEl).render(
@@ -293,9 +304,10 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       el.style.width = '10px';
       el.style.height = '10px';
       el.style.backgroundColor = eventColor;
-      el.style.opacity = '0.9';
+      el.style.opacity = visitedLookup.has('event', event.id) ? '0.3' : '0.9';
       el.style.border = `1px solid ${paperColor}`;
       el.style.cursor = 'pointer';
+      if (visitedLookup.has('event', event.id)) el.title = '✓ Visited';
 
       const dateLabel = event.start_date
         ? t('trips.map.eventOn', {
@@ -359,7 +371,7 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
       setTimeout(fitBounds, 200);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geoPlaces, dayIndexMap, days, t, visibleVenues, visibleEvents]);
+  }, [geoPlaces, dayIndexMap, days, t, visibleVenues, visibleEvents, visitedLookup]);
 
   if (places.length === 0 && cityIds.length === 0) {
     return (

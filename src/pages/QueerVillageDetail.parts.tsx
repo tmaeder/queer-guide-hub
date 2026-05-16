@@ -20,6 +20,7 @@ import { AdminEditButton } from '@/components/admin/AdminEditButton';
 import { VenueCard } from '@/components/venues/VenueCard';
 import { EventCard } from '@/components/events/EventCard';
 import { EntityMap } from '@/components/map/EntityMap';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import type { ReactNode } from 'react';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -424,12 +425,14 @@ export function VillageMapTab({
   village: VillageWithRelations;
   venues: VillageVenue[];
 }) {
+  const visitedLookup = useVisitedPlaceLookup();
   if (typeof village.latitude !== 'number' || typeof village.longitude !== 'number') return null;
   return (
     <EntityMap
       center={[Number(village.longitude), Number(village.latitude)]}
       zoom={14}
       height={400}
+      visitedLookup={visitedLookup}
       markers={[
         {
           id: village.id,
@@ -438,6 +441,8 @@ export function VillageMapTab({
           name: village.name ?? 'Village',
           type: 'neighbourhoods',
           primary: true,
+          entityType: 'village',
+          entityId: village.id,
         },
         ...venues
           .filter((v) => typeof v.latitude === 'number' && typeof v.longitude === 'number')
@@ -449,6 +454,8 @@ export function VillageMapTab({
             subtitle: v.category ?? undefined,
             type: 'venues' as const,
             linkTo: `/venues/${v.slug || v.id}`,
+            entityType: 'venue' as const,
+            entityId: v.id,
           })),
       ]}
     />

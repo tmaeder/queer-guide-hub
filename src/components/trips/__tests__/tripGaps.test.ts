@@ -28,6 +28,8 @@ function place(overrides: Partial<TripPlace>): TripPlace {
     sort_order: 0,
     created_by: null,
     created_at: '',
+    booking_status: 'booked',
+    reservation_id: null,
     ...overrides,
   };
 }
@@ -84,5 +86,26 @@ describe('detectTripGaps', () => {
     const places = [place({ id: 'p1', day_id: 'd1', category: 'lodging' })];
     const gaps = detectTripGaps(days, places);
     expect(gaps.find((g) => g.kind === 'no_lodging' && g.dayId === 'd1')).toBeFalsy();
+  });
+
+  it('flags unconfirmed_booking when lodging has intent status', () => {
+    const days = [day('d1', '2026-06-01'), day('d2', '2026-06-02')];
+    const places = [
+      place({ id: 'p1', day_id: 'd1', hotel_id: 'h1', booking_status: 'intent' }),
+      place({ id: 'p2', day_id: 'd2', hotel_id: 'h2', booking_status: 'booked' }),
+    ];
+    const gaps = detectTripGaps(days, places);
+    expect(gaps.find((g) => g.kind === 'unconfirmed_booking' && g.dayId === 'd1')).toBeTruthy();
+    expect(gaps.find((g) => g.kind === 'no_lodging' && g.dayId === 'd1')).toBeFalsy();
+    expect(gaps.find((g) => g.kind === 'unconfirmed_booking' && g.dayId === 'd2')).toBeFalsy();
+  });
+
+  it('does not flag unconfirmed_booking on last day', () => {
+    const days = [day('d1', '2026-06-01')];
+    const places = [
+      place({ id: 'p1', day_id: 'd1', hotel_id: 'h1', booking_status: 'intent' }),
+    ];
+    const gaps = detectTripGaps(days, places);
+    expect(gaps.find((g) => g.kind === 'unconfirmed_booking')).toBeFalsy();
   });
 });

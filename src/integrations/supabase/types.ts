@@ -12841,6 +12841,7 @@ export type Database = {
       }
       trip_places: {
         Row: {
+          booking_status: string
           category: string | null
           city_id: string | null
           country_id: string | null
@@ -12857,12 +12858,14 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           notes: string | null
+          reservation_id: string | null
           sort_order: number
           start_time: string | null
           trip_id: string
           venue_id: string | null
         }
         Insert: {
+          booking_status?: string
           category?: string | null
           city_id?: string | null
           country_id?: string | null
@@ -12879,12 +12882,14 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           notes?: string | null
+          reservation_id?: string | null
           sort_order?: number
           start_time?: string | null
           trip_id: string
           venue_id?: string | null
         }
         Update: {
+          booking_status?: string
           category?: string | null
           city_id?: string | null
           country_id?: string | null
@@ -12901,6 +12906,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           notes?: string | null
+          reservation_id?: string | null
           sort_order?: number
           start_time?: string | null
           trip_id?: string

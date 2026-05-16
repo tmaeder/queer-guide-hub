@@ -38,15 +38,18 @@ interface Props {
   onClose: () => void;
   tripId: string;
   existing?: Reservation;
+  initialTitle?: string;
+  initialType?: typeof TYPES[number];
+  onCreated?: (reservation: Reservation) => void;
 }
 
-export function AddReservationDialog({ open, onClose, tripId, existing }: Props) {
+export function AddReservationDialog({ open, onClose, tripId, existing, initialTitle, initialType, onCreated }: Props) {
   const { toast } = useToast();
   const { addReservation, updateReservation } = useReservationMutations(tripId);
   const isEdit = !!existing;
 
-  const [type, setType] = useState(existing?.type || 'hotel');
-  const [title, setTitle] = useState(existing?.title || '');
+  const [type, setType] = useState(existing?.type || initialType || 'hotel');
+  const [title, setTitle] = useState(existing?.title || initialTitle || '');
   const [confirmationCode, setConfirmationCode] = useState(existing?.confirmation_code || '');
   const [checkIn, setCheckIn] = useState(existing?.check_in?.slice(0, 16) || '');
   const [checkOut, setCheckOut] = useState(existing?.check_out?.slice(0, 16) || '');
@@ -118,8 +121,9 @@ export function AddReservationDialog({ open, onClose, tripId, existing }: Props)
         await updateReservation.mutateAsync({ id: existing.id, ...updatePayload });
         toast({ title: 'Reservation updated' });
       } else {
-        await addReservation.mutateAsync(payload);
+        const created = await addReservation.mutateAsync(payload);
         toast({ title: 'Reservation added' });
+        onCreated?.(created);
       }
       resetAndClose();
     } catch (err) {

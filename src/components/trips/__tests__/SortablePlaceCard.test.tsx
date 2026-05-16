@@ -11,6 +11,14 @@ vi.mock('react-i18next', () => ({
 }));
 vi.mock('@/utils/equalityScore', () => ({ getScoreRingColor: () => '#0f0' }));
 vi.mock('../PlaceBookableLinks', () => ({ PlaceBookableLinks: () => <div data-testid="links" /> }));
+vi.mock('../AddReservationDialog', () => ({ AddReservationDialog: () => null }));
+vi.mock('@/hooks/useTripReservations', () => ({
+  useTripReservations: () => ({ data: [] }),
+  useReservationMutations: () => ({ addReservation: { mutateAsync: vi.fn() } }),
+}));
+vi.mock('@/hooks/useTrips', () => ({
+  useTripMutations: () => ({ updatePlace: { mutateAsync: vi.fn() } }),
+}));
 
 import {
   SortablePlaceCard,

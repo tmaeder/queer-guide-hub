@@ -187,7 +187,7 @@ export const NotificationList = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         );
       }
       case 'dm': {
@@ -222,7 +222,7 @@ export const NotificationList = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         );
       }
       case 'group': {
@@ -257,15 +257,16 @@ export const NotificationList = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         );
       }
       case 'like': {
         const l = item.data as unknown as LikeItem;
         return (
-          <div
+          <button
+            type="button"
             key={item.key}
-            className="p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/feed')}
           >
             <div className="flex items-start gap-3">
@@ -290,15 +291,16 @@ export const NotificationList = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         );
       }
       case 'comment': {
         const c = item.data as unknown as CommentItem;
         return (
-          <div
+          <button
+            type="button"
             key={item.key}
-            className="p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/feed')}
           >
             <div className="flex items-start gap-3">
@@ -326,7 +328,7 @@ export const NotificationList = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         );
       }
       default:

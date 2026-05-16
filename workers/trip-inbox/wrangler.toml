@@ -1,0 +1,26 @@
+name = "queer-guide-worker-trip-inbox"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Email Worker bindings — the actual route `*@inbox.queer.guide` is configured
+# in the Cloudflare dashboard under Email Routing → Email Workers. Once the
+# DNS for `inbox.queer.guide` is verified, point all matching addresses at
+# this worker.
+
+[vars]
+INBOX_DOMAIN = "inbox.queer.guide"
+# Threshold above which a parsed item auto-slots into reservations.
+AUTO_SLOT_CONFIDENCE = "0.85"
+# Anthropic model — Claude Haiku, lowest cost.
+ANTHROPIC_MODEL = "claude-haiku-4-5"
+
+# Secrets (set via `wrangler secret put NAME`):
+#   SUPABASE_URL             - https://<project>.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY - service-role key (bypasses RLS, server-only)
+#   ANTHROPIC_API_KEY        - Anthropic Claude API key
+#   INBOX_ENCRYPTION_KEY     - 32-byte base64 secret used by AES-GCM to
+#                              encrypt raw_body_encrypted bytea column.
+
+[observability]
+enabled = true

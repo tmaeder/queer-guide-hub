@@ -62,6 +62,7 @@ function ThumbImage({ item, size = 'full' }: { item: UnifiedMediaItem; size?: 'f
     <img
       src={url}
       alt={item.display_name}
+      role="presentation"
       className="w-full h-full object-cover"
       loading="lazy"
       onError={() => setErrored(true)}
@@ -100,7 +101,12 @@ export function MediaGrid(props: MediaGridProps) {
             onClick={() => navigate(`/admin/media/${item.id}`)}
           >
             {bulkMode && (
-              <div className="absolute top-2 left-2 z-10" onClick={e => e.stopPropagation()}>
+              <div
+                className="absolute top-2 left-2 z-10"
+                onClick={e => e.stopPropagation()}
+                onKeyDown={e => e.stopPropagation()}
+                role="presentation"
+              >
                 <Checkbox
                   checked={selectedItems.has(item.id)}
                   onCheckedChange={() => onToggleSelect(item.id)}
@@ -162,9 +168,21 @@ export function MediaGrid(props: MediaGridProps) {
           key={item.id}
           className="p-3 flex items-center gap-3 hover:bg-muted cursor-pointer"
           onClick={() => navigate(`/admin/media/${item.id}`)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate(`/admin/media/${item.id}`);
+            }
+          }}
+          role="button"
+          tabIndex={0}
         >
           {bulkMode && (
-            <div onClick={e => e.stopPropagation()}>
+            <div
+              onClick={e => e.stopPropagation()}
+              onKeyDown={e => e.stopPropagation()}
+              role="presentation"
+            >
               <Checkbox
                 checked={selectedItems.has(item.id)}
                 onCheckedChange={() => onToggleSelect(item.id)}

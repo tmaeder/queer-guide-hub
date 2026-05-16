@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -15,30 +15,37 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable';
-import { Plus, Pencil, Check, Inbox, Map as MapIcon } from 'lucide-react';
-import { format, differenceInCalendarDays } from 'date-fns';
+import { Plus, Inbox, Map as MapIcon } from 'lucide-react';
+import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import type { TripWithDetails, TripPlace, TripDay } from '@/hooks/useTrips';
 import { useTripMutations } from '@/hooks/useTrips';
 import { SortablePlaceCard, PlaceCardOverlay } from './SortablePlaceCard';
+import { DayCard, type DaySlot } from './DayCard';
 
 interface Props {
   trip: TripWithDetails;
-  onAddPlace: (dayId?: string) => void;
+  onAddPlace: (dayId?: string, slot?: DaySlot) => void;
+  /** Auto-scroll the today card into view on mount. Default true. */
+  autoScrollToToday?: boolean;
 }
 
-export function DraggableItinerary({ trip, onAddPlace }: Props) {
+export function DraggableItinerary({
+  trip,
+  onAddPlace,
+  autoScrollToToday = true,
+}: Props) {
   const { t } = useTranslation();
   const { updatePlace, removePlace, updateDay } = useTripMutations();
   const { toast } = useToast();
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [editingDayId, setEditingDayId] = useState<string | null>(null);
   const [editDayTitle, setEditDayTitle] = useState('');
+  const rootRef = useRef<HTMLDivElement>(null);
+  const didScrollRef = useRef(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -72,15 +79,39 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
       a.date.localeCompare(b.date),
     );
     const firstDate = sorted[0]?.date ? new Date(sorted[0].date) : null;
-    return sorted.map((day, index) => ({
-      day,
-      index,
-      dayNumber:
-        firstDate != null
-          ? differenceInCalendarDays(new Date(day.date), firstDate) + 1
-          : index + 1,
-    }));
+    const now = new Date();
+    return sorted.map((day, index) => {
+      const date = new Date(day.date);
+      return {
+        day,
+        index,
+        dayNumber:
+          firstDate != null
+            ? differenceInCalendarDays(date, firstDate) + 1
+            : index + 1,
+        isFirst: index === 0,
+        isLast: index === sorted.length - 1,
+        isToday: isSameDay(date, now),
+        isPast: date < now && !isSameDay(date, now),
+        isFuture: date > now && !isSameDay(date, now),
+      };
+    });
   }, [trip.trip_days]);
+
+  // Auto-scroll to today on mount
+  useEffect(() => {
+    if (!autoScrollToToday || didScrollRef.current) return;
+    const root = rootRef.current;
+    if (!root) return;
+    const todayEl = root.querySelector<HTMLElement>('[data-day-today="true"]');
+    if (todayEl) {
+      didScrollRef.current = true;
+      // defer to next frame so layout is settled
+      requestAnimationFrame(() => {
+        todayEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [autoScrollToToday, sortedDays]);
 
   const findContainer = useCallback(
     (id: string): string | null => {
@@ -196,198 +227,117 @@ export function DraggableItinerary({ trip, onAddPlace }: Props) {
     trip.trip_days.length === 0 && unassigned.length === 0;
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      {/* Unassigned places */}
-      {unassigned.length > 0 && (
-        <div className="border border-dashed border-border rounded-container p-5 mb-4 bg-muted/40 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
-                <Inbox style={{ width: 12, height: 12 }} aria-hidden="true" />
-                {t('trips.itinerary.unassigned')}
-              </span>
-              <Badge variant="outline" className="rounded-full">{unassigned.length}</Badge>
+    <div ref={rootRef}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        {/* Unassigned places */}
+        {unassigned.length > 0 && (
+          <div className="border border-dashed border-border rounded-container p-5 mb-4 bg-muted/40 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+                  <Inbox style={{ width: 12, height: 12 }} aria-hidden="true" />
+                  {t('trips.itinerary.unassigned')}
+                </span>
+                <Badge variant="outline" className="rounded-full">{unassigned.length}</Badge>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
+                <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+                {t('trips.itinerary.add')}
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
-              <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
-              {t('trips.itinerary.add')}
+            <p className="text-xs text-muted-foreground block mb-3">
+              {t('trips.itinerary.unassignedHint')}
+            </p>
+            <SortableContext
+              items={unassigned.map((p) => p.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {unassigned.map((place) => (
+                <SortablePlaceCard
+                  key={place.id}
+                  place={place}
+                  onDelete={handleDelete}
+                  tripStartDate={trip.start_date}
+                  tripEndDate={trip.end_date}
+                />
+              ))}
+            </SortableContext>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {itineraryIsEmpty && (
+          <div className="text-center py-16 md:py-24 px-6 border border-dashed border-border rounded-container bg-muted/30 backdrop-blur-sm">
+            <div className="relative w-16 h-16 mx-auto mb-5">
+              <div
+                className="absolute inset-0 rounded-full opacity-[0.08]"
+                style={{ backgroundColor: 'hsl(var(--foreground))' }}
+                aria-hidden="true"
+              />
+              <MapIcon
+                style={{ width: 28, height: 28, color: 'hsl(var(--foreground))' }}
+                aria-hidden="true"
+                className="absolute inset-0 m-auto"
+              />
+            </div>
+            <h6 className="font-bold mb-2 text-xl tracking-tight">{t('trips.itinerary.emptyTitle')}</h6>
+            <p className="text-sm text-muted-foreground mb-6 max-w-[420px] mx-auto leading-relaxed">
+              {t('trips.itinerary.emptyDescription')}
+            </p>
+            <Button variant="brand" onClick={() => onAddPlace()} className="rounded-full">
+              <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+              {t('trips.itinerary.addPlace')}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground block mb-3">
-            {t('trips.itinerary.unassignedHint')}
-          </p>
-          <SortableContext
-            items={unassigned.map((p) => p.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {unassigned.map((place) => (
-              <SortablePlaceCard
-                key={place.id}
-                place={place}
-                onDelete={handleDelete}
-                tripStartDate={trip.start_date}
-                tripEndDate={trip.end_date}
-              />
-            ))}
-          </SortableContext>
-        </div>
-      )}
+        )}
 
-      {/* Empty state */}
-      {itineraryIsEmpty && (
-        <div className="text-center py-16 md:py-24 px-6 border border-dashed border-border rounded-container bg-muted/30 backdrop-blur-sm">
-          <div className="relative w-16 h-16 mx-auto mb-5">
-            <div
-              className="absolute inset-0 rounded-full opacity-[0.08]"
-              style={{ backgroundColor: 'hsl(var(--foreground))' }}
-              aria-hidden="true"
+        {/* Day spine */}
+        {sortedDays.map((meta) => {
+          const dayPlaces = placesByContainer[meta.day.id] || [];
+          return (
+            <DayCard
+              key={meta.day.id}
+              day={meta.day}
+              dayNumber={meta.dayNumber}
+              totalDays={sortedDays.length}
+              isFirst={meta.isFirst}
+              isLast={meta.isLast}
+              isToday={meta.isToday}
+              isPast={meta.isPast}
+              isFuture={meta.isFuture}
+              places={dayPlaces}
+              tripStartDate={trip.start_date}
+              tripEndDate={trip.end_date}
+              editingTitle={editingDayId === meta.day.id}
+              draftTitle={editDayTitle}
+              activeDragId={activeDragId}
+              onStartEditTitle={() => startEditDay(meta.day)}
+              onChangeDraftTitle={setEditDayTitle}
+              onSaveTitle={saveEditDay}
+              onCancelEditTitle={() => setEditingDayId(null)}
+              onAddPlace={(slot) => onAddPlace(meta.day.id, slot)}
+              onDeletePlace={handleDelete}
             />
-            <MapIcon
-              style={{ width: 28, height: 28, color: 'hsl(var(--foreground))' }}
-              aria-hidden="true"
-              className="absolute inset-0 m-auto"
-            />
-          </div>
-          <h6 className="font-bold mb-2 text-xl tracking-tight">{t('trips.itinerary.emptyTitle')}</h6>
-          <p className="text-sm text-muted-foreground mb-6 max-w-[420px] mx-auto leading-relaxed">
-            {t('trips.itinerary.emptyDescription')}
-          </p>
-          <Button variant="brand" onClick={() => onAddPlace()} className="rounded-full">
+          );
+        })}
+
+        {!itineraryIsEmpty && (
+          <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-3 rounded-element border-dashed h-12">
             <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
             {t('trips.itinerary.addPlace')}
           </Button>
-        </div>
-      )}
+        )}
 
-      {/* Day containers */}
-      {sortedDays.map(({ day, dayNumber }) => {
-        const dayPlaces = placesByContainer[day.id] || [];
-        return (
-          <Card key={day.id} className="mb-3 rounded-container border-border/70 overflow-hidden">
-            <CardContent>
-              <div className="flex items-center justify-between mb-4 gap-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div
-                    className="flex flex-col items-center justify-center flex-shrink-0 w-14 h-14 rounded-element"
-                    style={{
-                      backgroundColor: 'hsl(var(--foreground))',
-                      color: 'hsl(var(--background))',
-                    }}
-                    aria-hidden="true"
-                  >
-                    <span className="text-[9px] font-semibold uppercase opacity-70" style={{ letterSpacing: '0.18em', lineHeight: 1 }}>
-                      {t('trips.itinerary.dayShort')}
-                    </span>
-                    <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em' }}>
-                      {dayNumber}
-                    </span>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold leading-tight tracking-tight">
-                      {format(new Date(day.date), 'EEEE, MMM d')}
-                    </p>
-
-                    {editingDayId === day.id ? (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Input
-                          value={editDayTitle}
-                          onChange={(e) => setEditDayTitle(e.target.value)}
-                          placeholder={t('trips.itinerary.dayTitlePlaceholder')}
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') saveEditDay();
-                            if (e.key === 'Escape') setEditingDayId(null);
-                          }}
-                          className="flex-1 max-w-[240px] h-8"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0"
-                          onClick={saveEditDay}
-                          aria-label={t('trips.itinerary.saveDayTitle')}
-                        >
-                          <Check style={{ width: 14, height: 14 }} />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1 min-w-0">
-                        {day.title && (
-                          <p className="text-sm text-muted-foreground truncate max-w-[280px]">
-                            {day.title}
-                          </p>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 opacity-40 hover:opacity-100"
-                          onClick={() => startEditDay(day)}
-                          aria-label={t('trips.itinerary.editDayTitle')}
-                        >
-                          <Pencil style={{ width: 12, height: 12 }} />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-
-                  <Badge variant="outline" className="rounded-full">
-                    {t('trips.card.placeCount', { count: dayPlaces.length })}
-                  </Badge>
-                </div>
-
-                <Button variant="ghost" size="sm" onClick={() => onAddPlace(day.id)} className="rounded-full">
-                  <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
-                  {t('trips.itinerary.add')}
-                </Button>
-              </div>
-
-              <SortableContext
-                items={dayPlaces.map((p) => p.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {dayPlaces.length === 0 ? (
-                  <div
-                    className="border border-dashed rounded-container py-6 text-center min-h-[56px] transition-colors bg-muted/20"
-                    style={{
-                      borderColor: activeDragId ? 'hsl(var(--foreground))' : 'hsl(var(--border))',
-                    }}
-                  >
-                    <p className="text-xs text-muted-foreground">{t('trips.itinerary.dropHere')}</p>
-                  </div>
-                ) : (
-                  dayPlaces.map((place) => (
-                    <SortablePlaceCard
-                      key={place.id}
-                      place={place}
-                      onDelete={handleDelete}
-                      tripStartDate={trip.start_date}
-                      tripEndDate={trip.end_date}
-                    />
-                  ))
-                )}
-              </SortableContext>
-            </CardContent>
-          </Card>
-        );
-      })}
-
-      {!itineraryIsEmpty && (
-        <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-3 rounded-element border-dashed h-12">
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
-          {t('trips.itinerary.addPlace')}
-        </Button>
-      )}
-
-      <DragOverlay>
-        {activePlace ? <PlaceCardOverlay place={activePlace} /> : null}
-      </DragOverlay>
-    </DndContext>
+        <DragOverlay>
+          {activePlace ? <PlaceCardOverlay place={activePlace} /> : null}
+        </DragOverlay>
+      </DndContext>
+    </div>
   );
 }

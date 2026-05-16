@@ -102,6 +102,14 @@ export function FeedbackCard({
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div
         onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick?.(e as unknown as React.MouseEvent);
+          }
+        }}
+        role="button"
+        tabIndex={0}
         style={cardStyle}
         className={cn(
           'group relative rounded border cursor-pointer transition-all',
@@ -205,7 +213,16 @@ export function FeedbackCard({
 
           <div
             onClick={onToggleSelect}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggleSelect?.(e as unknown as React.MouseEvent);
+              }
+            }}
             onPointerDown={(e) => e.stopPropagation()}
+            role="checkbox"
+            aria-checked={selected}
+            tabIndex={0}
             className={cn(
               'flex-shrink-0 transition-opacity',
               selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
@@ -311,6 +328,14 @@ export function FeedbackCard({
                     e.stopPropagation();
                     onStoryClick?.(story.story_id);
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onStoryClick?.(story.story_id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                   className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
                   style={{
                     gap: 2,
@@ -414,6 +439,14 @@ export function FeedbackCard({
                       e.stopPropagation();
                       onStoryClick?.(story.story_id);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onStoryClick?.(story.story_id);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
                     className="inline-flex items-center flex-shrink-0 overflow-hidden whitespace-nowrap"
                     style={{
                       gap: 2,

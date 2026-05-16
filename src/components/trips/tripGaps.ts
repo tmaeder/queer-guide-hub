@@ -1,7 +1,7 @@
 import type { TripDay, TripPlace } from '@/hooks/useTrips';
 
 export type GapSeverity = 'warning' | 'info';
-export type GapKind = 'no_lodging' | 'no_dinner' | 'empty_day';
+export type GapKind = 'no_lodging' | 'no_dinner' | 'empty_day' | 'unconfirmed_booking';
 
 export interface TripGap {
   kind: GapKind;
@@ -16,6 +16,10 @@ function isLodging(place: TripPlace): boolean {
   if (place.hotel_id) return true;
   if (place.category === 'lodging' || place.category === 'hotel') return true;
   return false;
+}
+
+function isBooked(place: TripPlace): boolean {
+  return place.booking_status === 'booked' || place.booking_status === 'completed';
 }
 
 function hasEveningPlace(places: TripPlace[]): boolean {
@@ -51,7 +55,8 @@ export function detectTripGaps(
       return;
     }
 
-    const lodging = dayPlaces.some(isLodging);
+    const lodgings = dayPlaces.filter(isLodging);
+    const lodging = lodgings.length > 0;
     const isLastDay = idx === sortedDays.length - 1;
     if (!lodging && !isLastDay) {
       gaps.push({
@@ -61,6 +66,15 @@ export function detectTripGaps(
         date: day.date,
         dayIndex: idx + 1,
         message: `Day ${idx + 1}: no accommodation`,
+      });
+    } else if (lodging && !lodgings.some(isBooked) && !isLastDay) {
+      gaps.push({
+        kind: 'unconfirmed_booking',
+        severity: 'info',
+        dayId: day.id,
+        date: day.date,
+        dayIndex: idx + 1,
+        message: `Day ${idx + 1}: tentative reservation`,
       });
     }
 

@@ -1,6 +1,10 @@
+import { useEffect, useRef } from 'react';
 import { Hotel, Ticket } from 'lucide-react';
 import { logTripBookingClick } from '@/hooks/useBundledCheckout';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { useTripMutations } from '@/hooks/useTrips';
+import { useTripReservations } from '@/hooks/useTripReservations';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   buildPlaceBookableLinks,
@@ -15,6 +19,7 @@ interface Props {
   cityName?: string | null;
   startDate?: string | null;
   endDate?: string | null;
+  bookingStatus?: 'intent' | 'booked' | 'completed';
 }
 
 const iconFor = (link: BookableLink) =>
@@ -28,8 +33,14 @@ export function PlaceBookableLinks({
   cityName,
   startDate,
   endDate,
+  bookingStatus = 'intent',
 }: Props) {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const { updatePlace } = useTripMutations();
+  const { data: reservations, refetch } = useTripReservations(tripId);
+  const clickedRef = useRef(false);
+
   const links = buildPlaceBookableLinks({
     category,
     name,
@@ -38,9 +49,31 @@ export function PlaceBookableLinks({
     endDate,
   });
 
+  // On window focus after an affiliate click, prompt user if no reservation appeared.
+  useEffect(() => {
+    function onFocus() {
+      if (!clickedRef.current) return;
+      void refetch().then(() => {
+        const hasReservation = (reservations ?? []).some(
+          (r) => r.title?.toLowerCase().includes(name.toLowerCase()),
+        );
+        if (!hasReservation) {
+          toast({
+            title: 'Did you complete the booking?',
+            description: `Mark "${name}" as booked to track it.`,
+          });
+        }
+        clickedRef.current = false;
+      });
+    }
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [name, refetch, reservations, toast]);
+
   if (links.length === 0) return null;
 
   const onClick = (link: BookableLink) => {
+    clickedRef.current = true;
     void logTripBookingClick({
       trip_id: tripId,
       trip_place_id: tripPlaceId,
@@ -49,6 +82,12 @@ export function PlaceBookableLinks({
       vertical: link.vertical,
       destination_url: link.url,
     });
+    // Only flip to intent if not already booked/completed
+    if (bookingStatus !== 'booked' && bookingStatus !== 'completed') {
+      void updatePlace.mutateAsync({ id: tripPlaceId, booking_status: 'intent' }).catch(() => {
+        /* no-op */
+      });
+    }
   };
 
   return (

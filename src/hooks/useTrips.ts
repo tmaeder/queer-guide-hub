@@ -64,6 +64,8 @@ export interface TripPlace {
   sort_order: number;
   created_by: string | null;
   created_at: string;
+  booking_status: 'intent' | 'booked' | 'completed';
+  reservation_id: string | null;
   // Joined relations
   venues?: { id: string; name: string; category: string | null; images: string[] | null; address: string | null } | null;
   events?: { id: string; title: string; event_type: string | null; start_date: string | null; end_date: string | null; images: string[] | null } | null;

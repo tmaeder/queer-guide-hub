@@ -295,6 +295,7 @@ export const NewsCard = ({
           referrerPolicy="no-referrer"
           src={effectiveImage}
           alt=""
+          role="presentation"
           width={160}
           height={120}
           style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0, borderRadius: 6 }}
@@ -493,13 +494,18 @@ export const NewsCard = ({
             </div>
           )}
           {authorName && (
-            <span
-              className="text-xs text-muted-foreground"
-              style={{ cursor: onFilterByAuthor ? 'pointer' : 'default' }}
-              onClick={(e) => { e.stopPropagation(); onFilterByAuthor?.(authorName); }}
-            >
-              By {authorName}
-            </span>
+            onFilterByAuthor ? (
+              <button
+                type="button"
+                className="text-xs text-muted-foreground"
+                style={{ cursor: 'pointer' }}
+                onClick={(e) => { e.stopPropagation(); onFilterByAuthor(authorName); }}
+              >
+                By {authorName}
+              </button>
+            ) : (
+              <span className="text-xs text-muted-foreground">By {authorName}</span>
+            )
           )}
         </div>
 
@@ -541,6 +547,8 @@ export const NewsCard = ({
             className="flex flex-wrap items-center gap-1.5 text-muted-foreground"
             style={{ fontSize: '0.8rem' }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="presentation"
           >
             <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
             {linkedCities.map((city: { id: string; name: string | undefined; slug?: string }, i: number) => (
@@ -563,7 +571,12 @@ export const NewsCard = ({
         )}
 
         {/* Favorite + share */}
-        <div className="flex items-center gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-1 pt-1"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          role="presentation"
+        >
           <FavoriteButton itemId={article.id} type="news" />
           <button
             type="button"

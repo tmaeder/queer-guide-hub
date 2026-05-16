@@ -15,6 +15,10 @@ export interface PlaceMark {
   is_public: boolean;
   note: string | null;
   marked_at: string;
+  trip_id: string | null;
+  photo_urls: string[] | null;
+  journal_note: string | null;
+  rating: number | null;
 }
 
 const QK = {

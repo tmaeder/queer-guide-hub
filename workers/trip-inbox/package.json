@@ -1,0 +1,20 @@
+{
+  "name": "queer-guide-worker-trip-inbox",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "postal-mime": "^2.2.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250414.0",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.84.0"
+  }
+}
