@@ -1,5 +1,5 @@
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
-import { jsonResponse, errorResponse, corsResponse, requireAdmin, getServiceClient } from '../_shared/supabase-client.ts'
+import { jsonResponse, errorResponse, corsResponse, requireAdmin, requireInternalOrAdmin, getServiceClient } from '../_shared/supabase-client.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 
 // Queue configuration: name → visibility timeout in seconds
@@ -67,11 +67,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Dispatch is called by cron (sends anon key in Authorization).
-    // All other actions are admin-only.
-    // TODO: harden dispatch with X-Internal-Secret header check once cron
-    // commands are migrated to send the secret (see security audit P0).
-    if (action !== 'dispatch') {
+    // Dispatch is called by cron with the X-Internal-Secret header (sourced
+    // from vault) OR by an authenticated admin via the admin UI. All other
+    // actions are admin-only.
+    if (action === 'dispatch') {
+      const authResult = await requireInternalOrAdmin(req, supabase)
+      if (authResult instanceof Response) return authResult
+    } else {
       const authResult = await requireAdmin(req, supabase)
       if (authResult instanceof Response) return authResult
     }
@@ -306,14 +308,17 @@ async function dispatchEdgeFunction(
 
     const functionUrl = `${supabaseUrl}/functions/v1/${def.edge_function}`
     // Authenticate internal invocations with the service role key so target functions
-    // can recognise this as a system/internal call (e.g. fetch-news bypasses requireAdmin
-    // when it sees the service role key in the Authorization header).
+    // recognise this as system/internal. Also forward X-Internal-Secret so targets
+    // that have moved to the stricter internal-only gate can authenticate without
+    // relying on the service-role bypass.
+    const internalSecret = Deno.env.get('INTERNAL_INVOKE_SECRET') || ''
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${serviceRoleKey}`,
         'apikey': serviceRoleKey,
+        ...(internalSecret ? { 'X-Internal-Secret': internalSecret } : {}),
       },
       body: JSON.stringify(payload),
       signal: controller.signal,

@@ -132,7 +132,7 @@ export const GroupImageUpload = ({
               <div className="overflow-hidden" style={{ aspectRatio: '1' }}>
                 <img
                   src={imageUrl}
-                  alt={`Group image ${index + 1}`}
+                  alt=""
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;

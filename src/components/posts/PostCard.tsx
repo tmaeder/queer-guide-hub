@@ -172,7 +172,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               >
                 <img
                   src={image}
-                  alt="Post image"
+                  alt=""
                   className="w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;

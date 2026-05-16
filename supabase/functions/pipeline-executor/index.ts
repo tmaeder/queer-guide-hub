@@ -1,4 +1,4 @@
-import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
+import { getServiceClient, jsonResponse, errorResponse, corsResponse, requireInternalOrAdmin } from '../_shared/supabase-client.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 import { evaluateCondition } from '../_shared/condition-evaluator.ts'
 import type { PipelineMessage, PipelineNode, PipelineEdge, NodeState } from '../_shared/pipeline-message.ts'
@@ -17,9 +17,12 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-  // TODO: enforce X-Internal-Secret or service-role bearer here once cron
-  // commands are migrated to send a valid bearer (see security audit P0).
-  // Workflow-dispatcher already sends Bearer ${SERVICE_ROLE_KEY}.
+  // verify_jwt = false at the gateway — enforce auth here. Accept:
+  //   - X-Internal-Secret header (cron via vault; workflow-dispatcher forwards it)
+  //   - service-role bearer (workflow-dispatcher fallback)
+  //   - authenticated admin user (admin UI manual triggers)
+  const authResult = await requireInternalOrAdmin(req, supabase)
+  if (authResult instanceof Response) return authResult
 
   try {
     const body = await req.json().catch(() => ({}))

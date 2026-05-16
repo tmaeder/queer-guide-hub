@@ -155,7 +155,7 @@ export function EnhancedImageUpload({
         <div className="relative group">
           <img
             src={currentImage}
-            alt="Uploaded image"
+            alt=""
             className="w-full h-48 object-cover bg-muted"
           />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

@@ -79,6 +79,44 @@ export interface AdminContext {
   originalActorId: string | null
 }
 
+/**
+ * Internal-only invocation auth for endpoints that run with verify_jwt=false.
+ * Returns true if the caller presented a valid INTERNAL_INVOKE_SECRET via the
+ * X-Internal-Secret header (set by pg_cron via vault, or by workflow-dispatcher
+ * when invoking target functions).
+ *
+ * Use as a soft gate alongside requireAdmin — if neither check passes, reject.
+ * Returns false (not Response) so callers can decide their own auth fallback.
+ */
+export function hasInternalSecret(req: Request): boolean {
+  const expected = Deno.env.get('INTERNAL_INVOKE_SECRET')
+  if (!expected) return false
+  const provided = req.headers.get('x-internal-secret')
+  return provided === expected
+}
+
+/**
+ * Strict gate for cron/internal-only functions (workflow-dispatcher, pipeline-executor).
+ * Accepts: valid INTERNAL_INVOKE_SECRET header, service-role bearer token,
+ * or authenticated admin user. Rejects everything else with 401/403.
+ */
+export async function requireInternalOrAdmin(
+  req: Request,
+  serviceClient: SupabaseClient,
+): Promise<AdminContext | Response> {
+  if (hasInternalSecret(req)) {
+    const originalActor = req.headers.get('x-original-actor')
+    return {
+      userId: originalActor || 'cron',
+      isServiceRole: true,
+      originalActorId: originalActor && /^[0-9a-f-]{36}$/i.test(originalActor)
+        ? originalActor
+        : null,
+    }
+  }
+  return requireAdmin(req, serviceClient)
+}
+
 export async function requireAdmin(
   req: Request,
   serviceClient: SupabaseClient
