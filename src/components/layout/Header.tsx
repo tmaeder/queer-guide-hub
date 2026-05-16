@@ -42,6 +42,9 @@ import {
   LifeBuoy,
   Puzzle,
   Footprints,
+  Search as SearchIcon,
+  X,
+  ChevronDown,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
@@ -56,7 +59,6 @@ import { UniversalSearchBar } from '@/components/search/UniversalSearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { generateAvatarUrl } from '@/lib/avatar';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { HeaderNavWithFlyouts } from './HeaderNavWithFlyouts';
 import { useNotifications } from '@/hooks/useNotifications';
 const NotificationList = lazy(() =>
   import('@/components/notifications/NotificationList').then((m) => ({
@@ -68,36 +70,24 @@ import { useInboxBadge } from '@/hooks/useInboxBadge';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
-const navigationSections = [
-  {
-    titleKey: 'header.nav.discover',
-    items: [
-      { to: '/venues', icon: MapPin, labelKey: 'header.nav.venues', cat: 'venues' },
-      { to: '/events', icon: Calendar, labelKey: 'header.nav.events', cat: 'events' },
-      { to: '/places', icon: Globe, labelKey: 'header.nav.places', cat: 'places' },
-      { to: '/map', icon: Map, labelKey: 'header.nav.map', cat: 'places' },
-    ],
-  },
-  {
-    titleKey: 'header.nav.connect',
-    items: [
-      { to: '/feed', icon: Rss, labelKey: 'header.nav.feed', cat: 'community' },
-      { to: '/groups', icon: UsersRound, labelKey: 'header.nav.groups', cat: 'community' },
-      { to: '/users', icon: UserCheck, labelKey: 'header.nav.members', cat: 'community' },
-    ],
-  },
-  {
-    titleKey: 'header.nav.more',
-    items: [
-      { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace', cat: 'marketplace' },
-      { to: '/resources', icon: Tags, labelKey: 'header.nav.resources', cat: 'news' },
-      { to: '/news', icon: Newspaper, labelKey: 'header.nav.news', cat: 'news' },
-      { to: '/travel', icon: Plane, labelKey: 'header.nav.travel', cat: 'travel' },
-      { to: '/personalities', icon: Users, labelKey: 'header.nav.personalities', cat: 'community' },
-      { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels', cat: 'hotels' },
-      { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help', cat: 'community' },
-    ],
-  },
+const primaryNav = [
+  { to: '/venues', icon: MapPin, labelKey: 'header.nav.venues' },
+  { to: '/events', icon: Calendar, labelKey: 'header.nav.events' },
+  { to: '/places', icon: Globe, labelKey: 'header.nav.places' },
+  { to: '/marketplace', icon: Store, labelKey: 'header.nav.marketplace' },
+  { to: '/news', icon: Newspaper, labelKey: 'header.nav.news' },
+];
+
+const moreNav = [
+  { to: '/map', icon: Map, labelKey: 'header.nav.map' },
+  { to: '/feed', icon: Rss, labelKey: 'header.nav.feed' },
+  { to: '/groups', icon: UsersRound, labelKey: 'header.nav.groups' },
+  { to: '/users', icon: UserCheck, labelKey: 'header.nav.members' },
+  { to: '/resources', icon: Tags, labelKey: 'header.nav.resources' },
+  { to: '/travel', icon: Plane, labelKey: 'header.nav.travel' },
+  { to: '/personalities', icon: Users, labelKey: 'header.nav.personalities' },
+  { to: '/hotels', icon: Building, labelKey: 'header.nav.hotels' },
+  { to: '/help', icon: LifeBuoy, labelKey: 'header.nav.help' },
 ];
 
 const userMenuItems = [
@@ -132,8 +122,9 @@ const legalItems = [
 
 export function Header() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -170,22 +161,22 @@ export function Header() {
     [location.pathname],
   );
 
+  const moreActive = moreNav.some((item) => isActiveRoute(item.to));
+
   const handleModeChange = async (mode: string) => {
     await updateProfile({
       user_mode: mode as 'dating' | 'friends' | 'exploration' | 'fun' | 'networking' | 'community',
     });
   };
 
-  // Desktop dropdown menu item click
-  const handleMenuItemClick = (path: string) => {
-    navigate(path);
-    setMenuOpen(false);
-  };
-
-  // Mobile drawer navigation
   const handleDrawerNav = (path: string) => {
     navigate(path);
     setDrawerOpen(false);
+  };
+
+  const handleMoreNav = (path: string) => {
+    navigate(path);
+    setMoreOpen(false);
   };
 
   // ── Mobile Drawer ───────────────────────────────────────────────────────
@@ -202,7 +193,6 @@ export function Header() {
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
-        {/* Drawer header */}
         <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
           <Link
             to="/"
@@ -214,18 +204,11 @@ export function Header() {
               alt="Queer Guide"
               className="h-7 w-7 brightness-0 dark:invert"
             />
-            <span className="text-base font-bold text-foreground">
-              Queer Guide
-            </span>
+            <span className="text-base font-bold text-foreground">Queer Guide</span>
           </Link>
-          {/* Close button is provided by SheetContent (top-right). Rendering a
-              second one here previously sat under it and tripped axe's
-              `target-size` rule (4×44 visible area). */}
         </div>
 
-        {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
-          {/* User section (logged in) */}
           {user && (
             <>
               <div className="px-4 py-3">
@@ -248,13 +231,15 @@ export function Header() {
                     </p>
                   </div>
                   {unreadCount > 0 && (
-                    <div className="flex items-center justify-center px-1 flex-shrink-0 bg-destructive text-destructive-foreground font-bold" style={{ minWidth: 22, height: 22, fontSize: '0.7rem' }}>
+                    <div
+                      className="flex items-center justify-center px-1 flex-shrink-0 bg-destructive text-destructive-foreground font-bold"
+                      style={{ minWidth: 22, height: 22, fontSize: '0.7rem' }}
+                    >
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </div>
                   )}
                 </div>
 
-                {/* User mode selector */}
                 <Select value={profile?.user_mode || 'community'} onValueChange={handleModeChange}>
                   <SelectTrigger style={{ width: '100%' }}>
                     <SelectValue placeholder="Select mode" />
@@ -275,7 +260,6 @@ export function Header() {
             </>
           )}
 
-          {/* Sign in / sign up CTAs (logged out) */}
           {!user && (
             <>
               <div className="px-4 py-4 flex flex-col gap-2">
@@ -307,7 +291,6 @@ export function Header() {
             </>
           )}
 
-          {/* Submit CTA */}
           <div className="px-4 py-3">
             <Button
               variant="default"
@@ -327,32 +310,25 @@ export function Header() {
             </Button>
           </div>
 
-          {/* Navigation sections */}
-          {navigationSections.map((section) => (
-            <div key={section.titleKey}>
-              {section.items.map((item) => {
-                const active = isActiveRoute(item.to);
-                return (
-                  <div key={item.to}>
-                    <button
-                      onClick={() => handleDrawerNav(item.to)}
-                      className={`w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
-                      style={{ minHeight: 48 }}
-                    >
-                      <item.icon style={{ width: 18, height: 18, flexShrink: 0, color: active ? 'hsl(var(--foreground))' : undefined }} />
-                      <span className={`text-sm ${active ? 'font-semibold' : 'font-normal'}`}>
-                        {t(item.labelKey)}
-                      </span>
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+          {[...primaryNav, ...moreNav].map((item) => {
+            const active = isActiveRoute(item.to);
+            return (
+              <button
+                key={item.to}
+                onClick={() => handleDrawerNav(item.to)}
+                className={`w-full flex items-center gap-2 px-4 text-left ${active ? 'bg-muted' : 'hover:bg-muted'}`}
+                style={{ minHeight: 48 }}
+              >
+                <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                <span className={`text-sm ${active ? 'font-semibold' : 'font-normal'}`}>
+                  {t(item.labelKey)}
+                </span>
+              </button>
+            );
+          })}
 
           <div className="my-2" />
 
-          {/* User actions (logged in) */}
           {user && (
             <>
               {userMenuItems.map((item) => {
@@ -375,7 +351,6 @@ export function Header() {
                 );
               })}
 
-              {/* Admin link */}
               {(isAdmin || isModerator) && (
                 <button
                   onClick={() => handleDrawerNav('/admin')}
@@ -391,7 +366,6 @@ export function Header() {
             </>
           )}
 
-          {/* Legal / Info */}
           {legalItems.map((item) => (
             <button
               key={item.to}
@@ -404,7 +378,6 @@ export function Header() {
             </button>
           ))}
 
-          {/* Sign out */}
           {user && (
             <>
               <div className="my-2" />
@@ -422,7 +395,6 @@ export function Header() {
             </>
           )}
 
-          {/* Bottom spacer for safe area */}
           <div style={{ height: 'env(safe-area-inset-bottom, 16px)', minHeight: 16 }} />
         </div>
       </SheetContent>
@@ -433,303 +405,344 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 bg-background/70 backdrop-blur-xl border-b border-border/50 transition-all duration-300"
+      className="sticky top-0 bg-background/70 backdrop-blur-xl border-b border-border/50"
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">
         <div className="flex items-center gap-2 sm:gap-3" style={{ height: 56 }}>
           {/* ── Logo ──────────────────────────────────────────────────── */}
-          <Link
-            to="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              flexShrink: 0,
-              textDecoration: 'none',
-            }}
-          >
-            <img
-              src="/images/logo.png"
-              alt=""
-              aria-hidden="true"
-              tabIndex={-1}
-              className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
-              style={{ height: 32, width: 32 }}
-            />
-            <span
-              className="absolute"
+          {!(isMobile && mobileSearchOpen) && (
+            <Link
+              to="/"
               style={{
-                width: 1,
-                height: 1,
-                overflow: 'hidden',
-                clip: 'rect(0,0,0,0)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                flexShrink: 0,
+                textDecoration: 'none',
               }}
             >
-              Queer Guide
-            </span>
-          </Link>
+              <img
+                src="/images/logo.png"
+                alt=""
+                aria-hidden="true"
+                tabIndex={-1}
+                className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
+                style={{ height: 32, width: 32 }}
+              />
+              <span
+                className="absolute"
+                style={{ width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+              >
+                Queer Guide
+              </span>
+            </Link>
+          )}
 
-          {/* ── Search ────────────────────────────────────────────────── */}
-          <div className="flex-1 min-w-0">
-            <UniversalSearchBar />
-          </div>
-
-          {/* ── Right side controls ───────────────────────────────────── */}
-
-          {/* MOBILE: single hamburger button only */}
           {isMobile ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setDrawerOpen(true)}
-              aria-label={t('header.openMenu', 'Open menu')}
-              aria-haspopup="dialog"
-              aria-expanded={drawerOpen}
-              aria-controls="mobile-nav-drawer"
-              className="text-foreground relative flex-shrink-0 p-0"
-              style={{ width: 48, height: 48 }}
-            >
-              <Menu style={{ width: 22, height: 22 }} />
-              {/* Show notification dot on hamburger when logged in with unread */}
-              {user && unreadCount > 0 && (
-                <>
-                  <span
-                    aria-hidden="true"
-                    className="absolute bg-destructive"
-                    style={{
-                      top: 8,
-                      right: 8,
-                      width: 8,
-                      height: 8,
-                    }}
-                  />
-                  <span
-                    role="status"
-                    aria-live="polite"
-                    className="absolute"
-                    style={{
-                      width: 1,
-                      height: 1,
-                      overflow: 'hidden',
-                      clip: 'rect(0,0,0,0)',
-                    }}
-                  >
-                    {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
-                  </span>
-                </>
-              )}
-            </Button>
-          ) : (
-            /* DESKTOP: all controls visible */
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Submit CTA */}
-              <Button variant="default" size="sm" onClick={() => navigate(submitCta.route)}>
-                <span className="inline-flex items-center font-semibold" style={{ gap: 6 }}>
-                  <Plus style={{ width: 16, height: 16 }} />
-                  {submitCta.label}
-                </span>
-              </Button>
-
-              {/* Admin menu */}
-              {(isAdmin || isModerator) && (
+            /* ── MOBILE: logo · search-icon · hamburger (or expanded search) ── */
+            mobileSearchOpen ? (
+              <>
+                <div className="flex-1 min-w-0">
+                  <UniversalSearchBar />
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  style={{ position: 'relative', height: 40, width: 40, padding: 0 }}
-                  aria-label={t('header.adminConsole', 'Admin Console')}
-                  title={t('header.adminConsole', 'Admin Console')}
-                  onClick={() => navigate('/admin')}
+                  onClick={() => setMobileSearchOpen(false)}
+                  aria-label={t('header.closeSearch', 'Close search')}
+                  className="text-foreground flex-shrink-0 p-0"
+                  style={{ width: 48, height: 48 }}
                 >
-                  <Shield style={{ width: 16, height: 16 }} />
+                  <X style={{ width: 22, height: 22 }} />
                 </Button>
-              )}
-
-              {/* User menu */}
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      style={{ position: 'relative', height: 40, width: 40, padding: 0 }}
-                      aria-label={t('header.openUserMenu', 'Open user menu')}
-                    >
-                      <Avatar style={{ height: 36, width: 36 }}>
-                        <AvatarImage
-                          src={avatarSrc}
-                          alt={(profile?.display_name || 'Account menu') as string}
-                        />
-                        <AvatarFallback>
-                          {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {unreadCount > 0 && (
-                        <span
-                          className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground"
-                          style={{
-                            top: -4,
-                            right: -4,
-                            minWidth: '1.25rem',
-                            height: 20,
-                            fontSize: '10px',
-                            paddingLeft: 4,
-                            paddingRight: 4,
-                          }}
-                        >
-                          <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
-                          {unreadCount}
-                        </span>
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" style={{ width: 320, padding: 16, zIndex: 50 }}>
-                    {/* User mode */}
-                    <div className="mb-4">
-                      <Select
-                        value={profile?.user_mode || 'community'}
-                        onValueChange={handleModeChange}
-                      >
-                        <SelectTrigger style={{ width: '100%' }}>
-                          <SelectValue placeholder="Select mode" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {userModes.map((mode) => (
-                            <SelectItem key={mode.value} value={mode.value}>
-                              <div className="flex items-center gap-2">
-                                <mode.icon style={{ width: 16, height: 16 }} />
-                                <span>{t(mode.labelKey)}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Notifications */}
-                    <div className="mb-4">
-                      <Suspense fallback={null}>
-                        <NotificationList />
-                      </Suspense>
-                    </div>
-
-                    <div className="my-2" />
-
-                    {userMenuItems.map((item) => {
-                      const showBadge = item.to === '/trips' && inboxBadgeCount > 0;
-                      return (
-                        <Button
-                          key={item.to}
-                          variant="ghost"
-                          size="sm"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-start',
-                            width: '100%',
-                            gap: 8,
-                            padding: '8px 12px',
-                          }}
-                          onClick={() => navigate(item.to)}
-                        >
-                          <item.icon style={{ width: 16, height: 16 }} />
-                          <span className="text-sm flex-1 text-left">
-                            {t(item.labelKey)}
-                          </span>
-                          {showBadge && (
-                            <Badge variant="default" className="h-5" style={{ fontSize: '0.7rem' }}>
-                              {inboxBadgeCount}
-                            </Badge>
-                          )}
-                        </Button>
-                      );
-                    })}
-
-                    <div className="my-2" />
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      style={{ width: '100%', justifyContent: 'flex-start', color: 'hsl(var(--destructive))' }}
-                      onClick={signOut}
-                    >
-                      <LogOut style={{ width: 16, height: 16, marginRight: 8 }} />
-                      {t('header.signOut', 'Sign Out')}
-                    </Button>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setAuthDialogOpen(true)}
-                    aria-label={t('header.signIn', 'Sign in')}
-                  >
-                    {t('header.signIn', 'Sign in')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => navigate('/auth?mode=signup')}
-                    aria-label={t('header.signUp', 'Sign up')}
-                  >
-                    {t('header.signUp', 'Sign up')}
-                  </Button>
-                </div>
-              )}
-
-              {/* Navigation dropdown (desktop) */}
-              <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" aria-label={t('header.openNavigation', 'Open navigation menu')} aria-haspopup="menu" aria-expanded={menuOpen}>
-                    <Menu style={{ width: 20, height: 20 }} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  style={{
-                    width: 240,
-                    maxHeight: '80vh',
-                    overflowY: 'auto',
-                    padding: 8,
-                    zIndex: 50,
-                  }}
+              </>
+            ) : (
+              <>
+                <div className="flex-1" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMobileSearchOpen(true)}
+                  aria-label={t('header.openSearch', 'Open search')}
+                  className="text-foreground flex-shrink-0 p-0"
+                  style={{ width: 48, height: 48 }}
                 >
-                  {navigationSections.map((section) =>
-                    section.items.map((item) => {
+                  <SearchIcon style={{ width: 22, height: 22 }} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDrawerOpen(true)}
+                  aria-label={t('header.openMenu', 'Open menu')}
+                  aria-haspopup="dialog"
+                  aria-expanded={drawerOpen}
+                  aria-controls="mobile-nav-drawer"
+                  className="text-foreground relative flex-shrink-0 p-0"
+                  style={{ width: 48, height: 48 }}
+                >
+                  <Menu style={{ width: 22, height: 22 }} />
+                  {user && unreadCount > 0 && (
+                    <>
+                      <span
+                        aria-hidden="true"
+                        className="absolute bg-destructive"
+                        style={{ top: 8, right: 8, width: 8, height: 8 }}
+                      />
+                      <span
+                        role="status"
+                        aria-live="polite"
+                        className="absolute"
+                        style={{
+                          width: 1,
+                          height: 1,
+                          overflow: 'hidden',
+                          clip: 'rect(0,0,0,0)',
+                        }}
+                      >
+                        {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+                      </span>
+                    </>
+                  )}
+                </Button>
+              </>
+            )
+          ) : (
+            /* ── DESKTOP: flat nav · search · CTA · avatar ── */
+            <>
+              <nav
+                className="flex items-center gap-1 flex-shrink-0"
+                aria-label={t('header.primaryNav', 'Primary')}
+              >
+                {primaryNav.map((item) => {
+                  const active = isActiveRoute(item.to);
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`px-3 py-2 text-sm transition-colors ${
+                        active
+                          ? 'font-semibold text-foreground underline underline-offset-8 decoration-2'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                      style={{ textDecoration: active ? 'underline' : 'none' }}
+                    >
+                      {t(item.labelKey)}
+                    </Link>
+                  );
+                })}
+
+                <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-3 py-2 text-sm inline-flex items-center gap-1 transition-colors ${
+                        moreActive
+                          ? 'font-semibold text-foreground'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      }`}
+                      aria-haspopup="menu"
+                      aria-expanded={moreOpen}
+                    >
+                      {t('header.nav.more', 'More')}
+                      <ChevronDown style={{ width: 14, height: 14 }} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    style={{ width: 220, padding: 4, zIndex: 50 }}
+                  >
+                    {moreNav.map((item) => {
                       const active = isActiveRoute(item.to);
                       return (
-                        <Button
+                        <button
                           key={item.to}
-                          variant={active ? 'default' : 'ghost'}
-                          size="sm"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-start',
-                            width: '100%',
-                            gap: 8,
-                            padding: '8px 12px',
-                          }}
-                          onClick={() => handleMenuItemClick(item.to)}
+                          onClick={() => handleMoreNav(item.to)}
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
+                            active ? 'bg-muted font-semibold' : 'hover:bg-muted'
+                          }`}
                         >
-                          <item.icon style={{ width: 16, height: 16 }} />
-                          <span className="text-sm">{t(item.labelKey)}</span>
-                        </Button>
+                          <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                          <span>{t(item.labelKey)}</span>
+                        </button>
                       );
-                    })
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </nav>
+
+              <div className="flex-1 min-w-0">
+                <UniversalSearchBar />
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Button variant="default" size="sm" onClick={() => navigate(submitCta.route)}>
+                  <span className="inline-flex items-center font-semibold" style={{ gap: 6 }}>
+                    <Plus style={{ width: 16, height: 16 }} />
+                    {submitCta.label}
+                  </span>
+                </Button>
+
+                {user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        style={{ position: 'relative', height: 40, width: 40, padding: 0 }}
+                        aria-label={t('header.openUserMenu', 'Open user menu')}
+                      >
+                        <Avatar style={{ height: 36, width: 36 }}>
+                          <AvatarImage
+                            src={avatarSrc}
+                            alt={(profile?.display_name || 'Account menu') as string}
+                          />
+                          <AvatarFallback>
+                            {(profile?.display_name || 'U')?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {unreadCount > 0 && (
+                          <span
+                            className="absolute inline-flex items-center justify-center bg-destructive text-destructive-foreground"
+                            style={{
+                              top: -4,
+                              right: -4,
+                              minWidth: '1.25rem',
+                              height: 20,
+                              fontSize: '10px',
+                              paddingLeft: 4,
+                              paddingRight: 4,
+                            }}
+                          >
+                            <span className="absolute inset-0 animate-ping bg-destructive opacity-75" />
+                            {unreadCount}
+                          </span>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" style={{ width: 320, padding: 16, zIndex: 50 }}>
+                      <div className="mb-4">
+                        <Select
+                          value={profile?.user_mode || 'community'}
+                          onValueChange={handleModeChange}
+                        >
+                          <SelectTrigger style={{ width: '100%' }}>
+                            <SelectValue placeholder="Select mode" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {userModes.map((mode) => (
+                              <SelectItem key={mode.value} value={mode.value}>
+                                <div className="flex items-center gap-2">
+                                  <mode.icon style={{ width: 16, height: 16 }} />
+                                  <span>{t(mode.labelKey)}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="mb-4">
+                        <Suspense fallback={null}>
+                          <NotificationList />
+                        </Suspense>
+                      </div>
+
+                      <div className="my-2" />
+
+                      {userMenuItems.map((item) => {
+                        const showBadge = item.to === '/trips' && inboxBadgeCount > 0;
+                        return (
+                          <Button
+                            key={item.to}
+                            variant="ghost"
+                            size="sm"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-start',
+                              width: '100%',
+                              gap: 8,
+                              padding: '8px 12px',
+                            }}
+                            onClick={() => navigate(item.to)}
+                          >
+                            <item.icon style={{ width: 16, height: 16 }} />
+                            <span className="text-sm flex-1 text-left">{t(item.labelKey)}</span>
+                            {showBadge && (
+                              <Badge variant="default" className="h-5" style={{ fontSize: '0.7rem' }}>
+                                {inboxBadgeCount}
+                              </Badge>
+                            )}
+                          </Button>
+                        );
+                      })}
+
+                      {(isAdmin || isModerator) && (
+                        <>
+                          <div className="my-2" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-start',
+                              width: '100%',
+                              gap: 8,
+                              padding: '8px 12px',
+                            }}
+                            onClick={() => navigate('/admin')}
+                          >
+                            <Shield style={{ width: 16, height: 16 }} />
+                            <span className="text-sm">
+                              {t('header.adminConsole', 'Admin Console')}
+                            </span>
+                          </Button>
+                        </>
+                      )}
+
+                      <div className="my-2" />
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        style={{
+                          width: '100%',
+                          justifyContent: 'flex-start',
+                          color: 'hsl(var(--destructive))',
+                        }}
+                        onClick={signOut}
+                      >
+                        <LogOut style={{ width: 16, height: 16, marginRight: 8 }} />
+                        {t('header.signOut', 'Sign Out')}
+                      </Button>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setAuthDialogOpen(true)}
+                      aria-label={t('header.signIn', 'Sign in')}
+                    >
+                      {t('header.signIn', 'Sign in')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate('/auth?mode=signup')}
+                      aria-label={t('header.signUp', 'Sign up')}
+                    >
+                      {t('header.signUp', 'Sign up')}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
-
-        {/* Desktop primary nav row with Aceternity-style hover flyouts. */}
-        {!isMobile && <HeaderNavWithFlyouts pathname={location.pathname} />}
       </div>
 
-      {/* Mobile drawer */}
       {isMobile && mobileDrawer}
 
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
