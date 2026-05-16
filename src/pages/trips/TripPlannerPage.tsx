@@ -36,6 +36,7 @@ import { TripBookingAssistant } from '@/components/trips/TripBookingAssistant';
 import { TripCoverBand } from '@/components/trips/TripCoverBand';
 import { TripProgressRing } from '@/components/trips/TripProgressRing';
 import { TripDocExpiryBanner } from '@/components/trips/TripDocExpiryBanner';
+import { TripPreTripBlock } from '@/components/trips/TripPreTripBlock';
 import { MemoryRecapCard } from '@/components/trips/MemoryRecapCard';
 import { TripLocalContext } from '@/components/trips/TripLocalContext';
 import { getTripPhase } from '@/components/trips/tripPhase';
@@ -254,6 +255,8 @@ export default function TripPlannerPage() {
       </TripCoverBand>
 
       <TripDocExpiryBanner trip={trip} />
+
+      <TripPreTripBlock trip={trip} />
 
       <TripNudgesBanner tripId={trip.id} />
 
