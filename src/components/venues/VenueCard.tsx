@@ -8,6 +8,7 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { Luggage } from 'lucide-react';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { useToast } from '@/hooks/use-toast';
 import { isSupportedLocale, DEFAULT_LOCALE } from '@/i18n/languages';
@@ -111,6 +112,8 @@ export function VenueCard({
   loading = false,
 }: VenueCardProps) {
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
+  const visitedLookup = useVisitedPlaceLookup();
+  const isVisited = !!venue?.id && visitedLookup.has('venue', venue.id);
   const { toast } = useToast();
 
   const venueImage = venue?.images?.[0] ?? venue?.logo_url ?? null;
@@ -218,8 +221,19 @@ export function VenueCard({
                 </div>
               )}
 
+              {/* Visited pill */}
+              {isVisited && (
+                <div
+                  className="absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
+                  style={{ fontSize: '0.65rem' }}
+                  title="Visited"
+                >
+                  ✓ Visited
+                </div>
+              )}
+
               {/* Trip badge */}
-              {tripStatus?.isInTrip && (
+              {!isVisited && tripStatus?.isInTrip && (
                 <div
                   className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground"
                   style={{ fontSize: '0.7rem' }}

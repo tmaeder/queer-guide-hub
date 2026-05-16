@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, MapPin, Hotel, CalendarDays, Star, Clock, X, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { useTripReservations, useReservationMutations, type Reservation } from '@/hooks/useTripReservations';
+import { useTripReservations, type Reservation } from '@/hooks/useTripReservations';
 import { useTripMutations, type TripPlace } from '@/hooks/useTrips';
 import { getScoreRingColor } from '@/utils/equalityScore';
 import { PlaceBookableLinks } from './PlaceBookableLinks';

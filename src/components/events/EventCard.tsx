@@ -35,6 +35,7 @@ import { Skeleton } from 'boneyard-js/react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { AddToTripMenuItem } from '@/components/trips/AddToTripMenuItem';
 import { useEntityTripStatus } from '@/hooks/useEntityTripStatus';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { rangesOverlap } from '@/components/trips/tripOverlap';
 import { ContentLangBadge } from '@/components/i18n/ContentLangBadge';
@@ -106,6 +107,8 @@ export const EventCard = memo(function EventCard({
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: tripStatus } = useEntityTripStatus('event', event?.id);
+  const visitedLookup = useVisitedPlaceLookup();
+  const isVisited = !!event?.id && visitedLookup.has('event', event.id);
   const { activeTrip } = useActiveTrip();
   const overlapsActiveTrip =
     !!activeTrip &&
@@ -194,6 +197,14 @@ export const EventCard = memo(function EventCard({
                 />
                 <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
                   <div className="flex gap-1">
+                    {isVisited && (
+                      <div
+                        className="inline-flex items-center px-1.5 py-0.5 text-[0.65rem] font-semibold bg-foreground/80 text-background"
+                        title="Visited"
+                      >
+                        ✓ Visited
+                      </div>
+                    )}
                     {tripStatus?.isInTrip && (
                       <div className="flex items-center gap-0.5 bg-primary text-primary-foreground rounded-full px-1 py-0.5 text-[0.7rem] font-semibold">
                         <Luggage className="w-3 h-3" />
