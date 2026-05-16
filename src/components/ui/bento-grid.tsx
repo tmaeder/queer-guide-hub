@@ -36,6 +36,18 @@ export function BentoCell({
   return (
     <section
       onClick={onClick}
+      onKeyDown={
+        interactive && onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
+      role={interactive && onClick ? 'button' : undefined}
+      tabIndex={interactive && onClick ? 0 : undefined}
       className={cn(
         "bg-background p-4 flex flex-col gap-3 min-h-[140px]",
         interactive && "hover:bg-muted/30 cursor-pointer",

@@ -203,6 +203,16 @@ export default function EmailTemplates() {
                       setSelectedTemplate(template);
                       setEditingTemplate(null);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedTemplate(template);
+                        setEditingTemplate(null);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={selectedTemplate?.id === template.id}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">

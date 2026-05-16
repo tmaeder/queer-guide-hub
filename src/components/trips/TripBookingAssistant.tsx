@@ -282,6 +282,14 @@ export function TripBookingAssistant({ tripId, places, _days, startDate, endDate
                       key={hotel.id}
                       className="flex items-center gap-3 p-3 bg-muted rounded cursor-pointer"
                       onClick={() => setBookingHotel(hotel)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setBookingHotel(hotel);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
                     >
                       {hotel.imageUrl && (
                         <img src={hotel.imageUrl} alt={hotel.title} className="w-14 h-14 object-cover rounded" />

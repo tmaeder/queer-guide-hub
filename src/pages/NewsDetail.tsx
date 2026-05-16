@@ -318,6 +318,7 @@ export default function NewsDetail() {
           <img
             src={heroSrc}
             alt={decodeHtmlEntities(article.title)}
+            role="presentation"
             referrerPolicy="no-referrer"
             loading="lazy"
             decoding="async"
@@ -483,6 +484,7 @@ export default function NewsDetail() {
                           <img
                             src={related.image_url}
                             alt=""
+                            role="presentation"
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover"
                             width={400}
