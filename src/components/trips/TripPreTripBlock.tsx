@@ -1,27 +1,43 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { differenceInCalendarDays, format } from 'date-fns';
-import { AlertTriangle, Info, Calendar } from 'lucide-react';
+import { AlertTriangle, Info, Calendar, Ticket, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TripWithDetails } from '@/hooks/useTrips';
+import { useTripReservations } from '@/hooks/useTripReservations';
+import { Button } from '@/components/ui/button';
+import { AddReservationDialog } from './AddReservationDialog';
 import { detectTripGaps } from './tripGaps';
 
 interface Props {
   trip: TripWithDetails;
 }
 
+const LODGING_TYPES = new Set(['lodging', 'hotel', 'accommodation', 'apartment']);
+
 export function TripPreTripBlock({ trip }: Props) {
   const { t } = useTranslation();
+  const [addOpen, setAddOpen] = useState(false);
   const now = new Date();
   const start = trip.start_date ? new Date(trip.start_date) : null;
   const daysUntil = start ? differenceInCalendarDays(start, now) : null;
+
+  const { data: reservations } = useTripReservations(trip.id);
 
   const gaps = useMemo(
     () => detectTripGaps(trip.trip_days, trip.trip_places),
     [trip.trip_days, trip.trip_places],
   );
 
+  const bookingStats = useMemo(() => {
+    const res = reservations ?? [];
+    const lodgingCount = res.filter((r) => LODGING_TYPES.has(r.type?.toLowerCase() ?? '')).length;
+    const otherCount = res.length - lodgingCount;
+    const dayCount = trip.trip_days.length;
+    return { lodgingCount, otherCount, totalRes: res.length, dayCount };
+  }, [reservations, trip.trip_days.length]);
+
   if (daysUntil !== null && daysUntil < 0) return null;
-  if (!start && gaps.length === 0) return null;
+  if (!start && gaps.length === 0 && bookingStats.totalRes === 0) return null;
 
   return (
     <section
@@ -78,6 +94,40 @@ export function TripPreTripBlock({ trip }: Props) {
           {t('trips.preTrip.allSet', 'Itinerary looks complete. No gaps detected.')}
         </p>
       )}
+
+      <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-3 flex-wrap">
+        <div className="inline-flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Ticket className="h-4 w-4" aria-hidden />
+            {t('trips.preTrip.bookings', '{{count}} reservations', {
+              count: bookingStats.totalRes,
+            })}
+          </span>
+          {bookingStats.lodgingCount > 0 && bookingStats.dayCount > 0 && (
+            <span>
+              ·{' '}
+              {t('trips.preTrip.lodgingCoverage', '{{count}} lodging', {
+                count: bookingStats.lodgingCount,
+              })}
+            </span>
+          )}
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setAddOpen(true)}
+          className="inline-flex items-center gap-1.5"
+        >
+          <Plus className="h-3.5 w-3.5" aria-hidden />
+          {t('trips.preTrip.addReservation', 'Booked it')}
+        </Button>
+      </div>
+
+      <AddReservationDialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        tripId={trip.id}
+      />
     </section>
   );
 }
