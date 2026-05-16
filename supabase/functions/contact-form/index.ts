@@ -1,6 +1,15 @@
 import { corsResponse, jsonResponse, errorResponse, getServiceClient } from "../_shared/supabase-client.ts";
 import { sendEmail, isEmailConfigured } from "../_shared/email.ts";
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return corsResponse(req);
   if (req.method !== "POST") return errorResponse("Method not allowed", 405, req);
@@ -56,14 +65,14 @@ Deno.serve(async (req) => {
       await sendEmail({
         from: "Queer Guide <noreply@queer.guide>",
         to: ["support@queer.guide"],
-        subject: `[Contact] ${category}: ${name}`,
+        subject: `[Contact] ${category}: ${name}`.replace(/[\r\n]/g, " "),
         html: `
           <h2>New Contact Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Category:</strong> ${category}</p>
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Category:</strong> ${escapeHtml(category)}</p>
           <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, "<br>")}</p>
+          <p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>
         `,
         text: `New contact submission\n\nName: ${name}\nEmail: ${email}\nCategory: ${category}\n\nMessage:\n${message}`,
       }).catch(() => {

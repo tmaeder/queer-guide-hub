@@ -21,7 +21,7 @@ describe('ApiErrorFilters', () => {
   it('clears query via X button', () => {
     const update = vi.fn();
     render(<ApiErrorFilters state={{ ...DEFAULT_ERROR_FILTERS, q: 'foo' }} update={update} />);
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByLabelText('Clear search'));
     expect(update).toHaveBeenCalledWith({ q: '' });
   });
 });
