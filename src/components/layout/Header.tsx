@@ -409,7 +409,7 @@ export function Header() {
       style={{ zIndex: 1100, paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="px-4 sm:px-6 md:px-8">
-        <div className="flex items-center gap-2 sm:gap-3" style={{ height: 56 }}>
+        <div className="flex items-center gap-2 sm:gap-3" style={{ height: isMobile ? 56 : 64 }}>
           {/* ── Logo ──────────────────────────────────────────────────── */}
           {!(isMobile && mobileSearchOpen) && (
             <Link
@@ -428,7 +428,7 @@ export function Header() {
                 aria-hidden="true"
                 tabIndex={-1}
                 className="brightness-0 dark:invert transition-transform duration-150 hover:-rotate-6 hover:scale-110 active:scale-95"
-                style={{ height: 32, width: 32 }}
+                style={{ height: 28, width: 28 }}
               />
               <span
                 className="absolute"
@@ -508,79 +508,36 @@ export function Header() {
               </>
             )
           ) : (
-            /* ── DESKTOP: flat nav · search · CTA · avatar ── */
+            /* ── DESKTOP row 1: logo · BIG search · [+] · avatar ── */
             <>
-              <nav
-                className="flex items-center gap-1 flex-shrink-0"
-                aria-label={t('header.primaryNav', 'Primary')}
-              >
-                {primaryNav.map((item) => {
-                  const active = isActiveRoute(item.to);
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className={`px-3 py-2 text-sm transition-colors ${
-                        active
-                          ? 'font-semibold text-foreground underline underline-offset-8 decoration-2'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                      }`}
-                      style={{ textDecoration: active ? 'underline' : 'none' }}
-                    >
-                      {t(item.labelKey)}
-                    </Link>
-                  );
-                })}
-
-                <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`px-3 py-2 text-sm inline-flex items-center gap-1 transition-colors ${
-                        moreActive
-                          ? 'font-semibold text-foreground'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                      }`}
-                      aria-haspopup="menu"
-                      aria-expanded={moreOpen}
-                    >
-                      {t('header.nav.more', 'More')}
-                      <ChevronDown style={{ width: 14, height: 14 }} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="start"
-                    style={{ width: 220, padding: 4, zIndex: 50 }}
-                  >
-                    {moreNav.map((item) => {
-                      const active = isActiveRoute(item.to);
-                      return (
-                        <button
-                          key={item.to}
-                          onClick={() => handleMoreNav(item.to)}
-                          className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
-                            active ? 'bg-muted font-semibold' : 'hover:bg-muted'
-                          }`}
-                        >
-                          <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
-                          <span>{t(item.labelKey)}</span>
-                        </button>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </nav>
-
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 mx-2 sm:mx-4 md:mx-8">
                 <UniversalSearchBar />
               </div>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button variant="default" size="sm" onClick={() => navigate(submitCta.route)}>
-                  <span className="inline-flex items-center font-semibold" style={{ gap: 6 }}>
-                    <Plus style={{ width: 16, height: 16 }} />
-                    {submitCta.label}
-                  </span>
-                </Button>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {user ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(submitCta.route)}
+                    aria-label={submitCta.label}
+                    title={submitCta.label}
+                    style={{ height: 40, width: 40, padding: 0 }}
+                  >
+                    <Plus style={{ width: 20, height: 20 }} />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAuthDialogOpen(true)}
+                    aria-label={t('header.signInToContribute', 'Sign in to contribute')}
+                    title={t('header.signInToContribute', 'Sign in to contribute')}
+                    style={{ height: 40, width: 40, padding: 0 }}
+                  >
+                    <Plus style={{ width: 20, height: 20 }} />
+                  </Button>
+                )}
 
                 {user ? (
                   <DropdownMenu>
@@ -719,28 +676,80 @@ export function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setAuthDialogOpen(true)}
-                      aria-label={t('header.signIn', 'Sign in')}
-                    >
-                      {t('header.signIn', 'Sign in')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => navigate('/auth?mode=signup')}
-                      aria-label={t('header.signUp', 'Sign up')}
-                    >
-                      {t('header.signUp', 'Sign up')}
-                    </Button>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAuthDialogOpen(true)}
+                    aria-label={t('header.signIn', 'Sign in')}
+                  >
+                    {t('header.signIn', 'Sign in')}
+                  </Button>
                 )}
               </div>
             </>
           )}
         </div>
+
+        {/* ── DESKTOP row 2: tab nav ──────────────────────────────────── */}
+        {!isMobile && (
+          <nav
+            className="flex items-center gap-6"
+            style={{ height: 36 }}
+            aria-label={t('header.primaryNav', 'Primary')}
+          >
+            {primaryNav.map((item) => {
+              const active = isActiveRoute(item.to);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`text-sm transition-colors py-2 ${
+                    active
+                      ? 'font-semibold text-foreground underline underline-offset-8 decoration-2'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={{ textDecoration: active ? 'underline' : 'none' }}
+                >
+                  {t(item.labelKey)}
+                </Link>
+              );
+            })}
+
+            <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={`text-sm py-2 inline-flex items-center gap-1 transition-colors ${
+                    moreActive
+                      ? 'font-semibold text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-haspopup="menu"
+                  aria-expanded={moreOpen}
+                >
+                  {t('header.nav.more', 'More')}
+                  <ChevronDown style={{ width: 14, height: 14 }} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" style={{ width: 220, padding: 4, zIndex: 50 }}>
+                {moreNav.map((item) => {
+                  const active = isActiveRoute(item.to);
+                  return (
+                    <button
+                      key={item.to}
+                      onClick={() => handleMoreNav(item.to)}
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left ${
+                        active ? 'bg-muted font-semibold' : 'hover:bg-muted'
+                      }`}
+                    >
+                      <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                      <span>{t(item.labelKey)}</span>
+                    </button>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+        )}
       </div>
 
       {isMobile && mobileDrawer}
