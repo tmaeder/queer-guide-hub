@@ -190,6 +190,7 @@ export const EventCard = memo(function EventCard({
                 <img
                   src={resolvedImage ?? ''}
                   alt={event.title}
+                  role="presentation"
                   loading="lazy"
                   decoding="async"
                   onError={() => setImageError(true)}
@@ -248,6 +249,7 @@ export const EventCard = memo(function EventCard({
                   <img
                     src={event.logo_url}
                     alt=""
+                    role="presentation"
                     loading="lazy"
                     decoding="async"
                     className="absolute bottom-3 left-3 w-8 h-8 rounded-element bg-background object-contain shadow-sm z-20 p-0.5"
@@ -381,7 +383,11 @@ export const EventCard = memo(function EventCard({
                 </div>
 
                 <div className="flex items-center gap-0.5">
-                  <div onClick={(e) => e.preventDefault()}>
+                  <div
+                    onClick={(e) => e.preventDefault()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    role="presentation"
+                  >
                     <FavoriteButton itemId={event.id} type="event" />
                   </div>
                   <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>

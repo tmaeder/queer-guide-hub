@@ -160,6 +160,19 @@ export function SideBySideComparison({
                     backgroundColor: choices[field.key] === 'left' && isDiff ? 'hsl(var(--muted))' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'left')}
+                  onKeyDown={
+                    isDiff
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleChoice(field.key, 'left');
+                          }
+                        }
+                      : undefined
+                  }
+                  role={isDiff ? 'button' : undefined}
+                  tabIndex={isDiff ? 0 : undefined}
+                  aria-pressed={isDiff ? choices[field.key] === 'left' : undefined}
                 >
                   <p className="text-sm break-words" style={{ fontSize: '0.8rem' }}>{formatCellValue(leftVal)}</p>
                 </div>
@@ -189,6 +202,19 @@ export function SideBySideComparison({
                     backgroundColor: choices[field.key] === 'right' && isDiff ? 'hsl(var(--muted))' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'right')}
+                  onKeyDown={
+                    isDiff
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleChoice(field.key, 'right');
+                          }
+                        }
+                      : undefined
+                  }
+                  role={isDiff ? 'button' : undefined}
+                  tabIndex={isDiff ? 0 : undefined}
+                  aria-pressed={isDiff ? choices[field.key] === 'right' : undefined}
                 >
                   <p className="text-sm break-words" style={{ fontSize: '0.8rem' }}>{formatCellValue(rightVal)}</p>
                 </div>

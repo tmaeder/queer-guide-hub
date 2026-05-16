@@ -182,6 +182,15 @@ export function ModerationQueue() {
                 <div
                   className="p-4 cursor-pointer hover:bg-muted"
                   onClick={() => setExpandedId(expanded ? null : item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setExpandedId(expanded ? null : item.id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={!!expanded}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant="secondary" className="h-[22px] text-[0.7rem] font-semibold">
@@ -215,6 +224,8 @@ export function ModerationQueue() {
                 <div
                   className="px-4 py-2 border-t border-border flex gap-2 flex-wrap"
                   onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  role="presentation"
                 >
                   <Button
                     size="sm"
