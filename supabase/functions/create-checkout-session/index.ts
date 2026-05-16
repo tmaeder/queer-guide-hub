@@ -8,6 +8,22 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return errorResponse("Method not allowed", 405, req);
 
   try {
+    // Rate limit by IP — Stripe checkout creation is metered and unauthenticated.
+    const ip =
+      req.headers.get("cf-connecting-ip") ||
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+    const rlClient = getServiceClient();
+    const { data: allowed } = await rlClient.rpc("check_rate_limit_enhanced", {
+      identifier: ip,
+      max_attempts: 10,
+      time_window_minutes: 60,
+      action_type: "checkout_session",
+    });
+    if (allowed === false) {
+      return errorResponse("Too many requests. Please try again later.", 429, req);
+    }
+
     const {
       amount,
       currency = "usd",
