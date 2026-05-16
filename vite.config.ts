@@ -40,15 +40,16 @@ export default defineConfig(({ mode }) => ({
         'src/vite-env.d.ts',
         'src/integrations/supabase/types.ts',
       ],
-      // Phase 6 floor (2026-05-16). Thresholds tuned just below current
-      // measured coverage so this commit doesn't break CI but new code
-      // can't ratchet down. Bump these every quarter as coverage rises.
-      // Baseline at lock: lines 21.7, branches 15.1, functions 15.9.
+      // Phase 6 floor (last bumped 2026-05-16, ratchet 2). Thresholds
+      // tuned just below current measured coverage so this commit doesn't
+      // break CI but new code can't ratchet down. Bump these every quarter
+      // as coverage rises.
+      // Measured at ratchet 2: lines 39.48, statements 37.34, branches 28.91, functions 30.46.
       thresholds: {
-        lines: 20,
-        statements: 19,
-        branches: 13,
-        functions: 14,
+        lines: 38,
+        statements: 36,
+        branches: 27,
+        functions: 28,
       },
     },
   },

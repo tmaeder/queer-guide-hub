@@ -152,11 +152,10 @@ const SearchResults = lazyRetry(() => import('./pages/SearchResults'));
 const Favorites = lazyRetry(() => import('./pages/Favorites'));
 
 const TripsPage = lazyRetry(() => import('./pages/trips/TripsPage'));
-const TripPlannerPage = lazyRetry(() => import('./pages/trips/TripPlannerPage'));
-const TripBookletPage = lazyRetry(() => import('./pages/trips/TripBookletPage'));
+const TripWorkspace = lazyRetry(() => import('./pages/trips/TripWorkspace'));
 const TripsDiscoverPage = lazyRetry(() => import('./pages/trips/TripsDiscoverPage'));
-const TodayModePage = lazyRetry(() => import('./pages/trips/TodayModePage'));
 const SharedTripPage = lazyRetry(() => import('./pages/trips/SharedTripPage'));
+const TripSubrouteRedirect = lazyRetry(() => import('./pages/trips/TripSubrouteRedirect'));
 const Donate = lazyRetry(() => import('./pages/Donate'));
 const Sitemap = lazyRetry(() => import('./pages/Sitemap'));
 const SubmitHub = lazyRetry(() => import('./pages/SubmitHub'));
