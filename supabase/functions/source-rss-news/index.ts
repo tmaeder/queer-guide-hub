@@ -30,13 +30,15 @@ const rssNewsAdapter: SourceAdapter = {
     const maxArticles = (config.filters?.maxArticles as number) || 100
     const sinceHours = (config.filters?.sinceHours as number) || 24
 
-    const { data: sources, error } = await supabase
-      .from('news_sources')
-      .select('*')
-      .eq('is_active', true)
+    // Only pull sources eligible to run right now (respects auto_paused,
+    // backoff_until, fetch_frequency). The RPC encapsulates the
+    // circuit-breaker policy at the source level — see news_sources_eligible().
+    const { data: sources, error } = await supabase.rpc('news_sources_eligible', {
+      p_limit: 100,
+    })
 
     if (error || !sources || sources.length === 0) {
-      console.log('No active news sources found')
+      console.log('No eligible news sources')
       return []
     }
 
@@ -68,14 +70,36 @@ const rssNewsAdapter: SourceAdapter = {
         await supabase.from('news_sources').update({
           status: 'active',
           last_fetched_at: new Date().toISOString(),
+          last_successful_fetch: new Date().toISOString(),
           last_error: null,
+          consecutive_failures: 0,
+          backoff_until: null,
         }).eq('id', source.id)
       } catch (e) {
-        console.error(`Error fetching from source ${source.name}:`, (e as Error).message)
-        await supabase.from('news_sources').update({
+        // Failure: exponential backoff (5min * 2^n, capped at 24h),
+        // auto-pause after 8 consecutive failures.
+        const { data: current } = await supabase
+          .from('news_sources')
+          .select('consecutive_failures')
+          .eq('id', source.id)
+          .single()
+        const failures = ((current?.consecutive_failures as number) ?? 0) + 1
+        const backoffMs = Math.min(
+          5 * 60 * 1000 * Math.pow(2, failures - 1),
+          24 * 60 * 60 * 1000,
+        )
+        const update: Record<string, unknown> = {
           status: 'error',
           last_error: (e as Error).message,
-        }).eq('id', source.id)
+          consecutive_failures: failures,
+          backoff_until: new Date(Date.now() + backoffMs).toISOString(),
+        }
+        if (failures >= 8) {
+          update.auto_paused = true
+          update.auto_paused_reason = `${failures} consecutive failures: ${(e as Error).message}`.slice(0, 500)
+        }
+        console.error(`Error fetching from source ${source.name} (attempt ${failures}):`, (e as Error).message)
+        await supabase.from('news_sources').update(update).eq('id', source.id)
       }
     }
 
@@ -193,14 +217,23 @@ async function fetchTheNewsApi(baseUrl: string): Promise<Record<string, unknown>
 }
 
 async function fetchFromRss(feedUrl: string): Promise<Record<string, unknown>[]> {
+  // Throw on failure so the caller's catch can register the failure
+  // (consecutive_failures + backoff_until). Returning [] silently would
+  // mask flapping feeds and never trip auto-pause.
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 20_000)
   try {
-    const res = await fetch(feedUrl, { headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot' } })
-    if (!res.ok) return []
+    const res = await fetch(feedUrl, {
+      headers: { 'User-Agent': 'QueerGuide/1.0 NewsBot' },
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} ${res.statusText}`)
+    }
     const xml = await res.text()
     return parseRssItems(xml)
-  } catch (e) {
-    console.error(`RSS fetch error for ${feedUrl}:`, (e as Error).message)
-    return []
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
