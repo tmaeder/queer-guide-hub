@@ -249,12 +249,13 @@ export const EventsCalendarView = ({
                         <div className="p-4 transition-all border-2 border-transparent rounded-element hover:border-primary hover:shadow-lg hover:scale-[1.02] bg-card">
                           {/* Event Header */}
                           <div className="flex items-start justify-between gap-3 mb-3">
-                            <p
-                              className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors line-clamp-2"
+                            <button
+                              type="button"
+                              className="text-sm font-semibold cursor-pointer hover:text-primary transition-colors line-clamp-2 text-left bg-transparent border-0 p-0"
                               onClick={() => onEventSelect?.(event)}
                             >
                               {event.title}
-                            </p>
+                            </button>
                             <div className="flex gap-1 flex-shrink-0">
                               {event.is_free && (
                                 <Badge variant="secondary" className="text-xs px-2 py-1">

@@ -140,6 +140,15 @@ export function AirportAutocomplete({
             <div
               key={airport.iata_code}
               onClick={() => handleSelect(airport)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleSelect(airport);
+                }
+              }}
+              role="option"
+              tabIndex={0}
+              aria-selected={false}
               className="px-4 py-2 cursor-pointer flex items-center gap-2 hover:bg-muted"
             >
               <Plane style={{ height: 14, width: 14, flexShrink: 0, color: 'var(--muted-foreground)' }} />

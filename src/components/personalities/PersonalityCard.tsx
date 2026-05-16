@@ -126,6 +126,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
           <img
             src={personality.image_url}
             alt={personality.name}
+            role="presentation"
             loading="lazy"
             decoding="async"
             draggable={false}

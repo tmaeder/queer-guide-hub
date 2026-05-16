@@ -174,7 +174,13 @@ export const UniversalSearchBar = () => {
             }}
           >
             <div role="search" aria-label="Site search" className="flex items-center cursor-text bg-background transition-all"
-              onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}>
+              onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setIsOpen(true);
+                  setTimeout(() => inputRef.current?.focus(), 0);
+                }
+              }}>
               <span aria-hidden="true" className="inline-flex items-center justify-center"
                 style={{ height: isMobile ? 48 : 40, paddingLeft: isMobile ? 16 : 12, paddingRight: isMobile ? 16 : 12, color: 'hsl(var(--muted-foreground))', pointerEvents: 'none', flexShrink: 0 }}>
                 <Search style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />

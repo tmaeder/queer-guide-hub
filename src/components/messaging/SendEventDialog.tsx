@@ -154,6 +154,15 @@ export function SendEventDialog({
     <div
       key={id}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      role="option"
+      tabIndex={0}
+      aria-selected={selected}
       className={`flex items-center gap-3 px-3 py-2 rounded cursor-pointer ${selected ? 'bg-accent' : 'hover:bg-muted'}`}
     >
       <Avatar style={{ width: 36, height: 36 }}>

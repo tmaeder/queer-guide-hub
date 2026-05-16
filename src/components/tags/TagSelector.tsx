@@ -124,6 +124,15 @@ export const TagSelector = ({
                     key={tag.id}
                     className={`flex items-center justify-between p-2 cursor-pointer transition-colors ${selectedTags.includes(tag.name) ? 'bg-primary/10' : 'hover:bg-muted'}`}
                     onClick={() => addTag(tag.name)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        addTag(tag.name);
+                      }
+                    }}
+                    role="option"
+                    tabIndex={0}
+                    aria-selected={selectedTags.includes(tag.name)}
                   >
                       <div className="flex items-center gap-2 flex-1">
                         <div style={{ width: 12, height: 12, backgroundColor: tag.color }} />

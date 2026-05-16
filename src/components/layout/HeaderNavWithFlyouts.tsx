@@ -75,6 +75,7 @@ export function HeaderNavWithFlyouts({ pathname }: HeaderNavWithFlyoutsProps) {
       aria-label={t('header.primaryNav', 'Primary navigation')}
       className="hidden md:flex items-center gap-1 relative"
       onMouseLeave={() => setHovered(null)}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- onMouseLeave dismisses flyouts; keyboard users dismiss via Escape on the nav items themselves
     >
       {NAV.map((item) => {
         const active = pathname === item.to || pathname.startsWith(`${item.to}/`);

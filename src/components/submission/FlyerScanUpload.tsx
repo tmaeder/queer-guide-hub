@@ -235,6 +235,7 @@ export function FlyerScanUpload({
             aria-live="polite"
             className="flex items-start gap-2 mt-3"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <AlertCircle
               style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 2 }}

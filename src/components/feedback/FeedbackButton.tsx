@@ -213,6 +213,15 @@ export function FeedbackButton() {
                       <div
                         key={cat.value}
                         onClick={() => setForm((f) => ({ ...f, category: cat.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setForm((f) => ({ ...f, category: cat.value }));
+                          }
+                        }}
+                        role="radio"
+                        tabIndex={0}
+                        aria-checked={selected}
                         className="flex items-center gap-2 cursor-pointer rounded-element transition-all"
                         style={{
                           padding: 12,

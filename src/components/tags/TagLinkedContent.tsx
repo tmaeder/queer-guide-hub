@@ -196,6 +196,7 @@ function PersonalityCard({ p, onClick }: { p: TagContentResult['personalities'][
           <img
             src={p.image_url}
             alt={p.name}
+            role="presentation"
             loading="lazy"
             style={{
               position: 'absolute',

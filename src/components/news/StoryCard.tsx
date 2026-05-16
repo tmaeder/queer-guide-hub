@@ -32,6 +32,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           referrerPolicy="no-referrer"
           src={img}
           alt={title}
+          role="presentation"
           width={400}
           height={200}
           style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }}

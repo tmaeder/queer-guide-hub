@@ -393,6 +393,15 @@ export function FlyerScanResults({
                 {/* Collapsed header */}
                 <div
                   onClick={() => setExpandedIdx(isExpanded ? -1 : flatIdx)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setExpandedIdx(isExpanded ? -1 : flatIdx);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isExpanded}
                   className="flex items-center gap-2 p-3 cursor-pointer hover:bg-muted"
                 >
                   <Badge
