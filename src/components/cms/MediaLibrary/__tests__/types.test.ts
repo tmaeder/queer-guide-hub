@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type {
-  UnifiedMediaItem, OptimizationStatus, ViewMode, SortBy, SortDir,
+  OptimizationStatus, ViewMode, SortBy, SortDir,
   StatusFilter, FormatFilter, SourceTypeFilter, EntityTypeFilter,
-  EntityLink, MediaDetailData, DuplicateGroup, VisualDuplicatePair,
 } from '../types';
 
 describe('MediaLibrary/types', () => {
