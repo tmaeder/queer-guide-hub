@@ -362,6 +362,16 @@ export default function MediaPickerDialog({
                           setSelectedId(item.id);
                           setSelectedExternal(null);
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedId(item.id);
+                            setSelectedExternal(null);
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
                         className={`cursor-pointer rounded overflow-hidden border-2 relative bg-gray-50 hover:border-muted ${
                           isSelected
                             ? 'border-primary hover:border-primary'

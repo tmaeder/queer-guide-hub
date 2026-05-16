@@ -162,6 +162,15 @@ export function DuplicateFinderPanel() {
                             onClick={() => {
                               setSelectedPrimary(prev => new Map(prev).set(group.group_hash, item.asset_id));
                             }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setSelectedPrimary(prev => new Map(prev).set(group.group_hash, item.asset_id));
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={isSelected}
                           >
                             <img
                               src={item.thumbnail_url || item.url}

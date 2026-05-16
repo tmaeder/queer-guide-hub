@@ -304,6 +304,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           const isQueue = card.key === 'queue';
 
           return (
+            // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex conditionally set when isQueue=true
             <div
               key={card.key}
               onClick={isQueue ? () => onNavigate('review') : undefined}

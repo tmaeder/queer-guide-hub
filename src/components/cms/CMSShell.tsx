@@ -292,6 +292,15 @@ export function CMSShell() {
       {isMobile && (
         <div
           onClick={() => setMobileOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setMobileOpen(true);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Open content hub menu"
           className="fixed flex items-center gap-1.5 bg-background rounded-[10px] cursor-pointer transition-shadow"
           style={{
             top: 80,

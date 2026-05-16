@@ -149,6 +149,7 @@ export function RecommendedForYou({ className, limit = 10 }: { className?: strin
 											<img
 												src={isValidImageUrl(it.image_url) ? it.image_url : getRandomFallbackImage()}
 												alt=""
+												role="presentation"
 												loading="lazy"
 												className="h-24 w-full object-cover"
 												onError={(e) => {

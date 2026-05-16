@@ -36,6 +36,7 @@ export function Lens({ children, zoom = 1.5, size = 200, className }: LensProps)
       onMouseEnter={() => setActive(true)}
       onMouseLeave={() => setActive(false)}
       onMouseMove={onMove}
+      role="presentation"
       className={cn('relative overflow-hidden cursor-zoom-in', className)}
     >
       {children}

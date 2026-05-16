@@ -187,6 +187,16 @@ export default function ExternalImageSearch({
                       setSelectedId(image.id);
                       onSelect(image);
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedId(image.id);
+                        onSelect(image);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isSelected}
                     className={`cursor-pointer rounded overflow-hidden border-2 relative bg-gray-50 hover:border-muted ${
                       isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                     }`}

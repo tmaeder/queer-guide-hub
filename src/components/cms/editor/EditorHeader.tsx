@@ -127,6 +127,15 @@ export function EditorHeader({
           ) : (
             <div
               onClick={handleStartEditing}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleStartEditing();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Edit title"
               className="group flex items-center gap-1.5 cursor-pointer border-b border-dashed border-transparent hover:border-muted-foreground/40 rounded-badge transition-colors"
             >
               <p

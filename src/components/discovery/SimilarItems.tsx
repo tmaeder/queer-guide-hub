@@ -124,6 +124,7 @@ export function SimilarItems({ entity, limit = 6, title = "More like this", clas
 												<img
 														src={isValidImageUrl(it.metadata?.image_url) ? (it.metadata!.image_url as string) : getRandomFallbackImage()}
 														alt=""
+														role="presentation"
 														loading="lazy"
 														className="h-24 w-full object-cover"
 														onError={(e) => { const fb = getRandomFallbackImage(); if (e.currentTarget.src !== fb) e.currentTarget.src = fb; }}
