@@ -6,6 +6,7 @@ import type { TripWithDetails } from '@/hooks/useTrips';
 import { useTripReservations } from '@/hooks/useTripReservations';
 import { Button } from '@/components/ui/button';
 import { AddReservationDialog } from './AddReservationDialog';
+import { TripBookingInbox } from './TripBookingInbox';
 import { detectTripGaps } from './tripGaps';
 
 interface Props {
@@ -36,10 +37,17 @@ export function TripPreTripBlock({ trip }: Props) {
     return { lodgingCount, otherCount, totalRes: res.length, dayCount };
   }, [reservations, trip.trip_days.length]);
 
-  if (daysUntil !== null && daysUntil < 0) return null;
-  if (!start && gaps.length === 0 && bookingStats.totalRes === 0) return null;
+  const hidePreTrip =
+    (daysUntil !== null && daysUntil < 0) ||
+    (!start && gaps.length === 0 && bookingStats.totalRes === 0);
+
+  if (hidePreTrip) {
+    return <TripBookingInbox tripId={trip.id} />;
+  }
 
   return (
+    <>
+    <TripBookingInbox tripId={trip.id} />
     <section
       aria-label={t('trips.preTrip.label', 'Pre-trip overview')}
       className="border border-border bg-background p-4 mb-4"
@@ -129,5 +137,6 @@ export function TripPreTripBlock({ trip }: Props) {
         tripId={trip.id}
       />
     </section>
+    </>
   );
 }
