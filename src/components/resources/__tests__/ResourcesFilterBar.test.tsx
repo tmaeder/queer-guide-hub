@@ -25,7 +25,7 @@ describe('ResourcesFilterBar', () => {
         onSortByChange={vi.fn()}
         sortDirection="desc"
         onSortDirectionToggle={vi.fn()}
-        categoriesTree={{}}
+        categoriesTree={[]}
       />,
     );
     expect(container).toBeTruthy();
