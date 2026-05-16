@@ -67,12 +67,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Dispatch is called by cron (JWT verified by Supabase gateway).
-    // All other actions are admin-only and require an authenticated admin user.
-    if (action !== 'dispatch') {
-      const authResult = await requireAdmin(req, supabase)
-      if (authResult instanceof Response) return authResult
-    }
+    // All actions — including dispatch — require service-role (cron) or
+    // an authenticated admin user. verify_jwt = false at the gateway means
+    // the function must enforce auth itself; otherwise anyone on the
+    // internet can trigger dispatch loops and drain LLM/API budget.
+    const authResult = await requireAdmin(req, supabase)
+    if (authResult instanceof Response) return authResult
 
     // Route actions
     switch (action) {
