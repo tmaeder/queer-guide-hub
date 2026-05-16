@@ -152,6 +152,7 @@ export function SideBySideComparison({
                 </div>
 
                 {/* Left Value */}
+                {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex conditionally applied when isDiff */}
                 <div
                   className="p-3"
                   style={{
@@ -194,6 +195,7 @@ export function SideBySideComparison({
                 </div>
 
                 {/* Right Value */}
+                {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex conditionally applied when isDiff */}
                 <div
                   className="p-3"
                   style={{

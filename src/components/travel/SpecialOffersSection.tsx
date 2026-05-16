@@ -86,6 +86,7 @@ export function SpecialOffersSection() {
                   <img
                     src={`https://pics.avs.io/24/24/${offer.airline}.png`}
                     alt={offer.airline}
+                    role="presentation"
                     className="w-4 h-4 rounded-full"
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />

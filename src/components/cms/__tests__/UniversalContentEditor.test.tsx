@@ -12,7 +12,7 @@ import { UniversalContentEditor } from '../UniversalContentEditor';
 
 describe('UniversalContentEditor', () => {
   it('renders', () => {
-    const { container } = render(<UniversalContentEditor content={{ id: 'x1', _table: 'venues' } as never} onClose={vi.fn()} />);
+    const { container } = render(<UniversalContentEditor content={{ id: 'x1', title: 'T', content_type: 'venues' } as never} onClose={vi.fn()} />);
     expect(container).toBeTruthy();
   });
 });

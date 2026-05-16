@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+
 import type { SVGProps } from 'react';
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number | string };

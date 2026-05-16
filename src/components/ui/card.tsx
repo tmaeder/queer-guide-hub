@@ -84,6 +84,7 @@ const CardImage = ({
       <img
         src={effectiveSrc}
         alt={alt}
+        role="presentation"
         loading="lazy"
         decoding="async"
         referrerPolicy={referrerPolicy}

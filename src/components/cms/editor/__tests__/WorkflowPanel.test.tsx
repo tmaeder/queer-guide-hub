@@ -6,10 +6,15 @@ import { render } from '@testing-library/react';
 
 vi.mock('@/hooks/useCMSWorkflow', () => ({
   useCMSWorkflow: () => ({
-    metadata: null, loading: false,
-    transition: vi.fn(), setReviewLevel: vi.fn(),
+    availableTransitions: [], transition: vi.fn(), isTransitioning: false, error: null,
   }),
 }));
+vi.mock('@/hooks/useCMSContentMetadata', () => ({
+  fetchCMSContentMetadata: vi.fn().mockResolvedValue(null),
+  upsertCMSContentMetadata: vi.fn().mockResolvedValue({}),
+  insertContentActions: vi.fn().mockResolvedValue({}),
+}));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
 import { WorkflowPanel } from '../WorkflowPanel';
 

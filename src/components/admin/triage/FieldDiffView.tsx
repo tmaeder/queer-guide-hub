@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+
 import { cn } from '@/lib/utils';
 
 interface FieldDiff {

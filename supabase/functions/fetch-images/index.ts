@@ -546,7 +546,7 @@ Deno.serve(async (req) => {
     }
 
     
-    const success = (result as any)?.success ?? true
+    const success = (result as { success?: boolean })?.success ?? true
     return jsonResponse({ ...result as Record<string, unknown>, timestamp: new Date().toISOString() }, success ? 200 : 400, req)
   } catch (e: unknown) {
     console.error('fetch-images error:', e)

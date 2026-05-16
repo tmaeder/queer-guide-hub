@@ -262,6 +262,7 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
               style={{ flex: i < config.steps.length - 1 ? 1 : undefined }}
             >
               {/* Step circle */}
+              {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex applied conditionally when i < currentStep (past step) */}
               <div
                 onClick={() => i < currentStep && goToStep(i)}
                 onKeyDown={

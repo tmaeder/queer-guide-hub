@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { isAdultCategoryName } from '@/components/resources/categoryMeta';
 

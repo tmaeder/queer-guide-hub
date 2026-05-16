@@ -5,7 +5,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 
 vi.mock('@/hooks/useCMSMedia', () => ({
-  useCMSMedia: () => ({ assets: [], loading: false, loadAssets: vi.fn() }),
+  useCMSMedia: () => ({
+    media: [], loading: false, error: null, totalCount: 0,
+    fetchMedia: vi.fn(), importExternalMedia: vi.fn().mockResolvedValue({}),
+  }),
 }));
 
 import MediaPickerDialog from '../MediaPickerDialog';

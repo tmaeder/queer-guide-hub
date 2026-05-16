@@ -108,6 +108,7 @@ export function TagListRenderer({
                 <img
                   src={tag.image_url || getRandomFallbackImage()}
                   alt={tag.name}
+                  role="presentation"
                   loading="lazy"
                   className="w-full h-full object-cover"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {

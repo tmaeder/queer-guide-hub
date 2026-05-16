@@ -173,6 +173,7 @@ export const UniversalSearchBar = () => {
               transition: 'transform 200ms ease-out, backdrop-filter 200ms ease-out',
             }}
           >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search role + keyboard handler delegates focus to inner combobox */}
             <div role="search" aria-label="Site search" className="flex items-center cursor-text bg-background transition-all"
               onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
               onKeyDown={(e) => {

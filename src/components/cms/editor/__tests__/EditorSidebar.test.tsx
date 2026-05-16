@@ -11,6 +11,13 @@ vi.mock('@/hooks/useCMSMedia', () => ({
   useCMSMedia: () => ({ assets: [], loading: false, loadAssets: vi.fn() }),
 }));
 vi.mock('@/config/contentTypeRegistry', () => ({ getContentType: () => null }));
+vi.mock('@/hooks/useCMSWorkflow', () => ({ useCMSWorkflow: () => ({ availableTransitions: [], transition: vi.fn(), isTransitioning: false, error: null }) }));
+vi.mock('@/hooks/useCMSContentMetadata', () => ({
+  fetchCMSContentMetadata: vi.fn().mockResolvedValue(null),
+  upsertCMSContentMetadata: vi.fn().mockResolvedValue({}),
+  insertContentActions: vi.fn().mockResolvedValue({}),
+}));
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 
 import { EditorSidebar } from '../EditorSidebar';
 

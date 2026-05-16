@@ -107,6 +107,7 @@ export function ResourceTagDetail({
           <img
             src={selectedTag.image_url}
             alt={selectedTag.name}
+            role="presentation"
             className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';

@@ -44,10 +44,11 @@ export function MarketplaceFilteredView({
   const [page, setPage] = useState(0);
   const [accumulated, setAccumulated] = useState<MarketplaceListing[]>([]);
 
+  const filtersKey = JSON.stringify(filters);
   useEffect(() => {
     setPage(0);
     setAccumulated([]);
-  }, [JSON.stringify(filters), sortBy]);
+  }, [filtersKey, sortBy]);
 
   useEffect(() => {
     fetchListings(filters, page, sortBy);

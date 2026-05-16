@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+
 import { SlidersHorizontal, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';

@@ -221,6 +221,16 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                       setSelectedTripId(trip.id);
                       setSelectedDayId('');
                     }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedTripId(trip.id);
+                        setSelectedDayId('');
+                      }
+                    }}
+                    role="radio"
+                    tabIndex={0}
+                    aria-checked={selectedTripId === trip.id}
                     className={cn(
                       'flex items-center justify-between p-3 rounded-element border-2 cursor-pointer transition-colors',
                       selectedTripId === trip.id

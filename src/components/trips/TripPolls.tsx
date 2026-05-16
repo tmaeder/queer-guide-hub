@@ -130,6 +130,7 @@ export function TripPolls({ tripId }: Props) {
                     const hasVoted = opt.votes?.includes(user?.id || '');
 
                     return (
+                      // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex applied conditionally when poll is open and user is signed in
                       <div
                         key={opt.id}
                         onClick={() => {

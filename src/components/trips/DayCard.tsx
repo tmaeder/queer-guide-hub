@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+
 import { useMemo, useState } from 'react';
 import { format, differenceInCalendarDays, isSameDay } from 'date-fns';
 import { useTranslation } from 'react-i18next';

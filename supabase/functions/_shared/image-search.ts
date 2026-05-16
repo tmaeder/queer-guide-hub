@@ -156,8 +156,7 @@ export async function storeImageToStorage(
     const ext = imageUrl.includes('.png') ? 'png' : 'jpg'
     const filePath = `${pathPrefix}/${entityId}-${Date.now()}.${ext}`
 
-    // deno-lint-ignore no-explicit-any
-    const sb = supabase as any
+    const sb = supabase as { storage: { from: (b: string) => { upload: (p: string, b: ArrayBuffer, o: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>; getPublicUrl: (p: string) => { data: { publicUrl: string } } } } }
     const { data, error } = await sb.storage.from(bucket).upload(filePath, buffer, {
       contentType: ext === 'png' ? 'image/png' : 'image/jpeg',
       cacheControl: '86400',

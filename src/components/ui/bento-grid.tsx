@@ -34,6 +34,7 @@ export function BentoCell({
   onClick,
 }: BentoCellProps) {
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex applied conditionally when interactive=true and onClick is provided
     <section
       onClick={onClick}
       onKeyDown={

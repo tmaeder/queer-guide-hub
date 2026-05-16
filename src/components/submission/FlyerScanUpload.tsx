@@ -230,6 +230,7 @@ export function FlyerScanUpload({
           )}
         </div>
         {rejectionMessage && (
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- role=alert wrapper needs propagation guards to prevent parent button activation
           <div
             role="alert"
             aria-live="polite"

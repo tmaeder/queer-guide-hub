@@ -12,6 +12,7 @@ export default tseslint.config(
   {
     ignores: [
       "dist",
+      "coverage",
       "src/integrations/supabase/types.ts",
       // Pre-existing botched-merge artifacts — files have parsing errors
       // unrelated to this branch. Tracked in

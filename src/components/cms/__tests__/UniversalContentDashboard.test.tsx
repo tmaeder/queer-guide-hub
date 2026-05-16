@@ -6,9 +6,9 @@ import { render } from '@testing-library/react';
 
 vi.mock('@/hooks/useUniversalCMS', () => ({
   useUniversalCMS: () => ({
-    content: [], loading: false, error: null,
-    totalCount: 0, filters: {}, setFilters: vi.fn(),
-    refresh: vi.fn(), createContent: vi.fn(), updateContent: vi.fn(), deleteContent: vi.fn(),
+    allContent: [], contentStats: [], loading: false, error: null,
+    totalCount: 0, currentPage: 1,
+    fetchAllContent: vi.fn(), deleteUniversalContent: vi.fn(),
   }),
 }));
 

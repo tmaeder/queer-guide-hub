@@ -255,6 +255,7 @@ function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onCl
           <img
             src={g.avatar_url}
             alt={g.name}
+            role="presentation"
             style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';

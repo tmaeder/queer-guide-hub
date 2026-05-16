@@ -133,6 +133,7 @@ export const GroupImageUpload = ({
                 <img
                   src={imageUrl}
                   alt=""
+                  role="presentation"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     const target = e.target as HTMLImageElement;

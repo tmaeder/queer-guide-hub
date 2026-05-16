@@ -85,6 +85,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
           <img
             src={village.image_url}
             alt={village.name}
+            role="presentation"
             className="h-full w-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';

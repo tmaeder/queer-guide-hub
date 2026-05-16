@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+
 import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, Sparkles, Ticket, Flag, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';

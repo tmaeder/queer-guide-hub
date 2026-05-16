@@ -198,7 +198,7 @@ export const ExploreMap = ({
       onLayersChangeProp?.(next);
       return next;
     });
-  }, []);
+  }, [onLayersChangeProp]);
 
   // ── Geolocation ──────────────────────────────────────────────────────────
   const flyToLocation = useCallback((lng: number, lat: number, zoom = 12) => {

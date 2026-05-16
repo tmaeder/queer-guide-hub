@@ -6,7 +6,8 @@ import { render } from '@testing-library/react';
 
 vi.mock('@/hooks/useExternalImageSearch', () => ({
   useExternalImageSearch: () => ({
-    images: [], loading: false, error: null, searchImages: vi.fn(), nextPage: vi.fn(), hasMore: false,
+    results: [], loading: false, error: null,
+    searchPexelsUnsplash: vi.fn(), searchWikipedia: vi.fn(), clearResults: vi.fn(),
   }),
 }));
 

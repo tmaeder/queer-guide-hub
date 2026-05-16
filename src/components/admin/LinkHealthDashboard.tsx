@@ -379,6 +379,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
               : key === 'suspicious' ? 'text-amber-600'
               : 'text-foreground';
             return (
+              // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- role/tabIndex conditionally applied when key !== 'total'
               <div
                 key={key}
                 className={`p-2 text-center rounded-element border bg-card ${key !== 'total' ? 'cursor-pointer' : ''} ${isActive ? 'border-2 border-primary' : ''}`}

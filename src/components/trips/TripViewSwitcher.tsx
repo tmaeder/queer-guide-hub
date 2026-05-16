@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components -- intentionally co-locates helpers/constants with the primary component */
+
 import { useSearchParams } from 'react-router';
 import { Map, Clock, BookOpen, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

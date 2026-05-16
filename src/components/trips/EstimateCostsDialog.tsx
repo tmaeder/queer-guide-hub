@@ -199,6 +199,15 @@ export function EstimateCostsDialog({
                 <div
                   key={i}
                   onClick={() => toggle(i)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggle(i);
+                    }
+                  }}
+                  role="checkbox"
+                  tabIndex={0}
+                  aria-checked={selected.has(i)}
                   className="flex items-start gap-2 p-2.5 border-t border-border cursor-pointer hover:bg-muted first-of-type:border-t-0"
                 >
                   <Checkbox

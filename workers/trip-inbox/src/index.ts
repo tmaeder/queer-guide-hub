@@ -12,18 +12,18 @@
  */
 
 import PostalMime from 'postal-mime';
-import { callAnthropic } from './anthropic';
+import { callWorkersAi, type AiBinding } from './workersai';
 import { bytesToPgHex, encryptBody } from './crypto';
 import { SupabaseClient } from './supabase';
 
 export interface Env {
   INBOX_DOMAIN: string;
   AUTO_SLOT_CONFIDENCE: string;
-  ANTHROPIC_MODEL: string;
+  WORKERS_AI_MODEL: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
-  ANTHROPIC_API_KEY: string;
   INBOX_ENCRYPTION_KEY: string;
+  AI: AiBinding;
 }
 
 const SHORT_ID_RE = /^trip-([a-z0-9]{6,32})$/i;
@@ -114,13 +114,13 @@ export default {
     let parsed;
     let parseStatus: 'parsed' | 'failed' = 'parsed';
     try {
-      parsed = await callAnthropic(env.ANTHROPIC_API_KEY, env.ANTHROPIC_MODEL, {
+      parsed = await callWorkersAi(env.AI, env.WORKERS_AI_MODEL, {
         subject,
         from: message.from,
         body,
       });
     } catch (err) {
-      console.error('anthropic failed', err);
+      console.error('workers-ai failed', err);
       parseStatus = 'failed';
     }
 

@@ -91,6 +91,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
               <img
                 src={`https://pics.avs.io/32/32/${deal.airline}.png`}
                 alt={deal.airline}
+                role="presentation"
                 style={{ width: 20, height: 20, flexShrink: 0, borderRadius: '50%' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
               />

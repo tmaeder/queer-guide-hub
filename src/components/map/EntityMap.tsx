@@ -355,7 +355,7 @@ export const EntityMap = ({
       allMarkers.forEach((m) => bounds.extend([m.lng, m.lat]));
       map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 0 });
     }
-  }, [primary, nearby, mapReady, showPopup]);
+  }, [primary, nearby, mapReady, showPopup, isVisitedMarker]);
 
   return (
     <div className={className} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
