@@ -1,8 +1,8 @@
 import { getServiceClient, jsonResponse, errorResponse, corsResponse } from '../_shared/supabase-client.ts'
-import { logoUrlFromWebsite } from '../_shared/logo-enrichment.ts'
 import { logPipelineError } from '../_shared/pipeline-error-log.ts'
 import { reportApiError } from '../_shared/report-api-error.ts'
 import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
+import { buildRecord } from './build-record.ts'
 
 // ============================================================
 // Pipeline Commit

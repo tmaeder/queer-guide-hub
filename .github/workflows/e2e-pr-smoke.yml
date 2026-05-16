@@ -1,0 +1,51 @@
+name: E2E PR Smoke
+
+# Phase 5 — fast smoke subset of Playwright suite that runs on every PR.
+# Targets ~5 min budget. Full nightly run still lives in e2e-nightly.yml.
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'e2e/**'
+      - 'package.json'
+      - 'playwright.config.ts'
+      - '.github/workflows/e2e-pr-smoke.yml'
+
+concurrency:
+  group: e2e-pr-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Playwright smoke (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --prefer-offline --no-audit
+      - run: npx playwright install --with-deps chromium
+      - name: Run smoke subset
+        env:
+          E2E_BASE_URL: https://queer.guide
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: |
+          npx playwright test \
+            auth-signup-renders.spec.ts \
+            search.spec.ts \
+            venues/detail-content.spec.ts \
+            help-locale.spec.ts \
+            hotels-filters.spec.ts \
+            --project=chromium
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-report
+          path: playwright-report/
+          retention-days: 7
