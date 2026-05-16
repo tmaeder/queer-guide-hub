@@ -120,7 +120,6 @@ export function useEvents(autoFetch: boolean = true) {
           .select(
             `
             *,
-            event_attendees(status),
             venues!venue_id(
               id,
               name,
@@ -218,6 +217,26 @@ export function useEvents(autoFetch: boolean = true) {
       if (error) throw error;
 
       let eventsData = (data as Event[]) || [];
+
+      // Attach public attendee counts via SECURITY DEFINER RPC.
+      // event_attendees has restricted SELECT (own rows only); the RPC
+      // returns aggregate counts that are safe to expose to anon.
+      if (eventsData.length > 0) {
+        const ids = eventsData.map((e) => e.id);
+        const { data: counts } = await supabase.rpc('event_attendee_counts', {
+          event_ids: ids,
+        });
+        const byId = new Map(
+          (counts ?? []).map((r: { event_id: string; going_count: number }) => [
+            r.event_id,
+            r.going_count,
+          ]),
+        );
+        eventsData = eventsData.map((e) => ({
+          ...e,
+          attendee_count: byId.get(e.id) ?? 0,
+        })) as Event[];
+      }
 
       // Filter by distance if nearMe is provided
       if (filters?.nearMe) {

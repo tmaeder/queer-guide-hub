@@ -99,8 +99,7 @@ export default function EventDetail() {
       setUserAttendance(null);
       return;
     }
-    const u = event.event_attendees?.find((a) => a.user_id === user.id);
-    setUserAttendance(u?.status || null);
+    setUserAttendance(event.user_attendance ?? null);
   }, [event, user]);
 
   useEffect(() => {

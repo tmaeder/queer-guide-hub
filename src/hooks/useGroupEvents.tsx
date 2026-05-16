@@ -71,21 +71,39 @@ export const useGroupEvents = (groupId: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
-        .select(`
-          *,
-          event_attendees(id, user_id, status)
-        `)
+        .select('*')
         .eq('group_id', groupId)
         .eq('status', 'active')
         .is('duplicate_of_id', null)
         .order('start_date', { ascending: true });
 
       if (error) throw error;
+      const rows = data ?? [];
+      if (rows.length === 0) return [];
 
-      return (data || []).map(event => ({
+      const ids = rows.map((e) => e.id);
+      const { data: counts } = await supabase.rpc('event_attendee_counts', {
+        event_ids: ids,
+      });
+      const countById = new Map(
+        (counts ?? []).map((r: { event_id: string; going_count: number }) => [r.event_id, r.going_count]),
+      );
+
+      let ownAttending = new Set<string>();
+      if (user?.id) {
+        const { data: own } = await supabase
+          .from('event_attendees')
+          .select('event_id')
+          .in('event_id', ids)
+          .eq('user_id', user.id)
+          .eq('status', 'going');
+        ownAttending = new Set((own ?? []).map((r) => r.event_id));
+      }
+
+      return rows.map((event) => ({
         ...event,
-        attendee_count: event.event_attendees?.filter((a: { status: string }) => a.status === 'going').length || 0,
-        user_attending: event.event_attendees?.some((a: { user_id: string; status: string }) => a.user_id === user?.id && a.status === 'going') || false
+        attendee_count: countById.get(event.id) ?? 0,
+        user_attending: ownAttending.has(event.id),
       }));
     },
     enabled: !!user && !!groupId

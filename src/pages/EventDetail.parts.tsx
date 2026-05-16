@@ -84,15 +84,8 @@ export type EventWithRelations = Database['public']['Tables']['events']['Row'] &
     phone: string | null;
     organizer_handles: Record<string, string> | null;
   } | null;
-  event_attendees?: Array<{
-    id: string;
-    status: string;
-    user_id: string;
-    profiles?: {
-      display_name: string;
-      avatar_url: string | null;
-    };
-  }>;
+  attendee_counts?: { going: number; interested: number };
+  user_attendance?: string | null;
 };
 
 export const EVENT_SELECT_FIELDS = `
@@ -427,8 +420,8 @@ export function EventOverview({
   userAttendance,
   onAttendanceUpdate,
 }: OverviewProps) {
-  const attendeesGoing = event.event_attendees?.filter((a) => a.status === 'going') || [];
-  const attendeesInterested = event.event_attendees?.filter((a) => a.status === 'interested') || [];
+  const goingCount = event.attendee_counts?.going ?? 0;
+  const interestedCount = event.attendee_counts?.interested ?? 0;
 
   return (
     <ScrollReveal direction="up">
@@ -471,70 +464,17 @@ export function EventOverview({
         </Card>
       )}
 
-      {user && (attendeesGoing.length > 0 || attendeesInterested.length > 0) && (
+      {(goingCount > 0 || interestedCount > 0) && (
         <Card>
           <CardHeader>
             <CardTitle>
-              Attendees ({attendeesGoing.length} going, {attendeesInterested.length} interested)
+              Attendees ({goingCount} going, {interestedCount} interested)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {attendeesGoing.length > 0 && (
-              <div className={attendeesInterested.length > 0 ? 'mb-4' : ''}>
-                <p className="text-sm font-medium mb-2">Going</p>
-                <div className="flex flex-wrap gap-2">
-                  {attendeesGoing.slice(0, 12).map((attendee) => (
-                    <div
-                      key={attendee.id}
-                      className="flex items-center gap-2 bg-muted rounded-full px-3 py-1"
-                    >
-                      <div
-                        className="bg-primary text-primary-foreground rounded-full flex items-center justify-center"
-                        style={{ width: 24, height: 24, fontSize: 12 }}
-                      >
-                        {attendee.profiles?.display_name?.[0] || 'U'}
-                      </div>
-                      <span className="text-xs">
-                        {attendee.profiles?.display_name || 'Anonymous'}
-                      </span>
-                    </div>
-                  ))}
-                  {attendeesGoing.length > 12 && (
-                    <span className="text-xs text-muted-foreground px-3 py-1">
-                      +{attendeesGoing.length - 12} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            {attendeesInterested.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2">Interested</p>
-                <div className="flex flex-wrap gap-2">
-                  {attendeesInterested.slice(0, 8).map((attendee) => (
-                    <div
-                      key={attendee.id}
-                      className="flex items-center gap-2 bg-muted rounded-full px-3 py-1"
-                    >
-                      <div
-                        className="bg-muted rounded-full flex items-center justify-center"
-                        style={{ width: 24, height: 24, fontSize: 12 }}
-                      >
-                        {attendee.profiles?.display_name?.[0] || 'U'}
-                      </div>
-                      <span className="text-xs">
-                        {attendee.profiles?.display_name || 'Anonymous'}
-                      </span>
-                    </div>
-                  ))}
-                  {attendeesInterested.length > 8 && (
-                    <span className="text-xs text-muted-foreground px-3 py-1">
-                      +{attendeesInterested.length - 8} more
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
+            <p className="text-sm text-muted-foreground">
+              Individual attendee profiles are private.
+            </p>
           </CardContent>
         </Card>
       )}

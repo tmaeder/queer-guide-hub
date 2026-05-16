@@ -124,7 +124,13 @@ export async function fetchEventBySlugOrId<T extends { id: string }>(
   slug: string,
   selectFields: string,
   userId: string | undefined,
-): Promise<(T & { event_attendees: unknown[] }) | null> {
+): Promise<
+  | (T & {
+      attendee_counts: { going: number; interested: number };
+      user_attendance: string | null;
+    })
+  | null
+> {
   let { data, error } = await supabase
     .from('events')
     .select(selectFields)
@@ -141,14 +147,32 @@ export async function fetchEventBySlugOrId<T extends { id: string }>(
   }
   if (!data) return null;
   const event = data as T;
+
+  // Aggregate counts via SECURITY DEFINER RPC (event_attendees has restricted
+  // SELECT — individual rows are not publicly readable).
+  const { data: countsRows } = await supabase.rpc('event_attendee_counts', {
+    event_ids: [event.id],
+  });
+  const row = countsRows?.[0] as
+    | { going_count: number; interested_count: number }
+    | undefined;
+  const attendee_counts = {
+    going: row?.going_count ?? 0,
+    interested: row?.interested_count ?? 0,
+  };
+
+  let user_attendance: string | null = null;
   if (userId) {
-    const { data: attendeesData } = await supabase
+    const { data: own } = await supabase
       .from('event_attendees')
-      .select(`id, status, user_id, profiles:user_id (display_name, avatar_url)`)
-      .eq('event_id', event.id);
-    return { ...event, event_attendees: attendeesData ?? [] };
+      .select('status')
+      .eq('event_id', event.id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    user_attendance = own?.status ?? null;
   }
-  return { ...event, event_attendees: [] };
+
+  return { ...event, attendee_counts, user_attendance };
 }
 
 /** PersonalityDetail.parts.tsx — public personality by slug, then by id. */

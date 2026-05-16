@@ -57,6 +57,7 @@ type Event = Database['public']['Tables']['events']['Row'] & {
 
 interface EventCardProps {
   event?: Event & {
+    attendee_count?: number;
     event_attendees?: Array<{ status: string }>;
   };
   loading?: boolean;
@@ -113,7 +114,10 @@ export const EventCard = memo(function EventCard({
       { start_date: event?.start_date, end_date: event?.end_date },
       { start_date: activeTrip.start_date, end_date: activeTrip.end_date },
     );
-  const attendeeCount = event?.event_attendees?.filter((a) => a.status === 'going').length || 0;
+  const attendeeCount =
+    event?.attendee_count ??
+    event?.event_attendees?.filter((a) => a.status === 'going').length ??
+    0;
   const isPast = !!event && new Date(event.end_date ?? event.start_date) < new Date();
   const resolvedImage = resolveEntityImage('event', event ?? null).url;
   const [imageError, setImageError] = React.useState(false);
