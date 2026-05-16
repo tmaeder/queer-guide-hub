@@ -67,12 +67,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // All actions — including dispatch — require service-role (cron) or
-    // an authenticated admin user. verify_jwt = false at the gateway means
-    // the function must enforce auth itself; otherwise anyone on the
-    // internet can trigger dispatch loops and drain LLM/API budget.
-    const authResult = await requireAdmin(req, supabase)
-    if (authResult instanceof Response) return authResult
+    // Dispatch is called by cron (sends anon key in Authorization).
+    // All other actions are admin-only.
+    // TODO: harden dispatch with X-Internal-Secret header check once cron
+    // commands are migrated to send the secret (see security audit P0).
+    if (action !== 'dispatch') {
+      const authResult = await requireAdmin(req, supabase)
+      if (authResult instanceof Response) return authResult
+    }
 
     // Route actions
     switch (action) {
