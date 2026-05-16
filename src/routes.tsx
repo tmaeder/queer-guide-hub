@@ -138,6 +138,7 @@ const IntimateDiscovery = lazyRetry(() => import('./pages/intimate/IntimateDisco
 const IntimateUserDetail = lazyRetry(() => import('./pages/intimate/IntimateUserDetail'));
 const ProfileTiers = lazyRetry(() => import('./pages/ProfileTiers'));
 const Footprint = lazyRetry(() => import('./pages/profile/Footprint'));
+const FootprintPublic = lazyRetry(() => import('./pages/profile/FootprintPublic'));
 const UserProfile = lazyRetry(() => import('./pages/UserProfile'));
 const Feed = lazyRetry(() => import('./pages/Feed'));
 
@@ -450,6 +451,7 @@ export const AppRoutes = () => {
                 <Route path="intimate/u/:userId" element={<IntimateUserDetail />} />
                 <Route path="profile/tiers" element={<ProfileTiers />} />
                 <Route path="profile/footprint" element={<Footprint />} />
+                <Route path="profile/footprint/:userId/public" element={<FootprintPublic />} />
                 <Route path="user/:userId" element={<UserProfile />} />
                 <Route path="sitemap" element={<Sitemap />} />
                 <Route path="feedback" element={<FeedbackBoard />} />

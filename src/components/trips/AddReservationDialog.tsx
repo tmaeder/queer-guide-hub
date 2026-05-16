@@ -43,7 +43,15 @@ interface Props {
   onCreated?: (reservation: Reservation) => void;
 }
 
-export function AddReservationDialog({ open, onClose, tripId, existing, initialTitle, initialType, onCreated }: Props) {
+export function AddReservationDialog({
+  open,
+  onClose,
+  tripId,
+  existing,
+  initialTitle,
+  initialType,
+  onCreated,
+}: Props) {
   const { toast } = useToast();
   const { addReservation, updateReservation } = useReservationMutations(tripId);
   const isEdit = !!existing;

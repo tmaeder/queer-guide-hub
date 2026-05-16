@@ -203,8 +203,10 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {photos.map((photo) => (
               <div key={photo.id} className="relative group">
-                <div
-                  className="aspect-square overflow-hidden rounded-element bg-muted cursor-pointer"
+                <button
+                  type="button"
+                  className="aspect-square overflow-hidden rounded-element bg-muted cursor-pointer w-full p-0 border-0 block"
+                  aria-label={photo.caption || 'Open photo'}
                   onClick={async () => {
                     const existing = signedUrls[photo.storage_path];
                     if (existing) {
@@ -223,7 +225,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <ZoomIn className="w-6 h-6 text-primary-foreground" />
                   </div>
-                </div>
+                </button>
 
                 {photo.caption && (
                   <div className="mt-2 text-sm text-muted-foreground line-clamp-2">
@@ -288,7 +290,7 @@ export function PhotoGallery({ userId, isOwnProfile }: PhotoGalleryProps) {
               <div className="relative">
                 <img
                   src={selectedImage}
-                  alt="Full size photo"
+                  alt=""
                   className="w-full max-h-[80vh] object-contain"
                 />
                 <Button

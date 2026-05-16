@@ -264,6 +264,19 @@ function SubmitFormInner({ config }: SubmitFormInnerProps) {
               {/* Step circle */}
               <div
                 onClick={() => i < currentStep && goToStep(i)}
+                onKeyDown={
+                  i < currentStep
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          goToStep(i);
+                        }
+                      }
+                    : undefined
+                }
+                role={i < currentStep ? 'button' : undefined}
+                tabIndex={i < currentStep ? 0 : undefined}
+                aria-label={i < currentStep ? `Return to step ${i + 1}` : undefined}
                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all flex-shrink-0"
                 style={{
                   cursor: i < currentStep ? 'pointer' : 'default',

@@ -305,7 +305,11 @@ export const UserDirectoryGrid = ({
                     <div />
                   )}
 
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    role="presentation"
+                  >
                     <StartConversationButton
                       userId={profile.user_id}
                       userName={profile.display_name || 'Anonymous User'}

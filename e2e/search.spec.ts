@@ -86,12 +86,12 @@ test.describe('search results', () => {
       mockSearch({ 1: venuesPage1, 2: venuesPage2 }, 25),
     );
     await page.goto('/search?q=berlin');
-    await expect(page.getByText('Venue 1')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toBeVisible();
     await page.getByLabel('Next page').click();
     await expect(page).toHaveURL(/page=2/);
-    await expect(page.getByText('Venue 21')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible();
     await page.reload();
-    await expect(page.getByText('Venue 21')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible();
   });
 
   test('q=a shows Keep typing empty state and never hits the worker', async ({ page }) => {

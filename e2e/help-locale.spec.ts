@@ -25,8 +25,10 @@ const GERMAN_MARKERS = [
   'Queer Guide ersetzt',
 ];
 
+// `page.content()` returns serialized HTML, so `&` becomes `&amp;`. Match
+// either form so this test isn't fragile to that serialization detail.
 const ENGLISH_MARKERS = [
-  'Help & Crisis Hotlines',
+  'Help &amp; Crisis Hotlines',
   'In acute danger',
   'All countries',
   'All topics',
