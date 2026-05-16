@@ -157,9 +157,10 @@ export const NotificationList = () => {
       case 'notification': {
         const n = item.data;
         return (
-          <div
+          <button
+            type="button"
             key={item.key}
-            className={`p-3 cursor-pointer hover:bg-muted transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
+            className={`w-full text-left p-3 cursor-pointer hover:bg-muted transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
             onClick={() => handleNotificationClick(n)}
           >
             <div className="flex items-start gap-3">
@@ -196,9 +197,10 @@ export const NotificationList = () => {
           c.title || others.map((o: { profile?: { display_name?: string } }) => o.profile?.display_name || 'User').join(', ');
         const avatar = others[0]?.profile?.avatar_url || '';
         return (
-          <div
+          <button
+            type="button"
             key={item.key}
-            className="p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/messages')}
           >
             <div className="flex items-start gap-3">
@@ -226,9 +228,10 @@ export const NotificationList = () => {
       case 'group': {
         const n = item.data;
         return (
-          <div
+          <button
+            type="button"
             key={item.key}
-            className="p-3 cursor-pointer hover:bg-muted"
+            className="w-full text-left p-3 cursor-pointer hover:bg-muted"
             onClick={() => navigate('/groups')}
           >
             <div className="flex items-start gap-3">
