@@ -188,6 +188,7 @@ export function EventHero({
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={event.title}
+            role="presentation"
             className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
@@ -217,6 +218,7 @@ export function EventHero({
               <img
                 src={event.logo_url}
                 alt=""
+                role="presentation"
                 className="object-contain flex-shrink-0"
                 style={{ width: 40, height: 40, borderRadius: '10px', padding: '3px' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
