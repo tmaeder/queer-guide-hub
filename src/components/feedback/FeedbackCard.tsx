@@ -43,12 +43,29 @@ export function FeedbackCard({ item, voteCount, hasVoted, onVote, onClick }: Fee
     <TooltipProvider>
       <div
         onClick={onClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick?.();
+          }
+        }}
+        role="button"
+        tabIndex={0}
         className="p-3 bg-background cursor-pointer flex gap-3 transition-all"
       >
         <Tooltip>
           <TooltipTrigger asChild>
             <div
               onClick={handleVoteClick}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleVoteClick(e as unknown as React.MouseEvent);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={hasVoted ? 'Remove vote' : 'Upvote'}
               className="flex flex-col items-center gap-0.5 pt-0.5 cursor-pointer"
               style={{ minWidth: 36 }}
             >

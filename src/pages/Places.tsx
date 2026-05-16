@@ -428,9 +428,11 @@ export default function Places() {
 
                       return (
                         <div key={continent.id} className="flex flex-col gap-6">
-                          <div
+                          <button
+                            type="button"
                             onClick={() => toggleContinent(continent.id as string)}
-                            className="flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85"
+                            aria-expanded={isExpanded}
+                            className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
                           >
                             <div className="flex items-center gap-3">
                               <div className="p-2 bg-muted-foreground/10">
@@ -444,7 +446,7 @@ export default function Places() {
                               </div>
                             </div>
                             {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
-                          </div>
+                          </button>
 
                           {isExpanded && (
                             <div className={GRID_6_COLS}>
@@ -502,9 +504,11 @@ export default function Places() {
 
                     return (
                       <div key={continent.id} className="flex flex-col gap-6">
-                        <div
+                        <button
+                          type="button"
                           onClick={() => toggleCityContinent(continent.id as string)}
-                          className="flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85"
+                          aria-expanded={isExpanded}
+                          className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
                         >
                           <div className="flex items-center gap-3">
                             <div className="p-2 bg-muted-foreground/10">
@@ -518,7 +522,7 @@ export default function Places() {
                             </div>
                           </div>
                           {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
-                        </div>
+                        </button>
 
                         {isExpanded && (
                           <div className="flex flex-col gap-8 pl-0 sm:pl-4">
@@ -618,9 +622,11 @@ export default function Places() {
 
                       return (
                         <div key={continent.id} className="flex flex-col gap-6">
-                          <div
+                          <button
+                            type="button"
                             onClick={() => toggleContinent(villageKey)}
-                            className="flex items-center justify-between gap-4 p-4 rounded-element bg-muted cursor-pointer hover:opacity-85"
+                            aria-expanded={isExpanded}
+                            className="w-full flex items-center justify-between gap-4 p-4 rounded-element bg-muted cursor-pointer hover:opacity-85 text-left"
                           >
                             <div className="flex items-center gap-3">
                               <div className="p-2 rounded-element bg-muted-foreground/10">
@@ -636,7 +642,7 @@ export default function Places() {
                             {hasMore && (
                               isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />
                             )}
-                          </div>
+                          </button>
 
                           {Object.entries(byCountry).map(([countryId, { name: countryName, villages: countryVillages }]) => (
                               <div key={countryId} className="flex flex-col gap-3">

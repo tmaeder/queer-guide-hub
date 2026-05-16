@@ -394,10 +394,22 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                 <div
                   className={`p-2 rounded-element border bg-card transition-[border-color,box-shadow] duration-150 cursor-pointer hover:border-primary hover:shadow-sm ${selectedIds.has(item.metadata.id) ? 'border-primary' : 'border-border'}`}
                   onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onEdit(item.metadata.source_table, item.metadata.source_id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                 >
                   {/* Top row */}
                   <div className="flex items-start justify-between gap-1.5 mb-1">
-                    <div onClick={(e) => e.stopPropagation()}>
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      role="presentation"
+                    >
                       <Checkbox
                         checked={selectedIds.has(item.metadata.id)}
                         onCheckedChange={() => toggleSelect(item.metadata.id)}
@@ -440,6 +452,8 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                   <div
                     className="flex items-center gap-1 pt-1 border-t border-border"
                     onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    role="presentation"
                   >
                     <Button
                       size="sm"

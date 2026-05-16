@@ -125,6 +125,7 @@ export function VenueHero({
           <img
             src={heroImage || getRandomFallbackImage()}
             alt={venue.name}
+            role="presentation"
             className="w-full h-full object-cover"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
@@ -163,6 +164,7 @@ export function VenueHero({
               <img
                 src={venue.logo_url}
                 alt=""
+                role="presentation"
                 className="object-contain flex-shrink-0"
                 style={{ width: 40, height: 40, borderRadius: '10px', padding: '3px' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -543,20 +545,23 @@ export function VenuePhotos({ venue, t }: VenuePhotosProps) {
   return (
     <StaggerGrid className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2">
       {venue.images.map((imageUrl, index) => (
-        <div
+        <button
+          type="button"
           key={index}
-          className="aspect-square rounded-element overflow-hidden bg-muted"
+          className="aspect-square rounded-element overflow-hidden bg-muted block w-full p-0 border-0"
+          onClick={() => window.open(imageUrl, '_blank')}
+          aria-label={`Open ${venue.name} photo ${index + 1} in a new tab`}
         >
           <img
             src={imageUrl}
-            alt={`${venue.name} - Image ${index + 1}`}
+            alt={`${venue.name} ${index + 1}`}
+            role="presentation"
             className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).src = '/placeholder.svg';
             }}
-            onClick={() => window.open(imageUrl, '_blank')}
           />
-        </div>
+        </button>
       ))}
     </StaggerGrid>
   );
