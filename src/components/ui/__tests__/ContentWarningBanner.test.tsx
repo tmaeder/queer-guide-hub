@@ -15,7 +15,7 @@ describe('ContentWarningBanner', () => {
     expect(container).toBeTruthy();
   });
   it('SensitivityBadges renders', () => {
-    const { container } = render(<SensitivityBadges sensitivityFlags={{ legal: true } as never} relevanceScore={0.5} />);
+    const { container } = render(<SensitivityBadges sensitivityFlags={['legal', 'nsfw'] as never} relevanceScore={0.5} />);
     expect(container).toBeTruthy();
   });
 });

@@ -7,7 +7,7 @@ import { ModernVideoPlayer } from '../modern-video-player';
 
 describe('ModernVideoPlayer', () => {
   it('renders', () => {
-    const { container } = render(<ModernVideoPlayer src="https://example.com/v.mp4" />);
+    const { container } = render(<ModernVideoPlayer video={{ id: 'v1', title: 'T', file_path: 'https://x/v.mp4', renditions: [] } as never} />);
     expect(container).toBeTruthy();
   });
 });

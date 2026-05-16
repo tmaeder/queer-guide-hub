@@ -8,7 +8,7 @@ import { ErrorRetry } from '../ErrorRetry';
 describe('ErrorRetry', () => {
   it('renders error and retry button', () => {
     const onRetry = vi.fn();
-    render(<ErrorRetry error={new Error('Boom')} onRetry={onRetry} />);
+    render(<ErrorRetry error="Boom" onRetry={onRetry} />);
     fireEvent.click(screen.getByRole('button', { name: /retry|try again/i }));
     expect(onRetry).toHaveBeenCalled();
   });

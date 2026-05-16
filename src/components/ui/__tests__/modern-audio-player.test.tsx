@@ -7,7 +7,7 @@ import { ModernAudioPlayer } from '../modern-audio-player';
 
 describe('ModernAudioPlayer', () => {
   it('renders', () => {
-    const { container } = render(<ModernAudioPlayer src="https://example.com/a.mp3" title="X" />);
+    const { container } = render(<ModernAudioPlayer audio={{ id: 'a1', title: 'T', file_path: 'https://x/a.mp3', renditions: [] } as never} />);
     expect(container).toBeTruthy();
   });
 });
