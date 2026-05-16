@@ -393,9 +393,9 @@ export const AppRoutes = () => {
                 <Route path="trips/inbox" element={<Navigate to="/trips" replace />} />
                 <Route path="trips/discover" element={<TripsDiscoverPage />} />
                 <Route path="trips/shared/:token" element={<SharedTripPage />} />
-                <Route path="trips/:tripId/today" element={<TodayModePage />} />
-                <Route path="trips/:tripId/booklet" element={<TripBookletPage />} />
-                <Route path="trips/:tripId" element={<TripPlannerPage />} />
+                <Route path="trips/:tripId/today" element={<TripSubrouteRedirect view="today" />} />
+                <Route path="trips/:tripId/booklet" element={<TripSubrouteRedirect view="booklet" />} />
+                <Route path="trips/:tripId" element={<TripWorkspace />} />
                 <Route path="bookings" element={<Navigate to="/trips" replace />} />
                 <Route path="map" element={<MapPage />} />
                 <Route path="flights" element={<Navigate to="/travel" replace />} />
