@@ -12,8 +12,11 @@ export const createOptimizedQueryClient = () => {
         gcTime: 15 * 60 * 1000,
         // Don't refetch on window focus in production
         refetchOnWindowFocus: process.env.NODE_ENV === 'development',
-        // Refetch stale queries when component mounts (e.g., route navigation)
-        refetchOnMount: 'always',
+        // Only refetch on mount if data is actually stale (default behavior).
+        // 'always' forced every mount to refetch regardless of staleTime,
+        // making the 5min cache effectively a no-op for components remounting
+        // on route changes — see audit P2 on TanStack staleTime defaults.
+        refetchOnMount: true,
         // Refetch when network reconnects after offline
         refetchOnReconnect: true,
         // Aggressive retry strategy with better error handling

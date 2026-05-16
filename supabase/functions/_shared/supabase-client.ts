@@ -68,10 +68,21 @@ export function corsResponse(req?: Request): Response {
  * recognised by matching SUPABASE_SERVICE_ROLE_KEY and are granted full access
  * without a user lookup.
  */
+export interface AdminContext {
+  userId: string
+  isServiceRole: boolean
+  // The originating user that triggered a service-role call, when known.
+  // Callers should set X-Original-Actor: <user-uuid> on internal invocations
+  // that were initiated by a real admin (e.g. admin UI → workflow-dispatcher
+  // → target function) so audit logs reflect the real actor rather than
+  // a generic 'service-role'.
+  originalActorId: string | null
+}
+
 export async function requireAdmin(
   req: Request,
   serviceClient: SupabaseClient
-): Promise<{ userId: string } | Response> {
+): Promise<AdminContext | Response> {
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
     return errorResponse('Missing authorization header', 401, req)
@@ -82,7 +93,14 @@ export async function requireAdmin(
   // Allow internal service-role invocations (workflow-dispatcher, cron, etc.)
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (serviceRoleKey && token === serviceRoleKey) {
-    return { userId: 'service-role' }
+    const originalActor = req.headers.get('x-original-actor')
+    return {
+      userId: originalActor || 'service-role',
+      isServiceRole: true,
+      originalActorId: originalActor && /^[0-9a-f-]{36}$/i.test(originalActor)
+        ? originalActor
+        : null,
+    }
   }
 
   const { data: userData, error: userError } = await serviceClient.auth.getUser(token)
@@ -101,5 +119,5 @@ export async function requireAdmin(
     return errorResponse('Admin access required', 403, req)
   }
 
-  return { userId: userData.user.id }
+  return { userId: userData.user.id, isServiceRole: false, originalActorId: null }
 }
