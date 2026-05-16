@@ -6,10 +6,63 @@ import { rpcWithBreaker } from '../_shared/circuit-breaker.ts'
 
 // ============================================================
 // Pipeline Commit
-// Venues: delegate to commit_venue_staging_batch() SQL fn
-//   (atomic upsert venues + venue_sources + audit + advisory lock)
-// Non-venues: legacy per-table buildRecord + insert/upsert path.
+// Per-target SQL batch RPCs handle atomic upsert + audit + locks.
+// News is structurally different (per-job). Venues has post-commit
+// organizer flagging. Everything else flows through commitSimple().
+// Legacy path remains for entity types without a dedicated RPC.
 // ============================================================
+
+interface SimpleCommitConfig {
+  rpc: string
+  idColumn: string
+  extraArgs?: (ctx: { pipelineRunId?: string }) => Record<string, unknown>
+}
+
+const SIMPLE_COMMIT_TARGETS: Record<string, SimpleCommitConfig> = {
+  venues:         { rpc: 'commit_venue_staging_batch',       idColumn: 'venue_id' },
+  countries:      { rpc: 'commit_country_staging_batch',     idColumn: 'country_id' },
+  cities:         { rpc: 'commit_city_staging_batch',        idColumn: 'city_id' },
+  personalities:  { rpc: 'commit_personality_staging_batch', idColumn: 'personality_id' },
+  events:         { rpc: 'commit_event_staging_batch',       idColumn: 'event_id' },
+  queer_villages: { rpc: 'commit_village_staging_batch',     idColumn: 'village_id' },
+  marketplace_listings: {
+    rpc: 'commit_marketplace_staging_batch',
+    idColumn: 'listing_id',
+    extraArgs: (ctx) => ({ p_pipeline_run_id: ctx.pipelineRunId ?? null }),
+  },
+}
+
+type SimpleCommitRow = { staging_id: string; action: string } & Record<string, string>
+
+async function commitSimple(
+  supabase: ReturnType<typeof getServiceClient>,
+  target: string,
+  cfg: SimpleCommitConfig,
+  ctx: { batchSize: number; pipelineRunId?: string },
+  req: Request,
+): Promise<Response> {
+  const args = { p_limit: ctx.batchSize, ...(cfg.extraArgs?.({ pipelineRunId: ctx.pipelineRunId }) ?? {}) }
+  const { data, error, circuitOpen } = await rpcWithBreaker<SimpleCommitRow[]>(
+    supabase, `rpc.${cfg.rpc}`, cfg.rpc, args,
+  )
+  if (circuitOpen) {
+    return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
+  }
+  if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
+  const rows = data ?? []
+  const inserted = rows.filter((r) => r.action === 'inserted').length
+  const updated  = rows.filter((r) => r.action === 'updated').length
+  const errorsCt = rows.filter((r) => r.action === 'error' || r.action === 'rejected').length
+  return jsonResponse({
+    success: true,
+    items: rows.length,
+    items_processed: rows.length,
+    items_succeeded: inserted + updated,
+    items_failed: errorsCt,
+    inserted, updated,
+    target,
+  }, 200, req)
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return corsResponse(req)
@@ -28,12 +81,15 @@ Deno.serve(async (req) => {
     const resolvedTarget = targetTable ?? await detectTarget(supabase, pipelineRunId)
 
     if (resolvedTarget === 'venues' && !dryRun) {
-      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, venue_id: string, action: string }>>(
-        supabase, 'rpc.commit_venue_staging_batch', 'commit_venue_staging_batch', { p_limit: batchSize },
+      // Run the standard simple commit, then post-process for organizer flagging.
+      const cfg = SIMPLE_COMMIT_TARGETS.venues
+      const args = { p_limit: batchSize }
+      const { data, error, circuitOpen } = await rpcWithBreaker<SimpleCommitRow[]>(
+        supabase, `rpc.${cfg.rpc}`, cfg.rpc, args,
       )
       if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
       if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
-      const rows = (data ?? []) as Array<{ staging_id: string, venue_id: string, action: string }>
+      const rows = data ?? []
       const inserted = rows.filter((r) => r.action === 'inserted').length
       const updated  = rows.filter((r) => r.action === 'updated').length
 
@@ -72,91 +128,16 @@ Deno.serve(async (req) => {
       }, 200, req)
     }
 
-    if (resolvedTarget === 'countries' && !dryRun) {
-      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, country_id: string, action: string }>>(
-        supabase, 'rpc.commit_country_staging_batch', 'commit_country_staging_batch', { p_limit: batchSize },
+    // Standard simple targets: countries, cities, personalities, events,
+    // queer_villages, marketplace_listings — all go through commitSimple.
+    if (resolvedTarget && !dryRun && resolvedTarget in SIMPLE_COMMIT_TARGETS && resolvedTarget !== 'venues') {
+      return commitSimple(
+        supabase,
+        resolvedTarget,
+        SIMPLE_COMMIT_TARGETS[resolvedTarget],
+        { batchSize, pipelineRunId },
+        req,
       )
-      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
-      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
-      const rows = (data ?? []) as Array<{ staging_id: string, country_id: string, action: string }>
-      const inserted = rows.filter((r) => r.action === 'inserted').length
-      const updated  = rows.filter((r) => r.action === 'updated').length
-      return jsonResponse({
-        success: true, items: rows.length,
-        items_processed: rows.length, items_succeeded: rows.length,
-        inserted, updated,
-      }, 200, req)
-    }
-
-    if (resolvedTarget === 'cities' && !dryRun) {
-      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, city_id: string, action: string }>>(
-        supabase, 'rpc.commit_city_staging_batch', 'commit_city_staging_batch', { p_limit: batchSize },
-      )
-      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
-      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
-      const rows = (data ?? []) as Array<{ staging_id: string, city_id: string, action: string }>
-      const inserted = rows.filter((r) => r.action === 'inserted').length
-      const updated  = rows.filter((r) => r.action === 'updated').length
-      return jsonResponse({
-        success: true, items: rows.length,
-        items_processed: rows.length, items_succeeded: rows.length,
-        inserted, updated,
-      }, 200, req)
-    }
-
-    if (resolvedTarget === 'personalities' && !dryRun) {
-      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, personality_id: string, action: string }>>(
-        supabase, 'rpc.commit_personality_staging_batch', 'commit_personality_staging_batch', { p_limit: batchSize },
-      )
-      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
-      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
-      const rows = (data ?? []) as Array<{ staging_id: string, personality_id: string, action: string }>
-      const inserted = rows.filter((r) => r.action === 'inserted').length
-      const updated  = rows.filter((r) => r.action === 'updated').length
-      return jsonResponse({
-        success: true, items: rows.length,
-        items_processed: rows.length, items_succeeded: rows.length,
-        inserted, updated,
-      }, 200, req)
-    }
-
-    if (resolvedTarget === 'marketplace_listings' && !dryRun) {
-      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, listing_id: string, action: string }>>(
-        supabase, 'rpc.commit_marketplace_staging_batch', 'commit_marketplace_staging_batch',
-        { p_limit: batchSize, p_pipeline_run_id: pipelineRunId ?? null },
-      )
-      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
-      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
-      const rows = (data ?? []) as Array<{ staging_id: string, listing_id: string, action: string }>
-      const inserted = rows.filter((r) => r.action === 'inserted').length
-      const updated  = rows.filter((r) => r.action === 'updated').length
-      const errorsCt = rows.filter((r) => r.action === 'error' || r.action === 'rejected').length
-      return jsonResponse({
-        success: true,
-        items: rows.length,
-        items_processed: rows.length,
-        items_succeeded: inserted + updated,
-        items_failed: errorsCt,
-        inserted, updated,
-      }, 200, req)
-    }
-
-    if (resolvedTarget === 'events' && !dryRun) {
-      const { data, error, circuitOpen } = await rpcWithBreaker<Array<{ staging_id: string, event_id: string, action: string }>>(
-        supabase, 'rpc.commit_event_staging_batch', 'commit_event_staging_batch', { p_limit: batchSize },
-      )
-      if (circuitOpen) return jsonResponse({ success: false, error: error?.message, circuit_open: true, retry: true }, 503, req)
-      if (error) return errorResponse(`commit fn: ${error.message}`, 500, req)
-      const rows = (data ?? []) as Array<{ staging_id: string, event_id: string, action: string }>
-      const inserted = rows.filter((r) => r.action === 'inserted').length
-      const updated  = rows.filter((r) => r.action === 'updated').length
-      return jsonResponse({
-        success: true,
-        items: rows.length,
-        items_processed: rows.length,
-        items_succeeded: rows.length,
-        inserted, updated,
-      }, 200, req)
     }
 
     if (resolvedTarget === 'news_articles' && !dryRun) {
