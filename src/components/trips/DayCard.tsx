@@ -104,12 +104,10 @@ function useWeatherStub(date: string): WeatherPlaceholder {
 export function DayCard({
   day,
   dayNumber,
-  totalDays: _totalDays,
   isFirst,
   isLast,
   isToday,
   isPast,
-  isFuture: _isFuture,
   places,
   tripStartDate,
   tripEndDate,
@@ -368,6 +366,3 @@ function defaultSlotLabel(slot: DaySlot): string {
 export function isDayToday(date: string, now: Date = new Date()): boolean {
   return isSameDay(new Date(date), now);
 }
-
-/** Suppress unused-import warning when totalDays/isFuture not consumed inside. */
-void (0 as unknown as typeof DayCard);
