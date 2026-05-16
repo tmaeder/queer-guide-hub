@@ -187,6 +187,14 @@ function StoryCard({
   return (
     <div
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      role="button"
+      tabIndex={0}
       data-testid={selectMode ? `selectable-story-${story.id}` : undefined}
       className={`relative cursor-pointer border ${selected ? 'border-primary bg-muted' : 'border-border bg-background'} hover:border-primary transition-colors`}
       style={{

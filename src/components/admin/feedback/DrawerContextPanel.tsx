@@ -138,6 +138,15 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
             </span>
             <div
               onClick={() => setLightboxOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setLightboxOpen(true);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Open screenshot in lightbox"
               style={{
                 borderRadius: 4,
                 overflow: 'hidden',

@@ -311,7 +311,18 @@ function SortableErrorCard({
           <GripVertical style={{ width: 14, height: 14 }} />
         </div>
 
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={onToggle}>
+        <div
+          className="flex-1 min-w-0 cursor-pointer"
+          onClick={onToggle}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onToggle();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+        >
           <div className="flex items-center gap-1 mb-1 flex-wrap">
             <Badge
               variant="outline"

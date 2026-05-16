@@ -168,6 +168,15 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
               <div
                 key={opt.value}
                 onClick={() => toggle(opt.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle(opt.value);
+                  }
+                }}
+                role="option"
+                tabIndex={0}
+                aria-selected={selected.has(opt.value)}
                 className="flex items-center gap-2 px-2 py-1.5 cursor-pointer rounded hover:bg-muted"
               >
                 <Checkbox checked={selected.has(opt.value)} />

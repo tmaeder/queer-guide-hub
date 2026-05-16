@@ -141,12 +141,13 @@ export function FeedbackDetailDrawer({
               <Link2 size={14} />
               <span className="text-xs flex-1">
                 Duplicate of{' '}
-                <span
+                <button
+                  type="button"
                   onClick={() => onOpenPartner(canonical.id)}
-                  className="cursor-pointer underline font-semibold"
+                  className="cursor-pointer underline font-semibold bg-transparent border-0 p-0 text-inherit"
                 >
                   {canonical.data?.title ?? canonical.id.slice(0, 8)}
-                </span>
+                </button>
               </span>
             </div>
           )}

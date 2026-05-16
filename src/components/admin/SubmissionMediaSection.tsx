@@ -105,6 +105,7 @@ export function SubmissionMediaSection({
                   key={i}
                   src={u}
                   alt={`media ${i + 1}`}
+                  role="presentation"
                   style={{ width: 96, height: 96, objectFit: 'cover' }}
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).style.display = 'none';

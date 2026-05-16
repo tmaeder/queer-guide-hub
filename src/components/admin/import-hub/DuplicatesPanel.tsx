@@ -278,6 +278,15 @@ function DuplicateGroup({ label, color, pairs, onMerge }: { label: string; color
       <div
         className="flex items-center gap-2 mb-2 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded(!expanded);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
       >
         <div className="rounded-full" style={{ width: 10, height: 10, backgroundColor: color }} />
         <h6 className="text-sm font-semibold">{label}</h6>

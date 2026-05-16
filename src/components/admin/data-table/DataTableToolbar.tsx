@@ -160,6 +160,14 @@ export function DataTableToolbar({
                   key={p.id}
                   className="flex items-center justify-between px-2 py-1 hover:bg-accent cursor-pointer rounded-badge"
                   onClick={() => onApplyPreset(p.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onApplyPreset(p.id);
+                    }
+                  }}
+                  role="menuitem"
+                  tabIndex={0}
                 >
                   <p className="text-sm">{p.name}</p>
                   {onDeletePreset && (

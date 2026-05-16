@@ -125,6 +125,15 @@ export function AutomationDashboard() {
           <div
             key={key}
             onClick={() => setActiveTab(key)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setActiveTab(key);
+              }
+            }}
+            role="tab"
+            tabIndex={0}
+            aria-selected={activeTab === key}
             className={`flex items-center gap-1.5 px-4 py-2.5 cursor-pointer border-b-2 text-sm transition-colors hover:text-primary ${
               activeTab === key
                 ? 'border-primary text-primary font-bold'
