@@ -128,9 +128,11 @@ export const VenueImageUpload = ({
             disabled={uploading || images.length >= maxImages}
           />
 
-          <div
-            className="flex flex-col items-center justify-center cursor-pointer"
+          <button
+            type="button"
+            className="flex flex-col items-center justify-center cursor-pointer w-full bg-transparent border-0 p-0"
             onClick={triggerFileInput}
+            disabled={uploading || images.length >= maxImages}
           >
             <div className="mb-4">
               <ImagePlus className="w-12 h-12 text-muted-foreground" />
@@ -146,7 +148,7 @@ export const VenueImageUpload = ({
                 {images.length}/{maxImages} images uploaded
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -157,7 +159,8 @@ export const VenueImageUpload = ({
               <div className="aspect-square rounded-element overflow-hidden bg-muted">
                 <img
                   src={imageUrl}
-                  alt={`Venue image ${index + 1}`}
+                  alt={`Venue ${index + 1}`}
+                  role="presentation"
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;

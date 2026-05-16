@@ -102,6 +102,7 @@ export function MarketplaceHero({
           <img
             src={heroImage}
             alt={listing.title}
+            role="presentation"
             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
@@ -209,10 +210,18 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {remainingImages.map((image, index) => (
-                <div key={index} className="bg-muted rounded-element overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                <button
+                  type="button"
+                  key={index}
+                  onClick={() => window.open(image, '_blank')}
+                  aria-label={`Open ${listing.title} photo ${index + 2} in a new tab`}
+                  className="bg-muted rounded-element overflow-hidden block w-full p-0 border-0"
+                  style={{ aspectRatio: '16/9' }}
+                >
                   <img
                     src={image}
-                    alt={`${listing.title} - Image ${index + 2}`}
+                    alt={`${listing.title} ${index + 2}`}
+                    role="presentation"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -229,9 +238,8 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       e.currentTarget.style.display = 'none';
                     }}
-                    onClick={() => window.open(image, '_blank')}
                   />
-                </div>
+                </button>
               ))}
             </div>
           </CardContent>
