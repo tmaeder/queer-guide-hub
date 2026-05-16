@@ -16,6 +16,19 @@ vi.mock('react-i18next', () => ({
 }));
 vi.mock('@/hooks/useTrackEvent', () => ({ useTrackEvent: useTrackMock }));
 vi.mock('@/hooks/useRecommendations', () => ({ useRecommendations: useRecsMock }));
+vi.mock('@/hooks/useActiveTrip', () => ({
+  useActiveTrip: () => ({
+    activeTrip: null,
+    setActiveTripId: vi.fn(),
+    dismiss: vi.fn(),
+    undismiss: vi.fn(),
+    isDismissed: false,
+    candidateTrips: [],
+  }),
+}));
+vi.mock('@/components/travel/TravelModeSwitcher', () => ({
+  TravelModeSwitcher: () => <div data-testid="mode-switcher" />,
+}));
 vi.mock('@/components/travel/ResumeTripStrip', () => ({ ResumeTripStrip: () => <div data-testid="resume" /> }));
 vi.mock('@/components/travel/StartTripHero', () => ({ StartTripHero: () => <div data-testid="hero" /> }));
 vi.mock('@/components/travel/PrideScroller', () => ({ PrideScroller: () => <div data-testid="pride" /> }));
