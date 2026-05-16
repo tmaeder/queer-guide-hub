@@ -195,6 +195,8 @@ export function VenueCard({
                   e.preventDefault();
                   e.stopPropagation();
                 }}
+                onKeyDown={(e) => e.stopPropagation()}
+                role="presentation"
               >
                 <button
                   type="button"
@@ -248,6 +250,7 @@ export function VenueCard({
                 <img
                   src={venue.logo_url}
                   alt=""
+                  role="presentation"
                   loading="lazy"
                   decoding="async"
                   className="absolute bottom-2 right-2 w-7 h-7 rounded-element bg-background object-contain shadow p-0.5"
