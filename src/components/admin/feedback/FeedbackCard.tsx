@@ -40,7 +40,7 @@ interface Props {
  */
 export function FeedbackCard({
   item,
-  voteCount: _voteCount,
+  voteCount,
   selected,
   focused,
   watchers: _watchers,
@@ -60,7 +60,7 @@ export function FeedbackCard({
   const isForwarded = !!item.github_issue_url;
   const withClaude = isForwarded && item.feedback_status !== 'done';
   const errorCount = item.data.context?.errors?.length ?? 0;
-  const _hasScreenshot = !!item.data.screenshot_url;
+  const hasScreenshot = !!item.data.screenshot_url;
   // Handoff chip beats GitHub chip when both are set — handoffs are the
   // primary signal for "this has been passed to someone".
   const handoff = latestHandoff(item);
