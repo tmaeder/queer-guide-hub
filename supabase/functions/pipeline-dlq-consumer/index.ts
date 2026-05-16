@@ -12,14 +12,45 @@ import { withErrorReporting } from '../_shared/report-api-error.ts'
 //   - manual POST from admin UI ("Retry now")
 // ============================================================
 
+// Stages that don't depend on entity_type.
 const STAGE_TO_FN: Record<string, string> = {
-  normalize:    'pipeline-normalize',
-  validate:     'pipeline-validate',
-  deduplicate:  'pipeline-deduplicate',
-  enrich:       'enrich-venue',
-  quality:      'pipeline-quality-score',
-  review:       'pipeline-review-gate',
-  commit:       'pipeline-commit',
+  normalize:           'pipeline-normalize',
+  validate:            'pipeline-validate',
+  deduplicate:         'pipeline-deduplicate',
+  quality:             'pipeline-quality-score',
+  'quality-score':     'pipeline-quality-score',
+  'quality-enhance':   'pipeline-quality-enhance',
+  'safety-relevance':  'pipeline-safety-relevance',
+  'geo-validate':      'pipeline-geo-validate',
+  geocode:             'pipeline-geocode',
+  'media-process':     'pipeline-media-process',
+  sanitize:            'pipeline-sanitize-news',
+  'sanitize-news':     'pipeline-sanitize-news',
+  relevance:           'marketplace-relevance',
+  'marketplace-relevance': 'marketplace-relevance',
+  review:              'pipeline-review-gate',
+  'review-gate':       'pipeline-review-gate',
+  commit:              'pipeline-commit',
+}
+
+// Enrich step is per-entity_type.
+const ENRICH_BY_ENTITY: Record<string, string> = {
+  news_article:        'pipeline-enrich-news',
+  event:               'pipeline-enrich-events',
+  venue:               'pipeline-enrich-venue',
+  city:                'pipeline-enrich-city',
+  country:             'pipeline-enrich-country',
+  personality:         'pipeline-enrich-personality',
+  queer_village:       'pipeline-enrich-village',
+}
+
+function resolveFn(stage: string, entityType: string | null): string | null {
+  const direct = STAGE_TO_FN[stage]
+  if (direct) return direct
+  if (stage === 'enrich') {
+    return (entityType && ENRICH_BY_ENTITY[entityType]) || null
+  }
+  return null
 }
 
 interface DlqRow {
@@ -68,12 +99,23 @@ Deno.serve(withErrorReporting('pipeline-dlq-consumer', async (req) => {
         continue
       }
 
-      const fn = STAGE_TO_FN[row.stage]
+      // Look up entity_type to disambiguate per-entity stages (enrich-*).
+      let entityType: string | null = null
+      if (row.staging_id) {
+        const { data: stagingRow } = await supabase
+          .from('ingestion_staging')
+          .select('entity_type')
+          .eq('id', row.staging_id)
+          .maybeSingle()
+        entityType = (stagingRow?.entity_type as string) ?? null
+      }
+
+      const fn = resolveFn(row.stage, entityType)
       if (!fn) {
         // Unknown stage — permanent failure, not retryable
         await supabase.from('ingestion_dlq').update({
           status: 'permanent_failed',
-          error_message: `unknown_stage: ${row.stage}`,
+          error_message: `unknown_stage: ${row.stage}${entityType ? ` (entity_type=${entityType})` : ''}`,
           updated_at: new Date().toISOString(),
         }).eq('id', row.id)
         failed++
