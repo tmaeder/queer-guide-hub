@@ -59,7 +59,7 @@ export default function PipelineDashboard() {
 
   const totalStaging = stagingStats?.reduce((sum, s) => sum + s.count, 0) || 0;
   const openCircuits = circuitBreakers?.filter(cb => cb.state === 'open').length || 0;
-  const runningPipelines = runs?.filter(r => r.status === 'running').length || 0;
+  const runningCount = runs?.filter(r => r.status === 'running').length || 0;
   const recentCompleted = runs?.filter(r => r.status === 'completed').length || 0;
   const recentFailed = runs?.filter(r => r.status === 'failed').length || 0;
 
@@ -75,7 +75,7 @@ export default function PipelineDashboard() {
         <div style={statCardStyle}>
           <div style={statIconRow}>
             <Play style={{ width: 16, height: 16, color: '#3b82f6' }} />
-            <span style={statValue}>{runningPipelines}</span>
+            <span style={statValue}>{runningCount}</span>
           </div>
           <p style={statLabel}>Running</p>
         </div>
