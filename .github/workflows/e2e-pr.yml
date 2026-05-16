@@ -35,6 +35,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build app
         run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
       - name: Run critical-path specs
         env:
           E2E_BASE_URL: http://localhost:4173
