@@ -3,7 +3,8 @@ import { render, fireEvent } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { QuickExit, performQuickExit } from '../QuickExit';
+import { QuickExit } from '../QuickExit';
+import { performQuickExit } from '../quickExit';
 
 beforeEach(() => {
   if (!i18n.isInitialized) {

@@ -52,7 +52,6 @@ export type VillageWithRelations = {
 type VillageVenue = Venue;
 type VillageEvent = Event;
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function buildVillageBreadcrumbs(village: VillageWithRelations) {
   const crumbs: { label: ReactNode; href?: string }[] = [{ label: 'Villages', href: '/villages' }];
   if (village.countries) {
@@ -196,7 +195,6 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const villageTabIcons = {
   Landmark,
   Building,

@@ -40,7 +40,7 @@ export function TriageView({ initialQueueType }: TriageViewProps) {
   const { data: counts } = useReviewCounts();
   const triageAction = useTriageAction();
 
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.total ?? 0;
   const activeItem = useMemo(
     () => items.find((i) => i.id === activeId) ?? null,

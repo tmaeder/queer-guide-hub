@@ -226,6 +226,16 @@ export default tseslint.config(
     },
   },
 
+  // *.parts.tsx files explicitly compose multiple component fragments + small
+  // helpers in one file. The "parts" suffix is a deliberate pattern; the
+  // HMR-friendliness warning from react-refresh is the wrong tradeoff here.
+  {
+    files: ["src/**/*.parts.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+
   // Cluster 3 — admin tree must stay motion-free. Aceternity effect
   // components and direct framer-motion / motion imports inside admin
   // pages and components would re-introduce the very animations the

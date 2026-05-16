@@ -12,18 +12,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const NEUTRAL_URL = 'https://weather.com/';
-
-export function performQuickExit(): void {
-  try {
-    // Push a neutral entry so the immediate back step lands on weather.com, not /help.
-    window.history.replaceState(null, '', NEUTRAL_URL);
-  } catch {
-    // ignore
-  }
-  window.location.replace(NEUTRAL_URL);
-}
+import { performQuickExit } from './quickExit';
 
 export function QuickExit() {
   const { t } = useTranslation();

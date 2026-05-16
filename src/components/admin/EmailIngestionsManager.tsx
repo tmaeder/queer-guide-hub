@@ -89,7 +89,7 @@ export function EmailIngestionsManager() {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     fetchIngestions();

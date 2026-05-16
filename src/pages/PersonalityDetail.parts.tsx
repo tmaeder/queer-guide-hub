@@ -38,7 +38,6 @@ export interface SimilarPersonality {
   similarity: number;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function transformPersonality(data: Record<string, unknown>): Personality {
   return {
     ...(data as unknown as Personality),
@@ -52,14 +51,12 @@ export function transformPersonality(data: Record<string, unknown>): Personality
   };
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export async function fetchPersonalityBySlug(slug: string): Promise<Personality | null> {
   const data = await fetchPublicPersonalityBySlugOrId<Record<string, unknown>>(slug);
   if (!data) return null;
   return transformPersonality(data);
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function calculateAge(birthDate: string, deathDate?: string) {
   const birth = new Date(birthDate);
   const end = deathDate ? new Date(deathDate) : new Date();
@@ -71,7 +68,6 @@ export function calculateAge(birthDate: string, deathDate?: string) {
   return age;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function getInitials(name: string) {
   return name
     .split(' ')

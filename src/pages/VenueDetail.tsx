@@ -55,7 +55,7 @@ export default function VenueDetail() {
   });
 
   const venue: VenueWithRelations | null = data?.venue ?? null;
-  const reviews: VenueReview[] = data?.reviews ?? [];
+  const reviews: VenueReview[] = useMemo(() => data?.reviews ?? [], [data]);
   const notFound = data?.notFound ?? false;
 
   const averageRatingForMeta = useMemo(
