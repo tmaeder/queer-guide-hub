@@ -1,6 +1,11 @@
 import Stripe from "https://esm.sh/stripe@17?target=deno";
 import { getServiceClient } from "../_shared/supabase-client.ts";
 import { reportApiError } from "../_shared/report-api-error.ts";
+import {
+  buildCheckoutCompletedUpdate,
+  buildRenewalDonation,
+  isRenewalInvoice,
+} from "./helpers.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-12-18.acacia" });
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")!;
@@ -31,21 +36,7 @@ Deno.serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const update: Record<string, unknown> = {
-          status: "completed",
-          updated_at: new Date().toISOString(),
-        };
-
-        if (session.customer) {
-          update.stripe_customer_id = typeof session.customer === "string"
-            ? session.customer
-            : session.customer.id;
-        }
-        if (session.subscription) {
-          update.stripe_subscription_id = typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription.id;
-        }
+        const update = buildCheckoutCompletedUpdate(session, new Date().toISOString());
 
         const { error } = await supabase
           .from("donations")
@@ -78,25 +69,12 @@ Deno.serve(async (req) => {
           break;
         }
 
-        // Skip if this is the first invoice (already handled by checkout.session.completed)
-        if (invoice.billing_reason === "subscription_create") break;
+        // Skip if this is the first invoice (handled by checkout.session.completed)
+        if (!isRenewalInvoice(invoice)) break;
 
-        // Insert new donation row for renewal
-        const { error } = await supabase.from("donations").insert({
-          user_id: original.user_id,
-          email: original.email,
-          amount: invoice.amount_paid,
-          currency: original.currency,
-          stripe_session_id: invoice.id,
-          stripe_subscription_id: subscriptionId,
-          stripe_customer_id: typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id,
-          donor_name: original.donor_name,
-          message: original.message,
-          is_anonymous: original.is_anonymous,
-          status: "completed",
-          donation_type: "recurring",
-          recurring_interval: original.recurring_interval,
-        });
+        const { error } = await supabase
+          .from("donations")
+          .insert(buildRenewalDonation(original, invoice, subscriptionId));
 
         if (error) console.error("Failed to insert renewal donation:", error);
         break;

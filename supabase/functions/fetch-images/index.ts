@@ -6,6 +6,7 @@
  * POST body: { entity_type, batchMode?, batchLimit?, forceUpdate?, dry_run?, ...entityParams }
  */
 
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5'
 import { getCorsHeaders, getServiceClient, requireAdmin, errorResponse, jsonResponse } from '../_shared/supabase-client.ts'
 import { scoreImage as sharedScoreImage, pickBest, isAcceptable, MIN_ACCEPTANCE_SCORE } from '../_shared/scoreImage.ts'
 import { upsertImageAsset, deriveImageFormat } from '../_shared/image-assets.ts'
@@ -222,8 +223,8 @@ async function findBestScoredImage(
 // City processing
 // ---------------------------------------------------------------------------
 
-// deno-lint-ignore no-explicit-any
-async function processCity(supabase: any, id: string, name: string, country: string, pK?: string, uK?: string, force = false) {
+
+async function processCity(supabase: SupabaseClient, id: string, name: string, country: string, pK?: string, uK?: string, force = false) {
   const { data: existing } = await supabase.from('cities').select('image_url, image_flagged, curated_image_url').eq('id', id).single()
   if (existing?.curated_image_url) return { success: true, image_url: existing.curated_image_url, cached: true, source: 'curated' }
   if (!force && !existing?.image_flagged && existing?.image_url) return { success: true, image_url: existing.image_url, cached: true }
@@ -257,8 +258,8 @@ async function processCity(supabase: any, id: string, name: string, country: str
 // Country processing
 // ---------------------------------------------------------------------------
 
-// deno-lint-ignore no-explicit-any
-async function processCountry(supabase: any, id: string, name: string, capital?: string, pK?: string, uK?: string, force = false) {
+
+async function processCountry(supabase: SupabaseClient, id: string, name: string, capital?: string, pK?: string, uK?: string, force = false) {
   const { data: existing } = await supabase.from('countries').select('image_url, image_flagged, curated_image_url').eq('id', id).single()
   if (existing?.curated_image_url) return { success: true, image_url: existing.curated_image_url, cached: true, source: 'curated' }
   if (!force && !existing?.image_flagged && existing?.image_url) return { success: true, image_url: existing.image_url, cached: true }
@@ -292,8 +293,8 @@ async function processCountry(supabase: any, id: string, name: string, capital?:
 // Village processing
 // ---------------------------------------------------------------------------
 
-// deno-lint-ignore no-explicit-any
-async function processVillage(supabase: any, id: string, name: string, city: string, country: string, pK?: string, uK?: string) {
+
+async function processVillage(supabase: SupabaseClient, id: string, name: string, city: string, country: string, pK?: string, uK?: string) {
   const queries = [
     `${name} ${city} pride gay lgbtq`,
     `${name} ${city} ${country}`,
@@ -329,8 +330,8 @@ async function processVillage(supabase: any, id: string, name: string, city: str
 // Simple enrichers (venue, event, personality)
 // ---------------------------------------------------------------------------
 
-// deno-lint-ignore no-explicit-any
-async function processVenueBatch(supabase: any, pK: string, uK: string, limit: number, force: boolean, dryRun: boolean) {
+
+async function processVenueBatch(supabase: SupabaseClient, pK: string, uK: string, limit: number, force: boolean, dryRun: boolean) {
   let q = supabase.from('venues').select('id, name, city, country, category').order('updated_at', { ascending: true }).limit(limit)
   if (!force) q = q.or('images.is.null,images.eq.{}')
   const { data: rows, error } = await q
@@ -357,8 +358,8 @@ async function processVenueBatch(supabase: any, pK: string, uK: string, limit: n
   return { success: true, updated, skipped, total: rows.length, dry_run: dryRun }
 }
 
-// deno-lint-ignore no-explicit-any
-async function processEventBatch(supabase: any, pK: string, uK: string, limit: number, force: boolean, dryRun: boolean) {
+
+async function processEventBatch(supabase: SupabaseClient, pK: string, uK: string, limit: number, force: boolean, dryRun: boolean) {
   const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   let q = supabase.from('events').select('id, title, city, country, event_type').gte('start_date', cutoff).order('start_date', { ascending: true }).limit(limit)
   if (!force) q = q.or('images.is.null,images.eq.{}')
@@ -386,8 +387,8 @@ async function processEventBatch(supabase: any, pK: string, uK: string, limit: n
   return { success: true, updated, skipped, total: rows.length, dry_run: dryRun }
 }
 
-// deno-lint-ignore no-explicit-any
-async function processPersonalityBatch(supabase: any, pK: string, limit: number, force: boolean, dryRun: boolean) {
+
+async function processPersonalityBatch(supabase: SupabaseClient, pK: string, limit: number, force: boolean, dryRun: boolean) {
   let q = supabase.from('personalities').select('id, name, profession, nationality').order('updated_at', { ascending: true }).limit(limit)
   if (!force) q = q.or('image_url.is.null,image_url.eq.')
   const { data: rows, error } = await q
@@ -414,8 +415,8 @@ async function processPersonalityBatch(supabase: any, pK: string, limit: number,
 // Batch wrappers for scored entities
 // ---------------------------------------------------------------------------
 
-// deno-lint-ignore no-explicit-any
-async function processCityBatch(supabase: any, pK?: string, uK?: string, force = false, limit = 50) {
+
+async function processCityBatch(supabase: SupabaseClient, pK?: string, uK?: string, force = false, limit = 50) {
   let q = supabase.from('cities').select('id, name, countries(name)')
   if (!force) q = q.or('image_url.is.null,image_flagged.eq.true')
   const { data: rows, error } = await q.order('name').limit(limit)
@@ -433,8 +434,8 @@ async function processCityBatch(supabase: any, pK?: string, uK?: string, force =
   return { success: true, processed: rows.length, ok, fail }
 }
 
-// deno-lint-ignore no-explicit-any
-async function processCountryBatch(supabase: any, pK?: string, uK?: string, force = false, limit = 50) {
+
+async function processCountryBatch(supabase: SupabaseClient, pK?: string, uK?: string, force = false, limit = 50) {
   let q = supabase.from('countries').select('id, name, capital')
   if (!force) q = q.or('image_url.is.null,image_flagged.eq.true')
   const { data: rows, error } = await q.order('name').limit(limit)
@@ -452,8 +453,8 @@ async function processCountryBatch(supabase: any, pK?: string, uK?: string, forc
   return { success: true, processed: rows.length, ok, fail }
 }
 
-// deno-lint-ignore no-explicit-any
-async function processVillageBatch(supabase: any, pK?: string, uK?: string, limit = 25) {
+
+async function processVillageBatch(supabase: SupabaseClient, pK?: string, uK?: string, limit = 25) {
   const { data: rows, error } = await supabase.from('queer_villages').select('id, name, cities(name), countries(name)').is('image_metadata', null).order('name').limit(limit)
   if (error) throw new Error(error.message)
   if (!rows?.length) return { success: true, message: 'Nothing to process', processed: 0 }
@@ -544,7 +545,7 @@ Deno.serve(async (req) => {
         break
     }
 
-    // deno-lint-ignore no-explicit-any
+    
     const success = (result as any)?.success ?? true
     return jsonResponse({ ...result as Record<string, unknown>, timestamp: new Date().toISOString() }, success ? 200 : 400, req)
   } catch (e: unknown) {
