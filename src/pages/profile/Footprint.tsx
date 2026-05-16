@@ -320,6 +320,38 @@ export default function Footprint() {
             );
           })()}
 
+          {(() => {
+            const tripById = new Map(trips.map((t) => [t.id, t]));
+            const fromTrips = resolved.filter((m) => m.trip_id && tripById.has(m.trip_id!)).slice(0, 8);
+            if (fromTrips.length === 0) return null;
+            return (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="text-base">From your trips</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {fromTrips.map((m) => {
+                    const trip = tripById.get(m.trip_id!);
+                    return (
+                      <div key={m.id} className="flex items-baseline justify-between gap-3">
+                        <span className="text-sm truncate">
+                          <span className="capitalize text-muted-foreground mr-1">{m.mark_type}</span>
+                          {m.name}
+                        </span>
+                        <LocalizedLink
+                          to={`/trips/${m.trip_id}`}
+                          className="text-xs text-muted-foreground underline truncate flex-shrink-0"
+                        >
+                          from trip: {trip?.title ?? 'Trip'}
+                        </LocalizedLink>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
           {cityCompletions.length > 0 && (
             <Card className="mb-6">
               <CardHeader>

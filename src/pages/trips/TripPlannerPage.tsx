@@ -38,6 +38,7 @@ import { TripProgressRing } from '@/components/trips/TripProgressRing';
 import { TripDocExpiryBanner } from '@/components/trips/TripDocExpiryBanner';
 import { TripPreTripBlock } from '@/components/trips/TripPreTripBlock';
 import { MemoryRecapCard } from '@/components/trips/MemoryRecapCard';
+import { PostTripMemoryPrompt } from '@/components/trips/PostTripMemoryPrompt';
 import { TripLocalContext } from '@/components/trips/TripLocalContext';
 import { getTripPhase } from '@/components/trips/tripPhase';
 import { Button } from '@/components/ui/button';
@@ -337,8 +338,9 @@ export default function TripPlannerPage() {
 
         <TabsContent value="itinerary">
           {getTripPhase(trip) === 'memory' && (
-            <div className="mb-6">
+            <div className="mb-6 space-y-4">
               <MemoryRecapCard tripId={trip.id} />
+              <PostTripMemoryPrompt trip={trip} />
             </div>
           )}
           <div className="flex gap-6">
