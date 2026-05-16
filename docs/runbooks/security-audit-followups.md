@@ -6,30 +6,28 @@ Track here so they don't fall off the radar.
 
 ## 1. JWKS migration for `workers/submit` (P1 #13)
 
-**State:** Worker verifies user JWTs with HS256 against `SUPABASE_JWT_SECRET`
-([workers/submit/src/auth.ts](../../workers/submit/src/auth.ts)). The symmetric
-key sits in worker env; if exposed (logs, supply chain), an attacker can mint
-arbitrary user JWTs including service-role.
+**State:** Code is already JWKS-aware ([workers/submit/src/auth.ts](../../workers/submit/src/auth.ts))
+— it tries `ES256`/`RS256` against the project's `/auth/v1/.well-known/jwks.json`
+first, falls back to `HS256` with `SUPABASE_JWT_SECRET` if JWKS verification
+fails (which happens today because the project's JWKS endpoint returns `keys: []`).
 
-**Action (manual, ~30 min):**
+**Action remaining (dashboard, ~10 min):**
 
 1. Supabase dashboard → Project → Authentication → JWT Keys → "Add new signing
    key" → choose `ES256`. Old HS256 key stays valid during rotation.
 2. Wait until the new key appears at
-   `https://xqeacpakadqfxjxjcewc.supabase.co/auth/v1/.well-known/jwks.json`.
-3. Update worker to verify against JWKS:
-   ```ts
-   import { createRemoteJWKSet, jwtVerify } from 'jose'
-   const JWKS = createRemoteJWKSet(new URL(
-     `${env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`,
-   ))
-   const { payload } = await jwtVerify(token, JWKS, { algorithms: ['ES256','HS256'] })
-   ```
-4. Deploy worker, monitor. After ~24h with no HS256 verifications, remove the
-   HS256 fallback in code.
+   `https://xqeacpakadqfxjxjcewc.supabase.co/auth/v1/.well-known/jwks.json`
+   (verify: `curl ...jwks.json | jq '.keys | length'` returns ≥1).
+3. New user JWTs minted after this point will be ES256-signed; the worker
+   automatically verifies them via JWKS without any code change or redeploy.
+4. After ~24h with no HS256 verifications (check `wrangler tail` for
+   "JWKS verification failed, falling back to HS256"), remove the HS256
+   branch in `verifySupabaseJwt()` and drop `SUPABASE_JWT_SECRET` from
+   worker env via `wrangler secret delete SUPABASE_JWT_SECRET`.
 5. Dashboard → revoke old HS256 key.
 
-**Verification:** `curl /auth/v1/.well-known/jwks.json` returns non-empty `keys` array.
+**Verification:** `curl /auth/v1/.well-known/jwks.json | jq '.keys | length'`
+returns ≥1 (currently `0`).
 
 ## 2. CSP `unsafe-inline` → nonces (P1 #6)
 

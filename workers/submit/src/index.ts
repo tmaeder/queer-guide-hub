@@ -104,7 +104,7 @@ async function authenticate(request: Request, env: Env) {
   const token = extractBearer(request);
   if (!token) throw new HttpError(401, "missing_bearer");
   try {
-    const user = await verifySupabaseJwt(token, env.SUPABASE_JWT_SECRET);
+    const user = await verifySupabaseJwt(token, env.SUPABASE_JWT_SECRET, env.SUPABASE_URL);
     return { user, token };
   } catch {
     throw new HttpError(401, "invalid_token");
