@@ -179,7 +179,6 @@ describe('DayCard render', () => {
       />,
     );
     expect(container.querySelector('[data-day-id="d1"]')).toBeTruthy();
-    // Auto theme should appear ("Arrival day" since isFirst)
     expect(getByText('Arrival day')).toBeTruthy();
   });
 
@@ -206,9 +205,7 @@ describe('DayCard render', () => {
         onDeletePlace={noop}
       />,
     );
-    expect(
-      container.querySelector('[data-day-today="true"]'),
-    ).toBeTruthy();
+    expect(container.querySelector('[data-day-today="true"]')).toBeTruthy();
   });
 
   it('groups places by time slot', () => {

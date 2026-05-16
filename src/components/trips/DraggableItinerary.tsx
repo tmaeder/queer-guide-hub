@@ -106,7 +106,6 @@ export function DraggableItinerary({
     const todayEl = root.querySelector<HTMLElement>('[data-day-today="true"]');
     if (todayEl) {
       didScrollRef.current = true;
-      // defer to next frame so layout is settled
       requestAnimationFrame(() => {
         todayEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
