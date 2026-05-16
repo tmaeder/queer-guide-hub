@@ -13,8 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sb = untypedSupabase as any;
+const sb = untypedSupabase;
 
 type EntityType = 'country' | 'city' | 'region' | 'venue' | 'event' | 'personality' | 'organisation';
 

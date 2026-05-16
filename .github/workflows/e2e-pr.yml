@@ -1,0 +1,57 @@
+name: E2E Critical Path (PR)
+
+# Fast subset of the Playwright suite that runs on every PR.
+# Full suite still runs nightly (see e2e-nightly.yml).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'vite.config.ts'
+      - 'playwright.config.ts'
+      - 'e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+concurrency:
+  group: e2e-pr-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  critical:
+    name: Critical paths
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build app
+        run: npm run build
+      - name: Run critical-path specs
+        env:
+          E2E_BASE_URL: http://localhost:4173
+        run: |
+          npx vite preview --port 4173 &
+          sleep 5
+          npx playwright test \
+            e2e/auth-signup-renders.spec.ts \
+            e2e/search.spec.ts \
+            e2e/trip-creation.spec.ts \
+            e2e/marketplace.spec.ts \
+            e2e/admin-pipelines.spec.ts \
+            --reporter=line
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-pr-report
+          path: playwright-report/
+          retention-days: 7

@@ -21,8 +21,7 @@ import { untypedSupabase } from '@/integrations/supabase/untyped';
 import { toast } from 'sonner';
 import { diffWords, diffChangeRatio } from '@/lib/text-diff';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sb = untypedSupabase as any;
+const sb = untypedSupabase;
 
 type Sentiment = 'positive' | 'neutral' | 'negative' | 'mixed';
 
