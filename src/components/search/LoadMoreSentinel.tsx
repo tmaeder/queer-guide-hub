@@ -22,9 +22,18 @@ export function LoadMoreSentinel({ hasMore, loading, onLoadMore }: LoadMoreSenti
     if (!hasMore || loading) return;
     const node = ref.current;
     if (!node || typeof IntersectionObserver === 'undefined') return;
+    let fired = false;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) onLoadMore();
+        if (fired) return;
+        if (entries.some((e) => e.isIntersecting)) {
+          // Disconnect immediately so subsequent intersection ticks (which
+          // can fire before React renders `loading=true`) don't double-fire
+          // setPage and skip a page.
+          fired = true;
+          io.disconnect();
+          onLoadMore();
+        }
       },
       { rootMargin: '300px 0px' },
     );
