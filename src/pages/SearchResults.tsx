@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Card, CardContent } from '@/components/ui/card';
@@ -46,7 +46,7 @@ import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
-import { SearchPagination } from '@/components/search/SearchPagination';
+import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ColourfulText } from '@/components/effects/ColourfulText';
@@ -55,7 +55,6 @@ import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { useTranslation } from 'react-i18next';
 import { CONTENT_TYPES, supportsPriceSort, resolveType } from '@/lib/searchTaxonomy';
 
-const HITS_PER_PAGE = 20;
 const MAX_HEADING_QUERY_LEN = 80;
 
 const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSProperties }>> = {
@@ -187,8 +186,8 @@ export default function SearchResults() {
     setPage(1);
   }, [query]);
 
-  const getResultsByType = () => {
-    return results.reduce(
+  const getResultsByType = (source: SearchResult[]) => {
+    return source.reduce(
       (acc, result) => {
         if (!acc[result.type]) acc[result.type] = [];
         acc[result.type].push(result);
@@ -546,9 +545,36 @@ export default function SearchResults() {
     );
   };
 
-  const resultsByType = getResultsByType();
-  const totalResults = results.length;
-  const sortedResults = sortResults(results);
+  // Accumulate results across pages so /search behaves like infinite scroll
+  // instead of paginated. Reset whenever the query/filter/sort/tab changes.
+  const queryKey = `${query}|${selectedTab}|${JSON.stringify(filters)}|${sortBy}`;
+  const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
+  const lastKeyRef = useRef('');
+  const lastPageRef = useRef(0);
+
+  useEffect(() => {
+    if (loading) return;
+    if (queryKey !== lastKeyRef.current) {
+      // New query/filter/sort/tab — reset to the fresh page.
+      lastKeyRef.current = queryKey;
+      lastPageRef.current = page;
+      setAccumulated(results);
+    } else if (page > lastPageRef.current) {
+      // Same scope, next page — append non-duplicate results.
+      lastPageRef.current = page;
+      setAccumulated((prev) => {
+        const seen = new Set(prev.map((r) => r.objectID));
+        const append = results.filter((r) => r.objectID && !seen.has(r.objectID));
+        return append.length ? [...prev, ...append] : prev;
+      });
+    }
+    // Same key + same page = no-op (avoids setState/re-render loops when the
+    // useSearch hook re-creates its `results` array reference on every render).
+  }, [results, loading, queryKey, page]);
+
+  const resultsByType = getResultsByType(accumulated);
+  const totalResults = accumulated.length;
+  const sortedResults = sortResults(accumulated);
   const sortedResultsByType = Object.entries(resultsByType).reduce(
     (acc, [type, typeResults]) => {
       acc[type] = sortResults(typeResults);
@@ -556,6 +582,7 @@ export default function SearchResults() {
     },
     {} as Record<string, SearchResult[]>,
   );
+  const hasMore = totalResults < totalHits;
 
   const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
   const listClass = 'flex flex-col gap-4';
@@ -976,11 +1003,10 @@ export default function SearchResults() {
                     </section>
                   );
                 })}
-                <SearchPagination
-                  page={page}
-                  hitsPerPage={HITS_PER_PAGE}
-                  totalHits={totalHits}
-                  onPageChange={setPage}
+                <LoadMoreSentinel
+                  hasMore={hasMore}
+                  loading={loading}
+                  onLoadMore={() => setPage((p) => p + 1)}
                 />
               </div>
             ) : (
@@ -988,11 +1014,10 @@ export default function SearchResults() {
                 <div className={viewMode === 'grid' ? gridClass : listClass}>
                   {sortedResults.map(renderResultCard)}
                 </div>
-                <SearchPagination
-                  page={page}
-                  hitsPerPage={HITS_PER_PAGE}
-                  totalHits={totalHits}
-                  onPageChange={setPage}
+                <LoadMoreSentinel
+                  hasMore={hasMore}
+                  loading={loading}
+                  onLoadMore={() => setPage((p) => p + 1)}
                 />
               </>
             )}
@@ -1003,6 +1028,11 @@ export default function SearchResults() {
               <div className={viewMode === 'grid' ? gridClass : listClass}>
                 {typeResults.map(renderResultCard)}
               </div>
+              <LoadMoreSentinel
+                hasMore={hasMore}
+                loading={loading}
+                onLoadMore={() => setPage((p) => p + 1)}
+              />
             </TabsContent>
           ))}
         </Tabs>
