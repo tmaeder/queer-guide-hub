@@ -73,18 +73,22 @@ export const MapShell = ({
     [state.filters, setFilters],
   );
 
-  // Lens → ExploreMap config adapter. Phase 1: only pins implemented; other
-  // lenses render the same ExploreMap but with reduced layer sets so they
-  // visually differ from each other.
+  // Lens → ExploreMap config adapter. Boundary auto-enables area layers
+  // from the surface preset (otherwise the polygons users came to see
+  // wouldn't render). Density only needs point layers (the heatmap
+  // computes density from points, not boundaries).
   const exploreLayers: LayerType[] = useMemo(() => {
+    const AREA: LayerType[] = ['cities', 'countries', 'neighbourhoods'];
     if (state.lens === 'boundary') {
-      return state.enabledLayers.filter((l) => l === 'cities' || l === 'countries' || l === 'neighbourhoods');
+      const presetAreas = config.layers.filter((l) => AREA.includes(l));
+      const seed = presetAreas.length > 0 ? presetAreas : (['cities'] as LayerType[]);
+      return Array.from(new Set([...state.enabledLayers.filter((l) => AREA.includes(l)), ...seed]));
     }
     if (state.lens === 'density') {
       return state.enabledLayers.filter((l) => l === 'venues' || l === 'events');
     }
     return state.enabledLayers;
-  }, [state.lens, state.enabledLayers]);
+  }, [state.lens, state.enabledLayers, config.layers]);
 
   const handleViewportChange = useCallback(
     (vp: { center: [number, number]; zoom: number }) => {
