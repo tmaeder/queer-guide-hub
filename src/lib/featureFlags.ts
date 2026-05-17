@@ -18,3 +18,9 @@ const truthy = (v: string | undefined) =>
 export const LEGACY_NEWS_TRIGGER_ENABLED = truthy(
   import.meta.env.VITE_LEGACY_NEWS_TRIGGER,
 );
+
+// MAP_SHELL_ENABLED — gates the new unified MapShell (command bar + lens
+// picker + filter chips) that replaces per-surface map chrome. Phase 1
+// ships behind this flag so /map can A/B against the legacy ExploreMap
+// chrome. When stable, all callers migrate and the flag is deleted.
+export const MAP_SHELL_ENABLED = truthy(import.meta.env.VITE_MAP_SHELL);

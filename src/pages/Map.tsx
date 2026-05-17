@@ -1,8 +1,10 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { ExploreMap } from '@/components/map/ExploreMap';
+import { MapShell } from '@/components/map/MapShell';
 import type { LayerType, ExploreMapFilters } from '@/hooks/useExploreMapData';
 import { LAYER_DEFS } from '@/components/map/ExploreMapLayers';
+import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 
 const PREFS_KEY = 'explore_map_prefs';
 
@@ -96,6 +98,20 @@ const MapPage = () => {
     },
     [setSearchParams, savedPrefs],
   );
+
+  if (MAP_SHELL_ENABLED) {
+    return (
+      <div className="flex flex-col" style={{ minHeight: 'calc(100dvh - 64px)' }}>
+        <MapShell
+          surface="discover"
+          height="calc(100dvh - 64px)"
+          initialCenter={initialCenter}
+          initialZoom={z}
+          skipAutoFly={initialCenter != null}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col" style={{ minHeight: 'calc(100dvh - 64px)' }}>
