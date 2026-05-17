@@ -27,6 +27,7 @@ const SearchFiltersPanel = lazy(() =>
   import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
 );
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import type { SearchFilters } from '@/hooks/useSearch';
 
 const contentTypeLabels: Record<string, string> = {
@@ -44,6 +45,33 @@ const contentTypeLabels: Record<string, string> = {
 };
 
 const TYPE_ORDER = ['city', 'country', 'venue', 'event', 'personality', 'news', 'queer_village', 'marketplace', 'tag', 'user', 'group'];
+
+function HighlightedText({ text, query }: { text: string; query: string }) {
+  if (!text) return null;
+  const q = query.trim();
+  if (!q) return <>{text}</>;
+  const lower = text.toLowerCase();
+  const needle = q.toLowerCase();
+  const idx = lower.indexOf(needle);
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark
+        style={{
+          background: 'transparent',
+          color: 'inherit',
+          fontWeight: 600,
+          textDecoration: 'underline',
+          textUnderlineOffset: 2,
+        }}
+      >
+        {text.slice(idx, idx + needle.length)}
+      </mark>
+      {text.slice(idx + needle.length)}
+    </>
+  );
+}
 
 function TypeHeading({ type }: { type: string }) {
   const Icon = TYPE_ICONS[type];
@@ -154,6 +182,14 @@ export const UniversalSearchBar = () => {
     if (isOpen && inputRef.current) setTimeout(() => inputRef.current?.focus(), 0);
   }, [isOpen]);
 
+  useSearchHotkey(() => {
+    setIsOpen(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  });
+
+  const isMac =
+    typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
+
   const groupedSuggestions = suggestions.reduce<Record<string, SearchSuggestion[]>>((acc, s) => {
     const t = s.type || 'other';
     if (!acc[t]) acc[t] = [];
@@ -196,6 +232,26 @@ export const UniversalSearchBar = () => {
                   onBlur={() => setIsFocused(false)}
                   style={{ width: '100%', border: 0, backgroundColor: 'transparent', boxShadow: 'none', outline: 'none', fontSize: isMobile ? '1rem' : '0.875rem' }}
                   autoComplete="off" />
+                {!query && !isMobile && (
+                  <kbd
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      right: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '0.7rem',
+                      lineHeight: 1,
+                      padding: '2px 6px',
+                      border: '1px solid hsl(var(--border))',
+                      color: 'hsl(var(--muted-foreground))',
+                      fontFamily: 'inherit',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {isMac ? '⌘K' : 'Ctrl+K'}
+                  </kbd>
+                )}
                 {query && (
                   <span className="flex items-center gap-1" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }}>
                     {suggestionsLoading && <Loader2 className="animate-spin" style={{ height: isMobile ? 14 : 12, width: isMobile ? 14 : 12, color: 'hsl(var(--muted-foreground))' }} />}
@@ -265,7 +321,9 @@ export const UniversalSearchBar = () => {
                       <CommandItem key={`${suggestion.type}-${suggestion.id}`} onSelect={() => handleSelectSuggestion(suggestion)} style={{ cursor: 'pointer', padding: '8px 12px' }}>
                         <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                         <div className="flex flex-col items-start flex-1 min-w-0">
-                          <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">{displayName}</span>
+                          <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">
+                            <HighlightedText text={displayName || ''} query={query} />
+                          </span>
                           {subtitle && <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap w-full">{subtitle}</span>}
                         </div>
                       </CommandItem>

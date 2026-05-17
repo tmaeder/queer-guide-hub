@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, Tag, Layers } from 'lucide-react';
-import { SearchFilters } from '@/hooks/useSearch';
+import { SearchFilters, FacetDistribution } from '@/hooks/useSearch';
 import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
@@ -18,7 +18,18 @@ interface SearchFiltersPanelProps {
   onFiltersChange: (filters: SearchFilters) => void;
   /** P1-7: optional escape hatch so the parent can also clear its own search input. */
   onClearAll?: () => void;
+  /** Optional Meili facet distribution — drives the drill-down list with counts. */
+  facets?: FacetDistribution;
 }
+
+/** Facets we know how to render as a refinement list, in display order. */
+const FACET_GROUPS: Array<{ facet: string; label: string; filterKey: 'categories' }> = [
+  { facet: 'category', label: 'Category', filterKey: 'categories' },
+  { facet: 'subcategory', label: 'Subcategory', filterKey: 'categories' },
+  { facet: 'tags', label: 'Tags', filterKey: 'categories' },
+];
+
+const MAX_FACET_VALUES = 8;
 
 // P3-12: filter chips draw their id/label/icon from the taxonomy module so
 // they can never drift from the worker contract or other UI surfaces again.
@@ -49,7 +60,7 @@ const popularCategories = {
   ressource: ['Health', 'Education', 'Legal', 'Community', 'Support', 'Resources']
 };
 
-export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll }: SearchFiltersPanelProps) => {
+export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facets }: SearchFiltersPanelProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const selectedRange: DateRange | undefined = filters.dateRange
@@ -209,6 +220,51 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll }: Sea
               </Badge>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Facet Drill-down — wired to Meili facetDistribution from useSearch. */}
+      {facets && FACET_GROUPS.some((g) => facets[g.facet] && Object.keys(facets[g.facet]).length > 0) && (
+        <div className="flex flex-col gap-3">
+          {FACET_GROUPS.map((group) => {
+            const dist = facets[group.facet];
+            if (!dist) return null;
+            const entries = Object.entries(dist)
+              .filter(([, c]) => c > 0)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, MAX_FACET_VALUES);
+            if (entries.length === 0) return null;
+            const active = new Set((filters[group.filterKey] ?? []).map((v) => v.toLowerCase()));
+            return (
+              <div key={group.facet} className="flex flex-col gap-2">
+                <Label style={{ fontSize: '0.875rem', fontWeight: 500 }}>{group.label}</Label>
+                <div className="flex flex-wrap gap-1">
+                  {entries.map(([value, count]) => {
+                    const isActive = active.has(value.toLowerCase());
+                    return (
+                      <Badge
+                        key={value}
+                        variant={isActive ? 'default' : 'secondary'}
+                        style={{ cursor: 'pointer', fontSize: '0.75rem' }}
+                        onClick={() => {
+                          const current = filters[group.filterKey] ?? [];
+                          const next = isActive
+                            ? current.filter((v) => v.toLowerCase() !== value.toLowerCase())
+                            : [...current, value];
+                          onFiltersChange({
+                            ...filters,
+                            [group.filterKey]: next.length > 0 ? next : undefined,
+                          });
+                        }}
+                      >
+                        {value} <span style={{ opacity: 0.6, marginLeft: 4 }}>{count}</span>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

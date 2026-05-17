@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
+import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
 import { SearchPagination } from '@/components/search/SearchPagination';
 import { useTrackClick } from '@/hooks/useSearchActions';
@@ -110,7 +111,7 @@ export default function SearchResults() {
   });
 
   const activeTypes = selectedTab === 'all' ? filters.types : [selectedTab];
-  const { results, loading, error, errorKind, totalHits, tooShort } = useSearch(
+  const { results, loading, error, errorKind, totalHits, tooShort, facets } = useSearch(
     query,
     { ...filters, types: activeTypes },
     page,
@@ -624,9 +625,13 @@ export default function SearchResults() {
             filters={filters}
             onFiltersChange={handleFiltersChange}
             onClearAll={handleClearAll}
+            facets={facets}
           />
         </Card>
       )}
+
+      {/* Active filter chips — visible refinement on results header */}
+      <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
 
       {/* Results Controls */}
       {!loading && results.length > 0 && (
