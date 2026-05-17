@@ -330,7 +330,7 @@ export const UniversalSearchBar = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        aria-label={voice.listening ? 'Stop voice search' : 'Voice search'}
+                        aria-label={voice.listening ? t('search.stopVoice', 'Stop voice search') : t('search.voice', 'Voice search')}
                         aria-pressed={voice.listening}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -412,13 +412,13 @@ export const UniversalSearchBar = () => {
             <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
               {!query && (
                 <>
-                  <CommandGroup heading="Browse">
+                  <CommandGroup heading={t('search.browse', 'Browse')}>
                     {[
-                      { label: 'Places', icon: MapPin, path: '/places' },
-                      { label: 'Cities', icon: Globe, path: '/cities' },
-                      { label: 'Events this weekend', icon: CalendarDays, path: '/events?range=weekend' },
-                      { label: 'Personalities', icon: Users, path: '/personalities' },
-                      { label: 'Marketplace', icon: ShoppingBag, path: '/marketplace' },
+                      { label: t('search.quickLinks.places', 'Places'), icon: MapPin, path: '/places' },
+                      { label: t('search.quickLinks.cities', 'Cities'), icon: Globe, path: '/cities' },
+                      { label: t('search.quickLinks.eventsWeekend', 'Events this weekend'), icon: CalendarDays, path: '/events?range=weekend' },
+                      { label: t('search.quickLinks.personalities', 'Personalities'), icon: Users, path: '/personalities' },
+                      { label: t('search.quickLinks.marketplace', 'Marketplace'), icon: ShoppingBag, path: '/marketplace' },
                     ].map((link) => {
                       const Icon = link.icon;
                       return (
@@ -442,7 +442,7 @@ export const UniversalSearchBar = () => {
                     heading={
                       <span className="flex items-center gap-1.5">
                         <TrendingUp style={{ height: 12, width: 12 }} />
-                        Trending
+                        {t('search.trending', 'Trending')}
                       </span>
                     }
                   >
@@ -482,7 +482,7 @@ export const UniversalSearchBar = () => {
               )}
               {!query && recentSearches.length > 0 && (
                 <>
-                  <CommandGroup heading="Recent searches">
+                  <CommandGroup heading={t('search.recentSearches', 'Recent searches')}>
                     {recentSearches.map((search, index) => (
                       <CommandItem key={index} onSelect={() => handleRecentSearch(search)} style={{ cursor: 'pointer' }}>
                         <Clock style={{ height: 16, width: 16, marginRight: 8, color: 'hsl(var(--muted-foreground))' }} />
@@ -599,12 +599,12 @@ export const UniversalSearchBar = () => {
                 aria-hidden="true"
               >
                 <span className="inline-flex items-center" style={{ gap: 8 }}>
-                  <KbdHint label="↑↓" desc="Navigate" />
-                  <KbdHint label="↵" desc="Select" />
-                  <KbdHint label="Tab" desc="Complete" />
+                  <KbdHint label="↑↓" desc={t('search.kbd.navigate', 'Navigate')} />
+                  <KbdHint label="↵" desc={t('search.kbd.select', 'Select')} />
+                  <KbdHint label="Tab" desc={t('search.kbd.complete', 'Complete')} />
                 </span>
                 <span className="inline-flex items-center" style={{ gap: 8 }}>
-                  <KbdHint label="Esc" desc="Close" />
+                  <KbdHint label="Esc" desc={t('search.kbd.close', 'Close')} />
                 </span>
               </div>
             )}

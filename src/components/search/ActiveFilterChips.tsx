@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { SearchFilters } from '@/hooks/useSearch';
@@ -21,6 +22,7 @@ function formatDate(d?: Date) {
 }
 
 export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChipsProps) {
+  const { t } = useTranslation();
   const chips: Chip[] = [];
 
   (filters.types ?? []).forEach((t) => {
@@ -115,7 +117,7 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
       className="flex flex-wrap items-center"
       style={{ gap: 6, marginBottom: 16 }}
       role="region"
-      aria-label="Active filters"
+      aria-label={t('search.activeFilters', 'Active filters')}
     >
       {chips.map((chip) => (
         <Badge
@@ -127,7 +129,7 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
           {chip.label}
           <button
             type="button"
-            aria-label={`Remove filter ${chip.label}`}
+            aria-label={t('search.removeFilter', 'Remove filter {{label}}', { label: chip.label })}
             onClick={chip.onRemove}
             style={{
               display: 'inline-flex',
@@ -151,7 +153,7 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
         style={{ height: 24, fontSize: '0.75rem' }}
         onClick={() => onFiltersChange({})}
       >
-        Clear all
+        {t('search.clearAll', 'Clear all')}
       </Button>
     </div>
   );

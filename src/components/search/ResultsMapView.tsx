@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
 import type { SearchResult } from '@/hooks/useSearch';
 
@@ -20,6 +21,7 @@ const TYPE_TO_MAP_KIND: Record<string, EntityMapMarker['type']> = {
 };
 
 export function ResultsMapView({ results, height = 480, onSelect }: ResultsMapViewProps) {
+  const { t } = useTranslation();
   const markers: EntityMapMarker[] = useMemo(() => {
     const out: EntityMapMarker[] = [];
     for (const r of results) {
@@ -54,7 +56,7 @@ export function ResultsMapView({ results, height = 480, onSelect }: ResultsMapVi
         className="flex items-center justify-center bg-muted"
         style={{ height, color: 'hsl(var(--muted-foreground))', fontSize: '0.875rem' }}
       >
-        No mappable results in this view.
+        {t('search.noMappable', 'No mappable results in this view.')}
       </div>
     );
   }

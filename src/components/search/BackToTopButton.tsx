@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowUp } from 'lucide-react';
 
 const SHOW_AFTER_PX = 600;
 
 export function BackToTopButton() {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export function BackToTopButton() {
   return (
     <button
       type="button"
-      aria-label="Back to top"
+      aria-label={t('search.backToTop', 'Back to top')}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       style={{
         position: 'fixed',

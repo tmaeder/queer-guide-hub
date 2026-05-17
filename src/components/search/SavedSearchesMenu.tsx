@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Bookmark, BookmarkPlus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,7 @@ export function SavedSearchesMenu({
   suggestedName,
   onLoad,
 }: SavedSearchesMenuProps) {
+  const { t } = useTranslation();
   const { searches, save, remove } = useSavedSearches();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
@@ -40,10 +42,10 @@ export function SavedSearchesMenu({
           variant="ghost"
           size="sm"
           style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-          aria-label="Saved searches"
+          aria-label={t('search.savedSearches', 'Saved searches')}
         >
           <Bookmark style={{ width: 14, height: 14 }} />
-          Saved
+          {t('search.savedLabel', 'Saved')}
           {searches.length > 0 && (
             <span className="text-muted-foreground">({searches.length})</span>
           )}
@@ -53,24 +55,24 @@ export function SavedSearchesMenu({
         {currentQueryString && (
           <div className="flex flex-col" style={{ gap: 6, marginBottom: 12 }}>
             <label className="text-xs font-medium" htmlFor="qg-saved-name">
-              Save this search
+              {t('search.saveThisSearch', 'Save this search')}
             </label>
             <div className="flex" style={{ gap: 6 }}>
               <Input
                 id="qg-saved-name"
-                placeholder={suggestedName || 'Name…'}
+                placeholder={suggestedName || t('search.namePlaceholder', 'Name…')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 style={{ fontSize: '0.875rem', flex: 1 }}
               />
-              <Button size="sm" onClick={handleSave} aria-label="Save">
+              <Button size="sm" onClick={handleSave} aria-label={t('common.save', 'Save')}>
                 <BookmarkPlus style={{ width: 14, height: 14 }} />
               </Button>
             </div>
           </div>
         )}
         {searches.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No saved searches yet.</p>
+          <p className="text-xs text-muted-foreground">{t('search.noSavedYet', 'No saved searches yet.')}</p>
         ) : (
           <ul className="flex flex-col" style={{ gap: 4, maxHeight: 280, overflowY: 'auto' }}>
             {searches.map((s) => (
@@ -102,7 +104,7 @@ export function SavedSearchesMenu({
                 </button>
                 <button
                   type="button"
-                  aria-label={`Delete saved search ${s.name}`}
+                  aria-label={t('search.deleteSavedSearch', 'Delete saved search {{name}}', { name: s.name })}
                   onClick={() => remove(s.id)}
                   style={{
                     background: 'transparent',

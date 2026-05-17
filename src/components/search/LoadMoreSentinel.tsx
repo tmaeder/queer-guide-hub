@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
@@ -14,6 +15,7 @@ interface LoadMoreSentinelProps {
  * users and when prefers-reduced-motion / disabled IO.
  */
 export function LoadMoreSentinel({ hasMore, loading, onLoadMore }: LoadMoreSentinelProps) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,10 +44,10 @@ export function LoadMoreSentinel({ hasMore, loading, onLoadMore }: LoadMoreSenti
         {loading ? (
           <>
             <Loader2 className="animate-spin" style={{ width: 14, height: 14, marginRight: 8 }} />
-            Loading…
+            {t('search.loading', 'Loading…')}
           </>
         ) : (
-          'Load more'
+          t('search.loadMore', 'Load more')
         )}
       </Button>
     </div>
