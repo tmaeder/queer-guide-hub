@@ -17,6 +17,8 @@ import {
   Info,
   Loader2,
 } from 'lucide-react';
+import { MapShell } from '@/components/map/MapShell';
+import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ReportButton } from '@/components/moderation/ReportButton';
@@ -556,6 +558,20 @@ export interface CountryMapTabProps {
 
 export function CountryMapTab({ country, ExploreMap, Suspense }: CountryMapTabProps) {
   if (typeof country.latitude !== 'number' || typeof country.longitude !== 'number') return null;
+  const center: [number, number] = [Number(country.longitude), Number(country.latitude)];
+
+  if (MAP_SHELL_ENABLED) {
+    return (
+      <MapShell
+        surface="country"
+        height={500}
+        initialCenter={center}
+        initialZoom={5}
+        skipAutoFly
+      />
+    );
+  }
+
   return (
     <Suspense
       fallback={
@@ -566,7 +582,7 @@ export function CountryMapTab({ country, ExploreMap, Suspense }: CountryMapTabPr
     >
       <ExploreMap
         height={500}
-        initialCenter={[Number(country.longitude), Number(country.latitude)]}
+        initialCenter={center}
         initialZoom={5}
         defaultLayers={['venues', 'events', 'cities']}
         showLayerToggles

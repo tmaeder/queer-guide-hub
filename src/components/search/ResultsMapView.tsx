@@ -1,9 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EntityMap, type EntityMapMarker } from '@/components/map/EntityMap';
+import { MapShell } from '@/components/map/MapShell';
 import { Button } from '@/components/ui/button';
 import { Navigation } from 'lucide-react';
 import type { SearchResult } from '@/hooks/useSearch';
+import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 
 interface ResultsMapViewProps {
   results: SearchResult[];
@@ -69,6 +71,18 @@ export function ResultsMapView({ results, height = 480, onSelect, onAreaSearch }
   }
 
   if (!initialCenterRef.current) initialCenterRef.current = center;
+
+  if (MAP_SHELL_ENABLED) {
+    return (
+      <MapShell
+        surface="search"
+        height={height}
+        initialCenter={initialCenterRef.current}
+        initialZoom={markers.length === 1 ? 12 : 5}
+        skipAutoFly
+      />
+    );
+  }
 
   return (
     <div

@@ -1,4 +1,6 @@
 import { Loader2 } from 'lucide-react';
+import { MapShell } from '@/components/map/MapShell';
+import { MAP_SHELL_ENABLED } from '@/lib/featureFlags';
 import type { CityRelation } from './types';
 
 export interface CityMapTabProps {
@@ -9,6 +11,20 @@ export interface CityMapTabProps {
 
 export function CityMapTab({ city, ExploreMap, Suspense }: CityMapTabProps) {
   if (typeof city.latitude !== 'number' || typeof city.longitude !== 'number') return null;
+  const center: [number, number] = [Number(city.longitude), Number(city.latitude)];
+
+  if (MAP_SHELL_ENABLED) {
+    return (
+      <MapShell
+        surface="city"
+        height={500}
+        initialCenter={center}
+        initialZoom={12}
+        skipAutoFly
+      />
+    );
+  }
+
   return (
     <Suspense
       fallback={
@@ -19,7 +35,7 @@ export function CityMapTab({ city, ExploreMap, Suspense }: CityMapTabProps) {
     >
       <ExploreMap
         height={500}
-        initialCenter={[Number(city.longitude), Number(city.latitude)]}
+        initialCenter={center}
         initialZoom={12}
         defaultLayers={['venues', 'events', 'neighbourhoods']}
         showLayerToggles
