@@ -456,6 +456,10 @@ const METADATA_KEYS_BY_EVENT: Record<string, readonly string[]> = {
 	book: ["source", "amount", "currency"],
 	attend: ["source"],
 	dismiss: ["source", "query"],
+	// Search UX telemetry — feeds search analytics dashboards.
+	search_submit: ["query", "scope", "filters_count", "source"],
+	facet_apply: ["facet", "value", "query"],
+	zero_results: ["query", "scope"],
 };
 
 async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promise<Response> {
@@ -479,9 +483,20 @@ async function handleTrack(request: Request, env: Env, cors: HeadersInit): Promi
 	if (!entityTypeR.ok) return errorResponse(entityTypeR, cors);
 	const entity_type = entityTypeR.value;
 
-	const entityIdR = validUuid(body.entity_id, "entity_id");
-	if (!entityIdR.ok) return errorResponse(entityIdR, cors);
-	const entity_id = entityIdR.value;
+	// Search-UX telemetry events use a synthetic "search" entity where the id
+	// is the query string itself (not a UUID). Skip the UUID guard for those.
+	const isSearchUxEvent =
+		event_type === "search_submit" || event_type === "facet_apply" || event_type === "zero_results";
+	let entity_id: string;
+	if (isSearchUxEvent && entity_type === "search") {
+		const eidR = validString(body.entity_id, "entity_id", { max: 200, trim: true });
+		if (!eidR.ok) return errorResponse(eidR, cors);
+		entity_id = eidR.value;
+	} else {
+		const entityIdR = validUuid(body.entity_id, "entity_id");
+		if (!entityIdR.ok) return errorResponse(entityIdR, cors);
+		entity_id = entityIdR.value;
+	}
 
 	const allowedKeys = METADATA_KEYS_BY_EVENT[event_type] ?? [];
 	const metadataR = validMetadata(body.metadata, allowedKeys);

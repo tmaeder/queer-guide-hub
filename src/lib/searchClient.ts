@@ -68,7 +68,10 @@ export type TrackEvent =
 	| "favorite"
 	| "book"
 	| "attend"
-	| "dismiss";
+	| "dismiss"
+	| "search_submit"
+	| "facet_apply"
+	| "zero_results";
 
 /** Fire-and-forget user event — feeds the bias vector for personalization. */
 export async function trackSearchEvent(
@@ -89,6 +92,19 @@ export async function trackSearchEvent(
 	} catch {
 		/* best-effort */
 	}
+}
+
+/**
+ * Fire a UX telemetry event for the searchbar — search_submit, facet_apply,
+ * zero_results. Uses a synthetic entity ("search:query") so the existing
+ * /track schema can store it without changes.
+ */
+export async function trackSearchUx(
+	event: Extract<TrackEvent, "search_submit" | "facet_apply" | "zero_results">,
+	metadata: Record<string, unknown>,
+	userId?: string | null,
+): Promise<void> {
+	await trackSearchEvent(event, { type: "search", id: String(metadata.query ?? "") }, metadata, userId);
 }
 
 /** Thumbs up/down on a result — stored as save/dismiss to feed bias. */

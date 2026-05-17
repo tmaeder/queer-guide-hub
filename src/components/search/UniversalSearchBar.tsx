@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTrackClick } from '@/hooks/useSearchActions';
+import { trackSearchUx } from '@/lib/searchClient';
 import { useLocation } from 'react-router';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { Loader2 } from 'lucide-react';
@@ -210,6 +211,17 @@ export const UniversalSearchBar = () => {
       ...(filters.location && { location: filters.location }),
       ...(filters.categories && filters.categories.length > 0 && { categories: filters.categories.join(',') }),
       ...(filters.cluster_ids && filters.cluster_ids.length > 0 && { clusters: filters.cluster_ids.join(',') }),
+    });
+    // Fire-and-forget telemetry — feeds future trending + analytics dashboards.
+    void trackSearchUx('search_submit', {
+      query: searchTerm,
+      scope: filters.types && filters.types.length === 1 ? filters.types[0] : 'all',
+      filters_count:
+        (filters.types?.length || 0)
+        + (filters.location ? 1 : 0)
+        + (filters.categories?.length || 0)
+        + (filters.cluster_ids?.length || 0),
+      source: 'universal_searchbar',
     });
     navigate(`/search?${params}`);
     setIsOpen(false);

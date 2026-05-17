@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { CalendarIcon, MapPin, DollarSign, Star, Filter, X, Building2, CalendarDays, ShoppingBag, Users, Newspaper, Globe, Tag, Layers } from 'lucide-react';
 import { SearchFilters, FacetDistribution } from '@/hooks/useSearch';
+import { trackSearchUx } from '@/lib/searchClient';
 import { useTopicClusters } from '@/hooks/useTopicClusters';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { DateRange } from 'react-day-picker';
@@ -255,6 +256,9 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
                             ...filters,
                             [group.filterKey]: next.length > 0 ? next : undefined,
                           });
+                          if (!isActive) {
+                            void trackSearchUx('facet_apply', { facet: group.facet, value });
+                          }
                         }}
                       >
                         {value} <span style={{ opacity: 0.6, marginLeft: 4 }}>{count}</span>

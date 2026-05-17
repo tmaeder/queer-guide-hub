@@ -49,6 +49,7 @@ import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons
 import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
 import { useTrackClick } from '@/hooks/useSearchActions';
+import { trackSearchUx } from '@/lib/searchClient';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ColourfulText } from '@/components/effects/ColourfulText';
 import { SpotlightV2 } from '@/components/effects/SpotlightV2';
@@ -186,6 +187,18 @@ export default function SearchResults() {
   useEffect(() => {
     setPage(1);
   }, [query]);
+
+  // Fire zero_results telemetry once when a real query lands with no hits.
+  useEffect(() => {
+    if (!query || loading || tooShort) return;
+    if (totalHits === 0 && !errorKind) {
+      void trackSearchUx('zero_results', {
+        query,
+        scope: filters.types && filters.types.length === 1 ? filters.types[0] : 'all',
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, totalHits, loading, tooShort, errorKind]);
 
   const getResultsByType = (source: SearchResult[]) => {
     return source.reduce(
