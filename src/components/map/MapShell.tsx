@@ -1,8 +1,10 @@
 import React, { useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ExploreMap } from './ExploreMap';
 import { CommandBar } from './CommandBar';
 import { FilterChips } from './FilterChips';
 import { useMapShellState } from '@/hooks/useMapShellState';
+import { useToast } from '@/hooks/use-toast';
 import {
   SURFACE_PRESETS,
   type MapShellConfig,
@@ -48,6 +50,8 @@ export const MapShell = ({
   );
 
   const { state, setLens, setLayers, setFilters, setViewport } = useMapShellState(config);
+  const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Drop filter keys we don't expose on this surface so they can't leak in via URL.
   const exposedFilters: MapShellFilters = useMemo(() => {
@@ -108,6 +112,60 @@ export const MapShell = ({
   const fallbackZoom = state.viewport?.zoom ?? initialZoom;
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const handleShare = useCallback(async () => {
+    const url = window.location.href;
+    const payload = {
+      title: t('map.share.title', { defaultValue: 'Map view' }),
+      url,
+    };
+    try {
+      if (typeof navigator.share === 'function') {
+        await navigator.share(payload);
+        return;
+      }
+    } catch (err) {
+      if ((err as { name?: string })?.name === 'AbortError') return;
+      // Fall through to clipboard.
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: t('map.share.copied', { defaultValue: 'Link copied' }),
+        description: t('map.share.copiedDescription', { defaultValue: 'Paste to share this view' }),
+      });
+    } catch {
+      toast({
+        title: t('map.share.failed', { defaultValue: 'Share failed' }),
+        variant: 'destructive',
+      });
+    }
+  }, [t, toast]);
+
+  const handleGeolocate = useCallback(() => {
+    if (!navigator.geolocation) {
+      toast({
+        title: t('map.geolocate.unsupported', { defaultValue: 'Geolocation unavailable' }),
+        variant: 'destructive',
+      });
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setViewport({
+          center: [pos.coords.longitude, pos.coords.latitude],
+          zoom: Math.max(state.viewport?.zoom ?? 12, 12),
+        });
+      },
+      () => {
+        toast({
+          title: t('map.geolocate.denied', { defaultValue: 'Location denied' }),
+          variant: 'destructive',
+        });
+      },
+      { enableHighAccuracy: true, timeout: 8000 },
+    );
+  }, [setViewport, state.viewport?.zoom, t, toast]);
+
   return (
     <div
       ref={containerRef}
@@ -141,6 +199,8 @@ export const MapShell = ({
           availableFilters={config.filters}
           filters={state.filters}
           onFiltersChange={setFilters}
+          onGeolocate={handleGeolocate}
+          onShare={handleShare}
         />
       )}
 
