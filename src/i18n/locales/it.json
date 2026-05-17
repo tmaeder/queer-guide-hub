@@ -104,7 +104,10 @@
       "select": "[IT] Select",
       "complete": "[IT] Complete",
       "close": "[IT] Close"
-    }
+    },
+    "nearMeWithRadius": "[IT] Near me ({{km}}km)",
+    "searchThisArea": "[IT] Search this area",
+    "didYouMean": "[IT] Did you mean \"{{q}}\"?"
   },
   "common": {
     "contentInLanguage": "In {{lang}}",

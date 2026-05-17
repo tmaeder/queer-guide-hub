@@ -28,10 +28,12 @@ import {
   Globe,
   Users,
   ShoppingBag,
+  Navigation,
 } from 'lucide-react';
 import { useSearchSuggestions, SearchSuggestion, TYPE_ICONS } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
+import { useNearMe } from '@/hooks/useNearMe';
 import { TrendingUp } from 'lucide-react';
 const SearchFiltersPanel = lazy(() =>
   import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
@@ -180,6 +182,7 @@ export const UniversalSearchBar = () => {
   const { suggestions, loading: suggestionsLoading, error: suggestionsError } = useSearchSuggestions(query, filters.types);
   const { trending } = useTrendingSuggestions(isOpen && !query);
   const voice = useVoiceSearch();
+  const nearMe = useNearMe();
 
   useEffect(() => {
     if (voice.transcript) {
@@ -422,6 +425,26 @@ export const UniversalSearchBar = () => {
               </Suspense>
             )}
             <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
+              {!query && nearMe.supported && (
+                <>
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={async () => {
+                        const c = await nearMe.request();
+                        if (!c) return;
+                        setIsOpen(false);
+                        navigate(`/search?lat=${c.lat}&lng=${c.lng}&radius=25000`);
+                      }}
+                      style={{ cursor: 'pointer', padding: '8px 12px' }}
+                    >
+                      <Navigation style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                      <span className="text-sm">{t('search.nearMe', 'Near me')}</span>
+                      {nearMe.loading && <Loader2 className="animate-spin" style={{ height: 12, width: 12, marginLeft: 8 }} />}
+                    </CommandItem>
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
               {!query && (
                 <>
                   <CommandGroup heading={t('search.browse', 'Browse')}>

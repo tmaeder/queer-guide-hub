@@ -104,7 +104,10 @@
       "select": "[RU] Select",
       "complete": "[RU] Complete",
       "close": "[RU] Close"
-    }
+    },
+    "nearMeWithRadius": "[RU] Near me ({{km}}km)",
+    "searchThisArea": "[RU] Search this area",
+    "didYouMean": "[RU] Did you mean \"{{q}}\"?"
   },
   "common": {
     "contentInLanguage": "На языке: {{lang}}",

@@ -104,7 +104,10 @@
       "select": "[JA] Select",
       "complete": "[JA] Complete",
       "close": "[JA] Close"
-    }
+    },
+    "nearMeWithRadius": "[JA] Near me ({{km}}km)",
+    "searchThisArea": "[JA] Search this area",
+    "didYouMean": "[JA] Did you mean \"{{q}}\"?"
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",

@@ -42,6 +42,10 @@ export interface SearchFilters {
   rating?: number;
   featured?: boolean;
   verified?: boolean;
+  /** Geo radius — worker turns these into Meili _geoRadius(lat,lng,m). */
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }
 
 export interface FacetDistribution {

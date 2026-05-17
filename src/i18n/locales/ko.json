@@ -104,7 +104,10 @@
       "select": "[KO] Select",
       "complete": "[KO] Complete",
       "close": "[KO] Close"
-    }
+    },
+    "nearMeWithRadius": "[KO] Near me ({{km}}km)",
+    "searchThisArea": "[KO] Search this area",
+    "didYouMean": "[KO] Did you mean \"{{q}}\"?"
   },
   "common": {
     "contentInLanguage": "{{lang}}(으)로",

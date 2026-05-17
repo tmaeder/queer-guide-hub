@@ -50,6 +50,7 @@ import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
+import { useDidYouMean } from '@/hooks/useDidYouMean';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ColourfulText } from '@/components/effects/ColourfulText';
 import { SpotlightV2 } from '@/components/effects/SpotlightV2';
@@ -84,7 +85,7 @@ const contentTypeIcons: Record<string, React.ComponentType<{ style?: React.CSSPr
 };
 
 export default function SearchResults() {
-  const { _t } = useTranslation();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useLocalizedNavigate();
   const trackClick = useTrackClick();
@@ -109,11 +110,18 @@ export default function SearchResults() {
     setSearchQuery(query);
   }, [query]);
 
+  const initialLat = Number(searchParams.get('lat')) || undefined;
+  const initialLng = Number(searchParams.get('lng')) || undefined;
+  const initialRadius = Number(searchParams.get('radius')) || undefined;
+
   const [filters, setFilters] = useState<SearchFilters>({
     types: initialTypes,
     location: initialLocation,
     categories: initialCategories.length > 0 ? initialCategories : undefined,
     cluster_ids: initialClusterIds.length > 0 ? initialClusterIds : undefined,
+    lat: initialLat,
+    lng: initialLng,
+    radius: initialRadius,
   });
 
   const activeTypes = selectedTab === 'all' ? filters.types : [selectedTab];
@@ -597,6 +605,10 @@ export default function SearchResults() {
     {} as Record<string, SearchResult[]>,
   );
   const hasMore = totalResults < totalHits;
+  const dymHit = useDidYouMean(
+    query,
+    !loading && !tooShort && totalHits === 0 && !errorKind,
+  );
 
   const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
   const listClass = 'flex flex-col gap-4';
@@ -924,10 +936,25 @@ export default function SearchResults() {
                 }}
               />
               <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
-                No results found
+                {t('search.noResultsFor', 'No results found for "{{q}}"', { q: query })}
               </h3>
+              {dymHit && (dymHit.title || dymHit.name) && (
+                <p className="mb-4">
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams);
+                      params.set('q', (dymHit.title || dymHit.name) as string);
+                      params.delete('types');
+                      setSearchParams(params);
+                    }}
+                  >
+                    {t('search.didYouMean', 'Did you mean "{{q}}"?', { q: (dymHit.title || dymHit.name) as string })}
+                  </Button>
+                </p>
+              )}
               <p className="text-muted-foreground mb-4">
-                Try adjusting your search query or filters
+                {t('search.tryDifferent', 'Try different keywords or adjust your filters')}
               </p>
               <div className="flex" style={{ gap: 12 }}>
                 <Button variant="outline" onClick={() => setShowFilters(true)}>

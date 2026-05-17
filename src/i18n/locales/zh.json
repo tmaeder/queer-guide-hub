@@ -104,7 +104,10 @@
       "select": "[ZH] Select",
       "complete": "[ZH] Complete",
       "close": "[ZH] Close"
-    }
+    },
+    "nearMeWithRadius": "[ZH] Near me ({{km}}km)",
+    "searchThisArea": "[ZH] Search this area",
+    "didYouMean": "[ZH] Did you mean \"{{q}}\"?"
   },
   "common": {
     "contentInLanguage": "语言：{{lang}}",
