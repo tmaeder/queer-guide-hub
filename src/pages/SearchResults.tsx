@@ -47,6 +47,7 @@ import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
 import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
+import { ResultsMapView } from '@/components/search/ResultsMapView';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ColourfulText } from '@/components/effects/ColourfulText';
@@ -91,7 +92,7 @@ export default function SearchResults() {
   const [selectedTab, setSelectedTab] = useState('all');
   const initialSort = searchParams.get('sort') || 'relevance';
   const [sortBy, setSortBy] = useState(initialSort);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('list');
   const [searchQuery, setSearchQuery] = useState('');
   // P0-4: 1-indexed page param survives reload; resets to 1 when q/sort/filters change.
   const initialPage = Math.max(1, Number(searchParams.get('page') || 1));
@@ -781,9 +782,18 @@ export default function SearchResults() {
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                style={{ borderRadius: 0 }}
               >
                 <Grid style={{ width: 16, height: 16 }} />
+              </Button>
+              <Button
+                variant={viewMode === 'map' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('map')}
+                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                aria-label="Map view"
+              >
+                <MapPin style={{ width: 16, height: 16 }} />
               </Button>
             </div>
           </div>
@@ -966,8 +976,12 @@ export default function SearchResults() {
           </TabsList>
 
           <TabsContent value="all">
-            {/* Federated grouped view when results span multiple types */}
-            {Object.keys(sortedResultsByType).length > 1 ? (
+            {viewMode === 'map' ? (
+              <ResultsMapView
+                results={sortedResults}
+                onSelect={navigateToResult}
+              />
+            ) : Object.keys(sortedResultsByType).length > 1 ? (
               <div className="flex flex-col" style={{ gap: 32 }}>
                 {Object.entries(sortedResultsByType).map(([type, typeResults]) => {
                   const Icon = contentTypeIcons[type] || HelpCircle;
@@ -1025,14 +1039,23 @@ export default function SearchResults() {
 
           {Object.entries(sortedResultsByType).map(([type, typeResults]) => (
             <TabsContent key={type} value={type}>
-              <div className={viewMode === 'grid' ? gridClass : listClass}>
-                {typeResults.map(renderResultCard)}
-              </div>
-              <LoadMoreSentinel
-                hasMore={hasMore}
-                loading={loading}
-                onLoadMore={() => setPage((p) => p + 1)}
-              />
+              {viewMode === 'map' ? (
+                <ResultsMapView
+                  results={typeResults}
+                  onSelect={navigateToResult}
+                />
+              ) : (
+                <>
+                  <div className={viewMode === 'grid' ? gridClass : listClass}>
+                    {typeResults.map(renderResultCard)}
+                  </div>
+                  <LoadMoreSentinel
+                    hasMore={hasMore}
+                    loading={loading}
+                    onLoadMore={() => setPage((p) => p + 1)}
+                  />
+                </>
+              )}
             </TabsContent>
           ))}
         </Tabs>

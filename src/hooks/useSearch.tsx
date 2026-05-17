@@ -25,6 +25,8 @@ export interface SearchResult {
   date?: string;
   rating?: number;
   imageUrl?: string;
+  /** Geo coords when the entity has them (venues, events, places, villages). */
+  _geoloc?: { lat: number; lng: number };
   metadata?: Record<string, unknown>;
   _highlightResult?: Record<string, unknown>;
 }
