@@ -46,6 +46,7 @@ const AdminShell = lazy(() =>
 // Admin page components (rendered inside AdminShell via Outlet)
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
+const AdminMaps = lazy(() => import('./pages/AdminMaps'));
 const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 const AdminCountries = lazy(() => import('./pages/AdminCountries'));
 const AdminTags = lazy(() => import('./pages/AdminTags'));
@@ -246,6 +247,7 @@ export const AppRoutes = () => {
                 {/* Dashboard section */}
                 <Route index element={<AdminDashboard />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
+                <Route path="maps" element={<AdminMaps />} />
                 <Route path="security" element={<SecurityMonitoringDashboard />} />
                 <Route path="cloudflare" element={<CloudflareDashboard />} />
 

@@ -265,6 +265,13 @@ export const adminNavSections: AdminNavSection[] = [
         adminOnly: true,
       },
       {
+        id: 'maps',
+        label: 'Maps',
+        icon: MapPin,
+        route: '/admin/maps',
+        adminOnly: true,
+      },
+      {
         id: 'security',
         label: 'Security',
         icon: Shield,
