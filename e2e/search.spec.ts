@@ -13,7 +13,7 @@
  */
 import { test, expect, Route, Request } from '@playwright/test';
 
-const SEARCH_HOST = 'search.queer.guide';
+const SEARCH_HOST_RE = /^https:\/\/search\.queer\.guide\//;
 
 type Hit = {
   objectID: string;
@@ -59,7 +59,7 @@ const venuesPage2: Hit[] = Array.from({ length: 5 }, (_, i) => ({
 
 test.describe('search results', () => {
   test('q=queer renders no blank cards and no literal `undefined`', async ({ page }) => {
-    await page.route(`https://${SEARCH_HOST}/**`, mockSearch({ 1: venuesPage1 }, 20));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: venuesPage1 }, 20));
     await page.goto('/search?q=queer');
     await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
     expect(await page.locator('text=undefined').count()).toBe(0);
@@ -73,30 +73,31 @@ test.describe('search results', () => {
       { objectID: 'c1', title: 'Berlin', type: 'city', category: undefined },
       { objectID: 'p1', title: 'Berlin Person', type: 'personality', category: undefined },
     ];
-    await page.route(`https://${SEARCH_HOST}/**`, mockSearch({ 1: mixed }, 3));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: mixed }, 3));
     await page.goto('/search?q=berlin&categories=Bar');
     await expect(page.getByText('Bar Berlin')).toBeVisible();
     // city/personality must be filtered out by the post-filter.
     await expect(page.getByText('Berlin Person')).toHaveCount(0);
   });
 
-  test('pagination renders and survives reload', async ({ page }) => {
+  test('Load more appends page 2 results in-place', async ({ page }) => {
     await page.route(
-      `https://${SEARCH_HOST}/**`,
+      SEARCH_HOST_RE,
       mockSearch({ 1: venuesPage1, 2: venuesPage2 }, 25),
     );
     await page.goto('/search?q=berlin');
     await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toBeVisible();
-    await page.getByLabel('Next page').click();
-    await expect(page).toHaveURL(/page=2/);
+    const loadMore = page.getByRole('button', { name: /Load more/i }).first();
+    await loadMore.scrollIntoViewIfNeeded();
+    await loadMore.click();
     await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible();
-    await page.reload();
-    await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible();
+    // Page 1 results remain — infinite-scroll, not pagination.
+    await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toBeVisible();
   });
 
   test('q=a shows Keep typing empty state and never hits the worker', async ({ page }) => {
     let calls = 0;
-    await page.route(`https://${SEARCH_HOST}/**`, async (route) => {
+    await page.route(SEARCH_HOST_RE, async (route) => {
       calls += 1;
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{"hits":[]}' });
     });
@@ -107,7 +108,7 @@ test.describe('search results', () => {
 
   test('200-character query does not break the heading layout', async ({ page }) => {
     const longQ = 'q'.repeat(200);
-    await page.route(`https://${SEARCH_HOST}/**`, mockSearch({ 1: [] }, 0));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: [] }, 0));
     await page.goto(`/search?q=${longQ}`);
     const heading = page.locator('h1');
     const headingBox = await heading.boundingBox();
@@ -118,7 +119,7 @@ test.describe('search results', () => {
   });
 
   test('venue-only result set hides Price sort options', async ({ page }) => {
-    await page.route(`https://${SEARCH_HOST}/**`, mockSearch({ 1: venuesPage1 }, 20));
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: venuesPage1 }, 20));
     await page.goto('/search?q=berlin&types=venue');
     await page.getByRole('combobox', { name: /sort/i }).click().catch(() => {});
     // shadcn Select renders options into a portal — assert by text presence/absence.

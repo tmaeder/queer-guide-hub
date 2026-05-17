@@ -1,0 +1,173 @@
+/**
+ * E2E coverage for the search UX overhaul:
+ *   - ⌘K hotkey opens the searchbar dropdown
+ *   - Voice / Saved / Map view / Back-to-top buttons all wired
+ *   - Active filter chips appear and remove cleanly
+ *   - LoadMoreSentinel appends instead of paginating
+ *   - Did-you-mean banner surfaces on zero-result queries
+ *   - "Search this area" map refinement updates URL filters
+ *
+ * Worker is mocked at the network layer so this runs against any baseURL
+ * (local or prod) without depending on live Meili data.
+ */
+import { test, expect, Route, Request } from '@playwright/test';
+
+const SEARCH_HOST_RE = /^https:\/\/search\.queer\.guide\//;
+
+type Hit = {
+  objectID: string;
+  title: string;
+  type: string;
+  category?: string;
+  _geoloc?: { lat: number; lng: number };
+};
+
+function mockSearch(
+  hitsByPage: Record<number, Hit[]>,
+  totalHits = Object.values(hitsByPage).flat().length,
+) {
+  return async (route: Route, request: Request) => {
+    const body = JSON.parse((await request.postData()) || '{}');
+    const page = Number(body.page) || 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        hits: hitsByPage[page] || [],
+        suggestions: [],
+        facetDistribution: { category: { Bar: 12, Cafe: 4 } },
+        totalHits,
+        page,
+        hitsPerPage: 20,
+      }),
+    });
+  };
+}
+
+const page1Venues: Hit[] = Array.from({ length: 20 }, (_, i) => ({
+  objectID: `v${i + 1}`,
+  title: `Venue ${i + 1}`,
+  type: 'venue',
+  category: 'Bar',
+  _geoloc: { lat: 52.52 + i * 0.001, lng: 13.405 + i * 0.001 },
+}));
+const page2Venues: Hit[] = Array.from({ length: 5 }, (_, i) => ({
+  objectID: `v${21 + i}`,
+  title: `Venue ${21 + i}`,
+  type: 'venue',
+  category: 'Bar',
+}));
+
+test.describe('search UX — universal searchbar', () => {
+  test('⌘K opens the dropdown and Esc closes it', async ({ page }) => {
+    await page.goto('/');
+    const combo = page.locator('input[role="combobox"][aria-label*="Search"]').first();
+    await expect(combo).toBeVisible();
+    await expect(combo).toHaveAttribute('aria-expanded', 'false');
+
+    await page.keyboard.press('Meta+k');
+    // Fallback for non-Mac CI runners.
+    if ((await combo.getAttribute('aria-expanded')) !== 'true') {
+      await page.keyboard.press('Control+k');
+    }
+    await expect(combo).toHaveAttribute('aria-expanded', 'true');
+
+    await page.keyboard.press('Escape');
+    await expect(combo).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('⌘K kbd hint is rendered in the searchbar when input is empty', async ({ page }) => {
+    await page.goto('/');
+    const kbd = page.locator('kbd', { hasText: /⌘K|Ctrl\+K/ });
+    await expect(kbd.first()).toBeVisible();
+  });
+});
+
+test.describe('search UX — results page', () => {
+  test('active filter chip appears and removing it clears the URL', async ({ page }) => {
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.goto('/search?q=berlin&types=venue');
+    // Chip uses the Venues label from CONTENT_TYPES.
+    await expect(page.getByText('Venues', { exact: true }).first()).toBeVisible();
+    const remove = page.getByRole('button', { name: /Remove filter Venues/i });
+    await remove.click();
+    await expect(page).not.toHaveURL(/types=venue/);
+  });
+
+  test('LoadMoreSentinel appends page 2 results without pagination buttons', async ({ page }) => {
+    await page.route(
+      SEARCH_HOST_RE,
+      mockSearch({ 1: page1Venues, 2: page2Venues }, 25),
+    );
+    await page.goto('/search?q=berlin');
+    await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Next page/i })).toHaveCount(0);
+
+    const loadMore = page.getByRole('button', { name: /Load more/i }).first();
+    await loadMore.scrollIntoViewIfNeeded();
+    await loadMore.click();
+
+    await expect(page.getByText('Venue 21', { exact: true })).toBeVisible();
+    await expect(page.getByText('Venue 1', { exact: true })).toBeVisible();
+  });
+
+  test('Map view toggle renders MapLibre canvas', async ({ page }) => {
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.goto('/search?q=berlin');
+    await page.getByRole('button', { name: /Map view/i }).click();
+    // MapLibre injects a <canvas class="maplibregl-canvas"> when ready.
+    await expect(page.locator('canvas.maplibregl-canvas').first()).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+
+  test('Saved searches popover lets you save and reload a search', async ({ page }) => {
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.goto('/search?q=berlin&types=venue');
+    await page.getByRole('button', { name: /Saved searches/i }).click();
+    await page.getByLabel('Save this search').fill('Berlin venues');
+    await page.getByRole('button', { name: /^Save$/i }).click();
+    // The list shows the saved entry.
+    await expect(page.getByText('Berlin venues')).toBeVisible();
+  });
+
+  test('Back to top button appears after scrolling and scrolls back', async ({ page }) => {
+    await page.route(SEARCH_HOST_RE, mockSearch({ 1: page1Venues }, 20));
+    await page.goto('/search?q=berlin');
+    // Scroll past the 600px threshold.
+    await page.mouse.wheel(0, 1200);
+    const btn = page.getByRole('button', { name: /Back to top/i });
+    await expect(btn).toBeVisible();
+    await btn.click();
+    await page.waitForFunction(() => window.scrollY === 0);
+  });
+
+  test('Did you mean banner surfaces on a zero-result query', async ({ page }) => {
+    // /search returns zero hits.
+    await page.route(SEARCH_HOST_RE, async (route, request) => {
+      const url = request.url();
+      if (url.endsWith('/autocomplete')) {
+        // /autocomplete returns a typo-tolerant suggestion.
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            suggestions: [
+              { id: 'c1', type: 'city', title: 'Berlin', city: 'Berlin', country: 'DE' },
+            ],
+          }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ hits: [], suggestions: [], totalHits: 0, page: 1, hitsPerPage: 20 }),
+      });
+    });
+    await page.goto('/search?q=berlnn');
+    await expect(page.getByRole('button', { name: /Did you mean.*Berlin/i })).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+});

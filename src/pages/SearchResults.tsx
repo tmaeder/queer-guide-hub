@@ -601,9 +601,13 @@ export default function SearchResults() {
         const append = results.filter((r) => r.objectID && !seen.has(r.objectID));
         return append.length ? [...prev, ...append] : prev;
       });
+    } else {
+      // Same key, same page — replace only if the worker came back with a
+      // different result set (initial empty → populated, or retry). Length
+      // is a cheap-enough proxy that also prevents setState loops when the
+      // hook re-creates a fresh empty-array reference each render.
+      setAccumulated((prev) => (prev.length === results.length ? prev : results));
     }
-    // Same key + same page = no-op (avoids setState/re-render loops when the
-    // useSearch hook re-creates its `results` array reference on every render).
   }, [results, loading, queryKey, page]);
 
   const resultsByType = getResultsByType(accumulated);
