@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
@@ -14,6 +14,8 @@ import { useRecommendations } from '@/hooks/useRecommendations';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
 import { Calendar, MapPin } from 'lucide-react';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
+import { PlanModeInventory } from '@/components/travel/PlanModeInventory';
+import { PlanGapsSidebar } from '@/components/travel/PlanGapsSidebar';
 
 const MODE_STORAGE_KEY = 'qg.travelMode';
 
@@ -126,6 +128,9 @@ function BrowseMode({ intentBook }: { intentBook: boolean }) {
 function PlanMode() {
   const { t } = useTranslation();
   const { activeTrip, candidateTrips, setActiveTripId } = useActiveTrip();
+  const [focusSection, setFocusSection] = useState<
+    'hotels' | 'venues' | 'events' | null
+  >(null);
 
   if (!activeTrip) {
     return (
@@ -199,13 +204,21 @@ function PlanMode() {
         )}
       </section>
 
-      <p className="text-sm text-muted-foreground mb-4">
-        {t(
-          'pages.travel.plan.contextNote',
-          'Inventory below is being curated for your destination.',
-        )}
-      </p>
-      <InspirationGrid />
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+        <div className="min-w-0">
+          <PlanModeInventory trip={activeTrip} highlightSection={focusSection} />
+        </div>
+        <div className="lg:order-last">
+          <PlanGapsSidebar
+            tripId={activeTrip.id}
+            onFocusSection={(s) => {
+              setFocusSection(s);
+              // Re-trigger scroll on repeated clicks by clearing then setting.
+              setTimeout(() => setFocusSection((cur) => (cur === s ? null : cur)), 1500);
+            }}
+          />
+        </div>
+      </div>
     </>
   );
 }
