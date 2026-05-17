@@ -822,3 +822,12 @@ h1, h2, h3, h4, h5, h6 {
     min-height: 44px;
   }
 }
+
+/* Search suggestion match highlight — Meili emits <em>match</em>. Strip italic,
+   render as the rest of the app's match style (bold + underline). */
+.qg-search-highlight em {
+  font-style: normal;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

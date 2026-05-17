@@ -26,6 +26,8 @@ export interface SearchHit {
 	objectID?: string;
 	type: string;
 	title?: string;
+	/** Meili-highlighted title (HTML with <em>match</em>). Only set on /autocomplete responses. */
+	title_formatted?: string | null;
 	name?: string;
 	category?: string;
 	location?: string;

@@ -71,8 +71,40 @@ function KbdHint({ label, desc }: { label: string; desc: string }) {
   );
 }
 
-function HighlightedText({ text, query }: { text: string; query: string }) {
+/** Allow only `<em>…</em>` (Meili's default highlight tag); strip everything else. */
+function sanitizeMeiliHighlight(html: string): string {
+  return html
+    .replace(/<(?!\/?em\b)[^>]+>/gi, '')
+    .replace(/<em\b[^>]*>/gi, '<em>');
+}
+
+function HighlightedText({
+  text,
+  query,
+  html,
+}: {
+  text: string;
+  query: string;
+  html?: string | null;
+}) {
   if (!text) return null;
+  // Prefer server-side Meili highlight when present — it covers typo-tolerant
+  // matches that a client substring search would miss.
+  if (html && /<em>/i.test(html)) {
+    const safe = sanitizeMeiliHighlight(html);
+    return (
+      <span
+        // Only <em> survives sanitization above; styled via the parent rule below.
+        dangerouslySetInnerHTML={{ __html: safe }}
+        style={
+          {
+            ['--em-weight' as string]: '600',
+          } as React.CSSProperties
+        }
+        className="qg-search-highlight"
+      />
+    );
+  }
   const q = query.trim();
   if (!q) return <>{text}</>;
   const lower = text.toLowerCase();
@@ -436,7 +468,7 @@ export const UniversalSearchBar = () => {
                         <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                         <div className="flex flex-col items-start flex-1 min-w-0">
                           <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                            <HighlightedText text={displayName || ''} query={query} />
+                            <HighlightedText text={displayName || ''} query={query} html={suggestion.nameHtml} />
                           </span>
                           {subtitle && <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap w-full">{subtitle}</span>}
                         </div>

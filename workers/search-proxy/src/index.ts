@@ -833,14 +833,21 @@ async function handleAutocomplete(request: Request, env: Env, cors: HeadersInit)
 		}
 	}
 
-	const out = hits.slice(0, limit).map((h) => ({
-		id: h.id,
-		type: h.type,
-		title: h.title,
-		city: h.city,
-		country: h.country,
-		slug: h.slug,
-	}));
+	const out = hits.slice(0, limit).map((h) => {
+		// Pass Meili-highlighted title through so the client can render
+		// authoritative <em>…</em> matches (preserves typo-tolerant matching
+		// that a client-side substring-match would miss).
+		const formatted = (h._formatted ?? {}) as Record<string, unknown>;
+		return {
+			id: h.id,
+			type: h.type,
+			title: h.title,
+			title_formatted: formatted.title ?? formatted.name ?? null,
+			city: h.city,
+			country: h.country,
+			slug: h.slug,
+		};
+	});
 	return json({ suggestions: out }, 200, cors);
 }
 

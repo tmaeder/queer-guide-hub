@@ -15,6 +15,8 @@ export interface SearchSuggestion {
   icon: React.ComponentType;
   subtitle?: string;
   title?: string;
+  /** Meili-highlighted HTML, e.g. "Ber<em>lin</em>". When present, prefer over client-side highlighting. */
+  nameHtml?: string;
   slug?: string;
   city?: string;
   country?: string;
@@ -88,6 +90,7 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
           : hit.type === 'city' ? (hit.country as string | undefined)
           : (hit.city as string | undefined),
         title: (hit.title || hit.name || '') as string,
+        nameHtml: (hit.title_formatted as string | null | undefined) ?? undefined,
         slug: hit.slug as string | undefined,
         city: hit.city,
         country: hit.country as string | undefined,
