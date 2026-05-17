@@ -21,9 +21,16 @@ import {
   X,
   Clock,
   SlidersHorizontal,
+  Mic,
+  MapPin,
+  CalendarDays,
+  Globe,
+  Users,
+  ShoppingBag,
 } from 'lucide-react';
 import { useSearchSuggestions, SearchSuggestion, TYPE_ICONS } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
+import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { TrendingUp } from 'lucide-react';
 const SearchFiltersPanel = lazy(() =>
   import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
@@ -171,6 +178,13 @@ export const UniversalSearchBar = () => {
 
   const { suggestions, loading: suggestionsLoading, error: suggestionsError } = useSearchSuggestions(query, filters.types);
   const { trending } = useTrendingSuggestions(isOpen && !query);
+  const voice = useVoiceSearch();
+
+  useEffect(() => {
+    if (voice.transcript) {
+      setQuery(voice.transcript);
+    }
+  }, [voice.transcript]);
 
   useEffect(() => {
     const saved = localStorage.getItem('recent-searches');
@@ -300,25 +314,56 @@ export const UniversalSearchBar = () => {
                   onBlur={() => setIsFocused(false)}
                   style={{ width: '100%', border: 0, backgroundColor: 'transparent', boxShadow: 'none', outline: 'none', fontSize: isMobile ? '1rem' : '0.875rem' }}
                   autoComplete="off" />
-                {!query && !isMobile && (
-                  <kbd
-                    aria-hidden="true"
+                {!query && (
+                  <span
+                    className="flex items-center"
                     style={{
                       position: 'absolute',
                       right: 8,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      fontSize: '0.7rem',
-                      lineHeight: 1,
-                      padding: '2px 6px',
-                      border: '1px solid hsl(var(--border))',
-                      color: 'hsl(var(--muted-foreground))',
-                      fontFamily: 'inherit',
-                      pointerEvents: 'none',
+                      gap: 6,
                     }}
                   >
-                    {isMac ? '⌘K' : 'Ctrl+K'}
-                  </kbd>
+                    {voice.supported && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        aria-label={voice.listening ? 'Stop voice search' : 'Voice search'}
+                        aria-pressed={voice.listening}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (voice.listening) voice.stop();
+                          else voice.start();
+                        }}
+                        style={{
+                          height: isMobile ? 32 : 24,
+                          width: isMobile ? 32 : 24,
+                          padding: 0,
+                          color: voice.listening ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
+                        }}
+                      >
+                        <Mic style={{ height: isMobile ? 16 : 14, width: isMobile ? 16 : 14 }} />
+                      </Button>
+                    )}
+                    {!isMobile && (
+                      <kbd
+                        aria-hidden="true"
+                        style={{
+                          fontSize: '0.7rem',
+                          lineHeight: 1,
+                          padding: '2px 6px',
+                          border: '1px solid hsl(var(--border))',
+                          color: 'hsl(var(--muted-foreground))',
+                          fontFamily: 'inherit',
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        {isMac ? '⌘K' : 'Ctrl+K'}
+                      </kbd>
+                    )}
+                  </span>
                 )}
                 {query && (
                   <span className="flex items-center gap-1" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }}>
@@ -365,6 +410,32 @@ export const UniversalSearchBar = () => {
               </Suspense>
             )}
             <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
+              {!query && (
+                <>
+                  <CommandGroup heading="Browse">
+                    {[
+                      { label: 'Places', icon: MapPin, path: '/places' },
+                      { label: 'Cities', icon: Globe, path: '/cities' },
+                      { label: 'Events this weekend', icon: CalendarDays, path: '/events?range=weekend' },
+                      { label: 'Personalities', icon: Users, path: '/personalities' },
+                      { label: 'Marketplace', icon: ShoppingBag, path: '/marketplace' },
+                    ].map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <CommandItem
+                          key={link.path}
+                          onSelect={() => { setIsOpen(false); navigate(link.path); }}
+                          style={{ cursor: 'pointer', padding: '8px 12px' }}
+                        >
+                          <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                          <span className="text-sm">{link.label}</span>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
               {!query && trending.length > 0 && (
                 <>
                   <CommandGroup
