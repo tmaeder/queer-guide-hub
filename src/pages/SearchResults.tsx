@@ -584,31 +584,28 @@ export default function SearchResults() {
   const queryKey = `${query}|${selectedTab}|${JSON.stringify(filters)}|${sortBy}`;
   const [accumulated, setAccumulated] = useState<SearchResult[]>([]);
   const lastKeyRef = useRef('');
-  const lastPageRef = useRef(0);
 
   useEffect(() => {
     if (loading) return;
-    if (queryKey !== lastKeyRef.current) {
-      // New query/filter/sort/tab — reset to the fresh page.
-      lastKeyRef.current = queryKey;
-      lastPageRef.current = page;
-      setAccumulated(results);
-    } else if (page > lastPageRef.current) {
-      // Same scope, next page — append non-duplicate results.
-      lastPageRef.current = page;
-      setAccumulated((prev) => {
-        const seen = new Set(prev.map((r) => r.objectID));
-        const append = results.filter((r) => r.objectID && !seen.has(r.objectID));
-        return append.length ? [...prev, ...append] : prev;
-      });
-    } else {
-      // Same key, same page — replace only if the worker came back with a
-      // different result set (initial empty → populated, or retry). Length
-      // is a cheap-enough proxy that also prevents setState loops when the
-      // hook re-creates a fresh empty-array reference each render.
-      setAccumulated((prev) => (prev.length === results.length ? prev : results));
-    }
-  }, [results, loading, queryKey, page]);
+    setAccumulated((prev) => {
+      // New query/filter/sort/tab → reset to the current results.
+      if (queryKey !== lastKeyRef.current) {
+        lastKeyRef.current = queryKey;
+        return results;
+      }
+      // Same scope — append any results not already accumulated. Detecting
+      // by objectID rather than page index avoids a race where setPage runs
+      // a render ahead of the worker fetch and the prior page's results
+      // briefly look "stale for the new page".
+      const seen = new Set(prev.map((r) => r.objectID));
+      const newOnes = results.filter((r) => r.objectID && !seen.has(r.objectID));
+      if (newOnes.length > 0) return [...prev, ...newOnes];
+      // No new objectIDs. Replace only on length-different (handles initial
+      // empty → populated). The length-equal branch keeps `prev` so a fresh
+      // empty-array reference from useSearch doesn't loop setAccumulated.
+      return prev.length === results.length ? prev : results;
+    });
+  }, [results, loading, queryKey]);
 
   const resultsByType = getResultsByType(accumulated);
   const totalResults = accumulated.length;
