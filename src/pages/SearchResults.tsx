@@ -623,7 +623,7 @@ export default function SearchResults() {
   const hasMore = totalResults < totalHits;
   const dymHit = useDidYouMean(
     query,
-    !loading && !tooShort && totalHits === 0 && !errorKind,
+    query.trim().length >= 2 && !loading && !tooShort && totalHits === 0 && !errorKind,
   );
 
   const gridClass = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';

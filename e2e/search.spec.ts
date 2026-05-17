@@ -92,7 +92,7 @@ test.describe('search results', () => {
     await loadMore.click();
     await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible();
     // Page 1 results remain — infinite-scroll, not pagination.
-    await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toHaveCount(1);
   });
 
   test('q=a shows Keep typing empty state and never hits the worker', async ({ page }) => {
@@ -121,8 +121,12 @@ test.describe('search results', () => {
   test('venue-only result set hides Price sort options', async ({ page }) => {
     await page.route(SEARCH_HOST_RE, mockSearch({ 1: venuesPage1 }, 20));
     await page.goto('/search?q=berlin&types=venue');
-    await page.getByRole('combobox', { name: /sort/i }).click().catch(() => {});
-    // shadcn Select renders options into a portal — assert by text presence/absence.
-    await expect(page.getByText(/price: low to high/i)).toHaveCount(0);
+    // Wait for the result-page header to mount so the Sort trigger exists.
+    await expect(page.getByText('Sort by:')).toBeVisible();
+    // Radix Select trigger is the combobox whose accessible name is the
+    // current value ("Relevance"). Filter to that to avoid the searchbar combobox.
+    await page.getByRole('combobox', { name: /relevance/i }).click();
+    // Options render into a Radix portal; assert price option is absent.
+    await expect(page.getByRole('option', { name: /price: low to high/i })).toHaveCount(0);
   });
 });
