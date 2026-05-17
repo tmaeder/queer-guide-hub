@@ -44,6 +44,7 @@ import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
+import { BackToTopButton } from '@/components/search/BackToTopButton';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
 import { SearchPagination } from '@/components/search/SearchPagination';
 import { useTrackClick } from '@/hooks/useSearchActions';
@@ -1007,6 +1008,48 @@ export default function SearchResults() {
         </Tabs>
       )}
       </div>
+      <BackToTopButton />
+      {isMobile && (
+        <button
+          type="button"
+          onClick={() => setShowFilters(true)}
+          aria-label="Open filters"
+          style={{
+            position: 'fixed',
+            left: 16,
+            bottom: 16,
+            zIndex: 40,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '10px 14px',
+            background: 'hsl(var(--foreground))',
+            color: 'hsl(var(--background))',
+            border: 0,
+            cursor: 'pointer',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+          }}
+        >
+          <Filter style={{ width: 16, height: 16 }} />
+          Filters
+          {Object.values(filters).some((v) => v && (Array.isArray(v) ? v.length > 0 : true)) && (
+            <Badge variant="destructive" style={{ marginLeft: 4, height: 18, padding: '0 6px', fontSize: '0.7rem' }}>
+              {
+                (filters.types?.length || 0)
+                + (filters.location ? 1 : 0)
+                + (filters.categories?.length || 0)
+                + (filters.cluster_ids?.length || 0)
+                + (filters.priceRange ? 1 : 0)
+                + (filters.dateRange ? 1 : 0)
+                + (filters.rating ? 1 : 0)
+                + (filters.featured ? 1 : 0)
+                + (filters.verified ? 1 : 0)
+              }
+            </Badge>
+          )}
+        </button>
+      )}
     </div>
   );
 }
