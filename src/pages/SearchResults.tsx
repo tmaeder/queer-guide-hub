@@ -41,6 +41,7 @@ import {
 import { useSearch, SearchResult, SearchFilters } from '@/hooks/useSearch';
 import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
+import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
 import { SearchPagination } from '@/components/search/SearchPagination';
 import { useTrackClick } from '@/hooks/useSearchActions';
@@ -618,9 +619,16 @@ export default function SearchResults() {
         </div>
       </PageHeader>
 
-      {/* Filters Panel */}
+      {/* Filters Panel — sticky on desktop */}
       {showFilters && (
-        <Card>
+        <Card
+          style={{
+            position: 'sticky',
+            top: 16,
+            zIndex: 10,
+            marginBottom: 16,
+          }}
+        >
           <SearchFiltersPanel
             filters={filters}
             onFiltersChange={handleFiltersChange}
@@ -630,8 +638,20 @@ export default function SearchResults() {
         </Card>
       )}
 
-      {/* Active filter chips — visible refinement on results header */}
-      <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
+      {/* Active filter chips + saved-search menu */}
+      <div className="flex items-center justify-between" style={{ gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <ActiveFilterChips filters={filters} onFiltersChange={handleFiltersChange} />
+        </div>
+        <SavedSearchesMenu
+          currentQueryString={searchParams.toString()}
+          suggestedName={query}
+          onLoad={(qs) => {
+            const next = new URLSearchParams(qs);
+            setSearchParams(next);
+          }}
+        />
+      </div>
 
       {/* Results Controls */}
       {!loading && results.length > 0 && (
