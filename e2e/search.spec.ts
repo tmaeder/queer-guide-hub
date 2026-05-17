@@ -87,10 +87,11 @@ test.describe('search results', () => {
     );
     await page.goto('/search?q=berlin');
     await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toBeVisible();
-    const loadMore = page.getByRole('button', { name: /Load more/i }).first();
-    await loadMore.scrollIntoViewIfNeeded();
-    await loadMore.click();
-    await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible();
+    // Scroll to bottom — IntersectionObserver inside LoadMoreSentinel auto-fires.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect(page.getByRole('heading', { name: 'Venue 21', exact: true })).toBeVisible({
+      timeout: 10_000,
+    });
     // Page 1 results remain — infinite-scroll, not pagination.
     await expect(page.getByRole('heading', { name: 'Venue 1', exact: true })).toHaveCount(1);
   });
@@ -121,12 +122,16 @@ test.describe('search results', () => {
   test('venue-only result set hides Price sort options', async ({ page }) => {
     await page.route(SEARCH_HOST_RE, mockSearch({ 1: venuesPage1 }, 20));
     await page.goto('/search?q=berlin&types=venue');
-    // Wait for the result-page header to mount so the Sort trigger exists.
+    // Wait for the result-page header to mount.
     await expect(page.getByText('Sort by:')).toBeVisible();
-    // Radix Select trigger is the combobox whose accessible name is the
-    // current value ("Relevance"). Filter to that to avoid the searchbar combobox.
-    await page.getByRole('combobox', { name: /relevance/i }).click();
-    // Options render into a Radix portal; assert price option is absent.
+    // Radix Select trigger is the <button role=combobox> next to "Sort by:".
+    // Click whichever combobox has SelectValue text "Relevance".
+    const sortTrigger = page
+      .getByRole('combobox')
+      .filter({ hasText: /relevance/i })
+      .first();
+    await sortTrigger.click();
+    // Options render into a Radix portal; assert the Price option is absent.
     await expect(page.getByRole('option', { name: /price: low to high/i })).toHaveCount(0);
   });
 });
