@@ -123,6 +123,7 @@ export const MapShell = ({
         skipAutoFly={skipAutoFly ?? fallbackCenter != null}
         onViewportChange={handleViewportChange}
         onLayersChange={handleLayersChange}
+        renderMode={state.lens === 'density' ? 'heatmap' : 'pins'}
       />
 
       {config.showCommandBar !== false && (

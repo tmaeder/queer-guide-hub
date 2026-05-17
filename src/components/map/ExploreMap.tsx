@@ -56,6 +56,8 @@ const POINTS_SOURCE = 'points-source';
 const CLUSTERS_LAYER = 'clusters';
 const CLUSTER_COUNT_LAYER = 'cluster-count';
 const UNCLUSTERED_LAYER = 'unclustered-point';
+const HEATMAP_SOURCE = 'heatmap-source';
+const HEATMAP_LAYER = 'heatmap-layer';
 
 // ── Boundary configs ─────────────────────────────────────────────────────────
 
@@ -109,6 +111,9 @@ export interface ExploreMapProps {
   onViewportChange?: (viewport: { center: [number, number]; zoom: number }) => void;
   /** Fired when the enabled layer set changes. */
   onLayersChange?: (layers: LayerType[]) => void;
+  /** Rendering style for point data. `'pins'` (default) shows clusters + markers.
+   *  `'heatmap'` swaps clusters/markers for a monochrome density layer. */
+  renderMode?: 'pins' | 'heatmap';
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -126,7 +131,8 @@ export const ExploreMap = ({
   skipAutoFly = false,
   onViewportChange: onViewportChangeProp,
   onLayersChange: onLayersChangeProp,
-}) => {
+  renderMode = 'pins',
+}: ExploreMapProps) => {
   const navigate = useLocalizedNavigate();
   const { toast } = useToast();
 
@@ -750,6 +756,68 @@ export const ExploreMap = ({
 
     pointLayersAddedRef.current = true;
   }, [pointsGeoJSON, pointEnabledLayers, mapReady, showPopup]);
+
+  // ── Heatmap layer (Density lens): monochrome black-alpha ramp ─────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+
+    const wantHeatmap = renderMode === 'heatmap' && pointEnabledLayers.length > 0;
+
+    if (!wantHeatmap) {
+      if (map.getLayer(HEATMAP_LAYER)) map.removeLayer(HEATMAP_LAYER);
+      if (map.getSource(HEATMAP_SOURCE)) map.removeSource(HEATMAP_SOURCE);
+      // Restore cluster/pin layer visibility
+      for (const id of [CLUSTERS_LAYER, CLUSTER_COUNT_LAYER, UNCLUSTERED_LAYER]) {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
+      }
+      return;
+    }
+
+    // Hide pin/cluster layers while heatmap is active.
+    for (const id of [CLUSTERS_LAYER, CLUSTER_COUNT_LAYER, UNCLUSTERED_LAYER]) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+    }
+
+    const filteredGeoJSON: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features: pointsGeoJSON.features.filter((f) =>
+        pointEnabledLayers.includes(f.properties.pointType),
+      ),
+    };
+
+    const existing = map.getSource(HEATMAP_SOURCE) as GeoJSONSource | undefined;
+    if (existing) {
+      existing.setData(filteredGeoJSON);
+      return;
+    }
+
+    map.addSource(HEATMAP_SOURCE, { type: 'geojson', data: filteredGeoJSON });
+    map.addLayer({
+      id: HEATMAP_LAYER,
+      type: 'heatmap',
+      source: HEATMAP_SOURCE,
+      maxzoom: 16,
+      paint: {
+        'heatmap-weight': 1,
+        'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 9, 2],
+        // Monochrome black-alpha ramp — design system: no hue, no shadow.
+        'heatmap-color': [
+          'interpolate',
+          ['linear'],
+          ['heatmap-density'],
+          0, 'rgba(0,0,0,0)',
+          0.2, 'rgba(0,0,0,0.15)',
+          0.4, 'rgba(0,0,0,0.30)',
+          0.6, 'rgba(0,0,0,0.50)',
+          0.8, 'rgba(0,0,0,0.70)',
+          1, 'rgba(0,0,0,0.85)',
+        ],
+        'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 6, 9, 28, 14, 60],
+        'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.85, 14, 0.65, 16, 0],
+      },
+    });
+  }, [renderMode, pointsGeoJSON, pointEnabledLayers, mapReady]);
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
