@@ -16,6 +16,12 @@ import { Calendar, MapPin } from 'lucide-react';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
 import { PlanModeInventory } from '@/components/travel/PlanModeInventory';
 import { PlanGapsSidebar } from '@/components/travel/PlanGapsSidebar';
+import {
+  BrowseVisitedToolbar,
+  readStoredVisitedFilter,
+  writeVisitedFilter,
+  type VisitedFilter,
+} from '@/components/travel/BrowseVisitedToolbar';
 
 const MODE_STORAGE_KEY = 'qg.travelMode';
 
@@ -100,12 +106,22 @@ export default function Travel() {
 
 function BrowseMode({ intentBook }: { intentBook: boolean }) {
   const { t } = useTranslation();
+  const [visitedFilter, setVisitedFilter] = useState<VisitedFilter>(() =>
+    readStoredVisitedFilter(),
+  );
+  const onChange = (next: VisitedFilter) => {
+    setVisitedFilter(next);
+    writeVisitedFilter(next);
+  };
   return (
     <>
       <ResumeTripStrip />
       {!intentBook && <StartTripHero />}
       <PrideScroller />
-      <InspirationGrid />
+      <div className="flex items-center justify-end mb-3">
+        <BrowseVisitedToolbar value={visitedFilter} onChange={onChange} />
+      </div>
+      <InspirationGrid visitedFilter={visitedFilter} />
       <BookNowAccordion defaultOpen={intentBook} />
       <div className="border border-border bg-background text-center py-6 px-6 rounded">
         <p className="font-semibold mb-2">

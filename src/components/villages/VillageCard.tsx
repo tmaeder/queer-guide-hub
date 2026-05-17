@@ -4,6 +4,7 @@ import { MapPin, Landmark } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardImage } from '@/components/ui/card';
 import type { QueerVillageWithRelations } from '@/hooks/useQueerVillages';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
 
 interface VillageCardProps {
   village: QueerVillageWithRelations;
@@ -13,6 +14,8 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
   const imageUrl = village.image_url;
   const cityName = village.cities?.name;
   const countryName = village.countries?.name;
+  const visitedLookup = useVisitedPlaceLookup();
+  const isVisited = !!village.id && visitedLookup.has('village', village.id);
 
   return (
     <LocalizedLink to={`/villages/${village.slug}`} style={{ textDecoration: 'none' }}>
@@ -30,6 +33,15 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
             >
               Featured
             </Badge>
+          )}
+          {isVisited && (
+            <div
+              className="absolute bottom-2 left-2 inline-flex items-center px-1.5 py-0.5 font-semibold bg-foreground/80 text-background"
+              style={{ fontSize: '0.65rem' }}
+              title="Visited"
+            >
+              ✓ Visited
+            </div>
           )}
         </CardImage>
 

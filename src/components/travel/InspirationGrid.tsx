@@ -6,13 +6,31 @@ import { useQueerVillages } from '@/hooks/useQueerVillages';
 import { useDiscoverableTrips } from '@/hooks/useDiscoverableTrips';
 import { VillageCard } from '@/components/villages/VillageCard';
 import { PublicTripCard } from '@/components/trips/PublicTripCard';
+import { useVisitedPlaceLookup } from '@/hooks/useVisitedPlaceLookup';
+import type { VisitedFilter } from './BrowseVisitedToolbar';
 
-export function InspirationGrid() {
+interface Props {
+  visitedFilter?: VisitedFilter;
+}
+
+export function InspirationGrid({ visitedFilter = 'all' }: Props) {
   const { t } = useTranslation();
   const { villages, loading: villagesLoading } = useQueerVillages();
   const { data: trips, isLoading: tripsLoading } = useDiscoverableTrips();
+  const visitedLookup = useVisitedPlaceLookup();
 
-  const featuredVillages = useMemo(() => villages.slice(0, 3), [villages]);
+  const filteredVillages = useMemo(() => {
+    if (visitedFilter === 'all') return villages;
+    return villages.filter((v) => {
+      const isVisited = !!v.id && visitedLookup.has('village', v.id);
+      return visitedFilter === 'only_visited' ? isVisited : !isVisited;
+    });
+  }, [villages, visitedFilter, visitedLookup]);
+
+  const featuredVillages = useMemo(
+    () => filteredVillages.slice(0, 3),
+    [filteredVillages],
+  );
   const featuredTrips = useMemo(() => (trips ?? []).slice(0, 3), [trips]);
 
   return (
