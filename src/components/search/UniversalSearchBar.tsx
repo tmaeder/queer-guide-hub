@@ -23,11 +23,14 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { useSearchSuggestions, SearchSuggestion, TYPE_ICONS } from '@/hooks/useSearchSuggestions';
+import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
+import { TrendingUp } from 'lucide-react';
 const SearchFiltersPanel = lazy(() =>
   import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
 );
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
+import { SearchScopeChips } from './SearchScopeChips';
 import type { SearchFilters } from '@/hooks/useSearch';
 
 const contentTypeLabels: Record<string, string> = {
@@ -112,7 +115,8 @@ export const UniversalSearchBar = () => {
     }
   }, [location.pathname]);
 
-  const { suggestions, loading: suggestionsLoading, error: suggestionsError } = useSearchSuggestions(query);
+  const { suggestions, loading: suggestionsLoading, error: suggestionsError } = useSearchSuggestions(query, filters.types);
+  const { trending } = useTrendingSuggestions(isOpen && !query);
 
   useEffect(() => {
     const saved = localStorage.getItem('recent-searches');
@@ -284,6 +288,12 @@ export const UniversalSearchBar = () => {
             </div>
           )}
           <Command shouldFilter={false} style={{ background: 'transparent' }}>
+            <SearchScopeChips
+              activeScope={filters.types && filters.types.length === 1 ? filters.types[0] : null}
+              onScopeChange={(scope) =>
+                setFilters({ ...filters, types: scope ? [scope] : [] })
+              }
+            />
             {showFilters && (
               <Suspense fallback={null}>
                 <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
@@ -291,6 +301,50 @@ export const UniversalSearchBar = () => {
               </Suspense>
             )}
             <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
+              {!query && trending.length > 0 && (
+                <>
+                  <CommandGroup
+                    heading={
+                      <span className="flex items-center gap-1.5">
+                        <TrendingUp style={{ height: 12, width: 12 }} />
+                        Trending
+                      </span>
+                    }
+                  >
+                    {trending.slice(0, 6).map((hit) => {
+                      const type = hit.type;
+                      const Icon = TYPE_ICONS[type] || TrendingUp;
+                      const name = (hit.title || hit.name || '') as string;
+                      const subtitle = (hit.city || hit.country) as string | undefined;
+                      if (!name) return null;
+                      return (
+                        <CommandItem
+                          key={`trending-${type}-${hit.id}`}
+                          onSelect={() =>
+                            handleSelectSuggestion({
+                              id: hit.id,
+                              name,
+                              type,
+                              icon: Icon,
+                              subtitle,
+                              title: name,
+                              slug: hit.slug as string | undefined,
+                            })
+                          }
+                          style={{ cursor: 'pointer', padding: '8px 12px' }}
+                        >
+                          <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                          <div className="flex flex-col items-start flex-1 min-w-0">
+                            <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">{name}</span>
+                            {subtitle && <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap w-full">{subtitle}</span>}
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                  <CommandSeparator />
+                </>
+              )}
               {!query && recentSearches.length > 0 && (
                 <>
                   <CommandGroup heading="Recent searches">

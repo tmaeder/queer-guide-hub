@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { MapPin, Calendar, Store, Tag, Users, User, Newspaper, Globe } from 'lucide-react';
 import { fetchAutocomplete, type SearchHit } from '@/lib/searchClient';
+import { toIndexKeys } from '@/lib/searchTaxonomy';
 
 const MIN_QUERY_LEN = 2;
 const MAX_PER_TYPE = 2;
@@ -53,12 +54,19 @@ function dedupeAndCap(hits: SearchHit[]): SearchHit[] {
   return out;
 }
 
-export function useSearchSuggestions(query: string) {
+export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSuggestions = useCallback(async (searchTerm: string) => {
+  const indexKeys = useMemo(
+    () => (scopeTypes && scopeTypes.length > 0 ? toIndexKeys(scopeTypes) : undefined),
+    [scopeTypes],
+  );
+  const indexKeysKey = JSON.stringify(indexKeys ?? null);
+
+  const fetchSuggestions = useCallback(
+    async (searchTerm: string) => {
     if (!searchTerm || searchTerm.length < MIN_QUERY_LEN) {
       setSuggestions([]);
       setError(null);
@@ -68,7 +76,7 @@ export function useSearchSuggestions(query: string) {
     setLoading(true);
     setError(null);
     try {
-      const hits = await fetchAutocomplete(searchTerm, undefined, 12);
+      const hits = await fetchAutocomplete(searchTerm, indexKeys, 12);
       const capped = dedupeAndCap(hits);
 
       const mapped: SearchSuggestion[] = capped.map((hit) => ({
@@ -93,7 +101,8 @@ export function useSearchSuggestions(query: string) {
     } finally {
       setLoading(false);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indexKeysKey]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -900,15 +900,63 @@ export default function SearchResults() {
           </TabsList>
 
           <TabsContent value="all">
-            <div className={viewMode === 'grid' ? gridClass : listClass}>
-              {sortedResults.map(renderResultCard)}
-            </div>
-            <SearchPagination
-              page={page}
-              hitsPerPage={HITS_PER_PAGE}
-              totalHits={totalHits}
-              onPageChange={setPage}
-            />
+            {/* Federated grouped view when results span multiple types */}
+            {Object.keys(sortedResultsByType).length > 1 ? (
+              <div className="flex flex-col" style={{ gap: 32 }}>
+                {Object.entries(sortedResultsByType).map(([type, typeResults]) => {
+                  const Icon = contentTypeIcons[type] || HelpCircle;
+                  const canonicalId = resolveType(type);
+                  const label =
+                    CONTENT_TYPES.find((t) => t.id === canonicalId)?.label ??
+                    (type && type !== 'undefined' ? type : 'Other');
+                  const topN = typeResults.slice(0, 3);
+                  return (
+                    <section key={type || 'other'} aria-label={label}>
+                      <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+                        <h2 className="font-semibold inline-flex items-center" style={{ fontSize: '1rem', gap: 8 }}>
+                          <Icon style={{ width: 16, height: 16 }} />
+                          {label}
+                          <span className="text-muted-foreground" style={{ fontWeight: 400 }}>
+                            ({typeResults.length})
+                          </span>
+                        </h2>
+                        {typeResults.length > topN.length && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            style={{ fontSize: '0.75rem' }}
+                            onClick={() => setSelectedTab(type)}
+                          >
+                            See all {typeResults.length} →
+                          </Button>
+                        )}
+                      </div>
+                      <div className={viewMode === 'grid' ? gridClass : listClass}>
+                        {topN.map(renderResultCard)}
+                      </div>
+                    </section>
+                  );
+                })}
+                <SearchPagination
+                  page={page}
+                  hitsPerPage={HITS_PER_PAGE}
+                  totalHits={totalHits}
+                  onPageChange={setPage}
+                />
+              </div>
+            ) : (
+              <>
+                <div className={viewMode === 'grid' ? gridClass : listClass}>
+                  {sortedResults.map(renderResultCard)}
+                </div>
+                <SearchPagination
+                  page={page}
+                  hitsPerPage={HITS_PER_PAGE}
+                  totalHits={totalHits}
+                  onPageChange={setPage}
+                />
+              </>
+            )}
           </TabsContent>
 
           {Object.entries(sortedResultsByType).map(([type, typeResults]) => (
