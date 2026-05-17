@@ -268,6 +268,9 @@ function mapHit(hit: Record<string, unknown>, indexUid: string) {
 		// match alias hits (köln -> Cologne, münchen -> Munich).
 		aliases: Array.isArray(hit.aliases) ? (hit.aliases as string[]) : undefined,
 		_rankingScore: (hit._rankingScore as number) || 0,
+		// Carry Meili's highlight payload so /autocomplete can surface
+		// <em>match</em> spans to the client.
+		_formatted: (hit._formatted as Record<string, unknown>) || undefined,
 	};
 }
 
