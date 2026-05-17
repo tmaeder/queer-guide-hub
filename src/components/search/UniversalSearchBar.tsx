@@ -49,6 +49,28 @@ const contentTypeLabels: Record<string, string> = {
 
 const TYPE_ORDER = ['city', 'country', 'venue', 'event', 'personality', 'news', 'queer_village', 'marketplace', 'tag', 'user', 'group'];
 
+function KbdHint({ label, desc }: { label: string; desc: string }) {
+  return (
+    <span className="inline-flex items-center" style={{ gap: 4 }}>
+      <kbd
+        style={{
+          display: 'inline-block',
+          minWidth: 18,
+          padding: '1px 4px',
+          fontSize: '0.65rem',
+          lineHeight: 1.2,
+          border: '1px solid hsl(var(--border))',
+          textAlign: 'center',
+          fontFamily: 'inherit',
+        }}
+      >
+        {label}
+      </kbd>
+      {desc}
+    </span>
+  );
+}
+
 function HighlightedText({ text, query }: { text: string; query: string }) {
   if (!text) return null;
   const q = query.trim();
@@ -175,6 +197,16 @@ export const UniversalSearchBar = () => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSearch();
     else if (e.key === 'Escape') { setIsOpen(false); inputRef.current?.blur(); }
+    else if (e.key === 'Tab' && !e.shiftKey && query && suggestions[0]) {
+      // Tab-to-complete: extend the input to the top suggestion's display name
+      // when the user is mid-typing and a suggestion exists.
+      const top = suggestions[0];
+      const candidate = (top.name || top.title || '').toString();
+      if (candidate && candidate.toLowerCase().startsWith(query.toLowerCase()) && candidate !== query) {
+        e.preventDefault();
+        setQuery(candidate);
+      }
+    }
   };
 
   const handleRecentSearch = (searchTerm: string) => { setQuery(searchTerm); handleSearch(searchTerm); };
@@ -450,6 +482,27 @@ export const UniversalSearchBar = () => {
                   <Search style={{ height: 16, width: 16, marginRight: 8 }} />
                   Search for &ldquo;{query.length > 20 ? query.slice(0, 20) + '...' : query}&rdquo;
                 </Button>
+              </div>
+            )}
+            {!isMobile && (
+              <div
+                className="flex items-center justify-between border-t border-border"
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.7rem',
+                  color: 'hsl(var(--muted-foreground))',
+                  gap: 12,
+                }}
+                aria-hidden="true"
+              >
+                <span className="inline-flex items-center" style={{ gap: 8 }}>
+                  <KbdHint label="↑↓" desc="Navigate" />
+                  <KbdHint label="↵" desc="Select" />
+                  <KbdHint label="Tab" desc="Complete" />
+                </span>
+                <span className="inline-flex items-center" style={{ gap: 8 }}>
+                  <KbdHint label="Esc" desc="Close" />
+                </span>
               </div>
             )}
           </Command>
