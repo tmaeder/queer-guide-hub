@@ -107,7 +107,14 @@
     },
     "nearMeWithRadius": "[IT] Near me ({{km}}km)",
     "searchThisArea": "[IT] Search this area",
-    "didYouMean": "[IT] Did you mean \"{{q}}\"?"
+    "didYouMean": "[IT] Did you mean \"{{q}}\"?",
+    "boost": {
+      "interest": "[IT] Matches your interests",
+      "recent_tag": "[IT] Recently viewed topic",
+      "home_city": "[IT] In your home city",
+      "recent_city": "[IT] In a city you've explored",
+      "featured": "[IT] Featured"
+    }
   },
   "common": {
     "contentInLanguage": "In {{lang}}",

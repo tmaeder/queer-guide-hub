@@ -107,7 +107,14 @@
     },
     "nearMeWithRadius": "[RU] Near me ({{km}}km)",
     "searchThisArea": "[RU] Search this area",
-    "didYouMean": "[RU] Did you mean \"{{q}}\"?"
+    "didYouMean": "[RU] Did you mean \"{{q}}\"?",
+    "boost": {
+      "interest": "[RU] Matches your interests",
+      "recent_tag": "[RU] Recently viewed topic",
+      "home_city": "[RU] In your home city",
+      "recent_city": "[RU] In a city you've explored",
+      "featured": "[RU] Featured"
+    }
   },
   "common": {
     "contentInLanguage": "На языке: {{lang}}",

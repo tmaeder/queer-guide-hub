@@ -107,7 +107,14 @@
     },
     "nearMeWithRadius": "[JA] Near me ({{km}}km)",
     "searchThisArea": "[JA] Search this area",
-    "didYouMean": "[JA] Did you mean \"{{q}}\"?"
+    "didYouMean": "[JA] Did you mean \"{{q}}\"?",
+    "boost": {
+      "interest": "[JA] Matches your interests",
+      "recent_tag": "[JA] Recently viewed topic",
+      "home_city": "[JA] In your home city",
+      "recent_city": "[JA] In a city you've explored",
+      "featured": "[JA] Featured"
+    }
   },
   "common": {
     "contentInLanguage": "言語：{{lang}}",

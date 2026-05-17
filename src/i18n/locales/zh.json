@@ -107,7 +107,14 @@
     },
     "nearMeWithRadius": "[ZH] Near me ({{km}}km)",
     "searchThisArea": "[ZH] Search this area",
-    "didYouMean": "[ZH] Did you mean \"{{q}}\"?"
+    "didYouMean": "[ZH] Did you mean \"{{q}}\"?",
+    "boost": {
+      "interest": "[ZH] Matches your interests",
+      "recent_tag": "[ZH] Recently viewed topic",
+      "home_city": "[ZH] In your home city",
+      "recent_city": "[ZH] In a city you've explored",
+      "featured": "[ZH] Featured"
+    }
   },
   "common": {
     "contentInLanguage": "语言：{{lang}}",

@@ -107,7 +107,14 @@
     },
     "nearMeWithRadius": "[KO] Near me ({{km}}km)",
     "searchThisArea": "[KO] Search this area",
-    "didYouMean": "[KO] Did you mean \"{{q}}\"?"
+    "didYouMean": "[KO] Did you mean \"{{q}}\"?",
+    "boost": {
+      "interest": "[KO] Matches your interests",
+      "recent_tag": "[KO] Recently viewed topic",
+      "home_city": "[KO] In your home city",
+      "recent_city": "[KO] In a city you've explored",
+      "featured": "[KO] Featured"
+    }
   },
   "common": {
     "contentInLanguage": "{{lang}}(으)로",

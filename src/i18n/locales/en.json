@@ -69,6 +69,13 @@
     "nearMeWithRadius": "Near me ({{km}}km)",
     "searchThisArea": "Search this area",
     "didYouMean": "Did you mean \"{{q}}\"?",
+    "boost": {
+      "interest": "Matches your interests",
+      "recent_tag": "Recently viewed topic",
+      "home_city": "In your home city",
+      "recent_city": "In a city you've explored",
+      "featured": "Featured"
+    },
     "mapView": "Map view",
     "seeAllN": "See all {{n}} →",
     "removeFilter": "Remove filter {{label}}",

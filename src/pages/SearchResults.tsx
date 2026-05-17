@@ -45,6 +45,7 @@ import { SearchFiltersPanel } from '@/components/search/SearchFiltersPanel';
 import { ActiveFilterChips } from '@/components/search/ActiveFilterChips';
 import { SavedSearchesMenu } from '@/components/search/SavedSearchesMenu';
 import { BackToTopButton } from '@/components/search/BackToTopButton';
+import { BoostReasonBadge } from '@/components/search/BoostReasonBadge';
 import { SearchFeedbackButtons } from '@/components/search/SearchFeedbackButtons';
 import { LoadMoreSentinel } from '@/components/search/LoadMoreSentinel';
 import { ResultsMapView } from '@/components/search/ResultsMapView';
@@ -422,6 +423,7 @@ export default function SearchResults() {
                 </div>
               )}
             </div>
+            <BoostReasonBadge reason={result._boostReason} />
             <div className="flex items-center justify-between">
               {result.price ? (
                 <p className="font-semibold" style={{ fontSize: '1.125rem', color: 'hsl(var(--primary))' }}>
@@ -549,6 +551,7 @@ export default function SearchResults() {
                       )}
                     </div>
                   )}
+                  <BoostReasonBadge reason={result._boostReason} />
                 </div>
                 <div className="flex flex-col items-end" style={{ gap: 8 }}>
                   {result.price && (

@@ -27,6 +27,8 @@ export interface SearchResult {
   imageUrl?: string;
   /** Geo coords when the entity has them (venues, events, places, villages). */
   _geoloc?: { lat: number; lng: number };
+  /** Personalization signal that boosted this hit (worker `rank.ts`). */
+  _boostReason?: 'interest' | 'recent_tag' | 'home_city' | 'recent_city' | 'featured' | null;
   metadata?: Record<string, unknown>;
   _highlightResult?: Record<string, unknown>;
 }
