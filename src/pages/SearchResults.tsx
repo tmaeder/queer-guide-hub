@@ -208,7 +208,7 @@ export default function SearchResults() {
 
   // Fire zero_results telemetry once when a real query lands with no hits.
   useEffect(() => {
-    if (!query || loading || tooShort) return;
+    if (!query || query.trim().length < 2 || loading || tooShort) return;
     if (totalHits === 0 && !errorKind) {
       void trackSearchUx('zero_results', {
         query,
