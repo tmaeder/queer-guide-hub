@@ -68,6 +68,11 @@ export interface EntityMapProps {
    * filter "only visited" / "hide visited" (persisted in localStorage).
    */
   visitedLookup?: VisitedPlaceLookup;
+  /**
+   * Fires on map `moveend` with the current bounds. Used by /search to
+   * implement "Search this area" — drives a lat/lng/radius refinement.
+   */
+  onMoveEnd?: (info: { center: [number, number]; bounds: { north: number; south: number; east: number; west: number }; zoom: number }) => void;
 }
 
 const PRIMARY_MARKER_SOURCE = 'entity-primary';
@@ -85,7 +90,8 @@ export const EntityMap = ({
   className,
   scrollZoom = false,
   visitedLookup,
-}) => {
+  onMoveEnd,
+}: EntityMapProps) => {
   const navigate = useLocalizedNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -187,6 +193,22 @@ export const EntityMap = ({
       mapRef.current = map;
     });
     map.on('error', () => setMapError(true));
+    if (onMoveEnd) {
+      map.on('moveend', () => {
+        const c = map.getCenter();
+        const b = map.getBounds();
+        onMoveEnd({
+          center: [c.lng, c.lat],
+          bounds: {
+            north: b.getNorth(),
+            south: b.getSouth(),
+            east: b.getEast(),
+            west: b.getWest(),
+          },
+          zoom: map.getZoom(),
+        });
+      });
+    }
 
     // Hard timeout: if tiles can't load (blocked by network policy, CDN
     // outage), show a fallback rather than spin forever.

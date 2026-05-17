@@ -155,6 +155,15 @@ export default function SearchResults() {
     } else {
       params.delete('clusters');
     }
+    if (newFilters.lat !== undefined && newFilters.lng !== undefined) {
+      params.set('lat', String(newFilters.lat));
+      params.set('lng', String(newFilters.lng));
+      if (newFilters.radius) params.set('radius', String(newFilters.radius));
+    } else {
+      params.delete('lat');
+      params.delete('lng');
+      params.delete('radius');
+    }
     params.delete('page');
     setSearchParams(params);
   };
@@ -1020,6 +1029,7 @@ export default function SearchResults() {
               <ResultsMapView
                 results={sortedResults}
                 onSelect={navigateToResult}
+                onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
               />
             ) : Object.keys(sortedResultsByType).length > 1 ? (
               <div className="flex flex-col" style={{ gap: 32 }}>
@@ -1083,6 +1093,7 @@ export default function SearchResults() {
                 <ResultsMapView
                   results={typeResults}
                   onSelect={navigateToResult}
+                  onAreaSearch={(area) => handleFiltersChange({ ...filters, ...area })}
                 />
               ) : (
                 <>
