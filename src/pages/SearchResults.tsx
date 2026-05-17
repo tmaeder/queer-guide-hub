@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Select,
   SelectContent,
@@ -84,6 +86,7 @@ export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useLocalizedNavigate();
   const trackClick = useTrackClick();
+  const isMobile = useIsMobile();
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTab, setSelectedTab] = useState('all');
   const initialSort = searchParams.get('sort') || 'relevance';
@@ -619,8 +622,8 @@ export default function SearchResults() {
         </div>
       </PageHeader>
 
-      {/* Filters Panel — sticky on desktop */}
-      {showFilters && (
+      {/* Filters Panel — sticky card on desktop, bottom Sheet on mobile */}
+      {showFilters && !isMobile && (
         <Card
           style={{
             position: 'sticky',
@@ -636,6 +639,21 @@ export default function SearchResults() {
             facets={facets}
           />
         </Card>
+      )}
+      {isMobile && (
+        <Sheet open={showFilters} onOpenChange={setShowFilters}>
+          <SheetContent side="bottom" style={{ maxHeight: '85dvh', overflowY: 'auto' }}>
+            <SheetHeader>
+              <SheetTitle>Filters</SheetTitle>
+            </SheetHeader>
+            <SearchFiltersPanel
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearAll={handleClearAll}
+              facets={facets}
+            />
+          </SheetContent>
+        </Sheet>
       )}
 
       {/* Active filter chips + saved-search menu */}

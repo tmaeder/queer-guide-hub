@@ -371,8 +371,36 @@ export const UniversalSearchBar = () => {
                     const Icon = suggestion.icon;
                     const displayName = suggestion.name || suggestion.title;
                     const subtitle = suggestion.subtitle;
+                    const slug = suggestion.slug || suggestion.id;
+                    const prefetchHref =
+                      suggestion.type === 'venue' ? `/venues/${slug}`
+                      : suggestion.type === 'event' ? `/events/${slug}`
+                      : suggestion.type === 'marketplace' ? `/marketplace/${slug}`
+                      : suggestion.type === 'personality' ? `/personalities/${slug}`
+                      : suggestion.type === 'city' ? `/city/${slug}`
+                      : suggestion.type === 'country' ? `/country/${slug}`
+                      : suggestion.type === 'queer_village' ? `/queer-villages/${slug}`
+                      : suggestion.type === 'news' ? `/news/${slug}`
+                      : null;
                     return (
-                      <CommandItem key={`${suggestion.type}-${suggestion.id}`} onSelect={() => handleSelectSuggestion(suggestion)} style={{ cursor: 'pointer', padding: '8px 12px' }}>
+                      <CommandItem
+                        key={`${suggestion.type}-${suggestion.id}`}
+                        onSelect={() => handleSelectSuggestion(suggestion)}
+                        onMouseEnter={() => {
+                          if (!prefetchHref) return;
+                          // Browser-native warm-up: a <link rel="prefetch"> hint
+                          // tells Chromium to fetch the route bundle. Cheap, fire-and-forget.
+                          try {
+                            const link = document.createElement('link');
+                            link.rel = 'prefetch';
+                            link.as = 'document';
+                            link.href = prefetchHref;
+                            document.head.appendChild(link);
+                            setTimeout(() => link.remove(), 30_000);
+                          } catch { /* ignore */ }
+                        }}
+                        style={{ cursor: 'pointer', padding: '8px 12px' }}
+                      >
                         <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                         <div className="flex flex-col items-start flex-1 min-w-0">
                           <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">
