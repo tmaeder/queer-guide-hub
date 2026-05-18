@@ -173,8 +173,10 @@ export function VenueCard({
                 className="grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
               />
 
-              {/* Category label — top left */}
-              {venue.category && (
+              {/* Category label — top left. "Other" is hidden because it's noise:
+                  most "other" entries are uncategorized scraper imports and the
+                  badge adds nothing for the user. */}
+              {venue.category && venue.category !== 'other' && (
                 <div
                   className="absolute top-2 left-2 px-2 py-0.5 rounded font-bold uppercase backdrop-blur-sm"
                   style={{

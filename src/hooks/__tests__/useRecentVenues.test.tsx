@@ -54,9 +54,12 @@ describe('useRecentVenues', () => {
     expect(state.calls).toHaveLength(0);
   });
 
-  it('fetches venues ordered by created_at desc, excluding refuge_restrooms', async () => {
+  it('fetches venues ordered by created_at desc, excluding refuge_restrooms and category=other', async () => {
     withResults({
-      data: [{ id: 'v1', name: 'Berghain' }, { id: 'v2', name: 'SchwuZ' }],
+      data: [
+        { id: 'v1', name: 'Berghain', images: ['x.jpg'] },
+        { id: 'v2', name: 'SchwuZ', logo_url: 'y.jpg' },
+      ],
       error: null,
     });
 
@@ -69,10 +72,29 @@ describe('useRecentVenues', () => {
 
     const call = state.calls[0];
     expect(call.table).toBe('venues');
-    const neq = call.chain.find(s => s.method === 'neq');
-    expect(neq?.args).toEqual(['data_source', 'refuge_restrooms']);
+    const neqs = call.chain.filter(s => s.method === 'neq');
+    expect(neqs.map(n => n.args)).toEqual(
+      expect.arrayContaining([
+        ['data_source', 'refuge_restrooms'],
+        ['category', 'other'],
+      ]),
+    );
     const limit = call.chain.find(s => s.method === 'limit');
-    expect(limit?.args).toEqual([2]);
+    expect(limit?.args).toEqual([8]); // over-fetches limit*4
+  });
+
+  it('filters out venues without an image', async () => {
+    withResults({
+      data: [
+        { id: 'v1', name: 'NoImg' },
+        { id: 'v2', name: 'WithImg', images: ['x.jpg'] },
+        { id: 'v3', name: 'WithLogo', logo_url: 'y.jpg' },
+      ],
+      error: null,
+    });
+    const { result } = renderHook(() => useRecentVenues(5));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.venues.map(v => v.id)).toEqual(['v2', 'v3']);
   });
 
   it('keeps venues empty when supabase returns null', async () => {
