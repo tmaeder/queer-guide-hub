@@ -1572,7 +1572,9 @@
         "discoverTail": "[KO] from the community.",
         "errors": {
           "city": "[KO] Pick a city to plan a trip."
-        }
+        },
+        "activeTripHeading": "Continue your trip",
+        "openTrip": "Open trip"
       },
       "resume": {
         "title": "[KO] Continue planning",
@@ -1582,18 +1584,26 @@
         "title": "[KO] Pride this season",
         "window": "[KO] Next 4 months",
         "empty": "[KO] No upcoming Pride events.",
-        "safety": "[KO] Equality score"
+        "safety": "[KO] Equality score",
+        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
+        "equalityAria": "Equality score {{score}}: tap for explanation"
       },
       "inspiration": {
         "villages": "[KO] Queer villages",
         "publicTrips": "[KO] Public trips",
         "viewAll": "[KO] View all",
         "noVillages": "[KO] No villages yet.",
-        "noTrips": "[KO] No public trips yet."
+        "noTrips": "[KO] No public trips yet.",
+        "heading": "Inspiration",
+        "visitedFilterLabel": "Visited:"
       },
       "bookNow": {
         "title": "[KO] Book now",
-        "subtitle": "[KO] Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "[KO] Search flights, hotels, and activities directly — no trip required.",
+        "headline": "Book without a trip"
+      },
+      "plan": {
+        "switchTrip": "Switch active trip"
       }
     },
     "marketplace": {
@@ -1776,6 +1786,16 @@
     },
     "sitemap": {
       "searchPlaceholder": "사이트맵 검색..."
+    },
+    "trips": {
+      "emptyTripsBanner": {
+        "title": "{{count}} empty trips",
+        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
+        "cta": "Review",
+        "dismiss": "Dismiss",
+        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
+        "exitScope": "Show all trips"
+      }
     }
   },
   "settings": {
