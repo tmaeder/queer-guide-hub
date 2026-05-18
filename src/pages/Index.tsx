@@ -17,12 +17,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BackgroundDots } from '@/components/effects/BackgroundDots';
-import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
 import { ExpandableCard, type ExpandableCardItem } from '@/components/effects/ExpandableCard';
 import { AnimatedModal } from '@/components/effects/AnimatedModal';
-import { CardContainer3D, CardItem } from '@/components/effects/CardContainer3D';
-import { GlowingEffect } from '@/components/effects/GlowingEffect';
 import { AppleCardsCarousel, type CarouselCard } from '@/components/effects/AppleCardsCarousel';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
@@ -262,47 +258,34 @@ const Index = React.memo(() => {
         </div>
       </section>
 
-      {/* ── Features Grid ────────────────────────────────────────────── */}
-      <BackgroundDots className="relative py-12 md:py-16 px-4 sm:px-6 md:px-8">
-        <h2 className="font-extrabold mb-8 md:mb-10 text-3xl md:text-4xl tracking-tight relative">
+      {/* ── Browse categories ───────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">
           {t('home.browse', 'Browse')}
         </h2>
-
-        <BentoGrid>
-          {featureDefs.map((feature, i) => {
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
+          {featureDefs.map((feature) => {
             const Icon = feature.icon;
-            const isLarge = i < 2;
             return (
-              <BentoGridItem
-                key={feature.titleKey}
-                colSpan={isLarge ? 2 : 1}
-              >
-                <div className="relative h-full overflow-hidden rounded-[inherit]">
-                  <GlowingEffect spread={260} intensity={0.28} />
-                  <CardContainer3D
-                    rotateRange={6}
-                    containerClassName="h-full"
-                    className="h-full"
-                  >
-                    <LocalizedLink
-                      to={feature.link}
-                      style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}
-                    >
-                      <CardItem translateZ={30} className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2">
-                        <Icon size={20} aria-hidden="true" style={{ flexShrink: 0 }} />
-                        {t(feature.titleKey)}
-                      </CardItem>
-                      <CardItem translateZ={16} as="p" className="text-sm text-muted-foreground leading-[1.5]">
-                        {t(feature.descKey)}
-                      </CardItem>
-                    </LocalizedLink>
-                  </CardContainer3D>
-                </div>
-              </BentoGridItem>
+              <li key={feature.titleKey} className="bg-background">
+                <LocalizedLink
+                  to={feature.link}
+                  className="flex h-full items-start gap-3 p-6 transition-colors hover:bg-muted/40"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight">{t(feature.titleKey)}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground leading-[1.5]">
+                      {t(feature.descKey)}
+                    </p>
+                  </div>
+                </LocalizedLink>
+              </li>
             );
           })}
-        </BentoGrid>
-      </BackgroundDots>
+        </ul>
+      </section>
 
       {/* ── Upcoming Events Near You (hero + index + 14-day strip) ───── */}
       <ErrorBoundary section="regional-calendar" fallback={null}>
