@@ -51,6 +51,7 @@ describe('MarketplaceCategoryTiles', () => {
   it('links each tile to its category route', () => {
     hookMock.mockReturnValue({ data: [{ slug: 'foo', count: 2 }], loading: false });
     render(<MarketplaceCategoryTiles />);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/marketplace/category/foo');
+    const tileLink = screen.getByRole('link', { name: /foo/i });
+    expect(tileLink).toHaveAttribute('href', '/marketplace/category/foo');
   });
 });

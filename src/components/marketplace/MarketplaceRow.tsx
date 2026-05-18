@@ -1,8 +1,9 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketplaceCard } from './MarketplaceCard';
 import { useMarketplaceRow, type CuratedRowKey } from '@/hooks/useMarketplaceRows';
+import { useCuratedIds } from './CuratedIdsContext';
 
 interface MarketplaceRowProps {
   rowKey: CuratedRowKey;
@@ -22,6 +23,11 @@ export function MarketplaceRow({
 }: MarketplaceRowProps) {
   const { data, loading, error } = useMarketplaceRow(rowKey, limit);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const { register } = useCuratedIds();
+
+  useEffect(() => {
+    register(rowKey, data.map((l) => l.id));
+  }, [rowKey, data, register]);
 
   if (!loading && (error || data.length === 0)) return null;
 

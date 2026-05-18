@@ -23,6 +23,7 @@ async function fetchRow(key: CuratedRowKey, limit = 12): Promise<MarketplaceList
     .from('marketplace_listings')
     .select(BASE_SELECT)
     .eq('status', 'active')
+    .not('images', 'is', null)
     .limit(limit);
 
   switch (key) {
@@ -36,7 +37,7 @@ async function fetchRow(key: CuratedRowKey, limit = 12): Promise<MarketplaceList
     }
     case 'most-relevant':
       q = q
-        .gte('lgbti_relevance_score', 0.85)
+        .gte('lgbti_relevance_score', 0.5)
         .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })
         .order('quality_score', { ascending: false, nullsFirst: false });
       break;

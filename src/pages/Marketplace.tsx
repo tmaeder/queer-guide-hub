@@ -11,6 +11,7 @@ import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityCh
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
 import { SavedSearchesButton } from '@/components/marketplace/SavedSearchesButton';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
+import { CuratedIdsProvider, useCuratedIds } from '@/components/marketplace/CuratedIdsContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -40,8 +41,89 @@ import { useTranslation } from 'react-i18next';
 
 type MarketplaceListing = Database['public']['Tables']['marketplace_listings']['Row'];
 
+interface MainGridSectionProps {
+  accumulated: MarketplaceListing[];
+  total: number;
+  page: number;
+  hasActiveFilters: boolean;
+  viewMode: 'grid' | 'list';
+  listingAssets: Map<string, import('@/hooks/useEntityImageAssets').EntityImageAsset>;
+  searchQuery: string | undefined;
+  userPresent: boolean;
+  onViewDetails: (listing: MarketplaceListing) => void;
+  onToggleFavorite: (id: string) => void;
+  canLoadMore: boolean;
+  loading: boolean;
+  onLoadMore: () => void;
+}
+
+function MainGridSection({
+  accumulated,
+  total,
+  page,
+  hasActiveFilters,
+  viewMode,
+  listingAssets,
+  searchQuery,
+  userPresent,
+  onViewDetails,
+  onToggleFavorite,
+  canLoadMore,
+  loading,
+  onLoadMore,
+}: MainGridSectionProps) {
+  const { ids: curatedIds } = useCuratedIds();
+  const visible = useMemo(() => {
+    if (page > 0 || hasActiveFilters || curatedIds.size === 0) return accumulated;
+    return accumulated.filter((l) => !curatedIds.has(l.id));
+  }, [accumulated, page, hasActiveFilters, curatedIds]);
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-muted-foreground">
+          {visible.length === total
+            ? `${total} listing${total !== 1 ? 's' : ''}`
+            : `Showing ${visible.length} of ${total} listings`}
+        </p>
+      </div>
+
+      <StaggerGrid
+        className={viewMode === 'grid' ? 'grid grid-cols-12 gap-3 md:gap-4' : 'flex flex-col gap-3'}
+        itemClassName={
+          viewMode === 'grid'
+            ? (i: number) => MARKETPLACE_SPAN_CLASS[spansForPreset('mosaic', i, visible.length)]
+            : undefined
+        }
+      >
+        {visible.map((listing) => (
+          <div key={listing.id}>
+            <MarketplaceCard
+              listing={listing}
+              onViewDetails={onViewDetails}
+              onToggleFavorite={userPresent ? onToggleFavorite : undefined}
+              showFavoriteButton={userPresent}
+              searchQuery={searchQuery}
+              imageAsset={listingAssets.get(listing.id)}
+            />
+          </div>
+        ))}
+      </StaggerGrid>
+
+      {canLoadMore && (
+        <div className="flex items-center justify-center mt-10">
+          <Button onClick={onLoadMore} variant="outline" size="lg" disabled={loading}>
+            {loading ? 'Loading…' : 'Load more'}
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
 const VALID_TABS = ['all', 'products', 'services'] as const;
-const VALID_SORTS = ['newest', 'oldest', 'az', 'za', 'price_asc', 'price_desc', 'most_viewed'] as const;
+const VALID_SORTS = ['relevance', 'newest', 'oldest', 'az', 'za', 'price_asc', 'price_desc', 'most_viewed'] as const;
+const VIEW_MODE_KEY = 'qg.marketplace.viewMode';
 
 const Marketplace = () => {
   const { t } = useTranslation();
@@ -78,8 +160,8 @@ const Marketplace = () => {
 
   const rawTab = searchParams.get('tab') || 'all';
   const activeTab = (VALID_TABS as readonly string[]).includes(rawTab) ? rawTab : 'all';
-  const rawSort = searchParams.get('sort') || 'newest';
-  const sortBy = (VALID_SORTS as readonly string[]).includes(rawSort) ? (rawSort as MarketplaceSort) : 'newest';
+  const rawSort = searchParams.get('sort') || 'relevance';
+  const sortBy = (VALID_SORTS as readonly string[]).includes(rawSort) ? (rawSort as MarketplaceSort) : 'relevance';
   const page = Math.max(0, parseInt(searchParams.get('page') || '0', 10) || 0);
   const qParam = searchParams.get('q') || '';
 
@@ -90,24 +172,30 @@ const Marketplace = () => {
   });
 
   const [_selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window === 'undefined') return 'grid';
+    const stored = window.localStorage.getItem(VIEW_MODE_KEY);
+    return stored === 'list' ? 'list' : 'grid';
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(VIEW_MODE_KEY, viewMode);
+  }, [viewMode]);
   const [accumulated, setAccumulated] = useState<MarketplaceListing[]>([]);
 
   const sortOptions = [
+    { value: 'relevance', label: 'Most relevant' },
     { value: 'newest', label: 'Newest first' },
-    { value: 'oldest', label: 'Oldest first' },
     { value: 'price_asc', label: 'Price: low to high' },
     { value: 'price_desc', label: 'Price: high to low' },
     { value: 'most_viewed', label: 'Most viewed' },
-    { value: 'az', label: 'A–Z' },
-    { value: 'za', label: 'Z–A' },
   ];
 
   const setUrlParams = (updates: Record<string, string | undefined>) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       for (const [k, v] of Object.entries(updates)) {
-        if (!v || v === 'all' || v === 'newest' || v === '0') {
+        if (!v || v === 'all' || v === 'relevance' || v === '0') {
           next.delete(k);
         } else {
           next.set(k, v);
@@ -171,7 +259,7 @@ const Marketplace = () => {
   };
 
   const handleSortChange = (s: string) => {
-    setUrlParams({ sort: s === 'newest' ? undefined : s, page: undefined });
+    setUrlParams({ sort: s === 'relevance' ? undefined : s, page: undefined });
   };
 
   const handleLoadMore = () => {
@@ -214,6 +302,7 @@ const Marketplace = () => {
   ];
 
   return (
+    <CuratedIdsProvider>
     <div className="min-h-screen relative">
       <PageHero
         eyebrow={t('pages.marketplace.eyebrow', 'Shop')}
@@ -361,49 +450,21 @@ const Marketplace = () => {
 
           <TabsContent value={activeTab}>
             {!error && accumulated.length > 0 && (
-              <>
-                <div className="flex items-center justify-between mb-6">
-                  <p className="text-muted-foreground">
-                    {accumulated.length === total
-                      ? `${total} listing${total !== 1 ? 's' : ''}`
-                      : `Showing ${accumulated.length} of ${total} listings`}
-                  </p>
-                </div>
-
-                <StaggerGrid
-                  className={
-                    viewMode === 'grid'
-                      ? 'grid grid-cols-12 gap-3 md:gap-4'
-                      : 'flex flex-col gap-3'
-                  }
-                  itemClassName={
-                    viewMode === 'grid'
-                      ? (i: number) => MARKETPLACE_SPAN_CLASS[spansForPreset('mosaic', i, accumulated.length)]
-                      : undefined
-                  }
-                >
-                  {accumulated.map((listing) => (
-                    <div key={listing.id}>
-                      <MarketplaceCard
-                        listing={listing}
-                        onViewDetails={handleViewDetails}
-                        onToggleFavorite={user ? handleToggleFavorite : undefined}
-                        showFavoriteButton={!!user}
-                        searchQuery={filters.search}
-                        imageAsset={listingAssets.get(listing.id)}
-                      />
-                    </div>
-                  ))}
-                </StaggerGrid>
-
-                {canLoadMore && (
-                  <div className="flex items-center justify-center mt-10">
-                    <Button onClick={handleLoadMore} variant="outline" size="lg" disabled={loading}>
-                      {loading ? 'Loading…' : 'Load more'}
-                    </Button>
-                  </div>
-                )}
-              </>
+              <MainGridSection
+                accumulated={accumulated}
+                total={total}
+                page={page}
+                hasActiveFilters={hasActiveFilters}
+                viewMode={viewMode}
+                listingAssets={listingAssets}
+                searchQuery={filters.search}
+                userPresent={!!user}
+                onViewDetails={handleViewDetails}
+                onToggleFavorite={handleToggleFavorite}
+                canLoadMore={canLoadMore}
+                loading={loading}
+                onLoadMore={handleLoadMore}
+              />
             )}
           </TabsContent>
         </Tabs>
@@ -411,6 +472,7 @@ const Marketplace = () => {
         <AffiliateDisclosure />
       </div>
     </div>
+    </CuratedIdsProvider>
   );
 };
 export default Marketplace;
