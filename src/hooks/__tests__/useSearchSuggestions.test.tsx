@@ -86,4 +86,13 @@ describe('useSearchSuggestions', () => {
 
     expect(result.current.suggestions[0].subtitle).toBe('Berlin');
   });
+
+  it('should silently fail on autocomplete errors (no banner)', async () => {
+    mockFetchAutocomplete.mockRejectedValue(new Error('network blip'));
+    const { result } = renderHook(() => useSearchSuggestions('Berlin'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // Autocomplete is enhancement, not core — surface no error banner.
+    expect(result.current.error).toBeNull();
+    expect(result.current.suggestions).toEqual([]);
+  });
 });

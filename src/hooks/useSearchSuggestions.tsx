@@ -98,9 +98,13 @@ export function useSearchSuggestions(query: string, scopeTypes?: string[]) {
 
       setSuggestions(mapped);
     } catch (err) {
+      // Autocomplete is a non-critical enhancement layer — a transient blip
+      // (network glitch, brief 5xx) should not surface a big red banner that
+      // makes search look broken. Drop suggestions silently; the user can
+      // still submit and /search has its own (more conservative) error UI.
       console.error('Error fetching suggestions:', err);
       setSuggestions([]);
-      setError('Search is temporarily unavailable.');
+      setError(null);
     } finally {
       setLoading(false);
     }
