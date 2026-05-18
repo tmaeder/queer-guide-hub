@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
-import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, ChevronLeft, ChevronRight, LayoutList, BookOpen, Rows3, Rows4, Layers } from "lucide-react";
+import { Newspaper, Search, Grid3X3, List, SortAsc, Filter, X, TrendingUp, Layers } from "lucide-react";
 import { useNewsStories } from "@/hooks/useNewsStories";
 import { StoryCard } from "@/components/news/StoryCard";
 import { fetchNamesByIds } from "@/hooks/usePageFetchers";
@@ -42,26 +42,14 @@ interface SortOption {
   order: 'asc' | 'desc';
 }
 const sortOptions: SortOption[] = [{
-  value: 'date-desc', label: 'Newest First', field: 'published_at', order: 'desc'
+  value: 'date-desc', label: 'Latest', field: 'published_at', order: 'desc'
 }, {
-  value: 'date-asc', label: 'Oldest First', field: 'published_at', order: 'asc'
+  value: 'views-desc', label: 'Most read', field: 'views_count', order: 'desc'
 }, {
-  value: 'views-desc', label: 'Most Viewed', field: 'views_count', order: 'desc'
-}, {
-  value: 'views-asc', label: 'Least Viewed', field: 'views_count', order: 'asc'
-}, {
-  value: 'title-asc', label: 'Title A-Z', field: 'title', order: 'asc'
-}, {
-  value: 'title-desc', label: 'Title Z-A', field: 'title', order: 'desc'
+  value: 'date-asc', label: 'Oldest', field: 'published_at', order: 'asc'
 }];
 
-type ViewMode = 'grid' | 'list' | 'headlines' | 'magazine' | 'stories';
-type Density = 'comfortable' | 'compact';
-const DENSITY_STORAGE_KEY = 'news:density';
-const readInitialDensity = (): Density => {
-  if (typeof window === 'undefined') return 'comfortable';
-  return window.localStorage.getItem(DENSITY_STORAGE_KEY) === 'compact' ? 'compact' : 'comfortable';
-};
+type ViewMode = 'grid' | 'list' | 'stories';
 
 export default function News() {
   const { t } = useTranslation();
@@ -85,7 +73,7 @@ export default function News() {
   // Filter, sort, view, search and pagination are all reflected in the
   // querystring so users can copy URLs, refresh, or use back/forward.
   const [searchParams, setSearchParams] = useSearchParams();
-  const validViewModes: ViewMode[] = ['grid', 'list', 'headlines', 'magazine', 'stories'];
+  const validViewModes: ViewMode[] = ['grid', 'list', 'stories'];
   const isViewMode = (v: string | null): v is ViewMode =>
     !!v && (validViewModes as string[]).includes(v);
   const validSorts = sortOptions.map((o) => o.value);
@@ -120,14 +108,8 @@ export default function News() {
   const [currentFilters, setCurrentFilters] = useState<Record<string, unknown>>(initialFilters);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory);
-  const [density, setDensity] = useState<Density>(readInitialDensity);
 
   const { stories, heroArticles: storyHeroes, loading: storiesLoading } = useNewsStories({ minArticles: 2, limit: 60 });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(DENSITY_STORAGE_KEY, density);
-  }, [density]);
 
   // Write the canonical state back to the URL whenever it changes. We push for
   // explicit user actions (filter/sort/view/page) and replace for the search
@@ -405,11 +387,11 @@ export default function News() {
   const hasActiveFilters = quickSearch || activeCategory || Object.keys(currentFilters).some(k => currentFilters[k] !== undefined);
 
   const sortedArticles = getSortedArticles();
-  const totalPages = Math.ceil(sortedArticles.length / ARTICLES_PER_PAGE);
-  const paginatedArticles = sortedArticles.slice(
-    (currentPage - 1) * ARTICLES_PER_PAGE,
-    currentPage * ARTICLES_PER_PAGE
-  );
+  // Load-More pattern: currentPage is the number of pages currently *visible* (cumulative).
+  // Clicking "Load more" increments by 1 and grows the window — old articles stay rendered.
+  const visibleCount = currentPage * ARTICLES_PER_PAGE;
+  const paginatedArticles = sortedArticles.slice(0, visibleCount);
+  const hasMore = sortedArticles.length > visibleCount;
 
   const visibleArticleIds = useMemo(() => {
     const ids = new Set<string>();
@@ -419,25 +401,8 @@ export default function News() {
   }, [paginatedArticles, featuredArticles]);
   const { assets: articleAssets } = useEntityImageAssets('news_article', visibleArticleIds);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const getPageNumbers = () => {
-    const pages: (number | 'ellipsis')[] = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (currentPage > 3) pages.push('ellipsis');
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (currentPage < totalPages - 2) pages.push('ellipsis');
-      pages.push(totalPages);
-    }
-    return pages;
+  const handleLoadMore = () => {
+    setCurrentPage((p) => p + 1);
   };
 
   // Count articles per canonical category for the tab badges. Prefer
@@ -520,54 +485,33 @@ export default function News() {
           </div>
         )}
 
-        {/* Featured Section */}
-        {showFeatured && (
-          <section className="border border-border rounded-container p-6 mb-6 bg-background" aria-labelledby="featured-stories-heading">
+        {/* Featured Section — single hero on page 1 with no filters. Secondary featured articles already appear in the grid below. */}
+        {showFeatured && featuredArticles[0] && (
+          <section className="mb-6" aria-labelledby="featured-stories-heading">
             <h2
               id="featured-stories-heading"
-              className="font-bold tracking-widest mb-4 text-muted-foreground uppercase text-xs"
+              className="sr-only"
             >
-              Featured Stories
+              Featured story
             </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Hero featured article */}
-              {featuredArticles[0] && (
-                <NewsCard
-                  article={featuredArticles[0]}
-                  variant="featured"
-                  priority
-                  hideDate
-                  onViewArticle={handleViewArticle}
-                  sourcesMap={sourcesMap}
-                  categoriesMap={categoriesMap}
-                  tags={articleTags[featuredArticles[0].id] || []}
-                  imageAsset={articleAssets.get(featuredArticles[0].id)}
-                />
-              )}
-              {/* Secondary featured articles */}
-              <div className="flex flex-col gap-4">
-                {featuredArticles.slice(1, 4).map((fa) => (
-                  <NewsCard
-                    key={fa.id}
-                    article={fa}
-                    variant="headline"
-                    hideDate
-                    onViewArticle={handleViewArticle}
-                    sourcesMap={sourcesMap}
-                    categoriesMap={categoriesMap}
-                    tags={articleTags[fa.id] || []}
-                    imageAsset={articleAssets.get(fa.id)}
-                  />
-                ))}
-              </div>
-            </div>
+            <NewsCard
+              article={featuredArticles[0]}
+              variant="featured"
+              priority
+              hideDate
+              onViewArticle={handleViewArticle}
+              sourcesMap={sourcesMap}
+              categoriesMap={categoriesMap}
+              tags={articleTags[featuredArticles[0].id] || []}
+              imageAsset={articleAssets.get(featuredArticles[0].id)}
+            />
           </section>
         )}
 
-        {/* Quick Search & Controls */}
-        <div className="border border-border rounded-element p-4 mb-6 bg-background">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="relative flex-1 max-w-md">
+        {/* Quick Search & Controls — sticky on mobile so search stays reachable while scrolling */}
+        <div className="border border-border rounded-element p-4 mb-6 bg-background sticky top-[44px] md:static z-10">
+          <div className="flex flex-col md:flex-row gap-3 md:items-center">
+            <div className="relative flex-1 md:max-w-md">
               <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
               <Input ref={searchInputRef} placeholder={t('pages.news.searchPlaceholder', 'Quick search articles...')} value={quickSearch} onChange={e => handleQuickSearch(e.target.value)} style={{ paddingLeft: 40, paddingRight: 40 }} aria-label="Search articles" />
               {quickSearch && (
@@ -577,9 +521,9 @@ export default function News() {
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:ml-auto">
               <Select value={sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger style={{ width: 180 }} aria-label="Sort articles">
+                <SelectTrigger style={{ width: 150 }} aria-label="Sort articles">
                   <SortAsc style={{ width: 16, height: 16, marginRight: 8 }} />
                   <SelectValue />
                 </SelectTrigger>
@@ -590,54 +534,19 @@ export default function News() {
                 </SelectContent>
               </Select>
 
-              {/* View Mode Buttons */}
-              <div className="flex items-center rounded-element p-1">
-                <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view" title="Grid">
+              {/* View Mode — Grid + List only. Stories has its own link below. */}
+              <div className="hidden md:flex items-center rounded-element p-1 border border-border" role="group" aria-label="View mode">
+                <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Grid view" aria-pressed={viewMode === 'grid'} title="Grid">
                   <Grid3X3 size={16} />
                 </Button>
-                <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }} aria-label="List view" title="List">
+                <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} style={{ height: 32, width: 32, padding: 0 }} aria-label="List view" aria-pressed={viewMode === 'list'} title="List">
                   <List size={16} />
-                </Button>
-                <Button variant={viewMode === 'headlines' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('headlines')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Headlines view" title="Headlines">
-                  <LayoutList size={16} />
-                </Button>
-                <Button variant={viewMode === 'magazine' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('magazine')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Magazine view" title="Magazine">
-                  <BookOpen size={16} />
-                </Button>
-                <Button variant={viewMode === 'stories' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('stories')} style={{ height: 32, width: 32, padding: 0 }} aria-label="Stories view" title="Stories">
-                  <Layers size={16} />
-                </Button>
-              </div>
-
-              {/* Density toggle */}
-              <div className="hidden md:flex items-center rounded-element p-1 border border-border" role="group" aria-label="Card density">
-                <Button
-                  variant={density === 'comfortable' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setDensity('comfortable')}
-                  style={{ height: 32, width: 32, padding: 0 }}
-                  aria-label="Comfortable density"
-                  aria-pressed={density === 'comfortable'}
-                  title="Comfortable"
-                >
-                  <Rows3 size={16} />
-                </Button>
-                <Button
-                  variant={density === 'compact' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setDensity('compact')}
-                  style={{ height: 32, width: 32, padding: 0 }}
-                  aria-label="Compact density"
-                  aria-pressed={density === 'compact'}
-                  title="Compact"
-                >
-                  <Rows4 size={16} />
                 </Button>
               </div>
 
               <Button variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(!showFilters)} style={{ display: 'flex', gap: 8 }} aria-label="Toggle filters">
                 <Filter size={16} />
-                Filters
+                <span className="hidden sm:inline">Filters</span>
                 {hasActiveFilters && (
                   <Badge variant="secondary" style={{ marginLeft: 4, height: 20, width: 20, padding: 0, fontSize: '0.75rem' }}>!</Badge>
                 )}
@@ -646,22 +555,27 @@ export default function News() {
           </div>
         </div>
 
-        {/* Trending tags strip */}
-        {trendingTags.length > 0 && !quickSearch && (
-          <div className="flex items-center gap-2 mb-6 flex-wrap" aria-label={t('pages.news.trendingTags', 'Trending tags')}>
-            <span className="text-xs uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <TrendingUp size={14} /> {t('pages.news.trendingTags', 'Trending')}
-            </span>
-            {trendingTags.slice(0, 10).map(({ tag }) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => handleFilterByTag(tag)}
-                className="text-xs rounded-full border border-border px-3 py-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {tag}
-              </button>
-            ))}
+        {/* Story collections link — replaces the in-grid stories view-mode toggle */}
+        {viewMode !== 'stories' && stories.length > 0 && (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => setViewMode('stories')}
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-element"
+            >
+              <Layers size={14} /> {stories.length} multi-article story {stories.length === 1 ? 'collection' : 'collections'} →
+            </button>
+          </div>
+        )}
+        {viewMode === 'stories' && (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-element"
+            >
+              ← Back to all articles
+            </button>
           </div>
         )}
 
@@ -753,14 +667,19 @@ export default function News() {
 
             {!error && (paginatedArticles.length > 0 || viewMode === 'stories') && !(loading && viewMode !== 'stories') && (
               <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {(currentPage - 1) * ARTICLES_PER_PAGE + 1}–{Math.min(currentPage * ARTICLES_PER_PAGE, sortedArticles.length)} of {sortedArticles.length} article{sortedArticles.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
+                {/* aria-live so screen readers hear filter result counts change */}
+                <p
+                  className="text-sm text-muted-foreground"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {viewMode === 'stories'
+                    ? `${stories.length} story collection${stories.length !== 1 ? 's' : ''}`
+                    : `${sortedArticles.length} article${sortedArticles.length !== 1 ? 's' : ''}${hasMore ? ` · showing ${paginatedArticles.length}` : ''}`}
+                </p>
 
                 <AnimatePresence mode="wait" initial={false}>
-                {/* Stories View */}
                 {viewMode === 'stories' && (
                   <motion.div key="stories" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
                     {storiesLoading ? (
@@ -777,102 +696,6 @@ export default function News() {
                   </motion.div>
                 )}
 
-                {/* Headlines View */}
-                {viewMode === 'headlines' && (
-                  <motion.div key="headlines" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                  <div className="border border-border rounded-container overflow-hidden">
-                    {paginatedArticles.map((article) => (
-                      <NewsCard
-                        key={article.id}
-                        article={article}
-                        variant="headline"
-                        onViewArticle={handleViewArticle}
-                        onFilterByTag={handleFilterByTag}
-                        onFilterBySource={handleFilterBySource}
-                        onFilterByCategory={handleFilterByCategory}
-                        onFilterByAuthor={handleFilterByAuthor}
-                        cityNames={cityNames}
-                        countryNames={countryNames}
-                        sourcesMap={sourcesMap}
-                        categoriesMap={categoriesMap}
-                        tags={articleTags[article.id] || []}
-                        imageAsset={articleAssets.get(article.id)}
-                      />
-                    ))}
-                  </div>
-                  </motion.div>
-                )}
-
-                {/* Magazine View */}
-                {viewMode === 'magazine' && (
-                  <motion.div key="magazine" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
-                  <div className="flex flex-col gap-6">
-                    {/* First article as hero */}
-                    {paginatedArticles[0] && (
-                      <NewsCard
-                        article={paginatedArticles[0]}
-                        variant="featured"
-                        onViewArticle={handleViewArticle}
-                        onFilterByTag={handleFilterByTag}
-                        onFilterBySource={handleFilterBySource}
-                        onFilterByCategory={handleFilterByCategory}
-                        onFilterByAuthor={handleFilterByAuthor}
-                        cityNames={cityNames}
-                        countryNames={countryNames}
-                        sourcesMap={sourcesMap}
-                        categoriesMap={categoriesMap}
-                        tags={articleTags[paginatedArticles[0].id] || []}
-                        imageAsset={articleAssets.get(paginatedArticles[0].id)}
-                      />
-                    )}
-                    {/* Next 2 as medium cards */}
-                    {paginatedArticles.length > 1 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {paginatedArticles.slice(1, 3).map((article) => (
-                          <NewsCard
-                            key={article.id}
-                            article={article}
-                            onViewArticle={handleViewArticle}
-                            onFilterByTag={handleFilterByTag}
-                            onFilterBySource={handleFilterBySource}
-                            onFilterByCategory={handleFilterByCategory}
-                            onFilterByAuthor={handleFilterByAuthor}
-                            cityNames={cityNames}
-                            countryNames={countryNames}
-                            sourcesMap={sourcesMap}
-                            categoriesMap={categoriesMap}
-                            tags={articleTags[article.id] || []}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    {/* Rest in compact grid */}
-                    {paginatedArticles.length > 3 && (
-                      <StaggerGrid className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {paginatedArticles.slice(3).map((article) => (
-                          <NewsCard
-                            key={article.id}
-                            article={article}
-                            density={density}
-                            onViewArticle={handleViewArticle}
-                            onFilterByTag={handleFilterByTag}
-                            onFilterBySource={handleFilterBySource}
-                            onFilterByCategory={handleFilterByCategory}
-                            onFilterByAuthor={handleFilterByAuthor}
-                            cityNames={cityNames}
-                            countryNames={countryNames}
-                            sourcesMap={sourcesMap}
-                            categoriesMap={categoriesMap}
-                            tags={articleTags[article.id] || []}
-                          />
-                        ))}
-                      </StaggerGrid>
-                    )}
-                  </div>
-                  </motion.div>
-                )}
-
-                {/* Grid / List View */}
                 {(viewMode === 'grid' || viewMode === 'list') && (
                   <motion.div key={viewMode} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.2 }}>
                   <StaggerGrid
@@ -891,7 +714,6 @@ export default function News() {
                         key={article.id}
                         article={article}
                         variant={viewMode === 'list' ? 'compact' : undefined}
-                        density={density}
                         onViewArticle={handleViewArticle}
                         onFilterByTag={handleFilterByTag}
                         onFilterBySource={handleFilterBySource}
@@ -910,28 +732,11 @@ export default function News() {
                 )}
                 </AnimatePresence>
 
-                {/* Pagination */}
-                {totalPages > 1 && viewMode !== 'stories' && (
-                  <div className="flex items-center justify-center gap-2 pt-4">
-                    <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <ChevronLeft size={16} /> {t('pages.news.previous', 'Previous')}
-                    </Button>
-                    <div className="hidden sm:flex items-center gap-1">
-                      {getPageNumbers().map((page, i) =>
-                        page === 'ellipsis' ? (
-                          <p key={`e${i}`} className="px-2 text-sm text-muted-foreground">...</p>
-                        ) : (
-                          <Button key={page} variant={currentPage === page ? 'default' : 'outline'} size="sm" onClick={() => handlePageChange(page as number)} style={{ minWidth: 36, height: 36, padding: 0 }}>
-                            {page}
-                          </Button>
-                        )
-                      )}
-                    </div>
-                    <p className="block sm:hidden text-sm text-muted-foreground">
-                      {currentPage} / {totalPages}
-                    </p>
-                    <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      Next <ChevronRight size={16} />
+                {/* Load More — replaces numbered pagination. Cumulative window grows on click. */}
+                {hasMore && viewMode !== 'stories' && (
+                  <div className="flex justify-center pt-4">
+                    <Button variant="outline" onClick={handleLoadMore}>
+                      Load more articles
                     </Button>
                   </div>
                 )}
