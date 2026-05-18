@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { TrendingStrip } from '@/components/discovery/TrendingStrip';
-import { RecommendedForYou } from '@/components/discovery/RecommendedForYou';
 import { useTranslation } from 'react-i18next';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
@@ -26,7 +24,6 @@ import { AnimatedModal } from '@/components/effects/AnimatedModal';
 import { CardContainer3D, CardItem } from '@/components/effects/CardContainer3D';
 import { GlowingEffect } from '@/components/effects/GlowingEffect';
 import { AppleCardsCarousel, type CarouselCard } from '@/components/effects/AppleCardsCarousel';
-import { WobbleCard } from '@/components/effects/WobbleCard';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
@@ -262,42 +259,6 @@ const Index = React.memo(() => {
               { title: 'Tokyo', category: 'Japan', href: '/city/tokyo', src: getRandomFallbackImage() },
             ] satisfies CarouselCard[]}
           />
-        </div>
-      </section>
-
-      {/* ── Discovery widgets (search v2) ────────────────────────────── */}
-      <section className="px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col gap-8">
-        <RecommendedForYou />
-        <TrendingStrip />
-      </section>
-
-      {/* ── Why Queer Guide — WobbleCards trio ─────────────────────── */}
-      <section className="px-4 sm:px-6 md:px-8 py-10 md:py-14 max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6">
-          {t('home.why.title', 'Why Queer Guide')}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <WobbleCard className="h-full">
-            <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">01</div>
-            <h3 className="text-xl font-bold tracking-tight mt-1">{t('home.why.community.title', 'Built by the community.')}</h3>
-            <p className="text-sm text-muted-foreground mt-3 leading-[1.55]">
-              {t('home.why.community.desc', 'Verified by people who actually go — not by algorithms or paid placements.')}
-            </p>
-          </WobbleCard>
-          <WobbleCard className="h-full">
-            <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">02</div>
-            <h3 className="text-xl font-bold tracking-tight mt-1">{t('home.why.privacy.title', 'Privacy first.')}</h3>
-            <p className="text-sm text-muted-foreground mt-3 leading-[1.55]">
-              {t('home.why.privacy.desc', 'No location tracking, no third-party trackers, no dark patterns. Ever.')}
-            </p>
-          </WobbleCard>
-          <WobbleCard className="h-full">
-            <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">03</div>
-            <h3 className="text-xl font-bold tracking-tight mt-1">{t('home.why.free.title', 'Free, forever.')}</h3>
-            <p className="text-sm text-muted-foreground mt-3 leading-[1.55]">
-              {t('home.why.free.desc', 'No paywalls. Donations and ethical partnerships keep us running.')}
-            </p>
-          </WobbleCard>
         </div>
       </section>
 
