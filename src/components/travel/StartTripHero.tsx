@@ -23,6 +23,7 @@ export function StartTripHero() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const today = new Date().toISOString().slice(0, 10);
 
   const handlePlan = async () => {
     setError(null);
@@ -64,9 +65,9 @@ export function StartTripHero() {
 
   return (
     <section className="border border-border bg-background p-6 sm:p-8 mb-8 rounded">
-      <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+      <h2 className="text-3xl font-extrabold tracking-tight mb-2">
         {t('pages.travel.hero.title', 'Plan a trip')}
-      </h1>
+      </h2>
       <p className="text-muted-foreground mb-5 max-w-prose">
         {t(
           'pages.travel.hero.subtitle',
@@ -90,6 +91,7 @@ export function StartTripHero() {
             id="travel-hero-start"
             type="date"
             value={startDate}
+            min={today}
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
@@ -102,7 +104,7 @@ export function StartTripHero() {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            min={startDate || undefined}
+            min={startDate || today}
           />
         </div>
         <Button

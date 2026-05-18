@@ -17,6 +17,7 @@ import { ColourfulText } from '@/components/effects/ColourfulText';
 import { SpotlightV2 } from '@/components/effects/SpotlightV2';
 import { NextTripStrip } from '@/components/trips/NextTripStrip';
 import { InspiredByYourTrips } from '@/components/trips/InspiredByYourTrips';
+import { EmptyTripsCleanupBanner } from '@/components/trips/EmptyTripsCleanupBanner';
 import {
   TripsToolbar,
   type TripSortKey,
@@ -67,16 +68,18 @@ export default function TripsPage() {
   }, [seedGeo, createOpen]);
   const [statusFilter, setStatusFilter] = useState<TripStatusFilter>('all');
   const [sortKey, setSortKey] = useState<TripSortKey>('recent');
+  const [scopeEmptyIds, setScopeEmptyIds] = useState<Set<string> | null>(null);
 
   const counts = useMemo(
     () => countTripsByStatus(trips ?? [], savedIds),
     [trips, savedIds],
   );
 
-  const visibleTrips = useMemo(
-    () => filterAndSortTrips(trips ?? [], search, statusFilter, sortKey, savedIds),
-    [trips, search, statusFilter, sortKey, savedIds],
-  );
+  const visibleTrips = useMemo(() => {
+    const base = filterAndSortTrips(trips ?? [], search, statusFilter, sortKey, savedIds);
+    if (scopeEmptyIds) return base.filter((t) => scopeEmptyIds.has(t.id));
+    return base;
+  }, [trips, search, statusFilter, sortKey, savedIds, scopeEmptyIds]);
 
   if (!user) {
     return <TripsSignedOutHero />;
@@ -129,6 +132,36 @@ export default function TripsPage() {
       </div>
 
       {hasAnyTrips && !isFiltered && <NextTripStrip trips={trips ?? []} />}
+
+      {hasAnyTrips && !isFiltered && !scopeEmptyIds && (
+        <EmptyTripsCleanupBanner
+          trips={trips ?? []}
+          onCleanup={(ids) => {
+            setScopeEmptyIds(new Set(ids));
+            setSearch('');
+            setStatusFilter('all');
+          }}
+        />
+      )}
+
+      {scopeEmptyIds && (
+        <div className="border border-border bg-muted/30 p-3 mb-4 rounded flex items-center justify-between gap-3">
+          <p className="text-sm">
+            {t(
+              'pages.trips.emptyTripsBanner.scopeNote',
+              'Showing {{count}} empty drafts. Delete the ones you don’t need.',
+              { count: scopeEmptyIds.size },
+            )}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setScopeEmptyIds(null)}
+          >
+            {t('pages.trips.emptyTripsBanner.exitScope', 'Show all trips')}
+          </Button>
+        </div>
+      )}
 
       {/* Travel inbox */}
       <TripsInboxSection />

@@ -1518,12 +1518,9 @@
       "lgbtqFriendly": "LGBTQ+ Friendly"
     },
     "travel": {
-      "title": "Book Travel",
+      "title": "Travel",
       "subtitle": "Find flights, hotels, and activities for LGBTQ+ friendly destinations",
       "activitiesComingSoon": "Activities coming soon.",
-      "browseDestinations": "Browse Destinations",
-      "exploreCta": "Explore LGBTQ+ Friendly Destinations",
-      "exploreDescription": "Discover cities and countries with detailed safety information and travel guides",
       "browseDestinations": "Browse destinations",
       "exploreCta": "Explore LGBTQ+ friendly destinations",
       "exploreDescription": "Browse cities and countries with detailed safety information and travel guides.",
@@ -1539,7 +1536,9 @@
         "discoverTail": "from the community.",
         "errors": {
           "city": "Pick a city to plan a trip."
-        }
+        },
+        "activeTripHeading": "Continue your trip",
+        "openTrip": "Open trip"
       },
       "resume": {
         "title": "Continue planning",
@@ -1549,18 +1548,23 @@
         "title": "Pride this season",
         "window": "Next 4 months",
         "empty": "No upcoming Pride events.",
-        "safety": "Equality score"
+        "safety": "Equality score",
+        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
+        "equalityAria": "Equality score {{score}}: tap for explanation"
       },
       "inspiration": {
         "villages": "Queer villages",
         "publicTrips": "Public trips",
         "viewAll": "View all",
         "noVillages": "No villages yet.",
-        "noTrips": "No public trips yet."
+        "noTrips": "No public trips yet.",
+        "heading": "Inspiration",
+        "visitedFilterLabel": "Visited:"
       },
       "bookNow": {
         "title": "Book now",
-        "subtitle": "Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "Search flights, hotels, and activities directly — no trip required.",
+        "headline": "Book without a trip"
       },
       "hotels": {
         "typeLabel": "Type",
@@ -1579,6 +1583,9 @@
           "apartment": "Apartment",
           "resort": "Resort"
         }
+      },
+      "plan": {
+        "switchTrip": "Switch active trip"
       }
     },
     "marketplace": {
@@ -1761,6 +1768,16 @@
     },
     "sitemap": {
       "searchPlaceholder": "Search sitemap..."
+    },
+    "trips": {
+      "emptyTripsBanner": {
+        "title": "{{count}} empty trips",
+        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
+        "cta": "Review",
+        "dismiss": "Dismiss",
+        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
+        "exitScope": "Show all trips"
+      }
     }
   },
   "settings": {
