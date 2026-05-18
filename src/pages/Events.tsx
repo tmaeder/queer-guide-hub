@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { TrendingByType } from '@/components/discovery/TrendingByType';
 import { EventsHeroSpotlight } from '@/components/events/EventsHeroSpotlight';
-import { FeaturedEventsRail } from '@/components/events/FeaturedEventsRail';
 import { SmartEmptyState } from '@/components/events/SmartEmptyState';
 import { PresetChips, getPresetDateRange, type EventPresetId } from '@/components/events/PresetChips';
 import { useEvents } from '@/hooks/useEvents';
@@ -22,7 +20,7 @@ const EVENT_SPAN_CLASS: Record<string, string> = {
   wide: 'col-span-12 md:col-span-8',
   tall: 'col-span-12 sm:col-span-6 md:col-span-4 row-span-2',
 };
-import { SearchInputTyped } from '@/components/ui/search-input-typed';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -32,11 +30,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import {
   Calendar,
-  Loader,
   Search,
   Filter,
   X,
@@ -139,7 +135,7 @@ const Events = () => {
     lat: number;
     lng: number;
   } | null>(null);
-  const [locationLoading, setLocationLoading] = useState(false);
+  const [, setLocationLoading] = useState(false);
   const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(null);
   const { location: visitorLocation } = useVisitorLocation();
   const [page, setPage] = useState(1);
@@ -433,142 +429,35 @@ const Events = () => {
         size="md"
       />
       <div className="container mx-auto px-4 py-8 md:py-12">
-        {/* View mode toggle */}
-        <div className="mb-6 flex justify-end">
-          <div
-            className="flex items-center gap-1 p-1 bg-muted rounded-element"
-            role="group"
-            aria-label="View mode"
-          >
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size="icon"
-              aria-label={t('pages.events.gridView', 'Grid view')}
-              onClick={() => setViewMode('grid')}
-            >
-              <Grid size={16} />
-            </Button>
-            <Button
-              variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-              size="icon"
-              aria-label={t('pages.events.calendarView', 'Calendar view')}
-              onClick={() => setViewMode('calendar')}
-            >
-              <CalendarIcon size={16} />
-            </Button>
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'ghost'}
-              size="icon"
-              aria-label={t('pages.events.mapView', 'Map view')}
-              onClick={() => setViewMode('map')}
-            >
-              <MapPin size={16} />
-            </Button>
-          </div>
-        </div>
-
-        {/* Spotlight — next featured / pride / festival event */}
-        {!hasActiveFilters && (
-          <div className="mt-4 mb-6">
-            <EventsHeroSpotlight />
-          </div>
-        )}
-
-        <TrendingByType type="event" className="mt-4 mb-6" />
-
-        {/* Featured rail — editor-picked spotlight */}
-        {!hasActiveFilters && (
-          <div className="mb-10">
-            <FeaturedEventsRail city={visitorLocation?.city ?? null} />
-          </div>
-        )}
-
-        {/* Smart entry chips — preset filter combos */}
-        <div className="mb-6">
-          <PresetChips active={activePreset} onSelect={handlePresetSelect} />
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-8">
+        {/* Filters — first interactive surface after hero */}
+        <div className="flex flex-col gap-4 p-4 bg-card rounded-container mb-6">
           {/* Search Bar */}
           <div className="flex flex-wrap gap-2 items-center">
             <div className="flex-1 basis-full sm:basis-auto min-w-0 flex items-center gap-2 rounded px-3 py-2 bg-background">
               <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-              <SearchInputTyped
+              <Input
                 aria-label={t('pages.events.searchLabel', 'Search events')}
-                placeholders={[
-                  'Search for events...',
-                  'Find parties near you...',
-                  'Find LGBTQ+ meetups...',
-                  'Look for workshops...',
-                  'Search pride events...',
-                  'Find social gatherings...',
-                ]}
+                placeholder={t('pages.events.searchPlaceholder', 'Search events, cities, organizers')}
                 value={search}
-                onValueChange={setSearch}
+                onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleFiltersChange()}
-                style={{
-                  border: 0,
-                  boxShadow: 'none',
-                  padding: 0,
-                  height: 'auto',
-                  background: 'inherit',
-                  outline: 'none',
-                  flex: 1,
-                  minWidth: 0,
-                  width: '100%',
-                }}
-                typingSpeed={75}
-                pauseDuration={1500}
+                className="border-0 shadow-none p-0 h-auto bg-transparent focus:ring-0 focus:border-0 flex-1 min-w-0"
               />
             </div>
             <Button
-              onClick={handleNearMe}
-              variant={nearMe ? 'default' : 'outline'}
-              disabled={locationLoading}
-              size="icon"
-              aria-label="Find events near me"
-            >
-              {locationLoading ? (
-                <Loader style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
-              ) : (
-                <MapPin size={16} />
-              )}
-            </Button>
-            <Button onClick={handleFiltersChange} size="icon" aria-label="Search events">
-              <Search size={16} />
-            </Button>
-            <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              size="icon"
               aria-label={showFilters ? 'Hide filters' : 'Show filters'}
               aria-expanded={showFilters}
+              style={{ display: 'inline-flex', gap: 8 }}
             >
               <Filter size={16} />
+              {t('pages.events.filters', 'Filters')}
             </Button>
-            <Button
-              variant={showPast ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setShowPast(!showPast)}
-              aria-pressed={showPast}
-              className="hidden sm:inline-flex"
-            >
-              {t('pages.events.showPastEvents', 'Past events')}
-            </Button>
-            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
-              <SelectTrigger
-                className="hidden sm:flex w-[140px]"
-                aria-label={t('pages.events.sortLabel', 'Sort events')}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
-                <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
+
+          {/* Smart entry chips — preset filter combos */}
+          <PresetChips active={activePreset} onSelect={handlePresetSelect} />
 
           {/* Extended Filters */}
           {showFilters && (
@@ -752,33 +641,6 @@ const Events = () => {
                 categories={['events']}
               />
 
-              {/* Past events toggle */}
-              <div className="flex items-center justify-between gap-4 pt-2">
-                <Label htmlFor="show-past-events" style={{ cursor: 'pointer' }}>
-                  {t('pages.events.showPastEvents', 'Show past events')}
-                </Label>
-                <Switch
-                  id="show-past-events"
-                  checked={showPast}
-                  onCheckedChange={setShowPast}
-                  aria-label={t('pages.events.showPastEvents', 'Show past events')}
-                />
-              </div>
-
-              {/* Sort — mobile-only access (desktop has inline sort in filter row) */}
-              <div className="flex flex-col gap-2 sm:hidden">
-                <Label htmlFor="sort-mobile">{t('pages.events.sortLabel', 'Sort events')}</Label>
-                <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
-                  <SelectTrigger id="sort-mobile">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
-                    <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Action Buttons */}
               <div className="flex gap-2 pt-2">
                 <Button onClick={handleFiltersChange}>{t('pages.events.applyFilters', 'Apply Filters')}</Button>
@@ -908,6 +770,98 @@ const Events = () => {
             </div>
           )}
         </div>
+
+        {/* Editor-curated spotlight — only when browsing unfiltered */}
+        {!hasActiveFilters && (
+          <div className="mb-6">
+            <EventsHeroSpotlight />
+          </div>
+        )}
+
+        {/* Result-meta row: count + view toggle + sort + past toggle */}
+        {!loading && !error && (
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {autoLocationLabel && city === autoLocationLabel
+                ? t('pages.events.resultsNear', {
+                    count: events.length,
+                    city: displayCityName(autoLocationLabel, i18n.language),
+                    defaultValue: `${events.length} events near ${displayCityName(autoLocationLabel, i18n.language)}`,
+                  })
+                : t('pages.events.resultsCount', {
+                    count: events.length,
+                    defaultValue: `${events.length} ${events.length === 1 ? 'event' : 'events'}`,
+                  })}
+              {autoLocationLabel && city === autoLocationLabel && (
+                <button
+                  type="button"
+                  onClick={() => { setCity(''); setAutoLocationLabel(null); }}
+                  className="ml-2 underline hover:text-foreground"
+                >
+                  {t('pages.events.showWorldwide', 'Show worldwide')}
+                </button>
+              )}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant={showPast ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowPast(!showPast)}
+                aria-pressed={showPast}
+              >
+                {t('pages.events.showPastEvents', 'Past events')}
+              </Button>
+              <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+                <SelectTrigger
+                  className="w-[140px]"
+                  aria-label={t('pages.events.sortLabel', 'Sort events')}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-asc">{t('pages.events.sort.dateAsc', 'Soonest first')}</SelectItem>
+                  <SelectItem value="date-desc">{t('pages.events.sort.dateDesc', 'Latest first')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <div
+                className="flex items-center gap-1 p-1 bg-muted rounded-element"
+                role="group"
+                aria-label={t('pages.events.viewMode', 'View mode')}
+              >
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  aria-pressed={viewMode === 'grid'}
+                  style={{ display: 'inline-flex', gap: 6 }}
+                >
+                  <Grid size={16} />
+                  <span className="hidden sm:inline">{t('pages.events.gridView', 'Grid')}</span>
+                </Button>
+                <Button
+                  variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('calendar')}
+                  aria-pressed={viewMode === 'calendar'}
+                  style={{ display: 'inline-flex', gap: 6 }}
+                >
+                  <CalendarIcon size={16} />
+                  <span className="hidden sm:inline">{t('pages.events.calendarView', 'Calendar')}</span>
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('map')}
+                  aria-pressed={viewMode === 'map'}
+                  style={{ display: 'inline-flex', gap: 6 }}
+                >
+                  <MapPin size={16} />
+                  <span className="hidden sm:inline">{t('pages.events.mapView', 'Map')}</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Status region for screen readers */}
         <div
