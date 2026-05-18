@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import type { LayerType } from '@/hooks/useExploreMapData';
 import { LAYER_DEFS } from './ExploreMapLayers';
 import { LensPicker } from './LensPicker';
+import { TimePopover, EraPopover } from './FilterPopovers';
 import {
   FILTER_LABELS,
   type MapFilterKey,
@@ -138,6 +139,10 @@ export const CommandBar = ({
     onLayersChange(next);
   };
 
+  // time + era have inline popover triggers (rendered below); they're not
+  // listed in the generic Filter menu since the inline button is the entry point.
+  const genericFilters = availableFilters.filter((k) => k !== 'time' && k !== 'era');
+
   const toggleFilter = (key: MapFilterKey) => {
     hapticTrigger('nudge');
     const next: MapShellFilters = { ...filters };
@@ -164,14 +169,6 @@ export const CommandBar = ({
           return;
         }
         break;
-      case 'time':
-        if (next.dateRange) delete next.dateRange;
-        else {
-          const today = new Date().toISOString().slice(0, 10);
-          const inAYear = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10);
-          next.dateRange = { start: today, end: inAYear };
-        }
-        break;
       case 'accessibility':
         if (next.accessible) delete next.accessible;
         else next.accessible = true;
@@ -179,10 +176,6 @@ export const CommandBar = ({
       case 'queer-owned':
         if (next.queerOwned) delete next.queerOwned;
         else next.queerOwned = true;
-        break;
-      case 'era':
-        if (next.era) delete next.era;
-        else next.era = { decadeStart: 1950, decadeEnd: 2020 };
         break;
       default:
         break;
@@ -302,7 +295,7 @@ export const CommandBar = ({
 
       <LensPicker lenses={lenses} value={lens} onChange={onLensChange} />
 
-      {availableFilters.length > 0 && (
+      {genericFilters.length > 0 && (
         <Popover open={filterOpen} onOpenChange={setFilterOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -316,7 +309,7 @@ export const CommandBar = ({
           </PopoverTrigger>
           <PopoverContent align="end" className="p-2 w-56 border-border">
             <div className="flex flex-col gap-1">
-              {availableFilters.map((k) => (
+              {genericFilters.map((k) => (
                 <button
                   key={k}
                   type="button"
@@ -369,6 +362,19 @@ export const CommandBar = ({
             </div>
           </PopoverContent>
         </Popover>
+      )}
+
+      {availableFilters.includes('time') && (
+        <TimePopover
+          value={filters.dateRange}
+          onChange={(v) => onFiltersChange({ ...filters, dateRange: v })}
+        />
+      )}
+      {availableFilters.includes('era') && (
+        <EraPopover
+          value={filters.era}
+          onChange={(v) => onFiltersChange({ ...filters, era: v })}
+        />
       )}
 
       <Popover open={moreOpen} onOpenChange={setMoreOpen}>
