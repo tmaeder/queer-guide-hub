@@ -42,7 +42,7 @@ const EMERGENCY_NUMBERS: Record<string, string> = {
   ES: '112', IT: '112', INT: '112 / 911',
 };
 
-const MAX = 6;
+const MAX = 4;
 
 function is247(hours: string): boolean {
   const h = hours.toLowerCase();
@@ -82,12 +82,19 @@ export function CrisisStrip() {
       });
   }, [hotlines]);
 
+  const localCount = useMemo(
+    () => hotlines.filter((h) => h.country === country).length,
+    [hotlines, country],
+  );
+
   const visible = useMemo(() => {
     const local = hotlines.filter((h) => h.country === country);
     const international = hotlines.filter((h) => h.country === 'INT');
     const combined = local.length > 0 ? [...rankHotlines(local), ...rankHotlines(international)] : rankHotlines(international);
     return combined.slice(0, MAX);
   }, [hotlines, country]);
+
+  const showNoLocalNote = !isLoading && country !== 'INT' && localCount === 0 && hotlines.length > 0;
 
   const emergency = EMERGENCY_NUMBERS[country] ?? EMERGENCY_NUMBERS.INT;
 
@@ -125,6 +132,12 @@ export function CrisisStrip() {
         In immediate danger? Call <a href={`tel:${emergency.split(' ')[0]}`} className="font-semibold text-foreground underline">{emergency}</a>{country !== 'INT' && ` (${countryLabel(country)})`}.
       </p>
 
+      {showNoLocalNote && (
+        <p className="text-xs text-muted-foreground mb-3">
+          No {countryLabel(country)} hotlines indexed yet — showing international.
+        </p>
+      )}
+
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-element" />)}
@@ -143,9 +156,10 @@ export function CrisisStrip() {
                 {h.phone && (
                   <a
                     href={`tel:${h.phone.replace(/\s+/g, '')}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:underline"
+                    aria-label={`Call ${h.name} at ${h.phone}`}
+                    className="inline-flex items-center gap-2 text-xl font-semibold tabular-nums text-foreground hover:underline -mx-1 px-1 py-0.5"
                   >
-                    <Phone aria-hidden style={{ width: 14, height: 14 }} />
+                    <Phone aria-hidden style={{ width: 18, height: 18 }} />
                     {h.phone}
                   </a>
                 )}

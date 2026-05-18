@@ -11,11 +11,14 @@ import { ResourcesFilterBar } from '@/components/resources/ResourcesFilterBar';
 import { parentOrder } from '@/components/resources/categoryMeta';
 import { fetchAllProfessions, fetchTagWithCategories } from '@/hooks/usePageFetchers';
 import { useMeta } from '@/hooks/useMeta';
-import { useSafeMode } from '@/providers/SafeModeProvider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Network } from 'lucide-react';
-import { PageHero } from '@/components/discovery';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { ChevronDown, Network } from 'lucide-react';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
 import { ErrorState } from '@/components/ui/EmptyState';
 import { ResourceTagDetail } from '@/pages/resources/ResourceTagDetail';
@@ -36,7 +39,6 @@ export default function Ressources() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { allTags, categoriesTree, loading, error, searchTags } = useCentralizedTags();
   const { data: tagUsageCounts = {} } = useTagUsageCounts();
-  const safeMode = useSafeMode();
 
   // P1-1 — filter / sort / view state lives in URL query params so links
   // are shareable, back/forward works, and view-mode survives reloads.
@@ -258,22 +260,6 @@ export default function Ressources() {
     [categoriesTree],
   );
 
-  const popularTags = useMemo(
-    () =>
-      [...allTags]
-        .filter((t) => (tagUsageCounts[t.name] || 0) > 0)
-        .filter(
-          (t) =>
-            !safeMode.shouldHide([
-              ...(t.categories?.map((c) => c.name) ?? []),
-              ...(t.categories?.map((c) => c.parent_name ?? null) ?? []),
-            ]),
-        )
-        .sort((a, b) => (tagUsageCounts[b.name] || 0) - (tagUsageCounts[a.name] || 0))
-        .slice(0, 24),
-    [allTags, tagUsageCounts, safeMode],
-  );
-
   // P1-5 — per-page metadata for the tag-detail view. SPA caveat: meta
   // is JS-injected so crawlers without JS won't pick it up; documented
   // in the bug report's Stack Adaptation note.
@@ -421,17 +407,47 @@ export default function Ressources() {
     (viewMode === 'overview' &&
       (searchQuery || filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter));
 
+  const isPureOverview = viewMode === 'overview' && !showFilteredResults;
+
+  const filterBar = (
+    <ResourcesFilterBar
+      searchQuery={searchQuery}
+      onSearch={handleSearch}
+      displayMode={displayMode}
+      onDisplayModeChange={setDisplayMode}
+      viewMode={viewMode}
+      onToggleGraph={() => setViewMode(viewMode === 'graph' ? 'overview' : 'graph')}
+      filterCategory={filterCategory}
+      onFilterCategoryChange={setFilterCategory}
+      usageFilter={usageFilter}
+      onUsageFilterChange={setUsageFilter}
+      hasImageFilter={hasImageFilter}
+      onHasImageFilterChange={setHasImageFilter}
+      sortBy={sortBy}
+      onSortByChange={setSortBy}
+      sortDirection={sortDirection}
+      onSortDirectionToggle={() =>
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+      }
+      categoriesTree={categoriesTree}
+    />
+  );
+
   return (
     <div className="relative">
-      <PageHero
-        eyebrow="Support"
-        title="Help & resources."
-        lede="Crisis support, practical guides, and the people and organisations behind them."
-        size="md"
-      />
-      <div className="container mx-auto py-8 md:py-12 px-4 relative">
+      <div className="container mx-auto pt-8 md:pt-10 pb-8 md:pb-12 px-4 relative">
 
-      {viewMode === 'overview' && !showFilteredResults && (
+      <header className="mb-6 md:mb-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+          Support
+        </p>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Help &amp; resources.</h1>
+        <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-2xl">
+          Crisis support, practical guides, and the people and organisations behind them.
+        </p>
+      </header>
+
+      {isPureOverview && (
         <div className="flex flex-col gap-10 mb-10">
           <CrisisStrip />
           <TopicHubGrid />
@@ -439,27 +455,7 @@ export default function Ressources() {
         </div>
       )}
 
-      <ResourcesFilterBar
-        searchQuery={searchQuery}
-        onSearch={handleSearch}
-        displayMode={displayMode}
-        onDisplayModeChange={setDisplayMode}
-        viewMode={viewMode}
-        onToggleGraph={() => setViewMode(viewMode === 'graph' ? 'overview' : 'graph')}
-        filterCategory={filterCategory}
-        onFilterCategoryChange={setFilterCategory}
-        usageFilter={usageFilter}
-        onUsageFilterChange={setUsageFilter}
-        hasImageFilter={hasImageFilter}
-        onHasImageFilterChange={setHasImageFilter}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
-        sortDirection={sortDirection}
-        onSortDirectionToggle={() =>
-          setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-        }
-        categoriesTree={categoriesTree}
-      />
+      {!isPureOverview && filterBar}
 
       {/* ───────── Graph ───────── */}
       {viewMode === 'graph' && (
@@ -489,16 +485,35 @@ export default function Ressources() {
         </Suspense>
       )}
 
-      {/* ───────── Overview ───────── */}
-      {viewMode === 'overview' && !showFilteredResults && (
-        <ResourceOverview
-          popularTags={popularTags}
-          orderedParents={orderedParents}
-          tagUsageCounts={tagUsageCounts}
-          professionCount={professions.length}
-          onTagClick={handleTagClick}
-          onShowProfessions={() => setViewMode('professions')}
-        />
+      {/* ───────── Overview — explore disclosure ───────── */}
+      {isPureOverview && (
+        <Collapsible defaultOpen={false}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full flex items-center justify-between gap-3 rounded-element border border-border bg-background px-4 py-3 text-left hover:bg-muted transition-colors group"
+              aria-label="Browse all topics, search and advanced filters"
+            >
+              <span className="font-semibold text-sm">Browse all topics &amp; search</span>
+              <ChevronDown
+                aria-hidden
+                className="opacity-60 transition-transform group-data-[state=open]:rotate-180"
+                style={{ width: 16, height: 16 }}
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4 flex flex-col gap-4">
+            {filterBar}
+            <ResourceOverview
+              popularTags={[]}
+              orderedParents={orderedParents}
+              tagUsageCounts={tagUsageCounts}
+              professionCount={professions.length}
+              onTagClick={handleTagClick}
+              onShowProfessions={() => setViewMode('professions')}
+            />
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
       {/* ───────── Category ───────── */}
