@@ -1,5 +1,6 @@
 import { MotionCard as Card, CardImage, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Users, Globe, Building2, Crown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Users, Globe, Building2, Crown, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 import type {
   CountryWithRegions as Country,
   CityWithCountry as City,
@@ -9,6 +10,7 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { supabase } from '@/integrations/supabase/client';
 import { updateRow } from '@/hooks/usePageFetchers';
 import { useCityImages } from '@/hooks/useCityImages';
+import { getLegalityBadge, type LegalityLevel } from '@/lib/lgbtLegality';
 
 interface PlacesCardProps {
   type: 'continent' | 'country' | 'city';
@@ -148,6 +150,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   const getSubtitle = () => {
     if (type === 'country' && data) {
       const country = data as Country;
+      const legality = getLegalityBadge(country);
       return (
         <div className="flex flex-col gap-1">
           {country.capital && (
@@ -156,6 +159,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
               <span>{country.capital}</span>
             </div>
           )}
+          {legality && <LegalityBadge legality={legality} />}
         </div>
       );
     }
@@ -293,3 +297,20 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   // For continents or items without detail pages, use onClick
   return <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>{cardContent}</div>;
 });
+
+const LEGALITY_ICON_STYLE: React.CSSProperties = { height: 12, width: 12 };
+
+function LegalityBadge({ legality }: { legality: { level: LegalityLevel; label: string; ariaLabel: string } }) {
+  const Icon = legality.level === 'protected' ? ShieldCheck : legality.level === 'restricted' ? ShieldAlert : Shield;
+  return (
+    <Badge
+      variant={legality.level === 'protected' ? 'secondary' : 'outline'}
+      aria-label={legality.ariaLabel}
+      data-testid={`legality-${legality.level}`}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', fontWeight: 500 }}
+    >
+      <Icon style={LEGALITY_ICON_STYLE} />
+      <span>{legality.label}</span>
+    </Badge>
+  );
+}

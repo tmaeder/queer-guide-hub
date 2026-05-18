@@ -37,7 +37,7 @@ export const PlacesSearch = ({
     populationRange: "all",
     isCapital: "all",
     isMajorCity: "all",
-    sortBy: "population",
+    sortBy: "equality",
     sortOrder: "desc"
   });
 
@@ -76,7 +76,7 @@ export const PlacesSearch = ({
   };
 
   const getActiveFilterCount = () => {
-    return Object.values(filters).filter(value => value !== "all" && value !== "population" && value !== "desc").length;
+    return Object.values(filters).filter(value => value !== "all" && value !== "equality" && value !== "desc").length;
   };
 
   const detectLocation = async () => {
@@ -260,6 +260,7 @@ export const PlacesSearch = ({
                     <SelectValue placeholder="Sort by..." />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
+                    <SelectItem value="equality">LGBTQ+ equality score</SelectItem>
                     <SelectItem value="name">Name</SelectItem>
                     <SelectItem value="population">Population</SelectItem>
                     <SelectItem value="created_at">Date Added</SelectItem>
@@ -313,7 +314,7 @@ export const PlacesSearch = ({
                       Major: {filters.isMajorCity === "true" ? "Yes" : "No"}
                     </Badge>
                   )}
-                  {filters.sortBy !== "population" && (
+                  {filters.sortBy !== "equality" && (
                     <Badge variant="secondary" className="text-xs">
                       Sort: {filters.sortBy}
                     </Badge>
