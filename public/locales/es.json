@@ -1548,9 +1548,9 @@
       "title": "Viajes",
       "subtitle": "Encuentra vuelos, hoteles y actividades en destinos LGBTQ+ friendly",
       "activitiesComingSoon": "Actividades próximamente.",
-      "browseDestinations": "Explorar destinos",
-      "exploreCta": "Destinos",
-      "exploreDescription": "Ciudades y países con información de seguridad y guías de viaje.",
+      "browseDestinations": "Ver destinos",
+      "exploreCta": "Destinos LGBTQ+ friendly",
+      "exploreDescription": "Ciudades y países con información de seguridad y guías.",
       "hotels": {
         "typeLabel": "[ES] Type",
         "priceMin": "[ES] Min €",
@@ -1570,45 +1570,47 @@
         }
       },
       "hero": {
-        "title": "[ES] Plan a trip",
-        "subtitle": "[ES] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[ES] Where to?",
-        "start": "[ES] Start",
-        "end": "[ES] End",
-        "cta": "[ES] Plan this trip",
-        "discover": "[ES] Or",
-        "discoverLink": "[ES] browse public trips",
-        "discoverTail": "[ES] from the community.",
+        "title": "Planificar un viaje",
+        "subtitle": "Crea un itinerario queer-friendly: ciudad, eventos Pride, bares, hoteles y datos de seguridad en cada parada.",
+        "cityLabel": "¿A dónde?",
+        "start": "Inicio",
+        "end": "Fin",
+        "cta": "Planificar viaje",
+        "discover": "O",
+        "discoverLink": "ver viajes públicos",
+        "discoverTail": "de la comunidad.",
         "errors": {
-          "city": "[ES] Pick a city to plan a trip."
+          "city": "Elige una ciudad para planificar."
         },
         "activeTripHeading": "Continúa tu viaje",
         "openTrip": "Abrir viaje"
       },
       "resume": {
-        "title": "[ES] Continue planning",
-        "placeCount": "[ES] {{count}} places"
+        "title": "Continuar planificando",
+        "placeCount": "{{count}} lugares",
+        "placeCount_one": "{{count}} lugar",
+        "placeCount_other": "{{count}} lugares"
       },
       "pride": {
-        "title": "[ES] Pride this season",
-        "window": "[ES] Next 4 months",
-        "empty": "[ES] No upcoming Pride events.",
-        "safety": "[ES] Equality score",
+        "title": "Pride esta temporada",
+        "window": "Próximos 4 meses",
+        "empty": "No hay eventos Pride próximos.",
+        "safety": "Índice de igualdad",
         "equalityTooltip": "La puntuación de igualdad refleja las protecciones legales LGBTQ+ de este país. Más alta es más segura.",
         "equalityAria": "Puntuación de igualdad {{score}}: toca para explicación"
       },
       "inspiration": {
-        "villages": "[ES] Queer villages",
-        "publicTrips": "[ES] Public trips",
-        "viewAll": "[ES] View all",
-        "noVillages": "[ES] No villages yet.",
-        "noTrips": "[ES] No public trips yet.",
+        "villages": "Queer Villages",
+        "publicTrips": "Viajes públicos",
+        "viewAll": "Ver todo",
+        "noVillages": "No hay villages aún.",
+        "noTrips": "No hay viajes públicos aún.",
         "heading": "Inspiración",
         "visitedFilterLabel": "Visitados:"
       },
       "bookNow": {
-        "title": "[ES] Book now",
-        "subtitle": "[ES] Search flights, hotels, and activities directly — no trip required.",
+        "title": "Reservar directamente",
+        "subtitle": "Busca vuelos, hoteles y actividades — sin necesidad de viaje.",
         "headline": "Reservar sin viaje"
       },
       "plan": {

@@ -1608,8 +1608,8 @@
       "subtitle": "查找LGBTQ+友好目的地的航班、酒店和活动",
       "activitiesComingSoon": "活动即将推出。",
       "browseDestinations": "浏览目的地",
-      "exploreCta": "目的地",
-      "exploreDescription": "附带安全信息和旅行指南的城市和国家。",
+      "exploreCta": "LGBTQ+ 友好目的地",
+      "exploreDescription": "附有安全信息和旅游指南的城市和国家。",
       "hotels": {
         "typeLabel": "[ZH] Type",
         "priceMin": "[ZH] Min €",
@@ -1629,45 +1629,45 @@
         }
       },
       "hero": {
-        "title": "[ZH] Plan a trip",
-        "subtitle": "[ZH] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[ZH] Where to?",
-        "start": "[ZH] Start",
-        "end": "[ZH] End",
-        "cta": "[ZH] Plan this trip",
-        "discover": "[ZH] Or",
-        "discoverLink": "[ZH] browse public trips",
-        "discoverTail": "[ZH] from the community.",
+        "title": "规划行程",
+        "subtitle": "打造酷儿友好行程：选择城市、收集骄傲活动、酒吧、酒店和每个停靠点的安全信息，保存、分享、带上路。",
+        "cityLabel": "去哪里？",
+        "start": "开始",
+        "end": "结束",
+        "cta": "规划此行",
+        "discover": "或",
+        "discoverLink": "浏览公开行程",
+        "discoverTail": "来自社区。",
         "errors": {
-          "city": "[ZH] Pick a city to plan a trip."
+          "city": "选择一个城市来规划。"
         },
         "activeTripHeading": "继续您的旅行",
         "openTrip": "打开旅行"
       },
       "resume": {
-        "title": "[ZH] Continue planning",
-        "placeCount": "[ZH] {{count}} places"
+        "title": "继续规划",
+        "placeCount": "{{count}} 个地点"
       },
       "pride": {
-        "title": "[ZH] Pride this season",
-        "window": "[ZH] Next 4 months",
-        "empty": "[ZH] No upcoming Pride events.",
-        "safety": "[ZH] Equality score",
+        "title": "本季骄傲活动",
+        "window": "未来 4 个月",
+        "empty": "没有即将到来的骄傲活动。",
+        "safety": "平等指数",
         "equalityTooltip": "平等分数反映该国的LGBTQ+法律保护。越高越安全。",
         "equalityAria": "平等分数 {{score}}：点按以查看说明"
       },
       "inspiration": {
-        "villages": "[ZH] Queer villages",
-        "publicTrips": "[ZH] Public trips",
-        "viewAll": "[ZH] View all",
-        "noVillages": "[ZH] No villages yet.",
-        "noTrips": "[ZH] No public trips yet.",
+        "villages": "酷儿村",
+        "publicTrips": "公开行程",
+        "viewAll": "查看全部",
+        "noVillages": "暂无酷儿村。",
+        "noTrips": "暂无公开行程。",
         "heading": "灵感",
         "visitedFilterLabel": "已访问："
       },
       "bookNow": {
-        "title": "[ZH] Book now",
-        "subtitle": "[ZH] Search flights, hotels, and activities directly — no trip required.",
+        "title": "直接预订",
+        "subtitle": "直接搜索航班、酒店和活动 — 无需行程。",
         "headline": "无旅行直接预订"
       },
       "plan": {

@@ -1547,10 +1547,10 @@
     "travel": {
       "title": "여행",
       "subtitle": "LGBTQ+ 친화적 여행지의 항공편, 호텔, 활동 찾기",
-      "activitiesComingSoon": "활동은 곧 제공됩니다.",
-      "browseDestinations": "여행지 둘러보기",
-      "exploreCta": "여행지",
-      "exploreDescription": "안전 정보와 여행 가이드가 있는 도시와 국가.",
+      "activitiesComingSoon": "액티비티 곧 공개.",
+      "browseDestinations": "여행지 보기",
+      "exploreCta": "LGBTQ+ 친화 여행지",
+      "exploreDescription": "안전 정보와 가이드가 있는 도시와 국가 보기.",
       "hotels": {
         "typeLabel": "[KO] Type",
         "priceMin": "[KO] Min €",
@@ -1570,45 +1570,45 @@
         }
       },
       "hero": {
-        "title": "[KO] Plan a trip",
-        "subtitle": "[KO] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[KO] Where to?",
-        "start": "[KO] Start",
-        "end": "[KO] End",
-        "cta": "[KO] Plan this trip",
-        "discover": "[KO] Or",
-        "discoverLink": "[KO] browse public trips",
-        "discoverTail": "[KO] from the community.",
+        "title": "여행 계획",
+        "subtitle": "퀴어 친화적인 일정 만들기: 도시 선택, 프라이드 이벤트, 바, 호텔, 안전 정보를 모아 저장하고 공유하세요.",
+        "cityLabel": "어디로?",
+        "start": "시작",
+        "end": "종료",
+        "cta": "이 여행 계획하기",
+        "discover": "또는",
+        "discoverLink": "공개 여행 보기",
+        "discoverTail": "커뮤니티에서.",
         "errors": {
-          "city": "[KO] Pick a city to plan a trip."
+          "city": "계획할 도시를 선택하세요."
         },
         "activeTripHeading": "여행 계속하기",
         "openTrip": "여행 열기"
       },
       "resume": {
-        "title": "[KO] Continue planning",
-        "placeCount": "[KO] {{count}} places"
+        "title": "계획 계속하기",
+        "placeCount": "{{count}}개 장소"
       },
       "pride": {
-        "title": "[KO] Pride this season",
-        "window": "[KO] Next 4 months",
-        "empty": "[KO] No upcoming Pride events.",
-        "safety": "[KO] Equality score",
+        "title": "이번 시즌의 프라이드",
+        "window": "향후 4개월",
+        "empty": "예정된 프라이드 이벤트가 없습니다.",
+        "safety": "평등 점수",
         "equalityTooltip": "평등 점수는 이 나라의 LGBTQ+ 법적 보호를 반영합니다. 높을수록 안전합니다.",
         "equalityAria": "평등 점수 {{score}}: 탭하여 설명"
       },
       "inspiration": {
-        "villages": "[KO] Queer villages",
-        "publicTrips": "[KO] Public trips",
-        "viewAll": "[KO] View all",
-        "noVillages": "[KO] No villages yet.",
-        "noTrips": "[KO] No public trips yet.",
+        "villages": "퀴어 빌리지",
+        "publicTrips": "공개 여행",
+        "viewAll": "전체 보기",
+        "noVillages": "아직 빌리지가 없습니다.",
+        "noTrips": "아직 공개 여행이 없습니다.",
         "heading": "영감",
         "visitedFilterLabel": "방문:"
       },
       "bookNow": {
-        "title": "[KO] Book now",
-        "subtitle": "[KO] Search flights, hotels, and activities directly — no trip required.",
+        "title": "바로 예약",
+        "subtitle": "항공편, 호텔, 액티비티를 바로 검색 — 여행 계획 없이도.",
         "headline": "여행 없이 예약"
       },
       "plan": {

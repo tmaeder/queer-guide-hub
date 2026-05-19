@@ -11,7 +11,8 @@ import { MarketplaceCityChips } from '@/components/marketplace/MarketplaceCityCh
 import { MarketplaceRow } from '@/components/marketplace/MarketplaceRow';
 import { SavedSearchesButton } from '@/components/marketplace/SavedSearchesButton';
 import { AffiliateDisclosure } from '@/components/marketplace/AffiliateDisclosure';
-import { CuratedIdsProvider, useCuratedIds } from '@/components/marketplace/CuratedIdsContext';
+import { CuratedIdsProvider } from '@/components/marketplace/CuratedIdsContext';
+import { useCuratedIds } from '@/components/marketplace/useCuratedIds';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
