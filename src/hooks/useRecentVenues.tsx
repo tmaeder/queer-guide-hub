@@ -28,7 +28,7 @@ export function useRecentVenues(limit = 8, enabled = true) {
       const { data } = await supabase
         .from('venues')
         .select('*')
-        .neq('data_source', 'refuge_restrooms')
+        .neq('data_source', 'refuge-restrooms')
         .neq('category', 'other')
         .is('duplicate_of_id', null)
         .order('created_at', { ascending: false })

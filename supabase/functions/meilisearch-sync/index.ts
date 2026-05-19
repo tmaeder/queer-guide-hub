@@ -517,7 +517,7 @@ async function fetchVenues(sb: any, limit: number, offset: number) {
   const { data, error } = await sb
     .from('venues')
     .select('id, name, description, category, address, city, country, latitude, longitude, images, is_featured, slug, tags, target_groups, services, accessibility_attributes')
-    .neq('data_source', 'refuge_restrooms')
+    .neq('data_source', 'refuge-restrooms')
     .is('duplicate_of_id', null)
     .range(offset, offset + limit - 1)
   if (error) throw error
@@ -532,7 +532,7 @@ async function fetchVenue(sb: any, id: string) {
     .eq('id', id)
     .single()
   if (error || !data) return null
-  if (data.data_source === 'refuge_restrooms') return null
+  if (data.data_source === 'refuge-restrooms') return null
   if (data.duplicate_of_id) return null
   return mapVenue(data)
 }

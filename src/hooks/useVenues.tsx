@@ -22,7 +22,7 @@ export function useVenues(autoFetch: boolean = true) {
       const { count } = await supabase
         .from('venues')
         .select('id', { head: true, count: 'exact' })
-        .neq('data_source', 'refuge_restrooms')
+        .neq('data_source', 'refuge-restrooms')
         .is('duplicate_of_id', null);
       if (!cancelled) setDatasetTotal(count ?? 0);
     })();
@@ -68,7 +68,7 @@ export function useVenues(autoFetch: boolean = true) {
       let query = supabase
         .from('venues')
         .select('*', { count: 'exact' })
-        .neq('data_source', 'refuge_restrooms')
+        .neq('data_source', 'refuge-restrooms')
         .is('duplicate_of_id', null);
 
       // Server-side sort
