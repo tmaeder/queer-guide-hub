@@ -18,9 +18,9 @@ concurrency:
 
 jobs:
   smoke:
-    name: Playwright smoke (production)
+    name: Playwright smoke (PR build)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,12 +29,22 @@ jobs:
           cache: npm
       - run: npm ci --prefer-offline --no-audit
       - run: npx playwright install --with-deps chromium
-      - name: Run smoke subset
+      - name: Build app
+        run: npm run build
         env:
-          E2E_BASE_URL: https://queer.guide
+          NODE_OPTIONS: --max-old-space-size=4096
+      - name: Run smoke subset
+        # Test the PR's built bundle, not stale production. Prod is covered
+        # nightly via e2e-nightly.yml and post-deploy. Targeting prod here
+        # produces false negatives whenever the PR adds features (or fixes
+        # bugs) that haven't shipped yet — those would all fail until merge.
+        env:
+          E2E_BASE_URL: http://localhost:4173
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
         run: |
+          npx vite preview --port 4173 &
+          sleep 5
           npx playwright test \
             auth-signup-renders.spec.ts \
             search.spec.ts \
