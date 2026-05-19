@@ -31,16 +31,8 @@ import { ShootingStars } from '@/components/effects/ShootingStars';
 import { WordRotate } from '@/components/effects/WordRotate';
 import { Marquee } from '@/components/effects/Marquee';
 import { BackgroundLines } from '@/components/effects/BackgroundLines';
-import { LampEffect } from '@/components/effects/LampEffect';
-import { ShineButton } from '@/components/effects/ShineButton';
-import { HoverBorderGradient } from '@/components/effects/HoverBorderGradient';
-import { Boxes } from '@/components/effects/Boxes';
-import { TextHoverEffect } from '@/components/effects/TextHoverEffect';
-import { ExpandableCard, type ExpandableCardItem } from '@/components/effects/ExpandableCard';
-import { AnimatedModal } from '@/components/effects/AnimatedModal';
 import { CardContainer3D, CardItem } from '@/components/effects/CardContainer3D';
 import { GlowingEffect } from '@/components/effects/GlowingEffect';
-import { WorldMap } from '@/components/effects/WorldMap';
 import { AppleCardsCarousel, type CarouselCard } from '@/components/effects/AppleCardsCarousel';
 import { WobbleCard } from '@/components/effects/WobbleCard';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
@@ -66,69 +58,6 @@ const Index = React.memo(() => {
   const isMobile = useIsMobile();
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
-  const [newsletterOpen, setNewsletterOpen] = React.useState(false);
-
-  const featuredStories: ExpandableCardItem[] = React.useMemo(
-    () => [
-      {
-        id: 'pride-2026',
-        title: 'Pride 2026: A field guide',
-        description: 'Seven of the most welcoming parades on Earth this summer.',
-        src: getRandomFallbackImage(),
-        ctaText: 'Read',
-        ctaLink: '/news',
-        content: (
-          <p>
-            From Reykjavík to Buenos Aires, our community-sourced guide to the seven Pride events most worth the
-            plane ticket — with safety notes, after-party tips, and the locals who know.
-          </p>
-        ),
-      },
-      {
-        id: 'safe-travel',
-        title: 'Where it is safe — and where it is not.',
-        description: 'Country-by-country legal and social safety snapshot.',
-        src: getRandomFallbackImage(),
-        ctaText: 'Open atlas',
-        ctaLink: '/help',
-        content: (
-          <p>
-            An evolving country-by-country legal and social safety snapshot, built with on-the-ground
-            contributors. Updated weekly.
-          </p>
-        ),
-      },
-      {
-        id: 'queer-villages',
-        title: 'Queer villages',
-        description: 'The towns we have always called home.',
-        src: getRandomFallbackImage(),
-        ctaText: 'Browse villages',
-        ctaLink: '/places',
-        content: (
-          <p>
-            Provincetown, Sitges, Mykonos, Brighton, Hillcrest — and a hundred you have not heard of. Browse
-            the long list with context, history, and current temperature.
-          </p>
-        ),
-      },
-      {
-        id: 'contributors',
-        title: 'Built by 2,300+ contributors.',
-        description: 'Meet the people behind the guide.',
-        src: getRandomFallbackImage(),
-        ctaText: 'See credits',
-        ctaLink: '/contributors',
-        content: (
-          <p>
-            Bartenders, festival organisers, asylum seekers, professors, activists, and travellers. Every
-            verified entry has a story behind it.
-          </p>
-        ),
-      },
-    ],
-    [],
-  );
 
   const stats = useMemo(
     () => [
@@ -418,120 +347,6 @@ const Index = React.memo(() => {
         </React.Suspense>
       </ErrorBoundary>
 
-      {/* ── Featured stories — Aceternity ExpandableCard grid ─────── */}
-      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-6">
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-            {t('home.featuredStories', 'Featured stories')}
-          </h2>
-          <button
-            type="button"
-            onClick={() => setNewsletterOpen(true)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {t('home.subscribe', 'Subscribe →')}
-          </button>
-        </div>
-        <ExpandableCard items={featuredStories} />
-      </section>
-
-      {/* ── Newsletter modal — Aceternity AnimatedModal ─────────── */}
-      <AnimatedModal open={newsletterOpen} onClose={() => setNewsletterOpen(false)}>
-        <div className="text-center">
-          <h3 className="text-xl font-bold tracking-tight">
-            {t('home.newsletter.title', 'Get the monthly dispatch.')}
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('home.newsletter.subtitle', 'Best new venues, events, and rights updates — once a month, no spam.')}
-          </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setNewsletterOpen(false);
-            }}
-            className="mt-5 flex gap-2"
-          >
-            <input
-              type="email"
-              required
-              placeholder="you@example.com"
-              className="flex-1 h-10 rounded-element border border-input bg-background px-3.5 text-sm focus:outline-none focus:border-foreground focus:ring-2 focus:ring-foreground/15 transition"
-            />
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-element bg-foreground text-background px-4 text-sm font-semibold hover:opacity-90"
-            >
-              {t('home.newsletter.cta', 'Subscribe')}
-            </button>
-          </form>
-          <p className="mt-3 text-[0.6875rem] text-muted-foreground">
-            {t('home.newsletter.privacy', 'Unsubscribe anytime. Privacy-first — we never share your email.')}
-          </p>
-        </div>
-      </AnimatedModal>
-
-      {/* ── Aceternity Boxes teaser — interactive monochrome backdrop ── */}
-      <section className="relative h-72 w-full overflow-hidden bg-background flex items-center justify-center">
-        <div className="absolute inset-0 z-0 [mask-image:radial-gradient(transparent,white)] pointer-events-none">
-          <Boxes />
-        </div>
-        <div className="relative z-10 max-w-3xl text-center px-4">
-          <div className="h-24 md:h-32">
-            <TextHoverEffect text="QUEER.GUIDE" />
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {t('home.boxes.subtitle', 'Move your cursor across the grid.')}
-          </p>
-        </div>
-      </section>
-
-      {/* ── World map — global community ─────────────────────────── */}
-      <section className="relative py-16 md:py-24 px-4 sm:px-6 md:px-8 overflow-hidden">
-        <div className="max-w-5xl mx-auto text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            {t('home.world.title', 'A community without borders.')}
-          </h2>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            {t('home.world.subtitle', 'Verified safe places, real reviews, and the people behind them — from Brooklyn to Berlin to Bangkok.')}
-          </p>
-        </div>
-        <div className="max-w-6xl mx-auto">
-          <WorldMap
-            dots={[
-              { start: { lat: 40.7128, lng: -74.006, label: 'New York' }, end: { lat: 51.5072, lng: -0.1276, label: 'London' } },
-              { start: { lat: 51.5072, lng: -0.1276, label: 'London' }, end: { lat: 52.52, lng: 13.405, label: 'Berlin' } },
-              { start: { lat: 52.52, lng: 13.405, label: 'Berlin' }, end: { lat: 41.9028, lng: 12.4964, label: 'Rome' } },
-              { start: { lat: 41.9028, lng: 12.4964, label: 'Rome' }, end: { lat: -33.8688, lng: 151.2093, label: 'Sydney' } },
-              { start: { lat: -33.8688, lng: 151.2093, label: 'Sydney' }, end: { lat: 13.7563, lng: 100.5018, label: 'Bangkok' } },
-              { start: { lat: 13.7563, lng: 100.5018, label: 'Bangkok' }, end: { lat: 35.6762, lng: 139.6503, label: 'Tokyo' } },
-              { start: { lat: 35.6762, lng: 139.6503, label: 'Tokyo' }, end: { lat: 37.7749, lng: -122.4194, label: 'San Francisco' } },
-              { start: { lat: 37.7749, lng: -122.4194, label: 'San Francisco' }, end: { lat: 19.4326, lng: -99.1332, label: 'Mexico City' } },
-              { start: { lat: 19.4326, lng: -99.1332, label: 'Mexico City' }, end: { lat: -22.9068, lng: -43.1729, label: 'Rio' } },
-              { start: { lat: -22.9068, lng: -43.1729, label: 'Rio' }, end: { lat: -33.9249, lng: 18.4241, label: 'Cape Town' } },
-            ]}
-          />
-        </div>
-      </section>
-
-      {/* ── Lamp CTA — call-to-action with Aceternity lamp ─────────── */}
-      <LampEffect className="min-h-[26rem] py-12">
-        <h2 className="bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-center text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-transparent">
-          {t('home.cta.title', 'Built by the community,')}
-          <br />
-          {t('home.cta.title2', 'for the community.')}
-        </h2>
-        <p className="mt-3 text-center text-muted-foreground max-w-xl">
-          {t('home.cta.subtitle', 'Verified safe spaces, real reviews, no paywalls.')}
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3 justify-center">
-          <LocalizedLink to="/submit" style={{ textDecoration: 'none' }}>
-            <ShineButton>{t('home.cta.submit', 'Add a venue')}</ShineButton>
-          </LocalizedLink>
-          <LocalizedLink to="/about" style={{ textDecoration: 'none' }}>
-            <HoverBorderGradient>{t('home.cta.about', 'Read the mission')}</HoverBorderGradient>
-          </LocalizedLink>
-        </div>
-      </LampEffect>
     </div>
   );
 });
