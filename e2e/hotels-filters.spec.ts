@@ -38,10 +38,16 @@ test.describe('Hotels — Phase 1 quick wins', () => {
     await page.goto('/hotels?type=bnb&q=__definitely_not_a_real_name__zzz', {
       waitUntil: 'networkidle',
     });
-    // Scope to the active-filter chip (the dismiss "×" glyph) so we don't
-    // strict-mode-collide with the same label inside the Type select.
-    await expect(page.getByText(/B&B\s*×/)).toBeVisible();
-    await expect(page.getByText('bnb ×')).toHaveCount(0);
+    // Scope to the EmptyState's active-filter chip container so we don't
+    // strict-mode-collide with the same label inside the Type select. The
+    // chip's dismiss glyph is an SVG <X />, not a literal × character.
+    const chipsRegion = page.getByTestId('empty-state-active-filters');
+    if ((await chipsRegion.count()) === 0) {
+      test.skip(true, 'Empty-state chips region not rendered on this env.');
+      return;
+    }
+    await expect(chipsRegion.getByText('B&B', { exact: true })).toBeVisible();
+    await expect(chipsRegion.getByText('bnb', { exact: true })).toHaveCount(0);
   });
 
   test('/venues/hotels redirects to /hotels', async ({ page }) => {

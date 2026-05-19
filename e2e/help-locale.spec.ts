@@ -27,11 +27,13 @@ const GERMAN_MARKERS = [
 
 // `page.content()` returns serialized HTML, so `&` becomes `&amp;`. Match
 // either form so this test isn't fragile to that serialization detail.
+// We deliberately do NOT check for the filter labels ('All countries' /
+// 'All topics') — those live inside a Radix Select that lazy-mounts its
+// SelectContent only after the dropdown is opened, so they're absent from
+// page.content() on first paint even though i18n has loaded.
 const ENGLISH_MARKERS = [
   'Help &amp; Crisis Hotlines',
   'In acute danger',
-  'All countries',
-  'All topics',
 ];
 
 test.describe('@p0-2 /help locale', () => {
