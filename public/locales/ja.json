@@ -1482,7 +1482,16 @@
       "sort": {
         "dateAsc": "[JA] Soonest first",
         "dateDesc": "[JA] Latest first"
-      }
+      },
+      "searchLabel": "イベントを検索",
+      "searchPlaceholder": "イベント、都市、主催者を検索",
+      "filters": "フィルター",
+      "viewMode": "表示モード",
+      "resultsCount_one": "{{count}}件のイベント",
+      "resultsCount_other": "{{count}}件のイベント",
+      "resultsNear_one": "{{city}}近郊の{{count}}件のイベント",
+      "resultsNear_other": "{{city}}近郊の{{count}}件のイベント",
+      "showWorldwide": "世界中を表示"
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",

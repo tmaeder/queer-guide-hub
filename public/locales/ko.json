@@ -1482,7 +1482,16 @@
       "sort": {
         "dateAsc": "[KO] Soonest first",
         "dateDesc": "[KO] Latest first"
-      }
+      },
+      "searchLabel": "이벤트 검색",
+      "searchPlaceholder": "이벤트, 도시, 주최자 검색",
+      "filters": "필터",
+      "viewMode": "보기 모드",
+      "resultsCount_one": "이벤트 {{count}}개",
+      "resultsCount_other": "이벤트 {{count}}개",
+      "resultsNear_one": "{{city}} 근처 이벤트 {{count}}개",
+      "resultsNear_other": "{{city}} 근처 이벤트 {{count}}개",
+      "showWorldwide": "전 세계 보기"
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",

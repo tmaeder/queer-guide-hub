@@ -1486,7 +1486,16 @@
       "sort": {
         "dateAsc": "[FR] Soonest first",
         "dateDesc": "[FR] Latest first"
-      }
+      },
+      "searchLabel": "Rechercher des événements",
+      "searchPlaceholder": "Rechercher événements, villes, organisateurs",
+      "filters": "Filtres",
+      "viewMode": "Affichage",
+      "resultsCount_one": "{{count}} événement",
+      "resultsCount_other": "{{count}} événements",
+      "resultsNear_one": "{{count}} événement près de {{city}}",
+      "resultsNear_other": "{{count}} événements près de {{city}}",
+      "showWorldwide": "Voir dans le monde entier"
     },
     "eventDetail": {
       "loadFailed": "Impossible de charger les détails de l'événement.",

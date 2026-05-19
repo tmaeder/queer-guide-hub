@@ -1464,7 +1464,16 @@
       "sort": {
         "dateAsc": "Soonest first",
         "dateDesc": "Latest first"
-      }
+      },
+      "searchLabel": "Search events",
+      "searchPlaceholder": "Search events, cities, organizers",
+      "filters": "Filters",
+      "viewMode": "View mode",
+      "resultsCount_one": "{{count}} event",
+      "resultsCount_other": "{{count}} events",
+      "resultsNear_one": "{{count}} event near {{city}}",
+      "resultsNear_other": "{{count}} events near {{city}}",
+      "showWorldwide": "Show worldwide"
     },
     "eventDetail": {
       "loadFailed": "Failed to load event details.",
