@@ -1541,7 +1541,16 @@
       "sort": {
         "dateAsc": "[AR] Soonest first",
         "dateDesc": "[AR] Latest first"
-      }
+      },
+      "searchLabel": "البحث عن الأحداث",
+      "searchPlaceholder": "ابحث عن الأحداث والمدن والمنظمين",
+      "filters": "فلاتر",
+      "viewMode": "وضع العرض",
+      "resultsCount_one": "حدث {{count}}",
+      "resultsCount_other": "{{count}} حدث",
+      "resultsNear_one": "حدث {{count}} بالقرب من {{city}}",
+      "resultsNear_other": "{{count}} حدث بالقرب من {{city}}",
+      "showWorldwide": "عرض حول العالم"
     },
     "eventDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفعالية.",

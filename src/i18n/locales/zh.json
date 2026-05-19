@@ -1541,7 +1541,16 @@
       "sort": {
         "dateAsc": "[ZH] Soonest first",
         "dateDesc": "[ZH] Latest first"
-      }
+      },
+      "searchLabel": "搜索活动",
+      "searchPlaceholder": "搜索活动、城市、主办方",
+      "filters": "筛选",
+      "viewMode": "视图模式",
+      "resultsCount_one": "{{count}} 个活动",
+      "resultsCount_other": "{{count}} 个活动",
+      "resultsNear_one": "{{city}} 附近的 {{count}} 个活动",
+      "resultsNear_other": "{{city}} 附近的 {{count}} 个活动",
+      "showWorldwide": "查看全球"
     },
     "eventDetail": {
       "loadFailed": "无法加载活动详情。",

@@ -1541,7 +1541,16 @@
       "sort": {
         "dateAsc": "[DE] Soonest first",
         "dateDesc": "[DE] Latest first"
-      }
+      },
+      "searchLabel": "Veranstaltungen suchen",
+      "searchPlaceholder": "Veranstaltungen, Städte, Veranstalter suchen",
+      "filters": "Filter",
+      "viewMode": "Ansicht",
+      "resultsCount_one": "{{count}} Veranstaltung",
+      "resultsCount_other": "{{count}} Veranstaltungen",
+      "resultsNear_one": "{{count}} Veranstaltung in der Nähe von {{city}}",
+      "resultsNear_other": "{{count}} Veranstaltungen in der Nähe von {{city}}",
+      "showWorldwide": "Weltweit anzeigen"
     },
     "eventDetail": {
       "loadFailed": "Details zur Veranstaltung konnten nicht geladen werden.",

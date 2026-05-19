@@ -1569,7 +1569,16 @@
       "sort": {
         "dateAsc": "[RU] Soonest first",
         "dateDesc": "[RU] Latest first"
-      }
+      },
+      "searchLabel": "Поиск мероприятий",
+      "searchPlaceholder": "Поиск мероприятий, городов, организаторов",
+      "filters": "Фильтры",
+      "viewMode": "Режим просмотра",
+      "resultsCount_one": "{{count}} мероприятие",
+      "resultsCount_other": "{{count}} мероприятий",
+      "resultsNear_one": "{{count}} мероприятие рядом с {{city}}",
+      "resultsNear_other": "{{count}} мероприятий рядом с {{city}}",
+      "showWorldwide": "Показать по всему миру"
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",
