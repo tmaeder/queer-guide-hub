@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { ResumeTripStrip, useHasMeaningfulActiveTrip } from '@/components/travel/ResumeTripStrip';
+import { ResumeTripStrip } from '@/components/travel/ResumeTripStrip';
+import { useHasMeaningfulActiveTrip } from '@/hooks/useMeaningfulTrips';
 import { StartTripHero } from '@/components/travel/StartTripHero';
 import { PrideScroller } from '@/components/travel/PrideScroller';
 import { InspirationGrid } from '@/components/travel/InspirationGrid';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import { useActiveTrip } from '@/hooks/useActiveTrip';
 import {
   BrowseVisitedToolbar,
   readStoredVisitedFilter,
