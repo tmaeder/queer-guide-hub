@@ -69,7 +69,7 @@ export const unifiedTagsContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: Tag,
   label: { singular: 'Tag', plural: 'Tags' },
-  color: '#14b8a6',
+  color: 'hsl(var(--foreground))',
   fields: tagFields,
   defaults: { status: 'active' },
   fieldGroupOrder: ['basic', 'details', 'media'],
