@@ -1548,9 +1548,9 @@
       "title": "旅行",
       "subtitle": "LGBTQ+フレンドリーな目的地のフライト、ホテル、アクティビティを検索",
       "activitiesComingSoon": "アクティビティは近日公開。",
-      "browseDestinations": "目的地を探す",
-      "exploreCta": "目的地",
-      "exploreDescription": "安全情報とトラベルガイド付きの都市と国。",
+      "browseDestinations": "目的地を見る",
+      "exploreCta": "LGBTQ+フレンドリーな目的地",
+      "exploreDescription": "安全情報と旅行ガイドのある都市と国を閲覧。",
       "hotels": {
         "typeLabel": "[JA] Type",
         "priceMin": "[JA] Min €",
@@ -1570,45 +1570,45 @@
         }
       },
       "hero": {
-        "title": "[JA] Plan a trip",
-        "subtitle": "[JA] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[JA] Where to?",
-        "start": "[JA] Start",
-        "end": "[JA] End",
-        "cta": "[JA] Plan this trip",
-        "discover": "[JA] Or",
-        "discoverLink": "[JA] browse public trips",
-        "discoverTail": "[JA] from the community.",
+        "title": "旅行を計画する",
+        "subtitle": "クィアフレンドリーな旅程を作成：都市を選び、プライドイベント、バー、ホテル、各立ち寄り先の安全情報を集めて、保存・共有・持ち運び。",
+        "cityLabel": "行き先は？",
+        "start": "開始",
+        "end": "終了",
+        "cta": "この旅行を計画",
+        "discover": "または",
+        "discoverLink": "公開された旅行を見る",
+        "discoverTail": "コミュニティから。",
         "errors": {
-          "city": "[JA] Pick a city to plan a trip."
+          "city": "計画する都市を選んでください。"
         },
         "activeTripHeading": "旅行を続ける",
         "openTrip": "旅行を開く"
       },
       "resume": {
-        "title": "[JA] Continue planning",
-        "placeCount": "[JA] {{count}} places"
+        "title": "計画を続ける",
+        "placeCount": "{{count}}か所"
       },
       "pride": {
-        "title": "[JA] Pride this season",
-        "window": "[JA] Next 4 months",
-        "empty": "[JA] No upcoming Pride events.",
-        "safety": "[JA] Equality score",
+        "title": "今シーズンのプライド",
+        "window": "今後4ヶ月",
+        "empty": "今後のプライドイベントはありません。",
+        "safety": "平等スコア",
         "equalityTooltip": "平等スコアはこの国のLGBTQ+の法的保護を示します。高いほど安全です。",
         "equalityAria": "平等スコア{{score}}: タップで説明"
       },
       "inspiration": {
-        "villages": "[JA] Queer villages",
-        "publicTrips": "[JA] Public trips",
-        "viewAll": "[JA] View all",
-        "noVillages": "[JA] No villages yet.",
-        "noTrips": "[JA] No public trips yet.",
+        "villages": "クィア・ヴィレッジ",
+        "publicTrips": "公開旅行",
+        "viewAll": "すべて見る",
+        "noVillages": "まだヴィレッジはありません。",
+        "noTrips": "まだ公開旅行はありません。",
         "heading": "インスピレーション",
         "visitedFilterLabel": "訪問済み:"
       },
       "bookNow": {
-        "title": "[JA] Book now",
-        "subtitle": "[JA] Search flights, hotels, and activities directly — no trip required.",
+        "title": "直接予約",
+        "subtitle": "フライト、ホテル、アクティビティを直接検索 — 旅行プラン不要。",
         "headline": "旅行なしで予約"
       },
       "plan": {

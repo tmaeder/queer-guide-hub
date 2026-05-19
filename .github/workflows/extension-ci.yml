@@ -5,12 +5,12 @@ on:
     branches: [main]
     paths:
       - "extension/**"
-      - "worker-submit/**"
+      - "workers/submit/**"
       - ".github/workflows/extension-ci.yml"
   pull_request:
     paths:
       - "extension/**"
-      - "worker-submit/**"
+      - "workers/submit/**"
       - ".github/workflows/extension-ci.yml"
   workflow_dispatch: {}
 
@@ -22,11 +22,11 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - run: npm install
-        working-directory: worker-submit
+        working-directory: workers/submit
       - run: npx tsc --noEmit
-        working-directory: worker-submit
+        working-directory: workers/submit
       - run: npm test
-        working-directory: worker-submit
+        working-directory: workers/submit
 
   extension:
     runs-on: ubuntu-latest
