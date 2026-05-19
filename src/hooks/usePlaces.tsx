@@ -41,10 +41,13 @@ export function useOptimizedCountries(filters?: PlacesFilters) {
         .lte('population', filters.populationRange[1]);
     }
 
-    query = query.limit(filters?.limit || 200);
+    // Countries table has ~250 rows total (UN + territories). Default to 300 so
+    // alphabetical cutoff doesn't drop Spain / Thailand / United Kingdom /
+    // United States from the result set.
+    query = query.limit(filters?.limit || 300);
 
     if (filters?.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 200) - 1);
+      query = query.range(filters.offset, filters.offset + (filters.limit || 300) - 1);
     }
 
     const { data, error } = await query;
@@ -96,10 +99,13 @@ export function useOptimizedCities(filters?: PlacesFilters & { countryId?: strin
         .lte('population', filters.populationRange[1]);
     }
 
-    query = query.limit(filters?.limit || 100);
+    // Default 500 (was 100). 100 was too tight for /places: the top-100
+    // cities-by-population are heavily Western, so Asian/African countries
+    // got no cities and disappeared from the Browse-by-continent filter.
+    query = query.limit(filters?.limit || 500);
 
     if (filters?.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 100) - 1);
+      query = query.range(filters.offset, filters.offset + (filters.limit || 500) - 1);
     }
 
     const { data, error } = await query;
