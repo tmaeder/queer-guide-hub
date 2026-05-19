@@ -71,13 +71,13 @@ describe('useMarketplaceRow', () => {
     expect(gte?.args[0]).toBe('created_at');
   });
 
-  it("'most-relevant' filters by lgbti_relevance_score >= 0.85", async () => {
+  it("'most-relevant' filters by lgbti_relevance_score >= 0.5", async () => {
     withResults({ data: [], error: null });
     renderHook(() => useMarketplaceRow('most-relevant'));
     await waitFor(() => expect(state.calls).toHaveLength(1));
 
     const gte = state.calls[0].chain.find(s => s.method === 'gte');
-    expect(gte?.args).toEqual(['lgbti_relevance_score', 0.85]);
+    expect(gte?.args).toEqual(['lgbti_relevance_score', 0.5]);
   });
 
   it("'price-drops' returns [] when no drops detected", async () => {
