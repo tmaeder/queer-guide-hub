@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 
 vi.mock('maplibre-gl', () => ({
   default: {
-    Map: class { on() {} off() {} remove() {} addControl() {} setStyle() {} fitBounds() {} },
+    Map: class { on() {} off() {} once() {} remove() {} addControl() {} setStyle() {} fitBounds() {} isStyleLoaded() { return false; } },
     NavigationControl: class {},
     Marker: class { setLngLat() { return this; } addTo() { return this; } remove() {} },
     Popup: class { setLngLat() { return this; } setHTML() { return this; } addTo() { return this; } remove() {} },
