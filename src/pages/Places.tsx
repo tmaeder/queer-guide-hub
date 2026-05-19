@@ -32,7 +32,7 @@ const FEATURED_COUNTRY_NAMES = new Set([
   'France', 'Belgium', 'Sweden', 'Denmark', 'Iceland', 'New Zealand',
   'South Africa', 'Uruguay', 'Malta', 'Ireland', 'Norway', 'Finland',
 ]);
-const FEATURED_LIMIT = 12;
+const FEATURED_LIMIT = 18;
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
@@ -710,18 +710,6 @@ export default function Places() {
                 value="neighborhoods"
                 style={TAB_CONTENT_STYLE}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h5 className="text-2xl font-semibold">LGBTQ+ Neighborhoods</h5>
-                    <Badge
-                      variant="secondary"
-                      style={BADGE_STYLE}
-                    >
-                      {villages.length} found
-                    </Badge>
-                  </div>
-                </div>
-
                 {villagesLoading && villages.length === 0 ? (
                   <div className={GRID_4_COLS}>
                     {Array.from({ length: 8 }).map((_, i) => (
@@ -729,76 +717,93 @@ export default function Places() {
                     ))}
                   </div>
                 ) : villages.length > 0 ? (
-                  <div className="flex flex-col gap-8">
-                    {continents.map((continent) => {
-                      const continentVillages = villages.filter(
-                        (v) => v.countries?.continent_id === continent.id,
-                      );
-                      if (continentVillages.length === 0) return null;
-
-                      const villageKey = `villages-${continent.id}`;
-                      const isExpanded = expandedContinents[villageKey];
-
-                      // Group by country within continent
-                      const byCountry: Record<string, { name: string; villages: typeof continentVillages }> = {};
-                      for (const v of continentVillages) {
-                        const cid = v.country_id || 'unknown';
-                        const cname = v.countries?.name || 'Unknown';
-                        if (!byCountry[cid]) byCountry[cid] = { name: cname, villages: [] };
-                        byCountry[cid].villages.push(v);
-                      }
-
-                      const hasMore = continentVillages.length > COLLAPSED_COUNT;
-
+                  <>
+                    {/* Zone A — Featured neighborhoods (editorial picks) */}
+                    {(() => {
+                      const featured = villages.filter(v => v.featured).slice(0, 8);
+                      if (featured.length === 0) return null;
                       return (
-                        <div key={continent.id} className="flex flex-col gap-6">
-                          <button
-                            type="button"
-                            onClick={() => toggleContinent(villageKey)}
-                            aria-expanded={isExpanded}
-                            className="w-full flex items-center justify-between gap-4 p-4 rounded-element bg-muted cursor-pointer hover:opacity-85 text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-element bg-muted-foreground/10">
-                                <Globe style={ICON_MD} />
-                              </div>
-                              <div>
-                                <p className="text-lg font-semibold">{continent.name as string}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {continentVillages.length} neighborhood{continentVillages.length !== 1 ? 's' : ''}
-                                </p>
-                              </div>
-                            </div>
-                            {hasMore && (
-                              isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />
-                            )}
-                          </button>
-
-                          {Object.entries(byCountry).map(([countryId, { name: countryName, villages: countryVillages }]) => (
-                              <div key={countryId} className="flex flex-col gap-3">
-                                <p className="text-sm font-semibold text-muted-foreground pl-1">
-                                  {countryName}
-                                </p>
-                                <div className={GRID_4_COLS}>
-                                  {countryVillages.map((village) => (
-                                    <VillageCard key={village.id} village={village} />
-                                  ))}
-                                </div>
-                              </div>
-                          ))}
-
-                          {hasMore && !isExpanded && (
-                            <Button
-                              variant="ghost"
-                              onClick={() => toggleContinent(villageKey)}
-                              style={{ alignSelf: 'center' }}
-                            >
-                              Show all {continentVillages.length} neighborhoods
-                            </Button>
-                          )}
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-3">
+                            <Sparkles style={ICON_MD} aria-hidden="true" />
+                            <h5 className="text-2xl font-semibold">Famous queer neighborhoods</h5>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            The Castro, Chueca, Le Marais, Schöneberg — historic LGBTQ+ communities worth a trip on their own.
+                          </p>
+                          <div className={GRID_4_COLS}>
+                            {featured.map(village => <VillageCard key={village.id} village={village} />)}
+                          </div>
                         </div>
                       );
-                    })}
+                    })()}
+
+                    {/* Zone B — Browse by continent (collapsed accordions) */}
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-2xl font-semibold">Browse by continent</h5>
+                        <Badge variant="secondary" style={BADGE_STYLE}>
+                          {villages.length} neighborhoods
+                        </Badge>
+                      </div>
+
+                      <div className="flex flex-col gap-6">
+                        {continents.map((continent) => {
+                          const continentVillages = villages.filter(
+                            (v) => v.countries?.continent_id === continent.id,
+                          );
+                          if (continentVillages.length === 0) return null;
+
+                          const villageKey = `villages-${continent.id}`;
+                          const isExpanded = expandedContinents[villageKey];
+
+                          const byCountry: Record<string, { name: string; villages: typeof continentVillages }> = {};
+                          for (const v of continentVillages) {
+                            const cid = v.country_id || 'unknown';
+                            const cname = v.countries?.name || 'Unknown';
+                            if (!byCountry[cid]) byCountry[cid] = { name: cname, villages: [] };
+                            byCountry[cid].villages.push(v);
+                          }
+
+                          return (
+                            <div key={continent.id} className="flex flex-col gap-4">
+                              <button
+                                type="button"
+                                onClick={() => toggleContinent(villageKey)}
+                                aria-expanded={isExpanded}
+                                className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 bg-muted-foreground/10">
+                                    <Globe style={ICON_MD} />
+                                  </div>
+                                  <div>
+                                    <p className="text-lg font-semibold">{continent.name as string}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {continentVillages.length} neighborhood{continentVillages.length !== 1 ? 's' : ''}
+                                    </p>
+                                  </div>
+                                </div>
+                                {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
+                              </button>
+
+                              {isExpanded && Object.entries(byCountry).map(([countryId, { name: countryName, villages: countryVillages }]) => (
+                                <div key={countryId} className="flex flex-col gap-3">
+                                  <p className="text-sm font-semibold text-muted-foreground pl-1">
+                                    {countryName}
+                                  </p>
+                                  <div className={GRID_4_COLS}>
+                                    {countryVillages.map((village) => (
+                                      <VillageCard key={village.id} village={village} />
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
                     {/* Villages without a continent */}
                     {villages.some((v) => !v.countries?.continent_id) && (
@@ -813,7 +818,7 @@ export default function Places() {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </>
                 ) : (
                   <div className="text-center py-12">
                     <Landmark

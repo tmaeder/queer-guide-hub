@@ -1638,9 +1638,9 @@
     "travel": {
       "title": "Путешествия",
       "subtitle": "Находи авиабилеты, отели и активности в ЛГБТК+-дружественных направлениях",
-      "activitiesComingSoon": "Активности скоро появятся.",
-      "browseDestinations": "Просмотреть направления",
-      "exploreCta": "Направления",
+      "activitiesComingSoon": "Активности скоро.",
+      "browseDestinations": "Смотреть направления",
+      "exploreCta": "ЛГБТК+ дружественные направления",
       "exploreDescription": "Города и страны с информацией о безопасности и путеводителями.",
       "hotels": {
         "typeLabel": "[RU] Type",
@@ -1661,45 +1661,45 @@
         }
       },
       "hero": {
-        "title": "[RU] Plan a trip",
-        "subtitle": "[RU] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[RU] Where to?",
-        "start": "[RU] Start",
-        "end": "[RU] End",
-        "cta": "[RU] Plan this trip",
-        "discover": "[RU] Or",
-        "discoverLink": "[RU] browse public trips",
-        "discoverTail": "[RU] from the community.",
+        "title": "Спланировать поездку",
+        "subtitle": "Составьте квир-дружественный маршрут: город, прайд-события, бары, отели и инфо о безопасности на каждой остановке.",
+        "cityLabel": "Куда?",
+        "start": "Начало",
+        "end": "Конец",
+        "cta": "Спланировать",
+        "discover": "Или",
+        "discoverLink": "посмотреть публичные поездки",
+        "discoverTail": "от сообщества.",
         "errors": {
-          "city": "[RU] Pick a city to plan a trip."
+          "city": "Выберите город для планирования."
         },
         "activeTripHeading": "Продолжить путешествие",
         "openTrip": "Открыть путешествие"
       },
       "resume": {
-        "title": "[RU] Continue planning",
-        "placeCount": "[RU] {{count}} places"
+        "title": "Продолжить планирование",
+        "placeCount": "{{count}} мест"
       },
       "pride": {
-        "title": "[RU] Pride this season",
-        "window": "[RU] Next 4 months",
-        "empty": "[RU] No upcoming Pride events.",
-        "safety": "[RU] Equality score",
+        "title": "Прайды этого сезона",
+        "window": "Следующие 4 месяца",
+        "empty": "Нет предстоящих прайд-событий.",
+        "safety": "Индекс равенства",
         "equalityTooltip": "Оценка равенства отражает правовую защиту ЛГБТК+ в этой стране. Чем выше, тем безопаснее.",
         "equalityAria": "Оценка равенства {{score}}: нажмите для объяснения"
       },
       "inspiration": {
-        "villages": "[RU] Queer villages",
-        "publicTrips": "[RU] Public trips",
-        "viewAll": "[RU] View all",
-        "noVillages": "[RU] No villages yet.",
-        "noTrips": "[RU] No public trips yet.",
+        "villages": "Квир-вилладжи",
+        "publicTrips": "Публичные поездки",
+        "viewAll": "Смотреть все",
+        "noVillages": "Пока нет вилладжей.",
+        "noTrips": "Пока нет публичных поездок.",
         "heading": "Вдохновение",
         "visitedFilterLabel": "Посещено:"
       },
       "bookNow": {
-        "title": "[RU] Book now",
-        "subtitle": "[RU] Search flights, hotels, and activities directly — no trip required.",
+        "title": "Забронировать напрямую",
+        "subtitle": "Ищите рейсы, отели и активности — без необходимости в поездке.",
         "headline": "Забронировать без путешествия"
       },
       "plan": {

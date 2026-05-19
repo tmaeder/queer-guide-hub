@@ -10,12 +10,12 @@ import { InspirationGrid } from '@/components/travel/InspirationGrid';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useRecommendations } from '@/hooks/useRecommendations';
+import { BrowseVisitedToolbar } from '@/components/travel/BrowseVisitedToolbar';
 import {
-  BrowseVisitedToolbar,
   readStoredVisitedFilter,
   writeVisitedFilter,
   type VisitedFilter,
-} from '@/components/travel/BrowseVisitedToolbar';
+} from '@/components/travel/visitedFilter';
 
 export default function Travel() {
   const { t } = useTranslation();

@@ -1549,8 +1549,8 @@
       "subtitle": "ابحث عن رحلات وفنادق وأنشطة في وجهات صديقة لمجتمع LGBTQ+",
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
-      "exploreCta": "الوجهات",
-      "exploreDescription": "مدن وبلدان مع معلومات أمان وأدلة سفر.",
+      "exploreCta": "وجهات صديقة لمجتمع الميم",
+      "exploreDescription": "مدن ودول مع معلومات السلامة والأدلة.",
       "hotels": {
         "typeLabel": "[AR] Type",
         "priceMin": "[AR] Min €",
@@ -1570,45 +1570,45 @@
         }
       },
       "hero": {
-        "title": "[AR] Plan a trip",
-        "subtitle": "[AR] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[AR] Where to?",
-        "start": "[AR] Start",
-        "end": "[AR] End",
-        "cta": "[AR] Plan this trip",
-        "discover": "[AR] Or",
-        "discoverLink": "[AR] browse public trips",
-        "discoverTail": "[AR] from the community.",
+        "title": "خطط لرحلة",
+        "subtitle": "أنشئ مساراً مناسباً لمجتمع الميم: اختر مدينة، فعاليات فخر، بارات، فنادق وسلامة لكل محطة.",
+        "cityLabel": "إلى أين؟",
+        "start": "البداية",
+        "end": "النهاية",
+        "cta": "خطط لهذه الرحلة",
+        "discover": "أو",
+        "discoverLink": "تصفح الرحلات العامة",
+        "discoverTail": "من المجتمع.",
         "errors": {
-          "city": "[AR] Pick a city to plan a trip."
+          "city": "اختر مدينة للتخطيط."
         },
         "activeTripHeading": "متابعة رحلتك",
         "openTrip": "فتح الرحلة"
       },
       "resume": {
-        "title": "[AR] Continue planning",
-        "placeCount": "[AR] {{count}} places"
+        "title": "متابعة التخطيط",
+        "placeCount": "{{count}} مكان"
       },
       "pride": {
-        "title": "[AR] Pride this season",
-        "window": "[AR] Next 4 months",
-        "empty": "[AR] No upcoming Pride events.",
-        "safety": "[AR] Equality score",
+        "title": "فعاليات الفخر هذا الموسم",
+        "window": "الأشهر الأربعة القادمة",
+        "empty": "لا توجد فعاليات فخر قادمة.",
+        "safety": "مؤشر المساواة",
         "equalityTooltip": "تعكس درجة المساواة الحماية القانونية لمجتمع الميم في هذا البلد. كلما زادت زادت السلامة.",
         "equalityAria": "درجة المساواة {{score}}: انقر للشرح"
       },
       "inspiration": {
-        "villages": "[AR] Queer villages",
-        "publicTrips": "[AR] Public trips",
-        "viewAll": "[AR] View all",
-        "noVillages": "[AR] No villages yet.",
-        "noTrips": "[AR] No public trips yet.",
+        "villages": "قرى الكوير",
+        "publicTrips": "الرحلات العامة",
+        "viewAll": "عرض الكل",
+        "noVillages": "لا توجد قرى بعد.",
+        "noTrips": "لا توجد رحلات عامة بعد.",
         "heading": "إلهام",
         "visitedFilterLabel": "تمت زيارته:"
       },
       "bookNow": {
-        "title": "[AR] Book now",
-        "subtitle": "[AR] Search flights, hotels, and activities directly — no trip required.",
+        "title": "احجز مباشرة",
+        "subtitle": "ابحث عن رحلات وفنادق وأنشطة — دون الحاجة لرحلة.",
         "headline": "احجز بدون رحلة"
       },
       "plan": {

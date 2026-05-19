@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketplaceCard } from './MarketplaceCard';
 import { useMarketplaceRow, type CuratedRowKey } from '@/hooks/useMarketplaceRows';
-import { useCuratedIds } from './CuratedIdsContext';
+import { useCuratedIds } from './useCuratedIds';
 
 interface MarketplaceRowProps {
   rowKey: CuratedRowKey;
