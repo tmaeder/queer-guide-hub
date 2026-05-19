@@ -75,7 +75,7 @@ describe('useRecentVenues', () => {
     const neqs = call.chain.filter(s => s.method === 'neq');
     expect(neqs.map(n => n.args)).toEqual(
       expect.arrayContaining([
-        ['data_source', 'refuge_restrooms'],
+        ['data_source', 'refuge-restrooms'],
         ['category', 'other'],
       ]),
     );

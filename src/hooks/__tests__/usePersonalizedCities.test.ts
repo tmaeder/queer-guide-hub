@@ -46,17 +46,41 @@ describe('fetchPersonalizedCitiesByIds', () => {
 });
 
 describe('fetchTrendingCities', () => {
-  it('uses default minPopulation 500000 + limit 6', async () => {
-    withResults({ data: [], error: null });
+  it('queries the editorial whitelist by name first', async () => {
+    withResults({ data: [], error: null }, { data: [], error: null });
     await fetchTrendingCities();
-    expect(state.calls[0].chain.find(s => s.method === 'gte')?.args).toEqual(['population', 500000]);
-    expect(state.calls[0].chain.find(s => s.method === 'limit')?.args).toEqual([6]);
+    const inCall = state.calls[0].chain.find(s => s.method === 'in');
+    expect(inCall?.args[0]).toBe('name');
+    const names = inCall?.args[1] as string[];
+    expect(names).toContain('Berlin');
+    expect(names).toContain('Mexico City');
+    expect(names).toContain('Bangkok');
   });
 
-  it('honors custom args', async () => {
-    withResults({ data: [], error: null });
-    await fetchTrendingCities(1_000_000, 3);
-    expect(state.calls[0].chain.find(s => s.method === 'gte')?.args).toEqual(['population', 1_000_000]);
-    expect(state.calls[0].chain.find(s => s.method === 'limit')?.args).toEqual([3]);
+  it('preserves whitelist order, not the order supabase returns', async () => {
+    // Supabase returns Bangkok first, then Berlin — but Berlin appears earlier
+    // in FEATURED_CITY_WHITELIST so it must be surfaced first.
+    withResults({
+      data: [
+        { id: 'bkk', name: 'Bangkok', population: 10_000_000, countries: null },
+        { id: 'ber', name: 'Berlin', population: 3_700_000, countries: null },
+      ],
+      error: null,
+    });
+    const result = await fetchTrendingCities(0, 2);
+    expect(result.map(r => r.name)).toEqual(['Berlin', 'Bangkok']);
+  });
+
+  it('falls back to equality-filtered population query when whitelist is empty', async () => {
+    withResults(
+      { data: [], error: null },
+      { data: [{ id: 'x', name: 'Fallback', population: 5_000_000, countries: null }], error: null },
+    );
+    const result = await fetchTrendingCities();
+    expect(result.map(r => r.name)).toEqual(['Fallback']);
+    const popGte = state.calls[1].chain.find(s => s.method === 'gte' && s.args[0] === 'population');
+    expect(popGte?.args).toEqual(['population', 200000]);
+    const eqGte = state.calls[1].chain.find(s => s.method === 'gte' && s.args[0] === 'countries.equality_score');
+    expect(eqGte?.args).toEqual(['countries.equality_score', 60]);
   });
 });

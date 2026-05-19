@@ -1573,8 +1573,8 @@
         "errors": {
           "city": "[ES] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "Continúa tu viaje",
+        "openTrip": "Abrir viaje"
       },
       "resume": {
         "title": "[ES] Continue planning",
@@ -1585,8 +1585,8 @@
         "window": "[ES] Next 4 months",
         "empty": "[ES] No upcoming Pride events.",
         "safety": "[ES] Equality score",
-        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "La puntuación de igualdad refleja las protecciones legales LGBTQ+ de este país. Más alta es más segura.",
+        "equalityAria": "Puntuación de igualdad {{score}}: toca para explicación"
       },
       "inspiration": {
         "villages": "[ES] Queer villages",
@@ -1594,16 +1594,16 @@
         "viewAll": "[ES] View all",
         "noVillages": "[ES] No villages yet.",
         "noTrips": "[ES] No public trips yet.",
-        "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "heading": "Inspiración",
+        "visitedFilterLabel": "Visitados:"
       },
       "bookNow": {
         "title": "[ES] Book now",
         "subtitle": "[ES] Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "Reservar sin viaje"
       },
       "plan": {
-        "switchTrip": "Switch active trip"
+        "switchTrip": "Cambiar viaje activo"
       }
     },
     "marketplace": {
@@ -1789,12 +1789,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}} viajes vacíos",
+        "description": "Borradores sin fechas ni lugares guardados. Ordénalos para mantener tu lista de viajes enfocada.",
+        "cta": "Revisar",
+        "dismiss": "Descartar",
+        "scopeNote": "Mostrando {{count}} borradores vacíos. Elimina los que no necesites.",
+        "exitScope": "Mostrar todos los viajes"
       }
     }
   },

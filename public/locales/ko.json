@@ -1573,8 +1573,8 @@
         "errors": {
           "city": "[KO] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "여행 계속하기",
+        "openTrip": "여행 열기"
       },
       "resume": {
         "title": "[KO] Continue planning",
@@ -1585,8 +1585,8 @@
         "window": "[KO] Next 4 months",
         "empty": "[KO] No upcoming Pride events.",
         "safety": "[KO] Equality score",
-        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "평등 점수는 이 나라의 LGBTQ+ 법적 보호를 반영합니다. 높을수록 안전합니다.",
+        "equalityAria": "평등 점수 {{score}}: 탭하여 설명"
       },
       "inspiration": {
         "villages": "[KO] Queer villages",
@@ -1594,16 +1594,16 @@
         "viewAll": "[KO] View all",
         "noVillages": "[KO] No villages yet.",
         "noTrips": "[KO] No public trips yet.",
-        "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "heading": "영감",
+        "visitedFilterLabel": "방문:"
       },
       "bookNow": {
         "title": "[KO] Book now",
         "subtitle": "[KO] Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "여행 없이 예약"
       },
       "plan": {
-        "switchTrip": "Switch active trip"
+        "switchTrip": "활성 여행 전환"
       }
     },
     "marketplace": {
@@ -1789,12 +1789,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "빈 여행 {{count}}개",
+        "description": "날짜나 저장된 장소가 없는 초안입니다. 정리해서 여행 목록을 깔끔하게 유지하세요.",
+        "cta": "검토",
+        "dismiss": "닫기",
+        "scopeNote": "빈 초안 {{count}}개 표시 중. 필요 없는 것은 삭제하세요.",
+        "exitScope": "모든 여행 표시"
       }
     }
   },

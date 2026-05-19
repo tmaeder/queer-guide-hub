@@ -1541,7 +1541,16 @@
       "sort": {
         "dateAsc": "[PT] Soonest first",
         "dateDesc": "[PT] Latest first"
-      }
+      },
+      "searchLabel": "Buscar eventos",
+      "searchPlaceholder": "Buscar eventos, cidades, organizadores",
+      "filters": "Filtros",
+      "viewMode": "Visualização",
+      "resultsCount_one": "{{count}} evento",
+      "resultsCount_other": "{{count}} eventos",
+      "resultsNear_one": "{{count}} evento perto de {{city}}",
+      "resultsNear_other": "{{count}} eventos perto de {{city}}",
+      "showWorldwide": "Mostrar em todo o mundo"
     },
     "eventDetail": {
       "loadFailed": "Não foi possível carregar os detalhes do evento.",
@@ -1632,8 +1641,8 @@
         "errors": {
           "city": "[PT] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "Continue sua viagem",
+        "openTrip": "Abrir viagem"
       },
       "resume": {
         "title": "[PT] Continue planning",
@@ -1644,8 +1653,8 @@
         "window": "[PT] Next 4 months",
         "empty": "[PT] No upcoming Pride events.",
         "safety": "[PT] Equality score",
-        "equalityTooltip": "",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "A pontuação de igualdade reflete as proteções legais LGBTQ+ deste país. Quanto maior, mais seguro.",
+        "equalityAria": "Pontuação de igualdade {{score}}: toque para explicação"
       },
       "inspiration": {
         "villages": "[PT] Queer villages",
@@ -1653,12 +1662,16 @@
         "viewAll": "[PT] View all",
         "noVillages": "[PT] No villages yet.",
         "noTrips": "[PT] No public trips yet.",
-        "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "heading": "Inspiração",
+        "visitedFilterLabel": "Visitados:"
       },
       "bookNow": {
         "title": "[PT] Book now",
-        "subtitle": "[PT] Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "[PT] Search flights, hotels, and activities directly — no trip required.",
+        "headline": "Reservar sem viagem"
+      },
+      "plan": {
+        "switchTrip": "Trocar viagem ativa"
       }
     },
     "marketplace": {
@@ -1844,12 +1857,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}} viagens vazias",
+        "description": "Rascunhos sem datas ou lugares salvos. Organize-os para manter sua lista de viagens focada.",
+        "cta": "Revisar",
+        "dismiss": "Descartar",
+        "scopeNote": "Mostrando {{count}} rascunhos vazios. Exclua os que não precisar.",
+        "exitScope": "Mostrar todas as viagens"
       }
     }
   },

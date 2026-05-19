@@ -1541,7 +1541,16 @@
       "sort": {
         "dateAsc": "[JA] Soonest first",
         "dateDesc": "[JA] Latest first"
-      }
+      },
+      "searchLabel": "イベントを検索",
+      "searchPlaceholder": "イベント、都市、主催者を検索",
+      "filters": "フィルター",
+      "viewMode": "表示モード",
+      "resultsCount_one": "{{count}}件のイベント",
+      "resultsCount_other": "{{count}}件のイベント",
+      "resultsNear_one": "{{city}}近郊の{{count}}件のイベント",
+      "resultsNear_other": "{{city}}近郊の{{count}}件のイベント",
+      "showWorldwide": "世界中を表示"
     },
     "eventDetail": {
       "loadFailed": "イベントの詳細を読み込めませんでした。",
@@ -1632,8 +1641,8 @@
         "errors": {
           "city": "[JA] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "旅行を続ける",
+        "openTrip": "旅行を開く"
       },
       "resume": {
         "title": "[JA] Continue planning",
@@ -1644,8 +1653,8 @@
         "window": "[JA] Next 4 months",
         "empty": "[JA] No upcoming Pride events.",
         "safety": "[JA] Equality score",
-        "equalityTooltip": "",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "平等スコアはこの国のLGBTQ+の法的保護を示します。高いほど安全です。",
+        "equalityAria": "平等スコア{{score}}: タップで説明"
       },
       "inspiration": {
         "villages": "[JA] Queer villages",
@@ -1653,12 +1662,16 @@
         "viewAll": "[JA] View all",
         "noVillages": "[JA] No villages yet.",
         "noTrips": "[JA] No public trips yet.",
-        "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "heading": "インスピレーション",
+        "visitedFilterLabel": "訪問済み:"
       },
       "bookNow": {
         "title": "[JA] Book now",
-        "subtitle": "[JA] Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "[JA] Search flights, hotels, and activities directly — no trip required.",
+        "headline": "旅行なしで予約"
+      },
+      "plan": {
+        "switchTrip": "アクティブな旅行を切り替え"
       }
     },
     "marketplace": {
@@ -1844,12 +1857,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "空の旅行が{{count}}件",
+        "description": "日付や保存された場所がない下書きです。整理して旅行リストを見やすくしましょう。",
+        "cta": "確認",
+        "dismiss": "閉じる",
+        "scopeNote": "空の下書きを{{count}}件表示中。不要なものを削除してください。",
+        "exitScope": "すべての旅行を表示"
       }
     }
   },

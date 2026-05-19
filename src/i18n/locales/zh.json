@@ -1541,7 +1541,16 @@
       "sort": {
         "dateAsc": "[ZH] Soonest first",
         "dateDesc": "[ZH] Latest first"
-      }
+      },
+      "searchLabel": "搜索活动",
+      "searchPlaceholder": "搜索活动、城市、主办方",
+      "filters": "筛选",
+      "viewMode": "视图模式",
+      "resultsCount_one": "{{count}} 个活动",
+      "resultsCount_other": "{{count}} 个活动",
+      "resultsNear_one": "{{city}} 附近的 {{count}} 个活动",
+      "resultsNear_other": "{{city}} 附近的 {{count}} 个活动",
+      "showWorldwide": "查看全球"
     },
     "eventDetail": {
       "loadFailed": "无法加载活动详情。",
@@ -1632,8 +1641,8 @@
         "errors": {
           "city": "[ZH] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "继续您的旅行",
+        "openTrip": "打开旅行"
       },
       "resume": {
         "title": "[ZH] Continue planning",
@@ -1644,8 +1653,8 @@
         "window": "[ZH] Next 4 months",
         "empty": "[ZH] No upcoming Pride events.",
         "safety": "[ZH] Equality score",
-        "equalityTooltip": "",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "平等分数反映该国的LGBTQ+法律保护。越高越安全。",
+        "equalityAria": "平等分数 {{score}}：点按以查看说明"
       },
       "inspiration": {
         "villages": "[ZH] Queer villages",
@@ -1653,12 +1662,16 @@
         "viewAll": "[ZH] View all",
         "noVillages": "[ZH] No villages yet.",
         "noTrips": "[ZH] No public trips yet.",
-        "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "heading": "灵感",
+        "visitedFilterLabel": "已访问："
       },
       "bookNow": {
         "title": "[ZH] Book now",
-        "subtitle": "[ZH] Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "[ZH] Search flights, hotels, and activities directly — no trip required.",
+        "headline": "无旅行直接预订"
+      },
+      "plan": {
+        "switchTrip": "切换活动旅行"
       }
     },
     "marketplace": {
@@ -1844,12 +1857,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}}个空旅行",
+        "description": "没有日期或保存地点的草稿。整理它们以保持旅行列表清晰。",
+        "cta": "查看",
+        "dismiss": "关闭",
+        "scopeNote": "显示{{count}}个空草稿。删除您不需要的。",
+        "exitScope": "显示所有旅行"
       }
     }
   },

@@ -94,7 +94,7 @@ async function fetchVenuesInBbox(
   let query = supabase
     .from('venues')
     .select('id, slug, name, category, latitude, longitude, city, country, is_featured')
-    .neq('data_source', 'refuge_restrooms')
+    .neq('data_source', 'refuge-restrooms')
     .is('duplicate_of_id', null)
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)

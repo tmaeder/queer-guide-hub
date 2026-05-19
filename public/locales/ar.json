@@ -1573,8 +1573,8 @@
         "errors": {
           "city": "[AR] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "متابعة رحلتك",
+        "openTrip": "فتح الرحلة"
       },
       "resume": {
         "title": "[AR] Continue planning",
@@ -1585,8 +1585,8 @@
         "window": "[AR] Next 4 months",
         "empty": "[AR] No upcoming Pride events.",
         "safety": "[AR] Equality score",
-        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "تعكس درجة المساواة الحماية القانونية لمجتمع الميم في هذا البلد. كلما زادت زادت السلامة.",
+        "equalityAria": "درجة المساواة {{score}}: انقر للشرح"
       },
       "inspiration": {
         "villages": "[AR] Queer villages",
@@ -1594,16 +1594,16 @@
         "viewAll": "[AR] View all",
         "noVillages": "[AR] No villages yet.",
         "noTrips": "[AR] No public trips yet.",
-        "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "heading": "إلهام",
+        "visitedFilterLabel": "تمت زيارته:"
       },
       "bookNow": {
         "title": "[AR] Book now",
         "subtitle": "[AR] Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "احجز بدون رحلة"
       },
       "plan": {
-        "switchTrip": "Switch active trip"
+        "switchTrip": "تبديل الرحلة النشطة"
       }
     },
     "marketplace": {
@@ -1789,12 +1789,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}} رحلات فارغة",
+        "description": "مسودات بدون تواريخ أو أماكن محفوظة. رتبها للحفاظ على وضوح قائمة رحلاتك.",
+        "cta": "مراجعة",
+        "dismiss": "إغلاق",
+        "scopeNote": "عرض {{count}} مسودات فارغة. احذف ما لا تحتاجه.",
+        "exitScope": "عرض جميع الرحلات"
       }
     }
   },

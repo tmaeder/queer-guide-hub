@@ -1573,8 +1573,8 @@
         "errors": {
           "city": "[DE] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "Reise fortsetzen",
+        "openTrip": "Reise öffnen"
       },
       "resume": {
         "title": "[DE] Continue planning",
@@ -1585,8 +1585,8 @@
         "window": "[DE] Next 4 months",
         "empty": "[DE] No upcoming Pride events.",
         "safety": "[DE] Equality score",
-        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "Der Gleichberechtigungs-Score zeigt den LGBTQ+-Rechtsschutz in diesem Land. Höher ist sicherer.",
+        "equalityAria": "Gleichberechtigungs-Score {{score}}: tippen für Erklärung"
       },
       "inspiration": {
         "villages": "[DE] Queer villages",
@@ -1595,15 +1595,15 @@
         "noVillages": "[DE] No villages yet.",
         "noTrips": "[DE] No public trips yet.",
         "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "visitedFilterLabel": "Besucht:"
       },
       "bookNow": {
         "title": "[DE] Book now",
         "subtitle": "[DE] Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "Buchen ohne Reise"
       },
       "plan": {
-        "switchTrip": "Switch active trip"
+        "switchTrip": "Aktive Reise wechseln"
       }
     },
     "marketplace": {
@@ -1789,12 +1789,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}} leere Reisen",
+        "description": "Entwürfe ohne Daten oder gespeicherte Orte. Räume sie auf, um deine Reiseliste übersichtlich zu halten.",
+        "cta": "Prüfen",
+        "dismiss": "Schließen",
+        "scopeNote": "Zeigt {{count}} leere Entwürfe. Lösche die, die du nicht brauchst.",
+        "exitScope": "Alle Reisen anzeigen"
       }
     }
   },

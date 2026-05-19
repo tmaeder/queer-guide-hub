@@ -1541,7 +1541,16 @@
       "sort": {
         "dateAsc": "[DE] Soonest first",
         "dateDesc": "[DE] Latest first"
-      }
+      },
+      "searchLabel": "Veranstaltungen suchen",
+      "searchPlaceholder": "Veranstaltungen, Städte, Veranstalter suchen",
+      "filters": "Filter",
+      "viewMode": "Ansicht",
+      "resultsCount_one": "{{count}} Veranstaltung",
+      "resultsCount_other": "{{count}} Veranstaltungen",
+      "resultsNear_one": "{{count}} Veranstaltung in der Nähe von {{city}}",
+      "resultsNear_other": "{{count}} Veranstaltungen in der Nähe von {{city}}",
+      "showWorldwide": "Weltweit anzeigen"
     },
     "eventDetail": {
       "loadFailed": "Details zur Veranstaltung konnten nicht geladen werden.",
@@ -1632,8 +1641,8 @@
         "errors": {
           "city": "[DE] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "Reise fortsetzen",
+        "openTrip": "Reise öffnen"
       },
       "resume": {
         "title": "[DE] Continue planning",
@@ -1644,8 +1653,8 @@
         "window": "[DE] Next 4 months",
         "empty": "[DE] No upcoming Pride events.",
         "safety": "[DE] Equality score",
-        "equalityTooltip": "",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "Der Gleichberechtigungs-Score zeigt den LGBTQ+-Rechtsschutz in diesem Land. Höher ist sicherer.",
+        "equalityAria": "Gleichberechtigungs-Score {{score}}: tippen für Erklärung"
       },
       "inspiration": {
         "villages": "[DE] Queer villages",
@@ -1654,11 +1663,15 @@
         "noVillages": "[DE] No villages yet.",
         "noTrips": "[DE] No public trips yet.",
         "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "visitedFilterLabel": "Besucht:"
       },
       "bookNow": {
         "title": "[DE] Book now",
-        "subtitle": "[DE] Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "[DE] Search flights, hotels, and activities directly — no trip required.",
+        "headline": "Buchen ohne Reise"
+      },
+      "plan": {
+        "switchTrip": "Aktive Reise wechseln"
       }
     },
     "marketplace": {
@@ -1844,12 +1857,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}} leere Reisen",
+        "description": "Entwürfe ohne Daten oder gespeicherte Orte. Räume sie auf, um deine Reiseliste übersichtlich zu halten.",
+        "cta": "Prüfen",
+        "dismiss": "Schließen",
+        "scopeNote": "Zeigt {{count}} leere Entwürfe. Lösche die, die du nicht brauchst.",
+        "exitScope": "Alle Reisen anzeigen"
       }
     }
   },
