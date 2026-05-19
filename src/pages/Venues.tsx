@@ -575,7 +575,7 @@ const Venues = () => {
             />
             {!loading && filteredTotal === 0 && Object.keys(currentFilters).length > 0 && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 pointer-events-none">
-                <div className="pointer-events-auto rounded-element bg-background p-6 text-center shadow-lg">
+                <div className="pointer-events-auto rounded-element bg-background p-6 text-center shadow-[var(--shadow-aceternity)]">
                   <MapPin className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                   <p className="text-sm font-medium">{t('pages.venues.filteredEmpty.title', 'No venues match your filters')}</p>
                   <Button

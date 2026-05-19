@@ -246,7 +246,7 @@ export const EventsCalendarView = ({
                   <div className="flex flex-col gap-4">
                     {eventsForSelectedDate.map((event) => (
                       <div key={event.id} className="relative">
-                        <div className="p-4 transition-all border-2 border-transparent rounded-element hover:border-primary hover:shadow-lg hover:scale-[1.02] bg-card">
+                        <div className="p-4 transition-all border-2 border-transparent rounded-element hover:border-primary hover:shadow-[var(--shadow-aceternity)] hover:scale-[1.02] bg-card">
                           {/* Event Header */}
                           <div className="flex items-start justify-between gap-3 mb-3">
                             <button
