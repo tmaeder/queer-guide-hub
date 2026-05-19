@@ -1669,8 +1669,8 @@
         "errors": {
           "city": "[RU] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "Продолжить путешествие",
+        "openTrip": "Открыть путешествие"
       },
       "resume": {
         "title": "[RU] Continue planning",
@@ -1681,8 +1681,8 @@
         "window": "[RU] Next 4 months",
         "empty": "[RU] No upcoming Pride events.",
         "safety": "[RU] Equality score",
-        "equalityTooltip": "",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "Оценка равенства отражает правовую защиту ЛГБТК+ в этой стране. Чем выше, тем безопаснее.",
+        "equalityAria": "Оценка равенства {{score}}: нажмите для объяснения"
       },
       "inspiration": {
         "villages": "[RU] Queer villages",
@@ -1690,12 +1690,16 @@
         "viewAll": "[RU] View all",
         "noVillages": "[RU] No villages yet.",
         "noTrips": "[RU] No public trips yet.",
-        "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "heading": "Вдохновение",
+        "visitedFilterLabel": "Посещено:"
       },
       "bookNow": {
         "title": "[RU] Book now",
-        "subtitle": "[RU] Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "[RU] Search flights, hotels, and activities directly — no trip required.",
+        "headline": "Забронировать без путешествия"
+      },
+      "plan": {
+        "switchTrip": "Переключить активное путешествие"
       }
     },
     "marketplace": {
@@ -1881,12 +1885,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}} пустых путешествий",
+        "description": "Черновики без дат и сохранённых мест. Наведите порядок, чтобы список путешествий оставался чётким.",
+        "cta": "Просмотреть",
+        "dismiss": "Закрыть",
+        "scopeNote": "Показано {{count}} пустых черновиков. Удалите ненужные.",
+        "exitScope": "Показать все путешествия"
       }
     }
   },

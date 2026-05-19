@@ -1577,8 +1577,8 @@
         "errors": {
           "city": "[FR] Pick a city to plan a trip."
         },
-        "activeTripHeading": "Continue your trip",
-        "openTrip": "Open trip"
+        "activeTripHeading": "Continuer votre voyage",
+        "openTrip": "Ouvrir le voyage"
       },
       "resume": {
         "title": "[FR] Continue planning",
@@ -1589,8 +1589,8 @@
         "window": "[FR] Next 4 months",
         "empty": "[FR] No upcoming Pride events.",
         "safety": "[FR] Equality score",
-        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
-        "equalityAria": "Equality score {{score}}: tap for explanation"
+        "equalityTooltip": "Le score d'égalité reflète les protections juridiques LGBTQ+ de ce pays. Plus c'est élevé, plus c'est sûr.",
+        "equalityAria": "Score d'égalité {{score}} : touchez pour explication"
       },
       "inspiration": {
         "villages": "[FR] Queer villages",
@@ -1599,15 +1599,15 @@
         "noVillages": "[FR] No villages yet.",
         "noTrips": "[FR] No public trips yet.",
         "heading": "Inspiration",
-        "visitedFilterLabel": "Visited:"
+        "visitedFilterLabel": "Visités :"
       },
       "bookNow": {
         "title": "[FR] Book now",
         "subtitle": "[FR] Search flights, hotels, and activities directly — no trip required.",
-        "headline": "Book without a trip"
+        "headline": "Réserver sans voyage"
       },
       "plan": {
-        "switchTrip": "Switch active trip"
+        "switchTrip": "Changer de voyage actif"
       }
     },
     "marketplace": {
@@ -1793,12 +1793,12 @@
     },
     "trips": {
       "emptyTripsBanner": {
-        "title": "{{count}} empty trips",
-        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
-        "cta": "Review",
-        "dismiss": "Dismiss",
-        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
-        "exitScope": "Show all trips"
+        "title": "{{count}} voyages vides",
+        "description": "Brouillons sans dates ni lieux enregistrés. Nettoyez-les pour garder votre liste de voyages claire.",
+        "cta": "Examiner",
+        "dismiss": "Ignorer",
+        "scopeNote": "Affichage de {{count}} brouillons vides. Supprimez ceux dont vous n'avez pas besoin.",
+        "exitScope": "Afficher tous les voyages"
       }
     }
   },
