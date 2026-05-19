@@ -1826,129 +1826,129 @@
   },
   "resources": {
     "hero": {
-      "eyebrow": "Support",
-      "title": "Help & resources.",
-      "lede": "Crisis support, practical guides, and the people and organisations behind them."
+      "eyebrow": "サポート",
+      "title": "ヘルプとリソース。",
+      "lede": "危機支援、実用ガイド、その背後にある人々と団体。"
     },
-    "errorLoading": "Something went wrong while loading resources. Please try again later.",
-    "disclosure": "Browse all topics & search",
-    "disclosureAria": "Browse all topics, search and advanced filters",
-    "browseAllTopics": "Browse all topics",
+    "errorLoading": "リソースの読み込みに失敗しました。後ほどお試しください。",
+    "disclosure": "すべてのトピックと検索",
+    "disclosureAria": "すべてのトピック、検索、詳細フィルター",
+    "browseAllTopics": "すべてのトピック",
     "professions": {
-      "title": "Professions",
-      "description": "Browse LGBTQ+ personalities by profession",
-      "back": "Back"
+      "title": "職業",
+      "description": "職業で LGBTQ+ パーソナリティを探す",
+      "back": "戻る"
     },
     "category": {
-      "back": "Back",
-      "viewAll": "View all →",
-      "comingSoon": "Coming soon",
-      "tagCount": "{{count}} tags",
-      "tagCountTotal": "{{count}} tags total (across all subcategories)",
-      "tagCountTotalAria": "{{count}} tags total across all subcategories",
-      "totalChildHint": "Each subcategory's count is the number of tags directly assigned to it",
-      "supportNewsAlert": "Need immediate help? Browse our curated crisis hotlines directory.",
-      "crisisHotlines": "Crisis Hotlines",
-      "emptyTitle": "No tags in this category yet",
-      "emptyDescription": "Check back soon — this bucket is being filled.",
-      "subcategoryEmptyTitle": "No tags here yet",
-      "subcategoryEmptyDescription": "This subcategory is being populated."
+      "back": "戻る",
+      "viewAll": "すべて見る →",
+      "comingSoon": "近日公開",
+      "tagCount": "タグ {{count}} 件",
+      "tagCountTotal": "タグ {{count}} 件（全サブカテゴリ）",
+      "tagCountTotalAria": "全サブカテゴリで {{count}} 件のタグ",
+      "totalChildHint": "各サブカテゴリの数は直接割り当てられたタグの数です",
+      "supportNewsAlert": "今すぐ助けが必要ですか？危機ホットラインの一覧を見る。",
+      "crisisHotlines": "危機ホットライン",
+      "emptyTitle": "このカテゴリにはまだタグがありません",
+      "emptyDescription": "まもなく追加されます。",
+      "subcategoryEmptyTitle": "まだタグがありません",
+      "subcategoryEmptyDescription": "このサブカテゴリは追加中です。"
     },
     "crisis": {
-      "heading": "Crisis & safety",
-      "badge": "Free, anonymous",
-      "chooseCountryAria": "Choose country",
-      "callEmergencyPrefix": "In immediate danger? Call ",
-      "callEmergencySuffix": " ({{country}}).",
-      "callEmergencySuffixInt": ".",
-      "noLocal": "No {{country}} hotlines indexed yet — showing international.",
-      "callAria": "Call {{name}} at {{phone}}",
-      "noHotlinesLoaded": "No hotlines loaded yet.",
-      "listAria": "Crisis hotlines",
-      "seeAll": "See all hotlines"
+      "heading": "危機と安全",
+      "badge": "無料・匿名",
+      "chooseCountryAria": "国を選択",
+      "callEmergencyPrefix": "今すぐ危険ですか？ ",
+      "callEmergencySuffix": "に電話（{{country}}）。",
+      "callEmergencySuffixInt": "に電話。",
+      "noLocal": "{{country}} のホットラインはまだ登録されていません — 国際版を表示。",
+      "callAria": "{{name}}（{{phone}}）に電話",
+      "noHotlinesLoaded": "ホットラインはまだ読み込まれていません。",
+      "listAria": "危機ホットライン",
+      "seeAll": "すべてのホットラインを見る"
     },
     "topicHubs": {
-      "heading": "Topic hubs"
+      "heading": "トピック"
     },
     "topic": {
-      "back": "Resources",
-      "notFound": "Topic not found",
-      "backToResources": "Back to resources",
-      "metaSuffix": "Resources",
-      "metaNotFound": "Topic not found",
-      "stats": "{{guides}} guides · {{orgs}} orgs · {{news}} articles",
-      "guidesHeading": "Guides",
-      "guidesEmpty": "No guides published yet for this topic.",
-      "orgsHeading": "Organisations",
-      "orgsEmpty": "No organisations indexed for this topic yet.",
-      "newsHeading": "Recent news",
-      "newsEmpty": "No recent articles tagged for this topic.",
-      "moreTopics": "More topics"
+      "back": "リソース",
+      "notFound": "トピックが見つかりません",
+      "backToResources": "リソースに戻る",
+      "metaSuffix": "リソース",
+      "metaNotFound": "トピックが見つかりません",
+      "stats": "ガイド {{guides}} · 団体 {{orgs}} · 記事 {{news}}",
+      "guidesHeading": "ガイド",
+      "guidesEmpty": "このトピックのガイドはまだ公開されていません。",
+      "orgsHeading": "団体",
+      "orgsEmpty": "このトピックの団体はまだ登録されていません。",
+      "newsHeading": "最新ニュース",
+      "newsEmpty": "このトピックの最新記事はまだありません。",
+      "moreTopics": "他のトピック"
     },
     "orgs": {
-      "heading": "Support organisations",
-      "filterAria": "Filter organisations by country",
-      "noLocal": "No organisations in {{country}} indexed yet — showing global.",
-      "browseAll": "Browse all organisations",
-      "emptyPrefix": "No support organisations indexed yet. Submit one via the Chrome extension or ",
-      "emptyLink": "get in touch",
-      "emptySuffix": "."
+      "heading": "支援団体",
+      "filterAria": "国で団体を絞り込む",
+      "noLocal": "{{country}} の団体はまだ登録されていません — グローバル団体を表示。",
+      "browseAll": "すべての団体を見る",
+      "emptyPrefix": "支援団体はまだ登録されていません。Chrome 拡張で送るか ",
+      "emptyLink": "お問い合わせ",
+      "emptySuffix": "。"
     },
     "filter": {
-      "searchPlaceholder": "Search tags, categories, descriptions…",
-      "searchAria": "Search resources",
-      "filterAria": "Filter by category",
-      "categoryPlaceholder": "Category",
-      "allCategories": "All Categories",
-      "sortAria": "Sort by",
-      "sortPlaceholder": "Sort by",
-      "sortMostUsed": "Most used",
-      "sortAlphabetical": "Alphabetical",
-      "sortNewest": "Newest",
-      "advanced": "Advanced",
-      "usageAria": "Filter by usage",
-      "usagePlaceholder": "Usage",
-      "usageAll": "All Tags",
-      "usageUsed": "Used",
-      "usageUnused": "Unused",
-      "hasImage": "Has Image",
-      "hasImageTitle": "Only show tags with images",
-      "sortDirAsc": "Sort direction (ascending)",
-      "sortDirDesc": "Sort direction (descending)",
-      "active": "Active:",
-      "clearAll": "Clear all",
+      "searchPlaceholder": "タグ、カテゴリ、説明を検索…",
+      "searchAria": "リソースを検索",
+      "filterAria": "カテゴリで絞り込む",
+      "categoryPlaceholder": "カテゴリ",
+      "allCategories": "すべてのカテゴリ",
+      "sortAria": "並び替え",
+      "sortPlaceholder": "並び替え",
+      "sortMostUsed": "使用順",
+      "sortAlphabetical": "アルファベット順",
+      "sortNewest": "新着順",
+      "advanced": "詳細",
+      "usageAria": "使用状況で絞り込む",
+      "usagePlaceholder": "使用状況",
+      "usageAll": "すべてのタグ",
+      "usageUsed": "使用中",
+      "usageUnused": "未使用",
+      "hasImage": "画像あり",
+      "hasImageTitle": "画像のあるタグだけ表示",
+      "sortDirAsc": "昇順",
+      "sortDirDesc": "降順",
+      "active": "アクティブ:",
+      "clearAll": "すべてクリア",
       "view": {
-        "chips": "Chips",
-        "grid": "Grid",
-        "list": "List",
-        "ariaSuffix": " view"
+        "chips": "チップ",
+        "grid": "グリッド",
+        "list": "リスト",
+        "ariaSuffix": " ビュー"
       },
-      "graph": "Tag relationship graph"
+      "graph": "タグ関係グラフ"
     },
     "search": {
-      "resultsHeading": "Search results",
-      "categoryTagsHeading": "{{category}} tags",
-      "filteredHeading": "Filtered tags",
-      "countBadge": "{{visible}} of {{total}}",
-      "countAria": "{{count}} matching tags",
-      "showMore": "Show {{count}} more",
+      "resultsHeading": "検索結果",
+      "categoryTagsHeading": "{{category}} のタグ",
+      "filteredHeading": "絞り込みタグ",
+      "countBadge": "{{visible}} / {{total}}",
+      "countAria": "一致するタグ {{count}} 件",
+      "showMore": "さらに {{count}} 件表示",
       "empty": {
-        "title": "No results",
-        "description": "Try a broader query or clearing your filters."
+        "title": "結果なし",
+        "description": "範囲を広げるか、フィルターをクリアしてください。"
       }
     },
     "tagNotFound": {
-      "title": "Tag not found",
-      "bodyPrefix": "We couldn't find a tag matching ",
-      "browse": "Browse all resources"
+      "title": "タグが見つかりません",
+      "bodyPrefix": "次のタグが見つかりませんでした：",
+      "browse": "すべてのリソースを見る"
     },
     "tagDetail": {
-      "breadcrumbHome": "Resources",
-      "noDefinition": "No definition yet for this term."
+      "breadcrumbHome": "リソース",
+      "noDefinition": "この用語にはまだ定義がありません。"
     },
     "graph": {
-      "title": "Tag Relationship Graph",
-      "description": "Explore how tags relate by semantic similarity and co-occurrence"
+      "title": "タグ関係グラフ",
+      "description": "意味的類似度と共起でタグの関係を探る"
     }
   }
 }
