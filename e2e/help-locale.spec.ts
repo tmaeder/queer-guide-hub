@@ -37,8 +37,9 @@ const ENGLISH_MARKERS = [
 test.describe('@p0-2 /help locale', () => {
   test('English session: /help renders no German markers', async ({ page }) => {
     await page.goto('/en/help');
-    // Wait for the first heading so we know i18n + page have hydrated.
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    // `h1` is in the prerendered shell — wait for an English filter label that
+    // only appears after i18n + the country filter <select> have hydrated.
+    await expect(page.getByText('All countries').first()).toBeVisible({ timeout: 20_000 });
     const html = await page.content();
     for (const marker of GERMAN_MARKERS) {
       expect(
@@ -53,7 +54,8 @@ test.describe('@p0-2 /help locale', () => {
 
   test('German session: /de/help renders the German bundle', async ({ page }) => {
     await page.goto('/de/help');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    // Same hydration anchor, German variant.
+    await expect(page.getByText('Alle Länder').first()).toBeVisible({ timeout: 20_000 });
     const html = await page.content();
     // We expect the de.json bundle to provide German strings — at least one
     // German emergency or topic word must be present.
@@ -65,7 +67,7 @@ test.describe('@p0-2 /help locale', () => {
     const ctx = await browser.newContext({ locale: 'en-US' });
     const page = await ctx.newPage();
     await page.goto('/help');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await expect(page.getByText('All countries').first()).toBeVisible({ timeout: 20_000 });
     const html = await page.content();
     for (const marker of GERMAN_MARKERS) {
       expect(html.includes(marker), `EN browser /help leaked "${marker}"`).toBe(false);
