@@ -78,11 +78,17 @@ test.describe('Hotels — Phase 1 quick wins', () => {
   test('Load More yields disjoint pages (no duplicate IDs)', async ({ page }) => {
     await page.goto('/hotels', { waitUntil: 'networkidle' });
 
+    // Scope to the main result grid only — the page also shows editorial
+    // sections (featured hotel, picks, "in queer villages") whose anchors
+    // legitimately repeat hotels that appear in the grid. We only care
+    // that the paginated grid itself has no duplicate IDs.
     const collectIds = () =>
       page.evaluate(() =>
-        Array.from(document.querySelectorAll('a[href^="/hotels/"]')).map(
-          (a) => (a as HTMLAnchorElement).getAttribute('href') ?? '',
-        ),
+        Array.from(
+          document.querySelectorAll(
+            '[data-bento-preset="mosaic"] a[href^="/hotels/"]',
+          ),
+        ).map((a) => (a as HTMLAnchorElement).getAttribute('href') ?? ''),
       );
 
     const beforeIds = new Set(await collectIds());
