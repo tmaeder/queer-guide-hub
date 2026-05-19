@@ -102,6 +102,11 @@ test.describe('Hotels — Phase 1 quick wins', () => {
 
     await loadMore.click();
     await page.waitForLoadState('networkidle');
+    // networkidle can fire before React has re-rendered the appended page.
+    // Poll until the grid actually grows, then assert dedupe.
+    await expect
+      .poll(async () => (await collectIds()).length, { timeout: 10_000 })
+      .toBeGreaterThan(beforeIds.size);
 
     const afterIds = await collectIds();
     expect(afterIds.length).toBeGreaterThan(beforeIds.size);
