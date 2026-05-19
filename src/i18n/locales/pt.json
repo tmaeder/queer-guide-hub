@@ -1550,7 +1550,7 @@
       "resultsCount_other": "{{count}} eventos",
       "resultsNear_one": "{{count}} evento perto de {{city}}",
       "resultsNear_other": "{{count}} eventos perto de {{city}}",
-      "showWorldwide": "Mostrar em todo o mundo"
+      "showWorldwide": "Ver no mundo todo"
     },
     "eventDetail": {
       "loadFailed": "Não foi possível carregar os detalhes do evento.",
