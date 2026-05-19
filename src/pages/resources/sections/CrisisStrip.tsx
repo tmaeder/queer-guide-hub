@@ -7,6 +7,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useCMSPage } from '@/hooks/useCMSPage';
 import { useUserCountry, SUPPORTED_COUNTRIES, countryLabel } from '@/hooks/useUserCountry';
@@ -62,6 +63,7 @@ function rankHotlines(list: Hotline[]): Hotline[] {
 }
 
 export function CrisisStrip() {
+  const { t } = useTranslation();
   const { data: cms, isLoading } = useCMSPage('help');
   const { country, setCountry } = useUserCountry();
 
@@ -103,12 +105,12 @@ export function CrisisStrip() {
       <header className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
           <AlertTriangle aria-hidden style={{ width: 18, height: 18 }} />
-          <h2 id="crisis-heading" className="text-base font-semibold">Crisis &amp; safety</h2>
+          <h2 id="crisis-heading" className="text-base font-semibold">{t('resources.crisis.heading')}</h2>
         </div>
-        <Badge variant="secondary" className="text-[0.7rem]">Free, anonymous</Badge>
+        <Badge variant="secondary" className="text-[0.7rem]">{t('resources.crisis.badge')}</Badge>
         <div className="ml-auto flex items-center gap-2">
           <Select value={country} onValueChange={setCountry}>
-            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label="Choose country">
+            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label={t('resources.crisis.chooseCountryAria')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -129,12 +131,16 @@ export function CrisisStrip() {
       </header>
 
       <p className="text-sm text-muted-foreground mb-4">
-        In immediate danger? Call <a href={`tel:${emergency.split(' ')[0]}`} className="font-semibold text-foreground underline">{emergency}</a>{country !== 'INT' && ` (${countryLabel(country)})`}.
+        {t('resources.crisis.callEmergencyPrefix')}
+        <a href={`tel:${emergency.split(' ')[0]}`} className="font-semibold text-foreground underline">{emergency}</a>
+        {country !== 'INT'
+          ? t('resources.crisis.callEmergencySuffix', { country: countryLabel(country) })
+          : t('resources.crisis.callEmergencySuffixInt')}
       </p>
 
       {showNoLocalNote && (
         <p className="text-xs text-muted-foreground mb-3">
-          No {countryLabel(country)} hotlines indexed yet — showing international.
+          {t('resources.crisis.noLocal', { country: countryLabel(country) })}
         </p>
       )}
 
@@ -143,9 +149,9 @@ export function CrisisStrip() {
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full rounded-element" />)}
         </div>
       ) : visible.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No hotlines loaded yet.</p>
+        <p className="text-sm text-muted-foreground">{t('resources.crisis.noHotlinesLoaded')}</p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label="Crisis hotlines">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3" aria-label={t('resources.crisis.listAria')}>
           {visible.map((h) => (
             <li key={h.id}>
               <Card className="p-4 h-full flex flex-col gap-2">
@@ -156,7 +162,7 @@ export function CrisisStrip() {
                 {h.phone && (
                   <a
                     href={`tel:${h.phone.replace(/\s+/g, '')}`}
-                    aria-label={`Call ${h.name} at ${h.phone}`}
+                    aria-label={t('resources.crisis.callAria', { name: h.name, phone: h.phone })}
                     className="inline-flex items-center gap-2 text-xl font-semibold tabular-nums text-foreground hover:underline -mx-1 px-1 py-0.5"
                   >
                     <Phone aria-hidden style={{ width: 18, height: 18 }} />
@@ -187,7 +193,7 @@ export function CrisisStrip() {
         to="/help"
         className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
       >
-        See all hotlines
+        {t('resources.crisis.seeAll')}
         <ChevronRight aria-hidden style={{ width: 14, height: 14 }} />
       </LocalizedLink>
     </section>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type CentralizedTag } from '@/hooks/useCentralizedTags';
 import { TagListRenderer } from '@/components/resources/TagListRenderer';
 import { getCategoryShortName } from '@/components/resources/categoryMeta';
@@ -27,6 +28,7 @@ export function ResourceSearch({
   displayMode,
   onTagClick,
 }: ResourceSearchProps) {
+  const { t } = useTranslation();
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
 
   useEffect(() => {
@@ -44,17 +46,17 @@ export function ResourceSearch({
       <div className="flex items-center gap-3 mb-4">
         <h6 className="text-base font-semibold">
           {viewMode === 'search'
-            ? 'Search results'
+            ? t('resources.search.resultsHeading')
             : filterCategory !== 'all'
-              ? `${getCategoryShortName(filterCategory)} tags`
-              : 'Filtered tags'}
+              ? t('resources.search.categoryTagsHeading', { category: getCategoryShortName(filterCategory) })
+              : t('resources.search.filteredHeading')}
         </h6>
         <Badge
           variant="secondary"
-          title={`${total} matching tags`}
-          aria-label={`${total} matching tags`}
+          title={t('resources.search.countAria', { count: total })}
+          aria-label={t('resources.search.countAria', { count: total })}
         >
-          {paginated ? `${shown} of ${total}` : total}
+          {paginated ? t('resources.search.countBadge', { visible: shown, total }) : total}
         </Badge>
       </div>
       {total > 0 ? (
@@ -72,7 +74,7 @@ export function ResourceSearch({
                 size="sm"
                 onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
               >
-                Show {Math.min(PAGE_SIZE, remaining)} more
+                {t('resources.search.showMore', { count: Math.min(PAGE_SIZE, remaining) })}
               </Button>
             </div>
           )}
@@ -80,8 +82,8 @@ export function ResourceSearch({
       ) : (
         <EmptyState
           icon={Tag}
-          title="No results"
-          description="Try a broader query or clearing your filters."
+          title={t('resources.search.empty.title')}
+          description={t('resources.search.empty.description')}
           mood="encouraging"
         />
       )}

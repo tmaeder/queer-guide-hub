@@ -21,6 +21,22 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
 vi.mock('@/components/venues/VenueCard', () => ({
   VenueCard: (p: { venue: { id: string; name?: string } }) => <div data-testid="venue">{p.venue.name}</div>,
 }));
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, unknown>) => {
+      const map: Record<string, string> = {
+        'resources.orgs.heading': 'Support organisations',
+        'resources.orgs.filterAria': 'Filter organisations by country',
+        'resources.orgs.noLocal': `No organisations in ${opts?.country} indexed yet — showing global.`,
+        'resources.orgs.browseAll': 'Browse all organisations',
+        'resources.orgs.emptyPrefix': 'No support organisations indexed yet. Submit one via the Chrome extension or ',
+        'resources.orgs.emptyLink': 'get in touch',
+        'resources.orgs.emptySuffix': '.',
+      };
+      return map[key] ?? key;
+    },
+  }),
+}));
 
 import { OrgsDirectory } from '../OrgsDirectory';
 

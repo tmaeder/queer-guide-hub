@@ -11,6 +11,7 @@
 
 import { useMemo } from 'react';
 import { useParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMeta } from '@/hooks/useMeta';
@@ -38,6 +39,7 @@ function configFallback(): TopicHubRow[] {
 }
 
 export default function ResourceTopic() {
+  const { t } = useTranslation();
   const { slug = '' } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
   const { data: dbHubs = [], isLoading: hubsLoading } = useTopicHubs();
@@ -45,7 +47,7 @@ export default function ResourceTopic() {
   const topic = hubs.find((h) => h.slug === slug);
 
   useMeta({
-    title: topic ? `${topic.title} — Resources` : 'Topic not found',
+    title: topic ? `${topic.title} — ${t('resources.topic.metaSuffix')}` : t('resources.topic.metaNotFound'),
     description: topic?.description,
     canonicalPath: `/resources/topic/${slug}`,
   });
@@ -66,8 +68,8 @@ export default function ResourceTopic() {
   if (!topic) {
     return (
       <div className="container mx-auto py-16 px-4 text-center">
-        <h1 className="text-2xl font-bold mb-2">Topic not found</h1>
-        <Button onClick={() => navigate('/resources')}>Back to resources</Button>
+        <h1 className="text-2xl font-bold mb-2">{t('resources.topic.notFound')}</h1>
+        <Button onClick={() => navigate('/resources')}>{t('resources.topic.backToResources')}</Button>
       </div>
     );
   }
@@ -81,27 +83,27 @@ export default function ResourceTopic() {
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
       >
         <ChevronLeft aria-hidden style={{ width: 14, height: 14 }} />
-        Resources
+        {t('resources.topic.back')}
       </LocalizedLink>
 
       <PageHeader title={topic.title} subtitle={topic.description}>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <Icon aria-hidden style={{ width: 18, height: 18 }} />
-          <span>{counts.guides} guides · {counts.orgs} orgs · {counts.news} articles</span>
+          <span>{t('resources.topic.stats', { guides: counts.guides, orgs: counts.orgs, news: counts.news })}</span>
         </div>
       </PageHeader>
 
       <div className="flex flex-col gap-10 mt-8">
         <section aria-labelledby="topic-guides-heading">
           <h2 id="topic-guides-heading" className="text-base font-semibold mb-4 inline-flex items-center gap-2">
-            <FileText aria-hidden style={{ width: 18, height: 18 }} /> Guides
+            <FileText aria-hidden style={{ width: 18, height: 18 }} /> {t('resources.topic.guidesHeading')}
           </h2>
           {guidesLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-container" />)}
             </div>
           ) : guides.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No guides published yet for this topic.</p>
+            <p className="text-sm text-muted-foreground">{t('resources.topic.guidesEmpty')}</p>
           ) : (
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {guides.map((g) => (
@@ -124,13 +126,13 @@ export default function ResourceTopic() {
         </section>
 
         <section aria-labelledby="topic-orgs-heading">
-          <h2 id="topic-orgs-heading" className="text-base font-semibold mb-4">Organisations</h2>
+          <h2 id="topic-orgs-heading" className="text-base font-semibold mb-4">{t('resources.topic.orgsHeading')}</h2>
           {orgsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-56 rounded-container" />)}
             </div>
           ) : orgs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No organisations indexed for this topic yet.</p>
+            <p className="text-sm text-muted-foreground">{t('resources.topic.orgsEmpty')}</p>
           ) : (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {orgs.map((v) => (
@@ -142,14 +144,14 @@ export default function ResourceTopic() {
 
         <section aria-labelledby="topic-news-heading">
           <h2 id="topic-news-heading" className="text-base font-semibold mb-4 inline-flex items-center gap-2">
-            <Newspaper aria-hidden style={{ width: 18, height: 18 }} /> Recent news
+            <Newspaper aria-hidden style={{ width: 18, height: 18 }} /> {t('resources.topic.newsHeading')}
           </h2>
           {newsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-container" />)}
             </div>
           ) : news.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No recent articles tagged for this topic.</p>
+            <p className="text-sm text-muted-foreground">{t('resources.topic.newsEmpty')}</p>
           ) : (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {news.map((n) => (
@@ -173,7 +175,7 @@ export default function ResourceTopic() {
           to="/resources"
           className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
         >
-          More topics
+          {t('resources.topic.moreTopics')}
           <ChevronRight aria-hidden style={{ width: 14, height: 14 }} />
         </LocalizedLink>
       </div>

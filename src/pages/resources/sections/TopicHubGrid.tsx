@@ -7,6 +7,7 @@
  * topics.config.ts when the query returns zero rows (offline / unseeded DB).
  */
 
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { TOPIC_HUBS } from '@/pages/resources/topics.config';
 import { useTopicHubs, topicIcon, type TopicHubRow } from '@/hooks/useTopicHubs';
@@ -28,14 +29,15 @@ function configFallback(): TopicHubRow[] {
 }
 
 export function TopicHubGrid() {
+  const { t } = useTranslation();
   const safeMode = useSafeMode();
   const { data: dbHubs = [], isLoading } = useTopicHubs();
   const hubs: TopicHubRow[] = !isLoading && dbHubs.length === 0 ? configFallback() : dbHubs;
-  const visible = hubs.filter((t) => !(t.adult && safeMode.enabled));
+  const visible = hubs.filter((h) => !(h.adult && safeMode.enabled));
 
   return (
     <section aria-labelledby="topics-heading">
-      <h2 id="topics-heading" className="text-base font-semibold mb-4">Topic hubs</h2>
+      <h2 id="topics-heading" className="text-base font-semibold mb-4">{t('resources.topicHubs.heading')}</h2>
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {visible.map((topic) => (
           <li key={topic.slug}>
