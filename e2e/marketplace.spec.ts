@@ -51,7 +51,7 @@ test.describe('Marketplace — discovery surface', () => {
     // Avoids hardcoding API credentials in the spec.
     await page.goto('/marketplace');
     const detailLinks = page.locator(
-      'a[href^="/marketplace/"]:not([href*="category/"]):not([href*="merchants/"]):not([href*="share"])',
+      'a[href^="/marketplace/"]:not([href*="categor"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])',
     );
     await detailLinks.first().waitFor({ timeout: 30_000 });
     const slugs = (await detailLinks.evaluateAll((nodes) =>
@@ -94,7 +94,7 @@ test.describe('Marketplace — discovery surface', () => {
   test('marketplace detail page emits Product JSON-LD with offers', async ({ page }) => {
     await page.goto('/marketplace');
     await page.waitForSelector('a[href^="/marketplace/"]', { timeout: 30_000 });
-    const detailLink = page.locator('a[href^="/marketplace/"]:not([href*="category/"]):not([href*="merchants/"]):not([href*="share"])').first();
+    const detailLink = page.locator('a[href^="/marketplace/"]:not([href*="categor"]):not([href*="merchants/"]):not([href*="share"]):not([href$="/submit"])').first();
     const href = await detailLink.getAttribute('href');
     expect(href).toBeTruthy();
     await page.goto(href!);
