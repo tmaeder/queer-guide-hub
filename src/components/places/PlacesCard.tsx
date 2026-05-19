@@ -40,26 +40,44 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
     setImageLoading(true);
     const fetchCountryImage = async () => {
       try {
+        // Editorial Pexels queries — bias toward LGBTQ+ pride / queer-culture
+        // imagery for countries known as queer destinations. Falls back to
+        // landmark queries for everywhere else.
         const countrySpecificQueries: Record<string, string> = {
-          France: 'France Eiffel Tower Paris landmarks',
+          // Queer-essential destinations — pride / community imagery first
+          Germany: 'Berlin Pride Christopher Street Day parade rainbow',
+          Netherlands: 'Amsterdam Pride canal parade rainbow',
+          Spain: 'Madrid Pride rainbow flag parade',
+          Portugal: 'Lisbon Pride parade rainbow',
+          France: 'Paris Pride Marche des Fiertés rainbow',
+          Belgium: 'Brussels Pride parade rainbow',
+          Sweden: 'Stockholm Pride parade rainbow',
+          Denmark: 'Copenhagen Pride parade rainbow',
+          Norway: 'Oslo Pride parade rainbow',
+          Finland: 'Helsinki Pride parade rainbow',
+          Iceland: 'Reykjavik Pride parade rainbow',
+          Ireland: 'Dublin Pride parade rainbow',
+          Malta: 'Malta Pride Valletta rainbow',
+          'United Kingdom': 'London Pride parade rainbow flag',
+          'United States': 'San Francisco Pride parade rainbow Castro',
+          Canada: 'Toronto Pride parade rainbow Church Wellesley',
+          Mexico: 'Mexico City Pride Marcha del Orgullo rainbow',
+          Brazil: 'São Paulo Pride parade Avenida Paulista rainbow',
+          Argentina: 'Buenos Aires Pride Marcha del Orgullo rainbow',
+          Uruguay: 'Montevideo Pride parade rainbow',
+          Australia: 'Sydney Mardi Gras parade rainbow',
+          'New Zealand': 'Auckland Pride parade rainbow',
+          'South Africa': 'Cape Town Pride parade rainbow',
+          Thailand: 'Bangkok Pride parade rainbow',
+          // Landmark fallbacks for the rest
           Italy: 'Italy Colosseum Rome landmarks',
           Japan: 'Japan Mount Fuji Tokyo landmarks',
-          'United States': 'USA Statue of Liberty New York landmarks',
-          'United Kingdom': 'UK Big Ben London landmarks',
-          Germany: 'Germany Brandenburg Gate Berlin landmarks',
-          Spain: 'Spain Sagrada Familia Barcelona landmarks',
           China: 'China Great Wall Beijing landmarks',
           India: 'India Taj Mahal Delhi landmarks',
-          Brazil: 'Brazil Christ Redeemer Rio landmarks',
-          Australia: 'Australia Sydney Opera House landmarks',
-          Canada: 'Canada CN Tower Toronto landmarks',
           Russia: 'Russia Red Square Moscow landmarks',
           Greece: 'Greece Parthenon Athens landmarks',
           Egypt: 'Egypt Pyramids Cairo landmarks',
-          Thailand: 'Thailand Bangkok temples landmarks',
           Turkey: 'Turkey Hagia Sophia Istanbul landmarks',
-          Mexico: 'Mexico Chichen Itza landmarks',
-          Netherlands: 'Netherlands Amsterdam canals landmarks',
           Switzerland: 'Switzerland Alps Matterhorn landmarks',
         };
 
