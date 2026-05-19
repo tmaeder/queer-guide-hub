@@ -33,14 +33,18 @@ describe('StoryCard', () => {
   });
 
   it('uses hero image when provided', () => {
-    const { container } = render(<StoryCard story={story} hero={{ image_url: '/hero.jpg', excerpt: 'lead' } as never} />);
-    const img = container.querySelector('img')!;
+    const { container } = render(
+      <StoryCard story={story} hero={{ image_url: '/hero.jpg', excerpt: 'lead' } as never} />,
+    );
+    const img = container.querySelector('img');
     expect(img).toHaveAttribute('src', '/hero.jpg');
     expect(screen.getByText('lead')).toBeInTheDocument();
   });
 
   it('falls back to placeholder on image error', () => {
-    const { container } = render(<StoryCard story={story} hero={{ image_url: '/broken.jpg' } as never} />);
+    const { container } = render(
+      <StoryCard story={story} hero={{ image_url: '/broken.jpg' } as never} />,
+    );
     const img = container.querySelector('img')!;
     fireEvent.error(img);
     expect(img).toHaveAttribute('src', '/fallback.png');

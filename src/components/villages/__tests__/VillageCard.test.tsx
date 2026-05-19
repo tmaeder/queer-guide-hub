@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useVisitedPlaceLookup', () => ({
-  useVisitedPlaceLookup: () => ({ has: () => false, getKind: () => null, isEmpty: true }),
+  useVisitedPlaceLookup: () => ({ has: () => false }),
 }));
 
 import { VillageCard } from '../VillageCard';
