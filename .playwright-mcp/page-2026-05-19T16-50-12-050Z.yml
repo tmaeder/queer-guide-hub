@@ -1,0 +1,106 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Queer Guide" [ref=e9] [cursor=pointer]:
+            - /url: /
+            - img [ref=e10]
+            - generic [ref=e11]: Queer Guide
+          - search "Site search" [ref=e15]:
+            - generic:
+              - img
+            - generic [ref=e16]:
+              - generic [ref=e17]:
+                - combobox "Search Queer Guide" [ref=e18]
+                - generic:
+                  - generic:
+                    - text: Search ve
+                    - generic: "|"
+              - generic [ref=e19]:
+                - button "Voice search" [ref=e20]:
+                  - img
+                - generic: ⌘K
+            - button "Search filters" [ref=e21]:
+              - img
+          - generic [ref=e22]:
+            - button "Contribute" [ref=e23]:
+              - img
+            - button "Open user menu" [ref=e24]:
+              - img "tmaeder@me.com" [ref=e26]
+        - navigation "Primary" [ref=e27]:
+          - link "Venues" [ref=e28] [cursor=pointer]:
+            - /url: /venues
+          - link "Events" [ref=e29] [cursor=pointer]:
+            - /url: /events
+          - link "Places" [ref=e30] [cursor=pointer]:
+            - /url: /places
+          - link "Marketplace" [ref=e31] [cursor=pointer]:
+            - /url: /marketplace
+          - link "News" [ref=e32] [cursor=pointer]:
+            - /url: /news
+          - button "More" [ref=e33]:
+            - text: More
+            - img [ref=e34]
+    - generic [ref=e36]:
+      - status [ref=e37]
+      - main [ref=e38]
+    - contentinfo [ref=e139]:
+      - generic [ref=e140]:
+        - generic [ref=e141]:
+          - navigation "Footer navigation" [ref=e142]:
+            - link "About" [ref=e144] [cursor=pointer]:
+              - /url: /about
+              - generic [ref=e145]: About
+            - generic [ref=e146]:
+              - generic [ref=e147]: ·
+              - link "Legal" [ref=e148] [cursor=pointer]:
+                - /url: /legal
+                - generic [ref=e149]: Legal
+            - generic [ref=e150]:
+              - generic [ref=e151]: ·
+              - link "Accessibility" [ref=e152] [cursor=pointer]:
+                - /url: /accessibility
+                - generic [ref=e153]: Accessibility
+            - generic [ref=e154]:
+              - generic [ref=e155]: ·
+              - link "Privacy" [ref=e156] [cursor=pointer]:
+                - /url: /privacy
+                - generic [ref=e157]: Privacy
+            - generic [ref=e158]:
+              - generic [ref=e159]: ·
+              - link "Terms" [ref=e160] [cursor=pointer]:
+                - /url: /terms
+                - generic [ref=e161]: Terms
+            - generic [ref=e162]:
+              - generic [ref=e163]: ·
+              - link "Contact" [ref=e164] [cursor=pointer]:
+                - /url: /contact
+                - generic [ref=e165]: Contact
+            - generic [ref=e166]:
+              - generic [ref=e167]: ·
+              - link "Support Us" [ref=e168] [cursor=pointer]:
+                - /url: /donate
+                - generic [ref=e169]: Support Us
+          - generic [ref=e170]: © 2026 Queer Guide
+        - generic [ref=e171]:
+          - combobox "Select language" [ref=e172]:
+            - img [ref=e173]
+            - generic: English
+            - img [ref=e176]
+          - combobox "Select currency" [ref=e178]:
+            - img [ref=e179]
+            - generic:
+              - generic: USD ($)
+            - img [ref=e182]
+          - button "Toggle theme" [ref=e184]:
+            - img
+          - button "Scroll to top" [ref=e185]:
+            - img
+    - button "Share feedback" [ref=e186]:
+      - img [ref=e187]
