@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { TrendingStrip } from '@/components/discovery/TrendingStrip';
-import { RecommendedForYou } from '@/components/discovery/RecommendedForYou';
 import { useTranslation } from 'react-i18next';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
@@ -19,22 +17,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { StaggerGrid } from '@/components/animation/StaggerGrid';
 import { AnimatedCounter } from '@/components/animation/AnimatedCounter';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TextGenerateEffect } from '@/components/effects/TextGenerateEffect';
-import { SpotlightEffect } from '@/components/effects/SpotlightEffect';
-import { BackgroundDots } from '@/components/effects/BackgroundDots';
-import { BentoGrid, BentoGridItem } from '@/components/effects/BentoGrid';
-import { GrainOverlay } from '@/components/effects/GrainOverlay';
-import { Sparkles } from '@/components/effects/Sparkles';
-import { Beams } from '@/components/effects/Beams';
-import { Meteors } from '@/components/effects/Meteors';
-import { ShootingStars } from '@/components/effects/ShootingStars';
-import { WordRotate } from '@/components/effects/WordRotate';
-import { Marquee } from '@/components/effects/Marquee';
-import { BackgroundLines } from '@/components/effects/BackgroundLines';
-import { CardContainer3D, CardItem } from '@/components/effects/CardContainer3D';
-import { GlowingEffect } from '@/components/effects/GlowingEffect';
 import { AppleCardsCarousel, type CarouselCard } from '@/components/effects/AppleCardsCarousel';
-import { WobbleCard } from '@/components/effects/WobbleCard';
 import { getRandomFallbackImage } from '@/utils/fallbackImages';
 
 const ExploreMap = React.lazy(() => import('@/components/map/ExploreMap'));
@@ -76,62 +59,39 @@ const Index = React.memo(() => {
     <div className="min-h-screen">
       {/* ── Hero + Map ───────────────────────────────────────────────── */}
       <div className="relative flex flex-col md:flex-row md:min-h-[calc(100vh-64px)] bg-background overflow-hidden">
-        <GrainOverlay />
-        {/* Aceternity ambient backdrop — beams + sparkles + shooting stars. */}
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none z-0">
-          <Beams count={9} />
-          <Sparkles density={70} />
-          <Meteors number={14} />
-          <ShootingStars minDelay={2400} maxDelay={6000} trailLength={120} />
-          <div className="absolute inset-0 spotlight-radial" />
-        </div>
         {/* Text panel */}
-        <SpotlightEffect className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0 relative z-[1]">
-          <TextGenerateEffect
-            words={`${t('home.heroLine1', 'Discover.')} ${t('home.heroLine2', 'Connect.')} ${t('home.heroLine3', 'Belong.')}`}
-            className="text-[2.5rem] sm:text-[3rem] md:text-[3.5rem] lg:text-[4rem] font-extrabold leading-[1.05] mb-3 text-foreground"
+        <div className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0">
+          <h1
+            className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] mb-4 text-foreground"
             style={{ letterSpacing: '-0.04em' }}
-            as="h1"
-            staggerDelay={0.08}
-          />
+          >
+            {t('home.heroLine1', 'Queer venues,')}{' '}
+            {t('home.heroLine2', 'events, and people.')}{' '}
+            {t('home.heroLine3', 'Worldwide.')}
+          </h1>
 
-          <div className="reveal-up reveal-delay-1 text-[1.125rem] md:text-[1.25rem] font-medium mb-4 text-muted-foreground">
-            <span className="mr-1.5">{t('home.rotatePrefix', 'Find queer')}</span>
-            <WordRotate
-              className="text-foreground font-semibold"
-              words={[
-                t('home.rotate.venues', 'venues'),
-                t('home.rotate.events', 'events'),
-                t('home.rotate.community', 'community'),
-                t('home.rotate.travel', 'travel tips'),
-                t('home.rotate.stories', 'stories'),
-              ]}
-            />
-          </div>
-
-          <p className="reveal-up reveal-delay-2 text-[0.9375rem] md:text-[1.0625rem] text-muted-foreground mb-6 leading-[1.6]">
-            {t('home.subtitle', 'Safe venues, vibrant events, and communities that get you — wherever you are.')}
+          <p className="text-base md:text-lg text-muted-foreground mb-6 leading-[1.6] max-w-md">
+            {t('home.subtitle', 'Verified safe places, real events, and the people behind them. Built by the community.')}
           </p>
 
-          <div className="reveal-up reveal-delay-2 flex gap-3 flex-wrap">
-            <button
-              type="button"
-              onClick={() => navigate('/travel')}
-              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
-            >
-              <MapPin size={16} aria-hidden="true" />
-              {t('home.planTrip', 'Plan a trip')}
-            </button>
+          <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
               onClick={() => navigate('/directory')}
-              className="inline-flex items-center gap-2 rounded-full border border-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-background transition-transform duration-200 hover:-translate-y-0.5"
             >
               <Calendar size={16} aria-hidden="true" />
               {t('home.browseDirectory', 'Browse the directory')}
             </button>
+            <button
+              type="button"
+              onClick={() => navigate('/travel')}
+              className="text-sm font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t('home.planTrip', 'Plan a trip')}
+            </button>
           </div>
-        </SpotlightEffect>
+        </div>
 
         {/* Map panel */}
         <div className="md:flex-1 min-h-[55vh] md:min-h-0 relative">
@@ -207,32 +167,11 @@ const Index = React.memo(() => {
         </div>
       )}
 
-      {/* ── Aceternity marquee: rotating value-prop strip ────────────── */}
-      <div className="border-y border-border/50 py-6 bg-muted/30">
-        <Marquee speed={50} className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-          {[
-            'Verified safe spaces',
-            'Built by the community',
-            'Real reviews from real people',
-            'Privacy first',
-            '180+ countries',
-            'Open data',
-            'No paywalls',
-            'Worldwide',
-          ].map((phrase) => (
-            <span key={phrase} className="inline-flex items-center gap-2">
-              <span className="h-1 w-1 rounded-full bg-foreground" aria-hidden />
-              {phrase}
-            </span>
-          ))}
-        </Marquee>
-      </div>
-
       {/* ── Trending Cities carousel (Aceternity AppleCardsCarousel) ── */}
       <section className="px-4 sm:px-6 md:px-8 py-10 md:py-14">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between mb-4">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
               {t('home.trendingCities', 'Trending cities')}
             </h2>
             <LocalizedLink to="/cities" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -254,84 +193,34 @@ const Index = React.memo(() => {
         </div>
       </section>
 
-      {/* ── Discovery widgets (search v2) ────────────────────────────── */}
-      <section className="px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col gap-8">
-        <RecommendedForYou />
-        <TrendingStrip />
-      </section>
-
-      {/* ── Why Queer Guide — WobbleCards trio ─────────────────────── */}
-      <section className="px-4 sm:px-6 md:px-8 py-10 md:py-14 max-w-7xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-6">
-          {t('home.why.title', 'Why Queer Guide')}
+      {/* ── Browse categories ───────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">
+          {t('home.browse', 'Browse')}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <WobbleCard className="h-full">
-            <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">01</div>
-            <h3 className="text-xl font-bold tracking-tight mt-1">{t('home.why.community.title', 'Built by the community.')}</h3>
-            <p className="text-sm text-muted-foreground mt-3 leading-[1.55]">
-              {t('home.why.community.desc', 'Verified by people who actually go — not by algorithms or paid placements.')}
-            </p>
-          </WobbleCard>
-          <WobbleCard className="h-full">
-            <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">02</div>
-            <h3 className="text-xl font-bold tracking-tight mt-1">{t('home.why.privacy.title', 'Privacy first.')}</h3>
-            <p className="text-sm text-muted-foreground mt-3 leading-[1.55]">
-              {t('home.why.privacy.desc', 'No location tracking, no third-party trackers, no dark patterns. Ever.')}
-            </p>
-          </WobbleCard>
-          <WobbleCard className="h-full">
-            <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">03</div>
-            <h3 className="text-xl font-bold tracking-tight mt-1">{t('home.why.free.title', 'Free, forever.')}</h3>
-            <p className="text-sm text-muted-foreground mt-3 leading-[1.55]">
-              {t('home.why.free.desc', 'No paywalls. Donations and ethical partnerships keep us running.')}
-            </p>
-          </WobbleCard>
-        </div>
-      </section>
-
-      {/* ── Features Grid ────────────────────────────────────────────── */}
-      <BackgroundDots className="relative py-12 md:py-16 px-4 sm:px-6 md:px-8">
-        <BackgroundLines className="opacity-60" />
-        <h2 className="reveal-up font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem] relative">
-          {t('home.explore', 'Explore')}
-        </h2>
-
-        <BentoGrid>
-          {featureDefs.map((feature, i) => {
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
+          {featureDefs.map((feature) => {
             const Icon = feature.icon;
-            const isLarge = i < 2;
             return (
-              <BentoGridItem
-                key={feature.titleKey}
-                colSpan={isLarge ? 2 : 1}
-              >
-                <div className="relative h-full overflow-hidden rounded-[inherit]">
-                  <GlowingEffect spread={260} intensity={0.28} />
-                  <CardContainer3D
-                    rotateRange={6}
-                    containerClassName="h-full"
-                    className="h-full"
-                  >
-                    <LocalizedLink
-                      to={feature.link}
-                      style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 12, height: '100%' }}
-                    >
-                      <CardItem translateZ={30} className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2">
-                        <Icon size={20} aria-hidden="true" style={{ flexShrink: 0 }} />
-                        {t(feature.titleKey)}
-                      </CardItem>
-                      <CardItem translateZ={16} as="p" className="text-sm text-muted-foreground leading-[1.5]">
-                        {t(feature.descKey)}
-                      </CardItem>
-                    </LocalizedLink>
-                  </CardContainer3D>
-                </div>
-              </BentoGridItem>
+              <li key={feature.titleKey} className="bg-background">
+                <LocalizedLink
+                  to={feature.link}
+                  className="flex h-full items-start gap-3 p-6 transition-colors hover:bg-muted/40"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Icon size={20} aria-hidden="true" className="mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight">{t(feature.titleKey)}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground leading-[1.5]">
+                      {t(feature.descKey)}
+                    </p>
+                  </div>
+                </LocalizedLink>
+              </li>
             );
           })}
-        </BentoGrid>
-      </BackgroundDots>
+        </ul>
+      </section>
 
       {/* ── Upcoming Events Near You (hero + index + 14-day strip) ───── */}
       <ErrorBoundary section="regional-calendar" fallback={null}>
@@ -347,6 +236,34 @@ const Index = React.memo(() => {
         </React.Suspense>
       </ErrorBoundary>
 
+      {/* ── Final CTA — plain monochrome ─────────────────────────── */}
+      <section className="px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background text-center">
+        <h2
+          className="text-3xl md:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto"
+          style={{ letterSpacing: '-0.03em' }}
+        >
+          {t('home.cta.title', 'Built by the community,')} {t('home.cta.title2', 'for the community.')}
+        </h2>
+        <p className="mt-4 text-sm md:text-base opacity-70 max-w-xl mx-auto">
+          {t('home.cta.subtitle', 'Verified safe spaces, real reviews, no paywalls.')}
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3 justify-center">
+          <LocalizedLink
+            to="/submit"
+            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-7 py-4 text-sm font-extrabold tracking-tight hover:opacity-90 transition-opacity"
+            style={{ textDecoration: 'none' }}
+          >
+            {t('home.cta.submit', 'Add a venue')}
+          </LocalizedLink>
+          <LocalizedLink
+            to="/about"
+            className="inline-flex items-center justify-center rounded-full border border-background text-background px-7 py-4 text-sm font-extrabold tracking-tight hover:bg-background hover:text-foreground transition-colors"
+            style={{ textDecoration: 'none' }}
+          >
+            {t('home.cta.about', 'Read the mission')}
+          </LocalizedLink>
+        </div>
+      </section>
     </div>
   );
 });
