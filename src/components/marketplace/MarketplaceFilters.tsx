@@ -10,9 +10,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
 import { Search, Filter, X, Sliders } from 'lucide-react';
 import { TagSelector } from '@/components/tags/TagSelector';
 import { useMarketplaceFacets } from '@/hooks/useMarketplaceQueries';
+
+const PRICE_MIN = 0;
+const PRICE_MAX = 500;
+const PRICE_STEP = 5;
 
 interface MarketplaceFiltersProps {
   initialSearch?: string;
@@ -49,16 +54,19 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
   const [subcategory, setSubcategory] = useState('');
   const [location, setLocation] = useState('');
   const [businessType, setBusinessType] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [priceMin, setPriceMin] = useState<number>(PRICE_MIN);
+  const [priceMax, setPriceMax] = useState<number>(PRICE_MAX);
+  const [priceTouched, setPriceTouched] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showAllFilters, setShowAllFilters] = useState(false);
 
   const buildFilters = () => {
-    const priceRange = minPrice || maxPrice ? {
-      min: parseFloat(minPrice) || 0,
-      max: parseFloat(maxPrice) || 10000
-    } : undefined;
+    const priceRange = priceTouched
+      ? {
+          min: priceMin,
+          max: priceMax >= PRICE_MAX ? 100000 : priceMax,
+        }
+      : undefined;
 
     const cleanSearch = search.replace(/[,()]/g, ' ').trim();
 
@@ -88,7 +96,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, category, subcategory, location, businessType, minPrice, maxPrice, selectedTags]);
+  }, [search, category, subcategory, location, businessType, priceMin, priceMax, priceTouched, selectedTags]);
 
   const clearFilters = () => {
     setSearch('');
@@ -96,13 +104,14 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
     setSubcategory('');
     setLocation('');
     setBusinessType('');
-    setMinPrice('');
-    setMaxPrice('');
+    setPriceMin(PRICE_MIN);
+    setPriceMax(PRICE_MAX);
+    setPriceTouched(false);
     setSelectedTags([]);
     onFiltersChange({});
   };
 
-  const hasActiveFilters = search || (category && category !== 'all') || (subcategory && subcategory !== 'all') || location || (businessType && businessType !== 'all') || minPrice || maxPrice || selectedTags.length > 0;
+  const hasActiveFilters = search || (category && category !== 'all') || (subcategory && subcategory !== 'all') || location || (businessType && businessType !== 'all') || priceTouched || selectedTags.length > 0;
 
   const handleCategoryChange = (newCategory: string) => {
     setCategory(newCategory);
@@ -213,25 +222,28 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="minPrice">Min Price</Label>
-              <Input
-                id="minPrice"
-                type="number"
-                placeholder="$0"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="maxPrice">Max Price</Label>
-              <Input
-                id="maxPrice"
-                type="number"
-                placeholder="No limit"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
+            <div className="flex flex-col gap-2 md:col-span-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="price-range">Price range (USD)</Label>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  ${priceMin}
+                  {' – '}
+                  {priceMax >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${priceMax}`}
+                </span>
+              </div>
+              <Slider
+                id="price-range"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={PRICE_STEP}
+                value={[priceMin, priceMax]}
+                onValueChange={(v) => {
+                  if (!Array.isArray(v) || v.length !== 2) return;
+                  setPriceMin(v[0]);
+                  setPriceMax(v[1]);
+                  setPriceTouched(true);
+                }}
+                aria-label="Price range"
               />
             </div>
           </div>
@@ -292,10 +304,17 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
               <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => setBusinessType('')} />
             </Badge>
           )}
-          {(minPrice || maxPrice) && (
+          {priceTouched && (
             <Badge variant="secondary">
-              Price: ${minPrice || '0'} - ${maxPrice || '∞'}
-              <X style={{ height: 12, width: 12, cursor: 'pointer' }} onClick={() => { setMinPrice(''); setMaxPrice(''); }} />
+              Price: ${priceMin} – {priceMax >= PRICE_MAX ? `$${PRICE_MAX}+` : `$${priceMax}`}
+              <X
+                style={{ height: 12, width: 12, cursor: 'pointer' }}
+                onClick={() => {
+                  setPriceMin(PRICE_MIN);
+                  setPriceMax(PRICE_MAX);
+                  setPriceTouched(false);
+                }}
+              />
             </Badge>
           )}
            {selectedTags.map((tag) => (

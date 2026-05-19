@@ -47,12 +47,19 @@ export function BrowseVisitedToolbar({ value, onChange }: Props) {
   ];
 
   return (
-    <div
-      role="radiogroup"
-      aria-label={t('travel.visited.label', 'Filter by visited status')}
-      className="inline-flex items-center gap-1 border border-border bg-background p-1"
-    >
-      {options.map(({ key, icon: Icon, label }) => {
+    <div className="inline-flex items-center gap-2 flex-wrap">
+      <span
+        id="travel-visited-filter-label"
+        className="text-xs text-muted-foreground"
+      >
+        {t('pages.travel.inspiration.visitedFilterLabel', 'Visited:')}
+      </span>
+      <div
+        role="radiogroup"
+        aria-labelledby="travel-visited-filter-label"
+        className="inline-flex items-center gap-1 border border-border bg-background p-1"
+      >
+        {options.map(({ key, icon: Icon, label }) => {
         const active = value === key;
         return (
           <button
@@ -72,6 +79,7 @@ export function BrowseVisitedToolbar({ value, onChange }: Props) {
           </button>
         );
       })}
+      </div>
     </div>
   );
 }

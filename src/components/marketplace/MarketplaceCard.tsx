@@ -3,7 +3,7 @@ import { MotionCard as Card, CardImage } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Phone, Mail, Eye, Store, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Star, MapPin, Phone, Mail, Store, AlertTriangle, ExternalLink, BadgeDollarSign } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { FavoriteButton } from '@/components/ui/favorite-button';
@@ -91,12 +91,15 @@ export function MarketplaceCard({
   const pills = trustPillsFor(listing);
   const provenance = sourceProvenanceLine(listing);
   const linkState = linkHealthState(listing);
+  const isAffiliate = outbound?.isAffiliate ?? false;
+  const showContactIcons = !isAffiliate && (listing.contact_phone || listing.contact_email);
+  const viewsCount = listing.views_count ?? 0;
 
   return (
     <CardHoverEffect>
       <Card className="group transition-colors duration-300 hover:border-foreground/40">
         <div className="relative">
-          <CardImage src={listingImage} alt={listing.title} fallbackIcon={Store} height={160} className="grayscale-[0.15] group-hover:grayscale-0" />
+          <CardImage src={listingImage} alt={listing.title} fallbackIcon={Store} height={160} />
           {listing.featured && (
             <div className="absolute top-2 left-2 z-10">
               <Badge>Featured</Badge>
@@ -114,7 +117,13 @@ export function MarketplaceCard({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <h2 className="font-semibold leading-tight overflow-hidden text-ellipsis whitespace-nowrap text-base">
-                  <HighlightedText text={listing.title} query={searchQuery} />
+                  <LocalizedLink
+                    to={`/marketplace/${listing.slug}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:underline underline-offset-2"
+                  >
+                    <HighlightedText text={listing.title} query={searchQuery} />
+                  </LocalizedLink>
                 </h2>
                 <p className="text-sm text-muted-foreground mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
                   {listing.merchant_domain ? (
@@ -129,8 +138,14 @@ export function MarketplaceCard({
                     <HighlightedText text={listing.business_name} query={searchQuery} />
                   )}
                   {provenance && (
-                    <span className="ml-1.5 text-[11px] uppercase tracking-wider text-muted-foreground/70">
+                    <span className="ml-1.5 text-[11px] uppercase tracking-wider text-muted-foreground/70 inline-flex items-center gap-1">
                       · {provenance}
+                      {isAffiliate && (
+                        <BadgeDollarSign
+                          style={{ width: 11, height: 11 }}
+                          aria-label="Sponsored affiliate listing"
+                        />
+                      )}
                     </span>
                   )}
                 </p>
@@ -152,20 +167,33 @@ export function MarketplaceCard({
 
             {pills.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
-                {pills.slice(0, 2).map((p) => (
-                  <span
-                    key={p.key}
-                    title={p.title}
-                    className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-                  >
-                    {p.label}
-                  </span>
-                ))}
-                {pills.length > 2 && (
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 self-center">
-                    +{pills.length - 2}
-                  </span>
-                )}
+                <div className="md:hidden flex flex-wrap gap-1">
+                  {pills.slice(0, 2).map((p) => (
+                    <span
+                      key={p.key}
+                      title={p.title}
+                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                    >
+                      {p.label}
+                    </span>
+                  ))}
+                  {pills.length > 2 && (
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 self-center">
+                      +{pills.length - 2}
+                    </span>
+                  )}
+                </div>
+                <div className="hidden md:flex flex-wrap gap-1">
+                  {pills.map((p) => (
+                    <span
+                      key={p.key}
+                      title={p.title}
+                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                    >
+                      {p.label}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -190,6 +218,9 @@ export function MarketplaceCard({
               {price.secondary && (
                 <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
               )}
+              {viewsCount > 50 && (
+                <p className="text-[11px] text-muted-foreground/80 mt-0.5">{viewsCount.toLocaleString()} views</p>
+              )}
               <div className="flex items-center gap-1.5 mt-1.5">
                 {listing.shipping_available && <Badge variant="outline">Ships</Badge>}
                 {listing.in_stock === false && <Badge variant="outline">Out of stock</Badge>}
@@ -206,55 +237,39 @@ export function MarketplaceCard({
 
           <div className="flex items-center justify-between gap-2 pt-2">
             <div className="flex items-center gap-1">
-              {listing.contact_phone && (
+              {showContactIcons && listing.contact_phone && (
                 <Button size="default" variant="ghost" aria-label={`Call ${listing.contact_phone}`} asChild>
                   <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
                     <Phone style={{ height: 16, width: 16 }} aria-hidden="true" />
                   </a>
                 </Button>
               )}
-              {listing.contact_email && (
+              {showContactIcons && listing.contact_email && (
                 <Button size="default" variant="ghost" aria-label={`Email ${listing.contact_email}`} asChild>
                   <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
                     <Mail style={{ height: 16, width: 16 }} aria-hidden="true" />
                   </a>
                 </Button>
               )}
-
-              {listing.views_count && listing.views_count > 0 ? (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground ml-1">
-                  <Eye style={{ height: 12, width: 12 }} aria-hidden="true" />
-                  <span>{listing.views_count}</span>
-                </div>
-              ) : null}
             </div>
 
             <div className="flex items-center gap-2">
               {outbound ? (
-                <>
-                  <LocalizedLink
-                    to={`/marketplace/${listing.slug}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
-                  >
-                    Details
-                  </LocalizedLink>
-                  <a
-                    href={outbound.url}
-                    target="_blank"
-                    rel={outbound.rel}
-                    onClick={(e) => e.stopPropagation()}
-                    data-affiliate={outbound.isAffiliate ? 'true' : undefined}
-                    className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
-                    aria-label={`${outbound.label} (opens in new tab)`}
-                  >
-                    {outbound.label}
-                    <ExternalLink style={{ width: 14, height: 14 }} aria-hidden="true" />
-                  </a>
-                </>
+                <a
+                  href={outbound.url}
+                  target="_blank"
+                  rel={outbound.rel}
+                  onClick={(e) => e.stopPropagation()}
+                  data-affiliate={outbound.isAffiliate ? 'true' : undefined}
+                  className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-3 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                  aria-label={`${outbound.label} (opens in new tab)`}
+                >
+                  {outbound.label}
+                  <ExternalLink style={{ width: 14, height: 14 }} aria-hidden="true" />
+                </a>
               ) : (
                 <LocalizedLink to={`/marketplace/${listing.slug}`}>
-                  <Button size="sm">View</Button>
+                  <Button size="sm">View details</Button>
                 </LocalizedLink>
               )}
               {linkState === 'stale' && (

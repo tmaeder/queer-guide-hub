@@ -1,6 +1,28 @@
 import type { TripListItem } from '@/hooks/useTrips';
 import type { TripSortKey, TripStatusFilter } from './TripsToolbar';
 
+const DEFAULT_TITLE_KEY = 'trips.dialog.create.defaultTitle';
+
+/**
+ * A trip is "meaningful" when the user has invested something in it:
+ * either a place, dates, or a custom title. Empty stubs (no places, no dates,
+ * fallback "Trip to X" title) are treated as drafts and hidden from prominent
+ * surfaces like the /travel hero.
+ */
+export function isMeaningfulTrip(
+  trip: Pick<TripListItem, 'title' | 'place_count' | 'start_date' | 'end_date' | 'primary_city_name'>,
+): boolean {
+  if (trip.place_count > 0) return true;
+  if (trip.start_date || trip.end_date) return true;
+  const raw = trip.title?.trim();
+  if (!raw) return false;
+  if (raw === DEFAULT_TITLE_KEY) return false;
+  const city = trip.primary_city_name?.trim();
+  if (city && raw === `${city} trip`) return false;
+  if (city && raw === `Trip to ${city}`) return false;
+  return true;
+}
+
 /**
  * Filter + sort a list of trips by the dashboard toolbar state.
  * Pure — no hooks, no side effects. Used by TripsPage and covered by tripsFilters.test.ts.

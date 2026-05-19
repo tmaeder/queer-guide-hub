@@ -1623,7 +1623,7 @@
       "lgbtqFriendly": "ЛГБТК+-дружественное"
     },
     "travel": {
-      "title": "Забронировать поездку",
+      "title": "Путешествия",
       "subtitle": "Находи авиабилеты, отели и активности в ЛГБТК+-дружественных направлениях",
       "activitiesComingSoon": "Активности скоро появятся.",
       "browseDestinations": "Просмотреть направления",
@@ -1659,7 +1659,9 @@
         "discoverTail": "[RU] from the community.",
         "errors": {
           "city": "[RU] Pick a city to plan a trip."
-        }
+        },
+        "activeTripHeading": "Continue your trip",
+        "openTrip": "Open trip"
       },
       "resume": {
         "title": "[RU] Continue planning",
@@ -1669,14 +1671,18 @@
         "title": "[RU] Pride this season",
         "window": "[RU] Next 4 months",
         "empty": "[RU] No upcoming Pride events.",
-        "safety": "[RU] Equality score"
+        "safety": "[RU] Equality score",
+        "equalityTooltip": "",
+        "equalityAria": "Equality score {{score}}: tap for explanation"
       },
       "inspiration": {
         "villages": "[RU] Queer villages",
         "publicTrips": "[RU] Public trips",
         "viewAll": "[RU] View all",
         "noVillages": "[RU] No villages yet.",
-        "noTrips": "[RU] No public trips yet."
+        "noTrips": "[RU] No public trips yet.",
+        "heading": "Inspiration",
+        "visitedFilterLabel": "Visited:"
       },
       "bookNow": {
         "title": "[RU] Book now",
@@ -1863,6 +1869,16 @@
     },
     "sitemap": {
       "searchPlaceholder": "Поиск по карте сайта..."
+    },
+    "trips": {
+      "emptyTripsBanner": {
+        "title": "{{count}} empty trips",
+        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
+        "cta": "Review",
+        "dismiss": "Dismiss",
+        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
+        "exitScope": "Show all trips"
+      }
     }
   },
   "settings": {

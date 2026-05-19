@@ -1595,7 +1595,7 @@
       "lgbtqFriendly": "LGBTQ+-freundlich"
     },
     "travel": {
-      "title": "Reise buchen",
+      "title": "Reise",
       "subtitle": "Finde Flüge, Hotels und Aktivitäten für LGBTQ+-freundliche Reiseziele",
       "activitiesComingSoon": "Aktivitäten kommen bald.",
       "browseDestinations": "Reiseziele entdecken",
@@ -1631,7 +1631,9 @@
         "discoverTail": "[DE] from the community.",
         "errors": {
           "city": "[DE] Pick a city to plan a trip."
-        }
+        },
+        "activeTripHeading": "Continue your trip",
+        "openTrip": "Open trip"
       },
       "resume": {
         "title": "[DE] Continue planning",
@@ -1641,14 +1643,18 @@
         "title": "[DE] Pride this season",
         "window": "[DE] Next 4 months",
         "empty": "[DE] No upcoming Pride events.",
-        "safety": "[DE] Equality score"
+        "safety": "[DE] Equality score",
+        "equalityTooltip": "",
+        "equalityAria": "Equality score {{score}}: tap for explanation"
       },
       "inspiration": {
         "villages": "[DE] Queer villages",
         "publicTrips": "[DE] Public trips",
         "viewAll": "[DE] View all",
         "noVillages": "[DE] No villages yet.",
-        "noTrips": "[DE] No public trips yet."
+        "noTrips": "[DE] No public trips yet.",
+        "heading": "Inspiration",
+        "visitedFilterLabel": "Visited:"
       },
       "bookNow": {
         "title": "[DE] Book now",
@@ -1835,6 +1841,16 @@
     },
     "sitemap": {
       "searchPlaceholder": "Sitemap durchsuchen..."
+    },
+    "trips": {
+      "emptyTripsBanner": {
+        "title": "{{count}} empty trips",
+        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
+        "cta": "Review",
+        "dismiss": "Dismiss",
+        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
+        "exitScope": "Show all trips"
+      }
     }
   },
   "settings": {

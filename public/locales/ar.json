@@ -1536,7 +1536,7 @@
       "lgbtqFriendly": "صديق لمجتمع LGBTQ+"
     },
     "travel": {
-      "title": "حجز السفر",
+      "title": "سفر",
       "subtitle": "ابحث عن رحلات وفنادق وأنشطة في وجهات صديقة لمجتمع LGBTQ+",
       "activitiesComingSoon": "الأنشطة قريباً.",
       "browseDestinations": "تصفح الوجهات",
@@ -1572,7 +1572,9 @@
         "discoverTail": "[AR] from the community.",
         "errors": {
           "city": "[AR] Pick a city to plan a trip."
-        }
+        },
+        "activeTripHeading": "Continue your trip",
+        "openTrip": "Open trip"
       },
       "resume": {
         "title": "[AR] Continue planning",
@@ -1582,18 +1584,26 @@
         "title": "[AR] Pride this season",
         "window": "[AR] Next 4 months",
         "empty": "[AR] No upcoming Pride events.",
-        "safety": "[AR] Equality score"
+        "safety": "[AR] Equality score",
+        "equalityTooltip": "Equality score reflects this country's LGBTQ+ legal protections. Higher is safer.",
+        "equalityAria": "Equality score {{score}}: tap for explanation"
       },
       "inspiration": {
         "villages": "[AR] Queer villages",
         "publicTrips": "[AR] Public trips",
         "viewAll": "[AR] View all",
         "noVillages": "[AR] No villages yet.",
-        "noTrips": "[AR] No public trips yet."
+        "noTrips": "[AR] No public trips yet.",
+        "heading": "Inspiration",
+        "visitedFilterLabel": "Visited:"
       },
       "bookNow": {
         "title": "[AR] Book now",
-        "subtitle": "[AR] Search flights, hotels, and activities directly — no trip required."
+        "subtitle": "[AR] Search flights, hotels, and activities directly — no trip required.",
+        "headline": "Book without a trip"
+      },
+      "plan": {
+        "switchTrip": "Switch active trip"
       }
     },
     "marketplace": {
@@ -1776,6 +1786,16 @@
     },
     "sitemap": {
       "searchPlaceholder": "البحث في خريطة الموقع..."
+    },
+    "trips": {
+      "emptyTripsBanner": {
+        "title": "{{count}} empty trips",
+        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
+        "cta": "Review",
+        "dismiss": "Dismiss",
+        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
+        "exitScope": "Show all trips"
+      }
     }
   },
   "settings": {

@@ -31,12 +31,19 @@ export function OrgsDirectory() {
 
   const { data: venues = [], isLoading } = useSupportOrgs();
 
-  const filtered = useMemo(() => {
-    if (country === 'INT') return venues.slice(0, MAX);
-    const countryName = COUNTRY_CODE_TO_NAME[country];
-    if (!countryName) return venues.slice(0, MAX);
-    const matches = venues.filter((v) => v.country?.toLowerCase().includes(countryName.toLowerCase()));
-    return matches.length > 0 ? matches.slice(0, MAX) : venues.slice(0, MAX);
+  const { filtered, fellBackToGlobal, countryName } = useMemo(() => {
+    if (country === 'INT') {
+      return { filtered: venues.slice(0, MAX), fellBackToGlobal: false, countryName: null as string | null };
+    }
+    const name = COUNTRY_CODE_TO_NAME[country] ?? null;
+    if (!name) {
+      return { filtered: venues.slice(0, MAX), fellBackToGlobal: false, countryName: null };
+    }
+    const matches = venues.filter((v) => v.country?.toLowerCase().includes(name.toLowerCase()));
+    if (matches.length > 0) {
+      return { filtered: matches.slice(0, MAX), fellBackToGlobal: false, countryName: name };
+    }
+    return { filtered: venues.slice(0, MAX), fellBackToGlobal: true, countryName: name };
   }, [venues, country]);
 
   return (
@@ -61,6 +68,12 @@ export function OrgsDirectory() {
           </Select>
         </div>
       </header>
+
+      {fellBackToGlobal && countryName && (
+        <p className="text-xs text-muted-foreground mb-3">
+          No organisations in {countryName} indexed yet — showing global.
+        </p>
+      )}
 
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

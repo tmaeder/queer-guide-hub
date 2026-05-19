@@ -8,7 +8,7 @@ type MarketplaceListingInsert = Database['public']['Tables']['marketplace_listin
 
 export const PAGE_SIZE = 24;
 
-export type MarketplaceSort = 'newest' | 'oldest' | 'az' | 'za' | 'price_asc' | 'price_desc' | 'most_viewed';
+export type MarketplaceSort = 'relevance' | 'newest' | 'oldest' | 'az' | 'za' | 'price_asc' | 'price_desc' | 'most_viewed';
 
 export interface MarketplaceFiltersInput {
   category?: string;
@@ -41,7 +41,7 @@ export function useMarketplace() {
   const fetchListings = async (
     filters?: MarketplaceFiltersInput,
     page = 0,
-    sort: MarketplaceSort = 'newest',
+    sort: MarketplaceSort = 'relevance',
   ) => {
     try {
       setLoading(true);
@@ -81,8 +81,14 @@ export function useMarketplace() {
           query = query.order('views_count', { ascending: false, nullsFirst: false });
           break;
         case 'newest':
-        default:
           query = query.order('created_at', { ascending: false });
+          break;
+        case 'relevance':
+        default:
+          query = query
+            .order('quality_score', { ascending: false, nullsFirst: false })
+            .order('lgbti_relevance_score', { ascending: false, nullsFirst: false })
+            .order('updated_at', { ascending: false });
           break;
       }
 

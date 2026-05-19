@@ -52,6 +52,7 @@ export function useMarketplaceSubcategoryTiles() {
         counts.set(row.subcategory, (counts.get(row.subcategory) ?? 0) + 1);
       }
       return Array.from(counts.entries())
+        .filter(([, count]) => count >= 5)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8)
         .map(([slug, count]) => ({ slug, count }));

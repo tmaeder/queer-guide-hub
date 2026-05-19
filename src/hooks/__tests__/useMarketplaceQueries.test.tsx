@@ -57,15 +57,15 @@ beforeEach(() => {
 });
 
 describe('useMarketplaceSubcategoryTiles', () => {
-  it('aggregates and ranks top 8 subcategories by count', async () => {
+  it('aggregates, ranks, and hides subcategories with fewer than 5 listings', async () => {
+    const rep = (slug: string, n: number) =>
+      Array.from({ length: n }, () => ({ subcategory: slug }));
     withResults({
       data: [
-        { subcategory: 'art' },
-        { subcategory: 'art' },
-        { subcategory: 'art' },
-        { subcategory: 'fashion' },
-        { subcategory: 'fashion' },
-        { subcategory: 'jewelry' },
+        ...rep('art', 12),
+        ...rep('fashion', 8),
+        ...rep('jewelry', 5),
+        ...rep('rare', 2),
         { subcategory: null },
       ],
       error: null,
@@ -75,9 +75,9 @@ describe('useMarketplaceSubcategoryTiles', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.data).toEqual([
-      { slug: 'art', count: 3 },
-      { slug: 'fashion', count: 2 },
-      { slug: 'jewelry', count: 1 },
+      { slug: 'art', count: 12 },
+      { slug: 'fashion', count: 8 },
+      { slug: 'jewelry', count: 5 },
     ]);
   });
 

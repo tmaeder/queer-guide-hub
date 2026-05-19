@@ -1595,7 +1595,7 @@
       "lgbtqFriendly": "LGBTQ+フレンドリー"
     },
     "travel": {
-      "title": "旅行を予約",
+      "title": "旅行",
       "subtitle": "LGBTQ+フレンドリーな目的地のフライト、ホテル、アクティビティを検索",
       "activitiesComingSoon": "アクティビティは近日公開。",
       "browseDestinations": "目的地を探す",
@@ -1631,7 +1631,9 @@
         "discoverTail": "[JA] from the community.",
         "errors": {
           "city": "[JA] Pick a city to plan a trip."
-        }
+        },
+        "activeTripHeading": "Continue your trip",
+        "openTrip": "Open trip"
       },
       "resume": {
         "title": "[JA] Continue planning",
@@ -1641,14 +1643,18 @@
         "title": "[JA] Pride this season",
         "window": "[JA] Next 4 months",
         "empty": "[JA] No upcoming Pride events.",
-        "safety": "[JA] Equality score"
+        "safety": "[JA] Equality score",
+        "equalityTooltip": "",
+        "equalityAria": "Equality score {{score}}: tap for explanation"
       },
       "inspiration": {
         "villages": "[JA] Queer villages",
         "publicTrips": "[JA] Public trips",
         "viewAll": "[JA] View all",
         "noVillages": "[JA] No villages yet.",
-        "noTrips": "[JA] No public trips yet."
+        "noTrips": "[JA] No public trips yet.",
+        "heading": "Inspiration",
+        "visitedFilterLabel": "Visited:"
       },
       "bookNow": {
         "title": "[JA] Book now",
@@ -1835,6 +1841,16 @@
     },
     "sitemap": {
       "searchPlaceholder": "サイトマップを検索..."
+    },
+    "trips": {
+      "emptyTripsBanner": {
+        "title": "{{count}} empty trips",
+        "description": "Drafts without dates or saved places. Tidy them up to keep your trip list focused.",
+        "cta": "Review",
+        "dismiss": "Dismiss",
+        "scopeNote": "Showing {{count}} empty drafts. Delete the ones you don’t need.",
+        "exitScope": "Show all trips"
+      }
     }
   },
   "settings": {

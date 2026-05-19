@@ -19,8 +19,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState, LoadingTimeout, ErrorState } from '@/components/ui/EmptyState';
 import { PageLoadingState } from '@/components/layout/PageLoadingState';
-import { ArrowLeft, Globe, MapPin, Building2, Map as MapIcon, Landmark, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Globe, MapPin, Building2, Map as MapIcon, Landmark, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { PersonalizedFeed } from '@/components/personalization/PersonalizedFeed';
+import { useMeta } from '@/hooks/useMeta';
+
+// Curated queer-essential countries. Surfaced first regardless of equality_score
+// ranking — ensures the page leads with destinations queer travelers actually
+// want to discover, not just whichever country has the highest legal index.
+const FEATURED_COUNTRY_NAMES = new Set([
+  'Germany', 'Spain', 'Netherlands', 'Portugal', 'Canada', 'Mexico',
+  'Thailand', 'Argentina', 'Brazil', 'Australia', 'United States', 'United Kingdom',
+  'France', 'Belgium', 'Sweden', 'Denmark', 'Iceland', 'New Zealand',
+  'South Africa', 'Uruguay', 'Malta', 'Ireland', 'Norway', 'Finland',
+]);
+const FEATURED_LIMIT = 12;
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
@@ -45,6 +57,11 @@ type ViewMode = 'overview' | 'country' | 'city' | 'search';
 
 export default function Places() {
   const { _t } = useTranslation();
+  useMeta({
+    title: 'Queer Places — Cities, Neighborhoods, Villages',
+    description: 'Explore LGBTQ+ friendly countries, cities, and neighborhoods worldwide. See legality at a glance and find your next destination.',
+    canonicalPath: '/places',
+  });
   const { countries, loading: countriesLoading, error: countriesError } = useOptimizedCountries();
   const { cities, loading: citiesLoading, error: citiesError } = useOptimizedCities();
   // fetchCitiesByCountry, searchLocations, findNearbyCities imported as standalone functions
@@ -81,9 +98,10 @@ export default function Places() {
     populationRange: 'all',
     isCapital: 'all',
     isMajorCity: 'all',
-    sortBy: 'population',
+    sortBy: 'equality',
     sortOrder: 'desc',
   });
+  const [showAllCountries, setShowAllCountries] = useState(false);
 
   const [expandedContinents, setExpandedContinents] = useState<Record<string, boolean>>({});
   const toggleContinent = (id: string) => {
@@ -161,6 +179,17 @@ export default function Places() {
     }
 
     return result.sort((a, b) => {
+      if (filters.sortBy === 'equality') {
+        // null/undefined equality_score sorts last regardless of order
+        const aScore = a.equality_score;
+        const bScore = b.equality_score;
+        if (aScore == null && bScore == null) {
+          return (a.name as string).localeCompare(b.name as string);
+        }
+        if (aScore == null) return 1;
+        if (bScore == null) return -1;
+        return filters.sortOrder === 'asc' ? aScore - bScore : bScore - aScore;
+      }
       const field = filters.sortBy === 'name' ? 'name' : 'population';
       const aVal = a[field] || (field === 'name' ? '' : 0);
       const bVal = b[field] || (field === 'name' ? '' : 0);
@@ -192,6 +221,33 @@ export default function Places() {
       return filters.sortOrder === 'asc' ? (aVal > bVal ? 1 : -1) : aVal < bVal ? 1 : -1;
     });
   }, [cities, filters]);
+
+  // Countries with at least one city in our loaded data — proxy for
+  // "has content worth surfacing". Filters out Antarctica, Bouvet Island, and
+  // ~80 other uninhabited / zero-content territories from the default view.
+  const countriesWithContent = useMemo(() => {
+    const countryIdsWithCities = new Set(cities.map(c => c.country_id));
+    return countries.filter(c => countryIdsWithCities.has(c.id));
+  }, [countries, cities]);
+
+  // Top zone: editorial whitelist first (in defined order), then fill with
+  // remaining high-equality countries up to FEATURED_LIMIT.
+  const topQueerCountries = useMemo(() => {
+    const byName = new Map<string, typeof countries[number]>();
+    for (const c of countries) {
+      if (typeof c.name === 'string') byName.set(c.name, c);
+    }
+    const featured: typeof countries = [];
+    for (const name of FEATURED_COUNTRY_NAMES) {
+      const c = byName.get(name);
+      if (c) featured.push(c);
+    }
+    const featuredIds = new Set(featured.map(c => c.id));
+    const remaining = countries
+      .filter(c => !featuredIds.has(c.id) && typeof c.equality_score === 'number')
+      .sort((a, b) => (b.equality_score ?? 0) - (a.equality_score ?? 0));
+    return [...featured, ...remaining].slice(0, FEATURED_LIMIT);
+  }, [countries]);
 
   const citiesByContinent = useMemo(() => {
     return continents.map((continent) => {
@@ -394,78 +450,152 @@ export default function Places() {
                 value="countries"
                 style={TAB_CONTENT_STYLE}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h5 className="text-2xl font-semibold">Countries</h5>
-                    <Badge
-                      variant="secondary"
-                      style={BADGE_STYLE}
-                    >
-                      {filteredCountries.length} found
+                {/* Zone A — Top queer destinations */}
+                {topQueerCountries.length > 0 && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                      <Sparkles style={ICON_MD} aria-hidden="true" />
+                      <h5 className="text-2xl font-semibold">Top queer destinations</h5>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Editorial picks and countries with the strongest LGBTQ+ legal protections.
+                    </p>
+                    <div className={GRID_6_COLS}>
+                      {topQueerCountries.map((country) => (
+                        <div key={country.id}>
+                          <PlacesCard
+                            type="country"
+                            name={country.name}
+                            data={country}
+                            onClick={() => handleCountryClick(country)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Zone B — Browse by continent (collapsed, content-filtered) */}
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-2xl font-semibold">Browse by continent</h5>
+                    <Badge variant="secondary" style={BADGE_STYLE}>
+                      {countriesWithContent.length} countries
                     </Badge>
+                  </div>
+
+                  <div className="flex flex-col gap-6">
+                    {loading ? (
+                      <div className={GRID_6_COLS}>
+                        {Array.from({ length: 12 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-32 bg-muted rounded-element animate-pulse"
+                          />
+                        ))}
+                      </div>
+                    ) : continents.length > 0 ? (
+                      continents.map((continent) => {
+                        const continentCountries = countriesWithContent
+                          .filter((country) => country.continent_id === continent.id)
+                          .sort((a, b) => {
+                            const aS = a.equality_score, bS = b.equality_score;
+                            if (aS == null && bS == null) return (a.name as string).localeCompare(b.name as string);
+                            if (aS == null) return 1;
+                            if (bS == null) return -1;
+                            return bS - aS;
+                          });
+
+                        if (continentCountries.length === 0) return null;
+
+                        const isExpanded = expandedContinents[continent.id as string];
+
+                        return (
+                          <div key={continent.id} className="flex flex-col gap-6">
+                            <button
+                              type="button"
+                              onClick={() => toggleContinent(continent.id as string)}
+                              aria-expanded={isExpanded}
+                              className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-muted-foreground/10">
+                                  <Globe style={ICON_MD} />
+                                </div>
+                                <div>
+                                  <p className="text-lg font-semibold">{continent.name}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {continentCountries.length} countries
+                                  </p>
+                                </div>
+                              </div>
+                              {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
+                            </button>
+
+                            {isExpanded && (
+                              <div className={GRID_6_COLS}>
+                                {continentCountries.map((country, index) => (
+                                  <div key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
+                                    <PlacesCard
+                                      type="country"
+                                      name={country.name}
+                                      data={country}
+                                      onClick={() => handleCountryClick(country)}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      // Fallback when continents lookup is empty: flat grid of
+                      // content-bearing countries, still sorted by equality_score.
+                      <div className={GRID_6_COLS}>
+                        {[...countriesWithContent]
+                          .sort((a, b) => {
+                            const aS = a.equality_score, bS = b.equality_score;
+                            if (aS == null && bS == null) return (a.name as string).localeCompare(b.name as string);
+                            if (aS == null) return 1;
+                            if (bS == null) return -1;
+                            return bS - aS;
+                          })
+                          .map((country, index) => (
+                            <div key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
+                              <PlacesCard
+                                type="country"
+                                name={country.name}
+                                data={country}
+                                onClick={() => handleCountryClick(country)}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-10">
-                  {loading ? (
-                    <div className={GRID_6_COLS}>
-                      {Array.from({ length: 12 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="h-32 bg-muted rounded-element animate-pulse"
-                        />
-                      ))}
+                {/* Zone C — Show all 201 countries disclosure */}
+                <div className="flex flex-col gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllCountries(v => !v)}
+                    aria-expanded={showAllCountries}
+                    className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Globe style={ICON_MD} />
+                      <div>
+                        <p className="text-lg font-semibold">Show all countries &amp; territories</p>
+                        <p className="text-sm text-muted-foreground">
+                          {filteredCountries.length} total, including territories without dedicated content.
+                        </p>
+                      </div>
                     </div>
-                  ) : continents.length > 0 ? (
-                    continents.map((continent) => {
-                      const continentCountries = filteredCountries.filter(
-                        (country) => country.continent_id === continent.id,
-                      );
-
-                      if (continentCountries.length === 0) return null;
-
-                      const isExpanded = expandedContinents[continent.id as string];
-
-                      return (
-                        <div key={continent.id} className="flex flex-col gap-6">
-                          <button
-                            type="button"
-                            onClick={() => toggleContinent(continent.id as string)}
-                            aria-expanded={isExpanded}
-                            className="w-full flex items-center justify-between gap-4 p-4 bg-muted cursor-pointer hover:opacity-85 text-left"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-muted-foreground/10">
-                                <Globe style={ICON_MD} />
-                              </div>
-                              <div>
-                                <p className="text-lg font-semibold">{continent.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {continentCountries.length} countries
-                                </p>
-                              </div>
-                            </div>
-                            {isExpanded ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
-                          </button>
-
-                          {isExpanded && (
-                            <div className={GRID_6_COLS}>
-                              {continentCountries.map((country, index) => (
-                                <div key={country.id} style={{ animationDelay: `${index * 50}ms` }}>
-                                  <PlacesCard
-                                    type="country"
-                                    name={country.name}
-                                    data={country}
-                                    onClick={() => handleCountryClick(country)}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
+                    {showAllCountries ? <ChevronUp style={ICON_MD} /> : <ChevronDown style={ICON_MD} />}
+                  </button>
+                  {showAllCountries && (
                     <div className={GRID_6_COLS}>
                       {filteredCountries.map((country, index) => (
                         <div key={country.id} style={{ animationDelay: `${index * 50}ms` }}>

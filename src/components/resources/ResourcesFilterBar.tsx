@@ -247,7 +247,7 @@ export function ResourcesFilterBar({
             <button
               type="button"
               onClick={() => onFilterCategoryChange('all')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
               {getCategoryShortName(filterCategory)} ✕
             </button>
@@ -256,7 +256,7 @@ export function ResourcesFilterBar({
             <button
               type="button"
               onClick={() => onUsageFilterChange('all')}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
               {usageFilter === 'used' ? 'Used' : 'Unused'} ✕
             </button>
@@ -265,7 +265,7 @@ export function ResourcesFilterBar({
             <button
               type="button"
               onClick={() => onHasImageFilterChange(false)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer bg-secondary text-xs hover:opacity-80"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
               Has Image ✕
             </button>
