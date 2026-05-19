@@ -117,7 +117,7 @@ export default function GeoMismatchTab() {
             ? haversineKm(r.original_lat, r.original_lng ?? 0, r.validated_lat, r.validated_lng ?? 0)
             : null;
           return (
-            <div key={r.id} style={{ padding: 12, background: 'rgba(255,255,255,0.04)' }}>
+            <div key={r.id} style={{ padding: 12, background: 'hsl(var(--background) / 0.04)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>

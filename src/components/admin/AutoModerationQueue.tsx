@@ -624,7 +624,7 @@ function FlagCard({
                       <p className="text-xs font-semibold block mb-1 text-destructive">
                         Current Value:
                       </p>
-                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.05)]">
+                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[hsl(var(--destructive) / 0.2)] bg-[hsl(var(--destructive) / 0.05)]">
                         {JSON.stringify(flag.current_value, null, 2)}
                       </pre>
                     </div>
@@ -635,7 +635,7 @@ function FlagCard({
                       <p className="text-xs font-semibold block mb-1 text-foreground">
                         Suggested Value:
                       </p>
-                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[rgba(22,163,74,0.2)] bg-[rgba(22,163,74,0.05)]">
+                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[hsl(var(--foreground) / 0.2)] bg-[hsl(var(--foreground) / 0.05)]">
                         {JSON.stringify(flag.suggested_value, null, 2)}
                       </pre>
                     </div>

@@ -341,7 +341,7 @@ export function CMSListView({
                       }}
                       style={{
                         ...(selectedItems.includes(item.id as string)
-                          ? { backgroundColor: 'rgba(0,0,0,0.03)' }
+                          ? { backgroundColor: 'hsl(var(--foreground) / 0.03)' }
                           : {}),
                         ...(idx === focusedIndex
                           ? { outline: '2px solid var(--primary)', outlineOffset: -2 }
@@ -532,7 +532,7 @@ export function CMSListView({
                               style={{
                                 backgroundColor: 'var(--background)',
                                 border: '1px solid var(--border)',
-                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                                boxShadow: '0 4px 6px -1px hsl(var(--foreground) / 0.1)',
                               }}
                             >
                               <DropdownMenuItem onClick={() => onEdit(item)}>

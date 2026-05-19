@@ -376,16 +376,16 @@ export const ApiKeysManager = () => {
                       style={{
                         borderColor:
                           rk.status === 'configured'
-                            ? 'rgba(34,197,94,0.3)'
+                            ? 'hsl(var(--foreground) / 0.3)'
                             : rk.status === 'error'
-                              ? 'rgba(245,158,11,0.3)'
-                              : 'rgba(239,68,68,0.3)',
+                              ? 'hsl(var(--foreground) / 0.3)'
+                              : 'hsl(var(--destructive) / 0.3)',
                         background:
                           rk.status === 'configured'
-                            ? 'rgba(34,197,94,0.05)'
+                            ? 'hsl(var(--foreground) / 0.05)'
                             : rk.status === 'error'
-                              ? 'rgba(245,158,11,0.05)'
-                              : 'rgba(239,68,68,0.05)',
+                              ? 'hsl(var(--foreground) / 0.05)'
+                              : 'hsl(var(--destructive) / 0.05)',
                       }}
                     >
                       <div className="flex items-center gap-3 flex-1">

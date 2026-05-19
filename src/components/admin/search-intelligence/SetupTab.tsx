@@ -124,7 +124,7 @@ export function SetupTab() {
             </div>
           </div>
           <div className="mt-4">
-            <div className="h-1.5 w-full overflow-hidden" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
+            <div className="h-1.5 w-full overflow-hidden" style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}>
               <div className="h-full" style={{ width: `${okPct}%`, backgroundColor: barColor }} />
             </div>
             <span className="text-xs text-muted-foreground mt-1 block">

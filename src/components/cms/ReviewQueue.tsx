@@ -352,7 +352,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
         <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center mb-2.5 opacity-90"
-            style={{ backgroundColor: 'hsl(var(--foreground))', boxShadow: '0 0 0 8px rgba(22,163,74,0.1)' }}
+            style={{ backgroundColor: 'hsl(var(--foreground))', boxShadow: '0 0 0 8px hsl(var(--foreground) / 0.1)' }}
           >
             <CheckCircle2 className="w-10 h-10 text-white" />
           </div>

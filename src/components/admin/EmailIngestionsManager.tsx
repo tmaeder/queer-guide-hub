@@ -327,8 +327,8 @@ export function EmailIngestionsManager() {
                           <div
                             className="flex items-start gap-2 p-3 rounded"
                             style={{
-                              backgroundColor: 'rgba(220, 38, 38, 0.08)',
-                              border: '1px solid rgba(220, 38, 38, 0.2)',
+                              backgroundColor: 'hsl(var(--destructive) / 0.08)',
+                              border: '1px solid hsl(var(--destructive) / 0.2)',
                             }}
                           >
                             <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))', marginTop: 2, flexShrink: 0 }} />
@@ -377,7 +377,7 @@ export function EmailIngestionsManager() {
                           <span className="font-medium">Body Preview:</span>
                           <p
                             className="text-sm text-muted-foreground mt-1 p-2 rounded overflow-auto whitespace-pre-wrap"
-                            style={{ maxHeight: 200, fontSize: '0.8rem', backgroundColor: 'rgba(0,0,0,0.03)' }}
+                            style={{ maxHeight: 200, fontSize: '0.8rem', backgroundColor: 'hsl(var(--foreground) / 0.03)' }}
                           >
                             {ing.body_text.slice(0, 1000)}
                             {ing.body_text.length > 1000 && '...'}
@@ -404,7 +404,7 @@ export function EmailIngestionsManager() {
                             <pre
                               className="mt-2 p-3 rounded overflow-auto"
                               style={{
-                                backgroundColor: 'rgba(0,0,0,0.05)',
+                                backgroundColor: 'hsl(var(--foreground) / 0.05)',
                                 maxHeight: 400,
                                 fontSize: '0.75rem',
                                 lineHeight: 1.4,

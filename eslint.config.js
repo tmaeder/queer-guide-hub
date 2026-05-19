@@ -218,10 +218,9 @@ export default tseslint.config(
     },
   },
 
-  // Phase 0 (2026-05-19) — admin chromatic exemption REMOVED. Admin/cms violations
-  // surface as warnings here (combined with the radius warn since ESLint flat config
-  // overrides no-restricted-syntax wholesale). Phase 3g flips this to error after
-  // the chromatic sweep completes.
+  // Phase 3g (2026-05-19) — admin chromatic purge complete. Color-literal rule
+  // is now ERROR for the admin tree (same as public). Combined with the radius
+  // warn since ESLint flat config overrides no-restricted-syntax wholesale.
   {
     files: [
       "src/components/admin/**/*.{ts,tsx}",
@@ -237,12 +236,12 @@ export default tseslint.config(
     ignores: ["src/**/__tests__/**", "src/test/**"],
     rules: {
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
           selector:
             "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
           message:
-            "Admin chromatic exemption was removed 2026-05-19 (refactor/monochrome-2026). Use design tokens or <StatusBadge>.",
+            "Hardcoded color literal — use design tokens or <StatusBadge>. The admin chromatic exemption was removed 2026-05-19.",
         },
         {
           selector:

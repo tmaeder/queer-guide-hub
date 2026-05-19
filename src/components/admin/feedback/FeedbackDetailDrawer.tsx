@@ -134,7 +134,7 @@ export function FeedbackDetailDrawer({
               style={{
                 padding: 10,
                 borderLeft: '3px solid hsl(var(--muted-foreground))',
-                backgroundColor: 'rgba(99, 102, 241, 0.08)',
+                backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
                 borderRadius: 4,
               }}
             >
@@ -158,7 +158,7 @@ export function FeedbackDetailDrawer({
               style={{
                 padding: 10,
                 borderLeft: '3px solid hsl(var(--destructive))',
-                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                backgroundColor: 'hsl(var(--destructive) / 0.08)',
                 borderRadius: 4,
               }}
             >
@@ -188,7 +188,7 @@ export function FeedbackDetailDrawer({
               style={{
                 padding: 10,
                 borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
-                backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                backgroundColor: 'hsl(var(--foreground) / 0.55)',
                 borderRadius: 4,
                 gap: 8,
               }}

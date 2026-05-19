@@ -306,7 +306,7 @@ export function CMSShell() {
             top: 80,
             left: 8,
             zIndex: 1200,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+            boxShadow: '0 2px 12px hsl(var(--foreground) / 0.1)',
             paddingLeft: 8,
             paddingRight: 12,
             paddingTop: 6,

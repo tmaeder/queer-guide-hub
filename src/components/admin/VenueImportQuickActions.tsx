@@ -373,7 +373,7 @@ export const VenueImportQuickActions = () => {
                 {source.last_error && (
                   <div
                     className="p-2 rounded"
-                    style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
+                    style={{ backgroundColor: 'hsl(var(--destructive) / 0.1)', border: '1px solid hsl(var(--destructive) / 0.2)' }}
                   >
                     <span className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>
                       {source.last_error.slice(0, 80)}{source.last_error.length > 80 ? '...' : ''}
@@ -430,7 +430,7 @@ export const VenueImportQuickActions = () => {
                 <div
                   key={source}
                   className="flex items-center justify-between p-2 rounded"
-                  style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
+                  style={{ backgroundColor: 'hsl(var(--foreground) / 0.02)' }}
                 >
                   <p className="text-sm font-medium">
                     {source === 'manual' ? 'Manual / Untagged' : source}

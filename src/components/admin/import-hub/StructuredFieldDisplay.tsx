@@ -239,9 +239,9 @@ export function StructuredFieldDisplay({
               className="rounded-badge"
               style={{
                 padding: '2.4px 8px',
-                backgroundColor: isHighlighted ? 'rgba(250, 204, 21, 0.15)' : 'transparent',
+                backgroundColor: isHighlighted ? 'hsl(var(--foreground) / 0.55)' : 'transparent',
                 border: isHighlighted
-                  ? '1px solid rgba(250, 204, 21, 0.3)'
+                  ? '1px solid hsl(var(--foreground) / 0.55)'
                   : '1px solid transparent',
               }}
             >

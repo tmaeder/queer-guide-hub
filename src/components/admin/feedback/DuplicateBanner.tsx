@@ -36,7 +36,7 @@ export function DuplicateBanner({
       className="mb-4 p-3"
       style={{
         borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
-        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+        backgroundColor: 'hsl(var(--foreground) / 0.08)',
       }}
     >
       {parentStory && (

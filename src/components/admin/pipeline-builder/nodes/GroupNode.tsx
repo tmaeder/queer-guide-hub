@@ -9,11 +9,11 @@ interface GroupNodeData {
 }
 
 const COLORS = [
-  { name: 'indigo', bg: 'rgba(99, 102, 241, 0.08)', border: 'rgba(99, 102, 241, 0.4)', accent: 'hsl(var(--muted-foreground))' },
-  { name: 'emerald', bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.4)', accent: 'hsl(var(--foreground))' },
-  { name: 'rose', bg: 'rgba(244, 63, 94, 0.08)', border: 'rgba(244, 63, 94, 0.4)', accent: 'hsl(var(--destructive))' },
-  { name: 'amber', bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.4)', accent: 'hsl(var(--foreground) / 0.55)' },
-  { name: 'slate', bg: 'rgba(100, 116, 139, 0.08)', border: 'rgba(100, 116, 139, 0.4)', accent: 'hsl(var(--muted-foreground))' },
+  { name: 'indigo', bg: 'hsl(var(--muted-foreground) / 0.08)', border: 'hsl(var(--muted-foreground) / 0.4)', accent: 'hsl(var(--muted-foreground))' },
+  { name: 'emerald', bg: 'hsl(var(--foreground) / 0.08)', border: 'hsl(var(--foreground) / 0.4)', accent: 'hsl(var(--foreground))' },
+  { name: 'rose', bg: 'hsl(var(--destructive) / 0.08)', border: 'hsl(var(--destructive) / 0.4)', accent: 'hsl(var(--destructive))' },
+  { name: 'amber', bg: 'hsl(var(--foreground) / 0.08)', border: 'hsl(var(--foreground) / 0.4)', accent: 'hsl(var(--foreground) / 0.55)' },
+  { name: 'slate', bg: 'hsl(var(--muted-foreground) / 0.08)', border: 'hsl(var(--muted-foreground) / 0.4)', accent: 'hsl(var(--muted-foreground))' },
 ];
 
 function GroupNode({ data, selected, id }: NodeProps) {

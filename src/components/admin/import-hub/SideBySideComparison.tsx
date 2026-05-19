@@ -142,7 +142,7 @@ export function SideBySideComparison({
               <div
                 key={field.key}
                 className={`grid ${i < fields.length - 1 ? 'border-b border-border' : ''} ${isDiff ? 'hover:bg-yellow-100/10' : 'hover:bg-muted'}`}
-                style={{ ...gridCols, backgroundColor: isDiff ? 'rgba(250, 204, 21, 0.06)' : 'transparent' }}
+                style={{ ...gridCols, backgroundColor: isDiff ? 'hsl(var(--foreground) / 0.55)' : 'transparent' }}
               >
                 {/* Field Name */}
                 <div className="p-3 flex items-center">

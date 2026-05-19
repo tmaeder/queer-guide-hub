@@ -377,7 +377,7 @@ function SettingsJson({ value }: { value: SettingsObject | SettingsValue | null 
         fontSize: 12,
         maxHeight: 600,
         overflow: 'auto',
-        background: 'rgba(0,0,0,0.04)',
+        background: 'hsl(var(--foreground) / 0.04)',
         padding: 12,
         margin: 0,
       }}

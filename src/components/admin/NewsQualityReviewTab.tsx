@@ -93,8 +93,8 @@ function InlineDiff({ before, after }: { before: string; after: string }) {
             <span
               key={i}
               style={{
-                backgroundColor: 'rgba(34,197,94,0.18)',
-                color: 'rgb(21,128,61)',
+                backgroundColor: 'hsl(var(--foreground) / 0.18)',
+                color: 'hsl(var(--foreground))',
                 padding: '0 2px',
               }}
             >
@@ -106,8 +106,8 @@ function InlineDiff({ before, after }: { before: string; after: string }) {
           <span
             key={i}
             style={{
-              backgroundColor: 'rgba(239,68,68,0.18)',
-              color: 'rgb(153,27,27)',
+              backgroundColor: 'hsl(var(--destructive) / 0.18)',
+              color: 'hsl(var(--destructive))',
               textDecoration: 'line-through',
               padding: '0 2px',
             }}
