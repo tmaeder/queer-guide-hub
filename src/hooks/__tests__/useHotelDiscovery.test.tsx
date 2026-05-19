@@ -6,9 +6,32 @@ import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: () => ({ select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }), maybeSingle: () => Promise.resolve({ data: null, error: null }), limit: () => Promise.resolve({ data: [], error: null }) }), order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) }) }) }) },
-}));
+vi.mock('@/integrations/supabase/client', () => {
+  // Chainable Proxy builder — every method returns the same builder, and the
+  // chain itself is thenable so `await supabase.from(...).select(...).x.y.z`
+  // resolves to { data: [], error: null }. Mirrors useMarketplaceRows test.
+  const builder: unknown = new Proxy(
+    {},
+    {
+      get(_t, prop: string) {
+        if (prop === 'then') {
+          return (onFulfilled: (v: { data: unknown[]; error: null }) => unknown) =>
+            Promise.resolve({ data: [], error: null }).then(onFulfilled);
+        }
+        if (prop === 'maybeSingle') {
+          return () => Promise.resolve({ data: null, error: null });
+        }
+        return () => builder;
+      },
+    },
+  );
+  return {
+    supabase: {
+      from: () => builder,
+      rpc: () => Promise.resolve({ data: [], error: null }),
+    },
+  };
+});
 
 import { useFeaturedHotel, useEditorialHotels, useTopHotelCities } from '../useHotelDiscovery';
 
