@@ -63,7 +63,7 @@ export default function Places() {
     canonicalPath: '/places',
   });
   const { countries, loading: countriesLoading, error: countriesError } = useOptimizedCountries();
-  const { cities, loading: citiesLoading, error: citiesError } = useOptimizedCities();
+  const { cities, loading: citiesLoading, error: citiesError } = useOptimizedCities({ limit: 10000 });
   // fetchCitiesByCountry, searchLocations, findNearbyCities imported as standalone functions
   const { villages, loading: villagesLoading } = useQueerVillages(true);
   const loading = countriesLoading || citiesLoading;
