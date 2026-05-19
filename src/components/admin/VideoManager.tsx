@@ -82,11 +82,11 @@ export function VideoManager() {
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'completed': return '#22c55e';
-      case 'processing': return '#eab308';
-      case 'failed': return '#ef4444';
-      case 'uploaded': return '#3b82f6';
-      default: return '#6b7280';
+      case 'completed': return 'hsl(var(--foreground))';
+      case 'processing': return 'hsl(var(--foreground) / 0.55)';
+      case 'failed': return 'hsl(var(--destructive))';
+      case 'uploaded': return 'hsl(var(--muted-foreground))';
+      default: return 'hsl(var(--muted-foreground))';
     }
   };
 

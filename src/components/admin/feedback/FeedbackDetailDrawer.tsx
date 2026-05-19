@@ -133,7 +133,7 @@ export function FeedbackDetailDrawer({
               className="mb-3 flex items-center gap-2"
               style={{
                 padding: 10,
-                borderLeft: '3px solid #6366f1',
+                borderLeft: '3px solid hsl(var(--muted-foreground))',
                 backgroundColor: 'rgba(99, 102, 241, 0.08)',
                 borderRadius: 4,
               }}
@@ -157,7 +157,7 @@ export function FeedbackDetailDrawer({
               className="mb-3 flex items-center gap-2"
               style={{
                 padding: 10,
-                borderLeft: '3px solid #ef4444',
+                borderLeft: '3px solid hsl(var(--destructive))',
                 backgroundColor: 'rgba(239, 68, 68, 0.08)',
                 borderRadius: 4,
               }}
@@ -187,7 +187,7 @@ export function FeedbackDetailDrawer({
               className="mb-3 flex items-center"
               style={{
                 padding: 10,
-                borderLeft: '3px solid #8b5cf6',
+                borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
                 backgroundColor: 'rgba(139, 92, 246, 0.08)',
                 borderRadius: 4,
                 gap: 8,

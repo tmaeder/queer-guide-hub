@@ -89,8 +89,8 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
 
   const downloadTemplate = () => {
     const csvContent = `name,category,description,color
-"Sample Tag","sexual-orientations","Description of the tag","#6366f1"
-"Another Tag","genders","Another description","#10b981"`;
+"Sample Tag","sexual-orientations","Description of the tag","hsl(var(--muted-foreground))"
+"Another Tag","genders","Another description","hsl(var(--foreground))"`;
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -181,9 +181,9 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
               <CardContent>
                 <div className="flex items-center gap-2 mb-3">
                   {importResult.success ? (
-                    <CheckCircle style={{ width: 20, height: 20, color: '#22c55e' }} />
+                    <CheckCircle style={{ width: 20, height: 20, color: 'hsl(var(--foreground))' }} />
                   ) : (
-                    <AlertCircle style={{ width: 20, height: 20, color: '#ef4444' }} />
+                    <AlertCircle style={{ width: 20, height: 20, color: 'hsl(var(--destructive))' }} />
                   )}
                   <p className="text-sm font-semibold">
                     {importResult.success ? 'Import Successful' : 'Import Failed'}

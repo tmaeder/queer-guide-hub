@@ -60,9 +60,9 @@ interface UserDetailSheetProps {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: '#ef4444',
-  moderator: '#f97316',
-  editor: '#3b82f6',
+  admin: 'hsl(var(--destructive))',
+  moderator: 'hsl(var(--foreground) / 0.55)',
+  editor: 'hsl(var(--muted-foreground))',
   contributor: 'hsl(var(--foreground))',
 };
 

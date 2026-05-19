@@ -225,11 +225,11 @@ export function PrivacyControlCenter() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'basic':
-        return <Eye style={{ height: 16, width: 16, color: '#2563eb' }} />;
+        return <Eye style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))' }} />;
       case 'sensitive':
-        return <Shield style={{ height: 16, width: 16, color: '#ea580c' }} />;
+        return <Shield style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.55)' }} />;
       case 'financial':
-        return <Lock style={{ height: 16, width: 16, color: '#dc2626' }} />;
+        return <Lock style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
       default:
         return <Eye style={{ height: 16, width: 16 }} />;
     }
@@ -238,13 +238,13 @@ export function PrivacyControlCenter() {
   const getCategoryBadgeStyle = (category: string): React.CSSProperties => {
     switch (category) {
       case 'basic':
-        return { backgroundColor: '#dbeafe', color: '#1e40af' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' };
       case 'sensitive':
-        return { backgroundColor: '#ffedd5', color: '#9a3412' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' };
       case 'financial':
-        return { backgroundColor: '#fee2e2', color: '#991b1b' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))' };
       default:
-        return { backgroundColor: '#f3f4f6', color: '#1f2937' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' };
     }
   };
 

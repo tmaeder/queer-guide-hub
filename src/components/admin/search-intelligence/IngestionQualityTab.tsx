@@ -44,7 +44,7 @@ const AXIS_LABEL: Record<VisibilityAxis, string> = {
 function ScoreBar({ score }: { score: number }) {
   const pct = Math.round(score * 100);
   const label = scoreLabel(score);
-  const color = label === 'high' ? '#10b981' : label === 'medium' ? '#f59e0b' : '#ef4444';
+  const color = label === 'high' ? 'hsl(var(--foreground))' : label === 'medium' ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
   return (
     <div className="min-w-[80px]">
       <div className="flex items-center gap-2">

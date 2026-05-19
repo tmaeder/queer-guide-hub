@@ -100,7 +100,7 @@ export default function GeoMismatchTab() {
 
   if (rows.length === 0) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af' }}>
+      <div style={{ padding: 32, textAlign: 'center', color: 'hsl(var(--muted-foreground))' }}>
         No geo mismatches pending review.
       </div>
     );
@@ -123,18 +123,18 @@ export default function GeoMismatchTab() {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
                     <Badge>{r.content_type}</Badge>
                     {r.source && <Badge variant="outline">{r.source}</Badge>}
-                    {r.confidence != null && <span style={{ fontSize: 12, color: '#9ca3af' }}>conf {(r.confidence * 100).toFixed(0)}%</span>}
-                    <span style={{ fontSize: 12, color: '#9ca3af' }}>
+                    {r.confidence != null && <span style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>conf {(r.confidence * 100).toFixed(0)}%</span>}
+                    <span style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>
                       {formatDistanceToNow(new Date(r.last_validated_at))} ago
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, color: '#e5e7eb' }}>
+                  <div style={{ fontSize: 13, color: 'hsl(var(--muted))' }}>
                     <strong>Original:</strong> {fmt(r.original_lat)}, {fmt(r.original_lng)}<br />
                     <strong>Validated:</strong> {fmt(r.validated_lat)}, {fmt(r.validated_lng)}
                     {distKm != null && <> &middot; {distKm.toFixed(1)} km apart</>}
                   </div>
-                  {r.geocoded_address && <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>↳ {r.geocoded_address}</div>}
-                  {r.mismatch_details && <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 4 }}>{r.mismatch_details}</div>}
+                  {r.geocoded_address && <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginTop: 4 }}>↳ {r.geocoded_address}</div>}
+                  {r.mismatch_details && <div style={{ fontSize: 12, color: 'hsl(var(--destructive) / 0.5)', marginTop: 4 }}>{r.mismatch_details}</div>}
                 </div>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
                   <Button

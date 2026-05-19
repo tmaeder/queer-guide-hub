@@ -110,7 +110,7 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
               key={idx}
               style={{
                 backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                color: '#dc2626',
+                color: 'hsl(var(--destructive))',
                 textDecoration: 'line-through',
                 borderRadius: '2px',
                 padding: '0 2px',
@@ -126,7 +126,7 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
               key={idx}
               style={{
                 backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                color: '#16a34a',
+                color: 'hsl(var(--foreground))',
                 borderRadius: '2px',
                 padding: '0 2px',
               }}
@@ -224,7 +224,7 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                       border: '1px solid rgba(34, 197, 94, 0.2)',
                     }}
                   >
-                    <span className="block mb-1 text-xs font-semibold" style={{ color: '#16a34a' }}>
+                    <span className="block mb-1 text-xs font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                       Added
                     </span>
                     <div

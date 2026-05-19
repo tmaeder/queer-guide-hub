@@ -132,20 +132,20 @@ export function AutomationDashboard() {
           icon={AlertTriangle}
           label="Pending Review"
           value={stats.pendingFlags}
-          color={stats.pendingFlags > 0 ? '#f59e0b' : undefined}
+          color={stats.pendingFlags > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined}
         />
-        <StatCard icon={CheckCircle2} label="Applied" value={stats.appliedFlags} color="#22c55e" />
+        <StatCard icon={CheckCircle2} label="Applied" value={stats.appliedFlags} color="hsl(var(--foreground))" />
         <StatCard
           icon={Link2}
           label="Dead Links"
           value={stats.deadLinks}
-          color={stats.deadLinks > 0 ? '#ef4444' : undefined}
+          color={stats.deadLinks > 0 ? 'hsl(var(--destructive))' : undefined}
         />
         <StatCard
           icon={MapPin}
           label="Geo Mismatches"
           value={stats.geoMismatches}
-          color={stats.geoMismatches > 0 ? '#f59e0b' : undefined}
+          color={stats.geoMismatches > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined}
         />
         <StatCard icon={BarChart3} label="Total Processed" value={stats.totalProcessed} />
         <StatCard icon={Activity} label="Modules" value={modules.length} />
@@ -177,11 +177,11 @@ export function AutomationDashboard() {
                     <div className="flex items-center gap-4">
                       <div
                         className="p-2 rounded-element flex"
-                        style={{ backgroundColor: mod.is_enabled ? '#dcfce7' : '#f3f4f6' }}
+                        style={{ backgroundColor: mod.is_enabled ? 'hsl(var(--muted))' : 'hsl(var(--muted))' }}
                       >
                         <CategoryIcon
                           size={20}
-                          style={{ color: mod.is_enabled ? '#16a34a' : '#9ca3af' }}
+                          style={{ color: mod.is_enabled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -676,7 +676,7 @@ function FlagDetailDialog({
               <p className="font-semibold text-[0.85rem] mb-1">Current Value</p>
               <div
                 className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
-                style={{ backgroundColor: '#fef2f2' }}
+                style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.current_value, null, 2)}
               </div>
@@ -688,7 +688,7 @@ function FlagDetailDialog({
               <p className="font-semibold text-[0.85rem] mb-1">Suggested Value</p>
               <div
                 className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
-                style={{ backgroundColor: '#f0fdf4' }}
+                style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.suggested_value, null, 2)}
               </div>
@@ -706,7 +706,7 @@ function FlagDetailDialog({
           </Button>
           <Button
             variant="outline"
-            style={{ borderColor: '#ef4444', color: '#ef4444' }}
+            style={{ borderColor: 'hsl(var(--destructive))', color: 'hsl(var(--destructive))' }}
             disabled={isReviewing}
             onClick={() => onReject(flag.id)}
           >

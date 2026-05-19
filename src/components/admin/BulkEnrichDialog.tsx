@@ -201,7 +201,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           {result && !loading && (
             <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
+                <CheckCircle style={{ height: 18, width: 18, color: 'hsl(var(--foreground))' }} />
                 <span className="text-sm font-semibold">Processing Complete</span>
               </div>
 
@@ -213,20 +213,20 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Zap style={{ height: 14, width: 14, color: '#f59e0b' }} />
+                  <Zap style={{ height: 14, width: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
                   <span className="text-sm">
                     <strong>{result.flags_created}</strong> flags created
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle style={{ height: 14, width: 14, color: '#16a34a' }} />
+                  <CheckCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
                   <span className="text-sm">
                     <strong>{result.auto_approved}</strong> auto-approved
                   </span>
                 </div>
                 {result.items_failed > 0 && (
                   <div className="flex items-center gap-1">
-                    <AlertTriangle style={{ height: 14, width: 14, color: '#ef4444' }} />
+                    <AlertTriangle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))' }} />
                     <span className="text-sm">
                       <strong>{result.items_failed}</strong> failed
                     </span>

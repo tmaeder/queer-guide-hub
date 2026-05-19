@@ -125,7 +125,7 @@ export function SideBySideComparison({
           {/* Column Headers */}
           <div className="grid border-b-2 border-border bg-muted" style={gridCols}>
             <div className="p-3 font-semibold text-xs uppercase text-muted-foreground">Field</div>
-            <div className="p-3 font-semibold text-xs uppercase" style={{ color: '#3b82f6' }}>{leftLabel}</div>
+            <div className="p-3 font-semibold text-xs uppercase" style={{ color: 'hsl(var(--muted-foreground))' }}>{leftLabel}</div>
             <div className="p-3 flex items-center justify-center">
               <ArrowRight style={{ width: 14, height: 14 }} className="text-muted-foreground" />
             </div>
@@ -157,7 +157,7 @@ export function SideBySideComparison({
                   className="p-3"
                   style={{
                     cursor: isDiff ? 'pointer' : 'default',
-                    borderLeft: choices[field.key] === 'left' && isDiff ? '3px solid #3b82f6' : '3px solid transparent',
+                    borderLeft: choices[field.key] === 'left' && isDiff ? '3px solid hsl(var(--muted-foreground))' : '3px solid transparent',
                     backgroundColor: choices[field.key] === 'left' && isDiff ? 'hsl(var(--muted))' : 'transparent',
                   }}
                   onClick={() => isDiff && handleChoice(field.key, 'left')}
@@ -185,7 +185,7 @@ export function SideBySideComparison({
                       className="flex items-center justify-center text-white font-bold"
                       style={{
                         width: 20, height: 20, borderRadius: '50%',
-                        backgroundColor: choices[field.key] === 'left' ? '#3b82f6' : 'hsl(var(--foreground))',
+                        backgroundColor: choices[field.key] === 'left' ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
                         fontSize: '0.6rem',
                       }}
                     >
@@ -245,7 +245,7 @@ export function SideBySideComparison({
             </Button>
           )}
           {onMerge && leftId && rightId && (
-            <Button onClick={handleMerge} style={{ display: 'flex', gap: 6, backgroundColor: '#3b82f6', color: 'white' }}>
+            <Button onClick={handleMerge} style={{ display: 'flex', gap: 6, backgroundColor: 'hsl(var(--muted-foreground))', color: 'white' }}>
               <Merge style={{ width: 14, height: 14 }} />
               Merge & Keep Best
             </Button>

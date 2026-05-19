@@ -164,7 +164,7 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
       if (isUrl(value)) {
         return (
           <span className="flex items-center gap-1">
-            <span className="text-sm" style={{ color: '#3b82f6', wordBreak: 'break-all' }}>
+            <span className="text-sm" style={{ color: 'hsl(var(--muted-foreground))', wordBreak: 'break-all' }}>
               {String(value)}
             </span>
             <a
@@ -173,7 +173,7 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
               rel="noopener noreferrer"
               style={{ flexShrink: 0 }}
             >
-              <ExternalLink style={{ width: 12, height: 12, color: '#3b82f6' }} />
+              <ExternalLink style={{ width: 12, height: 12, color: 'hsl(var(--muted-foreground))' }} />
             </a>
           </span>
         );

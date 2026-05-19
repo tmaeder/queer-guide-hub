@@ -46,10 +46,10 @@ const STATUS_BADGE_VARIANT: Record<string, 'default' | 'destructive' | 'secondar
 };
 
 const STATUS_BORDER_COLOR: Record<string, string> = {
-  completed: '#16a34a',
-  failed: '#dc2626',
-  processing: '#ca8a04',
-  no_content: '#6b7280',
+  completed: 'hsl(var(--foreground))',
+  failed: 'hsl(var(--destructive))',
+  processing: 'hsl(var(--foreground) / 0.55)',
+  no_content: 'hsl(var(--muted-foreground))',
 };
 
 function relativeTime(dateStr: string): string {
@@ -140,7 +140,7 @@ export function EmailIngestionsManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Mail style={{ height: 24, width: 24, color: '#ec4899' }} />
+          <Mail style={{ height: 24, width: 24, color: 'hsl(var(--foreground))' }} />
           <div>
             <h6 className="text-base font-semibold">Email Ingestions</h6>
             <p className="text-sm text-muted-foreground">Forwarded emails processed for LGBTQ+ events and venues</p>
@@ -162,19 +162,19 @@ export function EmailIngestionsManager() {
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: '#16a34a' }}>{completedCount}</div>
+            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{completedCount}</div>
             <span className="text-xs text-muted-foreground">Completed</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>{failedCount}</div>
+            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--destructive))' }}>{failedCount}</div>
             <span className="text-xs text-muted-foreground">Failed</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: '#ca8a04' }}>{processingCount}</div>
+            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>{processingCount}</div>
             <span className="text-xs text-muted-foreground">Processing</span>
           </CardContent>
         </Card>
@@ -183,7 +183,7 @@ export function EmailIngestionsManager() {
       {/* Search and filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14, color: '#9ca3af' }} />
+          <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', height: 14, width: 14, color: 'hsl(var(--muted-foreground))' }} />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -229,7 +229,7 @@ export function EmailIngestionsManager() {
             <Collapsible key={ing.id}>
               <Card
                 style={{
-                  borderLeft: `4px solid ${STATUS_BORDER_COLOR[ing.status] || '#6b7280'}`,
+                  borderLeft: `4px solid ${STATUS_BORDER_COLOR[ing.status] || 'hsl(var(--muted-foreground))'}`,
                   transition: 'border-color 0.2s',
                 }}
               >
@@ -331,8 +331,8 @@ export function EmailIngestionsManager() {
                               border: '1px solid rgba(220, 38, 38, 0.2)',
                             }}
                           >
-                            <AlertCircle style={{ height: 14, width: 14, color: '#dc2626', marginTop: 2, flexShrink: 0 }} />
-                            <p className="text-sm break-words" style={{ color: '#dc2626' }}>{ing.error_message}</p>
+                            <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--destructive))', marginTop: 2, flexShrink: 0 }} />
+                            <p className="text-sm break-words" style={{ color: 'hsl(var(--destructive))' }}>{ing.error_message}</p>
                           </div>
                         </div>
                       )}

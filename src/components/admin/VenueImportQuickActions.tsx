@@ -41,11 +41,11 @@ const PROVIDER_ICONS: Record<string, React.ReactNode> = {
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
-  'foursquare': '#3b82f6',
-  'google-places': '#22c55e',
-  'tomtom': '#f97316',
-  'tripadvisor': '#555555',
-  'spartacus': '#a855f7',
+  'foursquare': 'hsl(var(--muted-foreground))',
+  'google-places': 'hsl(var(--foreground))',
+  'tomtom': 'hsl(var(--foreground) / 0.55)',
+  'tripadvisor': 'hsl(var(--muted-foreground))',
+  'spartacus': 'hsl(var(--foreground) / 0.55)',
 };
 
 const SLUG_TO_DATA_SOURCE: Record<string, string> = {
@@ -179,15 +179,15 @@ export const VenueImportQuickActions = () => {
 
   const getStatusIcon = (source: VenueSource) => {
     if (loadingStates[source.slug]) {
-      return <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', color: '#3b82f6' }} />;
+      return <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />;
     }
     if (source.last_error) {
-      return <AlertCircle style={{ width: 16, height: 16, color: '#ef4444' }} />;
+      return <AlertCircle style={{ width: 16, height: 16, color: 'hsl(var(--destructive))' }} />;
     }
     if (source.last_success_at) {
-      return <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />;
+      return <CheckCircle style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />;
     }
-    return <Clock style={{ width: 16, height: 16, color: '#9ca3af' }} />;
+    return <Clock style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />;
   };
 
   const getStatusText = (source: VenueSource) => {
@@ -271,7 +271,7 @@ export const VenueImportQuickActions = () => {
       <div className="flex flex-col gap-6">
         <h5 className="text-xl font-semibold">Venue Imports</h5>
         <div className="flex justify-center p-8">
-          <RefreshCw style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: '#6b7280' }} />
+          <RefreshCw style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: 'hsl(var(--muted-foreground))' }} />
         </div>
       </div>
     );
@@ -297,25 +297,25 @@ export const VenueImportQuickActions = () => {
       <Card>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#eff6ff' }}>
-              <div className="text-xl font-semibold" style={{ color: '#2563eb' }}>{totalVenues.toLocaleString()}</div>
-              <div className="text-xs" style={{ color: '#2563eb' }}>Total Venues</div>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
+              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>{totalVenues.toLocaleString()}</div>
+              <div className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>Total Venues</div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#f0fdf4' }}>
-              <div className="text-xl font-semibold" style={{ color: '#16a34a' }}>{(manualCount + nullCount).toLocaleString()}</div>
-              <div className="text-xs" style={{ color: '#16a34a' }}>Manual / Other</div>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
+              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{(manualCount + nullCount).toLocaleString()}</div>
+              <div className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>Manual / Other</div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#fff7ed' }}>
-              <div className="text-xl font-semibold" style={{ color: '#ea580c' }}>{importedCount.toLocaleString()}</div>
-              <div className="text-xs" style={{ color: '#ea580c' }}>Imported</div>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
+              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>{importedCount.toLocaleString()}</div>
+              <div className="text-xs" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>Imported</div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#faf5ff' }}>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
               <div className="text-xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{activeSources}</div>
               <div className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>Active Sources</div>
             </div>
-            <div className="text-center p-3 rounded-element" style={{ backgroundColor: '#fef2f2' }}>
-              <div className="text-xl font-semibold" style={{ color: '#dc2626' }}>{venueSources.length}</div>
-              <div className="text-xs" style={{ color: '#dc2626' }}>Registered Sources</div>
+            <div className="text-center p-3 rounded-element" style={{ backgroundColor: 'hsl(var(--muted))' }}>
+              <div className="text-xl font-semibold" style={{ color: 'hsl(var(--destructive))' }}>{venueSources.length}</div>
+              <div className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>Registered Sources</div>
             </div>
           </div>
         </CardContent>
@@ -329,7 +329,7 @@ export const VenueImportQuickActions = () => {
         }}
       >
         {venueSources.map((source) => {
-          const color = PROVIDER_COLORS[source.slug] || '#6b7280';
+          const color = PROVIDER_COLORS[source.slug] || 'hsl(var(--muted-foreground))';
           const icon = PROVIDER_ICONS[source.slug] || <Globe style={{ width: 24, height: 24 }} />;
           const venueCount = getSourceVenueCount(source);
 
@@ -375,7 +375,7 @@ export const VenueImportQuickActions = () => {
                     className="p-2 rounded"
                     style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}
                   >
-                    <span className="text-xs" style={{ color: '#dc2626' }}>
+                    <span className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>
                       {source.last_error.slice(0, 80)}{source.last_error.length > 80 ? '...' : ''}
                     </span>
                   </div>
@@ -441,7 +441,7 @@ export const VenueImportQuickActions = () => {
                       style={{
                         width: Math.max(4, (count / totalVenues) * 200),
                         height: 8,
-                        backgroundColor: PROVIDER_COLORS[source] || '#94a3b8',
+                        backgroundColor: PROVIDER_COLORS[source] || 'hsl(var(--muted-foreground))',
                       }}
                     />
                     <p className="text-sm font-semibold text-right" style={{ minWidth: 50 }}>

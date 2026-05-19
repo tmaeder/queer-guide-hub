@@ -41,7 +41,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
               <div
                 key={`${r.at}-${i}`}
                 className="p-2 border-l-[3px] bg-muted rounded"
-                style={{ borderColor: isGithub ? '#6366f1' : 'hsl(var(--foreground))' }}
+                style={{ borderColor: isGithub ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))' }}
               >
                 <div className="flex items-center gap-1 mb-1">
                   <Avatar className="w-[18px] h-[18px]">
@@ -69,12 +69,12 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                         size={11}
                         style={{
                           color: r.bounced_at
-                            ? '#ef4444'
+                            ? 'hsl(var(--destructive))'
                             : r.opened_at
-                              ? '#22c55e'
+                              ? 'hsl(var(--foreground))'
                               : r.delivered_at
-                                ? '#3b82f6'
-                                : '#9ca3af',
+                                ? 'hsl(var(--muted-foreground))'
+                                : 'hsl(var(--muted-foreground))',
                         }}
                         aria-label={
                           r.bounced_at
@@ -90,7 +90,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                   )}
                   {r.email_error && (
                     <span title={r.email_error}>
-                      <AlertTriangle size={11} style={{ color: '#ef4444' }} />
+                      <AlertTriangle size={11} style={{ color: 'hsl(var(--destructive))' }} />
                     </span>
                   )}
                   {r.github_url && (

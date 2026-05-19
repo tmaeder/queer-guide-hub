@@ -344,7 +344,7 @@ export function CMSShell() {
                 return (
                   <div key={i} className="flex items-center">
                     {i > 0 && (
-                      <ChevronRight size={14} style={{ color: '#94a3b8', margin: '0 6px' }} />
+                      <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 6px' }} />
                     )}
                     {isLast ? (
                       <span

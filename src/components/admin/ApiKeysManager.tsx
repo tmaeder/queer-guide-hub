@@ -67,13 +67,13 @@ const PREDEFINED_KEY_NAMES: Record<string, string[]> = {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'configured':
-      return <CheckCircle style={{ width: 18, height: 18, color: '#22c55e' }} />;
+      return <CheckCircle style={{ width: 18, height: 18, color: 'hsl(var(--foreground))' }} />;
     case 'missing':
-      return <XCircle style={{ width: 18, height: 18, color: '#ef4444' }} />;
+      return <XCircle style={{ width: 18, height: 18, color: 'hsl(var(--destructive))' }} />;
     case 'error':
-      return <AlertTriangle style={{ width: 18, height: 18, color: '#f59e0b' }} />;
+      return <AlertTriangle style={{ width: 18, height: 18, color: 'hsl(var(--foreground) / 0.55)' }} />;
     default:
-      return <Key style={{ width: 18, height: 18, color: '#6b7280' }} />;
+      return <Key style={{ width: 18, height: 18, color: 'hsl(var(--muted-foreground))' }} />;
   }
 };
 
@@ -328,27 +328,27 @@ export const ApiKeysManager = () => {
           {/* Status Summary */}
           {requiredKeys.length > 0 && (
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 rounded-element" style={{ background: '#f0fdf4' }}>
-                <div className="text-2xl font-semibold" style={{ color: '#16a34a' }}>
+              <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
+                <div className="text-2xl font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                   {configuredCount}
                 </div>
-                <div className="text-sm" style={{ color: '#16a34a' }}>
+                <div className="text-sm" style={{ color: 'hsl(var(--foreground))' }}>
                   Configured
                 </div>
               </div>
-              <div className="text-center p-4 rounded-element" style={{ background: '#fef2f2' }}>
-                <div className="text-2xl font-semibold" style={{ color: '#dc2626' }}>
+              <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
+                <div className="text-2xl font-semibold" style={{ color: 'hsl(var(--destructive))' }}>
                   {missingCount}
                 </div>
-                <div className="text-sm" style={{ color: '#dc2626' }}>
+                <div className="text-sm" style={{ color: 'hsl(var(--destructive))' }}>
                   Missing
                 </div>
               </div>
-              <div className="text-center p-4 rounded-element" style={{ background: '#fffbeb' }}>
-                <div className="text-2xl font-semibold" style={{ color: '#d97706' }}>
+              <div className="text-center p-4 rounded-element" style={{ background: 'hsl(var(--muted))' }}>
+                <div className="text-2xl font-semibold" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
                   {errorCount}
                 </div>
-                <div className="text-sm" style={{ color: '#d97706' }}>
+                <div className="text-sm" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
                   Errors
                 </div>
               </div>
@@ -398,7 +398,7 @@ export const ApiKeysManager = () => {
                             </p>
                           )}
                           {rk.status === 'error' && rk.hint && (
-                            <p className="text-xs" style={{ color: '#d97706' }}>
+                            <p className="text-xs" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
                               {rk.hint}
                             </p>
                           )}
@@ -457,7 +457,7 @@ export const ApiKeysManager = () => {
                           style={{
                             width: 16,
                             height: 16,
-                            color: key.is_active ? '#22c55e' : '#6b7280',
+                            color: key.is_active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
                           }}
                         />
                         <div>

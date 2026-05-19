@@ -321,19 +321,19 @@ export default function NewsQualityReviewTab() {
 
       {health && (
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-6">
-          <HealthStat label="Passed" value={health.passed} color="#22c55e" />
-          <HealthStat label="Review" value={health.review} color="#f59e0b" />
-          <HealthStat label="Rejected" value={health.rejected} color="#ef4444" />
-          <HealthStat label="Legacy" value={health.legacy_unprocessed} color="#6b7280" />
+          <HealthStat label="Passed" value={health.passed} color="hsl(var(--foreground))" />
+          <HealthStat label="Review" value={health.review} color="hsl(var(--foreground) / 0.55)" />
+          <HealthStat label="Rejected" value={health.rejected} color="hsl(var(--destructive))" />
+          <HealthStat label="Legacy" value={health.legacy_unprocessed} color="hsl(var(--muted-foreground))" />
           <HealthStat
             label="Avg relevance"
             value={health.avg_relevance != null ? fmtPct(health.avg_relevance) : '—'}
-            color="#3b82f6"
+            color="hsl(var(--muted-foreground))"
           />
           <HealthStat
             label="Avg quality"
             value={health.avg_quality_after != null ? fmtPct(health.avg_quality_after) : '—'}
-            color="#3b82f6"
+            color="hsl(var(--muted-foreground))"
           />
         </div>
       )}
