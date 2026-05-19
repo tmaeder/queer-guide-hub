@@ -120,7 +120,7 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 
 - **Color:** strictly monochrome. Black `--foreground: 0 0% 4%`, white `--background: 0 0% 100%`, plus grayscale steps (`--muted`, `--accent`, `--border`). No brand magenta in public UI. ESLint (`no-restricted-syntax`) errors on hex/rgb/hsl literals outside allowlisted files.
 - **Typography:** Inter only. Plus Jakarta Sans removed. Self-hosted woff2 in `public/fonts/inter/`.
-- **Shape:** `--radius: 0` globally (all Tailwind `rounded-*` values override to `'0'` in `tailwind.config.ts`). ESLint warns on `rounded-(sm|md|lg|xl|2xl|3xl)` in new code. `rounded-full` allowed for avatars/dots only.
+- **Shape:** `--radius: 0` globally (Tailwind v4 `@theme` block in `src/index.css` sets `--radius-container/element/badge: 0`). ESLint warns on `rounded-(sm|md|lg|xl|2xl|3xl)` in new code. `rounded-full` allowed for avatars/dots only.
 - **Shadows:** disabled. ESLint warns on `shadow-(md|lg|xl|2xl)`. Use `border` or `bg-muted` for depth.
 - **Gradients:** not allowed in public UI. ESLint warns on `bg-gradient-to-*`. Exception: black readability scrims over images (`from-black/15 to-black/65`).
 - **Icons:** lucide-react only, inherit color from parent.
@@ -130,15 +130,16 @@ LGBTQ+ travelers, locals, activists, researchers, allies. Safety-first, inclusiv
 - Components: shadcn/ui primitives in `src/components/ui/`.
 
 ### Documented exceptions
-- **`--destructive`** token for error/warning semantics (near-black with contextual meaning).
-- **Admin chromatic palette** (`--cat-*` tokens, content-type accents, data-viz) — the only place where multiple hues appear. Files in `src/components/admin/`, `src/components/cms/`, `src/pages/Admin*`, `src/pages/admin/` are exempt from the color-literal ESLint rule. Stay monochrome anywhere a normal user can see.
+- **`--destructive`** token for hard-error semantics (payment declined, pipeline failed, irreversible confirms). Reserved muted red — the ONLY chromatic color in the entire product. User-locked 2026-05-19.
+- **Trip safety briefing traffic-light.** `src/components/trips/TripSafetyBriefing.tsx` retains low/moderate/high/critical risk colors. Safety > consistency for LGBTQ+ travelers in high-risk destinations. User-locked 2026-05-19.
+- **Functional categorical scales** still allowlisted in `eslint.config.js`: map vector tiles, equality scores, news taxonomy, avatar gradients, submission scan flyers, trip cover gradients, content warnings, password strength meter, OAuth brand SVGs. Each is functional, not decorative.
 - **Inline links underlined.** `p a, li a, td a, span a, label a` get `text-decoration: underline` in `src/index.css`. Without color difference from body text, the underline is the only cue that distinguishes a link (WCAG 1.4.1, axe `link-in-text-block`). Standalone links — nav, buttons, cards — stay un-underlined.
 - **Crisis & safety pages are animation-free.** `src/pages/HelpHotlines.tsx` and any future route under `/help`, `/safety`, `/report-*` must not consume Aceternity components, scroll-reveal effects, or decorative motion. Functional motion only (focus rings, dialog transitions, accordions). Protects users in crisis from cognitive overload and respects `prefers-reduced-motion` (WCAG 2.3.3). The Aceternity Showcase (`/aceternity` → §A11y exemption) documents the canonical static pattern.
 - **Semantic radius tokens.** Prefer `rounded-container` (cards, sheets, dialogs), `rounded-element` (buttons, inputs, image frames), `rounded-badge` (chips/pills) over `rounded-(sm|md|lg|xl|2xl|3xl)` literals. All resolve to `0` today; the tokens give us a single point of change. `rounded-full` remains permitted for avatars/dots only.
 
 ### Design System Files
-- Tokens: `src/index.css` (CSS variables)
+- Tokens: `src/index.css` (Tailwind v4 `@theme` block — CSS variables; no `tailwind.config.ts`)
 - Animation: `src/lib/animation.ts` (durations, easings, distances)
-- Layout: `src/lib/sx.ts` (container, center, pageWrapper, stack, row)
-- Components: 52 shadcn/ui components in `src/components/ui/`
-- Enforcement: `eslint.config.js` (color literals, rounded, shadow, gradient rules)
+- Charts: `src/lib/chartPalette.ts` (monochrome recharts palette + stroke patterns; added Phase 3a)
+- Components: 57+ shadcn/ui components in `src/components/ui/` (includes `StatusBadge` for monochrome status semantics)
+- Enforcement: `eslint.config.js` (color literals: error in public, warn in admin → error after Phase 3g; semantic radius warn; admin motion ban error)

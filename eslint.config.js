@@ -112,13 +112,6 @@ export default tseslint.config(
       "src/integrations/supabase/types.ts",
       "src/**/__tests__/**",
       "src/test/**",
-      // Admin status / data-viz dashboards — chromatic by design.
-      "src/components/admin/**",
-      "src/components/cms/**",
-      "src/pages/Admin*.tsx",
-      "src/pages/admin/**",
-      "src/pages/admin-*/**",
-      "src/pages/SecurityDashboard.tsx",
       // Functional color scales (equality score 0–100, SDG indicators).
       "src/utils/equalityScore.ts",
       "src/components/country/LGBTJurisdictionInfo.tsx",
@@ -138,7 +131,6 @@ export default tseslint.config(
       "src/components/map/**",
       "src/components/hotels/HotelsMap.tsx",
       "src/components/events/EventsMapView.tsx",
-      "src/components/security/**",
       // Submission scan results — confidence traffic-light + flyer overlays.
       "src/components/submission/**",
       // Trip cover gradient palette + status badges.
@@ -158,7 +150,6 @@ export default tseslint.config(
       "src/hooks/useReviewBulkActions.ts",
       "src/hooks/useMapBoundaryLayers.ts",
       "src/config/workflowConfig.ts",
-      "src/config/feedbackCategories.ts",
       // Map style — vector tile color overrides, intentional.
       "src/components/trips/TripMap.tsx",
       // External brand SVGs (Google OAuth icon — locked color).
@@ -182,7 +173,6 @@ export default tseslint.config(
       "src/components/profile/PhotoGallery.tsx",
       "src/components/analytics/UmamiAnalyticsDashboard.tsx",
       "src/components/resources/TagListRenderer.tsx",
-      "src/config/contentTypes/**",
       // Hero / cover overlays — pre-multiplied black gradients on imagery.
       "src/pages/Ressources.tsx",
       "src/components/location/LocationInfo.tsx",
@@ -199,6 +189,35 @@ export default tseslint.config(
       ],
     },
   },
+
+  // Phase 0 (2026-05-19) — admin chromatic exemption REMOVED. Admin/cms violations
+  // surface as warnings here; Phase 3g flips to error after the chromatic sweep.
+  {
+    files: [
+      "src/components/admin/**/*.{ts,tsx}",
+      "src/components/cms/**/*.{ts,tsx}",
+      "src/components/security/**/*.{ts,tsx}",
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**/*.{ts,tsx}",
+      "src/pages/admin-*/**/*.{ts,tsx}",
+      "src/pages/SecurityDashboard.tsx",
+      "src/config/feedbackCategories.ts",
+      "src/config/contentTypes/**",
+    ],
+    ignores: ["src/**/__tests__/**", "src/test/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector:
+            "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
+          message:
+            "Admin chromatic exemption was removed 2026-05-19 (refactor/monochrome-2026). Use design tokens or <StatusBadge>.",
+        },
+      ],
+    },
+  },
+
   // P5 RETIRED — rounded / shadow / gradient classes are allowed again
   // in non-admin code as part of the Aceternity-inspired UI overhaul.
   // Color-literal ban above still enforces strict monochrome.
@@ -249,7 +268,7 @@ export default tseslint.config(
     ],
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
           paths: [
             { name: "framer-motion", message: "Admin tree is motion-free (Cluster 3). Remove decorative motion." },
@@ -258,6 +277,7 @@ export default tseslint.config(
           patterns: [
             { group: ["@/components/effects/*"], message: "Aceternity effect components are not allowed in the admin tree (Cluster 3)." },
             { group: ["@/components/animation/*"], message: "Decorative animation wrappers are not allowed in the admin tree (Cluster 3)." },
+            { group: ["@/components/motion/*"], message: "Decorative motion wrappers are not allowed in the admin tree (Cluster 3)." },
           ],
         },
       ],
