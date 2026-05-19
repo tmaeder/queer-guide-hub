@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { type CentralizedTag } from '@/hooks/useCentralizedTags';
 import { RelatedTagsCard } from '@/components/tags/RelatedTagsCard';
 import { TagLinkedContent } from '@/components/tags/TagLinkedContent';
@@ -27,6 +28,7 @@ export function ResourceTagDetail({
   onSetSelectedSubcategory,
   onTagClick,
 }: ResourceTagDetailProps) {
+  const { t } = useTranslation();
   const safeMode = useSafeMode();
   const ageAffirmation = useAgeAffirmation();
 
@@ -60,7 +62,7 @@ export function ResourceTagDetail({
           className="inline-flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
         >
           <ArrowLeft style={{ width: 14, height: 14 }} />
-          <span className="text-sm">Resources</span>
+          <span className="text-sm">{t('resources.tagDetail.breadcrumbHome')}</span>
         </button>
         {parentName && (
           <>
@@ -146,7 +148,7 @@ export function ResourceTagDetail({
         </p>
       ) : (
         <p className="text-muted-foreground mb-6 italic" style={{ fontSize: '0.85rem', opacity: 0.6 }}>
-          No definition yet for this term.
+          {t('resources.tagDetail.noDefinition')}
         </p>
       )}
 

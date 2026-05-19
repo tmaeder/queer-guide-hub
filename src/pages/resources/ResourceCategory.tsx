@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { type CentralizedTag, type CategoryTreeNode } from '@/hooks/useCentralizedTags';
 import { TagListRenderer } from '@/components/resources/TagListRenderer';
 import {
@@ -33,6 +34,7 @@ export function ResourceCategory({
   onBack,
   onSelectSubcategory,
 }: ResourceCategoryProps) {
+  const { t } = useTranslation();
   const renderTagList = (tags: CentralizedTag[]) => (
     <TagListRenderer
       tags={tags}
@@ -50,7 +52,7 @@ export function ResourceCategory({
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
-          Back
+          {t('resources.category.back')}
         </Button>
         {(() => {
           const Icon = getCategoryIcon(selectedCategory);
@@ -67,11 +69,11 @@ export function ResourceCategory({
         <Alert className="mb-6">
           <AlertTriangle size={20} />
           <AlertDescription className="flex items-center justify-between gap-4 flex-wrap">
-            <span>Need immediate help? Browse our curated crisis hotlines directory.</span>
+            <span>{t('resources.category.supportNewsAlert')}</span>
             <Button asChild variant="outline" size="sm">
               <LocalizedLink to="/help">
                 <Phone size={14} className="mr-1" />
-                Crisis Hotlines
+                {t('resources.category.crisisHotlines')}
               </LocalizedLink>
             </Button>
           </AlertDescription>
@@ -92,8 +94,8 @@ export function ResourceCategory({
           ) : (
             <EmptyState
               icon={Tag}
-              title="No tags in this category yet"
-              description="Check back soon — this bucket is being filled."
+              title={t('resources.category.emptyTitle')}
+              description={t('resources.category.emptyDescription')}
               mood="encouraging"
             />
           );
@@ -121,7 +123,7 @@ export function ResourceCategory({
                       {getCategoryShortName(child.name)}
                     </p>
                     <span className="text-xs text-muted-foreground">
-                      {isEmpty ? 'Coming soon' : `${child.tag_count} tags`}
+                      {isEmpty ? t('resources.category.comingSoon') : t('resources.category.tagCount', { count: child.tag_count })}
                     </span>
                   </div>
                   {!isEmpty && (
@@ -153,7 +155,7 @@ export function ResourceCategory({
                     onClick={() => onSelectSubcategory(child.name)}
                     className="bg-transparent border-0 cursor-pointer p-0 text-primary text-xs hover:underline"
                   >
-                    View all →
+                    {t('resources.category.viewAll')}
                   </button>
                 </div>
                 {renderTagList(childTags)}
@@ -187,6 +189,7 @@ export function ResourceSubcategory({
   onBack,
   onNavigateToParent,
 }: ResourceSubcategoryProps) {
+  const { t } = useTranslation();
   const parent = categoriesTree.find((c) =>
     c.children.some((ch) => ch.name === selectedSubcategory),
   );
@@ -200,7 +203,7 @@ export function ResourceSubcategory({
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
-          Back
+          {t('resources.category.back')}
         </Button>
         {parent && (
           <button
@@ -225,8 +228,8 @@ export function ResourceSubcategory({
       ) : (
         <EmptyState
           icon={Tag}
-          title="No tags here yet"
-          description="This subcategory is being populated."
+          title={t('resources.category.subcategoryEmptyTitle')}
+          description={t('resources.category.subcategoryEmptyDescription')}
           mood="encouraging"
         />
       )}

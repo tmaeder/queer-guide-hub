@@ -1882,5 +1882,132 @@
       "linkCopiedDescription": "Já podes colá-lo",
       "shareFailed": "Falha ao partilhar"
     }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "Ajuda",
+      "title": "Ajuda e recursos.",
+      "lede": "Apoio em crise, guias práticos, e as pessoas e organizações por trás."
+    },
+    "errorLoading": "Algo deu errado ao carregar. Tenta de novo mais tarde.",
+    "disclosure": "Todos os temas e busca",
+    "disclosureAria": "Todos os temas, busca e filtros avançados",
+    "browseAllTopics": "Todos os temas",
+    "professions": {
+      "title": "Profissões",
+      "description": "Personalidades LGBTQ+ por profissão",
+      "back": "Voltar"
+    },
+    "category": {
+      "back": "Voltar",
+      "viewAll": "Ver todos →",
+      "comingSoon": "Em breve",
+      "tagCount": "{{count}} tags",
+      "tagCountTotal": "{{count}} tags no total (em todas as subcategorias)",
+      "tagCountTotalAria": "{{count}} tags no total em todas as subcategorias",
+      "totalChildHint": "O número de cada subcategoria mostra os tags atribuídos diretamente",
+      "supportNewsAlert": "Precisa de ajuda imediata? Consulta o diretório de linhas de crise.",
+      "crisisHotlines": "Linhas de crise",
+      "emptyTitle": "Ainda sem tags nesta categoria",
+      "emptyDescription": "Volta em breve — está a ser preenchida.",
+      "subcategoryEmptyTitle": "Ainda sem tags aqui",
+      "subcategoryEmptyDescription": "Esta subcategoria está a ser preenchida."
+    },
+    "crisis": {
+      "heading": "Crise e segurança",
+      "badge": "Grátis, anónimo",
+      "chooseCountryAria": "Escolher país",
+      "callEmergencyPrefix": "Em perigo imediato? Liga para ",
+      "callEmergencySuffix": " ({{country}}).",
+      "callEmergencySuffixInt": ".",
+      "noLocal": "Ainda sem linhas para {{country}} — a mostrar internacionais.",
+      "callAria": "Ligar para {{name}} no {{phone}}",
+      "noHotlinesLoaded": "Ainda sem linhas carregadas.",
+      "listAria": "Linhas de crise",
+      "seeAll": "Ver todas as linhas"
+    },
+    "topicHubs": {
+      "heading": "Temas"
+    },
+    "topic": {
+      "back": "Recursos",
+      "notFound": "Tema não encontrado",
+      "backToResources": "Voltar aos recursos",
+      "metaSuffix": "Recursos",
+      "metaNotFound": "Tema não encontrado",
+      "stats": "{{guides}} guias · {{orgs}} orgs · {{news}} artigos",
+      "guidesHeading": "Guias",
+      "guidesEmpty": "Ainda sem guias publicados para este tema.",
+      "orgsHeading": "Organizações",
+      "orgsEmpty": "Ainda sem organizações para este tema.",
+      "newsHeading": "Notícias recentes",
+      "newsEmpty": "Ainda sem artigos recentes sobre este tema.",
+      "moreTopics": "Mais temas"
+    },
+    "orgs": {
+      "heading": "Organizações de apoio",
+      "filterAria": "Filtrar organizações por país",
+      "noLocal": "Ainda sem organizações em {{country}} — a mostrar globais.",
+      "browseAll": "Ver todas as organizações",
+      "emptyPrefix": "Ainda sem organizações de apoio. Submete uma pela extensão Chrome ou ",
+      "emptyLink": "fala connosco",
+      "emptySuffix": "."
+    },
+    "filter": {
+      "searchPlaceholder": "Procurar tags, categorias, descrições…",
+      "searchAria": "Procurar nos recursos",
+      "filterAria": "Filtrar por categoria",
+      "categoryPlaceholder": "Categoria",
+      "allCategories": "Todas as categorias",
+      "sortAria": "Ordenar por",
+      "sortPlaceholder": "Ordenar por",
+      "sortMostUsed": "Mais usados",
+      "sortAlphabetical": "Alfabético",
+      "sortNewest": "Mais recentes",
+      "advanced": "Avançado",
+      "usageAria": "Filtrar por uso",
+      "usagePlaceholder": "Uso",
+      "usageAll": "Todos os tags",
+      "usageUsed": "Usados",
+      "usageUnused": "Não usados",
+      "hasImage": "Com imagem",
+      "hasImageTitle": "Mostrar só tags com imagem",
+      "sortDirAsc": "Ordem crescente",
+      "sortDirDesc": "Ordem decrescente",
+      "active": "Ativo:",
+      "clearAll": "Limpar tudo",
+      "view": {
+        "chips": "Chips",
+        "grid": "Grelha",
+        "list": "Lista",
+        "ariaSuffix": " vista"
+      },
+      "graph": "Grafo de relações"
+    },
+    "search": {
+      "resultsHeading": "Resultados",
+      "categoryTagsHeading": "Tags {{category}}",
+      "filteredHeading": "Tags filtrados",
+      "countBadge": "{{visible}} de {{total}}",
+      "countAria": "{{count}} tags correspondentes",
+      "showMore": "Mostrar mais {{count}}",
+      "empty": {
+        "title": "Sem resultados",
+        "description": "Tenta uma busca mais ampla ou remove os filtros."
+      }
+    },
+    "tagNotFound": {
+      "title": "Tag não encontrado",
+      "bodyPrefix": "Não encontrámos um tag para ",
+      "browse": "Ver todos os recursos"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "Recursos",
+      "noDefinition": "Ainda sem definição para este termo."
+    },
+    "graph": {
+      "title": "Grafo de relações",
+      "description": "Como os tags se relacionam por semelhança semântica e co-ocorrência"
+    }
   }
 }

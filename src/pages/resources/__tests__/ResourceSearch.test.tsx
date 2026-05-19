@@ -13,6 +13,23 @@ vi.mock('@/components/resources/categoryMeta', () => ({
 vi.mock('@/components/ui/EmptyState', () => ({
   EmptyState: (p: { title: string }) => <div>{p.title}</div>,
 }));
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, unknown>) => {
+      const map: Record<string, string> = {
+        'resources.search.resultsHeading': 'Search results',
+        'resources.search.categoryTagsHeading': `${opts?.category} tags`,
+        'resources.search.filteredHeading': 'Filtered tags',
+        'resources.search.empty.title': 'No results',
+        'resources.search.empty.description': 'Try a broader query or clearing your filters.',
+        'resources.search.countBadge': `${opts?.visible} of ${opts?.total}`,
+        'resources.search.countAria': `${opts?.count} matching tags`,
+        'resources.search.showMore': `Show ${opts?.count} more`,
+      };
+      return map[key] ?? key;
+    },
+  }),
+}));
 
 import { ResourceSearch } from '../ResourceSearch';
 

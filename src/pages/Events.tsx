@@ -135,7 +135,6 @@ const Events = () => {
     lat: number;
     lng: number;
   } | null>(null);
-  const [, setLocationLoading] = useState(false);
   const [autoLocationLabel, setAutoLocationLabel] = useState<string | null>(null);
   const { location: visitorLocation } = useVisitorLocation();
   const [page, setPage] = useState(1);
@@ -225,7 +224,6 @@ const Events = () => {
 
   const handleNearMe = async () => {
     if (!nearMe) {
-      setLocationLoading(true);
       try {
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -258,8 +256,6 @@ const Events = () => {
           description: t('pages.events.locationErrorDesc', 'Unable to get your location. Please allow location access.'),
           variant: 'destructive',
         });
-      } finally {
-        setLocationLoading(false);
       }
     } else {
       setNearMe(false);

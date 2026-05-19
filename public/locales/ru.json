@@ -1510,7 +1510,20 @@
       "sort": {
         "dateAsc": "[RU] Soonest first",
         "dateDesc": "[RU] Latest first"
-      }
+      },
+      "searchLabel": "Поиск мероприятий",
+      "searchPlaceholder": "Поиск мероприятий, городов, организаторов",
+      "filters": "Фильтры",
+      "viewMode": "Режим просмотра",
+      "resultsCount_one": "{{count}} мероприятие",
+      "resultsCount_other": "{{count}} мероприятия",
+      "resultsNear_one": "{{count}} мероприятие рядом с {{city}}",
+      "resultsNear_other": "{{count}} мероприятия рядом с {{city}}",
+      "showWorldwide": "Показать по всему миру",
+      "resultsCount_few": "{{count}} мероприятия",
+      "resultsCount_many": "{{count}} мероприятий",
+      "resultsNear_few": "{{count}} мероприятия рядом с {{city}}",
+      "resultsNear_many": "{{count}} мероприятий рядом с {{city}}"
     },
     "eventDetail": {
       "loadFailed": "Не удалось загрузить информацию о мероприятии.",
@@ -1841,6 +1854,133 @@
       "linkCopied": "Ссылка скопирована",
       "linkCopiedDescription": "Теперь её можно вставить",
       "shareFailed": "Не удалось поделиться"
+    }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "Помощь",
+      "title": "Помощь и ресурсы.",
+      "lede": "Кризисная поддержка, практические гиды, и люди и организации, стоящие за ними."
+    },
+    "errorLoading": "Ошибка загрузки ресурсов. Попробуй позже.",
+    "disclosure": "Все темы и поиск",
+    "disclosureAria": "Все темы, поиск и расширенные фильтры",
+    "browseAllTopics": "Все темы",
+    "professions": {
+      "title": "Профессии",
+      "description": "ЛГБТК+ персоналии по профессии",
+      "back": "Назад"
+    },
+    "category": {
+      "back": "Назад",
+      "viewAll": "Смотреть все →",
+      "comingSoon": "Скоро",
+      "tagCount": "{{count}} тегов",
+      "tagCountTotal": "{{count}} тегов всего (по всем подкатегориям)",
+      "tagCountTotalAria": "{{count}} тегов всего по всем подкатегориям",
+      "totalChildHint": "Число у каждой подкатегории — это теги, назначенные напрямую",
+      "supportNewsAlert": "Нужна срочная помощь? Открой каталог кризисных линий.",
+      "crisisHotlines": "Кризисные линии",
+      "emptyTitle": "Пока нет тегов в этой категории",
+      "emptyDescription": "Загляни позже — она заполняется.",
+      "subcategoryEmptyTitle": "Пока нет тегов",
+      "subcategoryEmptyDescription": "Подкатегория заполняется."
+    },
+    "crisis": {
+      "heading": "Кризис и безопасность",
+      "badge": "Бесплатно, анонимно",
+      "chooseCountryAria": "Выбрать страну",
+      "callEmergencyPrefix": "Опасность сейчас? Звони ",
+      "callEmergencySuffix": " ({{country}}).",
+      "callEmergencySuffixInt": ".",
+      "noLocal": "Пока нет линий для {{country}} — показываем международные.",
+      "callAria": "Позвонить {{name}} по {{phone}}",
+      "noHotlinesLoaded": "Линии ещё не загружены.",
+      "listAria": "Кризисные линии",
+      "seeAll": "Все линии"
+    },
+    "topicHubs": {
+      "heading": "Темы"
+    },
+    "topic": {
+      "back": "Ресурсы",
+      "notFound": "Тема не найдена",
+      "backToResources": "К ресурсам",
+      "metaSuffix": "Ресурсы",
+      "metaNotFound": "Тема не найдена",
+      "stats": "{{guides}} гидов · {{orgs}} орг. · {{news}} статей",
+      "guidesHeading": "Гиды",
+      "guidesEmpty": "Пока нет опубликованных гидов по этой теме.",
+      "orgsHeading": "Организации",
+      "orgsEmpty": "Пока нет организаций по этой теме.",
+      "newsHeading": "Свежие новости",
+      "newsEmpty": "Пока нет свежих статей по этой теме.",
+      "moreTopics": "Ещё темы"
+    },
+    "orgs": {
+      "heading": "Организации поддержки",
+      "filterAria": "Фильтр по стране",
+      "noLocal": "Пока нет организаций в {{country}} — показываем глобальные.",
+      "browseAll": "Все организации",
+      "emptyPrefix": "Пока нет организаций поддержки. Отправь через расширение Chrome или ",
+      "emptyLink": "напиши нам",
+      "emptySuffix": "."
+    },
+    "filter": {
+      "searchPlaceholder": "Поиск тегов, категорий, описаний…",
+      "searchAria": "Поиск ресурсов",
+      "filterAria": "Фильтр по категории",
+      "categoryPlaceholder": "Категория",
+      "allCategories": "Все категории",
+      "sortAria": "Сортировка",
+      "sortPlaceholder": "Сортировка",
+      "sortMostUsed": "Популярные",
+      "sortAlphabetical": "По алфавиту",
+      "sortNewest": "Новые",
+      "advanced": "Расширенный",
+      "usageAria": "Фильтр по использованию",
+      "usagePlaceholder": "Использование",
+      "usageAll": "Все теги",
+      "usageUsed": "Используются",
+      "usageUnused": "Не используются",
+      "hasImage": "С картинкой",
+      "hasImageTitle": "Показывать только теги с картинкой",
+      "sortDirAsc": "По возрастанию",
+      "sortDirDesc": "По убыванию",
+      "active": "Активно:",
+      "clearAll": "Очистить всё",
+      "view": {
+        "chips": "Чипы",
+        "grid": "Сетка",
+        "list": "Список",
+        "ariaSuffix": " — вид"
+      },
+      "graph": "Граф связей"
+    },
+    "search": {
+      "resultsHeading": "Результаты поиска",
+      "categoryTagsHeading": "Теги {{category}}",
+      "filteredHeading": "Отфильтрованные теги",
+      "countBadge": "{{visible}} из {{total}}",
+      "countAria": "{{count}} подходящих тегов",
+      "showMore": "Показать ещё {{count}}",
+      "empty": {
+        "title": "Ничего не найдено",
+        "description": "Попробуй более широкий запрос или сбрось фильтры."
+      }
+    },
+    "tagNotFound": {
+      "title": "Тег не найден",
+      "bodyPrefix": "Тег не найден для ",
+      "browse": "Все ресурсы"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "Ресурсы",
+      "noDefinition": "Пока нет описания для этого термина."
+    },
+    "graph": {
+      "title": "Граф связей тегов",
+      "description": "Как теги связаны по семантическому сходству и совместной встречаемости"
     }
   }
 }

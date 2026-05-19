@@ -21,19 +21,13 @@ vi.mock('@/hooks/useRecommendations', () => ({ useRecommendations: useRecsMock }
 vi.mock('@/hooks/useLocalizedNavigate', () => ({
   useLocalizedNavigate: () => navigateMock,
 }));
-vi.mock('@/hooks/useActiveTrip', () => ({
-  useActiveTrip: () => ({
-    activeTrip: null,
-    setActiveTripId: vi.fn(),
-    dismiss: vi.fn(),
-    undismiss: vi.fn(),
-    isDismissed: false,
-    candidateTrips: [],
-  }),
+vi.mock('@/hooks/useMeaningfulTrips', () => ({
+  useHasMeaningfulActiveTrip: () => hasActiveTripMock(),
+  usePrimaryMeaningfulTrip: () => null,
+  useMeaningfulTrips: () => [],
 }));
 vi.mock('@/components/travel/ResumeTripStrip', () => ({
   ResumeTripStrip: () => <div data-testid="resume" />,
-  useHasMeaningfulActiveTrip: () => hasActiveTripMock(),
 }));
 vi.mock('@/components/travel/StartTripHero', () => ({ StartTripHero: () => <div data-testid="hero" /> }));
 vi.mock('@/components/travel/PrideScroller', () => ({ PrideScroller: () => <div data-testid="pride" /> }));

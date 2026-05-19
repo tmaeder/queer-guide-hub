@@ -34,7 +34,7 @@ vi.mock('@/components/routing/LocalizedLink', () => ({
   ),
 }));
 
-import { ResumeTripStrip, useHasMeaningfulActiveTrip } from '../ResumeTripStrip';
+import { ResumeTripStrip } from '../ResumeTripStrip';
 
 const baseTrip = (overrides: Partial<TripListItem>): TripListItem => ({
   id: 't1',
@@ -124,33 +124,3 @@ describe('ResumeTripStrip', () => {
   });
 });
 
-describe('useHasMeaningfulActiveTrip', () => {
-  beforeEach(() => {
-    useTripsMock.mockReset();
-    useAuthMock.mockReset();
-  });
-
-  function Probe() {
-    return <span data-testid="probe">{String(useHasMeaningfulActiveTrip())}</span>;
-  }
-
-  it('returns false when no meaningful trips', () => {
-    useAuthMock.mockReturnValue({ user: { id: 'u1' } });
-    useTripsMock.mockReturnValue({
-      data: [baseTrip({ title: 'Trip to Berlin', primary_city_name: 'Berlin' })],
-      isLoading: false,
-    });
-    render(<Probe />);
-    expect(screen.getByTestId('probe')).toHaveTextContent('false');
-  });
-
-  it('returns true when there is at least one meaningful trip', () => {
-    useAuthMock.mockReturnValue({ user: { id: 'u1' } });
-    useTripsMock.mockReturnValue({
-      data: [baseTrip({ place_count: 1 })],
-      isLoading: false,
-    });
-    render(<Probe />);
-    expect(screen.getByTestId('probe')).toHaveTextContent('true');
-  });
-});

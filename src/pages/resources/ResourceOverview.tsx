@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { type CentralizedTag, type CategoryTreeNode } from '@/hooks/useCentralizedTags';
 import {
   getCategoryIcon,
@@ -23,9 +24,10 @@ export function ResourceOverview({
   professionCount,
   onShowProfessions,
 }: ResourceOverviewProps) {
+  const { t } = useTranslation();
   return (
     <div>
-      <h2 className="text-base font-semibold mb-4">Browse all topics</h2>
+      <h2 className="text-base font-semibold mb-4">{t('resources.browseAllTopics')}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {orderedParents.map((cat) => {
           const Icon = getCategoryIcon(cat.name);
@@ -46,8 +48,8 @@ export function ResourceOverview({
                 </div>
                 <Badge
                   variant="secondary"
-                  title={`${cat.total_tag_count} tags total (across all subcategories)`}
-                  aria-label={`${cat.total_tag_count} tags total across all subcategories`}
+                  title={t('resources.category.tagCountTotal', { count: cat.total_tag_count })}
+                  aria-label={t('resources.category.tagCountTotalAria', { count: cat.total_tag_count })}
                 >
                   {cat.total_tag_count}
                 </Badge>
@@ -62,7 +64,7 @@ export function ResourceOverview({
                     WebkitBoxOrient: 'vertical',
                     lineHeight: 1.4,
                   }}
-                  title="Each subcategory's count is the number of tags directly assigned to it"
+                  title={t('resources.category.totalChildHint')}
                 >
                   {activeChildren
                     .map((c) => `${getCategoryShortName(c.name)} (${c.tag_count})`)
@@ -81,13 +83,13 @@ export function ResourceOverview({
             <div className="flex items-center gap-2">
               <Briefcase style={{ width: 18, height: 18, opacity: 0.75 }} />
               <span className="font-semibold" style={{ fontSize: '0.9rem' }}>
-                Professions
+                {t('resources.professions.title')}
               </span>
             </div>
             <Badge variant="secondary">{professionCount}</Badge>
           </div>
           <span className="text-xs text-muted-foreground" style={{ fontSize: '0.7rem', lineHeight: 1.4 }}>
-            Browse LGBTQ+ personalities by profession
+            {t('resources.professions.description')}
           </span>
         </button>
       </div>

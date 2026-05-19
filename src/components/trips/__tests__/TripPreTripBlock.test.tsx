@@ -9,9 +9,6 @@ vi.mock('@/hooks/useTripReservations', () => ({
   useTripReservations: () => ({ data: [], isLoading: false }),
   useReservationMutations: () => ({ create: vi.fn(), update: vi.fn(), remove: vi.fn(), isPending: false }),
 }));
-vi.mock('@/hooks/useTripInbox', () => ({
-  useTripInbox: () => ({ data: [], isLoading: false }),
-}));
 vi.mock('../AddReservationDialog', () => ({ AddReservationDialog: () => null }));
 vi.mock('../TripBookingInbox', () => ({ TripBookingInbox: () => null }));
 
@@ -21,9 +18,9 @@ const trip = { id: 't1', title: 'X', start_date: '2026-06-01', end_date: '2026-0
 
 describe('TripPreTripBlock', () => {
   it('renders without crashing', () => {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { container } = render(
-      <QueryClientProvider client={client}>
+      <QueryClientProvider client={qc}>
         <TripPreTripBlock trip={trip} />
       </QueryClientProvider>,
     );

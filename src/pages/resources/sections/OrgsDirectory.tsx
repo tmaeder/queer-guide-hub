@@ -4,6 +4,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useSupportOrgs } from '@/hooks/useResourceTopic';
 import { VenueCard } from '@/components/venues/VenueCard';
@@ -27,6 +28,7 @@ const COUNTRY_CODE_TO_NAME: Record<string, string> = {
 const MAX = 8;
 
 export function OrgsDirectory() {
+  const { t } = useTranslation();
   const { country, setCountry } = useUserCountry();
 
   const { data: venues = [], isLoading } = useSupportOrgs();
@@ -51,11 +53,11 @@ export function OrgsDirectory() {
       <header className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
           <Building2 aria-hidden style={{ width: 18, height: 18 }} />
-          <h2 id="orgs-heading" className="text-base font-semibold">Support organisations</h2>
+          <h2 id="orgs-heading" className="text-base font-semibold">{t('resources.orgs.heading')}</h2>
         </div>
         <div className="ml-auto">
           <Select value={country} onValueChange={setCountry}>
-            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label="Filter organisations by country">
+            <SelectTrigger className="h-8 w-[170px] text-xs" aria-label={t('resources.orgs.filterAria')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -71,7 +73,7 @@ export function OrgsDirectory() {
 
       {fellBackToGlobal && countryName && (
         <p className="text-xs text-muted-foreground mb-3">
-          No organisations in {countryName} indexed yet — showing global.
+          {t('resources.orgs.noLocal', { country: countryName })}
         </p>
       )}
 
@@ -81,8 +83,9 @@ export function OrgsDirectory() {
         </div>
       ) : filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No support organisations indexed yet. Submit one via the Chrome extension or{' '}
-          <LocalizedLink to="/contact" className="underline">get in touch</LocalizedLink>.
+          {t('resources.orgs.emptyPrefix')}
+          <LocalizedLink to="/contact" className="underline">{t('resources.orgs.emptyLink')}</LocalizedLink>
+          {t('resources.orgs.emptySuffix')}
         </p>
       ) : (
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -98,7 +101,7 @@ export function OrgsDirectory() {
         to="/venues?category=community_center"
         className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
       >
-        Browse all organisations
+        {t('resources.orgs.browseAll')}
         <ChevronRight aria-hidden style={{ width: 14, height: 14 }} />
       </LocalizedLink>
     </section>

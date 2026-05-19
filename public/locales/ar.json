@@ -1482,7 +1482,16 @@
       "sort": {
         "dateAsc": "[AR] Soonest first",
         "dateDesc": "[AR] Latest first"
-      }
+      },
+      "searchLabel": "البحث عن الأحداث",
+      "searchPlaceholder": "ابحث عن الأحداث والمدن والمنظمين",
+      "filters": "فلاتر",
+      "viewMode": "وضع العرض",
+      "resultsCount_one": "حدث {{count}}",
+      "resultsCount_other": "{{count}} حدث",
+      "resultsNear_one": "حدث {{count}} بالقرب من {{city}}",
+      "resultsNear_other": "{{count}} حدث بالقرب من {{city}}",
+      "showWorldwide": "عرض حول العالم"
     },
     "eventDetail": {
       "loadFailed": "تعذّر تحميل تفاصيل الفعالية.",
@@ -1813,6 +1822,133 @@
       "linkCopied": "تم نسخ الرابط",
       "linkCopiedDescription": "يمكنك لصقه الآن",
       "shareFailed": "فشل في المشاركة"
+    }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "الدعم",
+      "title": "المساعدة والموارد.",
+      "lede": "دعم في الأزمات، أدلة عملية، والأشخاص والمنظمات وراء كل ذلك."
+    },
+    "errorLoading": "حدث خطأ أثناء تحميل الموارد. حاول لاحقاً.",
+    "disclosure": "جميع المواضيع والبحث",
+    "disclosureAria": "جميع المواضيع، البحث، والمرشحات المتقدمة",
+    "browseAllTopics": "جميع المواضيع",
+    "professions": {
+      "title": "المهن",
+      "description": "تصفّح شخصيات LGBTQ+ حسب المهنة",
+      "back": "رجوع"
+    },
+    "category": {
+      "back": "رجوع",
+      "viewAll": "عرض الكل ←",
+      "comingSoon": "قريباً",
+      "tagCount": "{{count}} وسم",
+      "tagCountTotal": "{{count}} وسم إجمالاً (في جميع الفئات الفرعية)",
+      "tagCountTotalAria": "{{count}} وسم إجمالاً في جميع الفئات الفرعية",
+      "totalChildHint": "العدد لكل فئة فرعية هو عدد الوسوم المُسندة مباشرة",
+      "supportNewsAlert": "تحتاج مساعدة فورية؟ تصفّح دليل خطوط الأزمات.",
+      "crisisHotlines": "خطوط الأزمات",
+      "emptyTitle": "لا توجد وسوم بعد في هذه الفئة",
+      "emptyDescription": "تفقّد لاحقاً — يتم تعبئتها.",
+      "subcategoryEmptyTitle": "لا توجد وسوم هنا بعد",
+      "subcategoryEmptyDescription": "هذه الفئة الفرعية يتم تعبئتها."
+    },
+    "crisis": {
+      "heading": "الأزمة والسلامة",
+      "badge": "مجاني، مجهول",
+      "chooseCountryAria": "اختر البلد",
+      "callEmergencyPrefix": "في خطر فوري؟ اتصل بـ ",
+      "callEmergencySuffix": " ({{country}}).",
+      "callEmergencySuffixInt": ".",
+      "noLocal": "لا توجد خطوط مفهرسة لـ {{country}} بعد — عرض الخطوط الدولية.",
+      "callAria": "اتصل بـ {{name}} على {{phone}}",
+      "noHotlinesLoaded": "لم يتم تحميل الخطوط بعد.",
+      "listAria": "خطوط الأزمات",
+      "seeAll": "عرض جميع الخطوط"
+    },
+    "topicHubs": {
+      "heading": "المواضيع"
+    },
+    "topic": {
+      "back": "الموارد",
+      "notFound": "الموضوع غير موجود",
+      "backToResources": "العودة إلى الموارد",
+      "metaSuffix": "الموارد",
+      "metaNotFound": "الموضوع غير موجود",
+      "stats": "{{guides}} دليل · {{orgs}} منظمة · {{news}} مقال",
+      "guidesHeading": "الأدلة",
+      "guidesEmpty": "لا توجد أدلة منشورة لهذا الموضوع بعد.",
+      "orgsHeading": "المنظمات",
+      "orgsEmpty": "لا توجد منظمات مفهرسة لهذا الموضوع بعد.",
+      "newsHeading": "أخبار حديثة",
+      "newsEmpty": "لا توجد مقالات حديثة موسومة لهذا الموضوع.",
+      "moreTopics": "مواضيع أخرى"
+    },
+    "orgs": {
+      "heading": "منظمات الدعم",
+      "filterAria": "فلترة المنظمات حسب البلد",
+      "noLocal": "لا توجد منظمات في {{country}} بعد — عرض المنظمات العالمية.",
+      "browseAll": "تصفّح جميع المنظمات",
+      "emptyPrefix": "لا توجد منظمات دعم مفهرسة بعد. أرسل واحدة عبر إضافة Chrome أو ",
+      "emptyLink": "تواصل معنا",
+      "emptySuffix": "."
+    },
+    "filter": {
+      "searchPlaceholder": "ابحث في الوسوم والفئات والأوصاف…",
+      "searchAria": "ابحث في الموارد",
+      "filterAria": "فلترة حسب الفئة",
+      "categoryPlaceholder": "الفئة",
+      "allCategories": "جميع الفئات",
+      "sortAria": "الترتيب",
+      "sortPlaceholder": "الترتيب",
+      "sortMostUsed": "الأكثر استخداماً",
+      "sortAlphabetical": "أبجدياً",
+      "sortNewest": "الأحدث",
+      "advanced": "متقدم",
+      "usageAria": "فلترة حسب الاستخدام",
+      "usagePlaceholder": "الاستخدام",
+      "usageAll": "جميع الوسوم",
+      "usageUsed": "مستخدمة",
+      "usageUnused": "غير مستخدمة",
+      "hasImage": "بصورة",
+      "hasImageTitle": "إظهار الوسوم ذات الصور فقط",
+      "sortDirAsc": "تصاعدي",
+      "sortDirDesc": "تنازلي",
+      "active": "نشط:",
+      "clearAll": "مسح الكل",
+      "view": {
+        "chips": "رقاقات",
+        "grid": "شبكة",
+        "list": "قائمة",
+        "ariaSuffix": " — عرض"
+      },
+      "graph": "رسم علاقات الوسوم"
+    },
+    "search": {
+      "resultsHeading": "نتائج البحث",
+      "categoryTagsHeading": "وسوم {{category}}",
+      "filteredHeading": "وسوم مفلترة",
+      "countBadge": "{{visible}} من {{total}}",
+      "countAria": "{{count}} وسم مطابق",
+      "showMore": "عرض {{count}} المزيد",
+      "empty": {
+        "title": "لا نتائج",
+        "description": "جرّب بحثاً أوسع أو امسح المرشحات."
+      }
+    },
+    "tagNotFound": {
+      "title": "الوسم غير موجود",
+      "bodyPrefix": "لم نجد وسماً مطابقاً لـ ",
+      "browse": "تصفّح جميع الموارد"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "الموارد",
+      "noDefinition": "لا يوجد تعريف لهذا المصطلح بعد."
+    },
+    "graph": {
+      "title": "رسم علاقات الوسوم",
+      "description": "كيف ترتبط الوسوم بالتشابه الدلالي والتزامن"
     }
   }
 }

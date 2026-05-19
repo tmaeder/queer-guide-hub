@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
-import { ResumeTripStrip, useHasMeaningfulActiveTrip } from '@/components/travel/ResumeTripStrip';
+import { ResumeTripStrip } from '@/components/travel/ResumeTripStrip';
+import { useHasMeaningfulActiveTrip, usePrimaryMeaningfulTrip } from '@/hooks/useMeaningfulTrips';
 import { StartTripHero } from '@/components/travel/StartTripHero';
 import { PrideScroller } from '@/components/travel/PrideScroller';
 import { InspirationGrid } from '@/components/travel/InspirationGrid';
 import { BookNowAccordion } from '@/components/travel/BookNowAccordion';
 import { useTrackEvent } from '@/hooks/useTrackEvent';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import { useActiveTrip } from '@/hooks/useActiveTrip';
 import {
   BrowseVisitedToolbar,
   readStoredVisitedFilter,
@@ -22,16 +22,16 @@ export default function Travel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useLocalizedNavigate();
   const intentBook = searchParams.get('intent') === 'book';
-  const { activeTrip } = useActiveTrip();
   const hasActiveTrip = useHasMeaningfulActiveTrip();
+  const primaryTrip = usePrimaryMeaningfulTrip();
 
-  // Legacy ?mode=plan support: send active-trip users to /trips/:id (the real
-  // plan view). Otherwise drop the param so we render a clean URL.
+  // Legacy ?mode=plan support: send users with any meaningful trip to that
+  // trip's planner. Otherwise drop the param so we render a clean URL.
   useEffect(() => {
     const mode = searchParams.get('mode');
     if (mode !== 'plan' && mode !== 'browse') return;
-    if (mode === 'plan' && activeTrip) {
-      navigate(`/trips/${activeTrip.id}`, { replace: true });
+    if (mode === 'plan' && primaryTrip) {
+      navigate(`/trips/${primaryTrip.id}`, { replace: true });
       return;
     }
     setSearchParams(
@@ -41,7 +41,7 @@ export default function Travel() {
       },
       { replace: true },
     );
-  }, [searchParams, activeTrip, navigate, setSearchParams]);
+  }, [searchParams, primaryTrip, navigate, setSearchParams]);
 
   const { track } = useTrackEvent();
   const { data: recs } = useRecommendations({ recType: 'destination', limit: 20 });
