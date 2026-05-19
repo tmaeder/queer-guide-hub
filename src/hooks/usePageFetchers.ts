@@ -276,14 +276,14 @@ export async function upsertEmailTemplate(
   return { error };
 }
 
-/** Ressources.tsx — list distinct profession values. */
+/** Resources.tsx — list distinct profession values. */
 export async function fetchAllProfessions(): Promise<string[]> {
   const { data } = await supabase.from('personalities').select('profession').not('profession', 'is', null);
   if (!data) return [];
   return [...new Set((data as Array<{ profession?: string }>).map((p) => p.profession).filter(Boolean))].sort() as string[];
 }
 
-/** Ressources.tsx — fetch tag by name + category assignments + parent names. */
+/** Resources.tsx — fetch tag by name + category assignments + parent names. */
 export async function fetchTagWithCategories(name: string) {
   const { data } = await supabase
     .from('unified_tags')

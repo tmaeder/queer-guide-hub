@@ -33,7 +33,7 @@ import { isRealTagImage, type ViewMode, type DisplayMode, type SortOption } from
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
-export default function Ressources() {
+export default function Resources() {
   const { tagName, categorySlug } = useParams<{ tagName: string; categorySlug: string }>();
   const navigate = useLocalizedNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
