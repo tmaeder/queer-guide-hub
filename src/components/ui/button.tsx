@@ -47,7 +47,6 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
     if (import.meta.env.DEV && (variant === "secondary" || variant === "brand")) {
-      // eslint-disable-next-line no-console
       console.warn(
         `[Button] variant="${variant}" is deprecated (2026-05-19) and collapses to "default". Update to variant="default" before the next major release.`,
       )
