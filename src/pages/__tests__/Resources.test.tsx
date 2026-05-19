@@ -14,12 +14,12 @@ vi.mock('@/hooks/useCentralizedTags', () => ({
   useTagUsageCounts: () => ({ data: {}, isLoading: false }),
 }));
 
-import Ressources from '../Ressources';
+import Resources from '../Resources';
 
-describe('Ressources', () => {
+describe('Resources', () => {
   it('renders without crashing', () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
-    const { container } = render(<MemoryRouter><QueryClientProvider client={qc}><Ressources /></QueryClientProvider></MemoryRouter>);
+    const { container } = render(<MemoryRouter><QueryClientProvider client={qc}><Resources /></QueryClientProvider></MemoryRouter>);
     expect(container).toBeTruthy();
   });
 });

@@ -8,6 +8,14 @@ vi.mock('@/providers/SafeModeProvider', () => ({
   useSafeMode: () => ({ enabled: true, toggle: vi.fn() }),
 }));
 
+vi.mock('@/hooks/useTopicHubs', async () => {
+  const actual = await vi.importActual<typeof import('@/hooks/useTopicHubs')>('@/hooks/useTopicHubs');
+  return {
+    ...actual,
+    useTopicHubs: () => ({ data: [], isLoading: false }),
+  };
+});
+
 vi.mock('@/components/routing/LocalizedLink', () => ({
   LocalizedLink: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
     <a href={to} {...rest}>{children}</a>

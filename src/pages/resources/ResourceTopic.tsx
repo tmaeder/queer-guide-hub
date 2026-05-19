@@ -1,9 +1,12 @@
 /**
  * ResourceTopic — Composed topic hub at /resources/topic/:slug.
  *
- * Pulls CMS guides (cms_pages.parent_slug = topic.cmsParentSlug), tagged venues
+ * Pulls CMS guides (cms_pages.parent_slug = topic.cms_parent_slug), tagged venues
  * via get_venues_by_tag, and recent news articles whose tags overlap the
  * topic's tag cluster.
+ *
+ * Data source: topic_hubs Supabase table via useTopicHubs(). Falls back to
+ * topics.config.ts when the query returns zero rows.
  */
 
 import { useMemo } from 'react';
@@ -12,17 +15,34 @@ import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import { useMeta } from '@/hooks/useMeta';
 import { useTopicGuides, useTopicOrgs, useTopicNews } from '@/hooks/useResourceTopic';
+import { useTopicHubs, topicIcon, type TopicHubRow } from '@/hooks/useTopicHubs';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { VenueCard } from '@/components/venues/VenueCard';
-import { getTopic } from '@/pages/resources/topics.config';
+import { TOPIC_HUBS } from '@/pages/resources/topics.config';
 import { ChevronLeft, ChevronRight, FileText, Newspaper } from 'lucide-react';
+
+function configFallback(): TopicHubRow[] {
+  return TOPIC_HUBS.map((t, i) => ({
+    id: t.slug,
+    slug: t.slug,
+    title: t.title,
+    description: t.description,
+    icon_name: t.icon.displayName ?? t.icon.name ?? 'Heart',
+    tag_cluster: t.tagCluster,
+    cms_parent_slug: t.cmsParentSlug,
+    adult: t.adult ?? false,
+    sort_order: (i + 1) * 10,
+  }));
+}
 
 export default function ResourceTopic() {
   const { slug = '' } = useParams<{ slug: string }>();
   const navigate = useLocalizedNavigate();
-  const topic = getTopic(slug);
+  const { data: dbHubs = [], isLoading: hubsLoading } = useTopicHubs();
+  const hubs: TopicHubRow[] = !hubsLoading && dbHubs.length === 0 ? configFallback() : dbHubs;
+  const topic = hubs.find((h) => h.slug === slug);
 
   useMeta({
     title: topic ? `${topic.title} — Resources` : 'Topic not found',
@@ -30,14 +50,18 @@ export default function ResourceTopic() {
     canonicalPath: `/resources/topic/${slug}`,
   });
 
-  const { data: guides = [], isLoading: guidesLoading } = useTopicGuides(topic?.cmsParentSlug);
-  const { data: orgs = [], isLoading: orgsLoading } = useTopicOrgs(topic?.tagCluster);
-  const { data: news = [], isLoading: newsLoading } = useTopicNews(topic?.tagCluster);
+  const { data: guides = [], isLoading: guidesLoading } = useTopicGuides(topic?.cms_parent_slug);
+  const { data: orgs = [], isLoading: orgsLoading } = useTopicOrgs(topic?.tag_cluster);
+  const { data: news = [], isLoading: newsLoading } = useTopicNews(topic?.tag_cluster);
 
   const counts = useMemo(
     () => ({ guides: guides.length, orgs: orgs.length, news: news.length }),
     [guides, orgs, news],
   );
+
+  if (hubsLoading) {
+    return null;
+  }
 
   if (!topic) {
     return (
@@ -48,7 +72,7 @@ export default function ResourceTopic() {
     );
   }
 
-  const Icon = topic.icon;
+  const Icon = topicIcon(topic.icon_name);
 
   return (
     <div className="container mx-auto py-8 md:py-16 px-4">

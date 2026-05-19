@@ -14,6 +14,13 @@ vi.mock('@/hooks/useResourceTopic', () => ({
   useTopicOrgs: () => ({ data: [], isLoading: false }),
   useTopicNews: () => ({ data: [], isLoading: false }),
 }));
+vi.mock('@/hooks/useTopicHubs', async () => {
+  const actual = await vi.importActual<typeof import('@/hooks/useTopicHubs')>('@/hooks/useTopicHubs');
+  return {
+    ...actual,
+    useTopicHubs: () => ({ data: [], isLoading: false }),
+  };
+});
 vi.mock('@/components/venues/VenueCard', () => ({ VenueCard: () => null }));
 vi.mock('@/components/routing/LocalizedLink', () => ({ LocalizedLink: ({ children }: { children: ReactNode }) => <span>{children}</span> }));
 
