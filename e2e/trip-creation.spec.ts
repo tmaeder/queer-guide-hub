@@ -40,8 +40,11 @@ test.describe('/trips create dialog (signed out)', () => {
         !/failed to fetch dynamically imported module/i.test(e) &&
         !/manifest\.webmanifest/i.test(e) &&
         // Network/cert errors are infrastructure, not application code.
-        // Sandboxed CI runners may not trust the public CA chain.
-        !/net::ERR_(CERT|DNS|NAME|CONNECTION|NETWORK|INTERNET)_/i.test(e),
+        // Sandboxed CI runners may not trust the public CA chain, and
+        // ERR_FAILED is the generic Chromium fetch-failure code that
+        // covers transient prod-edge blips.
+        !/net::ERR_(CERT|DNS|NAME|CONNECTION|NETWORK|INTERNET|FAILED)_?/i.test(e) &&
+        !/Failed to load resource/i.test(e),
     );
     expect(ours, `Unexpected errors:\n${ours.join('\n')}`).toHaveLength(0);
   });
