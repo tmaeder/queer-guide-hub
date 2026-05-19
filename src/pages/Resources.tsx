@@ -148,13 +148,11 @@ export default function Resources() {
     if (viewMode === 'search') return; // already populated
     if (tagName || categorySlug) return; // tag-detail / category routes own the page
     const lower = searchQuery.toLowerCase();
-    const local = allTags
-      .filter(
-        (t) =>
-          t.name.toLowerCase().includes(lower) ||
-          (t.description && t.description.toLowerCase().includes(lower)),
-      )
-      .slice(0, 50);
+    const local = allTags.filter(
+      (t) =>
+        t.name.toLowerCase().includes(lower) ||
+        (t.description && t.description.toLowerCase().includes(lower)),
+    );
     setSearchResults(local);
     setViewMode('search');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,13 +295,11 @@ export default function Resources() {
         return;
       }
       const lower = query.toLowerCase();
-      const local = allTags
-        .filter(
-          (t) =>
-            t.name.toLowerCase().includes(lower) ||
-            (t.description && t.description.toLowerCase().includes(lower)),
-        )
-        .slice(0, 50);
+      const local = allTags.filter(
+        (t) =>
+          t.name.toLowerCase().includes(lower) ||
+          (t.description && t.description.toLowerCase().includes(lower)),
+      );
       setSearchResults(local);
       setViewMode('search');
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
