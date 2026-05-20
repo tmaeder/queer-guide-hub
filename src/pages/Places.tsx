@@ -32,7 +32,7 @@ const FEATURED_COUNTRY_NAMES = new Set([
   'France', 'Belgium', 'Sweden', 'Denmark', 'Iceland', 'New Zealand',
   'South Africa', 'Uruguay', 'Malta', 'Ireland', 'Norway', 'Finland',
 ]);
-const FEATURED_LIMIT = 18;
+const FEATURED_LIMIT = 24;
 
 // Lazy load the map component
 const ExploreMap = lazy(() => import('@/components/map/ExploreMap'));
@@ -720,7 +720,7 @@ export default function Places() {
                   <>
                     {/* Zone A — Featured neighborhoods (editorial picks) */}
                     {(() => {
-                      const featured = villages.filter(v => v.featured).slice(0, 8);
+                      const featured = villages.filter(v => v.featured).slice(0, 12);
                       if (featured.length === 0) return null;
                       return (
                         <div className="flex flex-col gap-4">
