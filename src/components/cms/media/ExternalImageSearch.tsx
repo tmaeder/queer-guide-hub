@@ -25,9 +25,9 @@ interface ExternalImageSearchProps {
 type SourceTab = 'stock' | 'wikimedia';
 
 const SOURCE_COLORS: Record<string, string> = {
-  pexels: '#05A081',
-  unsplash: '#111',
-  wikipedia: '#069',
+  pexels: 'hsl(var(--foreground))',
+  unsplash: 'hsl(var(--foreground))',
+  wikipedia: 'hsl(var(--muted-foreground))',
 };
 
 export default function ExternalImageSearch({
@@ -223,7 +223,7 @@ export default function ExternalImageSearch({
                     {/* Source badge */}
                     <span
                       className="absolute top-1.5 left-1.5 h-5 px-1.5 text-[0.65rem] font-semibold text-white rounded capitalize flex items-center"
-                      style={{ backgroundColor: SOURCE_COLORS[image.source] || '#666' }}
+                      style={{ backgroundColor: SOURCE_COLORS[image.source] || 'hsl(var(--muted-foreground))' }}
                     >
                       {image.source === 'wikipedia' ? 'Wiki' : image.source}
                     </span>

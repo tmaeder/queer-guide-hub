@@ -37,7 +37,7 @@ const emptyForm = {
   name: '',
   description: '',
   icon: '',
-  color: '#6366f1',
+  color: 'hsl(var(--muted-foreground))',
   sort_order: 0,
   is_active: true,
 };
@@ -64,7 +64,7 @@ export default function AdminTargetGroups() {
       name: row.name || '',
       description: row.description || '',
       icon: row.icon || '',
-      color: row.color || '#6366f1',
+      color: row.color || 'hsl(var(--muted-foreground))',
       sort_order: row.sort_order || 0,
       is_active: row.is_active,
     });

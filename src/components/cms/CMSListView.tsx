@@ -178,17 +178,17 @@ export function CMSListView({
     switch (status?.toLowerCase()) {
       case 'active':
       case 'published':
-        return { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#bbf7d0' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
       case 'draft':
-        return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
       case 'inactive':
       case 'archived':
-        return { backgroundColor: '#fee2e2', color: '#991b1b', borderColor: '#fecaca' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))', borderColor: 'hsl(var(--muted))' };
       case 'pending':
       case 'review':
-        return { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fef08a' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' };
       default:
-        return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
+        return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
     }
   };
 
@@ -341,7 +341,7 @@ export function CMSListView({
                       }}
                       style={{
                         ...(selectedItems.includes(item.id as string)
-                          ? { backgroundColor: 'rgba(0,0,0,0.03)' }
+                          ? { backgroundColor: 'hsl(var(--foreground) / 0.03)' }
                           : {}),
                         ...(idx === focusedIndex
                           ? { outline: '2px solid var(--primary)', outlineOffset: -2 }
@@ -532,7 +532,7 @@ export function CMSListView({
                               style={{
                                 backgroundColor: 'var(--background)',
                                 border: '1px solid var(--border)',
-                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                                boxShadow: '0 4px 6px -1px hsl(var(--foreground) / 0.1)',
                               }}
                             >
                               <DropdownMenuItem onClick={() => onEdit(item)}>

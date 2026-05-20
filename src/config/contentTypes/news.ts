@@ -146,7 +146,7 @@ export const newsArticleContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: Newspaper,
   label: { singular: 'News Article', plural: 'News Articles' },
-  color: '#3b82f6',
+  color: 'hsl(var(--foreground))',
   fields: newsArticleFields,
   defaults: { category: 'general', is_featured: false },
   validate: validateNewsArticle,

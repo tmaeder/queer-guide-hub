@@ -115,11 +115,11 @@ export function SecurityDashboard() {
     switch (severity) {
       case 'critical':
       case 'high':
-        return <AlertTriangle style={{ height: 16, width: 16, color: '#ef4444' }} />;
+        return <AlertTriangle style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
       case 'medium':
-        return <Eye style={{ height: 16, width: 16, color: '#eab308' }} />;
+        return <Eye style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.55)' }} />;
       default:
-        return <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />;
+        return <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />;
     }
   };
 
@@ -148,7 +148,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Events (24h)</p>
                 <p className="text-2xl font-bold">{metrics.totalEvents}</p>
               </div>
-              <Eye style={{ height: 32, width: 32, color: '#3b82f6' }} />
+              <Eye style={{ height: 32, width: 32, color: 'hsl(var(--muted-foreground))' }} />
             </div>
           </CardContent>
         </Card>
@@ -160,7 +160,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Critical Events</p>
                 <p className="text-2xl font-bold text-destructive">{metrics.criticalEvents}</p>
               </div>
-              <AlertTriangle style={{ height: 32, width: 32, color: '#ef4444' }} />
+              <AlertTriangle style={{ height: 32, width: 32, color: 'hsl(var(--destructive))' }} />
             </div>
           </CardContent>
         </Card>
@@ -172,7 +172,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Admin Access</p>
                 <p className="text-2xl font-bold">{metrics.recentAdminAccess}</p>
               </div>
-              <Lock style={{ height: 32, width: 32, color: '#555555' }} />
+              <Lock style={{ height: 32, width: 32, color: 'hsl(var(--muted-foreground))' }} />
             </div>
           </CardContent>
         </Card>
@@ -184,7 +184,7 @@ export function SecurityDashboard() {
                 <p className="text-sm text-muted-foreground">Failed Logins</p>
                 <p className="text-2xl font-bold">{metrics.failedLogins}</p>
               </div>
-              <AlertTriangle style={{ height: 32, width: 32, color: '#f97316' }} />
+              <AlertTriangle style={{ height: 32, width: 32, color: 'hsl(var(--foreground) / 0.55)' }} />
             </div>
           </CardContent>
         </Card>
@@ -237,27 +237,27 @@ export function SecurityDashboard() {
         <CardContent>
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
               <span>Profile data encryption and RLS policies hardened</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
               <span>Location privacy lockdown implemented</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
               <span>Financial data security enhanced</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
               <span>Credential storage security implemented</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
               <span>Content sanitization enhanced</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+              <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
               <span>Admin access logging and monitoring active</span>
             </div>
           </div>

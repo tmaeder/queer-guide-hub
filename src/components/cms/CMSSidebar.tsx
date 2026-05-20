@@ -199,7 +199,7 @@ export function CMSSidebar({
               boxShadow: `0 2px 8px ${brandColors.main}4D`,
             }}
           >
-            <Layers size={16} color="#fff" />
+            <Layers size={16} color="hsl(var(--background))" />
           </div>
           <div>
             <p
@@ -314,11 +314,11 @@ export function CMSSidebar({
         <nav className="flex flex-col">
           <NavItem
             isActive={activeView === 'pages'}
-            accentColor="#64748b"
+            accentColor="hsl(var(--muted-foreground))"
             onClick={() => onNavigate('pages')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={FileText} color="#64748b" size={15} />
+              <IconBadge icon={FileText} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'pages' ? 'font-semibold' : 'font-normal')}
@@ -329,11 +329,11 @@ export function CMSSidebar({
 
           <NavItem
             isActive={activeView === 'media'}
-            accentColor="#3b82f6"
+            accentColor="hsl(var(--muted-foreground))"
             onClick={() => onNavigate('media')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={Image} color="#3b82f6" size={15} />
+              <IconBadge icon={Image} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'media' ? 'font-semibold' : 'font-normal')}
@@ -344,11 +344,11 @@ export function CMSSidebar({
 
           <NavItem
             isActive={activeView === 'review'}
-            accentColor="#f59e0b"
+            accentColor="hsl(var(--foreground) / 0.55)"
             onClick={() => onNavigate('review')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={ClipboardCheck} color="#f59e0b" size={15} />
+              <IconBadge icon={ClipboardCheck} color="hsl(var(--foreground) / 0.55)" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'review' ? 'font-semibold' : 'font-normal')}
@@ -358,7 +358,7 @@ export function CMSSidebar({
             {reviewCount > 0 && (
               <Badge
                 className="h-5 text-[0.65rem] font-bold min-w-[24px] px-1.5"
-                style={{ backgroundColor: '#fef3c7', color: '#92400e' }}
+                style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}
               >
                 {reviewCount}
               </Badge>
@@ -367,11 +367,11 @@ export function CMSSidebar({
 
           <NavItem
             isActive={activeView === 'quality'}
-            accentColor="#10b981"
+            accentColor="hsl(var(--foreground))"
             onClick={() => onNavigate('quality')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={Activity} color="#10b981" size={15} />
+              <IconBadge icon={Activity} color="hsl(var(--foreground))" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'quality' ? 'font-semibold' : 'font-normal')}
@@ -382,11 +382,11 @@ export function CMSSidebar({
 
           <NavItem
             isActive={activeView === 'moderation'}
-            accentColor="#ef4444"
+            accentColor="hsl(var(--destructive))"
             onClick={() => onNavigate('moderation')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={ShieldAlert} color="#ef4444" size={15} />
+              <IconBadge icon={ShieldAlert} color="hsl(var(--destructive))" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'moderation' ? 'font-semibold' : 'font-normal')}
@@ -397,11 +397,11 @@ export function CMSSidebar({
 
           <NavItem
             isActive={activeView === 'audit'}
-            accentColor="#6366f1"
+            accentColor="hsl(var(--muted-foreground))"
             onClick={() => onNavigate('audit')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={History} color="#6366f1" size={15} />
+              <IconBadge icon={History} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'audit' ? 'font-semibold' : 'font-normal')}
@@ -414,11 +414,11 @@ export function CMSSidebar({
 
           <NavItem
             isActive={activeView === 'settings'}
-            accentColor="#64748b"
+            accentColor="hsl(var(--muted-foreground))"
             onClick={() => onNavigate('settings')}
           >
             <span className="min-w-9 mr-2 flex">
-              <IconBadge icon={Settings} color="#64748b" size={15} />
+              <IconBadge icon={Settings} color="hsl(var(--muted-foreground))" size={15} />
             </span>
             <span
               className={cn('text-[0.85rem] flex-1', activeView === 'settings' ? 'font-semibold' : 'font-normal')}

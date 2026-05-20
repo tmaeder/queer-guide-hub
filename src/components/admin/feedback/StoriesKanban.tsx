@@ -85,7 +85,7 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
               onClick={handleArchiveSelected}
               data-testid="bulk-archive"
               className="flex gap-1.5"
-              style={{ backgroundColor: '#f59e0b' }}
+              style={{ backgroundColor: 'hsl(var(--foreground) / 0.55)' }}
             >
               <Archive size={14} />
               {archive.isPending ? 'Archiving…' : 'Archive selected'}
@@ -235,7 +235,7 @@ function StoryCard({
                 style={{
                   paddingLeft: 3, paddingRight: 3,
                   backgroundColor: prio.color,
-                  color: '#fff',
+                  color: 'hsl(var(--background))',
                   fontSize: '0.55rem',
                   fontWeight: 700,
                   letterSpacing: 0.3,
@@ -300,7 +300,7 @@ function StoryCard({
         {story.error_count > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="inline-flex items-center flex-shrink-0" style={{ gap: 2, color: '#ef4444' }}>
+              <span className="inline-flex items-center flex-shrink-0" style={{ gap: 2, color: 'hsl(var(--destructive))' }}>
                 <AlertTriangle size={10} />
                 {story.error_count}
               </span>

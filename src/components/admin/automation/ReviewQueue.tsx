@@ -98,7 +98,7 @@ export function ReviewQueue({
   if (changes.length === 0) {
     return (
       <div className="text-center py-12">
-        <CheckCircle2 size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
+        <CheckCircle2 size={48} style={{ color: 'hsl(var(--foreground))', margin: '0 auto 16px' }} />
         <h6 className="text-lg font-semibold text-muted-foreground">No pending changes</h6>
         <p className="text-sm text-muted-foreground">
           All automation changes have been reviewed.

@@ -61,7 +61,7 @@ export const cmsPagesContentType: ContentTypeConfig = {
   imageField: 'cover_image_url',
   icon: FileText,
   label: { singular: 'Page', plural: 'Pages' },
-  color: '#64748b',
+  color: 'hsl(var(--foreground))',
   fields: pageFields,
   hasRichText: true,
   defaults: { page_type: 'blog_post', workflow_state: 'draft', visibility_level: 'private' },

@@ -7,7 +7,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: ban inline corsHeaders object literal in edge functions
         run: |
           hits=$(grep -rEl "^const corsHeaders\s*=\s*\{" supabase/functions --include='*.ts' \

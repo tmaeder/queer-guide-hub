@@ -195,7 +195,7 @@ export const eventContentType: ContentTypeConfig = {
   imageField: 'images',
   icon: Calendar,
   label: { singular: 'Event', plural: 'Events' },
-  color: '#ec4899',
+  color: 'hsl(var(--foreground))',
   fields: eventFields,
   defaults: { is_featured: false, is_free: false, is_public: true, status: 'active', verification_status: 'pending' },
   validate: validateEvent,

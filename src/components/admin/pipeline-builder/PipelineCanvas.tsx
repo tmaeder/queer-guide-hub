@@ -90,7 +90,7 @@ const PipelineCanvas = forwardRef<HTMLDivElement, Props>(function PipelineCanvas
         <Background gap={16} size={1} />
         <MiniMap
           nodeStrokeWidth={2}
-          nodeColor={(node) => (node.data as Record<string, string>)?.color || '#6b7280'}
+          nodeColor={(node) => (node.data as Record<string, string>)?.color || 'hsl(var(--muted-foreground))'}
           className="!bg-background !border"
           position="bottom-left"
         />

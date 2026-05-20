@@ -121,7 +121,7 @@ export function PersonalizedFeed() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {displayCities.map((city) => (
           <LocalizedLink key={city.id} to={`/city/${city.id}`} style={{ textDecoration: 'none' }}>
-            <Card className="hover:shadow-md transition-shadow h-full">
+            <Card className="hover:shadow-[var(--shadow-aceternity-sm)] transition-shadow h-full">
               <CardContent style={{ padding: 16 }}>
                 <div className="flex justify-between items-start mb-2">
                   <div>

@@ -95,7 +95,7 @@ export function TagSuggestionsQueue() {
     return (
       <div className="text-center py-16">
         <div className="mx-auto w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mb-4 opacity-90">
-          <Tag style={{ width: 40, height: 40, color: '#fff' }} />
+          <Tag style={{ width: 40, height: 40, color: 'hsl(var(--background))' }} />
         </div>
         <h3 className="text-lg font-semibold mb-1">No pending suggestions</h3>
         <p className="text-sm text-muted-foreground max-w-[320px] mx-auto">
@@ -130,7 +130,7 @@ export function TagSuggestionsQueue() {
                 size="sm"
                 disabled={isPending}
                 onClick={() => approveMutation.mutate(Array.from(selectedIds))}
-                style={{ backgroundColor: '#16a34a', color: 'white', display: 'flex', gap: 6 }}
+                style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', display: 'flex', gap: 6 }}
               >
                 <CheckCircle style={{ height: 14, width: 14 }} /> Approve Selected
               </Button>
@@ -149,7 +149,7 @@ export function TagSuggestionsQueue() {
             size="sm"
             disabled={isPending || items.length === 0}
             onClick={() => approveMutation.mutate(items.map((i) => i.id))}
-            style={{ backgroundColor: '#16a34a', color: 'white', display: 'flex', gap: 6 }}
+            style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', display: 'flex', gap: 6 }}
           >
             <CheckCircle style={{ height: 14, width: 14 }} /> Approve All ({items.length})
           </Button>
@@ -161,7 +161,7 @@ export function TagSuggestionsQueue() {
         const sourceInfo = SOURCE_LABELS[item.source] || { label: item.source, icon: Tag };
         const SourceIcon = sourceInfo.icon;
         const confidenceColor =
-          item.confidence >= 0.8 ? '#16a34a' : item.confidence >= 0.5 ? '#ca8a04' : '#dc2626';
+          item.confidence >= 0.8 ? 'hsl(var(--foreground))' : item.confidence >= 0.5 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
 
         return (
           <Card key={item.id}>
@@ -199,7 +199,7 @@ export function TagSuggestionsQueue() {
                     size="sm"
                     disabled={isPending}
                     onClick={() => approveMutation.mutate([item.id])}
-                    style={{ backgroundColor: '#16a34a', color: 'white', padding: '4px 8px' }}
+                    style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', padding: '4px 8px' }}
                   >
                     <CheckCircle style={{ height: 14, width: 14 }} />
                   </Button>

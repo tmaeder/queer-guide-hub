@@ -292,7 +292,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         label="Text Color"
         onClick={() => {
           const color = window.prompt(
-            'Enter a CSS color (e.g. #ff0000, red)',
+            'Enter a CSS color (e.g. red, hsl(0 0% 50%), or a hex code)',
             editor.getAttributes('textStyle').color as string | undefined ?? '',
           );
           if (color === null) return;

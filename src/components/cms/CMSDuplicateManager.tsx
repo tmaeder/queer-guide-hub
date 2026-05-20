@@ -104,11 +104,11 @@ export function CMSDuplicateManager() {
 
   const getStatusStyle = (status: string): React.CSSProperties => {
     switch (status) {
-      case 'pending': return { backgroundColor: '#fef9c3', color: '#854d0e', borderColor: '#fde68a' };
-      case 'merged': return { backgroundColor: '#dcfce7', color: '#166534', borderColor: '#bbf7d0' };
-      case 'not_duplicate': return { backgroundColor: '#dbeafe', color: '#1e40af', borderColor: '#bfdbfe' };
-      case 'deferred': return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
-      default: return { backgroundColor: '#f3f4f6', color: '#1f2937', borderColor: '#e5e7eb' };
+      case 'pending': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' };
+      case 'merged': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+      case 'not_duplicate': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', borderColor: 'hsl(var(--muted))' };
+      case 'deferred': return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
+      default: return { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))', borderColor: 'hsl(var(--muted))' };
     }
   };
 
@@ -307,8 +307,8 @@ export function CMSDuplicateManager() {
                   {Math.round(candidate.matching_criteria.title_similarity * 100)}%
                 </p>
                 {candidate.matching_criteria.title_similarity > 0.8 ?
-                  <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
-                  <X style={{ height: 16, width: 16, color: '#ef4444' }} />
+                  <Check style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} /> :
+                  <X style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />
                 }
               </div>
             </div>
@@ -316,24 +316,24 @@ export function CMSDuplicateManager() {
             <div className="flex items-center justify-between">
               <p className="text-sm">Location Match</p>
               {candidate.matching_criteria.location_match ?
-                <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
-                <X style={{ height: 16, width: 16, color: '#ef4444' }} />
+                <Check style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} /> :
+                <X style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />
               }
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-sm">Date Overlap</p>
               {candidate.matching_criteria.date_overlap ?
-                <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
-                <X style={{ height: 16, width: 16, color: '#ef4444' }} />
+                <Check style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} /> :
+                <X style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />
               }
             </div>
 
             <div className="flex items-center justify-between">
               <p className="text-sm">External ID Match</p>
               {candidate.matching_criteria.external_id_match ?
-                <Check style={{ height: 16, width: 16, color: '#22c55e' }} /> :
-                <X style={{ height: 16, width: 16, color: '#ef4444' }} />
+                <Check style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} /> :
+                <X style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />
               }
             </div>
           </div>
@@ -456,7 +456,7 @@ export function CMSDuplicateManager() {
             {pendingCandidates.length === 0 ? (
               <Card>
                 <CardContent>
-                  <Check style={{ height: 48, width: 48, color: '#22c55e', margin: '0 auto 16px' }} />
+                  <Check style={{ height: 48, width: 48, color: 'hsl(var(--foreground))', margin: '0 auto 16px' }} />
                   <h6 className="text-base font-semibold">No pending duplicates</h6>
                   <p className="text-sm text-muted-foreground">All potential duplicates have been reviewed</p>
                 </CardContent>
@@ -468,7 +468,7 @@ export function CMSDuplicateManager() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle>
-                          <AlertTriangle style={{ height: 20, width: 20, color: '#eab308' }} />
+                          <AlertTriangle style={{ height: 20, width: 20, color: 'hsl(var(--foreground) / 0.55)' }} />
                           Potential Duplicate Detected
                           <Badge style={{ border: '1px solid' }}>
                             {Math.round(candidate.similarity_score * 100)}% match

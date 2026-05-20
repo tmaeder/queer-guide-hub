@@ -94,7 +94,7 @@ function EmptyState({
   onCreate: () => void;
 }) {
   const Icon = config?.icon;
-  const color = config?.color || '#6b7280';
+  const color = config?.color || 'hsl(var(--muted-foreground))';
 
   return (
     <div className="py-16 px-6 flex flex-col items-center text-center">
@@ -216,7 +216,7 @@ function renderColumnValue(
   }
   if (field.type === 'select') {
     const opt = field.options?.find((o) => o.value === v);
-    const color = field.name === 'category' ? (config?.color ?? '#6b7280') : '#6b7280';
+    const color = field.name === 'category' ? (config?.color ?? 'hsl(var(--muted-foreground))') : 'hsl(var(--muted-foreground))';
     return (
       <Badge
         className="h-5 text-[0.7rem] font-semibold"

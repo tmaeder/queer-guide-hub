@@ -226,9 +226,9 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                             className="inline-block w-2 h-2 rounded-full"
                             style={{
                               backgroundColor:
-                                video.status === 'completed' ? '#16a34a' :
+                                video.status === 'completed' ? 'hsl(var(--foreground))' :
                                 video.status === 'error' ? 'hsl(var(--destructive))' :
-                                '#f59e0b',
+                                'hsl(var(--foreground) / 0.55)',
                             }}
                           />
                           <p className="text-sm capitalize">{video.status}</p>

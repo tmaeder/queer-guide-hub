@@ -1,6 +1,5 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
-import { MagneticButton } from '@/components/motion';
 import {
   Star,
   MapPin,
@@ -162,8 +161,7 @@ export function MarketplaceHero({
               currentData={listing as Record<string, unknown>}
               onSaved={() => window.location.reload()}
             />
-            <MagneticButton>
-              <Button variant="outline" size="sm" onClick={onToggleFavorite}>
+                          <Button variant="outline" size="sm" onClick={onToggleFavorite}>
                 <Heart
                   style={{
                     width: 16,
@@ -175,14 +173,11 @@ export function MarketplaceHero({
                 />
                 {isFavorited ? 'Favorited' : 'Favorite'}
               </Button>
-            </MagneticButton>
-            <MagneticButton>
-              <Button variant="outline" size="sm" onClick={onShare}>
+                                      <Button variant="outline" size="sm" onClick={onShare}>
                 <Share2 style={{ width: 16, height: 16, marginRight: 8 }} />
                 Share
               </Button>
-            </MagneticButton>
-          </div>
+                      </div>
         </div>
       </div>
     </>

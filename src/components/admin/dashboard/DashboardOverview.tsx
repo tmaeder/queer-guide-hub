@@ -148,7 +148,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
               <Card key={card.title} onClick={card.onClick}>
                 <CardHeader>
                   <CardTitle>{card.title}</CardTitle>
-                  <Icon style={{ height: 16, width: 16, color: 'rgba(0, 0, 0, 0.6)' }} />
+                  <Icon style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.6)' }} />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{card.value}</div>
