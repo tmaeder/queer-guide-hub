@@ -76,7 +76,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.deploy_infomaniak ||
       github.event_name == 'workflow_run'
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist-static
           path: dist-static/
@@ -110,7 +110,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.deploy_vps ||
       github.event_name == 'workflow_run'
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist-static
           path: dist-static/
@@ -149,7 +149,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.deploy_ipfs ||
       github.event_name == 'workflow_run'
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist-static
           path: dist-static/
