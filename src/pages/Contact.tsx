@@ -159,7 +159,7 @@ export default function Contact() {
                   <div className="flex items-start gap-4">
                     <method.icon style={{ width: 20, height: 20, flexShrink: 0, marginTop: 2 }} className="text-primary" />
                     <div className="flex-1">
-                      <p className="font-semibold text-[0.9375rem]">{method.label}</p>
+                      <p className="font-semibold text-15">{method.label}</p>
                       <div className="flex items-center justify-between mt-1">
                         <a href={`mailto:${method.email}`} className="text-sm text-primary">
                           {method.email}
@@ -201,7 +201,7 @@ export default function Contact() {
                 <Collapsible open={openFaq === index} onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}>
                   <CollapsibleTrigger className="flex w-full flex-col gap-1.5 p-6 text-left">
                     <div className="flex w-full items-center justify-between">
-                      <p className="font-semibold text-[0.9375rem]">{faq.question}</p>
+                      <p className="font-semibold text-15">{faq.question}</p>
                       {openFaq === index ? <ChevronDown style={{ width: 18, height: 18, flexShrink: 0 }} /> : <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />}
                     </div>
                   </CollapsibleTrigger>

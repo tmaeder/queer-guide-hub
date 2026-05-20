@@ -163,7 +163,7 @@ const RegionalEventsCalendar = () => {
           </h3>
           {(hero.venue_name || hero.city) && (
             <div
-              className="text-sm text-muted-foreground md:text-[0.9375rem]"
+              className="text-sm text-muted-foreground md:text-15"
               style={{ fontFamily: BODY }}
             >
               {[hero.venue_name, hero.city].filter(Boolean).join(' · ')}
@@ -192,7 +192,7 @@ const RegionalEventsCalendar = () => {
                     {format(new Date(ev.start_date), 'dd MMM').toUpperCase()}
                   </div>
                   <div
-                    className="overflow-hidden whitespace-nowrap text-ellipsis text-[0.9375rem] font-semibold leading-[1.3] transition-opacity group-hover:opacity-70 md:text-base"
+                    className="overflow-hidden whitespace-nowrap text-ellipsis text-15 font-semibold leading-[1.3] transition-opacity group-hover:opacity-70 md:text-base"
                     style={{ fontFamily: DISPLAY }}
                   >
                     {ev.title}

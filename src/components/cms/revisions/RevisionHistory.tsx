@@ -198,7 +198,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                     <div className="flex flex-row items-center gap-3">
                       <div className="flex flex-row items-center gap-1">
                         <Avatar className="w-[18px] h-[18px]">
-                          <AvatarFallback className="text-[0.55rem] bg-border">
+                          <AvatarFallback className="text-3xs bg-border">
                             {initials || <User size={10} />}
                           </AvatarFallback>
                         </Avatar>

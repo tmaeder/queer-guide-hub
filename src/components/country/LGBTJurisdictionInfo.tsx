@@ -128,7 +128,7 @@ function ProtectionRow({
             <div
               key={dim}
               title={`${dim}: ${val}`}
-              className="flex h-5 w-6 items-center justify-center rounded-badge text-[0.625rem] font-semibold"
+              className="flex h-5 w-6 items-center justify-center rounded-badge text-2xs font-semibold"
               style={{
                 backgroundColor: isYes ? '#dcfce7' : isNo ? '#fee2e2' : '#f3f4f6',
                 color: isYes ? '#166534' : isNo ? '#991b1b' : '#9ca3af',
@@ -288,7 +288,7 @@ export default function LGBTJurisdictionInfo({
               {['SO', 'GI', 'GE', 'SC'].map((dim) => (
                 <span
                   key={dim}
-                  className="w-6 text-center text-[0.5625rem] font-semibold text-[#9ca3af]"
+                  className="w-6 text-center text-3xs font-semibold text-[#9ca3af]"
                 >
                   {dim}
                 </span>

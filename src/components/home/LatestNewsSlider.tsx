@@ -145,7 +145,7 @@ const LatestNewsSlider = React.memo(() => {
           </h3>
           {feature.excerpt && (
             <div
-              className="overflow-hidden text-[0.9375rem] leading-normal text-muted-foreground md:text-base"
+              className="overflow-hidden text-15 leading-normal text-muted-foreground md:text-base"
               style={{
                 display: '-webkit-box',
                 WebkitLineClamp: 3,
@@ -188,7 +188,7 @@ const LatestNewsSlider = React.memo(() => {
                     </span>
                   </div>
                   <div
-                    className="overflow-hidden text-[0.9375rem] font-semibold leading-[1.3] transition-colors group-hover:text-[hsl(var(--foreground))] md:text-base"
+                    className="overflow-hidden text-15 font-semibold leading-[1.3] transition-colors group-hover:text-[hsl(var(--foreground))] md:text-base"
                     style={{
                       fontFamily: DISPLAY_FONT,
                       display: '-webkit-box',

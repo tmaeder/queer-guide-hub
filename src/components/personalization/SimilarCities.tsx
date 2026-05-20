@@ -73,7 +73,7 @@ export function SimilarCities({ cityId, _cityName, countryId, equalityScore, _la
     <div>
       <div className="flex items-center gap-2 mb-3">
         <Sparkles style={{ height: 18, width: 18, color: 'var(--primary)' }} />
-        <p className="font-semibold text-[0.95rem]">
+        <p className="font-semibold text-15">
           You might also like
         </p>
       </div>

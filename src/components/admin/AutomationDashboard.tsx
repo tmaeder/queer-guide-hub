@@ -186,7 +186,7 @@ export function AutomationDashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-[0.95rem]">{mod.display_name}</p>
+                          <p className="font-semibold text-15">{mod.display_name}</p>
                           {mod.schedule && (
                             <Badge variant="outline" className="text-xs2 h-5">
                               {mod.schedule}

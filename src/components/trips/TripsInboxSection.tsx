@@ -142,7 +142,7 @@ export function TripsInboxSection() {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles style={{ width: 16, height: 16, color: 'var(--primary)' }} />
-            <p className="font-bold text-[0.9375rem]">
+            <p className="font-bold text-15">
               {t('pages.inbox.suggestions.title', 'Suggested trips')}
             </p>
           </div>
@@ -174,7 +174,7 @@ export function TripsInboxSection() {
 
       {standaloneOrphans.length > 0 && (
         <div className="mb-6">
-          <p className="font-bold text-[0.9375rem] mb-3">
+          <p className="font-bold text-15 mb-3">
             {t('pages.inbox.orphans.title', 'Unattached reservations')}
           </p>
           <div className="flex flex-col gap-2">
@@ -371,7 +371,7 @@ function ForwardingAddressCard() {
           'Forward any confirmation email to this address and it will appear in your Inbox. Booking.com, Airbnb, and Lufthansa are recognized today.',
         )}
       </p>
-      <div className="flex items-center gap-2 p-3 bg-background font-mono text-[0.95rem] break-all">
+      <div className="flex items-center gap-2 p-3 bg-background font-mono text-15 break-all">
         <div className="flex-1 min-w-0">{data.address}</div>
         <Button
           variant="ghost"

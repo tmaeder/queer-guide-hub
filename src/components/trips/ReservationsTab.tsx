@@ -172,7 +172,7 @@ export function ReservationsTab({ tripId }: Props) {
           </div>
           <div className="min-w-0 flex-1">
             <span
-              className="block text-[0.68rem] font-bold uppercase text-[hsl(var(--foreground))]"
+              className="block text-xs2 font-bold uppercase text-[hsl(var(--foreground))]"
               style={{ letterSpacing: '0.06em' }}
             >
               {t('trips.reservations.nextUp')}

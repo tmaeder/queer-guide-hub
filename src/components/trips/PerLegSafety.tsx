@@ -63,7 +63,7 @@ export function PerLegSafety({ tripId, tripPlaces, tripDays }: Props) {
             <div key={`${seg.country_id}:${seg.start_date}`}>
               <div className="flex items-center gap-3 p-3 bg-background">
                 <div
-                  className={`w-11 h-11 flex items-center justify-center shrink-0 font-bold tabular-nums text-[0.95rem] ${scoreClass(country?.equality_score ?? null)}`}
+                  className={`w-11 h-11 flex items-center justify-center shrink-0 font-bold tabular-nums text-15 ${scoreClass(country?.equality_score ?? null)}`}
                   aria-label={
                     country?.equality_score != null
                       ? t('trips.safety.scoreAria', {
