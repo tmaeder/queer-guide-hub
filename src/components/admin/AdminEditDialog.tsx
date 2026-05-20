@@ -695,7 +695,7 @@ export function AdminEditDialog({
             <AccordionItem value="history">
               <AccordionTrigger>
                 <div className="flex items-center gap-2">
-                  <History style={{ width: 16, height: 16 }} />
+                  <History size={16} />
                   <span className="text-sm">Edit History ({editLog.length})</span>
                 </div>
               </AccordionTrigger>

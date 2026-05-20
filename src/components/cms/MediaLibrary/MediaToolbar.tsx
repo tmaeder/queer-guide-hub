@@ -79,7 +79,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
               size="sm"
               onClick={() => onViewModeChange('grid')}
             >
-              <Grid style={{ height: 14, width: 14 }} />
+              <Grid size={14} />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -87,7 +87,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
               onClick={() => onViewModeChange('list')}
               style={{ borderLeft: '1px solid var(--border)' }}
             >
-              <List style={{ height: 14, width: 14 }} />
+              <List size={14} />
             </Button>
           </div>
 
@@ -97,7 +97,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </Button>
 
           <Button variant="ghost" size="sm" onClick={onRefresh}>
-            <RefreshCw style={{ height: 14, width: 14 }} />
+            <RefreshCw size={14} />
           </Button>
         </div>
       </div>
@@ -195,9 +195,9 @@ export function MediaToolbar(props: MediaToolbarProps) {
           title={sortDir === 'asc' ? 'Ascending' : 'Descending'}
         >
           {sortDir === 'asc' ? (
-            <ArrowUp style={{ height: 14, width: 14 }} />
+            <ArrowUp size={14} />
           ) : (
-            <ArrowDown style={{ height: 14, width: 14 }} />
+            <ArrowDown size={14} />
           )}
         </Button>
 

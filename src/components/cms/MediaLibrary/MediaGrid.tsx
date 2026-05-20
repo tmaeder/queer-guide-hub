@@ -126,7 +126,7 @@ export function MediaGrid(props: MediaGridProps) {
               {/* Status indicators */}
               <div className="absolute top-1.5 right-1.5 flex gap-1">
                 {item.is_flagged && (
-                  <Flag style={{ height: 12, width: 12 }} />
+                  <Flag size={12} />
                 )}
                 {getOptimizationIcon(item.optimization_status)}
               </div>
@@ -204,7 +204,7 @@ export function MediaGrid(props: MediaGridProps) {
             <div className="flex items-center gap-2">
               <p className="text-sm truncate">{item.display_name}</p>
               {item.starred && <Star style={{ height: 12, width: 12, fill: 'currentColor' }} />}
-              {item.is_flagged && <Flag style={{ height: 12, width: 12 }} />}
+              {item.is_flagged && <Flag size={12} />}
             </div>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>{formatFileSize(item.file_size)}</span>

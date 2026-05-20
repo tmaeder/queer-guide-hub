@@ -51,7 +51,7 @@ export function CMSAdvancedFilters({
           <div>
             <CardTitle>
               <div className="flex items-center gap-2">
-                <Filter style={{ height: 20, width: 20 }} />
+                <Filter size={20} />
                 Filters & Search
                 {activeFiltersCount > 0 && (
                   <Badge variant="secondary">{activeFiltersCount} active</Badge>

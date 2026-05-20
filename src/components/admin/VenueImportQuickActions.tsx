@@ -33,11 +33,11 @@ interface VenueStats {
 }
 
 const PROVIDER_ICONS: Record<string, React.ReactNode> = {
-  'foursquare': <Navigation style={{ width: 24, height: 24 }} />,
-  'google-places': <Globe style={{ width: 24, height: 24 }} />,
-  'tomtom': <MapPin style={{ width: 24, height: 24 }} />,
-  'tripadvisor': <Plane style={{ width: 24, height: 24 }} />,
-  'spartacus': <Database style={{ width: 24, height: 24 }} />,
+  'foursquare': <Navigation size={24} />,
+  'google-places': <Globe size={24} />,
+  'tomtom': <MapPin size={24} />,
+  'tripadvisor': <Plane size={24} />,
+  'spartacus': <Database size={24} />,
 };
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -162,11 +162,11 @@ export const VenueImportQuickActions = () => {
     const status = getKeyStatus(source);
     switch (status) {
       case 'ready':
-        return <Badge variant="default"><Key style={{ width: 10, height: 10 }} />API Ready</Badge>;
+        return <Badge variant="default"><Key size={10} />API Ready</Badge>;
       case 'error':
-        return <Badge variant="destructive"><AlertTriangle style={{ width: 10, height: 10 }} />Key Error</Badge>;
+        return <Badge variant="destructive"><AlertTriangle size={10} />Key Error</Badge>;
       case 'missing':
-        return <Badge variant="destructive"><XCircle style={{ width: 10, height: 10 }} />Key Missing</Badge>;
+        return <Badge variant="destructive"><XCircle size={10} />Key Missing</Badge>;
       default:
         return <Badge variant="secondary">No Key Needed</Badge>;
     }
@@ -288,7 +288,7 @@ export const VenueImportQuickActions = () => {
           </p>
         </div>
         <Badge variant="secondary">
-          <Database style={{ width: 12, height: 12 }} />
+          <Database size={12} />
           Data-Driven
         </Badge>
       </div>
@@ -330,7 +330,7 @@ export const VenueImportQuickActions = () => {
       >
         {venueSources.map((source) => {
           const color = PROVIDER_COLORS[source.slug] || 'hsl(var(--muted-foreground))';
-          const icon = PROVIDER_ICONS[source.slug] || <Globe style={{ width: 24, height: 24 }} />;
+          const icon = PROVIDER_ICONS[source.slug] || <Globe size={24} />;
           const venueCount = getSourceVenueCount(source);
 
           return (
@@ -403,7 +403,7 @@ export const VenueImportQuickActions = () => {
                     </>
                   ) : (
                     <>
-                      <Search style={{ width: 16, height: 16 }} />
+                      <Search size={16} />
                       {getImportButtonText(source)}
                     </>
                   )}
@@ -418,7 +418,7 @@ export const VenueImportQuickActions = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Download style={{ width: 20, height: 20 }} />
+            <Download size={20} />
             Venue Source Breakdown
           </CardTitle>
         </CardHeader>

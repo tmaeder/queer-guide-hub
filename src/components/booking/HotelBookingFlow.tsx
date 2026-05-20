@@ -160,7 +160,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>Book Hotel</DialogTitle>
           <Button variant="ghost" size="icon" className="h-7 w-7 p-0" onClick={handleClose} aria-label="Close">
-            <X style={{ height: 20, width: 20 }} />
+            <X size={20} />
           </Button>
         </DialogHeader>
         <div>

@@ -174,7 +174,7 @@ export const EventImageUpload = ({
                 className="opacity-0 group-hover:opacity-100"
                 onClick={() => removeImage(index)}
               >
-                <X style={{ height: 12, width: 12 }} />
+                <X size={12} />
               </Button>
             </div>
           ))}

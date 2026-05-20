@@ -38,7 +38,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
       <Card>
         <CardHeader>
           <CardTitle>
-            <Clock style={{ width: 16, height: 16 }} />
+            <Clock size={16} />
             Recent Activity
           </CardTitle>
         </CardHeader>
@@ -62,7 +62,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
     <Card>
       <CardHeader>
         <CardTitle>
-          <Clock style={{ width: 16, height: 16 }} />
+          <Clock size={16} />
           Recent Activity
         </CardTitle>
         {onRefresh && (
@@ -71,7 +71,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
             size="sm"
             onClick={onRefresh}
           >
-            <RefreshCw style={{ width: 16, height: 16 }} />
+            <RefreshCw size={16} />
           </Button>
         )}
       </CardHeader>
@@ -106,7 +106,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
                       {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                     </p>
                   </div>
-                  <ArrowUpRight className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" style={{ width: 16, height: 16 }} />
+                  <ArrowUpRight className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" size={16} />
                 </div>
               );
             })}

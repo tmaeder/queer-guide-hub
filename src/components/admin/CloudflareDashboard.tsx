@@ -131,7 +131,7 @@ export function CloudflareDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>
-              <Globe style={{ height: 20, width: 20 }} />
+              <Globe size={20} />
               Zone Status
             </CardTitle>
           </CardHeader>
@@ -186,7 +186,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <BarChart3 style={{ height: 16, width: 16 }} />
+                    <BarChart3 size={16} />
                     Total Requests
                   </CardTitle>
                 </CardHeader>
@@ -203,7 +203,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <TrendingUp style={{ height: 16, width: 16 }} />
+                    <TrendingUp size={16} />
                     Bandwidth
                   </CardTitle>
                 </CardHeader>
@@ -229,7 +229,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <Users style={{ height: 16, width: 16 }} />
+                    <Users size={16} />
                     Unique Visitors
                   </CardTitle>
                 </CardHeader>
@@ -246,7 +246,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <Shield style={{ height: 16, width: 16 }} />
+                    <Shield size={16} />
                     Threats Blocked
                   </CardTitle>
                 </CardHeader>
@@ -275,7 +275,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <Lock style={{ height: 20, width: 20 }} />
+                    <Lock size={20} />
                     SSL/TLS Settings
                   </CardTitle>
                 </CardHeader>
@@ -310,7 +310,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <Shield style={{ height: 20, width: 20 }} />
+                    <Shield size={20} />
                     Security Level
                   </CardTitle>
                 </CardHeader>
@@ -342,7 +342,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <Zap style={{ height: 20, width: 20 }} />
+                    <Zap size={20} />
                     Caching Settings
                   </CardTitle>
                 </CardHeader>
@@ -377,7 +377,7 @@ export function CloudflareDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    <Activity style={{ height: 20, width: 20 }} />
+                    <Activity size={20} />
                     Optimization
                   </CardTitle>
                 </CardHeader>

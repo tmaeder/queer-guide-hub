@@ -80,7 +80,7 @@ export function SearchPopoverRail({
                       display: 'inline-flex',
                     }}
                   >
-                    <X style={{ height: 11, width: 11 }} />
+                    <X size={11} />
                   </button>
                 }
               >
@@ -151,7 +151,7 @@ export function SearchPopoverRail({
           <RailRow id="rail-nearme" onClick={onNearMe}>
             <Navigation style={{ height: 13, width: 13, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
             <span className="text-xs" style={{ flex: 1 }}>{t('search.nearMe', 'Near me')}</span>
-            {nearMeLoading && <Loader2 className="animate-spin" style={{ height: 11, width: 11 }} />}
+            {nearMeLoading && <Loader2 className="animate-spin" size={11} />}
           </RailRow>
         )}
         <RailRow id="rail-browse" onClick={onBrowseAll}>

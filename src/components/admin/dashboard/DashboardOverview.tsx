@@ -138,7 +138,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       {/* Key Metrics */}
       <div>
         <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp style={{ height: 20, width: 20 }} />
+          <TrendingUp size={20} />
           Key Metrics
         </h6>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
@@ -169,7 +169,7 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       {/* System Health */}
       <div>
         <h6 className="text-base font-semibold mb-4 flex items-center gap-2">
-          <Activity style={{ height: 20, width: 20 }} />
+          <Activity size={20} />
           System Health
         </h6>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">

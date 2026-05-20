@@ -407,9 +407,9 @@ export function VenueFilters({
             aria-label="Find near me"
           >
             {isDetectingLocation ? (
-              <Loader2 style={{ width: 16, height: 16 }} />
+              <Loader2 size={16} />
             ) : (
-              <Navigation style={{ width: 16, height: 16 }} />
+              <Navigation size={16} />
             )}
           </Button>
           <Button
@@ -418,7 +418,7 @@ export function VenueFilters({
             className="h-11 w-11 rounded-element"
             aria-label="Search"
           >
-            <Search style={{ width: 16, height: 16 }} />
+            <Search size={16} />
           </Button>
           <Button
             variant={showAdvanced ? 'default' : 'outline'}
@@ -426,7 +426,7 @@ export function VenueFilters({
             className="h-11 rounded-element gap-2"
             aria-label="Toggle filters"
           >
-            <Filter style={{ width: 16, height: 16 }} />
+            <Filter size={16} />
             {activeFilterCount > 0 && (
               <span
                 className="rounded-full inline-flex items-center justify-center font-semibold"
@@ -645,7 +645,7 @@ export function VenueFilters({
           {hasActiveFilters && (
             <div className="flex gap-3">
               <Button variant="outline" onClick={clearFilters} size="sm">
-                <X style={{ width: 14, height: 14 }} />
+                <X size={14} />
                 Clear All
               </Button>
             </div>
@@ -720,7 +720,7 @@ function FilterDropdown({
               <CommandGroup>
                 {loading ? (
                   <div className="flex items-center justify-center p-4">
-                    <Loader2 style={{ width: 16, height: 16 }} />
+                    <Loader2 size={16} />
                   </div>
                 ) : (
                   items.map((item) => (

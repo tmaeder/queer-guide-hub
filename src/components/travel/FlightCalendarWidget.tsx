@@ -72,7 +72,7 @@ export function FlightCalendarWidget({ destinationIata, destinationCity, type = 
                 </div>
                 {isCheapest && (
                   <div className="flex items-center justify-center" style={{ gap: 2, marginTop: 2 }}>
-                    <TrendingDown style={{ height: 10, width: 10 }} />
+                    <TrendingDown size={10} />
                     <span style={{ fontSize: '0.55rem', fontWeight: 600 }}>Cheapest</span>
                   </div>
                 )}

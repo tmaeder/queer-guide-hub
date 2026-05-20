@@ -298,7 +298,7 @@ export function UserDetailSheet({ user, open, onOpenChange, onUserUpdated }: Use
                           padding: '4px 10px',
                         }}
                       >
-                        <Shield style={{ height: 12, width: 12 }} />
+                        <Shield size={12} />
                         {role}
                         {isAdmin && (
                           <button

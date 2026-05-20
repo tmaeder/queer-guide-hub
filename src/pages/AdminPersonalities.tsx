@@ -261,7 +261,7 @@ export default function AdminPersonalities() {
           const val = info.getValue();
           return val ? (
             <div className="flex items-center gap-1">
-              <MapPin style={{ height: 12, width: 12 }} />
+              <MapPin size={12} />
               {val}
             </div>
           ) : (
@@ -280,7 +280,7 @@ export default function AdminPersonalities() {
             !p.is_living && p.death_date ? ` - ${new Date(p.death_date).getFullYear()}` : '';
           return (
             <div className="flex items-center gap-1">
-              <Calendar style={{ height: 12, width: 12 }} />
+              <Calendar size={12} />
               {born}
               {died}
             </div>
@@ -339,7 +339,7 @@ export default function AdminPersonalities() {
         header: 'Views',
         cell: (info) => (
           <div className="flex items-center gap-1">
-            <Eye style={{ height: 12, width: 12 }} />
+            <Eye size={12} />
             {info.getValue()?.toLocaleString() ?? 0}
           </div>
         ),

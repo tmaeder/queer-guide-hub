@@ -320,7 +320,7 @@ export default function TripPlannerPage() {
           className="rounded-element"
           style={{ width: 48, height: 48, padding: 0 }}
         >
-          <Hotel style={{ width: 20, height: 20 }} />
+          <Hotel size={20} />
         </Button>
       </div>
       <Sheet open={mobileBookingOpen} onOpenChange={setMobileBookingOpen}>

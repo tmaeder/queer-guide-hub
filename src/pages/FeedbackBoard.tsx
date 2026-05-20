@@ -212,12 +212,12 @@ export default function FeedbackBoard() {
                       : {}),
                   }}
                 >
-                  <ChevronUp style={{ width: 14, height: 14 }} />
+                  <ChevronUp size={14} />
                   {votesMap[selectedItem.id]?.count ?? 0} vote
                   {(votesMap[selectedItem.id]?.count ?? 0) !== 1 ? 's' : ''}
                 </Button>
                 <div className="flex items-center gap-1">
-                  <Clock style={{ width: 12, height: 12 }} className="text-muted-foreground" />
+                  <Clock size={12} className="text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
                     {new Date(selectedItem.submitted_at).toLocaleDateString('en-US', {
                       month: 'short',

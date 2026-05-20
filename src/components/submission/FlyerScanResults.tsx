@@ -330,7 +330,7 @@ export function FlyerScanResults({
               onClick={onDismiss}
               style={{ display: 'flex', alignItems: 'center', gap: 4 }}
             >
-              <X style={{ width: 14, height: 14 }} />
+              <X size={14} />
               Dismiss
             </Button>
           </div>
@@ -361,7 +361,7 @@ export function FlyerScanResults({
             onClick={onDismiss}
             style={{ display: 'flex', alignItems: 'center', gap: 4 }}
           >
-            <X style={{ width: 14, height: 14 }} />
+            <X size={14} />
             Dismiss
           </Button>
         </div>
@@ -422,7 +422,7 @@ export function FlyerScanResults({
                     </span>
                     {multipleFiles && (
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <FileText style={{ width: 10, height: 10 }} />
+                        <FileText size={10} />
                         {result.source_file}
                       </span>
                     )}

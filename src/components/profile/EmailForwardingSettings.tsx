@@ -85,7 +85,7 @@ export function EmailForwardingSettings() {
               onClick={() => void copy()}
               aria-label={t('settings.email.copy', 'Copy address')}
             >
-              {copied ? <Check style={{ width: 16, height: 16 }} /> : <Copy style={{ width: 16, height: 16 }} />}
+              {copied ? <Check size={16} /> : <Copy size={16} />}
             </Button>
           </div>
 

@@ -36,7 +36,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
   const header = (
     <CardHeader>
       <CardTitle>
-        <BarChart3 style={{ width: 20, height: 20 }} />
+        <BarChart3 size={20} />
         Venue Activity
       </CardTitle>
     </CardHeader>
@@ -114,7 +114,7 @@ export function VenueRecentCheckins({ venueId, refreshTrigger }: VenueRecentChec
           {recentActivity.length > 0 && (
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium flex items-center gap-2">
-                <Clock style={{ width: 16, height: 16 }} />
+                <Clock size={16} />
                 Recent Activity Hours
               </p>
               {recentActivity.map((stat, index) => {

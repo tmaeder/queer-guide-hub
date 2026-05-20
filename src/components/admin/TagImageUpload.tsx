@@ -112,7 +112,7 @@ export const TagImageUpload = ({
             />
           </div>
           <Button type="button" variant="destructive" size="sm" onClick={handleDeleteImage}>
-            <X style={{ width: 16, height: 16 }} />
+            <X size={16} />
           </Button>
         </div>
       ) : (
@@ -136,7 +136,7 @@ export const TagImageUpload = ({
 
       {uploading && (
         <div className="flex items-center gap-2">
-          <Upload className="animate-pulse" style={{ width: 16, height: 16 }} />
+          <Upload className="animate-pulse" size={16} />
           <p className="text-sm text-muted-foreground">Uploading image...</p>
         </div>
       )}

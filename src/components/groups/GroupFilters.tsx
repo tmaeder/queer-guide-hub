@@ -35,7 +35,7 @@ function FilterChip({ label, onDelete }: { label: string; onDelete: () => void }
         className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
         aria-label="Remove filter"
       >
-        <X style={{ width: 10, height: 10 }} />
+        <X size={10} />
       </button>
     </Badge>
   );
@@ -98,7 +98,7 @@ export const GroupFilters = ({
               onClick={clearAllFilters}
             >
               <span className="flex items-center gap-1">
-                <X style={{ width: 12, height: 12 }} />
+                <X size={12} />
                 Clear
               </span>
             </Button>

@@ -89,7 +89,7 @@ export default function Friends() {
                       disabled={!canSend || sosLoading}
                       style={{ gap: 6 }}
                     >
-                      <Siren style={{ width: 16, height: 16 }} />
+                      <Siren size={16} />
                       {cooldownSeconds > 0
                         ? `${Math.floor(cooldownSeconds / 60)}:${String(cooldownSeconds % 60).padStart(2, '0')}`
                         : t('sos.button')}
@@ -116,7 +116,7 @@ export default function Friends() {
                 </AlertDialog>
                 <Badge variant="secondary">
                   <div className="flex items-center gap-2">
-                    <Users style={{ width: 16, height: 16 }} />
+                    <Users size={16} />
                     {friends.length} Friends
                   </div>
                 </Badge>
@@ -128,13 +128,13 @@ export default function Friends() {
             <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: '1fr 1fr' }}>
               <TabsTrigger value="friends">
                 <div className="flex items-center gap-2">
-                  <Users style={{ width: 16, height: 16 }} />
+                  <Users size={16} />
                   Friends ({friends.length})
                 </div>
               </TabsTrigger>
               <TabsTrigger value="requests">
                 <div className="flex items-center gap-2">
-                  <Clock style={{ width: 16, height: 16 }} />
+                  <Clock size={16} />
                   Requests ({pendingRequests.length})
                 </div>
               </TabsTrigger>
@@ -263,7 +263,7 @@ export default function Friends() {
                                   disabled={loading}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <Check style={{ width: 16, height: 16 }} />
+                                    <Check size={16} />
                                     Accept
                                   </div>
                                 </Button>
@@ -274,7 +274,7 @@ export default function Friends() {
                                   disabled={loading}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <X style={{ width: 16, height: 16 }} />
+                                    <X size={16} />
                                     Decline
                                   </div>
                                 </Button>

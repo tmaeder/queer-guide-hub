@@ -308,7 +308,7 @@ function SortableErrorCard({
           className="cursor-grab text-muted-foreground/60 flex items-start pt-1 active:cursor-grabbing hover:text-muted-foreground"
           aria-label="Drag to reorder"
         >
-          <GripVertical style={{ width: 14, height: 14 }} />
+          <GripVertical size={14} />
         </div>
 
         <div
@@ -337,9 +337,9 @@ function SortableErrorCard({
               }}
             >
               {isAdvisor ? (
-                <ShieldAlert style={{ width: 11, height: 11 }} />
+                <ShieldAlert size={11} />
               ) : (
-                <Server style={{ width: 11, height: 11 }} />
+                <Server size={11} />
               )}
               {isAdvisor ? `advisor · ${advisorMeta?.advisor_type}` : item.data.service}
             </Badge>
@@ -373,7 +373,7 @@ function SortableErrorCard({
                   fontWeight: 700,
                 }}
               >
-                <Github style={{ width: 11, height: 11 }} />#{item.github_issue_number}
+                <Github size={11} />#{item.github_issue_number}
               </Badge>
             )}
             <div className="flex-1" />
@@ -395,7 +395,7 @@ function SortableErrorCard({
                 gap: 4,
               }}
             >
-              <Hash style={{ width: 11, height: 11 }} />
+              <Hash size={11} />
               {item.occurrence_count}×
             </Badge>
           </div>
@@ -445,7 +445,7 @@ function SortableErrorCard({
                   gap: 4,
                 }}
               >
-                <Github style={{ width: 12, height: 12 }} /> #{item.github_issue_number}
+                <Github size={12} /> #{item.github_issue_number}
               </Button>
             ) : (
               <Button
@@ -465,7 +465,7 @@ function SortableErrorCard({
                   color: 'hsl(var(--background))',
                 }}
               >
-                <MessageSquarePlus style={{ width: 12, height: 12 }} />
+                <MessageSquarePlus size={12} />
                 {isForwarding ? 'Forwarding…' : 'Fix with Claude'}
               </Button>
             )}
@@ -486,7 +486,7 @@ function SortableErrorCard({
                 }}
                 title="Mark resolved (auto-reopens if it recurs)"
               >
-                <Check style={{ width: 12, height: 12 }} /> Resolve
+                <Check size={12} /> Resolve
               </Button>
             )}
             <Button
@@ -505,7 +505,7 @@ function SortableErrorCard({
               }}
               title="Copy Claude prompt"
             >
-              <Copy style={{ width: 12, height: 12 }} />
+              <Copy size={12} />
             </Button>
           </div>
 

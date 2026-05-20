@@ -15,7 +15,7 @@ export function AccessibilityControls() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Eye style={{ height: 20, width: 20 }} />
+            <Eye size={20} />
             Text Size
           </CardTitle>
           <CardDescription>
@@ -47,7 +47,7 @@ export function AccessibilityControls() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Palette style={{ height: 20, width: 20 }} />
+            <Palette size={20} />
             Visual Settings
           </CardTitle>
           <CardDescription>
@@ -89,7 +89,7 @@ export function AccessibilityControls() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <MousePointer style={{ height: 20, width: 20 }} />
+            <MousePointer size={20} />
             Motion & Animation
           </CardTitle>
           <CardDescription>
@@ -117,7 +117,7 @@ export function AccessibilityControls() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Volume2 style={{ height: 20, width: 20 }} />
+            <Volume2 size={20} />
             Screen Reader Support
           </CardTitle>
           <CardDescription>
@@ -145,7 +145,7 @@ export function AccessibilityControls() {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Keyboard style={{ height: 20, width: 20 }} />
+            <Keyboard size={20} />
             Keyboard Navigation
           </CardTitle>
           <CardDescription>
@@ -189,7 +189,7 @@ export function AccessibilityControls() {
             variant="outline"
             onClick={resetToDefaults}
           >
-            <RefreshCw style={{ height: 16, width: 16 }} />
+            <RefreshCw size={16} />
             Reset to Defaults
           </Button>
         </CardContent>

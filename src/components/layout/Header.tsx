@@ -305,7 +305,7 @@ export function Header() {
               }}
               onClick={() => handleDrawerNav(submitCta.route)}
             >
-              <Plus style={{ width: 18, height: 18 }} />
+              <Plus size={18} />
               {submitCta.label}
             </Button>
           </div>
@@ -454,7 +454,7 @@ export function Header() {
                   className="text-foreground flex-shrink-0 p-0"
                   style={{ width: 48, height: 48 }}
                 >
-                  <X style={{ width: 22, height: 22 }} />
+                  <X size={22} />
                 </Button>
               </>
             ) : (
@@ -468,7 +468,7 @@ export function Header() {
                   className="text-foreground flex-shrink-0 p-0"
                   style={{ width: 48, height: 48 }}
                 >
-                  <SearchIcon style={{ width: 22, height: 22 }} />
+                  <SearchIcon size={22} />
                 </Button>
                 <Button
                   variant="ghost"
@@ -481,7 +481,7 @@ export function Header() {
                   className="text-foreground relative flex-shrink-0 p-0"
                   style={{ width: 48, height: 48 }}
                 >
-                  <Menu style={{ width: 22, height: 22 }} />
+                  <Menu size={22} />
                   {user && unreadCount > 0 && (
                     <>
                       <span
@@ -524,7 +524,7 @@ export function Header() {
                     title={submitCta.label}
                     style={{ height: 40, width: 40, padding: 0 }}
                   >
-                    <Plus style={{ width: 20, height: 20 }} />
+                    <Plus size={20} />
                   </Button>
                 ) : (
                   <Button
@@ -535,7 +535,7 @@ export function Header() {
                     title={t('header.signInToContribute', 'Sign in to contribute')}
                     style={{ height: 40, width: 40, padding: 0 }}
                   >
-                    <Plus style={{ width: 20, height: 20 }} />
+                    <Plus size={20} />
                   </Button>
                 )}
 
@@ -650,7 +650,7 @@ export function Header() {
                             }}
                             onClick={() => navigate('/admin')}
                           >
-                            <Shield style={{ width: 16, height: 16 }} />
+                            <Shield size={16} />
                             <span className="text-sm">
                               {t('header.adminConsole', 'Admin Console')}
                             </span>
@@ -727,7 +727,7 @@ export function Header() {
                   aria-expanded={moreOpen}
                 >
                   {t('header.nav.more', 'More')}
-                  <ChevronDown style={{ width: 14, height: 14 }} />
+                  <ChevronDown size={14} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" style={{ width: 220, padding: 4, zIndex: 50 }}>

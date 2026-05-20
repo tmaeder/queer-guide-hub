@@ -48,7 +48,7 @@ export function TripsSignedOutHero() {
           <div>
             <Badge variant="outline">
               <span className="inline-flex items-center gap-1">
-                <Luggage style={{ width: 12, height: 12 }} />
+                <Luggage size={12} />
                 {t('trips.signedOut.badge')}
               </span>
             </Badge>
@@ -153,7 +153,7 @@ export function TripsSignedOutHero() {
                       <div
                         className="inline-flex items-center gap-1 self-start text-white bg-white/20 px-2 py-0.5 rounded text-xs2 font-semibold"
                       >
-                        <ShieldCheck style={{ width: 11, height: 11 }} />
+                        <ShieldCheck size={11} />
                         {t('trips.signedOut.safeLabel')}
                       </div>
                     </div>

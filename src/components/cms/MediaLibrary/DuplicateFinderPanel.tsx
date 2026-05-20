@@ -180,7 +180,7 @@ export function DuplicateFinderPanel() {
                             />
                             {isSelected && (
                               <div className="absolute top-1 right-1">
-                                <Check style={{ height: 14, width: 14 }} />
+                                <Check size={14} />
                               </div>
                             )}
                             <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">

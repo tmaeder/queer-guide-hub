@@ -48,7 +48,7 @@ export function InspiredByYourTrips({ ownTrips }: Props) {
       <div className="flex items-end justify-between gap-3 mb-4">
         <div>
           <div className="inline-flex items-center gap-2 mb-1">
-            <Sparkles style={{ width: 16, height: 16 }} />
+            <Sparkles size={16} />
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {t('trips.inspired.eyebrow', 'Inspired by your trips')}
             </span>

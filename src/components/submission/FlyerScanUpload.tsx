@@ -138,7 +138,7 @@ export function FlyerScanUpload({
                 onClick={onReset}
                 style={{ display: 'flex', alignItems: 'center', gap: 4 }}
               >
-                <RotateCcw style={{ width: 14, height: 14 }} />
+                <RotateCcw size={14} />
                 {t('submission.errors.retry')}
               </Button>
             )}

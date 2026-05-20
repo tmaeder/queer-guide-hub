@@ -216,7 +216,7 @@ export default function TripsDiscoverPage() {
                   className="gap-2"
                 >
                   <span className="w-4 inline-flex">
-                    {key === sortKey && <Check style={{ width: 14, height: 14 }} />}
+                    {key === sortKey && <Check size={14} />}
                   </span>
                   {t(`trips.discover.sort.${key}`, sortLabel(key))}
                 </DropdownMenuItem>
@@ -240,7 +240,7 @@ export default function TripsDiscoverPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <List style={{ width: 14, height: 14 }} />
+              <List size={14} />
             </button>
             <button
               type="button"
@@ -253,7 +253,7 @@ export default function TripsDiscoverPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Map style={{ width: 14, height: 14 }} />
+              <Map size={14} />
             </button>
           </div>
         </div>

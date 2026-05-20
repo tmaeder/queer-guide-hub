@@ -73,7 +73,7 @@ export function CityOverviewTab({
           <Card>
             <CardHeader>
               <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Globe style={{ height: 20, width: 20 }} />
+                <Globe size={20} />
                 About {city.name}
               </CardTitle>
             </CardHeader>
@@ -88,7 +88,7 @@ export function CityOverviewTab({
           <Card>
             <CardHeader>
               <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Star style={{ height: 20, width: 20 }} />
+                <Star size={20} />
                 Quick Facts
               </CardTitle>
             </CardHeader>
@@ -129,7 +129,7 @@ export function CityOverviewTab({
       <Collapsible>
         <CollapsibleTrigger asChild>
           <Button variant="outline" size="sm">
-            <ChevronDown style={{ height: 16, width: 16 }} />
+            <ChevronDown size={16} />
             Show more details
           </Button>
         </CollapsibleTrigger>
@@ -138,7 +138,7 @@ export function CityOverviewTab({
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Info style={{ height: 20, width: 20 }} />
+                  <Info size={20} />
                   Basic Information
                 </CardTitle>
               </CardHeader>
@@ -165,7 +165,7 @@ export function CityOverviewTab({
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Thermometer style={{ height: 20, width: 20 }} />
+                  <Thermometer size={20} />
                   Climate & Geography
                 </CardTitle>
               </CardHeader>
@@ -196,7 +196,7 @@ export function CityOverviewTab({
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Phone style={{ height: 20, width: 20 }} />
+                  <Phone size={20} />
                   Contact & Codes
                 </CardTitle>
               </CardHeader>
@@ -254,7 +254,7 @@ export function CityOverviewTab({
               <Card>
                 <CardHeader>
                   <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Users style={{ height: 20, width: 20 }} />
+                    <Users size={20} />
                     Demographics & Population
                   </CardTitle>
                 </CardHeader>
@@ -278,7 +278,7 @@ export function CityOverviewTab({
                 <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <DollarSign style={{ height: 20, width: 20 }} />
+                      <DollarSign size={20} />
                       Economy Sectors
                     </CardTitle>
                   </CardHeader>
@@ -297,7 +297,7 @@ export function CityOverviewTab({
                 <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <DollarSign style={{ height: 20, width: 20 }} />
+                      <DollarSign size={20} />
                       Cost of Living
                     </CardTitle>
                   </CardHeader>
@@ -324,7 +324,7 @@ export function CityOverviewTab({
               <Card>
                 <CardHeader>
                   <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <GraduationCap style={{ height: 20, width: 20 }} />
+                    <GraduationCap size={20} />
                     Universities & Education
                   </CardTitle>
                 </CardHeader>
@@ -333,7 +333,7 @@ export function CityOverviewTab({
                     {city.universities.map((university: string, index: number) => (
                       <div key={index} className="p-3 rounded-element bg-muted">
                         <div className="flex items-center gap-2">
-                          <GraduationCap style={{ height: 16, width: 16 }} />
+                          <GraduationCap size={16} />
                           <span className="font-medium text-sm">{university}</span>
                         </div>
                       </div>
@@ -348,7 +348,7 @@ export function CityOverviewTab({
                 <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Landmark style={{ height: 20, width: 20 }} />
+                      <Landmark size={20} />
                       Notable Landmarks
                     </CardTitle>
                   </CardHeader>
@@ -357,7 +357,7 @@ export function CityOverviewTab({
                       {city.notable_landmarks.map((landmark: string, index: number) => (
                         <div key={index} className="p-3 rounded-element bg-muted">
                           <div className="flex items-center gap-2">
-                            <Landmark style={{ height: 16, width: 16 }} />
+                            <Landmark size={16} />
                             <span className="font-medium">{landmark}</span>
                           </div>
                         </div>
@@ -370,7 +370,7 @@ export function CityOverviewTab({
                 <Card>
                   <CardHeader>
                     <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Globe style={{ height: 20, width: 20 }} />
+                      <Globe size={20} />
                       Sister Cities
                     </CardTitle>
                   </CardHeader>
@@ -379,7 +379,7 @@ export function CityOverviewTab({
                       {city.sister_cities.map((sisterCity: string, index: number) => (
                         <div key={index} className="p-3 rounded-element bg-muted">
                           <div className="flex items-center gap-2">
-                            <Globe style={{ height: 16, width: 16 }} />
+                            <Globe size={16} />
                             <span className="font-medium">{sisterCity}</span>
                           </div>
                         </div>
@@ -395,7 +395,7 @@ export function CityOverviewTab({
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Info style={{ height: 20, width: 20 }} />
+                  <Info size={20} />
                   Local Customs & Culture
                 </CardTitle>
               </CardHeader>
@@ -413,7 +413,7 @@ export function CityOverviewTab({
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Home style={{ height: 20, width: 20 }} />
+              <Home size={20} />
               LGBTQ+ Neighborhoods
             </CardTitle>
           </CardHeader>

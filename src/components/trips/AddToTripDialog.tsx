@@ -196,7 +196,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
         <DialogHeader>
           <DialogTitle>
             <span className="flex items-center gap-2">
-              <Luggage style={{ width: 20, height: 20 }} />
+              <Luggage size={20} />
               {t('trips.addTo.title', 'Add to Trip')}
             </span>
           </DialogTitle>

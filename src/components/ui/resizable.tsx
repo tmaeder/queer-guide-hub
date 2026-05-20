@@ -49,7 +49,7 @@ const ResizableHandle = ({
         justifyContent: 'center',
         backgroundColor: 'hsl(var(--accent))',
       }}>
-        <GripVertical style={{ height: 10, width: 10 }} />
+        <GripVertical size={10} />
       </div>
     )}
   </ResizablePrimitive.PanelResizeHandle>

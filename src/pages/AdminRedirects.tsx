@@ -236,7 +236,7 @@ export default function AdminRedirects() {
           onClick={() => navigate('/admin')}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
+          <ArrowLeft size={16} /> Back to Admin
         </Button>
         <div>
           <h1 style={{ fontSize: '1.875rem', fontWeight: 700 }}>

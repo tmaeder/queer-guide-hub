@@ -65,14 +65,14 @@ export function VenueCheckInButton({
     <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
       <DialogTrigger asChild>
         <Button onClick={() => setShowPrivacyDialog(true)} disabled={loading} variant="default">
-          <Shield style={{ width: 16, height: 16 }} />
+          <Shield size={16} />
           Check In Securely
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <Shield style={{ width: 20, height: 20 }} />
+            <Shield size={20} />
             Privacy-Protected Check-In
           </DialogTitle>
         </DialogHeader>
@@ -143,9 +143,9 @@ export function VenueCheckInButton({
               style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}
             >
               {loading ? (
-                <Loader2 style={{ width: 16, height: 16 }} />
+                <Loader2 size={16} />
               ) : (
-                <MapPin style={{ width: 16, height: 16 }} />
+                <MapPin size={16} />
               )}
               {loading ? 'Checking in...' : 'Check In'}
             </Button>

@@ -336,7 +336,7 @@ export function ReviewQueueEnhanced() {
               {error instanceof Error ? error.message : 'The staging query failed. Check the database connection.'}
             </p>
             <Button variant="outline" size="sm" onClick={() => refetch()} style={{ display: 'flex', gap: 6, margin: '0 auto' }}>
-              <RefreshCw style={{ width: 14, height: 14 }} /> Retry
+              <RefreshCw size={14} /> Retry
             </Button>
           </CardContent>
         </Card>

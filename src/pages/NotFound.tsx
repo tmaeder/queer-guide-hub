@@ -31,12 +31,12 @@ const NotFound = () => {
             onClick={() => window.history.back()}
             style={{ display: 'inline-flex', gap: 8 }}
           >
-            <ArrowLeft style={{ width: 16, height: 16 }} aria-hidden="true" />
+            <ArrowLeft size={16} aria-hidden="true" />
             {t('pages.notFound.goBack', 'Go Back')}
           </Button>
           <Button asChild style={{ display: 'inline-flex', gap: 8 }}>
             <LocalizedLink to="/">
-              <Home style={{ width: 16, height: 16 }} aria-hidden="true" />
+              <Home size={16} aria-hidden="true" />
               {t('pages.notFound.returnHome', 'Return Home')}
             </LocalizedLink>
           </Button>

@@ -65,7 +65,7 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
             {result.vertical === 'flight' ? (
               <div className="flex items-center gap-1">
                 <span className="font-bold text-sm">{result.originIata}</span>
-                <ArrowRight style={{ height: 14, width: 14 }} />
+                <ArrowRight size={14} />
                 <span className="font-bold text-sm">{result.destinationIata}</span>
               </div>
             ) : (
@@ -146,7 +146,7 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
           </Button>
           {onAddToTrip && (
             <Button size="sm" variant="outline" onClick={() => onAddToTrip(result)}>
-              <MapPin style={{ height: 14, width: 14 }} />
+              <MapPin size={14} />
             </Button>
           )}
         </div>

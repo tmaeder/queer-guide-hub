@@ -53,7 +53,7 @@ export function TripContextBar() {
           style={{ textDecoration: 'none' }}
         >
           {t('trips.contextBar.openTrip', 'Open trip')}
-          <ChevronRight style={{ width: 14, height: 14 }} aria-hidden />
+          <ChevronRight size={14} aria-hidden />
         </RouterLink>
         <Button
           variant="ghost"
@@ -62,7 +62,7 @@ export function TripContextBar() {
           onClick={dismiss}
           className="h-6 w-6 p-0 ml-1"
         >
-          <X style={{ width: 14, height: 14 }} />
+          <X size={14} />
         </Button>
       </div>
     </div>

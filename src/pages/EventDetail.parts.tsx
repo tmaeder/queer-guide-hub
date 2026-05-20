@@ -336,7 +336,7 @@ export function EventHero({
 
       <div className="flex flex-wrap gap-2 mb-6">
         <Badge variant="outline" className="gap-1">
-          <Calendar style={{ width: 14, height: 14 }} />
+          <Calendar size={14} />
           {formatEventDate(event.start_date, event.end_date)}
         </Badge>
         <Badge
@@ -349,7 +349,7 @@ export function EventHero({
               : undefined
           }
         >
-          <Clock style={{ width: 14, height: 14 }} />
+          <Clock size={14} />
           {formatEventTime(event.start_date, event.end_date, showEventTz ? event.timezone : null)}
         </Badge>
         <Badge
@@ -357,16 +357,16 @@ export function EventHero({
           className="gap-1 cursor-pointer"
           onClick={() => venueRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
         >
-          <MapPin style={{ width: 14, height: 14 }} />
+          <MapPin size={14} />
           {locationLabel}
         </Badge>
         <Badge variant="outline" className="gap-1">
-          <DollarSign style={{ width: 14, height: 14 }} />
+          <DollarSign size={14} />
           {getPriceDisplay(event)}
         </Badge>
         {isMeaningfulTag(event.event_type) && (
           <Badge className="gap-1 capitalize">
-            <Tag style={{ width: 14, height: 14 }} />
+            <Tag size={14} />
             {event.event_type}
           </Badge>
         )}

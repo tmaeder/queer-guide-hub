@@ -88,7 +88,7 @@ export function SecurityDashboard() {
   if (!isAdmin) {
     return (
       <Alert>
-        <AlertTriangle style={{ height: 16, width: 16 }} />
+        <AlertTriangle size={16} />
         <AlertDescription>
           Access denied. This dashboard is only available to administrators.
         </AlertDescription>
@@ -127,7 +127,7 @@ export function SecurityDashboard() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Shield style={{ height: 24, width: 24 }} />
+          <Shield size={24} />
           <h2 className="text-2xl font-bold">Security Dashboard</h2>
         </div>
         <Button onClick={loadSecurityData} disabled={loading}>

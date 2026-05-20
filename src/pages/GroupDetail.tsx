@@ -185,11 +185,11 @@ export default function GroupDetail() {
 
                 <div className="flex items-center gap-4 justify-center md:justify-start text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Users style={{ height: 16, width: 16 }} />
+                    <Users size={16} />
                     <span>{group.member_count} members</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Clock style={{ height: 16, width: 16 }} />
+                    <Clock size={16} />
                     <span>Created {new Date(group.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
@@ -200,11 +200,11 @@ export default function GroupDetail() {
                       variant="secondary"
                       style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      {group.user_role === 'admin' && <Crown style={{ height: 12, width: 12 }} />}
+                      {group.user_role === 'admin' && <Crown size={12} />}
                       {group.user_role === 'moderator' && (
-                        <Shield style={{ height: 12, width: 12 }} />
+                        <Shield size={12} />
                       )}
-                      {group.user_role === 'member' && <User style={{ height: 12, width: 12 }} />}
+                      {group.user_role === 'member' && <User size={12} />}
                       {group.user_role}
                     </Badge>
                   </div>
@@ -264,22 +264,22 @@ export default function GroupDetail() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
           <TabsTrigger value="about" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Users style={{ height: 16, width: 16 }} />
+            <Users size={16} />
             About
           </TabsTrigger>
           <TabsTrigger
             value="members"
             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <Users style={{ height: 16, width: 16 }} />
+            <Users size={16} />
             Members
           </TabsTrigger>
           <TabsTrigger value="posts" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <MessageSquare style={{ height: 16, width: 16 }} />
+            <MessageSquare size={16} />
             Posts
           </TabsTrigger>
           <TabsTrigger value="events" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Calendar style={{ height: 16, width: 16 }} />
+            <Calendar size={16} />
             Events
           </TabsTrigger>
         </TabsList>

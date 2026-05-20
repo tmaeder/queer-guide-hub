@@ -194,13 +194,13 @@ export default function Favorites() {
     const getIcon = () => {
       switch (item.type) {
         case 'venue':
-          return <MapPin style={{ height: 16, width: 16 }} />;
+          return <MapPin size={16} />;
         case 'event':
-          return <Calendar style={{ height: 16, width: 16 }} />;
+          return <Calendar size={16} />;
         case 'marketplace':
-          return <ShoppingBag style={{ height: 16, width: 16 }} />;
+          return <ShoppingBag size={16} />;
         case 'news':
-          return <Newspaper style={{ height: 16, width: 16 }} />;
+          return <Newspaper size={16} />;
       }
     };
     if (viewMode === 'grid') {
@@ -245,7 +245,7 @@ export default function Favorites() {
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-2">
               {item.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin style={{ height: 12, width: 12 }} />
+                  <MapPin size={12} />
                   {item.location}
                 </div>
               )}
@@ -306,13 +306,13 @@ export default function Favorites() {
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     {item.location && (
                       <div className="flex items-center gap-1">
-                        <MapPin style={{ height: 12, width: 12 }} />
+                        <MapPin size={12} />
                         {item.location}
                       </div>
                     )}
                     {item.date && (
                       <div className="flex items-center gap-1">
-                        <Calendar style={{ height: 12, width: 12 }} />
+                        <Calendar size={12} />
                         {new Date(item.date).toLocaleDateString()}
                       </div>
                     )}
@@ -353,7 +353,7 @@ export default function Favorites() {
       <>
         {getEventCount() > 0 && (
           <Button variant="outline" onClick={handleCalendarSubscription} disabled={calendarLoading}>
-            <CalendarDays style={{ height: 16, width: 16 }} />
+            <CalendarDays size={16} />
             Subscribe to Events Calendar
           </Button>
         )}
@@ -365,14 +365,14 @@ export default function Favorites() {
               size="sm"
               onClick={() => setViewMode('list')}
             >
-              <List style={{ height: 16, width: 16 }} />
+              <List size={16} />
             </Button>
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('grid')}
             >
-              <Grid style={{ height: 16, width: 16 }} />
+              <Grid size={16} />
             </Button>
           </div>
         </div>
@@ -394,7 +394,7 @@ export default function Favorites() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                <CalendarDays style={{ height: 20, width: 20 }} />
+                <CalendarDays size={20} />
                 Subscribe to Your Events Calendar
               </DialogTitle>
               <DialogDescription>
@@ -416,7 +416,7 @@ export default function Favorites() {
                     onClick={copyCalendarFeedUrl}
                     disabled={calendarLoading}
                   >
-                    <LinkIcon style={{ height: 16, width: 16 }} />
+                    <LinkIcon size={16} />
                   </Button>
                 </div>
               </div>
@@ -521,19 +521,19 @@ export default function Favorites() {
                         All ({getTabCount('all')})
                       </TabsTrigger>
                       <TabsTrigger value="venue" className={lineTab}>
-                        <MapPin style={{ height: 12, width: 12 }} />
+                        <MapPin size={12} />
                         Venues ({getTabCount('venue')})
                       </TabsTrigger>
                       <TabsTrigger value="event" className={lineTab}>
-                        <Calendar style={{ height: 12, width: 12 }} />
+                        <Calendar size={12} />
                         Events ({getTabCount('event')})
                       </TabsTrigger>
                       <TabsTrigger value="marketplace" className={lineTab}>
-                        <ShoppingBag style={{ height: 12, width: 12 }} />
+                        <ShoppingBag size={12} />
                         Marketplace ({getTabCount('marketplace')})
                       </TabsTrigger>
                       <TabsTrigger value="news" className={lineTab}>
-                        <Newspaper style={{ height: 12, width: 12 }} />
+                        <Newspaper size={12} />
                         News ({getTabCount('news')})
                       </TabsTrigger>
                     </>

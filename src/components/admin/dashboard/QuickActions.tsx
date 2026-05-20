@@ -64,7 +64,7 @@ export function QuickActions() {
       <Card>
         <CardHeader>
           <CardTitle style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Zap style={{ height: 16, width: 16 }} />
+            <Zap size={16} />
             Quick Actions
           </CardTitle>
         </CardHeader>

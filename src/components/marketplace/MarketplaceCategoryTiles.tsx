@@ -82,8 +82,7 @@ export function MarketplaceCategoryTiles() {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <Icon style={{ width: 22, height: 22 }} className="text-foreground" aria-hidden="true" />
-                    <ArrowUpRight
-                      style={{ width: 14, height: 14 }}
+                    <ArrowUpRight size={14}
                       className="text-muted-foreground group-hover:text-foreground transition-colors"
                       aria-hidden="true"
                     />

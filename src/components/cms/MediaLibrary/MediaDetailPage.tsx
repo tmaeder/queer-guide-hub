@@ -125,7 +125,7 @@ export function MediaDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate('/admin/media')}>
-            <ArrowLeft style={{ height: 16, width: 16 }} />
+            <ArrowLeft size={16} />
           </Button>
           <div>
             <h4 className="text-xl font-bold">{detail.display_name}</h4>
@@ -189,7 +189,7 @@ export function MediaDetailPage() {
             </div>
           ) : (
             <div className="flex items-center justify-center py-16 bg-muted">
-              <ImageIcon style={{ height: 48, width: 48 }} className="text-muted-foreground" />
+              <ImageIcon size={48} className="text-muted-foreground" />
             </div>
           )}
         </CardContent>
@@ -308,7 +308,7 @@ export function MediaDetailPage() {
                             })}
                             title="Set as cover"
                           >
-                            <Crown style={{ height: 14, width: 14 }} />
+                            <Crown size={14} />
                           </Button>
                         )}
                         {detail.source_type === 'image_asset' && (
@@ -323,7 +323,7 @@ export function MediaDetailPage() {
                             })}
                             title="Remove link"
                           >
-                            <X style={{ height: 14, width: 14 }} />
+                            <X size={14} />
                           </Button>
                         )}
                       </div>
@@ -394,7 +394,7 @@ export function MediaDetailPage() {
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.phash.slice(0, 16)}
                     <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.phash!)}>
-                      <Copy style={{ height: 12, width: 12 }} />
+                      <Copy size={12} />
                     </Button>
                   </span>
                 </div>
@@ -405,7 +405,7 @@ export function MediaDetailPage() {
                   <span className="flex items-center gap-1 font-mono text-xs">
                     {detail.content_hash.slice(0, 16)}
                     <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.content_hash!)}>
-                      <Copy style={{ height: 12, width: 12 }} />
+                      <Copy size={12} />
                     </Button>
                   </span>
                 </div>
@@ -416,7 +416,7 @@ export function MediaDetailPage() {
                   <span className="flex items-center gap-1 font-mono text-xs max-w-md truncate">
                     {detail.url}
                     <Button variant="ghost" size="sm" onClick={() => copyToClipboard(detail.url!)}>
-                      <Copy style={{ height: 12, width: 12 }} />
+                      <Copy size={12} />
                     </Button>
                   </span>
                 </div>

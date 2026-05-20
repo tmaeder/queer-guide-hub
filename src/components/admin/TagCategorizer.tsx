@@ -54,7 +54,7 @@ export function TagCategorizer() {
     <Card>
       <CardHeader>
         <CardTitle>
-          <Tag style={{ width: 20, height: 20 }} />
+          <Tag size={20} />
           Tag Categorization
         </CardTitle>
         <CardDescription>

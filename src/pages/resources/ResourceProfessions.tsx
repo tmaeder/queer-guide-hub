@@ -22,7 +22,7 @@ export function ResourceProfessions({
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
           {t('resources.professions.back')}
         </Button>
-        <Briefcase style={{ width: 18, height: 18 }} />
+        <Briefcase size={18} />
         <h6 className="text-base font-semibold">{t('resources.professions.title')}</h6>
         <Badge variant="secondary">{professions.length}</Badge>
       </div>

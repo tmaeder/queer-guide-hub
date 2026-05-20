@@ -86,10 +86,10 @@ export const TagSelector = ({
             borderColor: tag.color
           } : {})
         }}>
-                <TagIcon style={{ height: 12, width: 12 }} />
+                <TagIcon size={12} />
                 {tagName}
                 <Button variant="ghost" size="sm" style={{ height: 16, width: 16, padding: 0 }} onClick={() => removeTag(tagName)}>
-                  <X style={{ height: 12, width: 12 }} />
+                  <X size={12} />
                 </Button>
               </Badge>;
       })}
@@ -100,7 +100,7 @@ export const TagSelector = ({
         <PopoverTrigger asChild>
           <Button variant="outline" role="combobox" aria-expanded={open} style={{ width: '100%', justifyContent: 'space-between' }} disabled={selectedTags.length >= maxTags}>
             <span className="flex items-center gap-2">
-              <Plus style={{ height: 16, width: 16 }} />
+              <Plus size={16} />
               {selectedTags.length >= maxTags ? `Maximum ${maxTags} tags selected` : placeholder}
             </span>
           </Button>

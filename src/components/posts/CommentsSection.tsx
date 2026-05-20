@@ -156,7 +156,7 @@ const CommentItem = ({
 
                 aria-label="Comment actions"
               >
-                <MoreHorizontal style={{ width: 12, height: 12 }} />
+                <MoreHorizontal size={12} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -295,7 +295,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
         {/* Comments Header */}
         <div className="p-4 border-b">
           <p className="font-medium flex items-center gap-2">
-            <MessageCircle style={{ width: 16, height: 16 }} />
+            <MessageCircle size={16} />
             Comments ({comments.length})
           </p>
         </div>
@@ -340,11 +340,11 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <AtSign style={{ width: 12, height: 12 }} />
+                      <AtSign size={12} />
                       <span>mention</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Hash style={{ width: 12, height: 12 }} />
+                      <Hash size={12} />
                       <span>tag</span>
                     </div>
                     <span>• Ctrl+Enter to post</span>

@@ -324,7 +324,7 @@ export const ImportJobCreator = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Upload style={{ height: 18, width: 18 }} />
+            <Upload size={18} />
             Import Data
           </CardTitle>
         </CardHeader>
@@ -384,7 +384,7 @@ export const ImportJobCreator = () => {
               {csvPreview && (
                 <>
                   <div className="flex items-center gap-2 -mb-2">
-                    <Eye style={{ height: 14, width: 14 }} />
+                    <Eye size={14} />
                     <p className="text-sm font-medium">
                       Preview (first 5 rows)
                     </p>
@@ -516,7 +516,7 @@ export const ImportJobCreator = () => {
                                 padding: 0,
                               }}
                             >
-                              <X style={{ height: 10, width: 10 }} />
+                              <X size={10} />
                             </button>
                           </Badge>
                         ))}
@@ -554,7 +554,7 @@ export const ImportJobCreator = () => {
                 <CardTitle
 
                 >
-                  <Sliders style={{ height: 14, width: 14 }} />
+                  <Sliders size={14} />
                   Events Scraper Config
                 </CardTitle>
               </CardHeader>
@@ -574,7 +574,7 @@ export const ImportJobCreator = () => {
                             padding: 0,
                           }}
                         >
-                          <X style={{ height: 10, width: 10 }} />
+                          <X size={10} />
                         </button>
                       </Badge>
                     ))}
@@ -644,7 +644,7 @@ export const ImportJobCreator = () => {
                 <CardTitle
 
                 >
-                  <Sliders style={{ height: 14, width: 14 }} />
+                  <Sliders size={14} />
                   Spartacus Scraper Config
                 </CardTitle>
               </CardHeader>
@@ -686,7 +686,7 @@ export const ImportJobCreator = () => {
                             padding: 0,
                           }}
                         >
-                          <X style={{ height: 10, width: 10 }} />
+                          <X size={10} />
                         </button>
                       </Badge>
                     ))}
@@ -755,7 +755,7 @@ export const ImportJobCreator = () => {
                   </>
                 ) : (
                   <>
-                    <CheckCircle style={{ height: 16, width: 16 }} />{' '}
+                    <CheckCircle size={16} />{' '}
                     {selected.mode === 'venue-api' ? 'Configure Import' : 'Start Import'}
                   </>
                 )}

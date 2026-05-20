@@ -250,19 +250,19 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
           <TabsList className="h-auto gap-0 rounded-none border-0 border-b border-border bg-transparent p-0 backdrop-blur-none w-full justify-start overflow-x-auto">
             <TabsTrigger value="basic" className={lineTab}>
-              <span className="flex items-center gap-2"><User style={{ width: 16, height: 16 }} /> Basic</span>
+              <span className="flex items-center gap-2"><User size={16} /> Basic</span>
             </TabsTrigger>
             <TabsTrigger value="identity" className={lineTab}>
-              <span className="flex items-center gap-2"><Heart style={{ width: 16, height: 16 }} /> Identity</span>
+              <span className="flex items-center gap-2"><Heart size={16} /> Identity</span>
             </TabsTrigger>
             <TabsTrigger value="travel" className={lineTab}>
-              <span className="flex items-center gap-2"><Plane style={{ width: 16, height: 16 }} /> Travel</span>
+              <span className="flex items-center gap-2"><Plane size={16} /> Travel</span>
             </TabsTrigger>
             <TabsTrigger value="relationships" className={lineTab}>
-              <span className="flex items-center gap-2"><Users style={{ width: 16, height: 16 }} /> Relationships</span>
+              <span className="flex items-center gap-2"><Users size={16} /> Relationships</span>
             </TabsTrigger>
             <TabsTrigger value="privacy" className={lineTab}>
-              <span className="flex items-center gap-2"><Lock style={{ width: 16, height: 16 }} /> Privacy</span>
+              <span className="flex items-center gap-2"><Lock size={16} /> Privacy</span>
             </TabsTrigger>
             <TabsTrigger value="intimate" className={lineTab}>
               <span className="flex items-center gap-2">Intimate</span>
@@ -336,7 +336,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
           )}
           {saveStatus === 'saved' && (
             <>
-              <Check style={{ width: 14, height: 14 }} />
+              <Check size={14} />
               <span className="text-muted-foreground">All changes saved</span>
             </>
           )}

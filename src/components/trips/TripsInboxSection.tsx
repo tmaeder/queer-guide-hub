@@ -380,9 +380,9 @@ function ForwardingAddressCard() {
           aria-label={t('pages.inbox.forwarding.copy', 'Copy address')}
         >
           {copied ? (
-            <Check style={{ width: 16, height: 16 }} />
+            <Check size={16} />
           ) : (
-            <Copy style={{ width: 16, height: 16 }} />
+            <Copy size={16} />
           )}
         </Button>
       </div>

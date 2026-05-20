@@ -134,7 +134,7 @@ const ToastClose = React.forwardRef<
     aria-label="Close notification"
     {...props}
   >
-    <X style={{ height: 16, width: 16 }} />
+    <X size={16} />
   </ToastPrimitives.Close>
 ))
 ToastClose.displayName = ToastPrimitives.Close.displayName

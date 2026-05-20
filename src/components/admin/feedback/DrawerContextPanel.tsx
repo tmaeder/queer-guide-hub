@@ -57,9 +57,9 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
         style={{ gap: 4, paddingTop: 6, paddingBottom: 6 }}
       >
         {expanded ? (
-          <ChevronDown style={{ width: 14, height: 14 }} />
+          <ChevronDown size={14} />
         ) : (
-          <ChevronRight style={{ width: 14, height: 14 }} />
+          <ChevronRight size={14} />
         )}
         Context & metadata
       </button>
@@ -134,7 +134,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
         {screenshotUrl && (
           <div>
             <span className="text-xs font-semibold flex items-center mb-1" style={{ gap: 4 }}>
-              <Camera style={{ width: 12, height: 12 }} /> Screenshot
+              <Camera size={12} /> Screenshot
             </span>
             <div
               onClick={() => setLightboxOpen(true)}
@@ -184,9 +184,9 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               style={{ gap: 4, paddingTop: 4, paddingBottom: 4 }}
             >
               {errorsOpen ? (
-                <ChevronDown style={{ width: 14, height: 14 }} />
+                <ChevronDown size={14} />
               ) : (
-                <ChevronRight style={{ width: 14, height: 14 }} />
+                <ChevronRight size={14} />
               )}
               <AlertTriangle style={{ width: 12, height: 12, color: 'hsl(var(--destructive))' }} />
               <span className="text-xs font-semibold">
@@ -241,9 +241,9 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               style={{ gap: 4, paddingTop: 4, paddingBottom: 4 }}
             >
               {networkOpen ? (
-                <ChevronDown style={{ width: 14, height: 14 }} />
+                <ChevronDown size={14} />
               ) : (
-                <ChevronRight style={{ width: 14, height: 14 }} />
+                <ChevronRight size={14} />
               )}
               <Wifi style={{ width: 12, height: 12, color: 'hsl(var(--foreground) / 0.55)' }} />
               <span className="text-xs font-semibold">

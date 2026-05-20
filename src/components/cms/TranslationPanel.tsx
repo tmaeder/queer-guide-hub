@@ -164,7 +164,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
     <Card>
       <CardHeader>
         <CardTitle>
-          <Languages style={{ width: 18, height: 18 }} />
+          <Languages size={18} />
           Translations
           <Badge variant="secondary" style={{ marginLeft: 'auto' }}>
             {completedCount}/{totalCount}

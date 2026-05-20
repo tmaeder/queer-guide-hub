@@ -287,7 +287,7 @@ export function AdminDataTable<TData extends { id: string }>({
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" aria-label="Row actions" style={{ height: 28, width: 28 }}>
-                            <MoreVertical style={{ height: 14, width: 14 }} />
+                            <MoreVertical size={14} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" side="bottom" avoidCollisions>

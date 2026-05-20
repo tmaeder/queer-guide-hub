@@ -97,12 +97,12 @@ export const LegalPageLayout = ({
             aria-label="Table of contents"
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <List style={{ width: 16, height: 16 }} />
+              <List size={16} />
               {activeSection
                 ? `${sections.findIndex(s => s.id === activeSection) + 1} of ${sections.length} sections`
                 : 'Contents'}
             </span>
-            {tocOpen ? <ChevronUp style={{ width: 16, height: 16 }} /> : <ChevronDown style={{ width: 16, height: 16 }} />}
+            {tocOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </Button>
           {tocOpen && (
             <div className="mt-2 bg-background p-3">

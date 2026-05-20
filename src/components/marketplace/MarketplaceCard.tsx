@@ -141,8 +141,7 @@ export function MarketplaceCard({
                     <span className="ml-1.5 text-xs2 uppercase tracking-wider text-muted-foreground/70 inline-flex items-center gap-1">
                       · {provenance}
                       {isAffiliate && (
-                        <BadgeDollarSign
-                          style={{ width: 11, height: 11 }}
+                        <BadgeDollarSign size={11}
                           aria-label="Sponsored affiliate listing"
                         />
                       )}
@@ -229,7 +228,7 @@ export function MarketplaceCard({
 
             {averageRating > 0 && (
               <div className="flex items-center gap-1">
-                <Star style={{ height: 14, width: 14 }} fill="currentColor" aria-hidden="true" />
+                <Star size={14} fill="currentColor" aria-hidden="true" />
                 <p className="text-sm font-medium">{averageRating.toFixed(1)}</p>
               </div>
             )}
@@ -240,14 +239,14 @@ export function MarketplaceCard({
               {showContactIcons && listing.contact_phone && (
                 <Button size="default" variant="ghost" aria-label={`Call ${listing.contact_phone}`} asChild>
                   <a href={`tel:${listing.contact_phone}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
-                    <Phone style={{ height: 16, width: 16 }} aria-hidden="true" />
+                    <Phone size={16} aria-hidden="true" />
                   </a>
                 </Button>
               )}
               {showContactIcons && listing.contact_email && (
                 <Button size="default" variant="ghost" aria-label={`Email ${listing.contact_email}`} asChild>
                   <a href={`mailto:${listing.contact_email}`} onClick={(e) => e.stopPropagation()} style={ICON_LINK_STYLE}>
-                    <Mail style={{ height: 16, width: 16 }} aria-hidden="true" />
+                    <Mail size={16} aria-hidden="true" />
                   </a>
                 </Button>
               )}
@@ -265,7 +264,7 @@ export function MarketplaceCard({
                   aria-label={`${outbound.label} (opens in new tab)`}
                 >
                   {outbound.label}
-                  <ExternalLink style={{ width: 14, height: 14 }} aria-hidden="true" />
+                  <ExternalLink size={14} aria-hidden="true" />
                 </a>
               ) : (
                 <LocalizedLink to={`/marketplace/${listing.slug}`}>
@@ -274,7 +273,7 @@ export function MarketplaceCard({
               )}
               {linkState === 'stale' && (
                 <span title="Link not recently verified" className="text-muted-foreground" aria-label="Link not recently verified">
-                  <AlertTriangle style={{ width: 14, height: 14 }} aria-hidden="true" />
+                  <AlertTriangle size={14} aria-hidden="true" />
                 </span>
               )}
             </div>

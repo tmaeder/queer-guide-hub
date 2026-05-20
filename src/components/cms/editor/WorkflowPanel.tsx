@@ -267,7 +267,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {!isNewItem && (
         <div>
           <p className="text-xs font-semibold flex items-center gap-1 mb-2 text-muted-foreground">
-            <CalendarClock style={{ width: 12, height: 12 }} />
+            <CalendarClock size={12} />
             Scheduled publish
           </p>
           <div className="flex flex-row gap-2 items-center">
@@ -315,7 +315,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {/* Visibility Level */}
       <div>
         <p className="text-xs font-semibold flex items-center gap-1 mb-2 text-muted-foreground">
-          <Eye style={{ width: 12, height: 12 }} />
+          <Eye size={12} />
           Visibility
         </p>
         <Select
@@ -355,7 +355,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
           <hr className="border-border" />
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock style={{ width: 12, height: 12 }} />
+              <Clock size={12} />
               Published
             </p>
             <p className="text-xs font-medium">{formatDatetime(publishedAt)}</p>

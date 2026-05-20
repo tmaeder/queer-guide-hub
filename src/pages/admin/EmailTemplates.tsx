@@ -180,7 +180,7 @@ export default function EmailTemplates() {
             <CardHeader>
               <CardTitle>
                 <div className="flex items-center gap-2">
-                  <Mail style={{ height: 20, width: 20 }} />
+                  <Mail size={20} />
                   Templates
                 </div>
               </CardTitle>
@@ -252,7 +252,7 @@ export default function EmailTemplates() {
                   <div>
                     <CardTitle>
                       <div className="flex items-center gap-2">
-                        <Edit style={{ height: 20, width: 20 }} />
+                        <Edit size={20} />
                         Editing: {editingTemplate.name}
                       </div>
                     </CardTitle>
@@ -430,7 +430,7 @@ export default function EmailTemplates() {
                   <div>
                     <CardTitle>
                       <div className="flex items-center gap-2">
-                        <FileText style={{ height: 20, width: 20 }} />
+                        <FileText size={20} />
                         {selectedTemplate.name}
                         <Badge variant={selectedTemplate.is_active ? 'default' : 'secondary'}>
                           {selectedTemplate.is_active ? 'Active' : 'Inactive'}

@@ -171,7 +171,7 @@ export default function AdminIngestionRules() {
           onClick={() => navigate('/admin')}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
-          <ArrowLeft style={{ height: 16, width: 16 }} /> Back to Admin
+          <ArrowLeft size={16} /> Back to Admin
         </Button>
         <div>
           <h4 className="text-xl font-bold">
@@ -186,7 +186,7 @@ export default function AdminIngestionRules() {
       <Card>
         <CardHeader>
           <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Link2 style={{ height: 18, width: 18 }} /> URL Import
+            <Link2 size={18} /> URL Import
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -216,7 +216,7 @@ export default function AdminIngestionRules() {
           <div className="flex justify-between items-center">
             <CardTitle>Rules</CardTitle>
             <Button onClick={openNew} size="sm" style={{ display: 'flex', gap: 6 }}>
-              <Plus style={{ width: 14, height: 14 }} /> New rule
+              <Plus size={14} /> New rule
             </Button>
           </div>
         </CardHeader>
@@ -276,7 +276,7 @@ export default function AdminIngestionRules() {
                       setDialogOpen(true);
                     }}
                   >
-                    <Pencil style={{ width: 14, height: 14 }} />
+                    <Pencil size={14} />
                   </Button>
                   <Button
                     variant="ghost"

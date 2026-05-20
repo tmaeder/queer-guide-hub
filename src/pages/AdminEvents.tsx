@@ -357,7 +357,7 @@ export default function AdminEvents() {
             <span style={{ fontWeight: 500 }}>{info.getValue()}</span>
             {info.row.original.venue_name && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <MapPin style={{ height: 11, width: 11 }} />
+                <MapPin size={11} />
                 {info.row.original.venue_name}
               </div>
             )}
@@ -385,7 +385,7 @@ export default function AdminEvents() {
           const d = info.getValue();
           return d ? (
             <div className="flex items-center gap-1">
-              <CalendarIcon style={{ height: 12, width: 12 }} />
+              <CalendarIcon size={12} />
               {format(new Date(d), 'MMM d, yyyy HH:mm')}
             </div>
           ) : (
@@ -400,7 +400,7 @@ export default function AdminEvents() {
           const d = info.getValue();
           return d ? (
             <div className="flex items-center gap-1">
-              <CalendarIcon style={{ height: 12, width: 12 }} />
+              <CalendarIcon size={12} />
               {format(new Date(d), 'MMM d, yyyy HH:mm')}
             </div>
           ) : (

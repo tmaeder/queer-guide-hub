@@ -69,7 +69,7 @@ export function Footer() {
             aria-label="Scroll to top"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <ChevronUp style={{ width: 14, height: 14 }} />
+            <ChevronUp size={14} />
           </Button>
         </div>
       </div>

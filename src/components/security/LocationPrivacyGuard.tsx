@@ -53,11 +53,11 @@ export function LocationPrivacyGuard({
     <div className="flex flex-col gap-4">
       {showWarning && locationData && (
         <Alert>
-          <Shield style={{ height: 16, width: 16 }} />
+          <Shield size={16} />
           <AlertDescription>
             <span>Location data is protected by privacy controls</span>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock style={{ height: 12, width: 12 }} />
+              <Clock size={12} />
               <span>Auto-anonymized after 30 days</span>
             </div>
           </AlertDescription>
@@ -68,7 +68,7 @@ export function LocationPrivacyGuard({
         <Card>
           <CardHeader>
             <CardTitle>
-              <MapPin style={{ height: 16, width: 16 }} />
+              <MapPin size={16} />
               Location Privacy Protection Active
             </CardTitle>
           </CardHeader>
@@ -85,7 +85,7 @@ export function LocationPrivacyGuard({
 
       {locationData && !allowPreciseLocation && (
         <div className="text-xs text-muted-foreground flex items-center gap-1">
-          <AlertTriangle style={{ height: 12, width: 12 }} />
+          <AlertTriangle size={12} />
           Precise location coordinates are hidden for privacy
         </div>
       )}

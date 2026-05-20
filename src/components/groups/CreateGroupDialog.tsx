@@ -69,7 +69,7 @@ export const CreateGroupDialog = ({
         <DialogHeader>
           <DialogTitle>
             <span className="flex items-center gap-2">
-              <Users style={{ height: 20, width: 20 }} />
+              <Users size={20} />
               Create New Group
             </span>
           </DialogTitle>

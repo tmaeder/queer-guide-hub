@@ -177,11 +177,11 @@ export default function Contact() {
             <Card>
               <CardContent>
                 <div className="flex items-center gap-3">
-                  <Clock style={{ width: 18, height: 18 }} className="text-primary" />
+                  <Clock size={18} className="text-primary" />
                   <p className="text-sm"><strong>Response Time</strong> — within 24 hours</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Shield style={{ width: 18, height: 18 }} className="text-primary" />
+                  <Shield size={18} className="text-primary" />
                   <p className="text-sm"><strong>Safety First</strong> — priority support for safety concerns</p>
                 </div>
               </CardContent>
@@ -192,7 +192,7 @@ export default function Contact() {
         {/* FAQ */}
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <HelpCircle style={{ width: 24, height: 24 }} className="text-primary" />
+            <HelpCircle size={24} className="text-primary" />
             Frequently Asked Questions
           </h2>
           <div className="flex flex-col gap-3">

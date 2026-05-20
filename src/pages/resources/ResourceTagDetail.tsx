@@ -61,7 +61,7 @@ export function ResourceTagDetail({
           }}
           className="inline-flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-primary"
         >
-          <ArrowLeft style={{ width: 14, height: 14 }} />
+          <ArrowLeft size={14} />
           <span className="text-sm">{t('resources.tagDetail.breadcrumbHome')}</span>
         </button>
         {parentName && (

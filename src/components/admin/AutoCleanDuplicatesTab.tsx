@@ -142,9 +142,9 @@ export function AutoCleanDuplicatesTab() {
             </span>
             <span className="ml-auto inline-flex items-center justify-center" style={{ width: 28, height: 28 }}>
               {showHistory ? (
-                <ChevronUp style={{ width: 16, height: 16 }} />
+                <ChevronUp size={16} />
               ) : (
-                <ChevronDown style={{ width: 16, height: 16 }} />
+                <ChevronDown size={16} />
               )}
             </span>
           </button>
@@ -183,7 +183,7 @@ function ScanAndCleanSection({
       <Card>
         <CardHeader>
           <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Zap style={{ width: 18, height: 18 }} />
+            <Zap size={18} />
             Auto Clean Duplicates
           </CardTitle>
         </CardHeader>
@@ -217,7 +217,7 @@ function ScanAndCleanSection({
             {!isRunning ? (
               <>
                 <Button onClick={onScanAll} variant="outline" style={{ display: 'flex', gap: 8 }}>
-                  <Search style={{ width: 16, height: 16 }} />
+                  <Search size={16} />
                   Scan All (Dry Run)
                 </Button>
 
@@ -225,13 +225,13 @@ function ScanAndCleanSection({
                   onClick={onAutoClean}
                   style={{ display: 'flex', gap: 8, backgroundColor: 'hsl(var(--foreground))', color: 'white' }}
                 >
-                  <Zap style={{ width: 16, height: 16 }} />
+                  <Zap size={16} />
                   Auto Clean &ge;{(threshold * 100).toFixed(0)}%
                 </Button>
               </>
             ) : (
               <Button onClick={onAbort} variant="destructive" style={{ display: 'flex', gap: 8 }}>
-                <StopCircle style={{ width: 16, height: 16 }} />
+                <StopCircle size={16} />
                 Stop
               </Button>
             )}
@@ -337,7 +337,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               {isDone ? (
                 <CheckCircle style={{ width: 12, height: 12, color: 'hsl(var(--foreground))' }} />
               ) : isCurrent ? (
-                <Loader2 className="animate-spin" style={{ width: 12, height: 12 }} aria-label="Loading" />
+                <Loader2 className="animate-spin" size={12} aria-label="Loading" />
               ) : (
                 <Icon style={{ width: 12, height: 12, color: 'var(--muted-foreground)' }} />
               )}
@@ -369,7 +369,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               border: '1px solid hsl(var(--border))',
             }}
           >
-            <Loader2 className="animate-spin" style={{ width: 12, height: 12 }} aria-label="Loading" />
+            <Loader2 className="animate-spin" size={12} aria-label="Loading" />
             <span>Processing</span>
           </div>
         )}
@@ -733,7 +733,7 @@ function PendingReviewSection() {
           onClick={() => refetch()}
           style={{ display: 'flex', gap: 6 }}
         >
-          <RefreshCw style={{ width: 14, height: 14 }} />
+          <RefreshCw size={14} />
         </Button>
         <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
           {pairs.length} pending pair{pairs.length !== 1 ? 's' : ''}
@@ -742,7 +742,7 @@ function PendingReviewSection() {
 
       {isLoading ? (
         <div className="flex justify-center" style={{ paddingTop: 32, paddingBottom: 32 }}>
-          <Loader2 className="animate-spin" style={{ width: 28, height: 28 }} aria-label="Loading" />
+          <Loader2 className="animate-spin" size={28} aria-label="Loading" />
         </div>
       ) : pairs.length === 0 ? (
         <Card>
@@ -858,14 +858,14 @@ function MergeHistorySection() {
     <Card>
       <CardHeader>
         <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <History style={{ width: 18, height: 18 }} />
+          <History size={18} />
           Merge History
         </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="flex justify-center" style={{ paddingTop: 32, paddingBottom: 32 }}>
-            <Loader2 className="animate-spin" style={{ width: 28, height: 28 }} aria-label="Loading" />
+            <Loader2 className="animate-spin" size={28} aria-label="Loading" />
           </div>
         ) : history.length === 0 ? (
           <p className="text-center" style={{ color: 'var(--muted-foreground)', paddingTop: 32, paddingBottom: 32 }}>

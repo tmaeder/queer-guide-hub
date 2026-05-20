@@ -40,7 +40,7 @@ export const SearchPagination = ({
         onClick={() => onPageChange(page - 1)}
         aria-label="Previous page"
       >
-        <ChevronLeft style={{ width: 16, height: 16 }} />
+        <ChevronLeft size={16} />
         Prev
       </Button>
       {start > 1 && (
@@ -74,7 +74,7 @@ export const SearchPagination = ({
         aria-label="Next page"
       >
         Next
-        <ChevronRight style={{ width: 16, height: 16 }} />
+        <ChevronRight size={16} />
       </Button>
     </nav>
   );

@@ -35,11 +35,11 @@ export function DataTableHeaderCell<TData>({ header, onSort }: DataTableHeaderCe
         {canSort && (
           <span style={{ opacity: sorted ? 1 : 0.3, display: 'inline-flex' }}>
             {sorted === 'asc' ? (
-              <ArrowUp style={{ height: 14, width: 14 }} />
+              <ArrowUp size={14} />
             ) : sorted === 'desc' ? (
-              <ArrowDown style={{ height: 14, width: 14 }} />
+              <ArrowDown size={14} />
             ) : (
-              <ArrowUpDown style={{ height: 14, width: 14 }} />
+              <ArrowUpDown size={14} />
             )}
           </span>
         )}

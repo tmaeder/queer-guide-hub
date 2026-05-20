@@ -44,7 +44,7 @@ export function SavedSearchesMenu({
           style={{ fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: 4 }}
           aria-label={t('search.savedSearches', 'Saved searches')}
         >
-          <Bookmark style={{ width: 14, height: 14 }} />
+          <Bookmark size={14} />
           {t('search.savedLabel', 'Saved')}
           {searches.length > 0 && (
             <span className="text-muted-foreground">({searches.length})</span>
@@ -66,7 +66,7 @@ export function SavedSearchesMenu({
                 style={{ fontSize: '0.875rem', flex: 1 }}
               />
               <Button size="sm" onClick={handleSave} aria-label={t('common.save', 'Save')}>
-                <BookmarkPlus style={{ width: 14, height: 14 }} />
+                <BookmarkPlus size={14} />
               </Button>
             </div>
           </div>
@@ -114,7 +114,7 @@ export function SavedSearchesMenu({
                     color: 'hsl(var(--muted-foreground))',
                   }}
                 >
-                  <Trash2 style={{ width: 14, height: 14 }} />
+                  <Trash2 size={14} />
                 </button>
               </li>
             ))}

@@ -367,7 +367,7 @@ export function LocationAutocomplete({
               style={{ height: 24, padding: '0 8px' }}
               title="Validate address"
             >
-              <MapPin style={{ height: 12, width: 12 }} />
+              <MapPin size={12} />
             </Button>
           </div>
         </div>
@@ -383,7 +383,7 @@ export function LocationAutocomplete({
           {isDetectingLocation ? (
             <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
           ) : (
-            <Navigation style={{ height: 16, width: 16 }} />
+            <Navigation size={16} />
           )}
         </Button>
       </div>

@@ -113,7 +113,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
             {village.name}
           </h1>
           <div className="flex items-center gap-1 text-muted-foreground">
-            <MapPin style={{ width: 16, height: 16 }} />
+            <MapPin size={16} />
             <p className="text-lg">
               {village.cities && (
                 <LocalizedLink
@@ -208,7 +208,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Landmark style={{ height: 20, width: 20 }} />
+              <Landmark size={20} />
               About {village.name}
             </CardTitle>
           </CardHeader>
@@ -223,7 +223,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <MapPin style={{ height: 20, width: 20 }} />
+              <MapPin size={20} />
               Notable Landmarks
             </CardTitle>
           </CardHeader>
@@ -254,7 +254,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Globe style={{ height: 20, width: 20 }} />
+              <Globe size={20} />
               History
             </CardTitle>
           </CardHeader>
@@ -270,7 +270,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <MapPin style={{ height: 20, width: 20 }} />
+              <MapPin size={20} />
               Location
             </CardTitle>
           </CardHeader>

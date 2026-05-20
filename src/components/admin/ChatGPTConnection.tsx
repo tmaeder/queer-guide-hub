@@ -31,7 +31,7 @@ export const ChatGPTConnection = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Zap style={{ width: 20, height: 20 }} />
+              <Zap size={20} />
               ChatGPT / OpenAI Connection
             </CardTitle>
             <CardDescription>

@@ -11,10 +11,10 @@ import {
 } from 'lucide-react';
 
 const SOURCE_TYPE_ICONS: Record<string, React.ReactNode> = {
-  api: <Database style={{ height: 16, width: 16 }} />,
-  scraper: <Globe style={{ height: 16, width: 16 }} />,
-  rss: <Rss style={{ height: 16, width: 16 }} />,
-  csv: <FileText style={{ height: 16, width: 16 }} />,
+  api: <Database size={16} />,
+  scraper: <Globe size={16} />,
+  rss: <Rss size={16} />,
+  csv: <FileText size={16} />,
 };
 
 function formatRelativeTime(date: string | null): string {
@@ -135,7 +135,7 @@ export const IngestionSourcesManager = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
                     <div className="p-2 bg-muted rounded">
-                      {SOURCE_TYPE_ICONS[source.source_type] || <Database style={{ height: 16, width: 16 }} />}
+                      {SOURCE_TYPE_ICONS[source.source_type] || <Database size={16} />}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
@@ -148,7 +148,7 @@ export const IngestionSourcesManager = () => {
                       </div>
                       <div className="flex gap-6 text-muted-foreground" style={{ fontSize: '0.8rem' }}>
                         <div className="flex items-center gap-1">
-                          <Clock style={{ height: 12, width: 12 }} />
+                          <Clock size={12} />
                           Last run: {formatRelativeTime(source.last_run_at)}
                         </div>
                         {source.schedule && (
@@ -158,7 +158,7 @@ export const IngestionSourcesManager = () => {
                         <span>Approved: {(source.total_items_approved || 0).toLocaleString()}</span>
                         {source.requires_api_key && (
                           <div className="flex items-center gap-1" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
-                            <Key style={{ height: 12, width: 12 }} />
+                            <Key size={12} />
                             {source.requires_api_key}
                           </div>
                         )}
@@ -166,7 +166,7 @@ export const IngestionSourcesManager = () => {
 
                       {hasError && (
                         <Alert style={{ marginTop: 8, padding: '4px 8px' }}>
-                          <AlertTriangle style={{ height: 14, width: 14 }} />
+                          <AlertTriangle size={14} />
                           <AlertDescription style={{ fontSize: '0.75rem' }}>
                             {source.last_error}
                           </AlertDescription>
@@ -190,7 +190,7 @@ export const IngestionSourcesManager = () => {
                       {isTriggering ? (
                         <RefreshCw style={{ height: 14, width: 14, animation: 'spin 1s linear infinite' }} />
                       ) : (
-                        <Play style={{ height: 14, width: 14 }} />
+                        <Play size={14} />
                       )}
                       Run Now
                     </Button>

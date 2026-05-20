@@ -82,7 +82,7 @@ export default function ResourceTopic() {
         to="/resources"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
       >
-        <ChevronLeft aria-hidden style={{ width: 14, height: 14 }} />
+        <ChevronLeft aria-hidden size={14} />
         {t('resources.topic.back')}
       </LocalizedLink>
 
@@ -96,7 +96,7 @@ export default function ResourceTopic() {
       <div className="flex flex-col gap-10 mt-8">
         <section aria-labelledby="topic-guides-heading">
           <h2 id="topic-guides-heading" className="text-base font-semibold mb-4 inline-flex items-center gap-2">
-            <FileText aria-hidden style={{ width: 18, height: 18 }} /> {t('resources.topic.guidesHeading')}
+            <FileText aria-hidden size={18} /> {t('resources.topic.guidesHeading')}
           </h2>
           {guidesLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -144,7 +144,7 @@ export default function ResourceTopic() {
 
         <section aria-labelledby="topic-news-heading">
           <h2 id="topic-news-heading" className="text-base font-semibold mb-4 inline-flex items-center gap-2">
-            <Newspaper aria-hidden style={{ width: 18, height: 18 }} /> {t('resources.topic.newsHeading')}
+            <Newspaper aria-hidden size={18} /> {t('resources.topic.newsHeading')}
           </h2>
           {newsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -176,7 +176,7 @@ export default function ResourceTopic() {
           className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
         >
           {t('resources.topic.moreTopics')}
-          <ChevronRight aria-hidden style={{ width: 14, height: 14 }} />
+          <ChevronRight aria-hidden size={14} />
         </LocalizedLink>
       </div>
     </div>

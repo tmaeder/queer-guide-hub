@@ -296,7 +296,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           {activeTab === 'flights' && (
             <div className="border-t border-border p-6">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp style={{ height: 20, width: 20 }} />
+                <TrendingUp size={20} />
                 <h3 className="text-base font-bold tracking-tight">
                   {originCity ? `Popular deals from ${originCity}` : 'Popular flight deals'}
                 </h3>
@@ -330,7 +330,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           {activeTab === 'hotels' && (
             <div className="border-t border-border p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Hotel style={{ height: 20, width: 20 }} />
+                <Hotel size={20} />
                 <h3 className="text-base font-bold tracking-tight">
                   {hotelSearch?.city ? `Hotels in ${hotelSearch.city}` : 'Search for hotels'}
                 </h3>
@@ -412,7 +412,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
           {activeTab === 'activities' && (
             <div className="border-t border-border p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Ticket style={{ height: 20, width: 20 }} />
+                <Ticket size={20} />
                 <h3 className="text-base font-bold tracking-tight">
                   {activityCity ? `Activities in ${activityCity}` : 'Search for activities'}
                 </h3>

@@ -130,7 +130,7 @@ export function ResourcesFilterBar({
             aria-label={t('resources.filter.graph')}
             aria-pressed={viewMode === 'graph'}
           >
-            <Network style={{ width: 18, height: 18 }} />
+            <Network size={18} />
           </Button>
         </div>
       </div>
@@ -233,9 +233,9 @@ export function ResourcesFilterBar({
               aria-pressed={sortDirection === 'desc'}
             >
               {sortDirection === 'asc' ? (
-                <SortAsc style={{ width: 16, height: 16 }} />
+                <SortAsc size={16} />
               ) : (
-                <SortDesc style={{ width: 16, height: 16 }} />
+                <SortDesc size={16} />
               )}
             </Button>
           </CollapsibleContent>

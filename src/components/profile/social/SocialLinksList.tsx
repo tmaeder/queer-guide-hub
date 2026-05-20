@@ -57,7 +57,7 @@ export function SocialLinksList({
                               size="sm"
                               onClick={() => window.open(link.url, '_blank')}
                             >
-                              <ExternalLink style={{ height: 16, width: 16 }} />
+                              <ExternalLink size={16} />
                             </Button>
                           )}
                         </div>
@@ -65,7 +65,7 @@ export function SocialLinksList({
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => onRemoveCustomLink(index)}>
-                    <Trash2 style={{ height: 16, width: 16 }} />
+                    <Trash2 size={16} />
                   </Button>
                 </div>
               </div>

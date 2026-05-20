@@ -128,7 +128,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
           <Card>
             <CardContent>
               <div className="flex items-center gap-2 mb-2">
-                <FileText style={{ width: 16, height: 16 }} />
+                <FileText size={16} />
                 <p className="text-sm font-semibold">CSV Format Requirements</p>
               </div>
               <ul className="flex flex-col gap-1">

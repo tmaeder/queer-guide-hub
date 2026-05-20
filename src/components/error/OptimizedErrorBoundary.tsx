@@ -120,7 +120,7 @@ export const DataErrorFallback = ({
 }) => {
   return (
     <Alert variant="destructive">
-      <AlertCircle style={{ height: 16, width: 16 }} />
+      <AlertCircle size={16} />
       <AlertTitle>Failed to load data</AlertTitle>
       <AlertDescription>
         <p className="text-sm">

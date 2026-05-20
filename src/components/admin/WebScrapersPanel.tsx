@@ -137,7 +137,7 @@ export const WebScrapersPanel = () => {
     <Card>
       <CardHeader>
         <CardTitle>
-          <Globe style={{ height: 18, width: 18 }} />
+          <Globe size={18} />
           Web Scrapers
           {online === true && (
             <Badge variant="outline">
@@ -154,7 +154,7 @@ export const WebScrapersPanel = () => {
       <CardContent>
         {online === false && (
           <Alert variant="destructive">
-            <AlertTriangle style={{ height: 14, width: 14 }} />
+            <AlertTriangle size={14} />
             <AlertDescription>
               Scraper service unreachable. Check Worker deployment.
             </AlertDescription>

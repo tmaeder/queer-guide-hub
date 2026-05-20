@@ -28,7 +28,7 @@ export function MarketplaceSpotlight() {
       </div>
       <div className="md:col-span-2 p-6 md:p-10 flex flex-col justify-center gap-4">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground self-start">
-          <Sparkles style={{ width: 12, height: 12 }} aria-hidden="true" />
+          <Sparkles size={12} aria-hidden="true" />
           Spotlight
         </span>
         <div>
@@ -58,7 +58,7 @@ export function MarketplaceSpotlight() {
               className="inline-flex items-center gap-1.5 rounded-element bg-foreground text-background px-4 py-2.5 text-sm font-medium hover:opacity-90"
             >
               {outbound.label}
-              <ExternalLink style={{ width: 14, height: 14 }} aria-hidden="true" />
+              <ExternalLink size={14} aria-hidden="true" />
             </a>
           )}
           <LocalizedLink to={`/marketplace/${listing.slug}`}>

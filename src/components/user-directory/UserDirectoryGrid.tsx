@@ -50,7 +50,7 @@ export const UserDirectoryGrid = ({
         {profiles && profiles.length > 0 && (
           <div className="flex items-center justify-between p-4 bg-muted rounded-element border border-border">
             <div className="flex items-center gap-2">
-              <Users style={{ height: 20, width: 20 }} />
+              <Users size={20} />
               <span className="font-medium">
                 {profiles.length} member{profiles.length !== 1 ? 's' : ''} found
               </span>
@@ -299,7 +299,7 @@ export const UserDirectoryGrid = ({
                       onClick={(e: React.MouseEvent) => e.stopPropagation()}
                     >
                       Visit Website
-                      <ExternalLink style={{ height: 12, width: 12 }} />
+                      <ExternalLink size={12} />
                     </a>
                   ) : (
                     <div />
@@ -337,12 +337,12 @@ export const UserDirectoryGrid = ({
             }}
           >
             <div className="relative inline-block mx-auto">
-              <Users style={{ height: 64, width: 64 }} />
+              <Users size={64} />
               <div
                 className="absolute bg-muted rounded-full flex items-center justify-center"
                 style={{ top: -8, right: -8, width: 32, height: 32 }}
               >
-                <Search style={{ height: 16, width: 16 }} />
+                <Search size={16} />
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -357,7 +357,7 @@ export const UserDirectoryGrid = ({
             </div>
             {(filters.searchQuery || activeFiltersCount > 0) && (
               <Button variant="outline" onClick={clearAllFilters} style={{ gap: 8 }}>
-                <X style={{ height: 16, width: 16 }} />
+                <X size={16} />
                 Clear all filters
               </Button>
             )}

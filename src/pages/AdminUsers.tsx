@@ -310,7 +310,7 @@ export default function AdminUsers() {
               onClick={() => setCreateOpen(true)}
               style={{ display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              <UserPlus style={{ height: 14, width: 14 }} />
+              <UserPlus size={14} />
               Create User
             </Button>
           )}

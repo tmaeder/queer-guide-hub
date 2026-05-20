@@ -311,7 +311,7 @@ const Marketplace = () => {
         lede={t('pages.marketplace.subtitle', 'Queer-friendly products and services.')}
         primaryCta={{
           label: t('pages.marketplace.listBusiness', 'List your business'),
-          icon: <Plus style={{ width: 16, height: 16 }} aria-hidden="true" />,
+          icon: <Plus size={16} aria-hidden="true" />,
           onClick: () => {
             if (!user) {
               toast({
@@ -387,7 +387,7 @@ const Marketplace = () => {
                   onClick={() => setViewMode('grid')}
                   aria-label="Grid view"
                 >
-                  <Grid style={{ width: 16, height: 16 }} />
+                  <Grid size={16} />
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'outline'}
@@ -395,7 +395,7 @@ const Marketplace = () => {
                   onClick={() => setViewMode('list')}
                   aria-label="List view"
                 >
-                  <List style={{ width: 16, height: 16 }} />
+                  <List size={16} />
                 </Button>
               </div>
             </div>

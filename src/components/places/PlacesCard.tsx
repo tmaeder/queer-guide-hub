@@ -155,11 +155,11 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
   const getIcon = () => {
     switch (type) {
       case 'continent':
-        return <Globe style={{ height: 20, width: 20 }} />;
+        return <Globe size={20} />;
       case 'country':
-        return <MapPin style={{ height: 20, width: 20 }} />;
+        return <MapPin size={20} />;
       case 'city':
-        return <Building2 style={{ height: 20, width: 20 }} />;
+        return <Building2 size={20} />;
       default:
         return null;
     }
@@ -173,7 +173,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
         <div className="flex flex-col gap-1">
           {country.capital && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Crown style={{ height: 16, width: 16 }} />
+              <Crown size={16} />
               <span>{country.capital}</span>
             </div>
           )}
@@ -199,7 +199,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
                   backgroundColor: 'rgba(var(--primary-rgb, 59, 130, 246), 0.1)',
                 }}
               >
-                <Crown style={{ height: 12, width: 12 }} />
+                <Crown size={12} />
               </div>
             )}
             {city.is_major_city && (
@@ -228,7 +228,7 @@ export const PlacesCard = memo(function PlacesCard({ type, name, data, onClick }
     if (data?.population) {
       return (
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Users style={{ height: 16, width: 16 }} />
+          <Users size={16} />
           <span>{formatPopulation(data.population)}</span>
         </div>
       );

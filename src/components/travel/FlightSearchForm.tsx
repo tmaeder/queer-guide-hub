@@ -89,7 +89,7 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
                 onClick={handleSwap}
                 style={{ alignSelf: 'end', marginBottom: 2 }}
               >
-                <ArrowRightLeft style={{ height: 16, width: 16 }} />
+                <ArrowRightLeft size={16} />
               </Button>
               <AirportAutocomplete
                 value={destination}

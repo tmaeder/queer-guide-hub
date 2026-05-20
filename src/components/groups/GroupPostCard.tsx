@@ -80,7 +80,7 @@ export const GroupPostCard = ({
     return (
       <div className="mt-4 p-4 rounded-element bg-muted">
         <div className="flex items-center gap-2 mb-3">
-          <BarChart3 style={{ width: 16, height: 16 }} color="var(--primary)" />
+          <BarChart3 size={16} color="var(--primary)" />
           <p className="text-sm font-medium">{post.poll_data.question}</p>
         </div>
 
@@ -120,7 +120,7 @@ export const GroupPostCard = ({
           </Button>
 
           <div className="flex items-center gap-1">
-            <Users style={{ width: 12, height: 12 }} />
+            <Users size={12} />
             <p className="text-xs text-muted-foreground">{totalVotes} votes</p>
           </div>
         </div>
@@ -151,20 +151,20 @@ export const GroupPostCard = ({
                     {post.post_type === 'announcement' && (
                       <Badge variant="secondary">
                         <span className="flex items-center gap-1 text-xs">
-                          <Megaphone style={{ width: 12, height: 12 }} />
+                          <Megaphone size={12} />
                           Announcement
                         </span>
                       </Badge>
                     )}
 
                     {post.is_pinned && (
-                      <Pin style={{ width: 12, height: 12 }} color="var(--primary)" />
+                      <Pin size={12} color="var(--primary)" />
                     )}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <Clock style={{ width: 12, height: 12 }} />
+                  <Clock size={12} />
                   <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                   </p>
@@ -179,14 +179,14 @@ export const GroupPostCard = ({
                     onClick={() => onTogglePin?.({ postId: post.id, isPinned: !post.is_pinned })}
                   >
                     {post.is_pinned ? (
-                      <PinOff style={{ width: 16, height: 16 }} />
+                      <PinOff size={16} />
                     ) : (
-                      <Pin style={{ width: 16, height: 16 }} />
+                      <Pin size={16} />
                     )}
                   </Button>
 
                   <Button variant="ghost" size="sm">
-                    <MoreHorizontal style={{ width: 16, height: 16 }} />
+                    <MoreHorizontal size={16} />
                   </Button>
                 </div>
               )}
@@ -220,7 +220,7 @@ export const GroupPostCard = ({
 
                 <Button variant="ghost" size="sm">
                   <span className="flex items-center gap-2">
-                    <MessageCircle style={{ width: 16, height: 16 }} />
+                    <MessageCircle size={16} />
                     <span>{post.comments_count}</span>
                   </span>
                 </Button>

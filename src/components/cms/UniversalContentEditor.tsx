@@ -116,11 +116,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
               <Avatar style={{ height: 48, width: 48 }}>
                 <AvatarImage src={content.image_url as string} alt={content.title as string} />
                 <AvatarFallback>
-                  {content.content_type === 'events' && <Calendar style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'venues' && <Building style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'personalities' && <User style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'community_groups' && <Users style={{ height: 24, width: 24 }} />}
-                  {content.content_type === 'community_posts' && <Tag style={{ height: 24, width: 24 }} />}
+                  {content.content_type === 'events' && <Calendar size={24} />}
+                  {content.content_type === 'venues' && <Building size={24} />}
+                  {content.content_type === 'personalities' && <User size={24} />}
+                  {content.content_type === 'community_groups' && <Users size={24} />}
+                  {content.content_type === 'community_posts' && <Tag size={24} />}
                 </AvatarFallback>
               </Avatar>
             )}

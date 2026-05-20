@@ -360,7 +360,7 @@ export const ApiKeysManager = () => {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <Shield style={{ width: 20, height: 20 }} />
+                  <Shield size={20} />
                   Supabase Environment Secrets
                 </CardTitle>
                 <CardDescription>
@@ -423,7 +423,7 @@ export const ApiKeysManager = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                <Server style={{ width: 20, height: 20 }} />
+                <Server size={20} />
                 Custom API Keys
               </CardTitle>
               <CardDescription>
@@ -478,12 +478,12 @@ export const ApiKeysManager = () => {
                           {key.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                         <Button variant="outline" size="sm" onClick={() => startEdit(key)}>
-                          <Edit style={{ height: 14, width: 14 }} />
+                          <Edit size={14} />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                              <Trash2 style={{ height: 14, width: 14 }} />
+                              <Trash2 size={14} />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>

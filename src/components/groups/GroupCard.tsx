@@ -17,7 +17,7 @@ const GroupCardFixture = () => (
           <div className="flex-1">
             <p className="font-semibold">Sample Group</p>
             <div className="flex items-center gap-1">
-              <Users style={{ width: 12, height: 12 }} />
+              <Users size={12} />
               <p className="text-sm font-medium">42</p>
               <p className="text-sm text-muted-foreground">members</p>
             </div>
@@ -93,15 +93,15 @@ export const GroupCard = ({
                   </p>
                 </LocalizedLink>
                 {group.is_private ? (
-                  <Lock style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                  <Lock size={16} color="var(--muted-foreground)" />
                 ) : (
-                  <Globe style={{ width: 16, height: 16 }} color="var(--muted-foreground)" />
+                  <Globe size={16} color="var(--muted-foreground)" />
                 )}
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
-                  <Users style={{ width: 12, height: 12 }} />
+                  <Users size={12} />
                   <p className="text-sm font-medium">{group.member_count}</p>
                   <p className="text-sm text-muted-foreground">members</p>
                 </div>
@@ -133,7 +133,7 @@ export const GroupCard = ({
                 onClick={() => onManage(group)}
                 aria-label="Manage group settings"
               >
-                <Settings style={{ width: 16, height: 16 }} />
+                <Settings size={16} />
               </Button>
             )}
           </div>

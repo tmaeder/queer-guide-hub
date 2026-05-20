@@ -136,7 +136,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
           disabled={!body.trim() || isSending}
           style={{ display: 'flex', alignItems: 'center', gap: 6 }}
         >
-          <Send style={{ width: 14, height: 14 }} />
+          <Send size={14} />
           {isSending ? 'Sending…' : canEmail && notify ? 'Reply' : 'Save comment'}
         </Button>
       </div>

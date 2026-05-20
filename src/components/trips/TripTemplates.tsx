@@ -118,7 +118,7 @@ export function TripTemplates() {
                     <div className="mt-3">
                       <Badge variant="secondary">
                         <span className="inline-flex items-center gap-1">
-                          <Clock style={{ width: 12, height: 12 }} />
+                          <Clock size={12} />
                           {template.days} days
                         </span>
                       </Badge>
@@ -137,7 +137,7 @@ export function TripTemplates() {
                       disabled={createTrip.isPending}
                     >
                       Use Template
-                      <ArrowRight style={{ width: 16, height: 16 }} />
+                      <ArrowRight size={16} />
                     </Button>
                   </CardContent>
                 </Card>

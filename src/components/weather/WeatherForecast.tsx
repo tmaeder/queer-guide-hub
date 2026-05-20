@@ -119,7 +119,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
           <CardHeader>
             <CardTitle>
               <div className="flex items-center gap-2">
-                <Cloud style={{ height: 20, width: 20 }} />
+                <Cloud size={20} />
                 Weather Forecast
               </div>
             </CardTitle>
@@ -141,7 +141,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <Cloud style={{ height: 20, width: 20 }} />
+              <Cloud size={20} />
               Weather Forecast
             </div>
           </CardTitle>
@@ -160,7 +160,7 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            <Cloud style={{ height: 20, width: 20 }} />
+            <Cloud size={20} />
             5-Day Weather Forecast
             {cityName && <Badge variant="secondary">{cityName}</Badge>}
           </div>
@@ -194,15 +194,15 @@ export const WeatherForecast = ({ latitude, longitude, cityName, className }: We
 
               <div className="mt-3 flex flex-col gap-1 text-xs">
                 <div className="flex items-center justify-center gap-1">
-                  <Droplets style={{ height: 12, width: 12 }} />
+                  <Droplets size={12} />
                   {day.humidity}%
                 </div>
                 <div className="flex items-center justify-center gap-1">
-                  <Wind style={{ height: 12, width: 12 }} />
+                  <Wind size={12} />
                   {day.windSpeed} m/s
                 </div>
                 <div className="flex items-center justify-center gap-1">
-                  <Gauge style={{ height: 12, width: 12 }} />
+                  <Gauge size={12} />
                   {day.pressure} hPa
                 </div>
               </div>

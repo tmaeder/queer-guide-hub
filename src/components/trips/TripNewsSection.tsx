@@ -126,7 +126,7 @@ function SectionHeading({ flaggedCount = 0 }: { flaggedCount?: number }) {
             fontSize: 11,
           }}
         >
-          <AlertTriangle style={{ width: 11, height: 11 }} />
+          <AlertTriangle size={11} />
           {t('trips.news.flaggedBadge', '{{count}} safety alerts', { count: flaggedCount })}
         </div>
       )}

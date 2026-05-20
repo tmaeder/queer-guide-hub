@@ -73,7 +73,7 @@ export function TagMergeCandidates() {
         onClick={() => setOpen(!open)}
         style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: 12, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
       >
-        <GitMerge style={{ width: 16, height: 16 }} />
+        <GitMerge size={16} />
         Tag merge candidates
         {dups && dups.length > 0 && (
           <Badge variant="outline" style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' }}>
@@ -92,7 +92,7 @@ export function TagMergeCandidates() {
               />
             </>
           )}
-          {open ? <ChevronUp style={{ width: 14, height: 14 }} /> : <ChevronDown style={{ width: 14, height: 14 }} />}
+          {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </span>
       </button>
 

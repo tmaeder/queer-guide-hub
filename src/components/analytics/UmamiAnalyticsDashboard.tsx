@@ -289,7 +289,7 @@ export const UmamiAnalyticsDashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-destructive/10 rounded-element">
-                <Activity style={{ height: 24, width: 24 }} />
+                <Activity size={24} />
               </div>
               <div>
                 <CardTitle>Analytics Unavailable</CardTitle>
@@ -360,7 +360,7 @@ export const UmamiAnalyticsDashboard = () => {
             Refresh
           </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download style={{ height: 12, width: 12 }} />
+            <Download size={12} />
             Export
           </Button>
         </div>
@@ -370,7 +370,7 @@ export const UmamiAnalyticsDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Filter style={{ height: 16, width: 16 }} />
+            <Filter size={16} />
             Filters & Controls
           </CardTitle>
         </CardHeader>
@@ -829,7 +829,7 @@ export const UmamiAnalyticsDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <Activity style={{ height: 16, width: 16 }} />
+                  <Activity size={16} />
                   Recent Activity
                 </CardTitle>
                 <CardDescription>Latest page views and events</CardDescription>

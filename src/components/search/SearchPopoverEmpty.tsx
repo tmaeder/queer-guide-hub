@@ -29,7 +29,7 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
             className="text-2xs uppercase tracking-wider text-muted-foreground"
             style={{ fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}
           >
-            <TrendingUp style={{ height: 11, width: 11 }} />
+            <TrendingUp size={11} />
             {t('search.trending', 'Trending')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>

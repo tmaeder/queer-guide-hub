@@ -83,7 +83,7 @@ export function TripCoverBand({
 
           {dateRange && (
             <div className="inline-flex items-center gap-1.5 mt-2 text-white/90">
-              <Calendar style={{ width: 15, height: 15 }} />
+              <Calendar size={15} />
               <p className="text-sm">{dateRange}</p>
             </div>
           )}

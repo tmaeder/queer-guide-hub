@@ -121,7 +121,7 @@ export function DataTableToolbar({
                   color: 'var(--muted-foreground)',
                 }}
               >
-                <X style={{ height: 14, width: 14 }} />
+                <X size={14} />
               </button>
             )}
           </div>
@@ -184,7 +184,7 @@ export function DataTableToolbar({
                         color: 'var(--muted-foreground)',
                       }}
                     >
-                      <X style={{ height: 12, width: 12 }} />
+                      <X size={12} />
                     </button>
                   )}
                 </div>

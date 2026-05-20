@@ -254,7 +254,7 @@ function SharedTripPage() {
             className="inline-flex items-center gap-0.5 px-[0.625rem] rounded-full text-white text-xs2 font-bold uppercase tracking-[0.04em] mb-[0.3125rem]"
             style={{ backgroundColor: 'rgba(255,255,255,0.18)', padding: '1px 10px' }}
           >
-            <Sparkles style={{ width: 12, height: 12 }} />
+            <Sparkles size={12} />
             {t('trips.shared.badge')}
           </div>
           <h1

@@ -126,7 +126,7 @@ export const UserDirectoryFilters = ({
                 {isDetectingLocation ? (
                   <Loader2 style={{ height: 16, width: 16, animation: 'spin 1s linear infinite' }} />
                 ) : (
-                  <Navigation style={{ height: 16, width: 16 }} />
+                  <Navigation size={16} />
                 )}
               </Button>
               <Button
@@ -140,7 +140,7 @@ export const UserDirectoryFilters = ({
                   transition: 'background-color 0.2s',
                 }}
               >
-                <Filter style={{ height: 16, width: 16 }} />
+                <Filter size={16} />
                 {activeFiltersCount > 0 && (
                   <Badge
                     variant="secondary"
@@ -173,7 +173,7 @@ export const UserDirectoryFilters = ({
                   <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Star style={{ height: 20, width: 20 }} />
+                        <Star size={20} />
                         <h2 className="text-lg font-semibold">Advanced Filters</h2>
                       </div>
                       {activeFiltersCount > 0 && (
@@ -183,7 +183,7 @@ export const UserDirectoryFilters = ({
                           onClick={clearAllFilters}
                           style={{ gap: 8 }}
                         >
-                          <X style={{ height: 16, width: 16 }} />
+                          <X size={16} />
                           Clear All ({activeFiltersCount})
                         </Button>
                       )}
@@ -192,7 +192,7 @@ export const UserDirectoryFilters = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       <div className="flex flex-col gap-3">
                         <Label className={labelCls}>
-                          <MapPin style={{ height: 16, width: 16 }} />
+                          <MapPin size={16} />
                           Location
                         </Label>
                         <Input
@@ -206,7 +206,7 @@ export const UserDirectoryFilters = ({
 
                       <div className="flex flex-col gap-3">
                         <Label className={labelCls}>
-                          <Calendar style={{ height: 16, width: 16 }} />
+                          <Calendar size={16} />
                           Age Range
                         </Label>
                         <Select
@@ -231,7 +231,7 @@ export const UserDirectoryFilters = ({
 
                       <div className="flex flex-col gap-3">
                         <Label className={labelCls}>
-                          <Heart style={{ height: 16, width: 16 }} />
+                          <Heart size={16} />
                           Relationship Status
                         </Label>
                         <Select
@@ -256,7 +256,7 @@ export const UserDirectoryFilters = ({
 
                       <div className="flex flex-col gap-3">
                         <Label className={labelCls}>
-                          <Briefcase style={{ height: 16, width: 16 }} />
+                          <Briefcase size={16} />
                           Occupation
                         </Label>
                         <Input
@@ -270,7 +270,7 @@ export const UserDirectoryFilters = ({
 
                       <div className="flex flex-col gap-3">
                         <Label className={labelCls}>
-                          <GraduationCap style={{ height: 16, width: 16 }} />
+                          <GraduationCap size={16} />
                           Education
                         </Label>
                         <Select
@@ -295,7 +295,7 @@ export const UserDirectoryFilters = ({
 
                       <div className="flex flex-col gap-3">
                         <Label className={labelCls}>
-                          <Users style={{ height: 16, width: 16 }} />
+                          <Users size={16} />
                           Gender Identity
                         </Label>
                         <Select
@@ -321,7 +321,7 @@ export const UserDirectoryFilters = ({
 
                     <div className="flex flex-col gap-3">
                       <Label className={labelCls}>
-                        <Sparkles style={{ height: 16, width: 16 }} />
+                        <Sparkles size={16} />
                         Interests
                       </Label>
                       <Popover open={interestsOpen} onOpenChange={setInterestsOpen}>
@@ -384,7 +384,7 @@ export const UserDirectoryFilters = ({
                         <div className="flex flex-wrap gap-2 mt-2">
                           {filters.interests.map((interest) => (
                             <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
-                              <Sparkles style={{ height: 12, width: 12 }} />
+                              <Sparkles size={12} />
                               {interest}
                               <X
                                 style={{ height: 12, width: 12, cursor: 'pointer' }}
@@ -449,7 +449,7 @@ export const UserDirectoryFilters = ({
 
                     <div className="flex flex-col gap-3">
                       <Label className={labelCls}>
-                        <TrendingUp style={{ height: 16, width: 16 }} />
+                        <TrendingUp size={16} />
                         Sort By
                       </Label>
                       <Select
@@ -482,7 +482,7 @@ export const UserDirectoryFilters = ({
             <div>
               <div className="flex flex-wrap gap-2 items-center justify-center p-4 bg-muted rounded-element">
                 <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Filter style={{ height: 16, width: 16 }} />
+                  <Filter size={16} />
                   Active filters:
                 </span>
                 {nearMe && (
@@ -495,7 +495,7 @@ export const UserDirectoryFilters = ({
                       borderColor: '#bfdbfe',
                     }}
                   >
-                    <Navigation style={{ height: 12, width: 12 }} />
+                    <Navigation size={12} />
                     Near Me
                     <X
                       style={{ height: 12, width: 12, cursor: 'pointer' }}
@@ -505,7 +505,7 @@ export const UserDirectoryFilters = ({
                 )}
                 {filters.location && (
                   <Badge variant="secondary" style={{ gap: 4 }}>
-                    <MapPin style={{ height: 12, width: 12 }} />
+                    <MapPin size={12} />
                     {filters.location}
                     <X
                       style={{ height: 12, width: 12, cursor: 'pointer' }}
@@ -515,7 +515,7 @@ export const UserDirectoryFilters = ({
                 )}
                 {filters.ageRange && filters.ageRange !== 'all' && (
                   <Badge variant="secondary" style={{ gap: 4 }}>
-                    <Calendar style={{ height: 12, width: 12 }} />
+                    <Calendar size={12} />
                     {filters.ageRange}
                     <X
                       style={{ height: 12, width: 12, cursor: 'pointer' }}
@@ -525,7 +525,7 @@ export const UserDirectoryFilters = ({
                 )}
                 {filters.interests.map((interest) => (
                   <Badge key={interest} variant="secondary" style={{ gap: 4 }}>
-                    <Sparkles style={{ height: 12, width: 12 }} />
+                    <Sparkles size={12} />
                     {interest}
                     <X
                       style={{ height: 12, width: 12, cursor: 'pointer' }}

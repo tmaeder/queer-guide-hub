@@ -142,11 +142,11 @@ export default function UserProfile() {
           </Button>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={handleShare} aria-label="Share profile">
-              <Share2 style={{ width: 16, height: 16 }} />
+              <Share2 size={16} />
             </Button>
             {!isOwnProfile && (
               <Button variant="outline" size="icon" aria-label="Report user">
-                <Flag style={{ width: 16, height: 16 }} />
+                <Flag size={16} />
               </Button>
             )}
           </div>
@@ -202,7 +202,7 @@ export default function UserProfile() {
                       <>
                         <p className="text-sm">&#8226;</p>
                         <div className="flex items-center gap-1">
-                          <MapPin style={{ width: 16, height: 16 }} />
+                          <MapPin size={16} />
                           <p className="text-sm">{profile.location}</p>
                         </div>
                       </>
@@ -216,7 +216,7 @@ export default function UserProfile() {
                   )}
 
                   <div className="flex items-center gap-2">
-                    <Calendar style={{ width: 16, height: 16 }} />
+                    <Calendar size={16} />
                     <p className="text-sm text-muted-foreground">
                       Joined {formatDate(profile.created_at)}
                     </p>

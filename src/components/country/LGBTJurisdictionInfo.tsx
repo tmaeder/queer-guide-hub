@@ -449,7 +449,7 @@ export default function LGBTJurisdictionInfo({
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs2 text-primary hover:underline"
           >
-            <ExternalLink style={{ height: 10, width: 10 }} />
+            <ExternalLink size={10} />
             ILGA World Database
           </a>
         </div>

@@ -62,7 +62,7 @@ export default function AdminAnalytics() {
           </p>
         </div>
         <Badge variant="outline" className="flex gap-2 items-center">
-          <Activity style={{ height: 12, width: 12 }} />
+          <Activity size={12} />
           Live Data
         </Badge>
       </div>
@@ -70,11 +70,11 @@ export default function AdminAnalytics() {
       <Tabs defaultValue="platform" className="flex flex-col gap-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="platform" className="flex gap-2 items-center">
-            <BarChart3 style={{ height: 16, width: 16 }} />
+            <BarChart3 size={16} />
             Platform Analytics
           </TabsTrigger>
           <TabsTrigger value="umami" className="flex gap-2 items-center">
-            <TrendingUp style={{ height: 16, width: 16 }} />
+            <TrendingUp size={16} />
             Website Analytics
           </TabsTrigger>
         </TabsList>

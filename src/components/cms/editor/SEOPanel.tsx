@@ -123,7 +123,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
       {/* Canonical URL */}
       <div>
         <div className="flex items-center gap-1 mb-1">
-          <Globe style={{ width: 12, height: 12 }} className="text-muted-foreground" />
+          <Globe size={12} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-foreground">Canonical URL</span>
         </div>
         <Input
@@ -141,7 +141,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
       {/* Google SERP Preview */}
       <div>
         <div className="flex items-center gap-1.5 mb-2">
-          <Search style={{ width: 14, height: 14 }} className="text-muted-foreground" />
+          <Search size={14} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground">Google Preview</span>
         </div>
         <div className={cn('rounded-element border border-border p-3 bg-white')}>

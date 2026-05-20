@@ -142,7 +142,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
         <DialogHeader>
           <DialogTitle>
             <span className="flex items-center gap-2">
-              <Wand2 style={{ height: 20, width: 20 }} />
+              <Wand2 size={20} />
               Bulk Content Enrichment
             </span>
           </DialogTitle>
@@ -188,7 +188,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           {loading && (
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <Loader2 style={{ height: 16, width: 16 }} className="animate-spin" />
+                <Loader2 size={16} className="animate-spin" />
                 <span className="text-sm">Running {selectedModule?.label}...</span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded bg-secondary">

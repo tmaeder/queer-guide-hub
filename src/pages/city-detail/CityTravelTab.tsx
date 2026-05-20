@@ -41,7 +41,7 @@ export function CityTravelTab({
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Plane style={{ height: 20, width: 20 }} />
+              <Plane size={20} />
               Airports
             </CardTitle>
           </CardHeader>
@@ -49,7 +49,7 @@ export function CityTravelTab({
             {city.major_airport_code && (
               <div className="p-3 rounded-element bg-muted mb-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Plane style={{ height: 16, width: 16 }} />
+                  <Plane size={16} />
                   <span className="text-sm font-medium">Major Airport</span>
                 </div>
                 <span className="font-bold">{city.major_airport_code}</span>
@@ -58,7 +58,7 @@ export function CityTravelTab({
             {!hasAirport && nearestAirport && (
               <div className="p-3 rounded-element bg-muted mb-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Plane style={{ height: 16, width: 16 }} />
+                  <Plane size={16} />
                   <span className="text-sm font-medium">Nearest Airport</span>
                 </div>
                 <span className="font-bold">{nearestAirport.iata_code}</span>
@@ -86,7 +86,7 @@ export function CityTravelTab({
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Bus style={{ height: 20, width: 20 }} />
+              <Bus size={20} />
               Transportation
             </CardTitle>
           </CardHeader>

@@ -104,7 +104,7 @@ export function CrisisStrip() {
     <section aria-labelledby="crisis-heading" className="rounded-container bg-foreground/[0.03] border border-border/60 p-5 sm:p-6">
       <header className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
-          <AlertTriangle aria-hidden style={{ width: 18, height: 18 }} />
+          <AlertTriangle aria-hidden size={18} />
           <h2 id="crisis-heading" className="text-base font-semibold">{t('resources.crisis.heading')}</h2>
         </div>
         <Badge variant="secondary" className="text-xs2">{t('resources.crisis.badge')}</Badge>
@@ -165,20 +165,20 @@ export function CrisisStrip() {
                     aria-label={t('resources.crisis.callAria', { name: h.name, phone: h.phone })}
                     className="inline-flex items-center gap-2 text-xl font-semibold tabular-nums text-foreground hover:underline -mx-1 px-1 py-0.5"
                   >
-                    <Phone aria-hidden style={{ width: 18, height: 18 }} />
+                    <Phone aria-hidden size={18} />
                     {h.phone}
                   </a>
                 )}
                 <div className="flex flex-wrap gap-2 text-xs2 text-muted-foreground mt-auto">
                   {h.hours && (
                     <span className="inline-flex items-center gap-1">
-                      <Clock aria-hidden style={{ width: 12, height: 12 }} />
+                      <Clock aria-hidden size={12} />
                       {h.hours}
                     </span>
                   )}
                   {h.languages?.length > 0 && (
                     <span className="inline-flex items-center gap-1">
-                      <Languages aria-hidden style={{ width: 12, height: 12 }} />
+                      <Languages aria-hidden size={12} />
                       {h.languages.join(', ')}
                     </span>
                   )}
@@ -194,7 +194,7 @@ export function CrisisStrip() {
         className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
       >
         {t('resources.crisis.seeAll')}
-        <ChevronRight aria-hidden style={{ width: 14, height: 14 }} />
+        <ChevronRight aria-hidden size={14} />
       </LocalizedLink>
     </section>
   );

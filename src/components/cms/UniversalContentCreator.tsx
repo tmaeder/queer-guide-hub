@@ -26,17 +26,17 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
   const [activeTab, setActiveTab] = useState('basic');
 
   const contentTypes = [
-    { value: 'events', label: 'Events', icon: <Calendar style={{ height: 16, width: 16 }} /> },
-    { value: 'venues', label: 'Venues', icon: <Building style={{ height: 16, width: 16 }} /> },
-    { value: 'personalities', label: 'Personalities', icon: <User style={{ height: 16, width: 16 }} /> },
-    { value: 'community_groups', label: 'Community Groups', icon: <Users style={{ height: 16, width: 16 }} /> },
-    { value: 'community_posts', label: 'Community Posts', icon: <Tag style={{ height: 16, width: 16 }} /> },
-    { value: 'cms_content', label: 'CMS Content', icon: <Tag style={{ height: 16, width: 16 }} /> },
-    { value: 'tags', label: 'Tags', icon: <Tag style={{ height: 16, width: 16 }} /> },
-    { value: 'cities', label: 'Cities', icon: <Building style={{ height: 16, width: 16 }} /> },
-    { value: 'countries', label: 'Countries', icon: <Globe style={{ height: 16, width: 16 }} /> },
-    { value: 'marketplace_listings', label: 'Marketplace Listings', icon: <Building style={{ height: 16, width: 16 }} /> },
-    { value: 'news_articles', label: 'News Articles', icon: <Tag style={{ height: 16, width: 16 }} /> }
+    { value: 'events', label: 'Events', icon: <Calendar size={16} /> },
+    { value: 'venues', label: 'Venues', icon: <Building size={16} /> },
+    { value: 'personalities', label: 'Personalities', icon: <User size={16} /> },
+    { value: 'community_groups', label: 'Community Groups', icon: <Users size={16} /> },
+    { value: 'community_posts', label: 'Community Posts', icon: <Tag size={16} /> },
+    { value: 'cms_content', label: 'CMS Content', icon: <Tag size={16} /> },
+    { value: 'tags', label: 'Tags', icon: <Tag size={16} /> },
+    { value: 'cities', label: 'Cities', icon: <Building size={16} /> },
+    { value: 'countries', label: 'Countries', icon: <Globe size={16} /> },
+    { value: 'marketplace_listings', label: 'Marketplace Listings', icon: <Building size={16} /> },
+    { value: 'news_articles', label: 'News Articles', icon: <Tag size={16} /> }
   ];
 
   const handleFieldChange = (field: string, value: unknown) => {
@@ -432,7 +432,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
       <DialogTrigger asChild>
         <Button>
           <span className="flex items-center gap-2">
-            <Plus style={{ height: 16, width: 16 }} />
+            <Plus size={16} />
             Create Content
           </span>
         </Button>
@@ -441,7 +441,7 @@ export function UniversalContentCreator({ onContentCreated }: UniversalContentCr
         <DialogHeader>
           <DialogTitle>
             <div className="flex items-center gap-2">
-              <Plus style={{ height: 20, width: 20 }} />
+              <Plus size={20} />
               Create New Content
             </div>
           </DialogTitle>

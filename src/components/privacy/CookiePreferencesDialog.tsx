@@ -82,7 +82,7 @@ export function CookiePreferencesDialog({ open, onOpenChange }: CookiePreference
       <DialogContent style={{ maxWidth: 672, maxHeight: '80vh', overflowY: 'auto' }}>
         <DialogHeader>
           <DialogTitle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Cookie style={{ height: 20, width: 20 }} />
+            <Cookie size={20} />
             Cookie Preferences
           </DialogTitle>
           <DialogDescription>

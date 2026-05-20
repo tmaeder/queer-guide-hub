@@ -65,7 +65,7 @@ export function CookieConsentBanner() {
                   size="sm"
                   style={{ display: 'inline-flex', gap: 8 }}
                 >
-                  <Settings style={{ height: 16, width: 16 }} />
+                  <Settings size={16} />
                   Customize
                 </Button>
               </div>

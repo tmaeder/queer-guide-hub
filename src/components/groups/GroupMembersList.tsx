@@ -25,9 +25,9 @@ export function GroupMembersList({ members, canManage, groupId, onStartConversat
   const { changeRole, removeMember } = useGroupMemberManagement(groupId);
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin': return <Crown style={{ width: 12, height: 12 }} />;
-      case 'moderator': return <Shield style={{ width: 12, height: 12 }} />;
-      default: return <User style={{ width: 12, height: 12 }} />;
+      case 'admin': return <Crown size={12} />;
+      case 'moderator': return <Shield size={12} />;
+      default: return <User size={12} />;
     }
   };
   const getRoleColor = (role: string) => {
@@ -74,7 +74,7 @@ export function GroupMembersList({ members, canManage, groupId, onStartConversat
               )}
               {canManage && groupId && member.role !== 'admin' && member.user_id !== user?.id && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild><Button variant="outline" size="sm"><MoreVertical style={{ width: 16, height: 16 }} /></Button></DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild><Button variant="outline" size="sm"><MoreVertical size={16} /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleRoleChange(member)}>
                       <ArrowUpDown style={{ width: 16, height: 16, marginRight: 8 }} />{member.role === 'moderator' ? 'Demote to Member' : 'Promote to Moderator'}

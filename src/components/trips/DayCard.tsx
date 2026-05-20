@@ -220,7 +220,7 @@ export function DayCard({
                     onClick={onSaveTitle}
                     aria-label={t('trips.itinerary.saveDayTitle')}
                   >
-                    <Check style={{ width: 14, height: 14 }} />
+                    <Check size={14} />
                   </Button>
                 </div>
               ) : (
@@ -237,7 +237,7 @@ export function DayCard({
                     onClick={onStartEditTitle}
                     aria-label={t('trips.itinerary.editDayTitle')}
                   >
-                    <Pencil style={{ width: 12, height: 12 }} />
+                    <Pencil size={12} />
                   </Button>
                 </div>
               )}
@@ -259,9 +259,9 @@ export function DayCard({
             >
               <MapPin style={{ width: 14, height: 14, marginRight: 4 }} />
               {mapOpen ? (
-                <ChevronUp style={{ width: 14, height: 14 }} />
+                <ChevronUp size={14} />
               ) : (
-                <ChevronDown style={{ width: 14, height: 14 }} />
+                <ChevronDown size={14} />
               )}
             </Button>
             <Button
@@ -327,7 +327,7 @@ export function DayCard({
                         slot,
                       })}
                     >
-                      <Plus style={{ width: 11, height: 11 }} />
+                      <Plus size={11} />
                     </Button>
                   </div>
                   {slotPlaces.map((place) => (

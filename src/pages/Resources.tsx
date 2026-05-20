@@ -465,7 +465,7 @@ export default function Resources() {
             <CardHeader>
               <CardTitle>
                 <div className="flex items-center gap-2">
-                  <Network style={{ width: 20, height: 20 }} />
+                  <Network size={20} />
                   <span className="text-base">{t('resources.graph.title')}</span>
                 </div>
               </CardTitle>
@@ -498,8 +498,7 @@ export default function Resources() {
               <span className="font-semibold text-sm">{t('resources.disclosure')}</span>
               <ChevronDown
                 aria-hidden
-                className="opacity-60 transition-transform group-data-[state=open]:rotate-180"
-                style={{ width: 16, height: 16 }}
+                className="opacity-60 transition-transform group-data-[state=open]:rotate-180" size={16}
               />
             </button>
           </CollapsibleTrigger>

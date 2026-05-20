@@ -108,9 +108,9 @@ export function HandoffSection({
             style={{ backgroundColor: 'hsl(var(--foreground))' }}
           >
             {copyState === 'copied' ? (
-              <Check style={{ width: 14, height: 14 }} />
+              <Check size={14} />
             ) : (
-              <Copy style={{ width: 14, height: 14 }} />
+              <Copy size={14} />
             )}
             {copyState === 'copied' ? 'Copied — paste into Claude' : 'Copy prompt for Claude'}
           </Button>
@@ -121,7 +121,7 @@ export function HandoffSection({
             className="flex items-center gap-1.5 text-xs"
             title="Record a handoff targeted at Claude web chat"
           >
-            <MessageSquare style={{ width: 13, height: 13 }} />
+            <MessageSquare size={13} />
             Chat
           </Button>
           <Button
@@ -131,7 +131,7 @@ export function HandoffSection({
             className="flex items-center gap-1.5 text-xs"
             title="Record a handoff with a custom target"
           >
-            <ArrowRight style={{ width: 13, height: 13 }} />
+            <ArrowRight size={13} />
             Other
           </Button>
         </div>
@@ -200,7 +200,7 @@ export function HandoffSection({
                         className="h-6 w-6 p-0"
                         title="Update status"
                       >
-                        <MoreVertical style={{ width: 12, height: 12 }} />
+                        <MoreVertical size={12} />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>

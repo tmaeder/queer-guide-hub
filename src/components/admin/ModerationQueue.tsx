@@ -319,9 +319,9 @@ export function ModerationQueue() {
                         </Badge>
                         <Badge variant="outline" className="gap-1 text-xs2">
                           {flag.source === 'system' ? (
-                            <Bot style={{ width: 12, height: 12 }} />
+                            <Bot size={12} />
                           ) : (
-                            <User style={{ width: 12, height: 12 }} />
+                            <User size={12} />
                           )}
                           {flag.source === 'system' ? 'System' : 'User'}
                         </Badge>
@@ -387,9 +387,9 @@ export function ModerationQueue() {
                           onClick={() => setExpandedId(expandedId === flag.id ? null : flag.id)}
                         >
                           {expandedId === flag.id ? (
-                            <ChevronUp style={{ width: 16, height: 16 }} />
+                            <ChevronUp size={16} />
                           ) : (
-                            <ChevronDown style={{ width: 16, height: 16 }} />
+                            <ChevronDown size={16} />
                           )}
                         </Button>
                       </div>

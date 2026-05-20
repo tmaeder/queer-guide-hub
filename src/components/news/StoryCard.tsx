@@ -43,7 +43,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           className="absolute top-2 left-2 inline-flex items-center gap-1"
           style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}
         >
-          <Layers style={{ width: 10, height: 10 }} aria-hidden="true" />
+          <Layers size={10} aria-hidden="true" />
           {story.article_count} articles
         </Badge>
       </div>
@@ -57,7 +57,7 @@ export const StoryCard = ({ story, hero }: StoryCardProps) => {
           </p>
         )}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Clock style={{ width: 12, height: 12 }} aria-hidden="true" />
+          <Clock size={12} aria-hidden="true" />
           <span>Updated {formatDistanceToNow(new Date(story.last_updated_at), { addSuffix: true })}</span>
         </div>
       </div>

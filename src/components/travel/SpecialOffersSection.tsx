@@ -112,7 +112,7 @@ export function SpecialOffersSection() {
                     window.open(url, '_blank', 'noopener');
                   }}
                 >
-                  <ExternalLink style={{ height: 12, width: 12 }} />
+                  <ExternalLink size={12} />
                 </Button>
               </div>
             </CardContent>

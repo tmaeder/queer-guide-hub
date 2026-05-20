@@ -60,11 +60,11 @@ export function SecurityMonitoring() {
     switch (severity) {
       case 'critical':
       case 'high':
-        return <AlertTriangle style={{ height: 16, width: 16 }} />;
+        return <AlertTriangle size={16} />;
       case 'medium':
-        return <Shield style={{ height: 16, width: 16 }} />;
+        return <Shield size={16} />;
       default:
-        return <Activity style={{ height: 16, width: 16 }} />;
+        return <Activity size={16} />;
     }
   };
 
@@ -76,7 +76,7 @@ export function SecurityMonitoring() {
   if (!user || !isAdmin) {
     return (
       <Alert>
-        <Shield style={{ height: 16, width: 16 }} />
+        <Shield size={16} />
         <AlertTitle>Access Denied</AlertTitle>
         <AlertDescription>
           You need administrator privileges to access security monitoring.
@@ -100,7 +100,7 @@ export function SecurityMonitoring() {
 
       {error && (
         <Alert variant="destructive">
-          <AlertTriangle style={{ height: 16, width: 16 }} />
+          <AlertTriangle size={16} />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>

@@ -25,7 +25,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'bio_public',
     label: 'Bio Visibility',
     description: 'Allow others to see your bio and description',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'basic',
     defaultValue: true
   },
@@ -33,7 +33,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'location_public',
     label: 'Location Sharing',
     description: 'Share your general location with others',
-    icon: <MapPin style={{ height: 16, width: 16 }} />,
+    icon: <MapPin size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -41,7 +41,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'pronouns_public',
     label: 'Pronouns Visibility',
     description: 'Display your pronouns publicly',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'basic',
     defaultValue: false
   },
@@ -49,7 +49,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'interests_public',
     label: 'Interests & Hobbies',
     description: 'Share your interests and hobbies',
-    icon: <Heart style={{ height: 16, width: 16 }} />,
+    icon: <Heart size={16} />,
     category: 'basic',
     defaultValue: false
   },
@@ -57,7 +57,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'contact_public',
     label: 'Contact Information',
     description: 'Allow others to see your website and social links',
-    icon: <Phone style={{ height: 16, width: 16 }} />,
+    icon: <Phone size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -65,7 +65,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'phone_public',
     label: 'Phone Number',
     description: 'Share your phone number (highly sensitive)',
-    icon: <Phone style={{ height: 16, width: 16 }} />,
+    icon: <Phone size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -73,7 +73,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'gender_identity_public',
     label: 'Gender Identity',
     description: 'Share your gender identity',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -81,7 +81,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'sexual_orientation_public',
     label: 'Sexual Orientation',
     description: 'Share your sexual orientation',
-    icon: <Heart style={{ height: 16, width: 16 }} />,
+    icon: <Heart size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -89,7 +89,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'relationship_status_public',
     label: 'Relationship Status',
     description: 'Share your relationship status',
-    icon: <Heart style={{ height: 16, width: 16 }} />,
+    icon: <Heart size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -97,7 +97,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'income_range_public',
     label: 'Income Information',
     description: 'Share your income range (financial data)',
-    icon: <DollarSign style={{ height: 16, width: 16 }} />,
+    icon: <DollarSign size={16} />,
     category: 'financial',
     defaultValue: false
   },
@@ -105,7 +105,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'emergency_contact_public',
     label: 'Emergency Contact',
     description: 'Emergency contact information visibility',
-    icon: <Phone style={{ height: 16, width: 16 }} />,
+    icon: <Phone size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -113,7 +113,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'political_views_public',
     label: 'Political Views',
     description: 'Share your political perspectives',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'sensitive',
     defaultValue: false
   },
@@ -121,7 +121,7 @@ const privacySettings: PrivacySetting[] = [
     key: 'religious_beliefs_public',
     label: 'Religious Beliefs',
     description: 'Share your religious or spiritual beliefs',
-    icon: <User style={{ height: 16, width: 16 }} />,
+    icon: <User size={16} />,
     category: 'sensitive',
     defaultValue: false
   }
@@ -231,7 +231,7 @@ export function PrivacyControlCenter() {
       case 'financial':
         return <Lock style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
       default:
-        return <Eye style={{ height: 16, width: 16 }} />;
+        return <Eye size={16} />;
     }
   };
 
@@ -262,7 +262,7 @@ export function PrivacyControlCenter() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Shield style={{ height: 24, width: 24 }} />
+              <Shield size={24} />
               <CardTitle>Privacy Control Center</CardTitle>
             </div>
             <Button
@@ -281,7 +281,7 @@ export function PrivacyControlCenter() {
       </Card>
 
       <Alert>
-        <Shield style={{ height: 16, width: 16 }} />
+        <Shield size={16} />
         <AlertTitle>Privacy Protection Active</AlertTitle>
         <AlertDescription>
           Your data is protected by enhanced security measures. All privacy changes are logged for security purposes.

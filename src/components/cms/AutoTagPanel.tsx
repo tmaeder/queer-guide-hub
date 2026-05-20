@@ -90,7 +90,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            <Sparkles style={{ height: 16, width: 16 }} className="text-primary" />
+            <Sparkles size={16} className="text-primary" />
             AI Tag Suggestions
           </div>
         </CardTitle>
@@ -162,7 +162,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
 
         {suggestions && tags.length === 0 && !loading && (
           <div className="flex items-center gap-2 py-2">
-            <AlertCircle style={{ height: 14, width: 14 }} className="text-muted-foreground" />
+            <AlertCircle size={14} className="text-muted-foreground" />
             <span className="text-xs text-muted-foreground">No tags suggested for this item</span>
           </div>
         )}

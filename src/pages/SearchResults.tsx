@@ -412,7 +412,7 @@ export default function SearchResults() {
             <div className="flex flex-wrap items-center mb-3" style={{ gap: 8 }}>
               {result.location && (
                 <div className="flex items-center" style={{ gap: 4 }}>
-                  <MapPin style={{ width: 12, height: 12 }} />
+                  <MapPin size={12} />
                   <span className="text-xs text-muted-foreground">{result.location}</span>
                 </div>
               )}
@@ -508,13 +508,13 @@ export default function SearchResults() {
                   <div className="flex flex-wrap items-center mb-3" style={{ gap: 16 }}>
                     {result.location && (
                       <div className="flex items-center" style={{ gap: 4 }}>
-                        <MapPin style={{ width: 12, height: 12 }} />
+                        <MapPin size={12} />
                         <span className="text-sm text-muted-foreground">{result.location}</span>
                       </div>
                     )}
                     {result.date && (
                       <div className="flex items-center" style={{ gap: 4 }}>
-                        <Calendar style={{ width: 12, height: 12 }} />
+                        <Calendar size={12} />
                         <span className="text-sm text-muted-foreground">
                           {formatResultDate(result.date)}
                         </span>
@@ -530,7 +530,7 @@ export default function SearchResults() {
                     )}
                     {result.metadata?.viewsCount && (
                       <div className="flex items-center" style={{ gap: 4 }}>
-                        <Eye style={{ width: 12, height: 12 }} />
+                        <Eye size={12} />
                         <span className="text-sm text-muted-foreground">
                           {result.metadata.viewsCount} views
                         </span>
@@ -650,7 +650,7 @@ export default function SearchResults() {
             onClick={() => setShowFilters(!showFilters)}
             style={{ display: 'flex', alignItems: 'center', gap: 8 }}
           >
-            <Filter style={{ width: 16, height: 16 }} />
+            <Filter size={16} />
             Filters
             {Object.values(filters).some((v) => v && (Array.isArray(v) ? v.length > 0 : true)) && (
               <Badge
@@ -754,13 +754,13 @@ export default function SearchResults() {
                 <SelectContent style={{ zIndex: 50 }}>
                   <SelectItem value="relevance">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
-                      <TrendingUp style={{ width: 12, height: 12 }} />
+                      <TrendingUp size={12} />
                       Relevance
                     </span>
                   </SelectItem>
                   <SelectItem value="newest">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
-                      <Clock style={{ width: 12, height: 12 }} />
+                      <Clock size={12} />
                       Newest
                     </span>
                   </SelectItem>
@@ -772,13 +772,13 @@ export default function SearchResults() {
                   </SelectItem>
                   <SelectItem value="rating">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
-                      <Star style={{ width: 12, height: 12 }} />
+                      <Star size={12} />
                       Highest Rated
                     </span>
                   </SelectItem>
                   <SelectItem value="popular">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
-                      <Eye style={{ width: 12, height: 12 }} />
+                      <Eye size={12} />
                       Most Popular
                     </span>
                   </SelectItem>
@@ -791,7 +791,7 @@ export default function SearchResults() {
                   )}
                   <SelectItem value="alpha-asc">
                     <span className="inline-flex items-center" style={{ gap: 8 }}>
-                      <ArrowUpDown style={{ width: 12, height: 12 }} />A - Z
+                      <ArrowUpDown size={12} />A - Z
                     </span>
                   </SelectItem>
                   <SelectItem value="alpha-desc">
@@ -814,7 +814,7 @@ export default function SearchResults() {
                 onClick={() => setViewMode('list')}
                 className="rounded-r-none"
               >
-                <List style={{ width: 16, height: 16 }} />
+                <List size={16} />
               </Button>
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -822,7 +822,7 @@ export default function SearchResults() {
                 onClick={() => setViewMode('grid')}
                 className="rounded-none"
               >
-                <Grid style={{ width: 16, height: 16 }} />
+                <Grid size={16} />
               </Button>
               <Button
                 variant={viewMode === 'map' ? 'default' : 'ghost'}
@@ -831,7 +831,7 @@ export default function SearchResults() {
                 className="rounded-l-none"
                 aria-label="Map view"
               >
-                <MapPin style={{ width: 16, height: 16 }} />
+                <MapPin size={16} />
               </Button>
             </div>
           </div>
@@ -1139,7 +1139,7 @@ export default function SearchResults() {
             fontWeight: 500,
           }}
         >
-          <Filter style={{ width: 16, height: 16 }} />
+          <Filter size={16} />
           Filters
           {Object.values(filters).some((v) => v && (Array.isArray(v) ? v.length > 0 : true)) && (
             <Badge variant="destructive" style={{ marginLeft: 4, height: 18, padding: '0 6px', fontSize: '0.7rem' }}>

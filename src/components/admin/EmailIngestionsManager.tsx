@@ -290,9 +290,9 @@ export function EmailIngestionsManager() {
                           style={{ padding: 4 }}
                         >
                           {expandedRows.has(ing.id) ? (
-                            <ChevronUp style={{ height: 16, width: 16 }} />
+                            <ChevronUp size={16} />
                           ) : (
-                            <ChevronDown style={{ height: 16, width: 16 }} />
+                            <ChevronDown size={16} />
                           )}
                         </Button>
                       </CollapsibleTrigger>

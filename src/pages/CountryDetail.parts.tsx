@@ -149,25 +149,25 @@ export function CountryHero({ country, cities, weatherData }: CountryHeroProps) 
         />
         {country.capital && (
           <Badge variant="outline" className="gap-1">
-            <Star style={{ height: 14, width: 14 }} />
+            <Star size={14} />
             Capital: {country.capital}
           </Badge>
         )}
         {country.population && (
           <Badge variant="outline" className="gap-1">
-            <Users style={{ height: 14, width: 14 }} />
+            <Users size={14} />
             {(country.population / 1e6).toFixed(1)}M people
           </Badge>
         )}
         {country.area_km2 && (
           <Badge variant="outline" className="gap-1">
-            <MapIcon style={{ height: 14, width: 14 }} />
+            <MapIcon size={14} />
             {country.area_km2.toLocaleString()} km²
           </Badge>
         )}
         {cities.length > 0 && (
           <Badge variant="outline" className="gap-1">
-            <Building2 style={{ height: 14, width: 14 }} />
+            <Building2 size={14} />
             {cities.length} cities
           </Badge>
         )}
@@ -194,7 +194,7 @@ export function CountryOverviewTab({
           <Card>
             <CardHeader>
               <CardTitle>
-                <Globe style={{ height: 20, width: 20 }} />
+                <Globe size={20} />
                 About {country.name}
               </CardTitle>
             </CardHeader>
@@ -209,7 +209,7 @@ export function CountryOverviewTab({
           <Card>
             <CardHeader>
               <CardTitle>
-                <Star style={{ height: 20, width: 20 }} />
+                <Star size={20} />
                 Quick Facts
               </CardTitle>
             </CardHeader>
@@ -483,7 +483,7 @@ export function CountryTravelTab({ country }: CountryTravelTabProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Activity style={{ height: 20, width: 20 }} />
+            <Activity size={20} />
             Activities & Tours
           </CardTitle>
           <CardDescription>Experiences in {country.name}</CardDescription>

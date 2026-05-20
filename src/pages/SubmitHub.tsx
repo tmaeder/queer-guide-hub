@@ -24,13 +24,13 @@ const SubmitHub = () => {
         onClick={() => navigate(-1)}
         style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}
       >
-        <ArrowLeft style={{ width: 16, height: 16 }} />
+        <ArrowLeft size={16} />
         Back
       </Button>
 
       <div className="text-center mb-8">
         <div className="flex justify-center mb-3">
-          <Heart style={{ width: 32, height: 32 }} />
+          <Heart size={32} />
         </div>
         <h4 className="text-2xl font-bold mb-2">
           {t('pages.submit.title', 'Contribute to Queer Guide')}
@@ -66,7 +66,7 @@ const SubmitHub = () => {
                 className="flex items-center justify-center flex-shrink-0 bg-muted"
                 style={{ width: 44, height: 44 }}
               >
-                <Camera style={{ width: 22, height: 22 }} />
+                <Camera size={22} />
               </div>
               <div>
                 <p className="text-base font-semibold mb-0.5">Scan a Flyer</p>

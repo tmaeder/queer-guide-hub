@@ -100,7 +100,7 @@ export function BasicInfoTab({ formData, profile, user, onChange, onAvatarSave }
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" size="icon" type="button" style={{ height: 40, width: 40, flexShrink: 0 }}>
-                        <CalendarIcon style={{ width: 16, height: 16 }} />
+                        <CalendarIcon size={16} />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent style={{ width: 'auto', padding: 0 }} align="start">

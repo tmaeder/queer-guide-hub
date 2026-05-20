@@ -153,7 +153,7 @@ export function ActiveFilterChips({ filters, onFiltersChange }: ActiveFilterChip
               color: 'inherit',
             }}
           >
-            <X style={{ height: 12, width: 12 }} />
+            <X size={12} />
           </button>
         </Badge>
       ))}

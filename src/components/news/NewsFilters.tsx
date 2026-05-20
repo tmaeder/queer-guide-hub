@@ -299,7 +299,7 @@ export const NewsFilters = ({
     <Card style={{ position: 'sticky', top: 16 }}>
       <CardHeader style={{ paddingBottom: 16 }}>
         <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.125rem' }}>
-          <Filter style={{ height: 20, width: 20 }} />
+          <Filter size={20} />
           Filters
         </CardTitle>
       </CardHeader>
@@ -327,7 +327,7 @@ export const NewsFilters = ({
           <>
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <Tag style={{ height: 16, width: 16 }} />
+                <Tag size={16} />
                 <span className="text-sm font-medium">
                   Category
                 </span>
@@ -354,7 +354,7 @@ export const NewsFilters = ({
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MapPin style={{ height: 16, width: 16 }} />
+              <MapPin size={16} />
               <span className="text-sm font-medium">
                 Near Me
               </span>
@@ -373,7 +373,7 @@ export const NewsFilters = ({
         {/* Countries Filter */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <Globe style={{ height: 16, width: 16 }} />
+            <Globe size={16} />
             <span className="text-sm font-medium">
               Country
             </span>
@@ -414,7 +414,7 @@ export const NewsFilters = ({
         {/* Cities Filter */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <Map style={{ height: 16, width: 16 }} />
+            <Map size={16} />
             <span className="text-sm font-medium">
               City
             </span>
@@ -458,7 +458,7 @@ export const NewsFilters = ({
         {sources.length > 0 && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <Building style={{ height: 16, width: 16 }} />
+              <Building size={16} />
               <span className="text-sm font-medium">
                 Source
               </span>
@@ -482,7 +482,7 @@ export const NewsFilters = ({
         {/* Date Range Filter */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <Calendar style={{ height: 16, width: 16 }} />
+            <Calendar size={16} />
             <span className="text-sm font-medium">
               Published Date
             </span>
@@ -510,7 +510,7 @@ export const NewsFilters = ({
             <Separator />
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <TrendingUp style={{ height: 16, width: 16 }} />
+                <TrendingUp size={16} />
                 <span className="text-sm font-medium">
                   Trending Topics
                 </span>

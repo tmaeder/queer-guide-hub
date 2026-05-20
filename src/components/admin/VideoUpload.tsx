@@ -167,7 +167,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Video style={{ width: 20, height: 20 }} />
+            <Video size={20} />
             Upload Videos
           </CardTitle>
         </CardHeader>
@@ -273,7 +273,7 @@ export function VideoUpload({ onUploadComplete }: VideoUploadProps) {
                     size="sm"
                     onClick={() => removeVideo(video.id)}
                   >
-                    <X style={{ width: 16, height: 16 }} />
+                    <X size={16} />
                   </Button>
                 </div>
               </CardContent>

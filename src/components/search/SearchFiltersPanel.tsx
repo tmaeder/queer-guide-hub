@@ -178,7 +178,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
       {/* Location Filter */}
       <div className="flex flex-col gap-2">
         <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <MapPin style={{ height: 12, width: 12 }} />
+          <MapPin size={12} />
           Location
         </Label>
         <div className="relative">
@@ -195,7 +195,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
               style={{ position: 'absolute', right: 4, top: 4, height: 24, width: 24, padding: 0 }}
               onClick={() => updateLocation('')}
             >
-              <X style={{ height: 12, width: 12 }} />
+              <X size={12} />
             </Button>
           )}
         </div>
@@ -285,7 +285,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
                 gap: 6,
               }}
             >
-              <Layers style={{ width: 14, height: 14 }} aria-hidden="true" />
+              <Layers size={14} aria-hidden="true" />
               Topics
             </Label>
             {filters.cluster_ids && filters.cluster_ids.length > 0 && (
@@ -354,7 +354,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
           {/* Date Range */}
           <div className="flex flex-col gap-2">
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <CalendarIcon style={{ height: 12, width: 12 }} />
+              <CalendarIcon size={12} />
               Date Range
             </Label>
             <DatePickerWithRange
@@ -375,7 +375,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
           {/* Price Range */}
           <div className="flex flex-col gap-2">
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <DollarSign style={{ height: 12, width: 12 }} />
+              <DollarSign size={12} />
               Price Range
             </Label>
             <div className="px-2">
@@ -396,7 +396,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
           {/* Rating Filter */}
           <div className="flex flex-col gap-2">
             <Label style={{ fontSize: '0.875rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Star style={{ height: 12, width: 12 }} />
+              <Star size={12} />
               Minimum Rating
             </Label>
             <div className="flex gap-1">
@@ -408,7 +408,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
                   style={{ height: 32, width: 32, padding: 0 }}
                   onClick={() => updateRating(rating)}
                 >
-                  <Star style={{ height: 12, width: 12 }} />
+                  <Star size={12} />
                 </Button>
               ))}
             </div>

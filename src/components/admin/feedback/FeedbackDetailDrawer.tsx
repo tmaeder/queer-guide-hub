@@ -165,7 +165,7 @@ export function FeedbackDetailDrawer({
               <Ban size={14} />
               <span className="text-xs flex-1">Flagged as spam</span>
               <Button size="sm" variant="outline" onClick={() => onToggleSpam(false)} className="gap-1">
-                <RotateCcw style={{ width: 12, height: 12 }} />
+                <RotateCcw size={12} />
                 Restore
               </Button>
             </div>
@@ -249,7 +249,7 @@ export function FeedbackDetailDrawer({
               </h2>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose} style={{ padding: 4 }}>
-              <X style={{ width: 16, height: 16 }} />
+              <X size={16} />
             </Button>
           </div>
 
@@ -303,7 +303,7 @@ export function FeedbackDetailDrawer({
                   <Popover open={labelPopoverOpen} onOpenChange={setLabelPopoverOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" size="sm" className="h-6 px-2 text-xs gap-1">
-                        <Plus style={{ width: 10, height: 10 }} />
+                        <Plus size={10} />
                         Add
                       </Button>
                     </PopoverTrigger>

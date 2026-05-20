@@ -63,8 +63,7 @@ function TopicCard({ topic }: { topic: TopicHubRow }) {
         </div>
         <ChevronRight
           aria-hidden
-          className="opacity-30 transition-transform group-hover:translate-x-0.5"
-          style={{ width: 16, height: 16 }}
+          className="opacity-30 transition-transform group-hover:translate-x-0.5" size={16}
         />
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">

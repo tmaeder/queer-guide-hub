@@ -21,7 +21,7 @@ export function LocationPrivacyManager() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <MapPin style={{ height: 20, width: 20 }} />
+              <MapPin size={20} />
               Location Privacy Settings
             </div>
           </CardTitle>
@@ -115,7 +115,7 @@ export function LocationPrivacyManager() {
 
       {/* Privacy Information */}
       <Alert>
-        <Shield style={{ height: 16, width: 16 }} />
+        <Shield size={16} />
         <AlertDescription>
           <strong>Privacy Protection:</strong> Your location data is automatically anonymized after {locationSettings.anonymizationDays} days.
           Even when sharing is enabled, precise coordinates are reduced to approximate regions for older data.
@@ -127,7 +127,7 @@ export function LocationPrivacyManager() {
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-2">
-              <EyeOff style={{ height: 20, width: 20 }} />
+              <EyeOff size={20} />
               Data Protection Actions
             </div>
           </CardTitle>

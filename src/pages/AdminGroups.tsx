@@ -91,7 +91,7 @@ export default function AdminGroups() {
         header: 'Members',
         cell: (info) => (
           <div className="flex items-center gap-1">
-            <Users style={{ height: 14, width: 14 }} />
+            <Users size={14} />
             {info.getValue() ?? 0}
           </div>
         ),

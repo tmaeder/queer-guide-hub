@@ -45,7 +45,7 @@ const MessageStatusIcon = ({ status }: { status?: Message['status'] }) => {
     case 'delivered':
       return <CheckCheck style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />;
     case 'read':
-      return <Eye style={{ height: 12, width: 12 }} />;
+      return <Eye size={12} />;
     default:
       return null;
   }
@@ -120,7 +120,7 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               style={{ height: 24, width: 24, padding: 0, opacity: 0, transition: 'opacity 0.2s' }}
               onClick={() => setShowReactions(!showReactions)}
             >
-              <Smile style={{ height: 12, width: 12 }} />
+              <Smile size={12} />
             </Button>
           </div>
 
@@ -459,7 +459,7 @@ const MessageInput = ({
             style={{ height: 44, width: 44, padding: 0 }}
             disabled={disabled}
           >
-            <Smile style={{ height: 20, width: 20 }} />
+            <Smile size={20} />
           </Button>
         </PopoverTrigger>
         <PopoverContent style={{ width: 320, padding: 16 }} side="top">
@@ -489,7 +489,7 @@ const MessageInput = ({
         style={{ height: 44, width: 44, padding: 0, transition: 'all 0.2s' }}
         size="sm"
       >
-        <Send style={{ height: 20, width: 20 }} />
+        <Send size={20} />
       </Button>
     </form>
   );
@@ -750,7 +750,7 @@ export const MessagingInterface = () => {
                   className="rounded-element"
                   style={{ height: 36, width: 36, padding: 0 }}
                 >
-                  <MoreVertical style={{ height: 16, width: 16 }} />
+                  <MoreVertical size={16} />
                 </Button>
               </div>
             </div>

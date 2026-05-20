@@ -102,12 +102,12 @@ export function CMSListView({
 
   const getSortIcon = (column: string) => {
     if (filters.sortBy !== column) {
-      return <ArrowUpDown style={{ height: 16, width: 16 }} />;
+      return <ArrowUpDown size={16} />;
     }
     return filters.sortOrder === 'asc' ? (
-      <ArrowUp style={{ height: 16, width: 16 }} />
+      <ArrowUp size={16} />
     ) : (
-      <ArrowDown style={{ height: 16, width: 16 }} />
+      <ArrowDown size={16} />
     );
   };
 
@@ -195,13 +195,13 @@ export function CMSListView({
   const getContentTypeIcon = (type: string) => {
     switch (type) {
       case 'events':
-        return <Calendar style={{ height: 16, width: 16 }} />;
+        return <Calendar size={16} />;
       case 'venues':
-        return <ExternalLink style={{ height: 16, width: 16 }} />;
+        return <ExternalLink size={16} />;
       case 'personalities':
-        return <User style={{ height: 16, width: 16 }} />;
+        return <User size={16} />;
       default:
-        return <Tag style={{ height: 16, width: 16 }} />;
+        return <Tag size={16} />;
     }
   };
 
@@ -287,14 +287,14 @@ export function CMSListView({
             size="sm"
             onClick={() => onViewModeChange('grid')}
           >
-            <Grid3X3 style={{ height: 16, width: 16 }} />
+            <Grid3X3 size={16} />
           </Button>
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onViewModeChange('list')}
           >
-            <List style={{ height: 16, width: 16 }} />
+            <List size={16} />
           </Button>
         </div>
       </div>
@@ -518,13 +518,13 @@ export function CMSListView({
                             onClick={() => onEdit(item)}
                             style={{ height: 32, paddingLeft: 8, paddingRight: 8 }}
                           >
-                            <Edit style={{ height: 16, width: 16 }} />
+                            <Edit size={16} />
                           </Button>
 
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" style={{ height: 32, width: 32, padding: 0 }}>
-                                <MoreHorizontal style={{ height: 16, width: 16 }} />
+                                <MoreHorizontal size={16} />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent

@@ -73,7 +73,7 @@ export function MediaLibrary() {
   if (!isAdmin) {
     return (
       <Alert>
-        <AlertTriangle style={{ height: 16, width: 16 }} />
+        <AlertTriangle size={16} />
         <AlertDescription>Admin access required.</AlertDescription>
       </Alert>
     );

@@ -181,7 +181,7 @@ export function AutomatedSecurityScheduler() {
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
-            <Calendar style={{ height: 20, width: 20 }} />
+            <Calendar size={20} />
             <span>Automated Security Tasks</span>
           </div>
         </CardTitle>

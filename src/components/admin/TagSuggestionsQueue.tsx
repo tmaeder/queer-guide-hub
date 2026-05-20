@@ -132,7 +132,7 @@ export function TagSuggestionsQueue() {
                 onClick={() => approveMutation.mutate(Array.from(selectedIds))}
                 style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', display: 'flex', gap: 6 }}
               >
-                <CheckCircle style={{ height: 14, width: 14 }} /> Approve Selected
+                <CheckCircle size={14} /> Approve Selected
               </Button>
               <Button
                 variant="destructive"
@@ -141,7 +141,7 @@ export function TagSuggestionsQueue() {
                 onClick={() => rejectMutation.mutate(Array.from(selectedIds))}
                 style={{ display: 'flex', gap: 6 }}
               >
-                <XCircle style={{ height: 14, width: 14 }} /> Reject Selected
+                <XCircle size={14} /> Reject Selected
               </Button>
             </>
           )}
@@ -151,7 +151,7 @@ export function TagSuggestionsQueue() {
             onClick={() => approveMutation.mutate(items.map((i) => i.id))}
             style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', display: 'flex', gap: 6 }}
           >
-            <CheckCircle style={{ height: 14, width: 14 }} /> Approve All ({items.length})
+            <CheckCircle size={14} /> Approve All ({items.length})
           </Button>
         </div>
       </div>
@@ -201,7 +201,7 @@ export function TagSuggestionsQueue() {
                     onClick={() => approveMutation.mutate([item.id])}
                     style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white', padding: '4px 8px' }}
                   >
-                    <CheckCircle style={{ height: 14, width: 14 }} />
+                    <CheckCircle size={14} />
                   </Button>
                   <Button
                     variant="destructive"
@@ -210,7 +210,7 @@ export function TagSuggestionsQueue() {
                     onClick={() => rejectMutation.mutate([item.id])}
                     style={{ padding: '4px 8px' }}
                   >
-                    <XCircle style={{ height: 14, width: 14 }} />
+                    <XCircle size={14} />
                   </Button>
                 </div>
               </div>

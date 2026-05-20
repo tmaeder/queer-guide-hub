@@ -45,11 +45,11 @@ const HotelCardFixture = () => (
     <div className="p-4 flex-1 flex flex-col gap-1">
       <p className="font-semibold truncate">Sample Hotel</p>
       <div className="flex items-center gap-1 text-muted-foreground">
-        <MapPin style={{ width: 14, height: 14 }} />
+        <MapPin size={14} />
         <p className="text-sm truncate">Berlin, Germany</p>
       </div>
       <div className="flex items-center gap-2 mt-auto pt-2">
-        <Star style={{ width: 14, height: 14 }} />
+        <Star size={14} />
         <p className="text-sm font-semibold">4.5</p>
         <Badge variant="outline" style={{ fontSize: '0.65rem', padding: '1px 5px' }}>LGBTQ+</Badge>
       </div>

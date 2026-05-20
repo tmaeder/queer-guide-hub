@@ -114,7 +114,7 @@ export const GroupImageUpload = ({
               </>
             ) : (
               <>
-                <Upload style={{ height: 16, width: 16 }} />
+                <Upload size={16} />
                 Upload Images
               </>
             )}
@@ -148,7 +148,7 @@ export const GroupImageUpload = ({
                 className="opacity-0 group-hover:opacity-100"
                 onClick={() => removeImage(index)}
               >
-                <X style={{ height: 12, width: 12 }} />
+                <X size={12} />
               </Button>
             </div>
           ))}

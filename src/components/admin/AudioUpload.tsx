@@ -189,7 +189,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Music style={{ width: 20, height: 20 }} />
+            <Music size={20} />
             Upload Audio Files
           </CardTitle>
         </CardHeader>
@@ -352,7 +352,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                     size="sm"
                     onClick={() => removeAudio(audio.id)}
                   >
-                    <X style={{ width: 16, height: 16 }} />
+                    <X size={16} />
                   </Button>
                 </div>
               </CardContent>

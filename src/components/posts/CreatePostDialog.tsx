@@ -191,18 +191,18 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
 
   const getPostTypeIcon = () => {
     switch (postType) {
-      case 'image': return <ImageIcon style={{ height: 16, width: 16 }} />;
-      case 'link': return <LinkIcon style={{ height: 16, width: 16 }} />;
-      case 'poll': return <BarChart3 style={{ height: 16, width: 16 }} />;
-      default: return <PenSquare style={{ height: 16, width: 16 }} />;
+      case 'image': return <ImageIcon size={16} />;
+      case 'link': return <LinkIcon size={16} />;
+      case 'poll': return <BarChart3 size={16} />;
+      default: return <PenSquare size={16} />;
     }
   };
 
   const getVisibilityIcon = () => {
     switch (visibility) {
-      case 'friends': return <Users style={{ height: 16, width: 16 }} />;
-      case 'private': return <Lock style={{ height: 16, width: 16 }} />;
-      default: return <Globe style={{ height: 16, width: 16 }} />;
+      case 'friends': return <Users size={16} />;
+      case 'private': return <Lock size={16} />;
+      default: return <Globe size={16} />;
     }
   };
 
@@ -296,11 +296,11 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
             {/* Mention and Tag Hints */}
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
-                <AtSign style={{ height: 12, width: 12 }} />
+                <AtSign size={12} />
                 <span>Type @ to mention users</span>
               </div>
               <div className="flex items-center gap-1">
-                <Hash style={{ height: 12, width: 12 }} />
+                <Hash size={12} />
                 <span>Type # to add tags</span>
               </div>
             </div>
@@ -373,7 +373,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
                         size="icon"
                         onClick={() => removePollOption(index)}
                       >
-                        <X style={{ height: 16, width: 16 }} />
+                        <X size={16} />
                       </Button>
                     )}
                   </div>
@@ -398,19 +398,19 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               <SelectContent>
                 <SelectItem value="public">
                   <div className="flex items-center gap-2">
-                    <Globe style={{ height: 16, width: 16 }} />
+                    <Globe size={16} />
                     <span>Public - Anyone can see this post</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="friends">
                   <div className="flex items-center gap-2">
-                    <Users style={{ height: 16, width: 16 }} />
+                    <Users size={16} />
                     <span>Friends - Only your connections</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
                   <div className="flex items-center gap-2">
-                    <Lock style={{ height: 16, width: 16 }} />
+                    <Lock size={16} />
                     <span>Private - Only you can see this</span>
                   </div>
                 </SelectItem>

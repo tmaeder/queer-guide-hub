@@ -210,9 +210,9 @@ export default function AdminNewsSources() {
           return (
             <div className="flex items-center gap-1">
               {val === 'rss' ? (
-                <Rss style={{ height: 14, width: 14 }} />
+                <Rss size={14} />
               ) : (
-                <Globe style={{ height: 14, width: 14 }} />
+                <Globe size={14} />
               )}
               <Badge variant="secondary">{val.toUpperCase()}</Badge>
             </div>

@@ -26,7 +26,7 @@ export function AdminRoleRequest() {
     <Card>
       <CardHeader>
         <CardTitle>
-          <Shield style={{ width: 20, height: 20 }} />
+          <Shield size={20} />
           Admin Access Required
         </CardTitle>
         <CardDescription>
@@ -35,7 +35,7 @@ export function AdminRoleRequest() {
       </CardHeader>
       <CardContent>
         <Alert>
-          <Info style={{ width: 16, height: 16 }} />
+          <Info size={16} />
           <AlertDescription>
             Please contact an existing administrator to request access.
           </AlertDescription>

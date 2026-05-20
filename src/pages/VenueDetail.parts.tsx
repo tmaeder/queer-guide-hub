@@ -225,7 +225,7 @@ export function VenueHero({
             onClick={onAddToTrip}
             className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
           >
-            <Luggage style={{ width: 14, height: 14 }} aria-hidden="true" />
+            <Luggage size={14} aria-hidden="true" />
             Add to trip
           </button>
           <FavoriteButton itemId={venue.id} type="venue" size="md" />
@@ -276,7 +276,7 @@ export function VenueHero({
         {venue.category && <Badge>{venue.category}</Badge>}
         {cityName && (
           <Badge variant="outline" className="gap-1">
-            <MapPin style={{ width: 14, height: 14 }} />
+            <MapPin size={14} />
             {cityName}{countryName ? `, ${countryName}` : ''}
           </Badge>
         )}
@@ -336,10 +336,10 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {venue.amenities.map((amenity, index) => (
                     <div key={index} className="flex items-center gap-2 p-2 rounded">
-                      {amenity === 'wifi' && <Wifi style={{ width: 16, height: 16 }} />}
-                      {amenity === 'parking' && <Car style={{ width: 16, height: 16 }} />}
+                      {amenity === 'wifi' && <Wifi size={16} />}
+                      {amenity === 'parking' && <Car size={16} />}
                       {amenity === 'wheelchair-accessible' && (
-                        <Accessibility style={{ width: 16, height: 16 }} />
+                        <Accessibility size={16} />
                       )}
                       {!['wifi', 'parking', 'wheelchair-accessible'].includes(amenity) && (
                         <div
@@ -490,7 +490,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
               <CardHeader>
                 <CardTitle>
                   <div className="flex items-center gap-2">
-                    <Clock style={{ width: 16, height: 16 }} />
+                    <Clock size={16} />
                     Hours
                   </div>
                 </CardTitle>

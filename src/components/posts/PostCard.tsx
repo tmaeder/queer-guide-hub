@@ -88,11 +88,11 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
   const getVisibilityIcon = () => {
     switch (post.visibility) {
       case 'friends':
-        return <Users style={{ height: 12, width: 12 }} />;
+        return <Users size={12} />;
       case 'private':
-        return <Lock style={{ height: 12, width: 12 }} />;
+        return <Lock size={12} />;
       default:
-        return <Globe style={{ height: 12, width: 12 }} />;
+        return <Globe size={12} />;
     }
   };
 
@@ -342,7 +342,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                   style={{ height: 32, width: 32 }}
                   aria-label="More options"
                 >
-                  <MoreHorizontal style={{ height: 16, width: 16 }} />
+                  <MoreHorizontal size={16} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -409,7 +409,7 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
           </div>
 
           <Button variant="ghost" size="sm" onClick={handleShare}>
-            <Share2 style={{ height: 16, width: 16 }} />
+            <Share2 size={16} />
           </Button>
         </div>
 

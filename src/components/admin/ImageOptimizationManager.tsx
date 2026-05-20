@@ -471,7 +471,7 @@ export function ImageOptimizationManager() {
             </CardHeader>
             <CardContent>
               <Alert>
-                <Server style={{ height: 16, width: 16 }} />
+                <Server size={16} />
                 <AlertDescription>
                   Optimization runs on the server and continues even if you close this page or refresh.
                   Jobs process images in batches of 10 to prevent system overload.

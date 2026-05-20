@@ -139,7 +139,7 @@ export function ResultsMapView({ results, height = 480, onSelect, onAreaSearch }
             gap: 6,
           }}
         >
-          <Navigation style={{ width: 14, height: 14 }} />
+          <Navigation size={14} />
           {t('search.searchThisArea', 'Search this area')}
         </Button>
       )}

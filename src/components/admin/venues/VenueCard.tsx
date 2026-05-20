@@ -56,7 +56,7 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <MapPin style={{ width: 12, height: 12 }} />
+                <MapPin size={12} />
                 <span>{venue.city}{venue.state && `, ${venue.state}`}</span>
               </div>
               <div className="flex items-center gap-1">
@@ -76,19 +76,19 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
             <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
               {venue.phone && (
                 <div className="flex items-center gap-1">
-                  <Phone style={{ width: 12, height: 12 }} />
+                  <Phone size={12} />
                   <span>{venue.phone}</span>
                 </div>
               )}
               {venue.email && (
                 <div className="flex items-center gap-1">
-                  <Mail style={{ width: 12, height: 12 }} />
+                  <Mail size={12} />
                   <span>{venue.email}</span>
                 </div>
               )}
               {venue.website && (
                 <div className="flex items-center gap-1">
-                  <ExternalLink style={{ width: 12, height: 12 }} />
+                  <ExternalLink size={12} />
                   <span>Website</span>
                 </div>
               )}
@@ -112,11 +112,11 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
 
           <div className="flex md:flex-col gap-2">
             <Button variant="outline" size="sm" onClick={() => onEdit(venue)}>
-              <Edit style={{ width: 16, height: 16 }} className="md:mr-2" />
+              <Edit size={16} className="md:mr-2" />
               <span className="hidden md:inline">Edit</span>
             </Button>
             <Button variant="destructive" size="sm" onClick={() => onDelete(venue)}>
-              <Trash2 style={{ width: 16, height: 16 }} className="md:mr-2" />
+              <Trash2 size={16} className="md:mr-2" />
               <span className="hidden md:inline">Delete</span>
             </Button>
           </div>

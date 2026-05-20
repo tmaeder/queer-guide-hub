@@ -55,7 +55,7 @@ export function SavedSearchesButton() {
                 disabled={!hasFilters || !name.trim()}
                 aria-label="Save search"
               >
-                <Plus style={{ width: 14, height: 14 }} aria-hidden="true" />
+                <Plus size={14} aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -83,7 +83,7 @@ export function SavedSearchesButton() {
                       aria-label={`Delete saved search ${s.name}`}
                       className="p-1 rounded hover:bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                     >
-                      <X style={{ width: 12, height: 12 }} aria-hidden="true" />
+                      <X size={12} aria-hidden="true" />
                     </button>
                   </li>
                 ))}

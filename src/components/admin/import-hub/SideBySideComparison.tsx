@@ -113,7 +113,7 @@ export function SideBySideComparison({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Merge style={{ width: 16, height: 16 }} />
+          <Merge size={16} />
           <h6 className="text-sm font-semibold">Side-by-Side Comparison</h6>
           <Badge variant="secondary">{diffFields.length} differences</Badge>
         </div>
@@ -127,7 +127,7 @@ export function SideBySideComparison({
             <div className="p-3 font-semibold text-xs uppercase text-muted-foreground">Field</div>
             <div className="p-3 font-semibold text-xs uppercase" style={{ color: 'hsl(var(--muted-foreground))' }}>{leftLabel}</div>
             <div className="p-3 flex items-center justify-center">
-              <ArrowRight style={{ width: 14, height: 14 }} className="text-muted-foreground" />
+              <ArrowRight size={14} className="text-muted-foreground" />
             </div>
             <div className="p-3 font-semibold text-xs uppercase" style={{ color: 'hsl(var(--foreground))' }}>{rightLabel}</div>
           </div>
@@ -234,19 +234,19 @@ export function SideBySideComparison({
           )}
           {onKeepLeft && (
             <Button variant="outline" onClick={onKeepLeft} style={{ display: 'flex', gap: 6 }}>
-              <Check style={{ width: 14, height: 14 }} />
+              <Check size={14} />
               Keep {leftLabel}
             </Button>
           )}
           {onKeepRight && (
             <Button variant="outline" onClick={onKeepRight} style={{ display: 'flex', gap: 6 }}>
-              <Check style={{ width: 14, height: 14 }} />
+              <Check size={14} />
               Keep {rightLabel}
             </Button>
           )}
           {onMerge && leftId && rightId && (
             <Button onClick={handleMerge} style={{ display: 'flex', gap: 6, backgroundColor: 'hsl(var(--muted-foreground))', color: 'white' }}>
-              <Merge style={{ width: 14, height: 14 }} />
+              <Merge size={14} />
               Merge & Keep Best
             </Button>
           )}

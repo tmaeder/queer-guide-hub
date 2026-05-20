@@ -60,14 +60,14 @@ export function formatPrice(listing: MarketplaceListing) {
 export function getBusinessTypeIcon(type: string | null | undefined) {
   switch (type) {
     case 'online':
-      return <Globe style={{ width: 16, height: 16 }} />;
+      return <Globe size={16} />;
     case 'physical':
-      return <MapPin style={{ width: 16, height: 16 }} />;
+      return <MapPin size={16} />;
     case 'both':
       return (
         <div className="flex gap-1">
-          <Globe style={{ width: 16, height: 16 }} />
-          <MapPin style={{ width: 16, height: 16 }} />
+          <Globe size={16} />
+          <MapPin size={16} />
         </div>
       );
     default:
@@ -259,7 +259,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
           <CardHeader>
             <CardTitle>
               <div className="flex items-center gap-2">
-                <Truck style={{ width: 16, height: 16 }} />
+                <Truck size={16} />
                 Shipping Information
               </div>
             </CardTitle>
@@ -433,7 +433,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
 
           {listing.shipping_available && (
             <div className="flex items-center gap-2 bg-muted rounded p-2 text-sm mt-3">
-              <Truck style={{ width: 16, height: 16 }} aria-hidden="true" />
+              <Truck size={16} aria-hidden="true" />
               Shipping available
             </div>
           )}
@@ -461,7 +461,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
               to={`/marketplace/merchants/${listing.merchant_domain}`}
               className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
             >
-              <Globe style={{ width: 14, height: 14 }} aria-hidden="true" />
+              <Globe size={14} aria-hidden="true" />
               {listing.merchant_domain}
             </LocalizedLink>
           </CardContent>

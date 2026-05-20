@@ -138,7 +138,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <TrendingUp style={{ height: 20, width: 20 }} />
+                <TrendingUp size={20} />
                 Economy
               </CardTitle>
             </CardHeader>
@@ -199,7 +199,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <Users style={{ height: 20, width: 20 }} />
+                <Users size={20} />
                 Demographics
               </CardTitle>
             </CardHeader>
@@ -252,7 +252,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <GraduationCap style={{ height: 20, width: 20 }} />
+                <GraduationCap size={20} />
                 Society
               </CardTitle>
             </CardHeader>
@@ -304,7 +304,7 @@ export const WorldBankDataPanel = ({ data, countryName: _countryName }: WorldBan
           <Card>
             <CardHeader>
               <CardTitle>
-                <Leaf style={{ height: 20, width: 20 }} />
+                <Leaf size={20} />
                 Environment & Health
               </CardTitle>
             </CardHeader>

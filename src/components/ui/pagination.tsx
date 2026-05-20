@@ -48,7 +48,7 @@ PaginationLink.displayName = "PaginationLink"
 const PaginationPrevious = ({ className, ...props }: React.ComponentProps<typeof PaginationLink>) => (
   <PaginationLink aria-label="Go to previous page" size="default" className={className}
     style={{ gap: 4, paddingLeft: 10 }} {...props}>
-    <ChevronLeft style={{ width: 16, height: 16 }} />
+    <ChevronLeft size={16} />
     <span>Previous</span>
   </PaginationLink>
 );
@@ -58,7 +58,7 @@ const PaginationNext = ({ className, ...props }: React.ComponentProps<typeof Pag
   <PaginationLink aria-label="Go to next page" size="default" className={className}
     style={{ gap: 4, paddingRight: 10 }} {...props}>
     <span>Next</span>
-    <ChevronRight style={{ width: 16, height: 16 }} />
+    <ChevronRight size={16} />
   </PaginationLink>
 );
 PaginationNext.displayName = "PaginationNext"
@@ -66,7 +66,7 @@ PaginationNext.displayName = "PaginationNext"
 const PaginationEllipsis = ({ className, style, ...props }: React.ComponentProps<"span">) => (
   <span aria-hidden className={className}
     style={{ display: 'flex', height: 36, width: 36, alignItems: 'center', justifyContent: 'center', ...style }} {...props}>
-    <MoreHorizontal style={{ width: 16, height: 16 }} />
+    <MoreHorizontal size={16} />
     <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>More pages</span>
   </span>
 );

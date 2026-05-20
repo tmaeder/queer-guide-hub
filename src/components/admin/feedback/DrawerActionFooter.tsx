@@ -62,7 +62,7 @@ export function DrawerActionFooter({
             onClick={() => onToggleSpam(false)}
             className="gap-1.5"
           >
-            <RotateCcw style={{ width: 12, height: 12 }} />
+            <RotateCcw size={12} />
             Restore
           </Button>
         ) : (
@@ -73,7 +73,7 @@ export function DrawerActionFooter({
             title="Mark as spam"
             className="gap-1.5"
           >
-            <Ban style={{ width: 12, height: 12 }} />
+            <Ban size={12} />
             Spam
           </Button>
         )}
@@ -85,7 +85,7 @@ export function DrawerActionFooter({
           title="Copy prompt only (no handoff entry)"
           className="gap-1.5"
         >
-          <Copy style={{ width: 12, height: 12 }} />
+          <Copy size={12} />
           Copy
         </Button>
 
@@ -98,7 +98,7 @@ export function DrawerActionFooter({
             }
             className="gap-1.5"
           >
-            <Github style={{ width: 12, height: 12 }} />
+            <Github size={12} />
             #{githubIssueNumber}
           </Button>
         ) : (
@@ -110,7 +110,7 @@ export function DrawerActionFooter({
             title="Open GitHub issue with @claude mention"
             className="gap-1.5"
           >
-            <Github style={{ width: 12, height: 12 }} />
+            <Github size={12} />
             {isForwarding ? 'Forwarding…' : 'GitHub'}
           </Button>
         )}

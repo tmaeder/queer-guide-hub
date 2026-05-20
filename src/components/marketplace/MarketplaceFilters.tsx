@@ -141,7 +141,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           />
         </div>
         <Button onClick={handleSearch} size="icon" aria-label="Search">
-          <Search style={{ height: 16, width: 16 }} />
+          <Search size={16} />
         </Button>
         <Button
           variant="outline"
@@ -149,7 +149,7 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
           size="icon"
           aria-label="Toggle filters"
         >
-          <Filter style={{ height: 16, width: 16 }} />
+          <Filter size={16} />
         </Button>
       </div>
 
@@ -258,12 +258,12 @@ export function MarketplaceFilters({ initialSearch = '', onFiltersChange }: Mark
 
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSearch}>
-              <Sliders style={{ height: 16, width: 16 }} />
+              <Sliders size={16} />
               Apply Filters
             </Button>
             {hasActiveFilters && (
               <Button variant="outline" onClick={clearFilters}>
-                <X style={{ height: 16, width: 16 }} />
+                <X size={16} />
                 Clear All
               </Button>
             )}

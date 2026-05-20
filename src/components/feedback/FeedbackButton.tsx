@@ -165,7 +165,7 @@ export function FeedbackButton() {
               visibility: capturing ? 'hidden' : 'visible',
             }}
           >
-            <MessageSquarePlus style={{ width: 22, height: 22 }} />
+            <MessageSquarePlus size={22} />
           </button>
         </TooltipTrigger>
         <TooltipContent side="left">Share Feedback</TooltipContent>
@@ -303,7 +303,7 @@ export function FeedbackButton() {
                     htmlFor="feedback-screenshot"
                     style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
                   >
-                    <Camera style={{ width: 14, height: 14 }} />
+                    <Camera size={14} />
                     Include screenshot of this page
                   </Label>
                 </div>

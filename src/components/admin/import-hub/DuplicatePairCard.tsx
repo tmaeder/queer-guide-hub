@@ -52,7 +52,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               onClick={() => setExpanded(!expanded)}
               style={{ display: 'flex', gap: 6 }}
             >
-              {expanded ? <ChevronUp style={{ width: 14, height: 14 }} /> : <Eye style={{ width: 14, height: 14 }} />}
+              {expanded ? <ChevronUp size={14} /> : <Eye size={14} />}
               {expanded ? 'Collapse' : 'Compare'}
             </Button>
             <Button
@@ -62,7 +62,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               disabled={dismissMutation.isPending}
               style={{ display: 'flex', gap: 6 }}
             >
-              <X style={{ width: 14, height: 14 }} />
+              <X size={14} />
               Not Duplicate
             </Button>
             <Button
@@ -70,7 +70,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
               onClick={() => onMerge(pair)}
               style={{ display: 'flex', gap: 6, backgroundColor: 'hsl(var(--muted-foreground))', color: 'white' }}
             >
-              <Merge style={{ width: 14, height: 14 }} />
+              <Merge size={14} />
               Merge
             </Button>
           </div>

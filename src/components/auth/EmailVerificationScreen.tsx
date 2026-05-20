@@ -64,7 +64,7 @@ export function EmailVerificationScreen({ email, onBackToLogin }: Props) {
 
           {status === 'sent' && (
             <Alert>
-              <CheckCircle2 style={{ width: 16, height: 16 }} />
+              <CheckCircle2 size={16} />
               <AlertDescription>
                 {t('auth.verifyEmail.resent', 'Verification email sent. Please check your inbox.')}
               </AlertDescription>

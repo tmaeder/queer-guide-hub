@@ -23,11 +23,11 @@ import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case 'message':
-      return <MessageCircle style={{ height: 16, width: 16 }} />;
+      return <MessageCircle size={16} />;
     case 'event':
-      return <Calendar style={{ height: 16, width: 16 }} />;
+      return <Calendar size={16} />;
     default:
-      return <Info style={{ height: 16, width: 16 }} />;
+      return <Info size={16} />;
   }
 };
 
@@ -211,7 +211,7 @@ export const NotificationList = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <MessageCircle style={{ height: 16, width: 16 }} /> {title || 'Conversation'}
+                    <MessageCircle size={16} /> {title || 'Conversation'}
                   </h4>
                   <span className="text-xs text-muted-foreground ml-2">
                     {formatDistanceToNow(item.createdAt, { addSuffix: true })}
@@ -244,7 +244,7 @@ export const NotificationList = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <Users style={{ height: 16, width: 16 }} />{' '}
+                    <Users size={16} />{' '}
                     {n.community_groups?.name || 'Group'}
                   </h4>
                   <span className="text-xs text-muted-foreground ml-2">
@@ -279,7 +279,7 @@ export const NotificationList = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <Heart style={{ height: 16, width: 16 }} /> {l.user_display_name} liked your
+                    <Heart size={16} /> {l.user_display_name} liked your
                     post
                   </h4>
                   <span className="text-xs text-muted-foreground ml-2">
@@ -313,7 +313,7 @@ export const NotificationList = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium truncate flex items-center gap-2">
-                    <MessageSquare style={{ height: 16, width: 16 }} /> {c.user_display_name}{' '}
+                    <MessageSquare size={16} /> {c.user_display_name}{' '}
                     commented
                   </h4>
                   <span className="text-xs text-muted-foreground ml-2">

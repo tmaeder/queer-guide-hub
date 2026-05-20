@@ -118,12 +118,12 @@ function formatValue(value: unknown, type: FieldDef['type']): React.ReactNode {
     case 'boolean':
       return value ? (
         <Badge variant="outline" className="gap-1 text-foreground border-foreground/40">
-          <Check style={{ width: 12, height: 12 }} />
+          <Check size={12} />
           Yes
         </Badge>
       ) : (
         <Badge variant="outline" className="gap-1">
-          <X style={{ width: 12, height: 12 }} />
+          <X size={12} />
           No
         </Badge>
       );

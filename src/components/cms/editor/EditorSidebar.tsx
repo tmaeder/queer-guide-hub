@@ -53,8 +53,7 @@ function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
               )}
             </div>
             <ChevronDown
-              className={cn('transition-transform', open && 'rotate-180')}
-              style={{ width: 18, height: 18 }}
+              className={cn('transition-transform', open && 'rotate-180')} size={18}
             />
           </button>
         </CollapsibleTrigger>
@@ -160,7 +159,7 @@ export function EditorSidebar({
                   />
                 ) : (
                   <div className="flex items-center justify-center flex-shrink-0 bg-muted rounded w-10 h-10">
-                    <FileText className="text-muted-foreground" style={{ width: 16, height: 16 }} />
+                    <FileText className="text-muted-foreground" size={16} />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
@@ -215,7 +214,7 @@ function RevisionEntry({ revision }: { revision: CMSRevision }) {
   return (
     <div className="flex items-start gap-2 p-2 rounded-element hover:bg-muted/40 transition-colors">
       <div className="flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full bg-muted w-7 h-7">
-        <Clock className="text-muted-foreground" style={{ width: 14, height: 14 }} />
+        <Clock className="text-muted-foreground" size={14} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">

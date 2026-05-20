@@ -196,7 +196,7 @@ export function ModernVideoPlayer({
               style={{ color: 'hsl(0 0% 100%)' }}
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? <Pause style={{ height: 20, width: 20 }} /> : <Play style={{ height: 20, width: 20 }} />}
+              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
             </Button>
 
             <span style={{ color: 'hsl(0 0% 100%)', fontSize: '0.875rem' }}>
@@ -215,7 +215,7 @@ export function ModernVideoPlayer({
                   download={video.title || 'video.mp4'}
                   aria-label="Download video"
                 >
-                  <Download style={{ height: 20, width: 20 }} />
+                  <Download size={20} />
                 </a>
               </Button>
             )}

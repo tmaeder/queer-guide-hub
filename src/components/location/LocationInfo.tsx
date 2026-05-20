@@ -145,7 +145,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
         <Card>
           <CardHeader>
             <CardTitle>
-              <Globe style={{ height: 20, width: 20 }} />
+              <Globe size={20} />
               About {name}
               <Badge variant="secondary">{type}</Badge>
             </CardTitle>
@@ -168,7 +168,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                 rel="noopener noreferrer"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--primary)' }}
               >
-                <ExternalLink style={{ height: 16, width: 16 }} />
+                <ExternalLink size={16} />
                 Read more on Wikipedia
               </a>
               
@@ -187,7 +187,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
         <Card>
           <CardHeader>
             <CardTitle>
-              <ImageIcon style={{ height: 20, width: 20 }} />
+              <ImageIcon size={20} />
               Photo Gallery
             </CardTitle>
           </CardHeader>
@@ -264,7 +264,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                       style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, color: 'white' }}
                       onClick={closeModal}
                     >
-                      <X style={{ height: 24, width: 24 }} />
+                      <X size={24} />
                     </Button>
                     
                     {/* Navigation buttons */}
@@ -276,7 +276,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                           style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: 'white' }}
                           onClick={() => navigateImage('prev')}
                         >
-                          <ChevronLeft style={{ height: 32, width: 32 }} />
+                          <ChevronLeft size={32} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -284,7 +284,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                           style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: 'white' }}
                           onClick={() => navigateImage('next')}
                         >
-                          <ChevronRight style={{ height: 32, width: 32 }} />
+                          <ChevronRight size={32} />
                         </Button>
                       </>
                     )}
@@ -315,7 +315,7 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                               className="rounded-element"
                               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.375rem 0.75rem', color: 'inherit', textDecoration: 'none', transition: 'background-color 0.2s' }}
                             >
-                              <ExternalLink style={{ height: 16, width: 16 }} />
+                              <ExternalLink size={16} />
                               View Profile
                             </a>
                           </div>

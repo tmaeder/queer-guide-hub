@@ -200,9 +200,9 @@ export function TripCard({ trip }: Props) {
                     safetyBg,
                   )}
                 >
-                  {safetyLevel === 'safe' && <ShieldCheck style={{ width: 16, height: 16 }} />}
-                  {safetyLevel === 'caution' && <ShieldAlert style={{ width: 16, height: 16 }} />}
-                  {safetyLevel === 'danger' && <AlertTriangle style={{ width: 16, height: 16 }} />}
+                  {safetyLevel === 'safe' && <ShieldCheck size={16} />}
+                  {safetyLevel === 'caution' && <ShieldAlert size={16} />}
+                  {safetyLevel === 'danger' && <AlertTriangle size={16} />}
                 </span>
               </TooltipTrigger>
               <TooltipContent>{t(`trips.card.safety.${safetyLevel}`)}</TooltipContent>
@@ -218,7 +218,7 @@ export function TripCard({ trip }: Props) {
                 aria-label={t('trips.card.menuAria')}
                 className="trip-card-menu absolute top-2 right-2 h-7 w-7 p-0 bg-background shadow"
               >
-                <MoreVertical style={{ width: 16, height: 16 }} />
+                <MoreVertical size={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
@@ -227,9 +227,9 @@ export function TripCard({ trip }: Props) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleTogglePin} className="flex items-center gap-2">
                 {isActive ? (
-                  <PinOff style={{ width: 14, height: 14 }} aria-hidden />
+                  <PinOff size={14} aria-hidden />
                 ) : (
-                  <Pin style={{ width: 14, height: 14 }} aria-hidden />
+                  <Pin size={14} aria-hidden />
                 )}
                 {isActive
                   ? t('trips.card.unpin', 'Unpin from active')

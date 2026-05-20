@@ -69,11 +69,11 @@ export default function NewsStoryDetail() {
 
       <div className="flex items-center gap-2 mb-3">
         <Badge style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }} className="inline-flex items-center gap-1">
-          <Layers style={{ width: 10, height: 10 }} aria-hidden="true" />
+          <Layers size={10} aria-hidden="true" />
           {story.article_count} articles
         </Badge>
         <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-          <Clock style={{ width: 12, height: 12 }} aria-hidden="true" />
+          <Clock size={12} aria-hidden="true" />
           Updated {formatDistanceToNow(new Date(story.last_updated_at), { addSuffix: true })}
         </span>
       </div>

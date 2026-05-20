@@ -490,7 +490,7 @@ export const UniversalSearchBar = () => {
                   }}
                   onClick={() => setShowFilters(!showFilters)}
                 >
-                  <SlidersHorizontal style={{ height: 20, width: 20 }} />
+                  <SlidersHorizontal size={20} />
                   {activeFiltersCount > 0 && <Badge variant="destructive">{activeFiltersCount}</Badge>}
                 </Button>
               )}

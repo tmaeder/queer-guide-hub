@@ -107,7 +107,7 @@ export function TripsToolbar({
               aria-label={t('trips.toolbar.sortAria')}
               className="h-10 w-10 p-0"
             >
-              <ArrowDownUp style={{ width: 16, height: 16 }} />
+              <ArrowDownUp size={16} />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -118,7 +118,7 @@ export function TripsToolbar({
                 className="gap-2"
               >
                 <span className="w-4 inline-flex">
-                  {key === sortKey && <Check style={{ width: 16, height: 16 }} />}
+                  {key === sortKey && <Check size={16} />}
                 </span>
                 {t(`trips.toolbar.sort.${key}`)}
               </DropdownMenuItem>

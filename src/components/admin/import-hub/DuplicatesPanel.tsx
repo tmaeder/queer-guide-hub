@@ -28,15 +28,15 @@ export function DuplicatesPanel() {
       <Tabs value={subTab} onValueChange={setSubTab}>
         <TabsList>
           <TabsTrigger value="staging" className="flex gap-1.5">
-            <Inbox style={{ width: 14, height: 14 }} />
+            <Inbox size={14} />
             Staging Dedup
           </TabsTrigger>
           <TabsTrigger value="existing" className="flex gap-1.5">
-            <Database style={{ width: 14, height: 14 }} />
+            <Database size={14} />
             Existing Data
           </TabsTrigger>
           <TabsTrigger value="history" className="flex gap-1.5">
-            <History style={{ width: 14, height: 14 }} />
+            <History size={14} />
             Merge History
           </TabsTrigger>
         </TabsList>
@@ -72,7 +72,7 @@ function StagingDedupSection() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Search style={{ width: 18, height: 18 }} />
+            <Search size={18} />
             Scan Staging Items for Duplicates
           </CardTitle>
         </CardHeader>
@@ -104,7 +104,7 @@ function StagingDedupSection() {
               {batchScan.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
               ) : (
-                <Search style={{ width: 16, height: 16 }} />
+                <Search size={16} />
               )}
               {batchScan.isPending ? 'Scanning...' : 'Scan Staging'}
             </Button>
@@ -156,7 +156,7 @@ function ExistingDedupSection() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Database style={{ width: 18, height: 18 }} />
+            <Database size={18} />
             Scan Existing Records for Duplicates
           </CardTitle>
         </CardHeader>
@@ -199,13 +199,13 @@ function ExistingDedupSection() {
               {scanMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading" />
               ) : (
-                <Search style={{ width: 16, height: 16 }} />
+                <Search size={16} />
               )}
               {scanMutation.isPending ? 'Scanning...' : 'Scan'}
             </Button>
 
             <Button variant="outline" size="sm" onClick={() => refetch()} className="flex gap-1.5">
-              <RefreshCw style={{ width: 14, height: 14 }} />
+              <RefreshCw size={14} />
             </Button>
           </div>
 
@@ -313,7 +313,7 @@ function MergeHistorySection() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <History style={{ width: 18, height: 18 }} />
+            <History size={18} />
             Merge History
           </CardTitle>
         </CardHeader>

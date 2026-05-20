@@ -206,7 +206,7 @@ export function VenueCard({
                   aria-label={`Share ${venue.name}`}
                   className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-background/70 backdrop-blur-sm hover:bg-background"
                 >
-                  <Share2 style={{ width: 16, height: 16 }} aria-hidden="true" />
+                  <Share2 size={16} aria-hidden="true" />
                 </button>
                 <FavoriteButton itemId={venue.id} type="venue" />
               </div>
@@ -242,7 +242,7 @@ export function VenueCard({
                   className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold bg-primary text-primary-foreground"
                   style={{ fontSize: '0.7rem' }}
                 >
-                  <Luggage style={{ width: 12, height: 12 }} />
+                  <Luggage size={12} />
                   In trip
                 </div>
               )}

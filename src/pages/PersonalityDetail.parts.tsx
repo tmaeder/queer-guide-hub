@@ -84,7 +84,7 @@ function VerificationBadge({ status }: { status: Personality['verification_statu
         variant="secondary"
         style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
       >
-        <Verified style={{ height: 12, width: 12 }} />
+        <Verified size={12} />
         Verified
       </Badge>
     );
@@ -143,7 +143,7 @@ export function PersonalityHero({
                 variant="secondary"
                 style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
               >
-                <Star style={{ height: 12, width: 12 }} />
+                <Star size={12} />
                 Featured
               </Badge>
             )}
@@ -164,7 +164,7 @@ export function PersonalityHero({
                 }}
                 className="flex items-center gap-1 cursor-pointer text-primary no-underline hover:underline"
               >
-                <Briefcase style={{ height: 16, width: 16 }} />
+                <Briefcase size={16} />
                 <span>{personality.profession}</span>
               </a>
             )}
@@ -174,24 +174,24 @@ export function PersonalityHero({
                   to={`/country/${countryId}`}
                   className="flex items-center gap-1 text-primary no-underline hover:underline"
                 >
-                  <MapPin style={{ height: 16, width: 16 }} />
+                  <MapPin size={16} />
                   <span>{personality.nationality}</span>
                 </LocalizedLink>
               ) : (
                 <div className="flex items-center gap-1">
-                  <MapPin style={{ height: 16, width: 16 }} />
+                  <MapPin size={16} />
                   <span>{personality.nationality}</span>
                 </div>
               ))}
             <div className="flex items-center gap-1">
               {personality.is_living ? (
                 <>
-                  <Heart style={{ height: 16, width: 16 }} />
+                  <Heart size={16} />
                   <span>Living</span>
                 </>
               ) : (
                 <>
-                  <Calendar style={{ height: 16, width: 16 }} />
+                  <Calendar size={16} />
                   <span>Historical</span>
                 </>
               )}
@@ -568,7 +568,7 @@ export function PersonalitySidebar({
         <Card>
           <CardHeader>
             <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Tag style={{ height: 16, width: 16 }} />
+              <Tag size={16} />
               Tags
             </CardTitle>
           </CardHeader>

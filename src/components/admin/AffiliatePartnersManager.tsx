@@ -118,7 +118,7 @@ export function AffiliatePartnersManager() {
     <div className="p-6 max-w-[1000px] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h5 className="text-xl font-medium flex items-center gap-2">
-          <Handshake style={{ width: 24, height: 24 }} />
+          <Handshake size={24} />
           Affiliate Partners
         </h5>
         <Button onClick={openCreate}><Plus className="w-4 h-4 mr-1" /> Add Partner</Button>
@@ -142,7 +142,7 @@ export function AffiliatePartnersManager() {
                 <div className="flex flex-wrap gap-1 mb-1">
                   {p.domains.map(d => (
                     <Badge key={d} variant="outline" className="gap-1">
-                      <Globe style={{ width: 12, height: 12 }} />{d}
+                      <Globe size={12} />{d}
                     </Badge>
                   ))}
                 </div>

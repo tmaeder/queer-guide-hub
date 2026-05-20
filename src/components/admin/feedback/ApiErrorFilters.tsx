@@ -59,7 +59,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
         className="inline-flex items-center gap-1 flex-[1_1_220px] min-w-[180px] max-w-[320px] py-[1px] border-b transition-colors focus-within:border-primary"
         style={{ borderColor: state.q ? 'hsl(var(--primary))' : 'hsl(var(--border))' }}
       >
-        <Search style={{ width: 14, height: 14 }} className="text-muted-foreground" />
+        <Search size={14} className="text-muted-foreground" />
         <Input
           value={state.q}
           onChange={(e) => update({ q: e.target.value })}
@@ -88,7 +88,7 @@ export function ApiErrorFilters({ state, update, counts }: Props) {
               display: 'inline-flex',
             }}
           >
-            <X style={{ width: 13, height: 13 }} />
+            <X size={13} />
           </button>
         )}
       </div>

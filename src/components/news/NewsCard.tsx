@@ -35,7 +35,7 @@ const NewsCardFixture = () => (
       <p className="text-sm">A sample excerpt for the news article.</p>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1">
-          <Clock style={{ height: 14, width: 14 }} />
+          <Clock size={14} />
           <span className="text-xs">2 hours ago</span>
         </div>
       </div>
@@ -285,7 +285,7 @@ export const NewsCard = ({
             )}
             {readingTime !== null && (
               <span className="text-xs inline-flex items-center gap-1">
-                <BookOpen style={{ height: 12, width: 12 }} aria-hidden="true" /> {readingTime} min read
+                <BookOpen size={12} aria-hidden="true" /> {readingTime} min read
               </span>
             )}
             {hideDate && article.is_featured && (
@@ -298,7 +298,7 @@ export const NewsCard = ({
               className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 28, width: 28 }}
             >
-              <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />
+              <Share2 size={14} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -336,7 +336,7 @@ export const NewsCard = ({
             )}
             {(article as Record<string, unknown>).is_premium === true && (
               <Badge style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', padding: '1px 6px' }}>
-                <Lock style={{ height: 9, width: 9 }} aria-hidden="true" /> Premium
+                <Lock size={9} aria-hidden="true" /> Premium
               </Badge>
             )}
             {displaySource && (
@@ -364,7 +364,7 @@ export const NewsCard = ({
               className="ml-auto inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               style={{ height: 24, width: 24 }}
             >
-              <Share2 style={{ height: 12, width: 12 }} aria-hidden="true" />
+              <Share2 size={12} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -401,7 +401,7 @@ export const NewsCard = ({
             />
             {(article as Record<string, unknown>).is_premium === true && (
               <Badge style={{ position: 'absolute', top: 8, right: 8, backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <Lock style={{ height: 10, width: 10 }} aria-hidden="true" /> Premium
+                <Lock size={10} aria-hidden="true" /> Premium
               </Badge>
             )}
             {article.is_featured && (
@@ -477,7 +477,7 @@ export const NewsCard = ({
             aria-label={displaySource ? `Open original article on ${displaySource} (opens in new tab)` : 'Open original article (opens in new tab)'}
             title="Open original article"
           >
-            <ExternalLink style={{ height: 14, width: 14 }} aria-hidden="true" />
+            <ExternalLink size={14} aria-hidden="true" />
           </a>
         </div>
       </CardHeader>
@@ -611,7 +611,7 @@ export const NewsCard = ({
             className="inline-flex items-center justify-center rounded-element p-1 hover:bg-muted text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{ height: 28, width: 28 }}
           >
-            <Share2 style={{ height: 14, width: 14 }} aria-hidden="true" />
+            <Share2 size={14} aria-hidden="true" />
           </button>
         </div>
       </CardContent>

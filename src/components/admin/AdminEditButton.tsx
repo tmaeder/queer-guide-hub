@@ -45,7 +45,7 @@ export function AdminEditButton({
               onClick={() => setOpen(true)}
               aria-label="Edit content"
             >
-              <Pencil style={{ width: 16, height: 16 }} />
+              <Pencil size={16} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Edit (Admin)</TooltipContent>

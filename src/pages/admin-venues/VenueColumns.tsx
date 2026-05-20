@@ -42,7 +42,7 @@ export function useVenueColumns() {
           const val = info.getValue();
           return val ? (
             <div className="flex items-center gap-1">
-              <MapPin style={{ height: 12, width: 12 }} />
+              <MapPin size={12} />
               {val}
             </div>
           ) : (

@@ -364,7 +364,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                     </div>
                     {validationResults.some(r => !r.is_valid) && (
                       <Button variant="outline" onClick={exportErrorsCSV} className="flex gap-2">
-                        <Download style={{ height: 16, width: 16 }} />
+                        <Download size={16} />
                         Export Errors CSV
                       </Button>
                     )}
@@ -373,7 +373,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
                 <CardContent>
                   {validationResults.filter(r => !r.is_valid).length === 0 ? (
                     <Alert>
-                      <CheckCircle style={{ height: 16, width: 16 }} />
+                      <CheckCircle size={16} />
                       <AlertDescription>
                         No validation errors found. All records passed validation successfully.
                       </AlertDescription>
@@ -473,7 +473,7 @@ export const ValidationReport = ({ jobId, onClose }: ValidationReportProps) => {
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4 border-t border-border">
             <Button onClick={exportReport} variant="outline" className="flex gap-2">
-              <Download style={{ height: 16, width: 16 }} />
+              <Download size={16} />
               Export Full Report
             </Button>
             <Button onClick={onClose} style={{ flex: 1 }}>

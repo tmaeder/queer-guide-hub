@@ -119,7 +119,7 @@ export function SearchPopoverResults({
             flexShrink: 0,
           }}
         >
-          <SlidersHorizontal style={{ height: 12, width: 12 }} />
+          <SlidersHorizontal size={12} />
           {t('search.filters', 'Filters')}
           {activeFiltersCount > 0 && (
             <span style={{ color: 'hsl(var(--muted-foreground))' }}>· {activeFiltersCount}</span>

@@ -251,7 +251,7 @@ export function FeedbackCard({
                   gap: 2,
                 }}
               >
-                {slaColor && <Clock style={{ width: 10, height: 10 }} />}
+                {slaColor && <Clock size={10} />}
                 {timeAgo(item.submitted_at)}
               </span>
             </TooltipTrigger>
@@ -310,7 +310,7 @@ export function FeedbackCard({
                   className="inline-flex items-center flex-shrink-0"
                   style={{ gap: 1, color: 'hsl(var(--destructive))' }}
                 >
-                  <AlertTriangle style={{ width: 10, height: 10 }} />
+                  <AlertTriangle size={10} />
                   {errorCount}
                 </span>
               </TooltipTrigger>
@@ -358,7 +358,7 @@ export function FeedbackCard({
                     cursor: onStoryClick ? 'pointer' : 'default',
                   }}
                 >
-                  <Layers style={{ width: 9, height: 9 }} />
+                  <Layers size={9} />
                   {story.title}
                 </span>
               </TooltipTrigger>
@@ -469,7 +469,7 @@ export function FeedbackCard({
                       cursor: onStoryClick ? 'pointer' : 'default',
                     }}
                   >
-                    <Layers style={{ width: 9, height: 9 }} />
+                    <Layers size={9} />
                     {story.title}
                   </span>
                 </TooltipTrigger>
@@ -516,7 +516,7 @@ export function FeedbackCard({
                     className="inline-flex items-center flex-shrink-0"
                     style={{ gap: 1, color: 'hsl(var(--destructive))' }}
                   >
-                    <AlertTriangle style={{ width: 10, height: 10 }} />
+                    <AlertTriangle size={10} />
                     {errorCount}
                   </span>
                 </TooltipTrigger>

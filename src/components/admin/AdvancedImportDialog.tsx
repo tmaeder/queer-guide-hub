@@ -145,7 +145,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <Settings style={{ height: 20, width: 20 }} />
+            <Settings size={20} />
             Advanced Import Configuration - {importType}
           </DialogTitle>
           <DialogDescription>
@@ -156,19 +156,19 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
         <Tabs defaultValue="duplicates">
           <TabsList>
             <TabsTrigger value="duplicates">
-              <Shield style={{ height: 16, width: 16 }} />
+              <Shield size={16} />
               Duplicates
             </TabsTrigger>
             <TabsTrigger value="errors">
-              <Shield style={{ height: 16, width: 16 }} />
+              <Shield size={16} />
               Errors
             </TabsTrigger>
             <TabsTrigger value="filters">
-              <Filter style={{ height: 16, width: 16 }} />
+              <Filter size={16} />
               Filters
             </TabsTrigger>
             <TabsTrigger value="advanced">
-              <Zap style={{ height: 16, width: 16 }} />
+              <Zap size={16} />
               Advanced
             </TabsTrigger>
           </TabsList>

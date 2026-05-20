@@ -71,12 +71,12 @@ export function SecurityMonitoringDashboard() {
 
   const getEventIcon = (eventType: string) => {
     if (eventType.includes('ROLE') || eventType.includes('ESCALATION')) {
-      return <Users style={{ height: 16, width: 16 }} />;
+      return <Users size={16} />;
     }
     if (eventType.includes('RATE_LIMIT') || eventType.includes('XSS')) {
-      return <AlertTriangle style={{ height: 16, width: 16 }} />;
+      return <AlertTriangle size={16} />;
     }
-    return <Activity style={{ height: 16, width: 16 }} />;
+    return <Activity size={16} />;
   };
 
   const criticalEvents = recentEvents.filter(
@@ -93,13 +93,13 @@ export function SecurityMonitoringDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2">
-        <Shield style={{ height: 24, width: 24 }} />
+        <Shield size={24} />
         <h2 className="text-2xl font-bold">Security Monitoring Dashboard</h2>
       </div>
 
       {criticalEvents.length > 0 && (
         <Alert variant="destructive">
-          <AlertTriangle style={{ height: 16, width: 16 }} />
+          <AlertTriangle size={16} />
           <AlertDescription>
             {criticalEvents.length} critical security event(s) detected. Review immediately.
           </AlertDescription>
@@ -111,7 +111,7 @@ export function SecurityMonitoringDashboard() {
         <Card>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-muted rounded-element">
-              <Activity style={{ height: 16, width: 16 }} />
+              <Activity size={16} />
             </div>
             <div>
               <p className="text-sm font-medium">Total Security Events</p>

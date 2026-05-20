@@ -156,7 +156,7 @@ export const CreatePostDialog = ({
             <TabsList className="w-full">
               <TabsTrigger value="text">
                 <div className="flex items-center gap-2">
-                  <MessageSquare style={{ height: 16, width: 16 }} />
+                  <MessageSquare size={16} />
                   Post
                 </div>
               </TabsTrigger>
@@ -164,7 +164,7 @@ export const CreatePostDialog = ({
               {canCreateAnnouncement && (
                 <TabsTrigger value="announcement">
                   <div className="flex items-center gap-2">
-                    <Megaphone style={{ height: 16, width: 16 }} />
+                    <Megaphone size={16} />
                     Announcement
                   </div>
                 </TabsTrigger>
@@ -172,7 +172,7 @@ export const CreatePostDialog = ({
 
               <TabsTrigger value="poll">
                 <div className="flex items-center gap-2">
-                  <BarChart3 style={{ height: 16, width: 16 }} />
+                  <BarChart3 size={16} />
                   Poll
                 </div>
               </TabsTrigger>
@@ -238,7 +238,7 @@ export const CreatePostDialog = ({
                           size="sm"
                           onClick={() => removePollOption(index)}
                         >
-                          <X style={{ height: 16, width: 16 }} />
+                          <X size={16} />
                         </Button>
                       )}
                     </div>
@@ -251,7 +251,7 @@ export const CreatePostDialog = ({
                       onClick={addPollOption}
                     >
                       <div className="flex items-center gap-2">
-                        <Plus style={{ height: 16, width: 16 }} />
+                        <Plus size={16} />
                         Add Option
                       </div>
                     </Button>
@@ -322,7 +322,7 @@ export const CreatePostDialog = ({
                         onClick={() => removeMention(mention.user_id)}
                         style={{ marginLeft: 4 }}
                       >
-                        <X style={{ height: 12, width: 12 }} />
+                        <X size={12} />
                       </button>
                     </div>
                   </Badge>
@@ -343,7 +343,7 @@ export const CreatePostDialog = ({
                 />
                 <Label htmlFor="pin-post">
                   <div className="flex items-center gap-2">
-                    <Pin style={{ height: 16, width: 16 }} />
+                    <Pin size={16} />
                     Pin this post to the top
                   </div>
                 </Label>

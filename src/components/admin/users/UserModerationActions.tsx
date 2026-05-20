@@ -117,7 +117,7 @@ export function UserModerationActions({
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ShieldCheck style={{ height: 14, width: 14 }} />
+            <ShieldCheck size={14} />
             Reinstate
           </Button>
         )}
@@ -129,7 +129,7 @@ export function UserModerationActions({
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'hsl(var(--foreground) / 0.55)' }}
           >
-            <ShieldAlert style={{ height: 14, width: 14 }} />
+            <ShieldAlert size={14} />
             Suspend
           </Button>
         )}
@@ -141,7 +141,7 @@ export function UserModerationActions({
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ShieldBan style={{ height: 14, width: 14 }} />
+            <ShieldBan size={14} />
             Ban
           </Button>
         )}

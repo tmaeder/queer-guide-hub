@@ -39,7 +39,7 @@ export const AvatarDisplay = ({
         <span style={{ ...dims, display: 'inline-flex' }}>
           <AvatarImage src={avatarUrl} alt="User avatar" />
           <AvatarFallback>
-            <User style={{ width: 16, height: 16 }} />
+            <User size={16} />
           </AvatarFallback>
         </span>
       </Avatar>
@@ -80,7 +80,7 @@ export const AvatarDisplay = ({
         <span style={{ ...dims, display: 'inline-flex' }}>
           <AvatarImage src={initialsUrl} alt="User avatar" />
           <AvatarFallback>
-            <User style={{ width: 16, height: 16 }} />
+            <User size={16} />
           </AvatarFallback>
         </span>
       </Avatar>
@@ -91,7 +91,7 @@ export const AvatarDisplay = ({
     <Avatar>
       <span style={{ ...dims, display: 'inline-flex' }}>
         <AvatarFallback>
-          <User style={{ width: 16, height: 16 }} />
+          <User size={16} />
         </AvatarFallback>
       </span>
     </Avatar>

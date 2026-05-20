@@ -673,7 +673,7 @@ const Events = () => {
               )}
               {city && (
                 <Badge variant="secondary" style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-                  {autoLocationLabel === city && <MapPin style={{ width: 10, height: 10 }} />}
+                  {autoLocationLabel === city && <MapPin size={10} />}
                   {autoLocationLabel === city
                     ? t('pages.events.filterNearYou', {
                         value: displayCityName(city, i18n.language),

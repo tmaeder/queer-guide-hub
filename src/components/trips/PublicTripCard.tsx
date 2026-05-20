@@ -178,13 +178,13 @@ export function PublicTripCard({ trip }: Props) {
                   )}
                 >
                   {safetyLevel === 'safe' && (
-                    <ShieldCheck style={{ width: 16, height: 16 }} />
+                    <ShieldCheck size={16} />
                   )}
                   {safetyLevel === 'caution' && (
-                    <ShieldAlert style={{ width: 16, height: 16 }} />
+                    <ShieldAlert size={16} />
                   )}
                   {safetyLevel === 'danger' && (
-                    <AlertTriangle style={{ width: 16, height: 16 }} />
+                    <AlertTriangle size={16} />
                   )}
                 </span>
               </TooltipTrigger>
@@ -256,7 +256,7 @@ export function PublicTripCard({ trip }: Props) {
           >
             {trip.fork_count > 0 && (
               <span className="inline-flex items-center gap-1">
-                <GitFork style={{ width: 11, height: 11 }} />
+                <GitFork size={11} />
                 {t('trips.discover.forkCount', {
                   count: trip.fork_count,
                   defaultValue: '{{count}} forks',
@@ -265,7 +265,7 @@ export function PublicTripCard({ trip }: Props) {
             )}
             {trip.save_count > 0 && (
               <span className="inline-flex items-center gap-1">
-                <Bookmark style={{ width: 11, height: 11 }} />
+                <Bookmark size={11} />
                 {t('trips.discover.saveCount', {
                   count: trip.save_count,
                   defaultValue: '{{count}} saves',

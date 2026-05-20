@@ -153,7 +153,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
                 color: 'var(--muted-foreground)',
               }}
             >
-              <Crown style={{ height: 16, width: 16 }} />
+              <Crown size={16} />
               <span>{country.capital}</span>
             </div>
           )}
@@ -220,7 +220,7 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             color: 'var(--muted-foreground)',
           }}
         >
-          <Users style={{ height: 16, width: 16 }} />
+          <Users size={16} />
           <span>{formatPopulation(data.population)}</span>
         </div>
       );

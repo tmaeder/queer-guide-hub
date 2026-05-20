@@ -211,7 +211,7 @@ export function VenueImportDialog({
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <MapPin style={{ height: 16, width: 16 }} />
+                  <MapPin size={16} />
                   Locations
                 </CardTitle>
                 <CardDescription>
@@ -229,7 +229,7 @@ export function VenueImportDialog({
 
                         onClick={() => removeLocation(location)}
                       >
-                        <X style={{ height: 12, width: 12 }} />
+                        <X size={12} />
                       </Button>
                     </Badge>
                   ))}
@@ -243,7 +243,7 @@ export function VenueImportDialog({
                     onKeyPress={(e) => e.key === 'Enter' && addLocation()}
                   />
                   <Button onClick={addLocation} disabled={!newLocation.trim()}>
-                    <Plus style={{ height: 16, width: 16 }} />
+                    <Plus size={16} />
                   </Button>
                 </div>
 
@@ -367,7 +367,7 @@ export function VenueImportDialog({
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <Search style={{ height: 16, width: 16 }} />
+                  <Search size={16} />
                   Search Terms
                 </CardTitle>
                 <CardDescription>
@@ -385,7 +385,7 @@ export function VenueImportDialog({
 
                         onClick={() => removeSearchTerm(term)}
                       >
-                        <X style={{ height: 12, width: 12 }} />
+                        <X size={12} />
                       </Button>
                     </Badge>
                   ))}
@@ -399,7 +399,7 @@ export function VenueImportDialog({
                     onKeyPress={(e) => e.key === 'Enter' && addSearchTerm()}
                   />
                   <Button onClick={addSearchTerm} disabled={!newSearchTerm.trim()}>
-                    <Plus style={{ height: 16, width: 16 }} />
+                    <Plus size={16} />
                   </Button>
                 </div>
 
@@ -468,7 +468,7 @@ export function VenueImportDialog({
             <Card>
               <CardHeader>
                 <CardTitle>
-                  <Settings style={{ height: 16, width: 16 }} />
+                  <Settings size={16} />
                   Filters & Quality Controls
                 </CardTitle>
                 <CardDescription>

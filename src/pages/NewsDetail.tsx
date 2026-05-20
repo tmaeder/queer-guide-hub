@@ -338,7 +338,7 @@ export default function NewsDetail() {
               to={`/news/story/${story.slug}`}
               className="inline-flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground mb-3 no-underline"
             >
-              <Layers style={{ width: 12, height: 12 }} aria-hidden="true" />
+              <Layers size={12} aria-hidden="true" />
               Part of story · {story.article_count} articles
             </LocalizedLink>
           )}
@@ -355,13 +355,13 @@ export default function NewsDetail() {
           <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
             {authorName && (
               <div className="flex items-center gap-1">
-                <User style={{ width: 14, height: 14 }} />
+                <User size={14} />
                 <span className="text-sm">By {authorName}</span>
               </div>
             )}
             {article.published_at && (
               <div className="flex items-center gap-1">
-                <Calendar style={{ width: 14, height: 14 }} />
+                <Calendar size={14} />
                 <span className="text-sm">
                   {format(new Date(article.published_at), 'MMMM d, yyyy')}
                 </span>
@@ -369,7 +369,7 @@ export default function NewsDetail() {
             )}
             {article.published_at && (
               <div className="flex items-center gap-1">
-                <Clock style={{ width: 14, height: 14 }} />
+                <Clock size={14} />
                 <span className="text-sm">
                   {formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}
                 </span>
@@ -377,7 +377,7 @@ export default function NewsDetail() {
             )}
             {article.views_count > 0 && (
               <div className="flex items-center gap-1">
-                <Eye style={{ width: 14, height: 14 }} />
+                <Eye size={14} />
                 <span className="text-sm">{article.views_count} views</span>
               </div>
             )}
@@ -460,7 +460,7 @@ export default function NewsDetail() {
                 style={{ display: 'flex', alignItems: 'center', gap: 8 }}
               >
                 Open Article
-                <ExternalLink style={{ width: 16, height: 16 }} />
+                <ExternalLink size={16} />
               </Button>
             </CardContent>
           </Card>
@@ -578,7 +578,7 @@ export default function NewsDetail() {
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Tag style={{ height: 16, width: 16 }} />
+                  <Tag size={16} />
                   Tags
                 </CardTitle>
               </CardHeader>
@@ -604,7 +604,7 @@ export default function NewsDetail() {
             <Card>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <MapPin style={{ height: 16, width: 16 }} />
+                  <MapPin size={16} />
                   Location
                 </CardTitle>
               </CardHeader>

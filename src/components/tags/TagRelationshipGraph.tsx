@@ -289,7 +289,7 @@ export default function TagRelationshipGraph({
 
         <div className="flex gap-1">
           <Button variant="outline" size="sm" onClick={handleZoomToFit}>
-            <Maximize2 style={{ width: 14, height: 14 }} />
+            <Maximize2 size={14} />
           </Button>
         </div>
 

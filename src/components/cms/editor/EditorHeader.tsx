@@ -260,7 +260,7 @@ export function EditorHeader({
                 onClick={handleClose}
                 className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
               >
-                <X style={{ width: 20, height: 20 }} />
+                <X size={20} />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Close editor</TooltipContent>

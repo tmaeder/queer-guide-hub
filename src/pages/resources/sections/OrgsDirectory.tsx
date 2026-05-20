@@ -52,7 +52,7 @@ export function OrgsDirectory() {
     <section aria-labelledby="orgs-heading">
       <header className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
-          <Building2 aria-hidden style={{ width: 18, height: 18 }} />
+          <Building2 aria-hidden size={18} />
           <h2 id="orgs-heading" className="text-base font-semibold">{t('resources.orgs.heading')}</h2>
         </div>
         <div className="ml-auto">
@@ -102,7 +102,7 @@ export function OrgsDirectory() {
         className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline"
       >
         {t('resources.orgs.browseAll')}
-        <ChevronRight aria-hidden style={{ width: 14, height: 14 }} />
+        <ChevronRight aria-hidden size={14} />
       </LocalizedLink>
     </section>
   );

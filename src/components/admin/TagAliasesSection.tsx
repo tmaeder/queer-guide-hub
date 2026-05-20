@@ -90,7 +90,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
                       opacity: 0.6,
                     }}
                   >
-                    <X style={{ width: 12, height: 12 }} />
+                    <X size={12} />
                   </button>
                 </Badge>
               ))}
@@ -130,7 +130,7 @@ export function TagAliasesSection({ tagId }: TagAliasesSectionProps) {
               onClick={handleAdd}
               disabled={!newAlias.trim() || createAlias.isPending}
             >
-              <Plus style={{ width: 14, height: 14 }} />
+              <Plus size={14} />
             </Button>
           </div>
         </>

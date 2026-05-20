@@ -159,7 +159,7 @@ export function ImageUpload({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {label && (
         <Label htmlFor={id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ImageIcon style={{ height: 16, width: 16 }} />
+          <ImageIcon size={16} />
           {label}
           {required && <span style={{ color: 'hsl(var(--destructive))' }}>*</span>}
         </Label>
