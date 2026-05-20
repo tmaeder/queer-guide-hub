@@ -1,11 +1,11 @@
 name: i18n Translation Completeness
 
 on:
+  # Runs on every PR so the "Verify locales have all en.json keys"
+  # required status check is always reported. Path filtering used to
+  # skip the workflow entirely for non-i18n PRs, which left them
+  # permanently BLOCKED on the missing required check.
   pull_request:
-    paths:
-      - 'src/i18n/**'
-      - 'scripts/sync-translations.ts'
-      - '.github/workflows/i18n-check.yml'
   push:
     branches: [main]
     paths:
