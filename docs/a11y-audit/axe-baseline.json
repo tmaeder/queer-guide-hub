@@ -1,6 +1,6 @@
 {
   "baseUrl": "https://queer.guide",
-  "generatedAt": "2026-05-20T00:38:18.157Z",
+  "generatedAt": "2026-05-20T00:45:22.825Z",
   "results": [
     {
       "route": "/",
@@ -48,36 +48,7 @@
       "url": "https://queer.guide/news",
       "status": 200,
       "error": null,
-      "violations": [
-        {
-          "id": "color-contrast",
-          "impact": "serious",
-          "help": "Elements must meet minimum color contrast ratio thresholds",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright",
-          "tags": [
-            "cat.color",
-            "wcag2aa",
-            "wcag143",
-            "TTv5",
-            "TT13.c",
-            "EN-301-549",
-            "EN-9.1.4.3",
-            "ACT",
-            "RGAAv4",
-            "RGAA-3.2.1"
-          ],
-          "nodes": 1,
-          "sample": [
-            {
-              "target": [
-                ".px-2\\.5"
-              ],
-              "html": "<div class=\"inline-flex items-ce...\" style=\"background-color: rg...\">",
-              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.76 (foreground color: #ffffff, background color: #ef4444, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
-            }
-          ]
-        }
-      ]
+      "violations": []
     },
     {
       "route": "/groups",

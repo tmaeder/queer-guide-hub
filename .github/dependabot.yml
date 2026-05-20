@@ -1,0 +1,77 @@
+# Dependabot scans every directory listed here on the schedule below.
+# Group all npm bumps so we don't get N separate PRs per CVE — one weekly
+# PR per directory, security-grouped patches still open immediately.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /scraper
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /extension
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /workers/geo
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/image-cdn
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/image-ingest
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/ingest
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/search-proxy
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/snapshot-archiver
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/submit
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: npm
+    directory: /workers/trip-inbox
+    schedule: { interval: weekly }
+    groups: { npm: { patterns: ['*'], update-types: [minor, patch] } }
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
