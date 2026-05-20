@@ -20,7 +20,7 @@ jobs:
         working-directory: workers/search-proxy
       - run: npx tsc --noEmit
         working-directory: workers/search-proxy
-      - uses: cloudflare/wrangler-action@v3
+      - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -37,7 +37,7 @@ jobs:
         working-directory: workers/ingest
       - run: npx tsc --noEmit
         working-directory: workers/ingest
-      - uses: cloudflare/wrangler-action@v3
+      - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
