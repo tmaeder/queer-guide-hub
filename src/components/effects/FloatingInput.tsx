@@ -45,7 +45,7 @@ export const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
           animate={{
             y: floated ? 4 : 14,
             scale: floated ? 0.75 : 1,
-            opacity: floated ? 0.7 : 0.5,
+            opacity: 1,
           }}
           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
         >

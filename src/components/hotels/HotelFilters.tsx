@@ -51,7 +51,7 @@ export function HotelFilters({
 
       {visibleTypes.length > 0 && (
         <Select value={hotelType} onValueChange={onTypeChange}>
-          <SelectTrigger style={{ width: 160 }}>
+          <SelectTrigger aria-label="Hotel type" style={{ width: 160 }}>
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>
@@ -67,7 +67,7 @@ export function HotelFilters({
 
       {meta?.priceAvailable && (
         <Select value={priceRange} onValueChange={onPriceChange}>
-          <SelectTrigger style={{ width: 160 }}>
+          <SelectTrigger aria-label="Price range" style={{ width: 160 }}>
             <SelectValue placeholder="Any Price" />
           </SelectTrigger>
           <SelectContent>
