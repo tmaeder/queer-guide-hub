@@ -110,7 +110,7 @@ export function StoriesKanban({ grouped, adminById, onStoryClick }: Props) {
                   borderTop: '3px solid',
                   borderColor: col.color,
                   backgroundColor: `color-mix(in srgb, ${col.color} 9%, transparent)`,
-                  borderRadius: '0 0 4px 4px',
+                  borderRadius: '0 0 var(--radius-badge) var(--radius-badge)',
                 }}
               >
                 <p className="text-sm font-bold" style={{ color: col.color, letterSpacing: 0.3 }}>

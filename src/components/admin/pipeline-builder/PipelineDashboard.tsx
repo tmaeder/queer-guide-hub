@@ -63,7 +63,7 @@ export default function PipelineDashboard() {
   const recentCompleted = runs?.filter(r => r.status === 'completed').length || 0;
   const recentFailed = runs?.filter(r => r.status === 'failed').length || 0;
 
-  const statCardStyle: React.CSSProperties = { border: '1px solid hsl(var(--border))', borderRadius: 8, padding: '16px 16px 12px', background: 'hsl(var(--background))' };
+  const statCardStyle: React.CSSProperties = { border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', padding: '16px 16px 12px', background: 'hsl(var(--background))' };
   const statIconRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8 };
   const statValue: React.CSSProperties = { fontSize: 24, fontWeight: 700 };
   const statLabel: React.CSSProperties = { fontSize: 12, color: 'hsl(var(--muted-foreground))', marginTop: 4 };
@@ -223,7 +223,7 @@ export default function PipelineDashboard() {
             <CardContent>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 {circuitBreakers?.map(cb => (
-                  <div key={cb.id} style={{ border: '1px solid hsl(var(--border))', borderRadius: 8, padding: 12 }}>
+                  <div key={cb.id} style={{ border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', padding: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontWeight: 500, fontSize: 14 }}>{cb.api_name}</span>
                       <Badge variant="outline" className={`text-xs ${cbStateColors[cb.state]}`}>
@@ -271,7 +271,7 @@ export default function PipelineDashboard() {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                       {stagingStats.map(s => (
-                        <div key={s.status} style={{ border: '1px solid hsl(var(--border))', borderRadius: 6, padding: 12, textAlign: 'center' }}>
+                        <div key={s.status} style={{ border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', padding: 12, textAlign: 'center' }}>
                           <div style={{ fontSize: 20, fontWeight: 700 }}>{s.count.toLocaleString()}</div>
                           <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', textTransform: 'capitalize' }}>{s.status}</div>
                         </div>

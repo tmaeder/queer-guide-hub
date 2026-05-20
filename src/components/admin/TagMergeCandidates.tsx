@@ -68,7 +68,7 @@ export function TagMergeCandidates() {
   });
 
   return (
-    <div style={{ border: '1px solid hsl(var(--border))', borderRadius: 8, marginBottom: 16, background: 'hsl(var(--background))' }}>
+    <div style={{ border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', marginBottom: 16, background: 'hsl(var(--background))' }}>
       <button
         onClick={() => setOpen(!open)}
         style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: 12, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
@@ -88,7 +88,7 @@ export function TagMergeCandidates() {
                 type="number" step="0.05" min="0.3" max="0.95" value={threshold}
                 onClick={(e) => e.stopPropagation()}
                 onChange={(e) => setThreshold(Number(e.target.value))}
-                style={{ width: 60, padding: '2px 6px', border: '1px solid hsl(var(--border))', borderRadius: 4, fontSize: 12 }}
+                style={{ width: 60, padding: '2px 6px', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-badge)', fontSize: 12 }}
               />
             </>
           )}
@@ -117,11 +117,11 @@ export function TagMergeCandidates() {
                 return (
                   <div key={i} style={{ display: 'contents' }}>
                     <div>
-                      <code style={{ background: aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{d.tag_a_slug}</code>
+                      <code style={{ background: aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 'var(--radius-badge)', fontSize: 12 }}>{d.tag_a_slug}</code>
                       <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, marginLeft: 4 }}>{aUsage}</span>
                     </div>
                     <div>
-                      <code style={{ background: !aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{d.tag_b_slug}</code>
+                      <code style={{ background: !aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 'var(--radius-badge)', fontSize: 12 }}>{d.tag_b_slug}</code>
                       <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, marginLeft: 4 }}>{bUsage}</span>
                     </div>
                     <div style={{ textAlign: 'right', color: 'hsl(var(--muted-foreground))', fontFamily: 'monospace', fontSize: 11 }}>

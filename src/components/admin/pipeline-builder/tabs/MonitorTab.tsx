@@ -237,7 +237,7 @@ export default function MonitorTab() {
                   <XAxis dataKey="range" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <ChartTooltip
-                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6, fontSize: 11 }}
+                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', fontSize: 11 }}
                     cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
                   />
                   <Bar dataKey="count" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
@@ -258,7 +258,7 @@ export default function MonitorTab() {
                   <XAxis dataKey="hour" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} interval={2} />
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <ChartTooltip
-                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6, fontSize: 11 }}
+                    contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-element)', fontSize: 11 }}
                   />
                   <Line type="monotone" dataKey="completed" stroke="hsl(var(--foreground))" strokeWidth={2} dot={false} strokeDasharray="0" />
                   <Line type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} strokeDasharray="4 2" />

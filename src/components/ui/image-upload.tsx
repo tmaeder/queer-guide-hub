@@ -192,7 +192,7 @@ export function ImageUpload({
               <img
                 src={preview}
                 alt="Preview"
-                style={{ width: '100%', height: 192, objectFit: 'cover', borderRadius: 6 }}
+                style={{ width: '100%', height: 192, objectFit: 'cover', borderRadius: 'var(--radius-element)' }}
               />
               <div
                 data-overlay=""
@@ -202,7 +202,7 @@ export function ImageUpload({
                   backgroundColor: 'hsl(var(--foreground) / 0.5)',
                   opacity: 0,
                   transition: 'opacity 0.2s',
-                  borderRadius: 6,
+                  borderRadius: 'var(--radius-element)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

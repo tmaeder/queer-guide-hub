@@ -30,7 +30,7 @@ const PaginationLink = ({ className, isActive, size = "icon", children, style, .
     className={className}
     style={{
       display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      borderRadius: 0, fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer',
+      borderRadius: 'var(--radius-none)', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer',
       textDecoration: 'none', color: 'inherit',
       minWidth: size === "icon" ? 36 : undefined, height: 36,
       padding: size === "icon" ? 0 : '0 16px',

@@ -252,7 +252,7 @@ export function ModernAudioPlayer({
           <img
             src={getAudioUrl(audio.poster_image_path)}
             alt={`${audio.title} artwork`}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, boxShadow: '0 10px 15px -3px hsl(var(--foreground) / 0.1)' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--radius-element)', boxShadow: '0 10px 15px -3px hsl(var(--foreground) / 0.1)' }}
           />
         </div>
       )}

@@ -112,7 +112,7 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
                 backgroundColor: 'hsl(var(--destructive) / 0.15)',
                 color: 'hsl(var(--destructive))',
                 textDecoration: 'line-through',
-                borderRadius: '2px',
+                borderRadius: 'var(--radius-badge)',
                 padding: '0 2px',
               }}
             >
@@ -127,7 +127,7 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
               style={{
                 backgroundColor: 'hsl(var(--foreground) / 0.15)',
                 color: 'hsl(var(--foreground))',
-                borderRadius: '2px',
+                borderRadius: 'var(--radius-badge)',
                 padding: '0 2px',
               }}
             >

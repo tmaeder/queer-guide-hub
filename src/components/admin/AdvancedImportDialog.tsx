@@ -188,12 +188,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       key={strategy.value}
                       role="button"
                       tabIndex={0}
-                      style={{ padding: 16, borderRadius: 8, cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.duplicateStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
+                      style={{ padding: 16, borderRadius: 'var(--radius-element)', cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.duplicateStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
                       onClick={() => setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge' }))}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfig(prev => ({ ...prev, duplicateStrategy: strategy.value as 'skip' | 'update' | 'merge' })); } }}
                     >
                       <div className="flex items-center gap-2">
-                        <div style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: config.duplicateStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
+                        <div style={{ height: 16, width: 16, borderRadius: 'var(--radius-badge)', backgroundColor: config.duplicateStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
                         <div>
                           <p className="font-medium">{strategy.label}</p>
                           <p className="text-sm text-muted-foreground">{strategy.description}</p>
@@ -221,12 +221,12 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       key={strategy.value}
                       role="button"
                       tabIndex={0}
-                      style={{ padding: 16, borderRadius: 8, cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.errorStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
+                      style={{ padding: 16, borderRadius: 'var(--radius-element)', cursor: 'pointer', transition: 'opacity 0.2s', backgroundColor: config.errorStrategy === strategy.value ? 'rgba(var(--primary-rgb), 0.1)' : 'var(--muted)' }}
                       onClick={() => setConfig(prev => ({ ...prev, errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch' }))}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setConfig(prev => ({ ...prev, errorStrategy: strategy.value as 'continue' | 'stop' | 'retry_batch' })); } }}
                     >
                       <div className="flex items-center gap-2">
-                        <div style={{ height: 16, width: 16, borderRadius: 4, backgroundColor: config.errorStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
+                        <div style={{ height: 16, width: 16, borderRadius: 'var(--radius-badge)', backgroundColor: config.errorStrategy === strategy.value ? 'hsl(var(--primary))' : 'var(--muted)' }} />
                         <div>
                           <p className="font-medium">{strategy.label}</p>
                           <p className="text-sm text-muted-foreground">{strategy.description}</p>

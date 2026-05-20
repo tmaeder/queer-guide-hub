@@ -38,7 +38,7 @@ const cmdkStyles = {
     padding: '6px 8px',
     fontSize: '0.875rem',
     outline: 'none',
-    borderRadius: 0,
+    borderRadius: 'var(--radius-none)',
   },
   separator: {
     marginLeft: -4,

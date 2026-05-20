@@ -54,7 +54,7 @@ function TableSkeleton({ columns }: { columns: number }) {
       {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
         <TableRow key={i}>
           <TableCell style={{ width: 42 }}>
-            <Skeleton style={{ width: 18, height: 18, borderRadius: 2 }} />
+            <Skeleton style={{ width: 18, height: 18, borderRadius: 'var(--radius-badge)' }} />
           </TableCell>
           <TableCell>
             <Skeleton style={{ width: `${55 + (i % 3) * 15}%`, height: 20 }} />

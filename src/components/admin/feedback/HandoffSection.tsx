@@ -154,7 +154,7 @@ export function HandoffSection({
                   className="flex items-center gap-2 py-1.5 px-2 bg-muted"
                   style={{
                     borderLeft: `3px solid ${statusMeta.color}`,
-                    borderRadius: '0 4px 4px 0',
+                    borderRadius: '0 var(--radius-badge) var(--radius-badge) 0',
                   }}
                 >
                   <TargetIcon

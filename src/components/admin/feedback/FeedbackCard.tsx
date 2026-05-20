@@ -193,7 +193,7 @@ export function FeedbackCard({
                       marginRight: 4,
                       paddingLeft: 3,
                       paddingRight: 3,
-                      borderRadius: 3,
+                      borderRadius: 'var(--radius-badge)',
                       background: prio.color,
                       color: 'hsl(var(--background))',
                       fontSize: '0.55rem',
@@ -352,7 +352,7 @@ export function FeedbackCard({
                       story.status === 'resolved'
                         ? 'hsl(var(--muted-foreground))'
                         : 'hsl(var(--foreground))',
-                    borderRadius: 4,
+                    borderRadius: 'var(--radius-badge)',
                     maxWidth: 90,
                     textOverflow: 'ellipsis',
                     cursor: onStoryClick ? 'pointer' : 'default',
@@ -377,7 +377,7 @@ export function FeedbackCard({
                     paddingTop: 1,
                     paddingBottom: 1,
                     fontSize: '0.55rem',
-                    borderRadius: 4,
+                    borderRadius: 'var(--radius-badge)',
                     maxWidth: 60,
                     textOverflow: 'ellipsis',
                   }}
@@ -463,7 +463,7 @@ export function FeedbackCard({
                         story.status === 'resolved'
                           ? 'hsl(var(--muted-foreground))'
                           : 'hsl(var(--foreground))',
-                      borderRadius: 4,
+                      borderRadius: 'var(--radius-badge)',
                       maxWidth: 90,
                       textOverflow: 'ellipsis',
                       cursor: onStoryClick ? 'pointer' : 'default',

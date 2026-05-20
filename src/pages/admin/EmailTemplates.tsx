@@ -193,7 +193,7 @@ export default function EmailTemplates() {
                     className="cursor-pointer transition-colors"
                     style={{
                       padding: 12,
-                      borderRadius: 8,
+                      borderRadius: 'var(--radius-element)',
                       borderWidth: 1,
                       borderStyle: 'solid',
                       borderColor: selectedTemplate?.id === template.id ? 'hsl(var(--primary))' : 'hsl(var(--border))',

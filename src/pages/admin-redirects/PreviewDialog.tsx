@@ -49,7 +49,7 @@ export function PreviewDialog({ open, onClose }: PreviewDialogProps) {
           Test
         </Button>
         {previewResult && (
-          <div className="bg-muted" style={{ marginTop: 16, padding: 16, borderRadius: 4 }}>
+          <div className="bg-muted" style={{ marginTop: 16, padding: 16, borderRadius: 'var(--radius-badge)' }}>
             <p
               style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.8rem' }}
             >

@@ -65,7 +65,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
       </button>
 
       <CollapsibleContent className="space-y-4 pb-4">
-        <div className="grid grid-cols-2 gap-3 bg-muted" style={{ padding: 10, borderRadius: 4 }}>
+        <div className="grid grid-cols-2 gap-3 bg-muted" style={{ padding: 10, borderRadius: 'var(--radius-badge)' }}>
           <MetaItem icon={ChevronUp} label="Votes" value={String(voteCount)} />
           <MetaItem icon={Clock} label="Submitted" value={timeAgo(submittedAt)} />
           {ctx.viewport && (
@@ -88,7 +88,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               style={{
                 gap: 6,
                 padding: 8,
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
                 fontFamily: 'monospace',
                 fontSize: '0.7rem',
               }}
@@ -120,7 +120,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               className="block bg-muted"
               style={{
                 padding: 8,
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
                 fontFamily: 'monospace',
                 fontSize: '0.65rem',
                 wordBreak: 'break-all',
@@ -148,7 +148,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               tabIndex={0}
               aria-label="Open screenshot in lightbox"
               style={{
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
                 overflow: 'hidden',
                 border: '1px solid hsl(var(--border))',
                 cursor: 'pointer',
@@ -198,7 +198,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 className="bg-muted"
                 style={{
                   padding: 8,
-                  borderRadius: 4,
+                  borderRadius: 'var(--radius-badge)',
                   fontFamily: 'monospace',
                   fontSize: '0.65rem',
                   maxHeight: 240,
@@ -255,7 +255,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 className="bg-muted"
                 style={{
                   padding: 8,
-                  borderRadius: 4,
+                  borderRadius: 'var(--radius-badge)',
                   fontFamily: 'monospace',
                   fontSize: '0.65rem',
                   maxHeight: 240,

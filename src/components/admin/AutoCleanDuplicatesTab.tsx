@@ -97,7 +97,7 @@ export function AutoCleanDuplicatesTab() {
               className="text-center"
               style={{
                 padding: 12,
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
                 backgroundColor: bg,
                 border: `1px solid ${border}`,
               }}
@@ -284,7 +284,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
       {/* Progress bar */}
       <div
         className="bg-muted overflow-hidden"
-        style={{ borderRadius: 4, height: 6, marginBottom: 12, position: 'relative' }}
+        style={{ borderRadius: 'var(--radius-badge)', height: 6, marginBottom: 12, position: 'relative' }}
       >
         {indeterminate ? (
           <div
@@ -327,7 +327,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
                 paddingRight: 8,
                 paddingTop: 2,
                 paddingBottom: 2,
-                borderRadius: 2,
+                borderRadius: 'var(--radius-badge)',
                 fontSize: '0.75rem',
                 backgroundColor: isDone ? 'hsl(var(--foreground) / 0.08)' : isCurrent ? 'hsl(var(--muted-foreground) / 0.08)' : 'var(--muted)',
                 border: `1px solid ${isDone ? 'hsl(var(--foreground) / 0.08)' : isCurrent ? 'hsl(var(--muted-foreground) / 0.08)' : 'transparent'}`,
@@ -363,7 +363,7 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               paddingRight: 8,
               paddingTop: 2,
               paddingBottom: 2,
-              borderRadius: 2,
+              borderRadius: 'var(--radius-badge)',
               fontSize: '0.75rem',
               backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
               border: '1px solid hsl(var(--border))',
@@ -394,7 +394,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               paddingRight: 16,
               paddingTop: 8,
               paddingBottom: 8,
-              borderRadius: 4,
+              borderRadius: 'var(--radius-badge)',
               backgroundColor: result.dry_run ? 'hsl(var(--muted-foreground) / 0.08)' : 'hsl(var(--foreground) / 0.08)',
               border: `1px solid ${result.dry_run ? 'hsl(var(--muted-foreground) / 0.08)' : 'hsl(var(--foreground) / 0.08)'}`,
             }}
@@ -416,7 +416,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               paddingRight: 16,
               paddingTop: 8,
               paddingBottom: 8,
-              borderRadius: 4,
+              borderRadius: 'var(--radius-badge)',
               backgroundColor: 'hsl(var(--foreground) / 0.08)',
               border: '1px solid hsl(var(--border))',
             }}
@@ -434,7 +434,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               paddingRight: 16,
               paddingTop: 8,
               paddingBottom: 8,
-              borderRadius: 4,
+              borderRadius: 'var(--radius-badge)',
               backgroundColor: 'hsl(var(--foreground) / 0.08)',
               border: '1px solid hsl(var(--border))',
             }}
@@ -452,7 +452,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
             paddingRight: 16,
             paddingTop: 8,
             paddingBottom: 8,
-            borderRadius: 4,
+            borderRadius: 'var(--radius-badge)',
             border: '1px solid var(--border)',
           }}
         >
@@ -679,7 +679,7 @@ function StagingStat({
     <div
       style={{
         padding: 12,
-        borderRadius: 4,
+        borderRadius: 'var(--radius-badge)',
         backgroundColor: `${color}10`,
         border: `1px solid ${color}25`,
       }}
@@ -882,7 +882,7 @@ function MergeHistorySection() {
                   style={{
                     gap: 16,
                     padding: 12,
-                    borderRadius: 4,
+                    borderRadius: 'var(--radius-badge)',
                     fontSize: '0.85rem',
                   }}
                 >

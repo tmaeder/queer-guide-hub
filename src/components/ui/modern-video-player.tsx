@@ -139,7 +139,7 @@ export function ModernVideoPlayer({
   const posterUrl = video.poster_image_path ? getVideoUrl(video.poster_image_path) : undefined;
 
   return (
-    <div style={{ position: 'relative', backgroundColor: 'hsl(0 0% 2%)', borderRadius: 8, overflow: 'hidden' }}>
+    <div style={{ position: 'relative', backgroundColor: 'hsl(0 0% 2%)', borderRadius: 'var(--radius-element)', overflow: 'hidden' }}>
       <video
         ref={videoRef}
         style={{ width: '100%', height: '100%' }}

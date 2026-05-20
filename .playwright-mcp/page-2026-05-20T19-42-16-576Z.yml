@@ -1,0 +1,292 @@
+- generic:
+  - generic:
+    - list
+    - region "Notifications alt+T"
+    - generic:
+      - link:
+        - /url: "#main-content"
+        - text: Skip to main content
+      - generic:
+        - banner:
+          - generic:
+            - generic:
+              - link:
+                - /url: /
+                - img
+                - generic: Queer Guide
+              - generic:
+                - generic:
+                  - generic:
+                    - search:
+                      - generic:
+                        - img
+                      - generic:
+                        - generic:
+                          - combobox
+                          - generic:
+                            - generic:
+                              - text: Sea
+                              - generic: "|"
+                        - generic:
+                          - button:
+                            - img
+                          - generic: ⌘K
+              - generic:
+                - button:
+                  - img
+                - button:
+                  - generic:
+                    - img
+            - navigation:
+              - link:
+                - /url: /venues
+                - text: Venues
+              - link:
+                - /url: /events
+                - text: Events
+              - link:
+                - /url: /places
+                - text: Places
+              - link:
+                - /url: /marketplace
+                - text: Marketplace
+              - link:
+                - /url: /news
+                - text: News
+              - button:
+                - text: More
+                - img
+        - generic:
+          - paragraph: Claim your unique queer.guide identity
+          - generic:
+            - button: Choose username
+            - button:
+              - img
+      - generic:
+        - status
+        - main:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Queer venues, events, and people. Worldwide.
+                  - paragraph: Verified safe places, real events, and the people behind them. Built by the community.
+                  - generic:
+                    - button:
+                      - img
+                      - text: Browse the directory
+                    - button: Plan a trip
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - link:
+                        - /url: /venues
+                        - paragraph: Venues
+                  - generic:
+                    - generic:
+                      - paragraph: Members
+                  - generic:
+                    - generic:
+                      - link:
+                        - /url: /cities
+                        - paragraph: Cities
+                  - generic:
+                    - generic:
+                      - link:
+                        - /url: /events
+                        - paragraph: Events
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=2]: Trending cities
+                    - link:
+                      - /url: /cities
+                      - text: View all →
+                  - generic:
+                    - generic:
+                      - link:
+                        - /url: /city/berlin
+                        - img
+                        - generic:
+                          - paragraph: Germany
+                          - heading [level=3]: Berlin
+                      - link:
+                        - /url: /city/new-york
+                        - img
+                        - generic:
+                          - paragraph: United States
+                          - heading [level=3]: New York
+                      - link:
+                        - /url: /city/mexico-city
+                        - img
+                        - generic:
+                          - paragraph: Mexico
+                          - heading [level=3]: Mexico City
+                      - link:
+                        - /url: /city/bangkok
+                        - img
+                        - generic:
+                          - paragraph: Thailand
+                          - heading [level=3]: Bangkok
+                      - link:
+                        - /url: /city/tel-aviv
+                        - img
+                        - generic:
+                          - paragraph: Israel
+                          - heading [level=3]: Tel Aviv
+                      - link:
+                        - /url: /city/buenos-aires
+                        - img
+                        - generic:
+                          - paragraph: Argentina
+                          - heading [level=3]: Buenos Aires
+                      - link:
+                        - /url: /city/cape-town
+                        - img
+                        - generic:
+                          - paragraph: South Africa
+                          - heading [level=3]: Cape Town
+                      - link:
+                        - /url: /city/tokyo
+                        - img
+                        - generic:
+                          - paragraph: Japan
+                          - heading [level=3]: Tokyo
+                    - generic:
+                      - button [disabled] [ref=e1]:
+                        - img [ref=e2]
+                      - button [ref=e4]:
+                        - img [ref=e5]
+              - generic:
+                - heading [level=2]: Browse
+                - list:
+                  - listitem:
+                    - link:
+                      - /url: /venues
+                      - img
+                      - generic:
+                        - heading [level=3]: Venues
+                        - paragraph: Bars, clubs, cafés, and community spaces verified by LGBTQ+ locals
+                  - listitem:
+                    - link:
+                      - /url: /events
+                      - img
+                      - generic:
+                        - heading [level=3]: Events
+                        - paragraph: Local and virtual gatherings in your area
+                  - listitem:
+                    - link:
+                      - /url: /marketplace
+                      - img
+                      - generic:
+                        - heading [level=3]: Marketplace
+                        - paragraph: Support queer-owned businesses and creators
+                  - listitem:
+                    - link:
+                      - /url: /places
+                      - img
+                      - generic:
+                        - heading [level=3]: Places
+                        - paragraph: Queer-friendly cities and countries
+                  - listitem:
+                    - link:
+                      - /url: /hotels
+                      - img
+                      - generic:
+                        - heading [level=3]: Hotels
+                        - paragraph: Welcoming accommodations worldwide
+                  - listitem:
+                    - link:
+                      - /url: /groups
+                      - img
+                      - generic:
+                        - heading [level=3]: Community
+                        - paragraph: Connect with people and join groups
+                  - listitem:
+                    - link:
+                      - /url: /resources
+                      - img
+                      - generic:
+                        - heading [level=3]: Resources
+                        - paragraph: Rights, culture, and community support
+              - generic:
+                - heading [level=2]: Built by the community, for the community.
+                - paragraph: Verified safe spaces, real reviews, no paywalls.
+                - generic:
+                  - link:
+                    - /url: /submit
+                    - text: Add a venue
+                  - link:
+                    - /url: /about
+                    - text: Read the mission
+      - generic:
+        - contentinfo:
+          - generic:
+            - generic:
+              - navigation:
+                - generic:
+                  - link:
+                    - /url: /about
+                    - generic: About
+                - generic:
+                  - generic: ·
+                  - link:
+                    - /url: /legal
+                    - generic: Legal
+                - generic:
+                  - generic: ·
+                  - link:
+                    - /url: /accessibility
+                    - generic: Accessibility
+                - generic:
+                  - generic: ·
+                  - link:
+                    - /url: /privacy
+                    - generic: Privacy
+                - generic:
+                  - generic: ·
+                  - link:
+                    - /url: /terms
+                    - generic: Terms
+                - generic:
+                  - generic: ·
+                  - link:
+                    - /url: /contact
+                    - generic: Contact
+                - generic:
+                  - generic: ·
+                  - link:
+                    - /url: /donate
+                    - generic: Support Us
+              - generic: © 2026 Queer Guide
+            - generic:
+              - combobox:
+                - img
+                - generic: English
+                - img
+              - button:
+                - img
+              - button:
+                - img
+  - dialog "Claim your username" [ref=e8]:
+    - generic [ref=e9]:
+      - heading "Claim your username" [level=2] [ref=e10]
+      - paragraph [ref=e11]: Pick a unique handle. Suggestions generated for you, or type your own.
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]: Pick a suggested username
+        - generic [ref=e21]:
+          - button "Reroll 🎲" [disabled]:
+            - img
+            - text: Reroll 🎲
+      - generic [ref=e22]:
+        - generic [ref=e23]: Or type your own custom username
+        - textbox "Or type your own custom username" [active] [ref=e25]:
+          - /placeholder: 8–15 letters, starts with a letter
+    - generic [ref=e26]:
+      - button "Cancel" [ref=e27]
+      - button "Save" [disabled]
+    - button "Close" [ref=e28]:
+      - img [ref=e29]
+      - generic [ref=e32]: Close

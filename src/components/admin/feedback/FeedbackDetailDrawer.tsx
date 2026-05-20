@@ -135,7 +135,7 @@ export function FeedbackDetailDrawer({
                 padding: 10,
                 borderLeft: '3px solid hsl(var(--muted-foreground))',
                 backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
               }}
             >
               <Link2 size={14} />
@@ -159,7 +159,7 @@ export function FeedbackDetailDrawer({
                 padding: 10,
                 borderLeft: '3px solid hsl(var(--destructive))',
                 backgroundColor: 'hsl(var(--destructive) / 0.08)',
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
               }}
             >
               <Ban size={14} />
@@ -189,7 +189,7 @@ export function FeedbackDetailDrawer({
                 padding: 10,
                 borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
                 backgroundColor: 'hsl(var(--foreground) / 0.55)',
-                borderRadius: 4,
+                borderRadius: 'var(--radius-badge)',
                 gap: 8,
               }}
             >
