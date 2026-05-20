@@ -1,13 +1,13 @@
 # axe-core baseline — https://queer.guide
 
-Scanned 17 routes on 2026-05-20T00:29:13.331Z.
+Scanned 17 routes on 2026-05-20T00:38:18.162Z.
 
 ## Summary
 
 | Impact | Violations |
 |---|---|
-| critical | 3 |
-| serious | 3 |
+| critical | 0 |
+| serious | 1 |
 | moderate | 0 |
 | minor | 0 |
 
@@ -15,10 +15,7 @@ Scanned 17 routes on 2026-05-20T00:29:13.331Z.
 
 | Rule | Count |
 |---|---|
-| `button-name` | 2 |
-| `color-contrast` | 2 |
-| `scrollable-region-focusable` | 1 |
-| `aria-allowed-attr` | 1 |
+| `color-contrast` | 1 |
 
 ## Per-route results
 
@@ -42,11 +39,9 @@ No violations.
 
 ### /hotels — hotels-list
 
-Status: 200 · Violations: 1
+Status: 200 · Violations: 0
 
-| Impact | Rule | Nodes | Help |
-|---|---|---|---|
-| critical | `button-name` | 1 | Buttons must have discernible text |
+No violations.
 
 ### /marketplace — marketplace
 
@@ -70,11 +65,9 @@ No violations.
 
 ### /personalities — personalities
 
-Status: 200 · Violations: 1
+Status: 200 · Violations: 0
 
-| Impact | Rule | Nodes | Help |
-|---|---|---|---|
-| serious | `scrollable-region-focusable` | 1 | Scrollable region must have keyboard access |
+No violations.
 
 ### /places — places
 
@@ -120,13 +113,9 @@ No violations.
 
 ### /contact — contact
 
-Status: 200 · Violations: 3
+Status: 200 · Violations: 0
 
-| Impact | Rule | Nodes | Help |
-|---|---|---|---|
-| critical | `aria-allowed-attr` | 5 | Elements must only use supported ARIA attributes |
-| critical | `button-name` | 1 | Buttons must have discernible text |
-| serious | `color-contrast` | 1 | Elements must meet minimum color contrast ratio thresholds |
+No violations.
 
 ### /accessibility — accessibility
 
