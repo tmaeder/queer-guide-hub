@@ -116,7 +116,7 @@ export default function TripsPage() {
             style={{ paddingLeft: 16, paddingRight: 16 }}
             aria-label={t('trips.discover.aria', 'Discover public trips')}
           >
-            <Compass style={{ width: 18, height: 18, marginRight: 6 }} />
+            <Compass size={18} className="mr-1.5" />
             {t('trips.discover.button', 'Discover')}
           </Button>
           <Button
@@ -125,7 +125,7 @@ export default function TripsPage() {
             onClick={() => setCreateOpen(true)}
             style={{ paddingLeft: 20, paddingRight: 20 }}
           >
-            <Plus style={{ width: 18, height: 18, marginRight: 6 }} />
+            <Plus size={18} className="mr-1.5" />
             {t('trips.create')}
           </Button>
         </div>

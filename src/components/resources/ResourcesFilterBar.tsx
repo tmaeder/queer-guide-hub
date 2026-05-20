@@ -184,7 +184,7 @@ export function ResourcesFilterBar({
               style={{ height: 40 }}
               aria-expanded={advancedOpen}
             >
-              <Sliders style={{ width: 14, height: 14, marginRight: 6 }} />
+              <Sliders size={14} className="mr-1.5" />
               {t('resources.filter.advanced')}
               <ChevronDown
                 style={{
@@ -219,7 +219,7 @@ export function ResourcesFilterBar({
               aria-label={t('resources.filter.hasImageTitle')}
               aria-pressed={hasImageFilter}
             >
-              <Image style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Image size={16} className="mr-1.5" />
               {t('resources.filter.hasImage')}
             </Button>
 

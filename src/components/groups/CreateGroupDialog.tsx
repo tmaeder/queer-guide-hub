@@ -61,7 +61,7 @@ export const CreateGroupDialog = ({
   return <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Plus size={16} className="mr-2" />
           Create Group
         </Button>
       </DialogTrigger>

@@ -101,7 +101,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
                 className="mt-1"
               >
                 {cta}
-                <ArrowRight style={{ width: 14, height: 14, marginLeft: 6 }} />
+                <ArrowRight size={14} className="ml-1.5" />
               </Button>
             </CardContent>
           </Card>
@@ -128,7 +128,7 @@ export function EmptyTripsHero({ onCreate }: Props) {
               onClick={() => navigate('/trips/discover')}
             >
               {t('trips.empty.discoverCta', 'Open Discover')}
-              <ArrowRight style={{ width: 14, height: 14, marginLeft: 4 }} />
+              <ArrowRight size={14} className="ml-1" />
             </Button>
           </div>
           {discoverLoading && previewTrips.length === 0 ? (

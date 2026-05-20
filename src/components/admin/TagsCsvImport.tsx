@@ -114,7 +114,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Upload size={16} className="mr-2" />
           Import CSV
         </Button>
       </DialogTrigger>
@@ -143,7 +143,7 @@ export function TagsCsvImport({ onImportComplete }: { onImportComplete?: () => v
                 size="sm"
                 onClick={downloadTemplate}
               >
-                <Download style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Download size={16} className="mr-2" />
                 Download Template
               </Button>
             </CardContent>

@@ -387,7 +387,7 @@ export default function AdminNewsSources() {
               setDialogOpen(true);
             }}
           >
-            <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Plus size={14} className="mr-1" />
             Add Source
           </Button>
         </div>

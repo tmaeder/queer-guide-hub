@@ -108,7 +108,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               >
                 {ctx.url}
               </a>
-              <ExternalLink style={{ width: 11, height: 11, flexShrink: 0 }} />
+              <ExternalLink size={11} className="shrink-0" />
             </div>
           </div>
         )}

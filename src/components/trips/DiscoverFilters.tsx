@@ -96,7 +96,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
           className="h-10"
           aria-label={t('trips.discover.filtersAria', 'Open filters')}
         >
-          <SlidersHorizontal style={{ width: 14, height: 14, marginRight: 6 }} />
+          <SlidersHorizontal size={14} className="mr-1.5" />
           {t('trips.discover.filtersButton', 'Filters')}
           {activeCount > 0 && (
             <span
@@ -245,7 +245,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
             onClick={() => onChange(DEFAULT_FILTERS)}
             disabled={activeCount === 0}
           >
-            <X style={{ width: 14, height: 14, marginRight: 6 }} />
+            <X size={14} className="mr-1.5" />
             {t('trips.discover.filters.clear', 'Clear all')}
           </Button>
         </SheetFooter>

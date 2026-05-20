@@ -297,7 +297,7 @@ export function FeedbackDetailDrawer({
                       style={{ fontSize: '0.7rem' }}
                       onClick={() => onRemoveLabel(l)}
                     >
-                      {l} <X style={{ width: 10, height: 10, marginLeft: 4 }} />
+                      {l} <X size={10} className="ml-1" />
                     </Badge>
                   ))}
                   <Popover open={labelPopoverOpen} onOpenChange={setLabelPopoverOpen}>

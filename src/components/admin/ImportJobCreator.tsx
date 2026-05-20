@@ -607,7 +607,7 @@ export const ImportJobCreator = () => {
 
                             onClick={() => setScraperCities((prev) => [...prev, slug])}
                           >
-                            <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
+                            <Plus size={10} className="mr-0.5" />
                             {city.name}{' '}
                             <span style={{ opacity: 0.5, marginLeft: 4 }}>{city.country}</span>
                           </Button>
@@ -702,7 +702,7 @@ export const ImportJobCreator = () => {
 
                           onClick={() => setSpartacusCountries((prev) => [...prev, c])}
                         >
-                          <Plus style={{ height: 10, width: 10, marginRight: 2 }} />
+                          <Plus size={10} className="mr-0.5" />
                           {c}
                         </Button>
                       ))}

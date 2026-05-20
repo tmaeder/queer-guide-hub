@@ -158,7 +158,7 @@ export default function CountryDetail() {
           </p>
           <Button asChild>
             <LocalizedLink to="/users">
-              <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+              <ArrowLeft size={16} className="mr-2" />
               Back to Directory
             </LocalizedLink>
           </Button>

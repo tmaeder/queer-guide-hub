@@ -69,7 +69,7 @@ export function TripsSignedOutHero() {
                 style={{ paddingLeft: 28, paddingRight: 28 }}
               >
                 {t('trips.signedOut.primaryCta')}
-                <ArrowRight style={{ width: 16, height: 16, marginLeft: 8 }} />
+                <ArrowRight size={16} className="ml-2" />
               </Button>
               <Button
                 size="lg"

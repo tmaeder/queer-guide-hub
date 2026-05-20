@@ -141,7 +141,7 @@ export default function Contact() {
                       />
                     </div>
                     <Button type="submit" disabled={submitting || !form.name || !form.email || !form.category || !form.message}>
-                      {submitting ? <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: "spin 1s linear infinite" }} /> : <Send style={{ width: 16, height: 16, marginRight: 8 }} />}
+                      {submitting ? <Loader2 style={{ width: 16, height: 16, marginRight: 8, animation: "spin 1s linear infinite" }} /> : <Send size={16} className="mr-2" />}
                       {submitting ? "Sending..." : "Send Message"}
                     </Button>
                   </div>
@@ -202,7 +202,7 @@ export default function Contact() {
                   <CollapsibleTrigger className="flex w-full flex-col gap-1.5 p-6 text-left">
                     <div className="flex w-full items-center justify-between">
                       <p className="font-semibold text-15">{faq.question}</p>
-                      {openFaq === index ? <ChevronDown style={{ width: 18, height: 18, flexShrink: 0 }} /> : <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />}
+                      {openFaq === index ? <ChevronDown size={18} className="shrink-0" /> : <ChevronRight size={18} className="shrink-0" />}
                     </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent>

@@ -183,7 +183,7 @@ export default function AdminRedirects() {
       toolbarActions: (
         <div className="flex" style={{ gap: 8 }}>
           <Button variant="outline" size="sm" onClick={() => setBulkDialogOpen(true)}>
-            <Upload style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Upload size={14} className="mr-1" />
             Import
           </Button>
           <ExportExcelButton
@@ -207,7 +207,7 @@ export default function AdminRedirects() {
             }}
           />
           <Button variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
-            <Eye style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Eye size={14} className="mr-1" />
             Preview
           </Button>
           <Button
@@ -217,7 +217,7 @@ export default function AdminRedirects() {
               setDialogOpen(true);
             }}
           >
-            <Plus style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Plus size={14} className="mr-1" />
             New Redirect
           </Button>
         </div>

@@ -54,7 +54,7 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
         </div>
         {(v.city || v.country) && (
           <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
-            <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
+            <MapPin size={14} className="shrink-0" />
             <p className="text-sm">
               {[v.city, v.country].filter(Boolean).join(', ')}
             </p>

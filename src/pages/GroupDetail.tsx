@@ -134,7 +134,7 @@ export default function GroupDetail() {
           </p>
           <Button asChild>
             <LocalizedLink to="/groups">
-              <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+              <ArrowLeft size={16} className="mr-2" />
               Back to Groups
             </LocalizedLink>
           </Button>
@@ -150,7 +150,7 @@ export default function GroupDetail() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+          <ArrowLeft size={16} className="mr-2" />
           Back
         </Button>
       </div>
@@ -238,19 +238,19 @@ export default function GroupDetail() {
                     disabled={isJoining}
                     style={{ background: 'var(--gradient-primary)' }}
                   >
-                    <UserPlus style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <UserPlus size={16} className="mr-2" />
                     {isJoining ? 'Joining...' : 'Join Group'}
                   </Button>
                 ) : (
                   <Button onClick={handleLeave} disabled={isLeaving} variant="outline">
-                    <UserMinus style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <UserMinus size={16} className="mr-2" />
                     {isLeaving ? 'Leaving...' : 'Leave Group'}
                   </Button>
                 )}
 
                 {canManage && (
                   <Button variant="outline" onClick={() => setActiveTab('members')}>
-                    <Settings style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <Settings size={16} className="mr-2" />
                     Manage Group
                   </Button>
                 )}

@@ -576,7 +576,7 @@ export const NewsCard = ({
             onKeyDown={(e) => e.stopPropagation()}
             role="presentation"
           >
-            <MapPin style={{ height: 14, width: 14, flexShrink: 0 }} />
+            <MapPin size={14} className="shrink-0" />
             {linkedCities.map((city: { id: string; name: string | undefined; slug?: string }, i: number) => (
               <span key={city.id}>
                 <LocalizedLink to={`/city/${city.slug || city.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>

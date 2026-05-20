@@ -80,7 +80,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
               <div className="flex justify-between items-center">
                 <p className="font-bold text-sm">{p.price}</p>
                 <Button size="sm" onClick={() => window.open(p.url, '_blank', 'noopener')}>
-                  <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
+                  <ExternalLink size={12} className="mr-1" />
                   Get Quote
                 </Button>
               </div>

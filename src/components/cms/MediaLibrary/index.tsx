@@ -131,7 +131,7 @@ export function MediaLibrary() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleBulkOptimize}>
-            <Zap style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Zap size={14} className="mr-1" />
             Optimize All
           </Button>
         </div>
@@ -193,7 +193,7 @@ export function MediaLibrary() {
                   variant="outline"
                   onClick={() => setDeleteDialogOpen(true)}
                 >
-                  <Trash2 style={{ height: 14, width: 14, marginRight: 4 }} />
+                  <Trash2 size={14} className="mr-1" />
                   Delete
                 </Button>
               </div>

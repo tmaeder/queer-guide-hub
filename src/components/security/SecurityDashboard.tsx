@@ -131,8 +131,7 @@ export function SecurityDashboard() {
           <h2 className="text-2xl font-bold">Security Dashboard</h2>
         </div>
         <Button onClick={loadSecurityData} disabled={loading}>
-          <RefreshCw
-            style={{ height: 16, width: 16, marginRight: 8 }}
+          <RefreshCw size={16} className="mr-2"
             className={loading ? 'animate-spin' : ''}
           />
           Refresh

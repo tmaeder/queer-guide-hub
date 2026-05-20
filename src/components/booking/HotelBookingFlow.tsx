@@ -241,7 +241,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
                   disabled={!guestName.trim() || !guestEmail.trim() || submitting}
                 >
                   {submitting ? 'Processing...' : hotel.supportsInApp ? 'Confirm Booking' : 'Continue to Partner'}
-                  {!hotel.supportsInApp && <ExternalLink style={{ height: 14, width: 14, marginLeft: 6 }} />}
+                  {!hotel.supportsInApp && <ExternalLink size={14} className="ml-1.5" />}
                 </Button>
               </div>
             </div>

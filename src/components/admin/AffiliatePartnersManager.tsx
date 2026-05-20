@@ -106,7 +106,7 @@ export function AffiliatePartnersManager() {
           <h6 className="text-lg font-medium mb-1">Failed to load affiliate partners</h6>
           <p className="text-muted-foreground mb-4">{fetchError}</p>
           <Button onClick={fetchPartners} variant="outline">
-            <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
+            <RefreshCw size={16} className="mr-2" />
             Retry
           </Button>
         </div>

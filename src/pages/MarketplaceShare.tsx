@@ -40,7 +40,7 @@ export default function MarketplaceShare() {
         <div className="mb-4">
           <LocalizedLink to="/marketplace">
             <Button variant="ghost" size="sm">
-              <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
+              <ArrowLeft size={14} className="mr-1.5" aria-hidden="true" />
               Marketplace
             </Button>
           </LocalizedLink>

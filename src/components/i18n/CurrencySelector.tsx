@@ -41,7 +41,7 @@ export function CurrencySelector() {
           background: 'transparent',
         }}
       >
-        <Wallet style={{ width: 16, height: 16, flexShrink: 0 }} />
+        <Wallet size={16} className="shrink-0" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

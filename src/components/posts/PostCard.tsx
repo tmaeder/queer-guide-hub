@@ -349,14 +349,14 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                 {isOwnPost && (
                   <>
                     <DropdownMenuItem>
-                      <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Edit size={16} className="mr-2" />
                       Edit Post
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => setShowDeleteDialog(true)}
                     >
-                      <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Trash2 size={16} className="mr-2" />
                       Delete Post
                     </DropdownMenuItem>
                   </>
@@ -398,12 +398,12 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
               onClick={() => setShowComments(!showComments)}
               disabled={!user}
             >
-              <MessageCircle style={{ height: 16, width: 16, marginRight: 4 }} />
+              <MessageCircle size={16} className="mr-1" />
               <span>{post.comments_count || 0}</span>
               {showComments ? (
-                <ChevronUp style={{ height: 16, width: 16, marginLeft: 4 }} />
+                <ChevronUp size={16} className="ml-1" />
               ) : (
-                <ChevronDown style={{ height: 16, width: 16, marginLeft: 4 }} />
+                <ChevronDown size={16} className="ml-1" />
               )}
             </Button>
           </div>

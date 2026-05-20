@@ -61,7 +61,7 @@ export function useVenueColumns() {
         cell: (info) =>
           info.getValue() ? (
             <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Star size={12} className="mr-1" />
               Featured
             </Badge>
           ) : null,
@@ -72,7 +72,7 @@ export function useVenueColumns() {
         cell: (info) =>
           info.getValue() ? (
             <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>
-              <Check style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Check size={12} className="mr-1" />
               Verified
             </Badge>
           ) : null,

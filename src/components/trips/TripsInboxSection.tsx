@@ -243,7 +243,7 @@ function SuggestionCard({
         onClick={() => void onCreate(titleSuggestion)}
         disabled={pending}
       >
-        <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+        <Plus size={16} className="mr-1.5" />
         {t('pages.inbox.suggestions.createCta', 'Create trip')}
       </Button>
     </div>
@@ -303,7 +303,7 @@ function OrphanRow({
                 disabled={trips.length === 0}
                 aria-label={t('pages.inbox.orphans.attach', 'Attach to trip')}
               >
-                <Link2 style={{ width: 16, height: 16, marginRight: 4 }} />
+                <Link2 size={16} className="mr-1" />
                 {t('pages.inbox.orphans.attach', 'Attach')}
               </Button>
             </DropdownMenuTrigger>
@@ -326,7 +326,7 @@ function OrphanRow({
               {trips.length > 0 && <DropdownMenuSeparator />}
               <DropdownMenuItem asChild>
                 <LocalizedLink to="/trips">
-                  <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
+                  <Plus size={14} className="mr-1.5" />
                   {t('pages.inbox.orphans.newTrip', 'Create new trip')}
                 </LocalizedLink>
               </DropdownMenuItem>

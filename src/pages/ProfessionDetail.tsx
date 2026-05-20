@@ -81,7 +81,7 @@ export default function ProfessionDetail() {
           <CardContent style={{ padding: 24, textAlign: 'center' }}>
             <p className="text-destructive">{error || 'Profession not found'}</p>
             <Button variant="outline" onClick={handleBack} style={{ marginTop: 16 }}>
-              <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+              <ArrowLeft size={16} className="mr-2" />
               Back to Resources
             </Button>
           </CardContent>
@@ -96,7 +96,7 @@ export default function ProfessionDetail() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={handleBack} style={{ flexShrink: 0 }}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
           <div className="flex items-center gap-3">

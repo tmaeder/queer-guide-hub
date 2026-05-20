@@ -146,9 +146,8 @@ export function EditorHeader({
               >
                 {displayTitle}
               </p>
-              <Pencil
-                style={{ width: 13, height: 13, flexShrink: 0 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+              <Pencil size={13}
+                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
               />
             </div>
           )}

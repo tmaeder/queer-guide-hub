@@ -403,7 +403,7 @@ export const NewsFilters = ({
                     onClick={() => handleCountryToggle(countryId)}
                   >
                     {country.name}
-                    <X style={{ height: 10, width: 10, marginLeft: 4 }} />
+                    <X size={10} className="ml-1" />
                   </Badge>
                 ) : null;
               })}
@@ -444,7 +444,7 @@ export const NewsFilters = ({
                     onClick={() => handleCityToggle(cityId)}
                   >
                     {city.name}
-                    <X style={{ height: 10, width: 10, marginLeft: 4 }} />
+                    <X size={10} className="ml-1" />
                   </Badge>
                 ) : null;
               })}

@@ -286,7 +286,7 @@ export function BookNowAccordion({ defaultOpen = false }: Props) {
                   />
                 </div>
                 <Button type="submit" size="sm" onClick={() => setActivityCity(activityCity.trim())}>
-                  <Ticket style={{ height: 16, width: 16, marginRight: 6 }} />
+                  <Ticket size={16} className="mr-1.5" />
                   Search Activities
                 </Button>
               </form>

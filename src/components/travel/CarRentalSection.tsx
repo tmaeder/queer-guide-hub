@@ -45,7 +45,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
           <p className="text-xs text-muted-foreground">Compare prices from top providers</p>
         </div>
         <Button size="sm" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
-          <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+          <ExternalLink size={14} className="mr-1" />
           Search
         </Button>
       </div>
@@ -66,7 +66,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
               Compare 500+ providers, free cancellation
             </p>
             <Button size="sm" className="w-full" onClick={() => window.open(discoverUrl, '_blank', 'noopener')}>
-              <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+              <ExternalLink size={14} className="mr-1" />
               Search Cars
             </Button>
           </CardContent>
@@ -78,7 +78,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
               Booking.com partner, loyalty rewards
             </p>
             <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(rentalcarsUrl, '_blank', 'noopener')}>
-              <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+              <ExternalLink size={14} className="mr-1" />
               Search Cars
             </Button>
           </CardContent>

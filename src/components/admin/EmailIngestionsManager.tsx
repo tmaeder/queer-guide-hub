@@ -147,7 +147,7 @@ export function EmailIngestionsManager() {
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={fetchIngestions}>
-          <RefreshCw style={{ height: 14, width: 14, marginRight: 6 }} />
+          <RefreshCw size={14} className="mr-1.5" />
           Refresh
         </Button>
       </div>
@@ -343,7 +343,7 @@ export function EmailIngestionsManager() {
                           <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.events.map((ev, i: number) => (
                               <div key={i} className="flex items-center gap-2 text-13 text-muted-foreground">
-                                <Calendar style={{ height: 12, width: 12, flexShrink: 0 }} />
+                                <Calendar size={12} className="shrink-0" />
                                 <span>
                                   <strong>{ev.title}</strong> — {ev.city}, {ev.country}
                                   {ev.start_date && ` (${new Date(ev.start_date).toLocaleDateString()})`}
@@ -361,7 +361,7 @@ export function EmailIngestionsManager() {
                           <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.venues.map((v, i: number) => (
                               <div key={i} className="flex items-center gap-2 text-13 text-muted-foreground">
-                                <Building style={{ height: 12, width: 12, flexShrink: 0 }} />
+                                <Building size={12} className="shrink-0" />
                                 <span>
                                   <strong>{v.name}</strong> — {v.address}, {v.city}
                                 </span>
@@ -395,9 +395,9 @@ export function EmailIngestionsManager() {
                           >
                             {expandedJson.has(ing.id) ? 'Hide' : 'Show'} Raw AI Response
                             {expandedJson.has(ing.id) ? (
-                              <ChevronUp style={{ height: 12, width: 12, marginLeft: 4 }} />
+                              <ChevronUp size={12} className="ml-1" />
                             ) : (
-                              <ChevronDown style={{ height: 12, width: 12, marginLeft: 4 }} />
+                              <ChevronDown size={12} className="ml-1" />
                             )}
                           </Button>
                           {expandedJson.has(ing.id) && (

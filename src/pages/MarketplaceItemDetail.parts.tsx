@@ -174,7 +174,7 @@ export function MarketplaceHero({
                 {isFavorited ? 'Favorited' : 'Favorite'}
               </Button>
                                       <Button variant="outline" size="sm" onClick={onShare}>
-                <Share2 style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Share2 size={16} className="mr-2" />
                 Share
               </Button>
                       </div>
@@ -308,7 +308,7 @@ export function MarketplaceOverview({ listing, reviews, t }: OverviewProps) {
                     <div className="flex items-center gap-2">
                       {review.purchase_verified && (
                         <Badge variant="outline" style={{ fontSize: '0.75rem' }}>
-                          <Shield style={{ width: 12, height: 12, marginRight: 4 }} />
+                          <Shield size={12} className="mr-1" />
                           Verified Purchase
                         </Badge>
                       )}
@@ -400,7 +400,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
             {outbound && (
               <Button style={{ width: '100%' }} asChild>
                 <a href={outbound.url} target="_blank" rel={outbound.rel} data-affiliate={outbound.isAffiliate ? 'true' : undefined}>
-                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <ExternalLink size={16} className="mr-2" />
                   {outbound.label}
                 </a>
               </Button>
@@ -408,7 +408,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
             {listing.contact_email && (
               <Button variant="outline" style={{ width: '100%' }} asChild>
                 <a href={`mailto:${listing.contact_email}`}>
-                  <Mail style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Mail size={16} className="mr-2" />
                   Send Email
                 </a>
               </Button>
@@ -416,7 +416,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
             {listing.contact_phone && (
               <Button variant="outline" style={{ width: '100%' }} asChild>
                 <a href={`tel:${listing.contact_phone}`}>
-                  <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Phone size={16} className="mr-2" />
                   Call {listing.contact_phone}
                 </a>
               </Button>
@@ -424,7 +424,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
             {!outbound && listing.website && (
               <Button variant="outline" style={{ width: '100%' }} asChild>
                 <a href={listing.website} target="_blank" rel="noopener noreferrer">
-                  <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Globe size={16} className="mr-2" />
                   Visit Website
                 </a>
               </Button>
@@ -515,7 +515,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
                   asChild
                 >
                   <a href={url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                    <ExternalLink size={16} className="mr-2" />
                     {platform.charAt(0).toUpperCase() + platform.slice(1)}
                   </a>
                 </Button>

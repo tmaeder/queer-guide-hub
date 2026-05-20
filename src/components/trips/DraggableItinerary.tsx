@@ -246,7 +246,7 @@ export function DraggableItinerary({
                 <Badge variant="outline" className="rounded-full">{unassigned.length}</Badge>
               </div>
               <Button variant="ghost" size="sm" onClick={() => onAddPlace()} className="rounded-full">
-                <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+                <Plus size={14} className="mr-1" />
                 {t('trips.itinerary.add')}
               </Button>
             </div>
@@ -290,7 +290,7 @@ export function DraggableItinerary({
               {t('trips.itinerary.emptyDescription')}
             </p>
             <Button variant="brand" onClick={() => onAddPlace()} className="rounded-full">
-              <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Plus size={16} className="mr-1.5" />
               {t('trips.itinerary.addPlace')}
             </Button>
           </div>
@@ -328,7 +328,7 @@ export function DraggableItinerary({
 
         {!itineraryIsEmpty && (
           <Button variant="outline" onClick={() => onAddPlace()} className="w-full mt-3 rounded-element border-dashed h-12">
-            <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+            <Plus size={16} className="mr-1.5" />
             {t('trips.itinerary.addPlace')}
           </Button>
         )}

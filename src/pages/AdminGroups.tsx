@@ -76,12 +76,12 @@ export default function AdminGroups() {
         cell: (info) =>
           info.getValue() ? (
             <Badge variant="secondary">
-              <Lock style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Lock size={12} className="mr-1" />
               Private
             </Badge>
           ) : (
             <Badge variant="outline">
-              <Globe style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Globe size={12} className="mr-1" />
               Public
             </Badge>
           ),
@@ -259,7 +259,7 @@ function PendingJoinRequestsPanel() {
                 onClick={() => approve(req.id)}
                 disabled={isApproving || isRejecting}
               >
-                <Check style={{ width: 14, height: 14, marginRight: 4 }} /> Approve
+                <Check size={14} className="mr-1" /> Approve
               </Button>
               <Button
                 size="sm"
@@ -267,7 +267,7 @@ function PendingJoinRequestsPanel() {
                 onClick={() => reject(req.id)}
                 disabled={isApproving || isRejecting}
               >
-                <X style={{ width: 14, height: 14, marginRight: 4 }} /> Reject
+                <X size={14} className="mr-1" /> Reject
               </Button>
             </div>
           </div>

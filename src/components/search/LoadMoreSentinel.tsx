@@ -52,7 +52,7 @@ export function LoadMoreSentinel({ hasMore, loading, onLoadMore }: LoadMoreSenti
       <Button variant="outline" onClick={onLoadMore} disabled={loading}>
         {loading ? (
           <>
-            <Loader2 className="animate-spin" style={{ width: 14, height: 14, marginRight: 8 }} />
+            <Loader2 className="animate-spin mr-2" size={14} />
             {t('search.loading', 'Loading…')}
           </>
         ) : (

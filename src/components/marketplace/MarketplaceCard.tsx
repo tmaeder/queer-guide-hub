@@ -157,7 +157,7 @@ export function MarketplaceCard({
 
             {(listing.venues?.name || listing.location) && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} aria-hidden="true" />
+                <MapPin size={12} className="shrink-0" aria-hidden="true" />
                 <span className="overflow-hidden text-ellipsis whitespace-nowrap">
                   {listing.venues ? `${listing.venues.name}, ${listing.venues.city}` : listing.location}
                 </span>

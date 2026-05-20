@@ -267,7 +267,7 @@ export default function EmailTemplates() {
                         setEditingTemplate(null);
                       }}
                     >
-                      <X style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <X size={16} className="mr-2" />
                       Cancel
                     </Button>
                     <Button
@@ -275,9 +275,9 @@ export default function EmailTemplates() {
                       disabled={isSaving}
                     >
                       {isSaving ? (
-                        <Loader2 style={{ height: 16, width: 16, marginRight: 8 }} className="animate-spin" />
+                        <Loader2 size={16} className="animate-spin mr-2" />
                       ) : (
-                        <Save style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <Save size={16} className="mr-2" />
                       )}
                       Save
                     </Button>
@@ -445,7 +445,7 @@ export default function EmailTemplates() {
                     <Dialog open={showTestDialog} onOpenChange={setShowTestDialog}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                          <TestTube style={{ height: 16, width: 16, marginRight: 8 }} />
+                          <TestTube size={16} className="mr-2" />
                           Test Email
                         </Button>
                       </DialogTrigger>
@@ -476,9 +476,9 @@ export default function EmailTemplates() {
                               disabled={!testEmail || isSendingTest}
                             >
                               {isSendingTest ? (
-                                <Loader2 style={{ height: 16, width: 16, marginRight: 8 }} className="animate-spin" />
+                                <Loader2 size={16} className="animate-spin mr-2" />
                               ) : (
-                                <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
+                                <Mail size={16} className="mr-2" />
                               )}
                               Send Test
                             </Button>
@@ -492,7 +492,7 @@ export default function EmailTemplates() {
                       size="sm"
                       onClick={() => setShowPreview(!showPreview)}
                     >
-                      <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Eye size={16} className="mr-2" />
                       {showPreview ? 'Hide Preview' : 'Preview'}
                     </Button>
 
@@ -500,7 +500,7 @@ export default function EmailTemplates() {
                       size="sm"
                       onClick={() => setEditingTemplate(selectedTemplate)}
                     >
-                      <Edit style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Edit size={16} className="mr-2" />
                       Edit
                     </Button>
                   </div>

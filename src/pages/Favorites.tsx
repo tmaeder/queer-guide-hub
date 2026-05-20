@@ -265,7 +265,7 @@ export default function Favorites() {
               )}
               <Button asChild variant="outline" size="sm">
                 <LocalizedLink to={getItemUrl()}>
-                  <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
+                  <ExternalLink size={12} className="mr-1" />
                   View
                 </LocalizedLink>
               </Button>
@@ -331,7 +331,7 @@ export default function Favorites() {
                   )}
                   <Button asChild variant="outline" size="sm">
                     <LocalizedLink to={getItemUrl()}>
-                      <ExternalLink style={{ height: 12, width: 12, marginRight: 4 }} />
+                      <ExternalLink size={12} className="mr-1" />
                       View Details
                     </LocalizedLink>
                   </Button>
@@ -448,7 +448,7 @@ export default function Favorites() {
                       onClick={copyCalendarFeedUrl}
                       disabled={calendarLoading}
                     >
-                      <LinkIcon style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <LinkIcon size={16} className="mr-2" />
                       Copy Subscription URL
                     </Button>
                   </CardContent>
@@ -473,7 +473,7 @@ export default function Favorites() {
                       onClick={downloadCalendarFile}
                       disabled={calendarLoading}
                     >
-                      <Download style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Download size={16} className="mr-2" />
                       Download .ics File
                     </Button>
                   </CardContent>
@@ -568,7 +568,7 @@ export default function Favorites() {
                           }
                         }}
                       >
-                        <LinkIcon style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
+                        <LinkIcon size={14} className="mr-1.5" aria-hidden="true" />
                         Share list
                       </Button>
                     </div>

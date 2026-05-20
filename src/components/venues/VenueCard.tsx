@@ -99,7 +99,7 @@ const VenueCardFixture = () => (
       <div className="flex flex-col gap-1.5">
         <p className="text-base font-semibold leading-tight">Sample Venue Name</p>
         <div className="flex items-center gap-1.5 text-muted-foreground">
-          <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
+          <MapPin size={14} className="shrink-0" />
           <p className="text-sm">Berlin, Germany</p>
         </div>
       </div>
@@ -270,9 +270,8 @@ export function VenueCard({
                 </p>
                 {isVerified && (
                   <BadgeCheck
-                    aria-label="Verified"
-                    style={{ width: 14, height: 14, flexShrink: 0 }}
-                    className="text-foreground/70"
+                    aria-label="Verified" size={14}
+                    className="text-foreground/70 shrink-0"
                   />
                 )}
                 {priceTier && (
@@ -285,7 +284,7 @@ export function VenueCard({
                 )}
               </div>
               <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
-                <MapPin style={{ width: 13, height: 13, flexShrink: 0 }} />
+                <MapPin size={13} className="shrink-0" />
                 <p className="text-xs overflow-hidden text-ellipsis whitespace-nowrap">
                   {[venue.city, venue.state].filter(Boolean).join(', ')}
                 </p>

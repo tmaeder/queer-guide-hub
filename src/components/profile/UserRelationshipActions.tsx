@@ -127,11 +127,11 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={handleRemove}>
-            <UserMinus style={{ height: 16, width: 16, marginRight: 8 }} />
+            <UserMinus size={16} className="mr-2" />
             Unfriend
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleBlock}>
-            <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Shield size={16} className="mr-2" />
             Block
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -155,11 +155,11 @@ export function UserRelationshipActions({ targetUserId, compact = false }: UserR
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={handleAddFriend}>
-          <UserPlus style={{ height: 16, width: 16, marginRight: 8 }} />
+          <UserPlus size={16} className="mr-2" />
           Send Friend Request
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleBlock}>
-          <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Shield size={16} className="mr-2" />
           Block User
         </DropdownMenuItem>
       </DropdownMenuContent>

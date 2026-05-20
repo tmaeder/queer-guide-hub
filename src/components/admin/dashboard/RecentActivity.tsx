@@ -115,7 +115,7 @@ export function RecentActivity({ activities, loading, onRefresh }: RecentActivit
               <div className="pt-4 border-t border-border">
                 <Button variant="ghost" size="sm">
                   View All Activity
-                  <ArrowUpRight style={{ width: 16, height: 16, marginLeft: 8 }} />
+                  <ArrowUpRight size={16} className="ml-2" />
                 </Button>
               </div>
             )}

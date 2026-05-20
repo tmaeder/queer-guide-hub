@@ -92,7 +92,7 @@ export function EmailForwardingSettings() {
           <div className="flex gap-2 flex-wrap">
             <LocalizedLink to="/trips">
               <Button variant="outline" size="sm">
-                <InboxIcon style={{ width: 14, height: 14, marginRight: 6 }} />
+                <InboxIcon size={14} className="mr-1.5" />
                 {t('settings.email.openInbox', 'Open inbox')}
               </Button>
             </LocalizedLink>
@@ -102,7 +102,7 @@ export function EmailForwardingSettings() {
               onClick={() => setConfirmOpen(true)}
               disabled={rotate.isPending}
             >
-              <RefreshCw style={{ width: 14, height: 14, marginRight: 6 }} />
+              <RefreshCw size={14} className="mr-1.5" />
               {t('settings.email.rotate', 'Rotate address')}
             </Button>
           </div>

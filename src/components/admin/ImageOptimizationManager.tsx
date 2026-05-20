@@ -227,14 +227,14 @@ export function ImageOptimizationManager() {
             onClick={scanForImages}
             disabled={isScanning}
           >
-            <FolderOpen style={{ height: 16, width: 16, marginRight: 8 }} />
+            <FolderOpen size={16} className="mr-2" />
             {isScanning ? 'Scanning...' : 'Scan Images'}
           </Button>
           <Button
             onClick={startOptimizationJob}
             disabled={currentJob?.status === 'processing'}
           >
-            <Server style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Server size={16} className="mr-2" />
             Start Background Optimization
           </Button>
         </div>
@@ -275,7 +275,7 @@ export function ImageOptimizationManager() {
                 <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>No Images Found</h3>
                 <p className="text-muted-foreground mb-4">Click "Scan Images" to find images in your project</p>
                 <Button onClick={scanForImages} disabled={isScanning}>
-                  <FolderOpen style={{ height: 16, width: 16, marginRight: 8 }} />
+                  <FolderOpen size={16} className="mr-2" />
                   {isScanning ? 'Scanning...' : 'Scan for Images'}
                 </Button>
               </CardContent>
@@ -381,7 +381,7 @@ export function ImageOptimizationManager() {
                 <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>No Background Jobs</h3>
                 <p className="text-muted-foreground mb-4">Start an optimization job to see it here</p>
                 <Button onClick={startOptimizationJob}>
-                  <Server style={{ height: 16, width: 16, marginRight: 8 }} />
+                  <Server size={16} className="mr-2" />
                   Start Background Optimization
                 </Button>
               </CardContent>
@@ -445,12 +445,12 @@ export function ImageOptimizationManager() {
                           size="sm"
                           onClick={() => checkJobStatus(job.id)}
                         >
-                          <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
+                          <RefreshCw size={16} className="mr-2" />
                           Refresh
                         </Button>
                         {job.status === 'completed' && (
                           <Button variant="outline" size="sm">
-                            <Download style={{ height: 16, width: 16, marginRight: 8 }} />
+                            <Download size={16} className="mr-2" />
                             Download Report
                           </Button>
                         )}

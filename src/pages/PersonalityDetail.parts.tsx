@@ -231,13 +231,13 @@ export function PersonalityHero({
           onSaved={() => window.location.reload()}
         />
         <Button variant="outline" size="sm" onClick={onShare}>
-          <Share2 style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Share2 size={16} className="mr-2" />
           Share
         </Button>
         {personality.website_url && (
           <Button variant="outline" size="sm" asChild>
             <a href={personality.website_url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink style={{ height: 16, width: 16, marginRight: 8 }} />
+              <ExternalLink size={16} className="mr-2" />
               Website
             </a>
           </Button>

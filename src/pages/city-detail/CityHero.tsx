@@ -109,7 +109,7 @@ export function CityHero({
           {city.official_website && (
             <Button variant="outline" size="sm" asChild>
               <a href={city.official_website} target="_blank" rel="noopener noreferrer">
-                <Globe style={{ height: 16, width: 16, marginRight: 6 }} />
+                <Globe size={16} className="mr-1.5" />
                 Website
               </a>
             </Button>

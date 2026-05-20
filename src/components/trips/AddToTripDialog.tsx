@@ -277,7 +277,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                       </div>
                     </div>
                     {selectedTripId === trip.id && (
-                      <Check style={{ width: 18, height: 18, flexShrink: 0 }} />
+                      <Check size={18} className="shrink-0" />
                     )}
                   </div>
                 ))}
@@ -321,7 +321,7 @@ export function AddToTripDialog({ open, onClose, entity }: AddToTripDialogProps)
                 onClick={() => setShowCreateForm(true)}
                 style={{ width: '100%' }}
               >
-                <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Plus size={16} className="mr-2" />
                 {t('trips.addTo.createNewTrip', 'Create New Trip')}
               </Button>
             </>

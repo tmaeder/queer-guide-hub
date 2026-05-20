@@ -37,7 +37,7 @@ function SectionHeader({
       </div>
       <LocalizedLink to={moreLink}>
         <Button variant="ghost" size="sm">
-          See all <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
+          See all <ArrowRight size={14} className="ml-1" />
         </Button>
       </LocalizedLink>
     </div>

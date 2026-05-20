@@ -178,7 +178,7 @@ export default function AdminUsers() {
           const val = info.getValue();
           return val ? (
             <div className="flex items-center gap-1">
-              <MapPin style={{ height: 12, width: 12, flexShrink: 0 }} />
+              <MapPin size={12} className="shrink-0" />
               <span
                 style={{
                   whiteSpace: 'nowrap',

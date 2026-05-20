@@ -292,7 +292,7 @@ export function EventHero({
           <FavoriteButton itemId={event.id} type="event" size="md" />
           {!isPast && (
                           <Button variant="outline" size="sm" onClick={onAddToTrip}>
-                <Luggage style={{ width: 14, height: 14, marginRight: 6 }} />
+                <Luggage size={14} className="mr-1.5" />
                 Add to Trip
               </Button>
                       )}
@@ -312,22 +312,22 @@ export function EventHero({
           {event.ticket_url && (
                           <Button size="sm" asChild>
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <ExternalLink size={16} className="mr-2" />
                   Get Tickets
                 </a>
               </Button>
                       )}
           <Button variant="outline" size="sm" onClick={onExportToCalendar}>
-            <Download style={{ width: 16, height: 16, marginRight: 6 }} />
+            <Download size={16} className="mr-1.5" />
             Calendar
           </Button>
           <Button variant="outline" size="sm" onClick={onShare}>
-            <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
+            <Share2 size={16} className="mr-1.5" />
             Share
           </Button>
           {showSendButton && (
             <Button variant="outline" size="sm" onClick={onSendEvent}>
-              <Send style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Send size={16} className="mr-1.5" />
               Send
             </Button>
           )}
@@ -391,7 +391,7 @@ export function EventHero({
             </p>
             <Button size="sm" variant="outline" asChild>
               <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink style={{ width: 14, height: 14, marginRight: 6 }} />
+                <ExternalLink size={14} className="mr-1.5" />
                 Visit source
               </a>
             </Button>
@@ -445,7 +445,7 @@ export function EventOverview({
                 onClick={() => onAttendanceUpdate('going')}
                 style={{ flex: 1 }}
               >
-                <Users style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Users size={16} className="mr-2" />
                 Going {userAttendance === 'going' && '✓'}
               </Button>
               <Button
@@ -453,7 +453,7 @@ export function EventOverview({
                 onClick={() => onAttendanceUpdate('interested')}
                 style={{ flex: 1 }}
               >
-                <Users style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Users size={16} className="mr-2" />
                 Interested {userAttendance === 'interested' && '✓'}
               </Button>
             </div>
@@ -559,7 +559,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
                     {(event.organizer.website || event.organizer.organizer_handles?.website) && (
                       <Button variant="outline" size="sm" asChild>
                         <a href={event.organizer.website || event.organizer.organizer_handles?.website} target="_blank" rel="noopener noreferrer">
-                          <Globe style={{ width: 14, height: 14, marginRight: 6 }} />
+                          <Globe size={14} className="mr-1.5" />
                           Website
                         </a>
                       </Button>
@@ -595,7 +595,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
                     {event.organizer.phone && (
                       <Button variant="outline" size="sm" asChild>
                         <a href={`tel:${event.organizer.phone}`}>
-                          <Phone style={{ width: 14, height: 14, marginRight: 6 }} />
+                          <Phone size={14} className="mr-1.5" />
                           Call
                         </a>
                       </Button>
@@ -636,7 +636,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
                 asChild
               >
                 <a href={event.website} target="_blank" rel="noopener noreferrer">
-                  <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Globe size={16} className="mr-2" />
                   Event Website
                 </a>
               </Button>
@@ -649,7 +649,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
                 asChild
               >
                 <a href={event.ticket_url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <ExternalLink size={16} className="mr-2" />
                   Get Tickets
                 </a>
               </Button>
@@ -679,7 +679,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Navigation2 style={{ width: 14, height: 14, marginRight: 6 }} />
+                    <Navigation2 size={14} className="mr-1.5" />
                     Directions
                   </a>
                 </Button>
@@ -687,7 +687,7 @@ export function EventSidebar({ event, venueRef, onOrganizerClick }: SidebarProps
               {event.venues.phone && (
                 <Button variant="outline" size="sm" asChild>
                   <a href={`tel:${event.venues.phone}`}>
-                    <Phone style={{ width: 14, height: 14, marginRight: 6 }} />
+                    <Phone size={14} className="mr-1.5" />
                     Call
                   </a>
                 </Button>

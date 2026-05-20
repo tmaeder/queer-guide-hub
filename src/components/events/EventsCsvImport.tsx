@@ -93,7 +93,7 @@ Tech Conference,Annual technology conference,conference,Convention Center,456 Co
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Upload size={16} className="mr-2" />
           Import CSV
         </Button>
       </DialogTrigger>
@@ -118,7 +118,7 @@ Tech Conference,Annual technology conference,conference,Convention Center,456 Co
 
           <div className="flex justify-between">
             <Button variant="outline" onClick={downloadTemplate}>
-              <Download style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Download size={16} className="mr-2" />
               Download Template
             </Button>
             <Button onClick={handleImport} disabled={!file || isUploading}>

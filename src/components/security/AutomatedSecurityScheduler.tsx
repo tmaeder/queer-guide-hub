@@ -222,18 +222,18 @@ export function AutomatedSecurityScheduler() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center">
-                  <Clock style={{ height: 12, width: 12, marginRight: 4 }} />
+                  <Clock size={12} className="mr-1" />
                   <span>Frequency: {task.frequency}</span>
                 </div>
                 {task.lastRun && (
                   <div className="flex items-center">
-                    <Database style={{ height: 12, width: 12, marginRight: 4 }} />
+                    <Database size={12} className="mr-1" />
                     <span>Last Run: {new Date(task.lastRun).toLocaleString()}</span>
                   </div>
                 )}
                 {task.nextRun && (
                   <div className="flex items-center">
-                    <Calendar style={{ height: 12, width: 12, marginRight: 4 }} />
+                    <Calendar size={12} className="mr-1" />
                     <span>Next Run: {new Date(task.nextRun).toLocaleString()}</span>
                   </div>
                 )}
@@ -244,7 +244,7 @@ export function AutomatedSecurityScheduler() {
 
         <div className="mt-6 p-4 bg-muted rounded-element">
           <p className="font-medium mb-2 flex items-center">
-            <Shield style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Shield size={16} className="mr-2" />
             Security Automation Status
           </p>
           <p className="text-sm text-muted-foreground">

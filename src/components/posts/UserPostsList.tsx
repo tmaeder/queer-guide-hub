@@ -65,7 +65,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
           {isOwnProfile && user && (
             <CreatePostDialog>
               <Button>
-                <PenSquare style={{ width: 16, height: 16, marginRight: 8 }} />
+                <PenSquare size={16} className="mr-2" />
                 Create Your First Post
               </Button>
             </CreatePostDialog>
@@ -83,7 +83,7 @@ export const UserPostsList = ({ userId, isOwnProfile }: UserPostsListProps) => {
           <CardContent>
             <CreatePostDialog>
               <Button variant="outline">
-                <PenSquare style={{ width: 16, height: 16, marginRight: 8 }} />
+                <PenSquare size={16} className="mr-2" />
                 What's on your mind?
               </Button>
             </CreatePostDialog>

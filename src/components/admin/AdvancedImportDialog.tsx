@@ -271,8 +271,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                       {requiredFields.map((field) => (
                         <Badge key={field} variant="secondary">
                           {field}
-                          <X
-                            style={{ height: 12, width: 12, marginLeft: 4 }}
+                          <X size={12} className="ml-1"
                             onClick={() => deleteRequiredField(field)}
                           />
                         </Badge>
@@ -337,8 +336,7 @@ export const AdvancedImportDialog = ({ importType, onImport, children }: Advance
                     {keywords.map((keyword) => (
                       <Badge key={keyword} variant="secondary">
                         {keyword}
-                        <X
-                          style={{ height: 12, width: 12, marginLeft: 4 }}
+                        <X size={12} className="ml-1"
                           onClick={() => deleteKeyword(keyword)}
                         />
                       </Badge>

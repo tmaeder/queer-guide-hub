@@ -204,7 +204,7 @@ export default function TripsDiscoverPage() {
                 aria-label={t('trips.discover.sortAria', 'Sort trips')}
                 className="h-10"
               >
-                <ArrowDownUp style={{ width: 14, height: 14, marginRight: 6 }} />
+                <ArrowDownUp size={14} className="mr-1.5" />
                 {t(`trips.discover.sort.${sortKey}`, sortLabel(sortKey))}
               </Button>
             </DropdownMenuTrigger>

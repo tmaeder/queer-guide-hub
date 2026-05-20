@@ -73,14 +73,14 @@ function VerificationBadge({ status }: { status: string }) {
   if (status === 'verified')
     return (
       <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>
-        <Check style={{ height: 12, width: 12, marginRight: 4 }} />
+        <Check size={12} className="mr-1" />
         Verified
       </Badge>
     );
   if (status === 'disputed')
     return (
       <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-        <AlertCircle style={{ height: 12, width: 12, marginRight: 4 }} />
+        <AlertCircle size={12} className="mr-1" />
         Disputed
       </Badge>
     );
@@ -314,7 +314,7 @@ export default function AdminPersonalities() {
             <VisibilityBadge visibility={info.getValue()} />
             {info.row.original.is_featured && (
               <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-                <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+                <Star size={12} className="mr-1" />
                 Featured
               </Badge>
             )}

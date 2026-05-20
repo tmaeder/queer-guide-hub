@@ -359,7 +359,7 @@ export function CMSDuplicateManager() {
               onClick={() => handleDecision(candidate.id, 'merge')}
 
             >
-              <Merge style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Merge size={16} className="mr-2" />
               Merge Items
             </Button>
             <Button
@@ -367,7 +367,7 @@ export function CMSDuplicateManager() {
               onClick={() => handleDecision(candidate.id, 'not_duplicate')}
 
             >
-              <X style={{ height: 16, width: 16, marginRight: 8 }} />
+              <X size={16} className="mr-2" />
               Not Duplicate
             </Button>
             <Button
@@ -497,7 +497,7 @@ export function CMSDuplicateManager() {
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button>
-                            <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+                            <Eye size={16} className="mr-2" />
                             Review
                           </Button>
                         </DialogTrigger>

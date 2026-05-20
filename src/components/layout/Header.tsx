@@ -283,7 +283,7 @@ export function Header() {
                     setAuthDialogOpen(true);
                   }}
                 >
-                  <User style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <User size={16} className="mr-2" />
                   {t('header.signIn', 'Sign In')}
                 </Button>
               </div>
@@ -357,7 +357,7 @@ export function Header() {
                   className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left"
                   style={{ minHeight: 48 }}
                 >
-                  <Shield style={{ width: 18, height: 18, flexShrink: 0 }} />
+                  <Shield size={18} className="shrink-0" />
                   <span className="text-sm">{t('header.adminConsole', 'Admin Console')}</span>
                 </button>
               )}
@@ -389,7 +389,7 @@ export function Header() {
                 className="w-full flex items-center gap-2 px-4 hover:bg-muted text-left text-destructive"
                 style={{ minHeight: 48 }}
               >
-                <LogOut style={{ width: 18, height: 18, flexShrink: 0 }} />
+                <LogOut size={18} className="shrink-0" />
                 <span className="text-sm font-medium">{t('header.signOut', 'Sign Out')}</span>
               </button>
             </>
@@ -670,7 +670,7 @@ export function Header() {
                         }}
                         onClick={signOut}
                       >
-                        <LogOut style={{ width: 16, height: 16, marginRight: 8 }} />
+                        <LogOut size={16} className="mr-2" />
                         {t('header.signOut', 'Sign Out')}
                       </Button>
                     </DropdownMenuContent>

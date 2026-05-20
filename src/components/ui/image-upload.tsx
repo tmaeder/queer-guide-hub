@@ -215,7 +215,7 @@ export function ImageUpload({
                     onClick={handleClick}
                     disabled={uploading}
                   >
-                    <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <Upload size={16} className="mr-2" />
                     Replace
                   </Button>
                   <Button
@@ -223,7 +223,7 @@ export function ImageUpload({
                     size="sm"
                     onClick={handleRemove}
                   >
-                    <X style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <X size={16} className="mr-2" />
                     Remove
                   </Button>
                 </div>

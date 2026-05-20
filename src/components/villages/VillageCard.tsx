@@ -50,7 +50,7 @@ export const VillageCard = memo(function VillageCard({ village }: VillageCardPro
 
           {(cityName || countryName) && (
             <div className="flex items-center gap-1 text-muted-foreground">
-              <MapPin style={{ width: 14, height: 14, flexShrink: 0 }} />
+              <MapPin size={14} className="shrink-0" />
               <p className="text-sm truncate">{[cityName, countryName].filter(Boolean).join(', ')}</p>
             </div>
           )}

@@ -224,7 +224,7 @@ export function CityOverviewTab({
                     <div className="flex flex-wrap gap-1">
                       {city.area_codes.map((code: string, index: number) => (
                         <Badge key={index} variant="outline" style={{ fontSize: '0.75rem' }}>
-                          <Phone style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Phone size={12} className="mr-1" />
                           {code}
                         </Badge>
                       ))}

@@ -134,7 +134,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Wand2 style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Wand2 size={16} className="mr-2" />
           Bulk Enrich
         </Button>
       </DialogTrigger>
@@ -249,7 +249,7 @@ export default function BulkEnrichDialog({ onComplete }: BulkEnrichDialogProps) 
           {/* Run button */}
           {!loading && (
             <Button onClick={handleRun} style={{ width: '100%' }}>
-              <Wand2 style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Wand2 size={16} className="mr-2" />
               {result ? 'Run Again' : `Run ${selectedModule?.label || 'Module'}`}
             </Button>
           )}

@@ -270,7 +270,7 @@ export function PrivacyControlCenter() {
               onClick={setAllToPrivate}
               disabled={loading}
             >
-              <EyeOff style={{ height: 16, width: 16, marginRight: 8 }} />
+              <EyeOff size={16} className="mr-2" />
               Set All Private
             </Button>
           </div>

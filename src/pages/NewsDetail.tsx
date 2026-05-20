@@ -259,7 +259,7 @@ export default function NewsDetail() {
         </p>
         <LocalizedLink to="/news">
           <Button>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back to News
           </Button>
         </LocalizedLink>
@@ -291,7 +291,7 @@ export default function NewsDetail() {
             textDecoration: 'none',
           }}
         >
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 4 }} />
+          <ArrowLeft size={14} className="mr-1" />
           <span className="text-sm text-muted-foreground hover:text-primary">News</span>
         </LocalizedLink>
         {article.category && article.category !== 'general' && (
@@ -389,11 +389,11 @@ export default function NewsDetail() {
           <FavoriteButton itemId={article.id} type="news" />
           <ReportButton contentType="news_article" contentId={article.id} />
           <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
+            <Share2 size={16} className="mr-1.5" />
             Share
           </Button>
           <Button size="sm" onClick={() => window.open(article.url, '_blank')}>
-            <ExternalLink style={{ width: 16, height: 16, marginRight: 6 }} />
+            <ExternalLink size={16} className="mr-1.5" />
             Read Full Article
           </Button>
         </div>
@@ -645,7 +645,7 @@ export default function NewsDetail() {
                 style={{ width: '100%', justifyContent: 'flex-start' }}
                 onClick={() => window.open(article.url, '_blank')}
               >
-                <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                <ExternalLink size={16} className="mr-2" />
                 Original Article
               </Button>
               {sourceUrl && (
@@ -655,7 +655,7 @@ export default function NewsDetail() {
                   style={{ width: '100%', justifyContent: 'flex-start' }}
                   onClick={() => window.open(sourceUrl, '_blank')}
                 >
-                  <Newspaper style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Newspaper size={16} className="mr-2" />
                   {sourceName || 'Source Website'}
                 </Button>
               )}

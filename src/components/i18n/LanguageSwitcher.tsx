@@ -57,7 +57,7 @@ export function LanguageSwitcher() {
           background: 'transparent',
         }}
       >
-        <Globe style={{ width: 16, height: 16, flexShrink: 0 }} />
+        <Globe size={16} className="shrink-0" />
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

@@ -168,7 +168,7 @@ export const UserDirectoryGrid = ({
                             color: '#1d4ed8',
                           }}
                         >
-                          <Briefcase style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Briefcase size={12} className="mr-1" />
                           Business
                         </Badge>
                       )}
@@ -182,7 +182,7 @@ export const UserDirectoryGrid = ({
                             color: '#15803d',
                           }}
                         >
-                          <Check style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Check size={12} className="mr-1" />
                           Verified
                         </Badge>
                       )}
@@ -209,27 +209,27 @@ export const UserDirectoryGrid = ({
                   <div className="flex flex-col gap-2 mb-4">
                     {profile.location && (
                       <div className="flex items-center text-sm text-muted-foreground">
-                        <MapPin style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <MapPin size={16} className="mr-2" />
                         {profile.location}
                       </div>
                     )}
 
                     {profile.occupation && (
                       <div className="flex items-center text-sm text-muted-foreground">
-                        <Briefcase style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <Briefcase size={16} className="mr-2" />
                         {profile.occupation}
                       </div>
                     )}
 
                     {profile.education && (
                       <div className="flex items-center text-sm text-muted-foreground">
-                        <GraduationCap style={{ height: 16, width: 16, marginRight: 8 }} />
+                        <GraduationCap size={16} className="mr-2" />
                         {profile.education}
                       </div>
                     )}
 
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar style={{ height: 16, width: 16, marginRight: 8 }} />
+                      <Calendar size={16} className="mr-2" />
                       Joined {new Date(profile.created_at).toLocaleDateString()}
                     </div>
                   </div>
@@ -247,7 +247,7 @@ export const UserDirectoryGrid = ({
                           color: '#be185d',
                         }}
                       >
-                        <Heart style={{ height: 12, width: 12, marginRight: 4 }} />
+                        <Heart size={12} className="mr-1" />
                         {profile.relationship_status}
                       </Badge>
                     )}

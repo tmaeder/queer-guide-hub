@@ -204,7 +204,7 @@ export const ApiKeysManager = () => {
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button>
-                <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Plus size={16} className="mr-2" />
                 Add API Key
               </Button>
             </DialogTrigger>

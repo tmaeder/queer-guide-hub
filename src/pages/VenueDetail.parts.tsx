@@ -252,7 +252,7 @@ export function VenueHero({
           />
           {venue.phone && (
             <Button variant="outline" size="sm" onClick={() => window.open(`tel:${venue.phone}`)}>
-              <Phone style={{ width: 16, height: 16, marginRight: 8 }} />
+              <Phone size={16} className="mr-2" />
               Call
             </Button>
           )}
@@ -263,7 +263,7 @@ export function VenueHero({
                 target="_blank"
                 rel="noopener noreferrer nofollow"
               >
-                <Globe style={{ width: 16, height: 16, marginRight: 8 }} />
+                <Globe size={16} className="mr-2" />
                 Website
               </a>
             </Button>
@@ -423,7 +423,7 @@ export function VenueOverview({ venue, checkinRefresh, navigate, t }: VenueOverv
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Navigation2 style={{ width: 14, height: 14, marginRight: 6 }} />
+                            <Navigation2 size={14} className="mr-1.5" />
                             Directions
                           </a>
                         </Button>

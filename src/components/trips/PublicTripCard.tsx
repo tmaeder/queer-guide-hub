@@ -284,7 +284,7 @@ export function PublicTripCard({ trip }: Props) {
             className="flex-1"
             aria-label={t('trips.discover.forkAria', 'Fork this trip')}
           >
-            <Sparkles style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Sparkles size={14} className="mr-1.5" />
             {forking
               ? t('trips.discover.forking', 'Forking…')
               : t('trips.discover.fork', 'Fork into my trips')}

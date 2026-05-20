@@ -176,7 +176,7 @@ export function ModerationQueue() {
       {selectedIds.length > 0 && (
         <div className="flex gap-2">
           <Button size="sm" onClick={() => openResolveDialog(selectedIds, 'RESOLVED')}>
-            <CheckCircle style={{ width: 14, height: 14, marginRight: 4 }} />
+            <CheckCircle size={14} className="mr-1" />
             Resolve ({selectedIds.length})
           </Button>
           <Button
@@ -184,7 +184,7 @@ export function ModerationQueue() {
             size="sm"
             onClick={() => openResolveDialog(selectedIds, 'REJECTED')}
           >
-            <XCircle style={{ width: 14, height: 14, marginRight: 4 }} />
+            <XCircle size={14} className="mr-1" />
             Reject ({selectedIds.length})
           </Button>
         </div>
@@ -343,7 +343,7 @@ export function ModerationQueue() {
                         {flag.status === 'OPEN' && (
                           <>
                             <Button size="sm" onClick={() => updateFlagStatus(flag.id, 'IN_REVIEW')}>
-                              <Eye style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <Eye size={12} className="mr-1" />
                               Review
                             </Button>
                             <Button
@@ -351,7 +351,7 @@ export function ModerationQueue() {
                               variant="outline"
                               onClick={() => openResolveDialog([flag.id], 'RESOLVED')}
                             >
-                              <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <CheckCircle size={12} className="mr-1" />
                               Resolve
                             </Button>
                             <Button
@@ -359,7 +359,7 @@ export function ModerationQueue() {
                               variant="outline"
                               onClick={() => openResolveDialog([flag.id], 'REJECTED')}
                             >
-                              <XCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <XCircle size={12} className="mr-1" />
                               Reject
                             </Button>
                           </>
@@ -367,7 +367,7 @@ export function ModerationQueue() {
                         {flag.status === 'IN_REVIEW' && (
                           <>
                             <Button size="sm" onClick={() => openResolveDialog([flag.id], 'RESOLVED')}>
-                              <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <CheckCircle size={12} className="mr-1" />
                               Resolve
                             </Button>
                             <Button
@@ -375,7 +375,7 @@ export function ModerationQueue() {
                               variant="outline"
                               onClick={() => openResolveDialog([flag.id], 'REJECTED')}
                             >
-                              <XCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                              <XCircle size={12} className="mr-1" />
                               Reject
                             </Button>
                           </>

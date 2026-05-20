@@ -260,7 +260,7 @@ export function VenueImportDialog({
                           size="sm"
                           onClick={() => addDefaultLocation(location)}
                         >
-                          <Plus style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Plus size={12} className="mr-1" />
                           {location}
                         </Button>
                       ))}
@@ -415,7 +415,7 @@ export function VenueImportDialog({
                           size="sm"
                           onClick={() => addDefaultSearchTerm(term)}
                         >
-                          <Plus style={{ height: 12, width: 12, marginRight: 4 }} />
+                          <Plus size={12} className="mr-1" />
                           {term}
                         </Button>
                       ))}

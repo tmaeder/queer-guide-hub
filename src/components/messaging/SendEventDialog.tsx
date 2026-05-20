@@ -260,7 +260,7 @@ export function SendEventDialog({
             onClick={activeTab === 'member' ? handleSend : handleSendToGroup}
             disabled={!canSend || sending}
           >
-            <Send style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Send size={14} className="mr-1.5" />
             {sending ? 'Sending...' : 'Send'}
           </Button>
         </DialogFooter>

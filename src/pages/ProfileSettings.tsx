@@ -228,7 +228,7 @@ function ProfileSettingsContent({ profile, updateProfile, toast, navigate, hasPa
         subtitle="Manage your account information and privacy settings"
         actions={
           <Button variant="outline" onClick={() => navigate(-1)} className="rounded-element">
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
         }

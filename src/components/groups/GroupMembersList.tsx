@@ -69,7 +69,7 @@ export function GroupMembersList({ members, canManage, groupId, onStartConversat
             <div className="flex items-center gap-2">
               {member.user_id !== user?.id && onStartConversation && (
                 <Button variant="outline" size="sm" onClick={() => onStartConversation(member.user_id)}>
-                  <MessageSquare style={{ width: 16, height: 16, marginRight: 8 }} />Message
+                  <MessageSquare size={16} className="mr-2" />Message
                 </Button>
               )}
               {canManage && groupId && member.role !== 'admin' && member.user_id !== user?.id && (
@@ -77,10 +77,10 @@ export function GroupMembersList({ members, canManage, groupId, onStartConversat
                   <DropdownMenuTrigger asChild><Button variant="outline" size="sm"><MoreVertical size={16} /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleRoleChange(member)}>
-                      <ArrowUpDown style={{ width: 16, height: 16, marginRight: 8 }} />{member.role === 'moderator' ? 'Demote to Member' : 'Promote to Moderator'}
+                      <ArrowUpDown size={16} className="mr-2" />{member.role === 'moderator' ? 'Demote to Member' : 'Promote to Moderator'}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setRemovingId(member.user_id)} className="text-destructive">
-                      <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />Remove from Group
+                      <UserMinus size={16} className="mr-2" />Remove from Group
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

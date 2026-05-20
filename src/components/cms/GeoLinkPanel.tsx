@@ -127,9 +127,9 @@ export function GeoLinkPanel({
         {!loading && (
           <Button variant="outline" size="sm" onClick={handleLink}>
             {isFullyLinked ? (
-              <RefreshCw style={{ height: 14, width: 14, marginRight: 6 }} />
+              <RefreshCw size={14} className="mr-1.5" />
             ) : (
-              <MapPin style={{ height: 14, width: 14, marginRight: 6 }} />
+              <MapPin size={14} className="mr-1.5" />
             )}
             {isFullyLinked ? 'Re-link Location' : linked ? 'Link Again' : 'Link Location'}
           </Button>

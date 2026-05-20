@@ -113,7 +113,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Globe style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Globe size={16} className="mr-2" />
           Batch Geo-Link
         </Button>
       </DialogTrigger>
@@ -263,7 +263,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           {/* Run button */}
           {!loading && (
             <Button onClick={handleRun}>
-              <Globe style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Globe size={16} className="mr-2" />
               {showResult ? 'Run Again' : 'Start Batch Geo-Link'}
             </Button>
           )}

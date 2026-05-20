@@ -112,7 +112,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
               : t('docs.list.tripTitle', 'Trip documents')}
           </h6>
           <Button variant="brand" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Plus size={14} className="mr-1.5" />
             {t('docs.list.add', 'Add document')}
           </Button>
         </div>
@@ -121,7 +121,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
       {embedded && (
         <div className="flex justify-end mb-2">
           <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)}>
-            <Plus style={{ width: 14, height: 14, marginRight: 6 }} />
+            <Plus size={14} className="mr-1.5" />
             {t('docs.list.add', 'Add document')}
           </Button>
         </div>

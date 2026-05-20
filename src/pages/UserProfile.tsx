@@ -85,7 +85,7 @@ export default function UserProfile() {
             This user profile doesn't exist or has been removed.
           </p>
           <Button onClick={() => navigate('/users')}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back to Directory
           </Button>
         </div>
@@ -123,7 +123,7 @@ export default function UserProfile() {
             This user has set their profile to private.
           </p>
           <Button onClick={() => navigate('/users')}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back to Directory
           </Button>
         </div>
@@ -137,7 +137,7 @@ export default function UserProfile() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={() => navigate(-1)}>
-            <ArrowLeft style={{ width: 16, height: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
           <div className="flex gap-2">
@@ -165,7 +165,7 @@ export default function UserProfile() {
                 </Avatar>
                 {(profile as unknown as Record<string, unknown>)?.verified_identity && (
                   <Badge variant="secondary">
-                    <Check style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Check size={12} className="mr-1" />
                     Verified
                   </Badge>
                 )}

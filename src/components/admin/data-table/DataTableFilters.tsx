@@ -152,8 +152,7 @@ function MultiSelectFilter({ config, value, onChange }: MultiSelectFilterProps) 
           >
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
             {value.length > 0 && (
-              <X
-                style={{ height: 14, width: 14, marginLeft: 4 }}
+              <X size={14} className="ml-1"
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange(undefined);
@@ -234,7 +233,7 @@ function DateRangeFilter({ config, value, onChange }: DateRangeFilterProps) {
             size="sm"
             style={{ height: 36, fontSize: 13, justifyContent: 'flex-start', width: '100%' }}
           >
-            <CalendarIcon style={{ height: 14, width: 14, marginRight: 6 }} />
+            <CalendarIcon size={14} className="mr-1.5" />
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
             {(from || to) && (
               <X

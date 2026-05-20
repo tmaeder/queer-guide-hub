@@ -19,7 +19,7 @@ export function ResourceProfessions({
     <div>
       <div className="flex items-center gap-3 mb-6">
         <Button variant="secondary" size="sm" onClick={onBack}>
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+          <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.professions.back')}
         </Button>
         <Briefcase size={18} />

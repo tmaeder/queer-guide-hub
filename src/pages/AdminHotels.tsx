@@ -263,7 +263,7 @@ export default function AdminHotels() {
         cell: (info) =>
           info.getValue() ? (
             <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Star size={12} className="mr-1" />
               Featured
             </Badge>
           ) : null,
@@ -347,7 +347,7 @@ export default function AdminHotels() {
               setIsDialogOpen(true);
             }}
           >
-            <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+            <Plus size={16} className="mr-1.5" />
             Add Hotel
           </Button>
         </div>

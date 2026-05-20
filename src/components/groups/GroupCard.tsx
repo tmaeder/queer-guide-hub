@@ -169,7 +169,7 @@ export const GroupCard = ({
           <Button asChild variant="ghost" size="sm">
             <LocalizedLink to={`/groups/${group.id}`}>
               <span className="flex items-center">
-                <ExternalLink style={{ width: 16, height: 16, marginRight: 8 }} />
+                <ExternalLink size={16} className="mr-2" />
                 View Group
               </span>
             </LocalizedLink>
@@ -179,7 +179,7 @@ export const GroupCard = ({
             group.is_private ? (
               group.has_pending_request ? (
                 <Button disabled variant="outline" size="sm">
-                  <Lock style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <Lock size={16} className="mr-2" />
                   Requested
                 </Button>
               ) : (
@@ -188,7 +188,7 @@ export const GroupCard = ({
                   disabled={isRequesting}
                   size="sm"
                 >
-                  <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <UserPlus size={16} className="mr-2" />
                   {isRequesting ? 'Requesting...' : 'Request to Join'}
                 </Button>
               )
@@ -198,7 +198,7 @@ export const GroupCard = ({
                 disabled={isJoining}
                 size="sm"
               >
-                <UserPlus style={{ width: 16, height: 16, marginRight: 8 }} />
+                <UserPlus size={16} className="mr-2" />
                 {isJoining ? 'Joining...' : 'Join'}
               </Button>
             )
@@ -209,7 +209,7 @@ export const GroupCard = ({
               variant="outline"
               size="sm"
             >
-              <UserMinus style={{ width: 16, height: 16, marginRight: 8 }} />
+              <UserMinus size={16} className="mr-2" />
               {isLeaving ? 'Leaving...' : 'Leave'}
             </Button>
           )}

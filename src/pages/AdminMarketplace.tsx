@@ -221,7 +221,7 @@ export default function AdminMarketplace() {
         cell: (info) =>
           info.getValue() ? (
             <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
-              <Star style={{ height: 12, width: 12, marginRight: 4 }} />
+              <Star size={12} className="mr-1" />
               Featured
             </Badge>
           ) : null,
@@ -335,7 +335,7 @@ export default function AdminMarketplace() {
             }}
           />
           <Button variant="outline" onClick={() => setIsAwinImportOpen(true)}>
-            <Download style={{ height: 14, width: 14, marginRight: 4 }} /> Import from Awin
+            <Download size={14} className="mr-1" /> Import from Awin
           </Button>
           <Button
             onClick={() => {
@@ -343,7 +343,7 @@ export default function AdminMarketplace() {
               setIsCreateDialogOpen(true);
             }}
           >
-            <Plus style={{ height: 14, width: 14, marginRight: 4 }} /> Create Listing
+            <Plus size={14} className="mr-1" /> Create Listing
           </Button>
         </div>
       ),
@@ -615,7 +615,7 @@ export default function AdminMarketplace() {
                   </>
                 ) : (
                   <>
-                    <Download style={{ height: 14, width: 14, marginRight: 4 }} />
+                    <Download size={14} className="mr-1" />
                     Import
                   </>
                 )}

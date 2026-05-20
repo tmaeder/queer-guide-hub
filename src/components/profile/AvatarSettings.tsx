@@ -160,19 +160,19 @@ export const AvatarSettings = ({
       <Tabs defaultValue={data.avatarType || 'builder'} style={{ width: '100%' }}>
         <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(4, 1fr)' }}>
           <TabsTrigger value="upload">
-            <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Upload size={16} className="mr-2" />
             Upload
           </TabsTrigger>
           <TabsTrigger value="builder">
-            <Palette style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Palette size={16} className="mr-2" />
             Build
           </TabsTrigger>
           <TabsTrigger value="initials">
-            <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Mail size={16} className="mr-2" />
             Initials
           </TabsTrigger>
           <TabsTrigger value="random">
-            <User style={{ height: 16, width: 16, marginRight: 8 }} />
+            <User size={16} className="mr-2" />
             Random
           </TabsTrigger>
         </TabsList>
@@ -249,7 +249,7 @@ export const AvatarSettings = ({
               style={{ width: '100%' }}
               variant={(data.avatarType as string) === 'initials' ? 'default' : 'outline'}
             >
-              <Mail style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Mail size={16} className="mr-2" />
               {(data.avatarType as string) === 'initials'
                 ? 'Using Initials'
                 : 'Use Initials Avatar'}
@@ -268,7 +268,7 @@ export const AvatarSettings = ({
               </p>
             </div>
             <Button onClick={generateRandomAvatar} size="lg" style={{ width: '100%' }}>
-              <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
+              <RefreshCw size={16} className="mr-2" />
               Generate Random Avatar
             </Button>
           </div>

@@ -108,7 +108,7 @@ export default function Friends() {
                         onClick={sendSOS}
                         className="bg-destructive text-destructive-foreground"
                       >
-                        <Siren style={{ width: 16, height: 16, marginRight: 6 }} />
+                        <Siren size={16} className="mr-1.5" />
                         {sosLoading ? t('sos.sending') : t('sos.send')}
                       </AlertDialogAction>
                     </AlertDialogFooter>

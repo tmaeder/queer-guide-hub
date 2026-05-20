@@ -75,7 +75,7 @@ const SubmitHub = () => {
                   automatically.
                 </p>
               </div>
-              <ArrowRight style={{ width: 18, height: 18, flexShrink: 0 }} />
+              <ArrowRight size={18} className="shrink-0" />
             </div>
           </CardContent>
         </Card>

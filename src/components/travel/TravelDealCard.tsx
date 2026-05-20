@@ -103,7 +103,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
               <span className="font-bold text-sm">
                 {deal.origin}
               </span>
-              <ArrowRight style={{ height: 14, width: 14, flexShrink: 0 }} />
+              <ArrowRight size={14} className="shrink-0" />
               <span className="font-bold text-sm">
                 {deal.destination}
               </span>
@@ -148,7 +148,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
           onClick={handleBookClick}
           aria-label={`Book flight from ${deal.origin} to ${deal.destination}`}
         >
-          <ExternalLink style={{ height: 14, width: 14, marginRight: 6 }} />
+          <ExternalLink size={14} className="mr-1.5" />
           Book Flight
         </Button>
       </CardContent>

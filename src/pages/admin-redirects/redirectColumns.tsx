@@ -13,9 +13,9 @@ export function getRedirectColumns() {
       cell: (info) => (
         <Badge variant={info.getValue() === 'SHORT' ? 'default' : 'secondary'}>
           {info.getValue() === 'SHORT' ? (
-            <Link2 style={{ height: 12, width: 12, marginRight: 4 }} />
+            <Link2 size={12} className="mr-1" />
           ) : (
-            <ArrowRight style={{ height: 12, width: 12, marginRight: 4 }} />
+            <ArrowRight size={12} className="mr-1" />
           )}
           {info.getValue()}
         </Badge>

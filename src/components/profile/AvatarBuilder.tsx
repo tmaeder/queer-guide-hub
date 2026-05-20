@@ -90,7 +90,7 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
         <div className="flex items-center justify-between">
           <h6 className="text-lg font-semibold">Avatar Builder</h6>
           <Button variant="outline" onClick={randomize} size="sm">
-            <RefreshCw style={{ width: 16, height: 16, marginRight: 8 }} />
+            <RefreshCw size={16} className="mr-2" />
             Randomize
           </Button>
         </div>
@@ -159,7 +159,7 @@ export const AvatarBuilder = ({ onSave, initialConfig }: AvatarBuilderProps) => 
           </div>
 
           <Button onClick={() => onSave(config)} style={{ width: '100%' }}>
-            <Save style={{ width: 16, height: 16, marginRight: 8 }} />
+            <Save size={16} className="mr-2" />
             Save Avatar
           </Button>
         </div>

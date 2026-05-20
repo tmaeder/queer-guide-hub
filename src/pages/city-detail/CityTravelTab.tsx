@@ -73,7 +73,7 @@ export function CityTravelTab({
                 <div className="flex flex-wrap gap-2">
                   {city.airport_codes.map((code: string, index: number) => (
                     <Badge key={index} variant="outline">
-                      <Plane style={{ height: 12, width: 12, marginRight: 4 }} />
+                      <Plane size={12} className="mr-1" />
                       {code}
                     </Badge>
                   ))}

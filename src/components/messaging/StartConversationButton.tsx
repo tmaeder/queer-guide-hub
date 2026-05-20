@@ -55,7 +55,7 @@ export const StartConversationButton = ({
 
   return (
     <Button variant={variant} size={size} onClick={handleStartConversation} disabled={loading}>
-      <MessageCircle style={{ width: 16, height: 16, marginRight: 8 }} />
+      <MessageCircle size={16} className="mr-2" />
       {loading ? 'Sliding into DMs...' : 'Send DM'}
     </Button>
   );

@@ -524,7 +524,7 @@ export default function News() {
             <div className="flex items-center gap-2 md:ml-auto">
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger style={{ width: 150 }} aria-label="Sort articles">
-                  <SortAsc style={{ width: 16, height: 16, marginRight: 8 }} />
+                  <SortAsc size={16} className="mr-2" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

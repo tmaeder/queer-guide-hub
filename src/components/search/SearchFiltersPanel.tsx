@@ -325,7 +325,7 @@ export const SearchFiltersPanel = ({ filters, onFiltersChange, onClearAll, facet
           style={{ fontSize: '0.75rem' }}
           onClick={() => setShowAdvanced(!showAdvanced)}
         >
-          <Filter style={{ height: 12, width: 12, marginRight: 4 }} />
+          <Filter size={12} className="mr-1" />
           {showAdvanced ? 'Hide' : 'Show'} Advanced Filters
         </Button>
 

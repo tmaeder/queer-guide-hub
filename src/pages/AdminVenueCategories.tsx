@@ -200,7 +200,7 @@ export default function AdminVenueCategories() {
       ],
       toolbarActions: (
         <Button size="sm" onClick={openCreate}>
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Plus size={16} className="mr-1.5" />
           Add Category
         </Button>
       ),

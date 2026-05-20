@@ -122,7 +122,7 @@ export function FlightSearchForm({ initialDestination, initialDestinationLabel }
                 />
               </div>
               <Button onClick={handleSearch} disabled={!origin} style={{ alignSelf: 'end' }}>
-                <Search style={{ height: 16, width: 16, marginRight: 6 }} />
+                <Search size={16} className="mr-1.5" />
                 Search
               </Button>
             </div>

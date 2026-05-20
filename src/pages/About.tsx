@@ -336,7 +336,7 @@ export default function About() {
             <LocalizedLink to="/venues" style={{ textDecoration: 'none' }}>
               <Button size="lg">
                 Explore Venues
-                <ArrowRight style={{ width: 18, height: 18, marginLeft: 8 }} aria-hidden="true" />
+                <ArrowRight size={18} className="ml-2" aria-hidden="true" />
               </Button>
             </LocalizedLink>
             <LocalizedLink to="/donate" style={{ textDecoration: 'none', color: 'inherit' }}>

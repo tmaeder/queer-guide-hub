@@ -343,7 +343,7 @@ export const NotificationList = () => {
           Recent
         </span>
         <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-          <CheckCheck style={{ height: 12, width: 12, marginRight: 4 }} />
+          <CheckCheck size={12} className="mr-1" />
           Mark all read
         </Button>
       </div>

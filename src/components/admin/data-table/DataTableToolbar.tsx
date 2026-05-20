@@ -133,7 +133,7 @@ export function DataTableToolbar({
         {/* Clear filters */}
         {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={onClearFilters}>
-            <RotateCcw style={{ height: 14, width: 14, marginRight: 4 }} />
+            <RotateCcw size={14} className="mr-1" />
             Clear
             <Badge variant="secondary" style={{ marginLeft: 4 }}>
               {activeFilterCount}
@@ -148,7 +148,7 @@ export function DataTableToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <BookmarkCheck style={{ height: 14, width: 14, marginRight: 4 }} />
+                <BookmarkCheck size={14} className="mr-1" />
                 Presets
               </Button>
             </DropdownMenuTrigger>
@@ -195,7 +195,7 @@ export function DataTableToolbar({
 
         {onSavePreset && (
           <Button variant="outline" size="sm" onClick={() => setPresetDialogOpen(true)}>
-            <Save style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Save size={14} className="mr-1" />
             Save
           </Button>
         )}
@@ -205,7 +205,7 @@ export function DataTableToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant={grouping.length > 0 ? 'default' : 'outline'} size="sm">
-                <Layers style={{ height: 14, width: 14, marginRight: 4 }} />
+                <Layers size={14} className="mr-1" />
                 Group
                 {grouping.length > 0 && (
                   <Badge variant="secondary" style={{ marginLeft: 4 }}>
@@ -241,7 +241,7 @@ export function DataTableToolbar({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <Columns3 style={{ height: 14, width: 14, marginRight: 4 }} />
+                <Columns3 size={14} className="mr-1" />
                 Columns
               </Button>
             </DropdownMenuTrigger>

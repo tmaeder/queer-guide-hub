@@ -69,7 +69,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
             {showLabels && (
               <>
                 <span className="ml-2">{config.name}</span>
-                <ExternalLink style={{ width: 12, height: 12, marginLeft: 4 }} />
+                <ExternalLink size={12} className="ml-1" />
               </>
             )}
           </a>
@@ -94,7 +94,7 @@ export function SocialLinksDisplay({ socialLinks, showLabels = false, size = 'md
           {showLabels && (
             <>
               <span className="ml-2">{platform}</span>
-              <ExternalLink style={{ width: 12, height: 12, marginLeft: 4 }} />
+              <ExternalLink size={12} className="ml-1" />
             </>
           )}
         </a>

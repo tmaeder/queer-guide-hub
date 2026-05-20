@@ -257,7 +257,7 @@ export function DayCard({
               aria-label={t('trips.timeline.toggleMap', 'Toggle day map')}
               aria-expanded={mapOpen}
             >
-              <MapPin style={{ width: 14, height: 14, marginRight: 4 }} />
+              <MapPin size={14} className="mr-1" />
               {mapOpen ? (
                 <ChevronUp size={14} />
               ) : (
@@ -270,7 +270,7 @@ export function DayCard({
               onClick={() => onAddPlace()}
               className="rounded-full"
             >
-              <Plus style={{ width: 14, height: 14, marginRight: 4 }} />
+              <Plus size={14} className="mr-1" />
               {t('trips.itinerary.add')}
             </Button>
           </div>

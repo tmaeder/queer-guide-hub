@@ -213,7 +213,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
       <DialogTrigger asChild>
         {children || (
           <Button>
-            <PenSquare style={{ height: 16, width: 16, marginRight: 8 }} />
+            <PenSquare size={16} className="mr-2" />
             Create Post
           </Button>
         )}
@@ -254,7 +254,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('text')}
             >
-              <PenSquare style={{ height: 16, width: 16, marginRight: 4 }} />
+              <PenSquare size={16} className="mr-1" />
               Text
             </Button>
             <Button
@@ -262,7 +262,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('image')}
             >
-              <ImageIcon style={{ height: 16, width: 16, marginRight: 4 }} />
+              <ImageIcon size={16} className="mr-1" />
               Image
             </Button>
             <Button
@@ -270,7 +270,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('link')}
             >
-              <LinkIcon style={{ height: 16, width: 16, marginRight: 4 }} />
+              <LinkIcon size={16} className="mr-1" />
               Link
             </Button>
             <Button
@@ -278,7 +278,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
               size="sm"
               onClick={() => setPostType('poll')}
             >
-              <BarChart3 style={{ height: 16, width: 16, marginRight: 4 }} />
+              <BarChart3 size={16} className="mr-1" />
               Poll
             </Button>
           </div>
@@ -380,7 +380,7 @@ export const CreatePostDialog = ({ children }: CreatePostDialogProps) => {
                 ))}
                 {pollOptions.length < 6 && (
                   <Button variant="outline" size="sm" onClick={addPollOption}>
-                    <Plus style={{ height: 16, width: 16, marginRight: 4 }} />
+                    <Plus size={16} className="mr-1" />
                     Add Option
                   </Button>
                 )}

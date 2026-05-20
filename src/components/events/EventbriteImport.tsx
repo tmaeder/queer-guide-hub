@@ -86,7 +86,7 @@ export const EventbriteImport = ({ onImportComplete }: EventbriteImportProps) =>
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Calendar style={{ height: 16, width: 16, marginRight: 8 }} />
+          <Calendar size={16} className="mr-2" />
           Import from Eventbrite
         </Button>
       </DialogTrigger>

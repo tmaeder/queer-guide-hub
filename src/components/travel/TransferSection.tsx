@@ -79,7 +79,7 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
               Pre-booked airport pickup, fixed price, meet & greet
             </p>
             <Button size="sm" className="w-full" onClick={() => window.open(kiwitaxiUrl, '_blank', 'noopener')}>
-              <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+              <ExternalLink size={14} className="mr-1" />
               Book Transfer
             </Button>
           </CardContent>
@@ -91,7 +91,7 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
               Private drivers, any route, competitive bidding
             </p>
             <Button size="sm" variant="outline" className="w-full" onClick={() => window.open(getTransferUrl, '_blank', 'noopener')}>
-              <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+              <ExternalLink size={14} className="mr-1" />
               Get Quotes
             </Button>
           </CardContent>

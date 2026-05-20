@@ -144,7 +144,7 @@ export function DuplicateFinderPanel() {
                         {group.items.length} identical images
                       </CardTitle>
                       <Button size="sm" onClick={() => handleMerge(group)}>
-                        <Merge style={{ height: 14, width: 14, marginRight: 4 }} />
+                        <Merge size={14} className="mr-1" />
                         Merge
                       </Button>
                     </div>

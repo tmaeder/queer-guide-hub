@@ -407,7 +407,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
 
       <div className="mt-4">
         <Button variant="outline" size="sm" onClick={() => setBundleOpen(true)}>
-          <Wallet style={{ width: 14, height: 14, marginRight: 6 }} />
+          <Wallet size={14} className="mr-1.5" />
           Bundle bookings
         </Button>
       </div>

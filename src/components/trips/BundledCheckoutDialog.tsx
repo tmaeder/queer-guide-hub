@@ -244,9 +244,9 @@ export function BundledCheckoutDialog({
                   rel="noopener sponsored noreferrer"
                   onClick={markBooked}
                 >
-                  <ExternalLink style={{ width: 14, height: 14, marginRight: 6 }} />
+                  <ExternalLink size={14} className="mr-1.5" />
                   {t('trips.bundledCheckout.openAndMarkBooked', 'Open & mark booked')}
-                  <ArrowRight style={{ width: 14, height: 14, marginLeft: 6 }} />
+                  <ArrowRight size={14} className="ml-1.5" />
                 </a>
               </Button>
             </>

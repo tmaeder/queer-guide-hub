@@ -115,19 +115,19 @@ export const ChatGPTConnection = () => {
                         }}
                       />
                     ) : (
-                      <Zap style={{ width: 14, height: 14, marginRight: 6 }} />
+                      <Zap size={14} className="mr-1.5" />
                     )}
                     {testing ? 'Testing...' : 'Test Connection'}
                   </Button>
                   <Button variant="destructive" size="sm" onClick={disconnect}>
-                    <Unplug style={{ width: 14, height: 14, marginRight: 6 }} />
+                    <Unplug size={14} className="mr-1.5" />
                     Disconnect
                   </Button>
                 </>
               ) : (
                 <>
                   <Button size="sm" onClick={connect}>
-                    <Plug style={{ width: 14, height: 14, marginRight: 6 }} />
+                    <Plug size={14} className="mr-1.5" />
                     Connect ChatGPT
                   </Button>
                   {usingFallback && (
@@ -142,7 +142,7 @@ export const ChatGPTConnection = () => {
                           }}
                         />
                       ) : (
-                        <Zap style={{ width: 14, height: 14, marginRight: 6 }} />
+                        <Zap size={14} className="mr-1.5" />
                       )}
                       {testing ? 'Testing...' : 'Test API Key'}
                     </Button>

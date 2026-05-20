@@ -367,7 +367,7 @@ export default function SearchResults() {
                 {result.metadata?.featured && (
                   <div className="absolute" style={{ top: 8, right: 8 }}>
                     <Badge style={{ fontSize: '0.75rem' }}>
-                      <Sparkles style={{ width: 12, height: 12, marginRight: 4 }} />
+                      <Sparkles size={12} className="mr-1" />
                       Featured
                     </Badge>
                   </div>
@@ -483,7 +483,7 @@ export default function SearchResults() {
                     </Badge>
                     {result.metadata?.featured && (
                       <Badge style={{ fontSize: '0.75rem' }}>
-                        <Sparkles style={{ width: 12, height: 12, marginRight: 4 }} />
+                        <Sparkles size={12} className="mr-1" />
                         Featured
                       </Badge>
                     )}

@@ -25,7 +25,7 @@ export function SavedSearchesButton() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" aria-label="Saved searches">
-          <Bookmark style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
+          <Bookmark size={14} className="mr-1.5" aria-hidden="true" />
           Saved searches
           {searches.length > 0 && (
             <span className="ml-1.5 text-xs2 rounded-full bg-muted px-1.5 py-0 leading-tight">

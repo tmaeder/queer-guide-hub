@@ -193,7 +193,7 @@ export default function TripPlannerPage() {
         onClick={() => navigate('/trips')}
         className="mb-3 pl-2 pr-3"
       >
-        <ArrowLeft style={{ width: 16, height: 16, marginRight: 6 }} />
+        <ArrowLeft size={16} className="mr-1.5" />
         {t('trips.backToTrips')}
       </Button>
 
@@ -213,9 +213,9 @@ export default function TripPlannerPage() {
               aria-label={t('trips.planner.saveOfflineAria', 'Save trip for offline use')}
             >
               {offlineSaved ? (
-                <Check style={{ width: 16, height: 16, marginRight: 6 }} />
+                <Check size={16} className="mr-1.5" />
               ) : (
-                <Download style={{ width: 16, height: 16, marginRight: 6 }} />
+                <Download size={16} className="mr-1.5" />
               )}
               {offlineSaved
                 ? t('trips.planner.offlineSaved', 'Saved')
@@ -229,7 +229,7 @@ export default function TripPlannerPage() {
               style={overlayBtnStyle}
               aria-label={t('trips.planner.bookletAria', 'Download trip booklet (PDF)')}
             >
-              <FileText style={{ width: 16, height: 16, marginRight: 6 }} />
+              <FileText size={16} className="mr-1.5" />
               {t('trips.planner.booklet', 'Booklet')}
             </Button>
             <Button
@@ -238,7 +238,7 @@ export default function TripPlannerPage() {
               onClick={() => setShareOpen(true)}
               style={overlayBtnStyle}
             >
-              <Share2 style={{ width: 16, height: 16, marginRight: 6 }} />
+              <Share2 size={16} className="mr-1.5" />
               {t('trips.share.title')}
             </Button>
           </div>
@@ -285,7 +285,7 @@ export default function TripPlannerPage() {
           }}
           className="rounded-full"
         >
-          <Plus style={{ width: 16, height: 16, marginRight: 6 }} />
+          <Plus size={16} className="mr-1.5" />
           {t('trips.itinerary.addPlace')}
         </Button>
       </div>

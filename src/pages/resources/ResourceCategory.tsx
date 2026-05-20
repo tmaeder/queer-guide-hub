@@ -51,7 +51,7 @@ export function ResourceCategory({
     <div>
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+          <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.category.back')}
         </Button>
         {(() => {
@@ -202,7 +202,7 @@ export function ResourceSubcategory({
     <div>
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Button variant="secondary" size="sm" onClick={onBack}>
-          <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
+          <ArrowLeft size={14} className="mr-1.5" />
           {t('resources.category.back')}
         </Button>
         {parent && (

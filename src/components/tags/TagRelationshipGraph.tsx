@@ -259,7 +259,7 @@ export default function TagRelationshipGraph({
             onValueChange={(val) => setInternalCategoryFilter(val === 'all' ? null : val)}
           >
             <SelectTrigger style={{ width: 220, height: 36 }}>
-              <Filter style={{ width: 14, height: 14, marginRight: 6 }} />
+              <Filter size={14} className="mr-1.5" />
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>

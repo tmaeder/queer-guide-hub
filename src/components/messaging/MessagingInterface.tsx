@@ -615,7 +615,7 @@ export const MessagingInterface = () => {
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <h6 className="font-semibold text-lg md:text-base">Messages</h6>
             <Button size="sm" variant="outline" className="rounded-element" style={{ height: 36 }}>
-              <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
+              <Plus size={16} className="mr-2" />
               <span className="hidden sm:inline">New</span>
             </Button>
           </div>

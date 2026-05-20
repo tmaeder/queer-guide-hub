@@ -92,7 +92,7 @@ export function MediaToolbar(props: MediaToolbarProps) {
           </div>
 
           <Button variant="outline" size="sm" onClick={onBulkModeToggle}>
-            <Archive style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Archive size={14} className="mr-1" />
             {bulkMode ? 'Exit Bulk' : 'Bulk'}
           </Button>
 

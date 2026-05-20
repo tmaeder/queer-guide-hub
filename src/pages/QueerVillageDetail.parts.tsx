@@ -171,7 +171,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
                     {village.website && (
                           <Button variant="outline" size="sm" asChild>
                 <a href={village.website} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink style={{ height: 16, width: 16, marginRight: 6 }} />
+                  <ExternalLink size={16} className="mr-1.5" />
                   Website
                 </a>
               </Button>
@@ -236,8 +236,7 @@ export function VillageOverviewTab({ village }: { village: VillageWithRelations 
                     className="flex items-center gap-2 rounded-element bg-accent p-3"
                   >
                     <Landmark
-                      className="text-muted-foreground"
-                      style={{ width: 16, height: 16, flexShrink: 0 }}
+                      className="text-muted-foreground shrink-0" size={16}
                     />
                     <p className="text-sm font-medium">{landmark}</p>
                   </div>

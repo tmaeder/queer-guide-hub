@@ -141,7 +141,7 @@ export const CreatePostDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <MessageSquare style={{ height: 16, width: 16, marginRight: 8 }} />
+          <MessageSquare size={16} className="mr-2" />
           New Post
         </Button>
       </DialogTrigger>
@@ -280,7 +280,7 @@ export const CreatePostDialog = ({
               <Popover open={showMentions} onOpenChange={setShowMentions}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
-                    <AtSign style={{ height: 16, width: 16, marginRight: 8 }} />
+                    <AtSign size={16} className="mr-2" />
                     Mention Someone
                   </Button>
                 </PopoverTrigger>

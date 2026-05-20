@@ -46,7 +46,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         </p>
         <LocalizedLink to="/travel">
           <Button variant="outline" size="sm">
-            <Plane style={{ height: 14, width: 14, marginRight: 6 }} />
+            <Plane size={14} className="mr-1.5" />
             Search Flights Manually
           </Button>
         </LocalizedLink>
@@ -68,7 +68,7 @@ export function TravelDealsSection({ destinationIata, destinationCity }: TravelD
         </div>
         <LocalizedLink to={`/travel${destinationIata ? `?to=${destinationIata}` : ''}`}>
           <Button variant="ghost" size="sm">
-            More <ArrowRight style={{ height: 14, width: 14, marginLeft: 4 }} />
+            More <ArrowRight size={14} className="ml-1" />
           </Button>
         </LocalizedLink>
       </div>

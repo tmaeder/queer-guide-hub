@@ -140,7 +140,7 @@ const CommentItem = ({
                 onClick={() => onReply(comment.id, comment.profiles?.display_name || 'User')}
 
               >
-                <Reply style={{ width: 12, height: 12, marginRight: 4 }} />
+                <Reply size={12} className="mr-1" />
                 Reply
               </Button>
             )}
@@ -163,11 +163,11 @@ const CommentItem = ({
               {isOwnComment && (
                 <>
                   <DropdownMenuItem>
-                    <Edit style={{ width: 12, height: 12, marginRight: 8 }} />
+                    <Edit size={12} className="mr-2" />
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
-                    <Trash2 style={{ width: 12, height: 12, marginRight: 8 }} />
+                    <Trash2 size={12} className="mr-2" />
                     Delete
                   </DropdownMenuItem>
                 </>
@@ -357,7 +357,7 @@ export const CommentsSection = ({ postId }: CommentsSectionProps) => {
                       onClick={handleSubmitComment}
                       disabled={!newComment.trim() || isCreatingComment}
                     >
-                      <Send style={{ width: 12, height: 12, marginRight: 4 }} />
+                      <Send size={12} className="mr-1" />
                       {isCreatingComment ? 'Posting...' : 'Post'}
                     </Button>
                   </div>

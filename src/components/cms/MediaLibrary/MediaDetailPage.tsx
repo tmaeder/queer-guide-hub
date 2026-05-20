@@ -82,7 +82,7 @@ export function MediaDetailPage() {
     return (
       <div className="max-w-screen-lg mx-auto p-6">
         <Button variant="ghost" onClick={() => navigate('/admin/media')}>
-          <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+          <ArrowLeft size={16} className="mr-2" />
           Back to Media Library
         </Button>
         <p className="text-muted-foreground mt-4">Media item not found.</p>
@@ -148,7 +148,7 @@ export function MediaDetailPage() {
           {imageUrl && (
             <Button variant="outline" size="sm" asChild>
               <a href={imageUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink style={{ height: 14, width: 14, marginRight: 4 }} />
+                <ExternalLink size={14} className="mr-1" />
                 Open
               </a>
             </Button>
@@ -159,7 +159,7 @@ export function MediaDetailPage() {
             onClick={() => setDeleteDialogOpen(true)}
             disabled={detail.usage_count > 0}
           >
-            <Trash2 style={{ height: 14, width: 14, marginRight: 4 }} />
+            <Trash2 size={14} className="mr-1" />
             Delete
           </Button>
         </div>
@@ -177,7 +177,7 @@ export function MediaDetailPage() {
               />
               {detail.is_flagged && (
                 <Badge variant="destructive" className="absolute top-3 right-3">
-                  <Flag style={{ height: 12, width: 12, marginRight: 4 }} />
+                  <Flag size={12} className="mr-1" />
                   Flagged{detail.flagged_reason && `: ${detail.flagged_reason}`}
                 </Badge>
               )}
@@ -373,7 +373,7 @@ export function MediaDetailPage() {
               onClick={() => mutations.optimizeItem.mutate()}
               disabled={mutations.optimizeItem.isPending}
             >
-              <Zap style={{ height: 14, width: 14, marginRight: 4 }} />
+              <Zap size={14} className="mr-1" />
               {mutations.optimizeItem.isPending ? 'Optimizing...' : 'Optimize Now'}
             </Button>
           )}

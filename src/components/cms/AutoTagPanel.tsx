@@ -98,7 +98,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
       <CardContent>
         {!suggestions && !loading && !applied && (
           <Button variant="outline" size="sm" onClick={handleSuggest}>
-            <Sparkles style={{ height: 14, width: 14, marginRight: 6 }} />
+            <Sparkles size={14} className="mr-1.5" />
             Suggest Tags
           </Button>
         )}
@@ -147,9 +147,9 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
             <div className="flex gap-1 mt-1">
               <Button size="sm" onClick={handleApply} disabled={applying || selected.size === 0}>
                 {applying ? (
-                  <Loader2 className="animate-spin" style={{ height: 14, width: 14, marginRight: 4 }} />
+                  <Loader2 className="animate-spin mr-1" size={14} />
                 ) : (
-                  <Check style={{ height: 14, width: 14, marginRight: 4 }} />
+                  <Check size={14} className="mr-1" />
                 )}
                 Apply {selected.size > 0 ? `(${selected.size})` : ''}
               </Button>
@@ -184,7 +184,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
                 handleSuggest();
               }}
             >
-              <Sparkles style={{ height: 14, width: 14, marginRight: 6 }} />
+              <Sparkles size={14} className="mr-1.5" />
               Re-suggest
             </Button>
           </div>

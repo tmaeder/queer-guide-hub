@@ -41,13 +41,13 @@ export function VenueCard({ venue, onEdit, onDelete }: VenueCardProps) {
                 <Badge variant="outline">{venue.category}</Badge>
                 {venue.is_featured && (
                   <Badge>
-                    <Star style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Star size={12} className="mr-1" />
                     Featured
                   </Badge>
                 )}
                 {venue.verified && (
                   <Badge>
-                    <CheckCircle style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <CheckCircle size={12} className="mr-1" />
                     Verified
                   </Badge>
                 )}

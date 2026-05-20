@@ -88,7 +88,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
         <CardContent>
           <p style={{ color: 'var(--muted-foreground)' }}>No content selected for editing</p>
           <Button onClick={onClose}>
-            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
         </CardContent>
@@ -108,7 +108,7 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={onClose}>
-            <ArrowLeft style={{ height: 16, width: 16, marginRight: 8 }} />
+            <ArrowLeft size={16} className="mr-2" />
             Back
           </Button>
           <div className="flex items-center gap-3">
@@ -138,11 +138,11 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
 
         <div className="flex gap-2">
           <Button variant="outline" disabled>
-            <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Eye size={16} className="mr-2" />
             Preview
           </Button>
           <Button onClick={handleSave} disabled={loading}>
-            <Save style={{ height: 16, width: 16, marginRight: 8 }} />
+            <Save size={16} className="mr-2" />
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
@@ -234,15 +234,15 @@ export function UniversalContentEditor({ content, onClose }: UniversalContentEdi
             </CardHeader>
             <CardContent>
               <Button variant="outline" size="sm" disabled>
-                <Eye style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Eye size={16} className="mr-2" />
                 View Public Page
               </Button>
               <Button variant="outline" size="sm" disabled>
-                <Upload style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Upload size={16} className="mr-2" />
                 Upload Media
               </Button>
               <Button variant="outline" size="sm" disabled>
-                <Trash2 style={{ height: 16, width: 16, marginRight: 8 }} />
+                <Trash2 size={16} className="mr-2" />
                 Delete Content
               </Button>
             </CardContent>

@@ -232,7 +232,7 @@ function ItemDetail({
                     : {}),
                 }}
               >
-                {selectedVenueId === v.id && <Check style={{ width: 14, height: 14, marginRight: 4 }} />}
+                {selectedVenueId === v.id && <Check size={14} className="mr-1" />}
                 {`${v.name} (${Math.round(v.score * 100)}%)`}
               </Badge>
             ))}

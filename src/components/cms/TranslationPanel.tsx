@@ -240,7 +240,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                 {autoTranslating ? (
                   <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 ) : (
-                  <Sparkles style={{ width: 14, height: 14, marginRight: 6 }} />
+                  <Sparkles size={14} className="mr-1.5" />
                 )}
                 Auto-translate
               </Button>
@@ -248,7 +248,7 @@ export function TranslationPanel({ tableName, recordId, originalData }: Translat
                 {saving ? (
                   <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                 ) : (
-                  <Check style={{ width: 14, height: 14, marginRight: 6 }} />
+                  <Check size={14} className="mr-1.5" />
                 )}
                 Save
               </Button>

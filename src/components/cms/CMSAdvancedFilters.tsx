@@ -68,12 +68,12 @@ export function CMSAdvancedFilters({
               size="sm"
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
-              <SlidersHorizontal style={{ height: 16, width: 16, marginRight: 8 }} />
+              <SlidersHorizontal size={16} className="mr-2" />
               {showAdvanced ? 'Simple' : 'Advanced'}
             </Button>
             {activeFiltersCount > 0 && (
               <Button variant="outline" size="sm" onClick={onReset}>
-                <RotateCcw style={{ height: 16, width: 16, marginRight: 8 }} />
+                <RotateCcw size={16} className="mr-2" />
                 Reset
               </Button>
             )}

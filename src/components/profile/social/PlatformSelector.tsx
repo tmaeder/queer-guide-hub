@@ -50,7 +50,7 @@ export function PlatformSelector({ onPlatformSelect }: PlatformSelectorProps) {
       <div className="flex items-center justify-between">
         <h6 className="text-base font-medium">Add Platform</h6>
         <Button variant="ghost" size="sm" onClick={() => setShowCustom(!showCustom)}>
-          <Plus style={{ width: 16, height: 16, marginRight: 8 }} />
+          <Plus size={16} className="mr-2" />
           Custom URL
         </Button>
       </div>

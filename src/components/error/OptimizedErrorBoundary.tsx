@@ -101,7 +101,7 @@ const DefaultErrorFallback = ({
 
           <div className="flex gap-2">
             <Button onClick={resetErrorBoundary} variant="outline">
-              <RefreshCw style={{ height: 16, width: 16, marginRight: 8 }} />
+              <RefreshCw size={16} className="mr-2" />
               Try Again
             </Button>
             <Button onClick={() => window.location.reload()} variant="default">
@@ -138,7 +138,7 @@ export const DataErrorFallback = ({
           </details>
         )}
         <Button onClick={resetErrorBoundary} variant="outline" size="sm">
-          <RefreshCw style={{ height: 12, width: 12, marginRight: 4 }} />
+          <RefreshCw size={12} className="mr-1" />
           Retry
         </Button>
       </AlertDescription>

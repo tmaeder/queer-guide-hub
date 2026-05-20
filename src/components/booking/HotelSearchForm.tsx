@@ -199,7 +199,7 @@ export function HotelSearchForm({
         LGBTQ+ friendly only
       </label>
       <Button type="submit" size="sm">
-        <Search style={{ height: 16, width: 16, marginRight: 6 }} />
+        <Search size={16} className="mr-1.5" />
         Search Hotels
       </Button>
     </form>

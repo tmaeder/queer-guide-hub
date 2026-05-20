@@ -132,7 +132,7 @@ export function NextTripStrip({ trips }: Props) {
               {phase === 'live'
                 ? t('trips.next.openLive', 'Open today’s plan')
                 : t('trips.next.open', 'Open trip')}
-              <ArrowRight style={{ width: 14, height: 14, marginLeft: 6 }} />
+              <ArrowRight size={14} className="ml-1.5" />
             </Button>
             {phase === 'live' && (
               <Button
