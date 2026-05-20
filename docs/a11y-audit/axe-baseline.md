@@ -1,21 +1,19 @@
 # axe-core baseline — https://queer.guide
 
-Scanned 17 routes on 2026-05-20T00:38:18.162Z.
+Scanned 17 routes on 2026-05-20T00:45:22.830Z.
 
 ## Summary
 
 | Impact | Violations |
 |---|---|
 | critical | 0 |
-| serious | 1 |
+| serious | 0 |
 | moderate | 0 |
 | minor | 0 |
 
 ## Top rules
 
-| Rule | Count |
-|---|---|
-| `color-contrast` | 1 |
+_No violations._
 
 ## Per-route results
 
@@ -51,11 +49,9 @@ No violations.
 
 ### /news — news
 
-Status: 200 · Violations: 1
+Status: 200 · Violations: 0
 
-| Impact | Rule | Nodes | Help |
-|---|---|---|---|
-| serious | `color-contrast` | 1 | Elements must meet minimum color contrast ratio thresholds |
+No violations.
 
 ### /groups — groups
 
