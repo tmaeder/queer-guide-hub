@@ -201,7 +201,7 @@ export function CityAutocompleteField({
                     <span>
                       {city.name}
                       {city.country_name && (
-                        <span style={{ color: '#888', marginLeft: 6, fontSize: '0.85em' }}>
+                        <span style={{ color: 'hsl(var(--muted-foreground))', marginLeft: 6, fontSize: '0.85em' }}>
                           {city.country_name}
                         </span>
                       )}

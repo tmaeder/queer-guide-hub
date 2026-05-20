@@ -206,8 +206,8 @@ export default function AdminTags() {
         header: 'Status',
         cell: (info) => {
           const s = info.getValue();
-          const color = s === 'active' ? '#dcfce7' : s === 'deprecated' ? '#fef3c7' : '#e2e8f0';
-          const text = s === 'active' ? '#166534' : s === 'deprecated' ? '#92400e' : '#475569';
+          const color = s === 'active' ? 'hsl(var(--muted))' : s === 'deprecated' ? 'hsl(var(--muted))' : 'hsl(var(--muted))';
+          const text = s === 'active' ? 'hsl(var(--foreground))' : s === 'deprecated' ? 'hsl(var(--foreground) / 0.7)' : 'hsl(var(--muted-foreground))';
           return <Badge style={{ backgroundColor: color, color: text }}>{s}</Badge>;
         },
         meta: {

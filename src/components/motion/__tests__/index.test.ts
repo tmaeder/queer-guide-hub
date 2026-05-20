@@ -8,8 +8,6 @@ describe('motion barrel', () => {
     expect(Motion.SlideIn).toBeDefined();
     expect(Motion.StaggerContainer).toBeDefined();
     expect(Motion.StaggerItem).toBeDefined();
-    expect(Motion.MagneticButton).toBeDefined();
-    expect(Motion.Parallax).toBeDefined();
     expect(Motion.Tappable).toBeDefined();
   });
 });

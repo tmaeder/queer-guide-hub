@@ -113,10 +113,10 @@ function StagingDedupSection() {
           {/* Results */}
           {batchScan.data && (
             <div className="mt-4 grid grid-cols-4 gap-4">
-              <ResultCard label="Processed" value={batchScan.data.processed} color="#3b82f6" />
-              <ResultCard label="Duplicates Found" value={batchScan.data.duplicates_found} color="#dc2626" />
-              <ResultCard label="Merge Candidates" value={batchScan.data.merge_candidates_found} color="#ca8a04" />
-              <ResultCard label="Skipped" value={batchScan.data.skipped} color="#6b7280" />
+              <ResultCard label="Processed" value={batchScan.data.processed} color="hsl(var(--muted-foreground))" />
+              <ResultCard label="Duplicates Found" value={batchScan.data.duplicates_found} color="hsl(var(--destructive))" />
+              <ResultCard label="Merge Candidates" value={batchScan.data.merge_candidates_found} color="hsl(var(--foreground) / 0.55)" />
+              <ResultCard label="Skipped" value={batchScan.data.skipped} color="hsl(var(--muted-foreground))" />
             </div>
           )}
         </CardContent>
@@ -241,13 +241,13 @@ function ExistingDedupSection() {
       ) : (
         <>
           {highConfidence.length > 0 && (
-            <DuplicateGroup label="High Confidence" color="#dc2626" pairs={highConfidence} onMerge={handleMerge} />
+            <DuplicateGroup label="High Confidence" color="hsl(var(--destructive))" pairs={highConfidence} onMerge={handleMerge} />
           )}
           {medConfidence.length > 0 && (
-            <DuplicateGroup label="Medium Confidence" color="#ca8a04" pairs={medConfidence} onMerge={handleMerge} />
+            <DuplicateGroup label="Medium Confidence" color="hsl(var(--foreground) / 0.55)" pairs={medConfidence} onMerge={handleMerge} />
           )}
           {lowConfidence.length > 0 && (
-            <DuplicateGroup label="Low Confidence" color="#6b7280" pairs={lowConfidence} onMerge={handleMerge} />
+            <DuplicateGroup label="Low Confidence" color="hsl(var(--muted-foreground))" pairs={lowConfidence} onMerge={handleMerge} />
           )}
         </>
       )}
@@ -336,7 +336,7 @@ function MergeHistorySection() {
                     className="flex items-center gap-4 p-3 rounded bg-muted"
                     style={{ fontSize: '0.85rem' }}
                   >
-                    <Merge style={{ width: 14, height: 14, color: '#3b82f6', flexShrink: 0 }} />
+                    <Merge style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">
                         {details.entity_type || 'unknown'}: Kept "{details.keep_name || '?'}", removed "{details.remove_name || '?'}"

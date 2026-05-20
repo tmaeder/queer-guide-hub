@@ -93,18 +93,18 @@ function formatAction(action: string): string {
 }
 
 function getActionColor(action: string): string {
-  if (action.includes('create') || action.includes('insert')) return '#10b981';
-  if (action.includes('update') || action.includes('edit')) return '#3b82f6';
-  if (action.includes('delete') || action.includes('remove')) return '#ef4444';
+  if (action.includes('create') || action.includes('insert')) return 'hsl(var(--foreground))';
+  if (action.includes('update') || action.includes('edit')) return 'hsl(var(--muted-foreground))';
+  if (action.includes('delete') || action.includes('remove')) return 'hsl(var(--destructive))';
   if (action.includes('publish')) return 'hsl(var(--foreground))';
-  return '#6b7280';
+  return 'hsl(var(--muted-foreground))';
 }
 
 const STAT_CARDS = [
-  { key: 'total', label: 'Total Items', icon: TrendingUp, color: '#3b82f6' },
-  { key: 'review', label: 'In Review', icon: Clock, color: '#f59e0b' },
+  { key: 'total', label: 'Total Items', icon: TrendingUp, color: 'hsl(var(--muted-foreground))' },
+  { key: 'review', label: 'In Review', icon: Clock, color: 'hsl(var(--foreground) / 0.55)' },
   { key: 'types', label: 'Content Types', icon: Layers, color: 'hsl(var(--foreground))' },
-  { key: 'queue', label: 'Review Queue', color: '#10b981', icon: AlertCircle },
+  { key: 'queue', label: 'Review Queue', color: 'hsl(var(--foreground))', icon: AlertCircle },
 ] as const;
 
 // ── Skeleton loader ─────────────────────────────────────────────────
@@ -344,8 +344,8 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                       <Badge
                         className="h-[22px] text-[0.7rem] font-semibold"
                         style={{
-                          background: alphaHex('#f59e0b', 0.12),
-                          color: '#d97706',
+                          background: alphaHex('hsl(var(--foreground) / 0.55)', 0.12),
+                          color: 'hsl(var(--foreground) / 0.55)',
                         }}
                       >
                         Action Needed
@@ -354,8 +354,8 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                       <Badge
                         className="h-[22px] text-[0.7rem] font-semibold"
                         style={{
-                          background: alphaHex('#10b981', 0.12),
-                          color: '#059669',
+                          background: alphaHex('hsl(var(--foreground))', 0.12),
+                          color: 'hsl(var(--foreground))',
                         }}
                       >
                         All Clear
@@ -512,10 +512,10 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           </span>
         </div>
         {[
-          { label: 'New Page', icon: FileText, color: '#64748b', onClick: () => onEdit('cms_pages', null) },
+          { label: 'New Page', icon: FileText, color: 'hsl(var(--muted-foreground))', onClick: () => onEdit('cms_pages', null) },
           { label: 'New Venue', icon: MapPin, color: 'hsl(var(--foreground))', onClick: () => onEdit('venues', null) },
-          { label: 'New Event', icon: Calendar, color: '#ec4899', onClick: () => onEdit('events', null) },
-          { label: 'New Article', icon: Newspaper, color: '#3b82f6', onClick: () => onEdit('news_articles', null) },
+          { label: 'New Event', icon: Calendar, color: 'hsl(var(--foreground))', onClick: () => onEdit('events', null) },
+          { label: 'New Article', icon: Newspaper, color: 'hsl(var(--muted-foreground))', onClick: () => onEdit('news_articles', null) },
         ].map((action) => (
           <button
             type="button"
@@ -546,10 +546,10 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
           </span>
         </div>
         {[
-          { label: 'Media Library', icon: Image, color: '#14b8a6', onClick: () => onNavigate('media') },
-          { label: 'Review Queue', icon: ClipboardCheck, color: '#f59e0b', onClick: () => onNavigate('review') },
-          { label: 'Audit Log', icon: History, color: '#6366f1', onClick: () => onNavigate('audit') },
-          { label: 'All Content', icon: BarChart3, color: '#6b7280', onClick: () => onNavigate('content') },
+          { label: 'Media Library', icon: Image, color: 'hsl(var(--foreground) / 0.55)', onClick: () => onNavigate('media') },
+          { label: 'Review Queue', icon: ClipboardCheck, color: 'hsl(var(--foreground) / 0.55)', onClick: () => onNavigate('review') },
+          { label: 'Audit Log', icon: History, color: 'hsl(var(--muted-foreground))', onClick: () => onNavigate('audit') },
+          { label: 'All Content', icon: BarChart3, color: 'hsl(var(--muted-foreground))', onClick: () => onNavigate('content') },
         ].map((action) => {
           const ActionIcon = action.icon;
           return (
