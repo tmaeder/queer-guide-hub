@@ -83,7 +83,7 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
   };
 
   return (
-    <Card className="hover:shadow-[var(--shadow-aceternity-sm)] transition-shadow">
+    <Card>
       <CardContent style={{ padding: 16 }}>
         <div className="flex justify-between items-start mb-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -92,7 +92,8 @@ export function TravelDealCard({ deal, loading = false, originCity, destinationC
                 src={`https://pics.avs.io/32/32/${deal.airline}.png`}
                 alt={deal.airline}
                 role="presentation"
-                style={{ width: 20, height: 20, flexShrink: 0, borderRadius: '50%' }}
+                className="rounded-full"
+                style={{ width: 20, height: 20, flexShrink: 0 }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (

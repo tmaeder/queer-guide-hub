@@ -84,14 +84,14 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
               paddingRight: 16,
               paddingTop: 8,
               paddingBottom: 8,
-              borderRadius: 16,
+              borderRadius: 'var(--radius-container)',
               ...(isOwn
                 ? {
                     backgroundColor: 'var(--primary)',
                     color: 'var(--primary-foreground)',
-                    borderBottomRightRadius: 6,
+                    borderBottomRightRadius: 'var(--radius-element)',
                   }
-                : { backgroundColor: 'var(--muted)', borderBottomLeftRadius: 6 }),
+                : { backgroundColor: 'var(--muted)', borderBottomLeftRadius: 'var(--radius-element)' }),
               ...(message.status === 'sending' ? { opacity: 0.6 } : {}),
             }}
           >
@@ -126,14 +126,13 @@ const MessageItem = ({ message, isOwn, onReaction }: MessageItemProps) => {
 
           {showReactions && (
             <div
+              className="rounded-container shadow-[var(--shadow-aceternity-sm)] border border-border"
               style={{
                 position: 'absolute',
                 top: '100%',
                 marginTop: 4,
                 backgroundColor: 'var(--popover)',
-                borderRadius: 8,
                 padding: 8,
-                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
                 zIndex: 10,
               }}
             >
@@ -444,7 +443,8 @@ const MessageInput = ({
         onKeyDown={handleKeyDown}
         placeholder="Type a message..."
         disabled={disabled}
-        style={{ flex: 1, borderRadius: 9999, height: 44, transition: 'border-color 0.2s' }}
+        className="rounded-element"
+        style={{ flex: 1, height: 44, transition: 'border-color 0.2s' }}
         maxLength={2000}
       />
 
@@ -455,7 +455,8 @@ const MessageInput = ({
             type="button"
             variant="ghost"
             size="sm"
-            style={{ borderRadius: '50%', height: 44, width: 44, padding: 0 }}
+            className="rounded-element"
+            style={{ height: 44, width: 44, padding: 0 }}
             disabled={disabled}
           >
             <Smile style={{ height: 20, width: 20 }} />
@@ -484,7 +485,8 @@ const MessageInput = ({
       <Button
         type="submit"
         disabled={disabled || !message.trim()}
-        style={{ borderRadius: '50%', height: 44, width: 44, padding: 0, transition: 'all 0.2s' }}
+        className="rounded-element"
+        style={{ height: 44, width: 44, padding: 0, transition: 'all 0.2s' }}
         size="sm"
       >
         <Send style={{ height: 20, width: 20 }} />
@@ -612,7 +614,7 @@ export const MessagingInterface = () => {
         <div className="p-3 md:p-4 border-b">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <h6 className="font-semibold text-lg md:text-base">Messages</h6>
-            <Button size="sm" variant="outline" style={{ borderRadius: '50%', height: 36 }}>
+            <Button size="sm" variant="outline" className="rounded-element" style={{ height: 36 }}>
               <Plus style={{ height: 16, width: 16, marginRight: 8 }} />
               <span className="hidden sm:inline">New</span>
             </Button>
@@ -634,7 +636,8 @@ export const MessagingInterface = () => {
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: 40, borderRadius: 50, height: 44 }}
+              className="rounded-element"
+              style={{ paddingLeft: 40, height: 44 }}
             />
           </div>
         </div>
@@ -716,6 +719,7 @@ export const MessagingInterface = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div
+                      className="rounded-full"
                       style={{
                         position: 'absolute',
                         bottom: -2,
@@ -724,7 +728,6 @@ export const MessagingInterface = () => {
                         height: 12,
                         backgroundColor: 'hsl(var(--foreground))',
                         border: '2px solid var(--background)',
-                        borderRadius: '50%',
                       }}
                     ></div>
                   </div>
@@ -744,7 +747,8 @@ export const MessagingInterface = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  style={{ borderRadius: '50%', height: 36, width: 36, padding: 0 }}
+                  className="rounded-element"
+                  style={{ height: 36, width: 36, padding: 0 }}
                 >
                   <MoreVertical style={{ height: 16, width: 16 }} />
                 </Button>

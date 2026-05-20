@@ -79,7 +79,7 @@ export function SpecialOffersSection() {
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {offers.map((offer, i) => (
-          <Card key={`${offer.origin}-${offer.destination}-${i}`} className="hover:shadow-sm transition-shadow" style={{ minWidth: 200, flexShrink: 0 }}>
+          <Card key={`${offer.origin}-${offer.destination}-${i}`} style={{ minWidth: 200, flexShrink: 0 }}>
             <CardContent style={{ padding: 12 }}>
               <div className="flex items-center gap-1 mb-1">
                 {offer.airline && (

@@ -256,15 +256,16 @@ function GroupCard({ g, onClick }: { g: TagContentResult['groups'][number]; onCl
             src={g.avatar_url}
             alt={g.name}
             role="presentation"
-            style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+            className="rounded-element"
+            style={{ width: 48, height: 48, objectFit: 'cover', flexShrink: 0 }}
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         ) : (
           <div
-            className="bg-muted flex items-center justify-center flex-shrink-0"
-            style={{ width: 48, height: 48, borderRadius: 8 }}
+            className="bg-muted flex items-center justify-center flex-shrink-0 rounded-element"
+            style={{ width: 48, height: 48 }}
           >
             <UsersIcon style={{ width: 20, height: 20, opacity: 0.3 }} />
           </div>
@@ -305,7 +306,7 @@ function Section({ title, count, children }: { title: string; count: number; chi
 // ── Loading skeleton ────────────────────────────────────────────────
 
 function CardSkeleton({ height = 260 }: { height?: number }) {
-  return <Skeleton style={{ height, borderRadius: 12 }} />;
+  return <Skeleton className="rounded-container" style={{ height }} />;
 }
 
 function SectionSkeleton() {

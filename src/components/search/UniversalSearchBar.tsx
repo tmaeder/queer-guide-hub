@@ -498,10 +498,11 @@ export const UniversalSearchBar = () => {
           </div>
         </PopoverAnchor>
         <PopoverContent
+          className="rounded-none"
           style={
             isMobile
-              ? { position: 'fixed', inset: 0, width: '100vw', height: '100dvh', maxHeight: '100dvh', borderRadius: 0, padding: 0, zIndex: 50 }
-              : { width: 'min(820px, calc(100vw - 32px))', padding: 0, zIndex: 50, borderRadius: 0 }
+              ? { position: 'fixed', inset: 0, width: '100vw', height: '100dvh', maxHeight: '100dvh', padding: 0, zIndex: 50 }
+              : { width: 'min(820px, calc(100vw - 32px))', padding: 0, zIndex: 50 }
           }
           align="start"
           onOpenAutoFocus={(e) => { e.preventDefault(); setTimeout(() => inputRef.current?.focus(), 0); }}

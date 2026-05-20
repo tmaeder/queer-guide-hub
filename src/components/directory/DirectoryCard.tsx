@@ -172,13 +172,13 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
           <div style={{ display: 'flex', gap: 8 }}>
             {city.is_capital && (
               <div
+                className="rounded-full"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   width: 24,
                   height: 24,
-                  borderRadius: '50%',
                   backgroundColor: 'rgba(var(--primary-rgb), 0.1)',
                 }}
               >
@@ -187,13 +187,13 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
             )}
             {city.is_major_city && (
               <div
+                className="rounded-full"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   width: 24,
                   height: 24,
-                  borderRadius: '50%',
                   backgroundColor: 'rgba(var(--secondary-rgb), 0.1)',
                 }}
               >
@@ -232,11 +232,11 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       {/* Country Image */}
       {type === 'country' && (
         <div
+          className="rounded-t-container"
           style={{
             aspectRatio: '4/3',
             width: '100%',
             overflow: 'hidden',
-            borderRadius: '8px 8px 0 0',
             backgroundColor: 'var(--accent)',
           }}
         >
@@ -282,11 +282,11 @@ export const DirectoryCard = ({ type, name, data, onClick }: DirectoryCardProps)
       {/* City Image */}
       {type === 'city' && (
         <div
+          className="rounded-t-container"
           style={{
             aspectRatio: '4/3',
             width: '100%',
             overflow: 'hidden',
-            borderRadius: '8px 8px 0 0',
             backgroundColor: 'var(--accent)',
           }}
         >

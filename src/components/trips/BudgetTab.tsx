@@ -266,7 +266,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
             <div className="flex items-center justify-between mb-[0.3125rem]">
               <div className="flex items-center gap-1">
                 <div
-                  className="w-7 h-7 rounded-[0.3125rem] flex items-center justify-center"
+                  className="w-7 h-7 rounded-badge flex items-center justify-center"
                   style={{ backgroundColor: `${color}1f` }}
                 >
                   <Icon size={14} style={{ color }} />

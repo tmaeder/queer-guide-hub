@@ -385,10 +385,10 @@ export function FlyerScanResults({
                       ? '#ec4899'
                       : 'hsl(var(--foreground))'
                     : 'hsl(var(--border))',
-                  borderRadius: 8,
                   overflow: 'hidden',
                   transition: 'border-color 0.2s',
                 }}
+                className="rounded-element"
               >
                 {/* Collapsed header */}
                 <div

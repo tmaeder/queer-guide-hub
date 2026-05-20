@@ -392,7 +392,8 @@ export const BulkCreatePersonalities = () => {
                             src={personality.image_url}
                             alt={personality.name}
                             role="presentation"
-                            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                            className="rounded-full"
+                            style={{ width: '48px', height: '48px', objectFit: 'cover', flexShrink: 0 }}
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).style.display = 'none';
                             }}

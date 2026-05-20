@@ -267,10 +267,10 @@ export const PostCard = ({ post, onLike, onUnlike, onDelete, isLiking }: PostCar
                     disabled
                   >
                     <span
+                      className="rounded-full"
                       style={{
                         width: 24,
                         height: 24,
-                        borderRadius: '50%',
                         border: '2px solid var(--muted-foreground)',
                         marginRight: 12,
                         flexShrink: 0,

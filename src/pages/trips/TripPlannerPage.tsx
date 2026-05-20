@@ -317,7 +317,8 @@ export default function TripPlannerPage() {
         <Button
           size="sm"
           onClick={() => setMobileBookingOpen(true)}
-          style={{ borderRadius: '50%', width: 48, height: 48, padding: 0 }}
+          className="rounded-element"
+          style={{ width: 48, height: 48, padding: 0 }}
         >
           <Hotel style={{ width: 20, height: 20 }} />
         </Button>

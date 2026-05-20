@@ -79,7 +79,7 @@ export function InstallBanner() {
     <div
       role="complementary"
       aria-label="Install app"
-      className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1300] w-[calc(100%-32px)] sm:w-auto max-w-[420px] bg-background p-4 flex items-start gap-3 animate-in slide-in-from-bottom-4 fade-in duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.24)]"
+      className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-[1300] w-[calc(100%-32px)] sm:w-auto max-w-[420px] bg-background p-4 flex items-start gap-3 animate-in slide-in-from-bottom-4 fade-in duration-300 border border-border shadow-[var(--shadow-aceternity-lg)] rounded-container"
     >
       <img
         src="/icons/icon-96.png"

@@ -99,7 +99,8 @@ export default function NewsStoryDetail() {
                   alt=""
                   width={120}
                   height={80}
-                  style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+                  className="rounded-element"
+                  style={{ width: 120, height: 80, objectFit: 'cover', flexShrink: 0 }}
                 />
               )}
               <div className="flex flex-col gap-1 min-w-0 flex-1">

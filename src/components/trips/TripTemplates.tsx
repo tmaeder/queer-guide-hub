@@ -73,7 +73,8 @@ export function TripTemplates() {
               <Skeleton
                 key={i}
                 variant="rectangular"
-                style={{ height: 220, borderRadius: 0 }}
+                className="rounded-container"
+                style={{ height: 220 }}
               />
             ))
           : (templates ?? []).map((template) => (

@@ -62,7 +62,7 @@ export function InsuranceSection({ compact = false }: InsuranceSectionProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {PROVIDERS.map((p) => (
-          <Card key={p.name} className="hover:shadow-sm transition-shadow">
+          <Card key={p.name}>
             <CardContent style={{ padding: 16 }}>
               <div className="flex justify-between items-start mb-2">
                 <p className="font-bold text-base">{p.name}</p>

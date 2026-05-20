@@ -228,7 +228,8 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                     style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(var(--primary-rgb), 0.1)', opacity: 0, transition: 'opacity 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     <div
-                      style={{ backgroundColor: 'rgba(var(--background-rgb), 0.9)', backdropFilter: 'blur(4px)', borderRadius: '9999px', padding: '0.5rem', transform: 'scale(0)', transition: 'transform 0.3s' }}
+                      className="rounded-full"
+                      style={{ backgroundColor: 'rgba(var(--background-rgb), 0.9)', backdropFilter: 'blur(4px)', padding: '0.5rem', transform: 'scale(0)', transition: 'transform 0.3s' }}
                     >
                       <ImageIcon style={{ height: 20, width: 20, color: 'var(--primary)' }} />
                     </div>
@@ -311,7 +312,8 @@ export const LocationInfo = ({ name, type, className }: LocationInfoProps) => {
                               href={selectedImage.photographer_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.375rem 0.75rem', borderRadius: '9999px', color: 'inherit', textDecoration: 'none', transition: 'background-color 0.2s' }}
+                              className="rounded-element"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.375rem 0.75rem', color: 'inherit', textDecoration: 'none', transition: 'background-color 0.2s' }}
                             >
                               <ExternalLink style={{ height: 16, width: 16 }} />
                               View Profile

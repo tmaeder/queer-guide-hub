@@ -59,7 +59,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
         <p className="font-semibold text-base">Rent a Car in {city}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="hover:shadow-sm transition-shadow">
+        <Card>
           <CardContent style={{ padding: 16 }}>
             <p className="font-semibold text-sm mb-1">DiscoverCars</p>
             <p className="text-xs text-muted-foreground mb-3">
@@ -71,7 +71,7 @@ export function CarRentalSection({ city, checkIn, checkOut, compact = false }: C
             </Button>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-sm transition-shadow">
+        <Card>
           <CardContent style={{ padding: 16 }}>
             <p className="font-semibold text-sm mb-1">Rentalcars.com</p>
             <p className="text-xs text-muted-foreground mb-3">

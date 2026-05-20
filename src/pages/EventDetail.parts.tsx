@@ -218,8 +218,8 @@ export function EventHero({
                 src={event.logo_url}
                 alt=""
                 role="presentation"
-                className="object-contain flex-shrink-0"
-                style={{ width: 40, height: 40, borderRadius: '10px', padding: '3px' }}
+                className="object-contain flex-shrink-0 rounded-element"
+                style={{ width: 40, height: 40, padding: '3px' }}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}

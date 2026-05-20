@@ -380,7 +380,7 @@ export const EntityMap = ({
   }, [primary, nearby, mapReady, showPopup, isVisitedMarker]);
 
   return (
-    <div className={className} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
+    <div className={`${className} rounded-element`} style={{ position: 'relative', overflow: 'hidden' }}>
       <div ref={containerRef} style={{ height, width: '100%' }} />
 
       {visitedLookup && !visitedLookup.isEmpty && (
@@ -401,16 +401,15 @@ export const EntityMap = ({
 
       <div
         ref={tooltipRef}
+        className="rounded-element shadow-[var(--shadow-aceternity-sm)]"
         style={{
           display: 'none',
           position: 'absolute',
           pointerEvents: 'none',
           zIndex: 20,
           background: 'rgba(255,255,255,0.95)',
-          borderRadius: 6,
           padding: '5px 10px',
           fontSize: 13,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
           whiteSpace: 'nowrap',
         }}
       />

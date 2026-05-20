@@ -323,7 +323,8 @@ export const NewsCard = ({
           role="presentation"
           width={160}
           height={120}
-          style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0, borderRadius: 6 }}
+          className="rounded-element"
+          style={{ width: 160, height: 120, objectFit: 'cover', flexShrink: 0 }}
           onError={() => setImgFailed(true)}
         />
         <div className="flex flex-col gap-1 min-w-0 flex-1">

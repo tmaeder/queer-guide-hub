@@ -119,7 +119,7 @@ export function DonationForm() {
           <p className="font-semibold text-sm mb-3">
             {t('donate.frequency', 'Frequency')}
           </p>
-          <div className="grid grid-cols-3 gap-2 p-1 rounded-[10px] bg-muted">
+          <div className="grid grid-cols-3 gap-2 p-1 rounded-element bg-muted">
             {FREQUENCY_OPTIONS.map((opt) => (
               <Button
                 key={opt}

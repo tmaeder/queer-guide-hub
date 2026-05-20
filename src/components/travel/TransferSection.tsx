@@ -72,7 +72,7 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="hover:shadow-sm transition-shadow">
+        <Card>
           <CardContent style={{ padding: 16 }}>
             <p className="font-semibold text-sm mb-1">Kiwitaxi</p>
             <p className="text-xs text-muted-foreground mb-3">
@@ -84,7 +84,7 @@ export function TransferSection({ city, equalityScore, airportCode, compact = fa
             </Button>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-sm transition-shadow">
+        <Card>
           <CardContent style={{ padding: 16 }}>
             <p className="font-semibold text-sm mb-1">GetTransfer</p>
             <p className="text-xs text-muted-foreground mb-3">

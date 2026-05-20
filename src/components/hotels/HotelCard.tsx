@@ -38,7 +38,7 @@ function PriceIndicator({ range }: { range: number | null }) {
 }
 
 const HotelCardFixture = () => (
-  <div className="overflow-hidden rounded-container h-full flex flex-col bg-card border shadow-sm">
+  <div className="overflow-hidden rounded-container h-full flex flex-col bg-card border shadow-[var(--shadow-aceternity-sm)]">
     <div className="bg-accent flex items-center justify-center" style={{ height: 180 }}>
       <MapPin style={{ width: 32, height: 32, color: 'hsl(var(--muted-foreground))' }} />
     </div>

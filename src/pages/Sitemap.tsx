@@ -266,7 +266,7 @@ export default function Sitemap() {
                               <li key={link.to}>
                                 <LocalizedLink
                                   to={link.to}
-                                  style={{ display: 'block', borderRadius: 4 }}
+                                  className="block rounded-badge"
                                   aria-label={`${link.label} page in ${section.title}`}
                                   aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                                 >
@@ -286,7 +286,7 @@ export default function Sitemap() {
                             <li key={link.to}>
                               <LocalizedLink
                                 to={link.to}
-                                style={{ display: 'block', borderRadius: 4 }}
+                                className="block rounded-badge"
                                 aria-label={`${link.label} hub in ${section.title}`}
                                 aria-describedby={`${id}-${slugify(link.label)}-subtitle`}
                               >
@@ -304,7 +304,7 @@ export default function Sitemap() {
                                   <li key={cl.to}>
                                     <LocalizedLink
                                       to={cl.to}
-                                      style={{ display: 'block', borderRadius: 4 }}
+                                      className="block rounded-badge"
                                       aria-label={`${cl.label} page under ${link.label} in ${section.title}`}
                                       aria-describedby={`${id}-${slugify(link.label)}-${slugify(cl.label)}-subtitle`}
                                     >

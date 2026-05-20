@@ -342,8 +342,8 @@ export default function SearchResults() {
           <div className="relative">
             {result.imageUrl ? (
               <div
-                className="relative overflow-hidden"
-                style={{ aspectRatio: '16/9', borderRadius: '8px 8px 0 0' }}
+                className="relative overflow-hidden rounded-t-container"
+                style={{ aspectRatio: '16/9' }}
               >
                 <img
                   src={result.imageUrl}
@@ -375,8 +375,8 @@ export default function SearchResults() {
               </div>
             ) : (
               <div
-                className="flex items-center justify-center bg-muted"
-                style={{ aspectRatio: '16/9', borderRadius: '8px 8px 0 0' }}
+                className="flex items-center justify-center bg-muted rounded-t-container"
+                style={{ aspectRatio: '16/9' }}
               >
                 <Icon style={{ width: 48, height: 48, color: 'hsl(var(--muted-foreground))' }} />
               </div>
@@ -463,11 +463,11 @@ export default function SearchResults() {
                 <img
                   src={result.imageUrl}
                   alt={result.title}
+                  className="rounded-element"
                   style={{
                     width: 80,
                     height: 80,
                     objectFit: 'cover',
-                    borderRadius: 8,
                     transition: 'transform 0.2s',
                   }}
                 />
@@ -741,8 +741,8 @@ export default function SearchResults() {
       {/* Results Controls */}
       {!loading && results.length > 0 && (
         <div
-          className="flex flex-col sm:flex-row sm:items-center justify-between bg-muted mb-6"
-          style={{ gap: 16, padding: 16, borderRadius: 8 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between bg-muted mb-6 rounded-element"
+          style={{ gap: 16, padding: 16 }}
         >
           <div className="flex items-center" style={{ gap: 16 }}>
             <div className="flex items-center" style={{ gap: 8 }}>
@@ -807,12 +807,12 @@ export default function SearchResults() {
 
           <div className="flex items-center" style={{ gap: 8 }}>
             <p className="text-sm font-medium">View:</p>
-            <div className="flex items-center" style={{ borderRadius: 8 }}>
+            <div className="flex items-center rounded-element">
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                className="rounded-r-none"
               >
                 <List style={{ width: 16, height: 16 }} />
               </Button>
@@ -820,7 +820,7 @@ export default function SearchResults() {
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                style={{ borderRadius: 0 }}
+                className="rounded-none"
               >
                 <Grid style={{ width: 16, height: 16 }} />
               </Button>
@@ -828,7 +828,7 @@ export default function SearchResults() {
                 variant={viewMode === 'map' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('map')}
-                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                className="rounded-l-none"
                 aria-label="Map view"
               >
                 <MapPin style={{ width: 16, height: 16 }} />

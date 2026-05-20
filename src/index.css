@@ -115,13 +115,16 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* ── Box shadow — monochrome Aceternity-style depth ───────────── */
+  /* ── Box shadow — monochrome Aceternity-style depth ─────────────
+     Inset 1px hairline ring removed from aceternity-* to avoid
+     doubling up with `border border-border` on consumers. Resting
+     edge = border class. Elevation = pure drop shadow. */
   --shadow-none: none;
   --shadow-hairline: 0 1px 0 hsl(var(--border));
-  --shadow-aceternity-sm: 0 0 0 1px hsl(0 0% 0% / 0.05), 0 2px 8px hsl(0 0% 0% / 0.04);
-  --shadow-aceternity: 0 0 0 1px hsl(0 0% 0% / 0.05), 0 8px 30px hsl(0 0% 0% / 0.06);
-  --shadow-aceternity-lg: 0 0 0 1px hsl(0 0% 0% / 0.06), 0 24px 60px hsl(0 0% 0% / 0.10);
-  --shadow-glow: 0 0 0 1px hsl(0 0% 100% / 0.08), 0 0 40px hsl(0 0% 0% / 0.04);
+  --shadow-aceternity-sm: 0 2px 8px hsl(0 0% 0% / 0.04);
+  --shadow-aceternity: 0 8px 30px hsl(0 0% 0% / 0.06);
+  --shadow-aceternity-lg: 0 24px 60px hsl(0 0% 0% / 0.10);
+  --shadow-glow: 0 0 40px hsl(0 0% 0% / 0.04);
 }
 
 /* ── Self-hosted fonts (Inter only) ───────────────────────────────────
@@ -337,9 +340,9 @@
   --cat-community:   var(--foreground);
 
   /* Dark mode shadow overrides — soft glow on dark surfaces. */
-  --shadow-aceternity-sm: 0 0 0 1px hsl(0 0% 100% / 0.06), 0 2px 10px hsl(0 0% 0% / 0.35);
-  --shadow-aceternity: 0 0 0 1px hsl(0 0% 100% / 0.06), 0 8px 30px hsl(0 0% 0% / 0.50);
-  --shadow-aceternity-lg: 0 0 0 1px hsl(0 0% 100% / 0.08), 0 24px 60px hsl(0 0% 0% / 0.60);
+  --shadow-aceternity-sm: 0 2px 10px hsl(0 0% 0% / 0.35);
+  --shadow-aceternity: 0 8px 30px hsl(0 0% 0% / 0.50);
+  --shadow-aceternity-lg: 0 24px 60px hsl(0 0% 0% / 0.60);
 }
 
 /* ── MapLibre popup theme (Aceternity card vibe) ───────────────────── */

@@ -215,8 +215,8 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
 
   return (
     <div
-      className={className}
-      style={{ position: 'relative', borderRadius: 'var(--radius-md, 10px)', overflow: 'hidden' }}
+      className={`${className} rounded-container`}
+      style={{ position: 'relative', overflow: 'hidden' }}
     >
       <div ref={containerRef} style={{ height, width: '100%' }} />
 

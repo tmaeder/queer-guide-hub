@@ -92,10 +92,10 @@ export function EntityDetailLayout({
     return (
       <div className="container mx-auto py-8" data-testid="entity-detail-loading">
         <Skeleton variant="rectangular" height={32} style={{ marginBottom: 16, width: '40%' }} />
-        <Skeleton variant="rectangular" height={192} style={{ marginBottom: 24, borderRadius: 12 }} />
+        <Skeleton variant="rectangular" height={192} className="mb-6 rounded-container" />
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
-          <Skeleton variant="rectangular" height={320} style={{ borderRadius: 12 }} />
-          <Skeleton variant="rectangular" height={240} style={{ borderRadius: 12 }} />
+          <Skeleton variant="rectangular" height={320} className="rounded-container" />
+          <Skeleton variant="rectangular" height={240} className="rounded-container" />
         </div>
       </div>
     );

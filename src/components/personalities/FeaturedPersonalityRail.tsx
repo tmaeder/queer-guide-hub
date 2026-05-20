@@ -28,11 +28,10 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
       style={{ scrollSnapAlign: 'start', textDecoration: 'none', color: 'inherit' }}
     >
       <div
-        className="featured-avatar relative flex items-center justify-center overflow-hidden mb-2 transition-shadow group-hover:shadow-[var(--shadow-aceternity)]"
+        className="featured-avatar relative flex items-center justify-center overflow-hidden mb-2 rounded-full"
         style={{
           width: 160,
           height: 160,
-          borderRadius: '50%',
           background: 'linear-gradient(135deg, hsl(var(--foreground) / 0.25) 0%, hsl(var(--foreground) / 0.15) 100%)',
           border: '2px solid hsl(var(--foreground))',
         }}
@@ -103,7 +102,7 @@ export function FeaturedPersonalityRail() {
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex-none w-40">
-                <div className="bg-muted mb-2" style={{ width: 160, height: 160, borderRadius: '50%' }} />
+                <div className="bg-muted mb-2 rounded-full" style={{ width: 160, height: 160 }} />
                 <div className="h-3 bg-muted mb-1" />
                 <div className="h-3 bg-muted w-3/4 mx-auto" />
               </div>
