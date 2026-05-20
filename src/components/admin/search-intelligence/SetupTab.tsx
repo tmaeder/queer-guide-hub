@@ -101,7 +101,7 @@ export function SetupTab() {
     ...[...grouped.keys()].filter((c) => !CATEGORY_ORDER.includes(c)),
   ];
 
-  const barColor = data.summary.fail > 0 ? '#ef4444' : data.summary.warn > 0 ? '#f59e0b' : '#10b981';
+  const barColor = data.summary.fail > 0 ? 'hsl(var(--destructive))' : data.summary.warn > 0 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--foreground))';
 
   return (
     <div className="flex flex-col gap-6">
@@ -124,7 +124,7 @@ export function SetupTab() {
             </div>
           </div>
           <div className="mt-4">
-            <div className="h-1.5 w-full overflow-hidden" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
+            <div className="h-1.5 w-full overflow-hidden" style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}>
               <div className="h-full" style={{ width: `${okPct}%`, backgroundColor: barColor }} />
             </div>
             <span className="text-xs text-muted-foreground mt-1 block">

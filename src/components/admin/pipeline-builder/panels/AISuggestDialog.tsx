@@ -83,7 +83,7 @@ export default function AISuggestDialog({ nodeTypes, onApply }: AISuggestDialogP
           label: s.label || nt?.display_name || s.slug,
           config: s.config || {},
           icon: nt?.icon || 'Box',
-          color: nt?.color || '#6b7280',
+          color: nt?.color || 'hsl(var(--muted-foreground))',
           category: nt?.category,
           description: nt?.description,
           nodeTypeSlug: s.slug,

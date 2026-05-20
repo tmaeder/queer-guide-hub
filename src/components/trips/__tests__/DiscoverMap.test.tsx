@@ -8,9 +8,12 @@ vi.mock('maplibre-gl', () => ({
   default: {
     Map: class {
       on() {} off() {} once() {} remove() {} addControl() {} setStyle() {} fitBounds() {}
-      addSource() {} addLayer() {} getSource() { return null; } getLayer() { return null; }
+      addLayer() {} addSource() {} getLayer() { return null; } getSource() { return null; }
+      removeLayer() {} removeSource() {}
       isStyleLoaded() { return false; }
+      loaded() { return false; }
       getCanvas() { return { style: {} }; }
+      flyTo() {} jumpTo() {} resize() {}
     },
     NavigationControl: class {},
     Marker: class { setLngLat() { return this; } addTo() { return this; } remove() {} },

@@ -44,7 +44,7 @@ function formatDuration(ms: number): string {
 function BaseNode({ data, selected }: NodeProps) {
   const d = data as BaseNodeData;
   const IconComponent = resolvePipelineIcon(d.icon);
-  const color = d.color || '#6b7280';
+  const color = d.color || 'hsl(var(--muted-foreground))';
   const status = d.status;
   const sc = status ? statusConfig[status] : null;
   const StatusIcon = sc ? resolvePipelineIcon(sc.icon) : null;

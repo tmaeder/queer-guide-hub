@@ -30,10 +30,10 @@ interface KanbanRow {
 }
 
 const LANES: Array<{ key: string; label: string; color: string }> = [
-  { key: 'pending', label: 'Pending', color: '#f59e0b' },
-  { key: 'approved', label: 'Approved', color: '#22c55e' },
-  { key: 'rejected', label: 'Rejected', color: '#ef4444' },
-  { key: 'merged', label: 'Merged', color: '#6366f1' },
+  { key: 'pending', label: 'Pending', color: 'hsl(var(--foreground) / 0.55)' },
+  { key: 'approved', label: 'Approved', color: 'hsl(var(--foreground))' },
+  { key: 'rejected', label: 'Rejected', color: 'hsl(var(--destructive))' },
+  { key: 'merged', label: 'Merged', color: 'hsl(var(--muted-foreground))' },
 ];
 
 const SELECT =
@@ -136,7 +136,7 @@ function KanbanCard({ row, onClick }: { row: KanbanRow; onClick: () => void }) {
       }}
       className="p-2 bg-background cursor-pointer flex flex-col gap-1.5 hover:bg-muted"
       style={{
-        border: `1px solid ${hasHighSeverity ? '#ef4444' : 'hsl(var(--border))'}`,
+        border: `1px solid ${hasHighSeverity ? 'hsl(var(--destructive))' : 'hsl(var(--border))'}`,
       }}
     >
       <div className="flex items-center gap-1.5 min-w-0">

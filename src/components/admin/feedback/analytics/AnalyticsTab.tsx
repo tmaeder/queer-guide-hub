@@ -18,6 +18,7 @@ import {
   type DailyVolumeRow,
 } from '@/hooks/useFeedbackAnalytics';
 import { feedbackCategoryMap, feedbackCategories } from '@/config/feedbackCategories';
+import { monoChartPalette } from '@/lib/chartPalette';
 import { kanbanColumns, priorityFor } from '../constants';
 import type { FeedbackSubmission } from '../types';
 
@@ -101,17 +102,20 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
               <YAxis tick={{ fontSize: 10 }} />
               <RechartsTooltip />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              {feedbackCategories.map((c) => (
-                <Area
-                  key={c.value}
-                  type="monotone"
-                  dataKey={c.value}
-                  stackId="1"
-                  stroke={c.color}
-                  fill={c.color}
-                  fillOpacity={0.6}
-                />
-              ))}
+              {feedbackCategories.map((c, i) => {
+                const tone = monoChartPalette(feedbackCategories.length)[i];
+                return (
+                  <Area
+                    key={c.value}
+                    type="monotone"
+                    dataKey={c.value}
+                    stackId="1"
+                    stroke={tone}
+                    fill={tone}
+                    fillOpacity={0.85}
+                  />
+                );
+              })}
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -156,7 +160,7 @@ export function AnalyticsTab({ items, voteCounts }: Props) {
                     <td>
                       <span
                         className="inline-block w-2 h-2 rounded-full mr-2"
-                        style={{ backgroundColor: cat?.color || '#888' }}
+                        style={{ backgroundColor: cat?.color || 'hsl(var(--muted-foreground))' }}
                       />
                       {cat?.label || row.category}
                     </td>

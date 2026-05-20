@@ -42,7 +42,7 @@ export function getRedirectColumns() {
               {source}
             </span>
             {(row.start_at || row.end_at) && (
-              <Clock style={{ height: 12, width: 12, color: '#888' }} />
+              <Clock style={{ height: 12, width: 12, color: 'hsl(var(--muted-foreground))' }} />
             )}
           </div>
         );
@@ -73,7 +73,7 @@ export function getRedirectColumns() {
       cell: (info) => (
         <Badge
           variant="outline"
-          style={{ color: info.getValue() === 301 ? '#16a34a' : '#ca8a04' }}
+          style={{ color: info.getValue() === 301 ? 'hsl(var(--foreground))' : 'hsl(var(--foreground) / 0.55)' }}
         >
           {info.getValue()}
         </Badge>
@@ -87,7 +87,7 @@ export function getRedirectColumns() {
         return (
           <span>
             {info.getValue().toLocaleString()}
-            {row.click_limit ? <span style={{ color: '#888' }}> / {row.click_limit}</span> : null}
+            {row.click_limit ? <span style={{ color: 'hsl(var(--muted-foreground))' }}> / {row.click_limit}</span> : null}
           </span>
         );
       },

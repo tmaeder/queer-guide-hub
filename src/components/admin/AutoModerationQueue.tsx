@@ -46,10 +46,10 @@ import {
 import { toast } from 'sonner';
 
 const SEVERITY_COLORS: Record<string, string> = {
-  info: '#3b82f6',
-  warning: '#f59e0b',
-  error: '#ef4444',
-  critical: '#dc2626',
+  info: 'hsl(var(--muted-foreground))',
+  warning: 'hsl(var(--foreground) / 0.55)',
+  error: 'hsl(var(--destructive))',
+  critical: 'hsl(var(--destructive))',
 };
 
 const SEVERITY_ICONS: Record<string, typeof Info> = {
@@ -78,16 +78,16 @@ const FLAG_TYPE_LABELS: Record<string, string> = {
 
 const SENSITIVITY_COLORS: Record<string, string> = {
   sensitivity_legal: 'hsl(var(--foreground))',
-  sensitivity_medical: '#0891b2',
-  sensitivity_nsfw: '#e11d48',
-  lgbti_relevance: '#d97706',
+  sensitivity_medical: 'hsl(var(--muted-foreground))',
+  sensitivity_nsfw: 'hsl(var(--destructive))',
+  lgbti_relevance: 'hsl(var(--foreground) / 0.55)',
 };
 
 const REVIEW_PRIORITY_COLORS: Record<string, string> = {
-  urgent: '#dc2626',
-  high: '#ea580c',
-  normal: '#f59e0b',
-  low: '#6b7280',
+  urgent: 'hsl(var(--destructive))',
+  high: 'hsl(var(--foreground) / 0.55)',
+  normal: 'hsl(var(--foreground) / 0.55)',
+  low: 'hsl(var(--muted-foreground))',
 };
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
@@ -431,7 +431,7 @@ function FlagCard({
   isReviewing,
 }: FlagCardProps) {
   const SeverityIcon = SEVERITY_ICONS[flag.severity] || Info;
-  const severityColor = SEVERITY_COLORS[flag.severity] || '#6b7280';
+  const severityColor = SEVERITY_COLORS[flag.severity] || 'hsl(var(--muted-foreground))';
   const isClassifierFlag = flag.module_name === 'content-classifier';
   const sensitivityColor = SENSITIVITY_COLORS[flag.flag_type];
   const currentVal = flag.current_value as Record<string, unknown> | null;
@@ -450,7 +450,7 @@ function FlagCard({
             {/* Top row */}
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge
-                style={{ backgroundColor: severityColor, color: '#fff' }}
+                style={{ backgroundColor: severityColor, color: 'hsl(var(--background))' }}
                 className="font-semibold text-[0.7rem] gap-1"
               >
                 <SeverityIcon className="w-3 h-3" />
@@ -486,10 +486,10 @@ function FlagCard({
                   style={{
                     borderColor:
                       flag.confidence >= 0.9
-                        ? '#16a34a'
+                        ? 'hsl(var(--foreground))'
                         : flag.confidence >= 0.7
-                          ? '#f59e0b'
-                          : '#ef4444',
+                          ? 'hsl(var(--foreground) / 0.55)'
+                          : 'hsl(var(--destructive))',
                   }}
                 >
                   {(flag.confidence * 100).toFixed(0)}%
@@ -498,8 +498,8 @@ function FlagCard({
               {reviewPriority && (
                 <Badge
                   style={{
-                    backgroundColor: REVIEW_PRIORITY_COLORS[reviewPriority] || '#6b7280',
-                    color: '#fff',
+                    backgroundColor: REVIEW_PRIORITY_COLORS[reviewPriority] || 'hsl(var(--muted-foreground))',
+                    color: 'hsl(var(--background))',
                   }}
                   className="font-semibold text-[0.7rem]"
                 >
@@ -571,10 +571,10 @@ function FlagCard({
                                 width: `${relevanceScore * 100}%`,
                                 backgroundColor:
                                   relevanceScore >= 0.7
-                                    ? '#16a34a'
+                                    ? 'hsl(var(--foreground))'
                                     : relevanceScore >= 0.5
-                                      ? '#f59e0b'
-                                      : '#ef4444',
+                                      ? 'hsl(var(--foreground) / 0.55)'
+                                      : 'hsl(var(--destructive))',
                               }}
                             />
                           </div>
@@ -621,10 +621,10 @@ function FlagCard({
                   {/* Generic flag detail view (non-classifier flags) */}
                   {!isClassifierFlag && flag.current_value && (
                     <div className="mb-3">
-                      <p className="text-xs font-semibold block mb-1 text-[#ef4444]">
+                      <p className="text-xs font-semibold block mb-1 text-destructive">
                         Current Value:
                       </p>
-                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.05)]">
+                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[hsl(var(--destructive) / 0.2)] bg-[hsl(var(--destructive) / 0.05)]">
                         {JSON.stringify(flag.current_value, null, 2)}
                       </pre>
                     </div>
@@ -632,10 +632,10 @@ function FlagCard({
 
                   {flag.suggested_value && (
                     <div>
-                      <p className="text-xs font-semibold block mb-1 text-[#16a34a]">
+                      <p className="text-xs font-semibold block mb-1 text-foreground">
                         Suggested Value:
                       </p>
-                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[rgba(22,163,74,0.2)] bg-[rgba(22,163,74,0.05)]">
+                      <pre className="text-xs overflow-auto max-h-[150px] p-2 rounded border border-[hsl(var(--foreground) / 0.2)] bg-[hsl(var(--foreground) / 0.05)]">
                         {JSON.stringify(flag.suggested_value, null, 2)}
                       </pre>
                     </div>

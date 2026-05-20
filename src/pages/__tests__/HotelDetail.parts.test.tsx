@@ -8,7 +8,6 @@ import type { ReactNode } from 'react';
 
 vi.mock('@/components/animation/ScrollReveal', () => ({ ScrollReveal: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock('@/components/effects/ParallaxHero', () => ({ ParallaxHero: () => null }));
-vi.mock('@/components/motion', () => ({ MagneticButton: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock('@/components/moderation/ReportButton', () => ({ ReportButton: () => null }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
 

@@ -6,18 +6,19 @@ interface ShineButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 /**
- * Solid B&W CTA with a single diagonal shine sweep on hover.
- * Pairs the new shadow-aceternity tokens for soft depth.
+ * Aceternity ShineButton — gutted 2026-05-19. Shimmer overlay removed.
+ * Falls through to a plain monochrome button. Consumers should migrate
+ * to <Button> from @/components/ui/button.
  */
-export function ShineButton({ className, children, ...props }: ShineButtonProps) {
+export function ShineButton({ children, className, ...rest }: ShineButtonProps) {
   return (
     <button
       type="button"
       className={cn(
-        'shine-on-hover inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-6 py-3 text-sm font-semibold tracking-tight shadow-[var(--shadow-aceternity-sm)] transition-all duration-200 hover:shadow-[var(--shadow-aceternity)] hover:-translate-y-px active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground focus-visible:ring-offset-2',
+        'inline-flex items-center justify-center bg-foreground text-background px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50',
         className,
       )}
-      {...props}
+      {...rest}
     >
       {children}
     </button>

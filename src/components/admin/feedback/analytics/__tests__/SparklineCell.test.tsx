@@ -24,14 +24,14 @@ describe('SparklineCell', () => {
 
   it('honors custom width/height/color props', () => {
     const { container } = render(
-      <SparklineCell data={[1, 2]} width={100} height={30} color="#ff00ff" />,
+      <SparklineCell data={[1, 2]} width={100} height={30} color="hsl(var(--foreground))" />,
     );
     const svg = container.querySelector('svg')!;
     expect(svg.getAttribute('width')).toBe('100');
     expect(svg.getAttribute('height')).toBe('30');
 
     const poly = container.querySelector('polyline')!;
-    expect(poly.getAttribute('stroke')).toBe('#ff00ff');
+    expect(poly.getAttribute('stroke')).toBe('hsl(var(--foreground))');
   });
 
   it('handles a single-point series without dividing by zero', () => {

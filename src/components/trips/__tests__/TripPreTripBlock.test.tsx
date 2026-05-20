@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router';
 
 vi.mock('@/hooks/useTripReservations', () => ({
   useTripReservations: () => ({ data: [], isLoading: false }),
@@ -18,10 +19,12 @@ const trip = { id: 't1', title: 'X', start_date: '2026-06-01', end_date: '2026-0
 
 describe('TripPreTripBlock', () => {
   it('renders without crashing', () => {
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { container } = render(
-      <QueryClientProvider client={qc}>
-        <TripPreTripBlock trip={trip} />
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <TripPreTripBlock trip={trip} />
+        </MemoryRouter>
       </QueryClientProvider>,
     );
     expect(container).toBeTruthy();

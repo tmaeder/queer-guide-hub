@@ -114,7 +114,7 @@ export const UserDirectoryGrid = ({
                     </Avatar>
                     {profile.verified_identity && (
                       <div
-                        className="absolute rounded-full flex items-center justify-center shadow-md"
+                        className="absolute rounded-full flex items-center justify-center shadow-[var(--shadow-aceternity-sm)]"
                         style={{
                           top: -4,
                           right: -4,

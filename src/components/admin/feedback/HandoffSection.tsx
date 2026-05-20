@@ -43,10 +43,10 @@ const STATUS_META: Record<
   HandoffStatus,
   { label: string; color: string; icon: typeof Circle }
 > = {
-  sent: { label: 'Handed off', color: '#3b82f6', icon: ArrowRight },
-  in_progress: { label: 'Working', color: '#f59e0b', icon: Loader },
-  resolved: { label: 'Resolved', color: '#22c55e', icon: Check },
-  failed: { label: 'Failed', color: '#ef4444', icon: X },
+  sent: { label: 'Handed off', color: 'hsl(var(--muted-foreground))', icon: ArrowRight },
+  in_progress: { label: 'Working', color: 'hsl(var(--foreground) / 0.55)', icon: Loader },
+  resolved: { label: 'Resolved', color: 'hsl(var(--foreground))', icon: Check },
+  failed: { label: 'Failed', color: 'hsl(var(--destructive))', icon: X },
 };
 
 const TARGET_META: Record<
