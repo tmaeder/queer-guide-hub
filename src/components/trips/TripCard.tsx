@@ -277,7 +277,7 @@ export function TripCard({ trip }: Props) {
                   e.stopPropagation();
                   navigate(`/trips/${trip.id}/today`);
                 }}
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[0.6875rem] font-bold uppercase border-none cursor-pointer"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs2 font-bold uppercase border-none cursor-pointer"
                 style={{
                   background: 'hsl(var(--foreground))',
                   color: 'hsl(var(--background))',

@@ -451,7 +451,7 @@ function FlagCard({
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge
                 style={{ backgroundColor: severityColor, color: 'hsl(var(--background))' }}
-                className="font-semibold text-[0.7rem] gap-1"
+                className="font-semibold text-xs2 gap-1"
               >
                 <SeverityIcon className="w-3 h-3" />
                 {flag.severity}
@@ -501,12 +501,12 @@ function FlagCard({
                     backgroundColor: REVIEW_PRIORITY_COLORS[reviewPriority] || 'hsl(var(--muted-foreground))',
                     color: 'hsl(var(--background))',
                   }}
-                  className="font-semibold text-[0.7rem]"
+                  className="font-semibold text-xs2"
                 >
                   Priority: {reviewPriority}
                 </Badge>
               )}
-              <Badge variant="outline" className="text-[0.7rem] gap-1">
+              <Badge variant="outline" className="text-xs2 gap-1">
                 <Bot className="w-3 h-3" />
                 {flag.module_name.replace(/-/g, ' ')}
               </Badge>
@@ -595,7 +595,7 @@ function FlagCard({
                               <Badge
                                 key={i}
                                 variant="outline"
-                                className="text-[0.7rem]"
+                                className="text-xs2"
                                 style={{
                                   backgroundColor: sensitivityColor
                                     ? `${sensitivityColor}15`

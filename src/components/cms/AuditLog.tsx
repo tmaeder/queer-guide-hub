@@ -209,7 +209,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
                   className="flex gap-2 py-3 px-1 hover:bg-muted rounded"
                 >
                   <Avatar className="w-7 h-7 mt-0.5">
-                    <AvatarFallback className="bg-border text-[0.6rem]">
+                    <AvatarFallback className="bg-border text-2xs">
                       {initials || <User size={14} />}
                     </AvatarFallback>
                   </Avatar>
@@ -219,12 +219,12 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
                       <p className="text-sm font-semibold">{actorName}</p>
                       <Badge
                         variant="outline"
-                        className={`text-[0.65rem] h-5 ${getActionClasses(entry.action)}`}
+                        className={`text-2xs h-5 ${getActionClasses(entry.action)}`}
                       >
                         {formatAction(entry.action)}
                       </Badge>
                       {entry.source_table && !isContentSpecific && (
-                        <Badge variant="outline" className="text-[0.65rem] h-5">
+                        <Badge variant="outline" className="text-2xs h-5">
                           {entry.source_table}
                         </Badge>
                       )}

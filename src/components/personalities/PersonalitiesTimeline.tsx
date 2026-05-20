@@ -100,7 +100,7 @@ export function PersonalitiesTimeline({ personalities }: PersonalitiesTimelinePr
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="text-xs font-medium truncate">{p.name}</div>
-                        <div className="text-[11px] text-muted-foreground truncate">
+                        <div className="text-xs2 text-muted-foreground truncate">
                           {year ?? ''}
                           {p.profession ? `${year ? ' · ' : ''}${p.profession}` : ''}
                         </div>

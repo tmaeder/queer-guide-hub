@@ -101,25 +101,25 @@ export function TripChat({ tripId }: Props) {
                 {msg.sender?.avatar_url && (
                   <AvatarImage src={msg.sender.avatar_url} alt={msg.sender?.display_name || 'User'} />
                 )}
-                <AvatarFallback className="text-[10px]">{initial}</AvatarFallback>
+                <AvatarFallback className="text-2xs">{initial}</AvatarFallback>
               </Avatar>
 
               <div className={cn('max-w-[75%]', isOwn ? 'items-end' : 'items-start')}>
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[11px] font-semibold">
+                  <span className="text-xs2 font-semibold">
                     {isOwn ? 'You' : msg.sender?.display_name || 'Unknown'}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-2xs text-muted-foreground">
                     {formatTimestamp(msg.created_at)}
                   </span>
                 </div>
 
                 {replyMsg && (
                   <div className="border-l-2 border-primary/40 pl-2 mb-1 rounded-badge bg-muted py-1 px-2">
-                    <span className="block text-[10px] text-muted-foreground">
+                    <span className="block text-2xs text-muted-foreground">
                       {replyMsg.sender?.display_name || 'Unknown'}
                     </span>
-                    <span className="block text-[11px] truncate max-w-[200px]">
+                    <span className="block text-xs2 truncate max-w-[200px]">
                       {replyMsg.content}
                     </span>
                   </div>
@@ -153,10 +153,10 @@ export function TripChat({ tripId }: Props) {
         <div className="flex items-center gap-2 px-3 py-1.5 border-t border-border bg-muted">
           <Reply size={14} style={{ opacity: 0.5, flexShrink: 0 }} />
           <div className="flex-1 min-w-0">
-            <span className="block text-[11px] font-semibold">
+            <span className="block text-xs2 font-semibold">
               Replying to {replyTo.sender?.display_name || 'Unknown'}
             </span>
-            <span className="block text-[11px] text-muted-foreground truncate">
+            <span className="block text-xs2 text-muted-foreground truncate">
               {replyTo.content}
             </span>
           </div>

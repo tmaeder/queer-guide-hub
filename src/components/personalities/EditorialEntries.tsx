@@ -71,7 +71,7 @@ export function EditorialEntries({
                 )}
               </div>
               <p className="text-xs font-medium mt-1.5 truncate">{p.name}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{dateLabel}</p>
+              <p className="text-xs2 text-muted-foreground truncate">{dateLabel}</p>
             </LocalizedLink>
           </li>
         );

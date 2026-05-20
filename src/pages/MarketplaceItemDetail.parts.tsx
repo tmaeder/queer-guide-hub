@@ -359,7 +359,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
           <div>
             <div className="flex items-baseline gap-2">
               {price.modifier && (
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
+                <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
               )}
               <h4 className="text-3xl font-bold">{price.primary}</h4>
             </div>
@@ -367,7 +367,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
               <p className="text-sm text-muted-foreground mt-1">{price.secondary}</p>
             )}
             {provenance && (
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70 mt-1">{provenance}</p>
+              <p className="text-xs2 uppercase tracking-wider text-muted-foreground/70 mt-1">{provenance}</p>
             )}
           </div>
 
@@ -377,7 +377,7 @@ export function MarketplaceSidebar({ listing, t }: SidebarProps) {
                 <span
                   key={p.key}
                   title={p.title}
-                  className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                  className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                 >
                   {p.label}
                 </span>

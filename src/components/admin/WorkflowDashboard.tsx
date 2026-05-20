@@ -202,7 +202,7 @@ export function WorkflowDashboard() {
               {key === 'dead_letter' && deadLetterRuns.length > 0 && (
                 <Badge
                   variant="outline"
-                  className="ml-1 h-5 border-destructive text-[0.7rem] text-destructive"
+                  className="ml-1 h-5 border-destructive text-xs2 text-destructive"
                 >
                   {deadLetterRuns.length}
                 </Badge>
@@ -423,7 +423,7 @@ function RunsTab({
                     <StatusChip status={run.status} />
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-[0.7rem]">
+                    <Badge variant="outline" className="text-xs2">
                       {run.queue_name}
                     </Badge>
                   </TableCell>
@@ -527,7 +527,7 @@ function RunDetail({ run }: { run: WorkflowRun }) {
       {run.output_result && (
         <div className="col-span-full">
           <span className="text-xs font-bold text-muted-foreground">Output</span>
-          <pre className="max-h-[200px] overflow-auto rounded bg-background p-2 font-mono text-[0.7rem]">
+          <pre className="max-h-[200px] overflow-auto rounded bg-background p-2 font-mono text-xs2">
             {JSON.stringify(run.output_result, null, 2)}
           </pre>
         </div>
@@ -535,7 +535,7 @@ function RunDetail({ run }: { run: WorkflowRun }) {
       {run.input_payload && Object.keys(run.input_payload).length > 0 && (
         <div className="col-span-full">
           <span className="text-xs font-bold text-muted-foreground">Input Payload</span>
-          <pre className="max-h-[150px] overflow-auto rounded bg-background p-2 font-mono text-[0.7rem]">
+          <pre className="max-h-[150px] overflow-auto rounded bg-background p-2 font-mono text-xs2">
             {JSON.stringify(run.input_payload, null, 2)}
           </pre>
         </div>
@@ -593,12 +593,12 @@ function DefinitionsTab({
                 <span className="text-sm font-semibold">{def.name}</span>
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className="font-mono text-[0.7rem]">
+                <Badge variant="outline" className="font-mono text-xs2">
                   {def.edge_function}
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge className="text-[0.7rem]">{def.queue_name}</Badge>
+                <Badge className="text-xs2">{def.queue_name}</Badge>
               </TableCell>
               <TableCell>
                 {def.schedule ? (
@@ -614,7 +614,7 @@ function DefinitionsTab({
                 <Badge
                   variant="outline"
                   className={cn(
-                    'text-[0.7rem]',
+                    'text-xs2',
                     def.is_enabled ? 'border-foreground/40 text-foreground' : '',
                   )}
                 >

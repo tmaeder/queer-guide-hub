@@ -225,7 +225,7 @@ export const ScrapeSourcesDashboard = () => {
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className="text-[0.7rem]"
+                      className="text-xs2"
                       style={{
                         backgroundColor: typeConfig.color + '22',
                         color: typeConfig.color,
@@ -254,7 +254,7 @@ export const ScrapeSourcesDashboard = () => {
                         <TooltipTrigger asChild>
                           <Badge
                             variant="outline"
-                            className="text-[0.65rem] gap-1 border-destructive text-destructive"
+                            className="text-2xs gap-1 border-destructive text-destructive"
                           >
                             <AlertCircle size={12} />
                             {`${source.consecutive_failures} fails`}
@@ -265,13 +265,13 @@ export const ScrapeSourcesDashboard = () => {
                     ) : source.last_success_at ? (
                       <Badge
                         variant="outline"
-                        className="text-[0.65rem] gap-1 border-foreground/40 text-foreground"
+                        className="text-2xs gap-1 border-foreground/40 text-foreground"
                       >
                         <CheckCircle size={12} />
                         OK
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[0.65rem]">
+                      <Badge variant="outline" className="text-2xs">
                         New
                       </Badge>
                     )}
@@ -342,7 +342,7 @@ export const ScrapeSourcesDashboard = () => {
                     <span className="text-sm">{source?.name || run.source_id.slice(0, 8)}</span>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`text-[0.65rem] ${statusClass}`}>
+                    <Badge variant="outline" className={`text-2xs ${statusClass}`}>
                       {run.status}
                     </Badge>
                   </TableCell>

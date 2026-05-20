@@ -29,7 +29,7 @@ export function FieldDiffView({ diffs }: FieldDiffViewProps) {
     <div className="divide-y">
       {diffs.map((d) => (
         <div key={d.field} className="px-3 py-2 bg-muted/30">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+          <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
             {d.field}
           </p>
           {d.oldValue !== undefined && d.oldValue !== null && (

@@ -69,7 +69,7 @@ export function TripCoverBand({
       <div className="relative z-[1] w-full px-5 py-5 md:px-8 md:py-6 flex items-end justify-between gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
           {/* Status pill */}
-          <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white/20 text-white text-[0.7rem] font-bold uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-white/20 text-white text-xs2 font-bold uppercase tracking-wider mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
             {statusLabel}
           </div>

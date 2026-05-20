@@ -219,7 +219,7 @@ function renderColumnValue(
     const color = field.name === 'category' ? (config?.color ?? 'hsl(var(--muted-foreground))') : 'hsl(var(--muted-foreground))';
     return (
       <Badge
-        className="h-5 text-[0.7rem] font-semibold"
+        className="h-5 text-xs2 font-semibold"
         style={{ backgroundColor: `${color}1A`, color }}
       >
         {opt?.label ?? String(v)}
@@ -250,7 +250,7 @@ function renderColumnValue(
     return (
       <div className="flex flex-wrap gap-1">
         {shown.map((tag) => (
-          <Badge key={String(tag)} variant="secondary" className="h-[18px] text-[0.65rem]">
+          <Badge key={String(tag)} variant="secondary" className="h-[18px] text-2xs">
             {String(tag)}
           </Badge>
         ))}
@@ -433,7 +433,7 @@ export function ContentListTable({
                     {!contentTypeId && (
                       <TableCell>
                         <Badge
-                          className="h-5 text-[0.7rem] font-semibold"
+                          className="h-5 text-xs2 font-semibold"
                           style={{
                             backgroundColor: `${item.contentTypeColor}1A`,
                             color: item.contentTypeColor,

@@ -64,7 +64,7 @@ function FallbackPreview({ item }: { item: TriageItem }) {
         <div className="divide-y border">
           {metaFields.map(([key, value]) => (
             <div key={key} className="flex gap-3 px-3 py-2 text-xs">
-              <span className="text-muted-foreground shrink-0 w-28 text-[10px] uppercase tracking-wider">
+              <span className="text-muted-foreground shrink-0 w-28 text-2xs uppercase tracking-wider">
                 {formatFieldKey(key)}
               </span>
               <span className="min-w-0 break-words">{formatFieldValue(value)}</span>

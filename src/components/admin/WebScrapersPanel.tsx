@@ -166,11 +166,11 @@ export const WebScrapersPanel = () => {
               <s.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="flex-1 min-w-0">
                 <p className="text-[0.85rem] font-semibold">{s.label}</p>
-                <p className="text-[0.7rem] text-muted-foreground truncate">
+                <p className="text-xs2 text-muted-foreground truncate">
                   {s.types} &middot; {s.url}
                 </p>
                 {results[s.key] && (
-                  <p className="text-[0.65rem] text-foreground">
+                  <p className="text-2xs text-foreground">
                     {results[s.key].count} scraped, {results[s.key].inserted} saved
                   </p>
                 )}

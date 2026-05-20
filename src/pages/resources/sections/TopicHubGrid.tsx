@@ -74,7 +74,7 @@ function TopicCard({ topic }: { topic: TopicHubRow }) {
         {topic.tag_cluster.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="text-[0.65rem] px-1.5 py-0.5 rounded-badge bg-foreground/5 text-muted-foreground"
+            className="text-2xs px-1.5 py-0.5 rounded-badge bg-foreground/5 text-muted-foreground"
           >
             {tag}
           </span>

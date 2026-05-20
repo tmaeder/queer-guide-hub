@@ -141,7 +141,7 @@ function ProtectionRow({
         })}
       </div>
       {since && (
-        <span className="flex-shrink-0 text-[0.6875rem] text-[#9ca3af]">{since}</span>
+        <span className="flex-shrink-0 text-xs2 text-[#9ca3af]">{since}</span>
       )}
     </div>
   );
@@ -184,7 +184,7 @@ function SimpleRow({
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p
-    className="mb-2 text-[0.6875rem] font-bold uppercase text-[#6b7280]"
+    className="mb-2 text-xs2 font-bold uppercase text-[#6b7280]"
     style={{ letterSpacing: '0.05em' }}
   >
     {children}
@@ -279,7 +279,7 @@ export default function LGBTJurisdictionInfo({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <p
-              className="text-[0.6875rem] font-bold uppercase text-[#6b7280]"
+              className="text-xs2 font-bold uppercase text-[#6b7280]"
               style={{ letterSpacing: '0.05em' }}
             >
               Anti-Discrimination Protection
@@ -447,7 +447,7 @@ export default function LGBTJurisdictionInfo({
             href="https://database.ilga.org/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[0.6875rem] text-primary hover:underline"
+            className="flex items-center gap-1 text-xs2 text-primary hover:underline"
           >
             <ExternalLink style={{ height: 10, width: 10 }} />
             ILGA World Database

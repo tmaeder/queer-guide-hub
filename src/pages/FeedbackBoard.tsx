@@ -134,7 +134,7 @@ export default function FeedbackBoard() {
               {/* Cards */}
               <div className="flex flex-col gap-2 md:max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
                 {colItems.length === 0 && (
-                  <p className="py-5 text-center text-[0.7rem] italic opacity-60 text-muted-foreground">
+                  <p className="py-5 text-center text-xs2 italic opacity-60 text-muted-foreground">
                     —
                   </p>
                 )}

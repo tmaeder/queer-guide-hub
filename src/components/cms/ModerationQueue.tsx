@@ -193,17 +193,17 @@ export function ModerationQueue() {
                   aria-expanded={!!expanded}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="h-[22px] text-[0.7rem] font-semibold">
+                    <Badge variant="secondary" className="h-[22px] text-xs2 font-semibold">
                       {item.content_type}
                     </Badge>
                     {item.is_spam && (
-                      <Badge variant="destructive" className="h-[22px] text-[0.7rem] gap-1">
+                      <Badge variant="destructive" className="h-[22px] text-xs2 gap-1">
                         <Flag size={12} />
                         Spam
                       </Badge>
                     )}
                     {item.priority > 0 && (
-                      <Badge className="h-[22px] text-[0.7rem] gap-1 bg-foreground text-white hover:bg-foreground">
+                      <Badge className="h-[22px] text-xs2 gap-1 bg-foreground text-white hover:bg-foreground">
                         <ShieldAlert size={12} />
                         Priority {item.priority}
                       </Badge>

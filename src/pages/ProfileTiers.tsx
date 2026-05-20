@@ -187,7 +187,7 @@ export default function ProfileTiers() {
                   <div className="font-medium flex items-center gap-2">
                     {LABEL[t]}
                     {active && (
-                      <span className="text-[10px] tracking-widest uppercase text-muted-foreground">
+                      <span className="text-2xs tracking-widest uppercase text-muted-foreground">
                         current
                       </span>
                     )}

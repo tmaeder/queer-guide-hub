@@ -251,7 +251,7 @@ export function PublicTripCard({ trip }: Props) {
 
         {(trip.fork_count > 0 || trip.save_count > 0) && (
           <div
-            className="flex items-center gap-3 mt-2 text-[0.6875rem] text-muted-foreground"
+            className="flex items-center gap-3 mt-2 text-xs2 text-muted-foreground"
             aria-label={t('trips.discover.signalsAria', 'Trip activity')}
           >
             {trip.fork_count > 0 && (

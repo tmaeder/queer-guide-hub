@@ -181,7 +181,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                       </p>
                       {index === 0 && (
                         <span
-                          className="px-1.5 py-0.5 rounded text-[0.65rem] font-bold"
+                          className="px-1.5 py-0.5 rounded text-2xs font-bold"
                           style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
                         >
                           CURRENT

@@ -93,12 +93,12 @@ export const ReviewItemCard = ({
               <p className="text-sm font-semibold truncate flex-1">{item.title}</p>
 
               {/* Content type chip */}
-              <Badge variant="outline" className="h-5 text-[0.65rem]">
+              <Badge variant="outline" className="h-5 text-2xs">
                 {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
               </Badge>
 
               {/* Status chip */}
-              <Badge variant={STATUS_VARIANTS[item.status] || 'outline'} className="h-5 text-[0.65rem]">
+              <Badge variant={STATUS_VARIANTS[item.status] || 'outline'} className="h-5 text-2xs">
                 {item.status}
               </Badge>
             </div>

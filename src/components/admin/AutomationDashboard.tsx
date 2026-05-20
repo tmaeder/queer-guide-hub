@@ -157,7 +157,7 @@ export function AutomationDashboard() {
           <TabsTrigger value="review">
             Review Queue
             {stats.pendingFlags > 0 && (
-              <Badge variant="destructive" className="ml-2 px-1 text-[0.65rem]">
+              <Badge variant="destructive" className="ml-2 px-1 text-2xs">
                 {stats.pendingFlags}
               </Badge>
             )}
@@ -188,12 +188,12 @@ export function AutomationDashboard() {
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-[0.95rem]">{mod.display_name}</p>
                           {mod.schedule && (
-                            <Badge variant="outline" className="text-[0.7rem] h-5">
+                            <Badge variant="outline" className="text-xs2 h-5">
                               {mod.schedule}
                             </Badge>
                           )}
                           {mod.auto_approve && (
-                            <Badge className="bg-muted text-foreground text-[0.7rem] h-5">
+                            <Badge className="bg-muted text-foreground text-xs2 h-5">
                               Auto-approve
                             </Badge>
                           )}
@@ -201,7 +201,7 @@ export function AutomationDashboard() {
                         <p className="text-[0.8rem] text-muted-foreground mt-0.5">
                           {mod.description}
                         </p>
-                        <div className="flex gap-4 mt-1 text-[0.75rem] text-muted-foreground flex-wrap items-center">
+                        <div className="flex gap-4 mt-1 text-xs text-muted-foreground flex-wrap items-center">
                           <span>Confidence: {(mod.confidence_threshold * 100).toFixed(0)}%</span>
                           <span>Batch: {mod.batch_size}</span>
                           <span>Runs: {mod.total_runs}</span>
@@ -214,7 +214,7 @@ export function AutomationDashboard() {
                           )}
                           {mod.last_run_status && (
                             <Badge
-                              className={`text-[0.65rem] h-[18px] ${
+                              className={`text-2xs h-[18px] ${
                                 mod.last_run_status === 'success'
                                   ? 'bg-muted text-foreground'
                                   : mod.last_run_status === 'partial'
@@ -309,7 +309,7 @@ export function AutomationDashboard() {
                     {pendingFlags.map((flag) => (
                       <TableRow key={flag.id}>
                         <TableCell>
-                          <Badge variant="secondary" className="text-[0.7rem]">
+                          <Badge variant="secondary" className="text-xs2">
                             {FLAG_TYPE_LABELS[flag.flag_type] || flag.flag_type}
                           </Badge>
                         </TableCell>
@@ -322,20 +322,20 @@ export function AutomationDashboard() {
                             {flag.title}
                           </button>
                           {flag.description && (
-                            <p className="text-[0.75rem] text-muted-foreground mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                               {flag.description.slice(0, 80)}
                               {flag.description.length > 80 ? '...' : ''}
                             </p>
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="text-[0.65rem]">
+                          <Badge variant="outline" className="text-2xs">
                             {flag.content_type}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge
-                            className={`text-[0.65rem] ${SEVERITY_CLASS[flag.severity] ?? ''}`}
+                            className={`text-2xs ${SEVERITY_CLASS[flag.severity] ?? ''}`}
                           >
                             {flag.severity}
                           </Badge>
@@ -346,7 +346,7 @@ export function AutomationDashboard() {
                             : '—'}
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(flag.created_at), { addSuffix: true })}
                           </span>
                         </TableCell>
@@ -444,7 +444,7 @@ export function AutomationDashboard() {
                     {deadLinks.map((link) => (
                       <TableRow key={link.id}>
                         <TableCell>
-                          <Badge variant="outline" className="text-[0.65rem]">
+                          <Badge variant="outline" className="text-2xs">
                             {link.content_type}
                           </Badge>
                         </TableCell>
@@ -453,7 +453,7 @@ export function AutomationDashboard() {
                         </TableCell>
                         <TableCell>
                           <span
-                            className="text-[0.75rem] font-mono truncate block max-w-[300px]"
+                            className="text-xs font-mono truncate block max-w-[300px]"
                             title={link.original_url}
                           >
                             {link.original_url}
@@ -461,23 +461,23 @@ export function AutomationDashboard() {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            className={`text-[0.65rem] ${link.http_status ? 'bg-muted text-foreground' : 'bg-destructive/10 text-destructive'}`}
+                            className={`text-2xs ${link.http_status ? 'bg-muted text-foreground' : 'bg-destructive/10 text-destructive'}`}
                           >
                             {link.http_status || 'Timeout'}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {link.response_time_ms ? `${link.response_time_ms}ms` : '—'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-destructive truncate block max-w-[200px]">
+                          <span className="text-xs text-destructive truncate block max-w-[200px]">
                             {link.error_message || '—'}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(link.last_checked_at), {
                               addSuffix: true,
                             })}
@@ -525,10 +525,10 @@ export function AutomationDashboard() {
                     {geoMismatches.map((geo) => (
                       <TableRow key={geo.id}>
                         <TableCell>
-                          <Badge variant="outline" className="text-[0.65rem]">
+                          <Badge variant="outline" className="text-2xs">
                             {geo.content_type}
                           </Badge>
-                          <span className="text-[0.7rem] text-muted-foreground font-mono block">
+                          <span className="text-xs2 text-muted-foreground font-mono block">
                             {geo.content_id.slice(0, 8)}...
                           </span>
                         </TableCell>
@@ -543,7 +543,7 @@ export function AutomationDashboard() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-foreground max-w-[250px] block">
+                          <span className="text-xs text-foreground max-w-[250px] block">
                             {geo.mismatch_details}
                           </span>
                         </TableCell>
@@ -553,7 +553,7 @@ export function AutomationDashboard() {
                             : '—'}
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(geo.last_validated_at), {
                               addSuffix: true,
                             })}
@@ -612,13 +612,13 @@ function StatCard({
     <Card>
       <CardContent>
         <div className="flex items-center justify-between">
-          <span className="text-[0.75rem] text-muted-foreground">{label}</span>
+          <span className="text-xs text-muted-foreground">{label}</span>
           <Icon size={14} style={{ color: color || 'var(--muted-foreground)' }} />
         </div>
         <p className="text-[1.3rem] font-bold" style={{ color: color || 'inherit' }}>
           {value.toLocaleString()}
           {total != null && (
-            <span className="text-[0.75rem] text-muted-foreground ml-1 font-normal">
+            <span className="text-xs text-muted-foreground ml-1 font-normal">
               / {total}
             </span>
           )}
@@ -695,7 +695,7 @@ function FlagDetailDialog({
             </div>
           )}
 
-          <p className="text-[0.75rem] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Content ID: {flag.content_id} &middot; Created{' '}
             {formatDistanceToNow(new Date(flag.created_at), { addSuffix: true })}
           </p>
@@ -764,7 +764,7 @@ function ModuleConfigDialog({
             <p className="text-[0.85rem] font-medium mb-1">
               Confidence Threshold: {threshold.toFixed(0)}%
             </p>
-            <p className="text-[0.75rem] text-muted-foreground mb-2">
+            <p className="text-xs text-muted-foreground mb-2">
               Changes above this confidence level can be auto-approved
             </p>
             <Slider
@@ -774,7 +774,7 @@ function ModuleConfigDialog({
               max={100}
               step={5}
             />
-            <div className="flex justify-between text-[0.7rem] text-muted-foreground mt-1">
+            <div className="flex justify-between text-xs2 text-muted-foreground mt-1">
               <span>50%</span>
               <span>75%</span>
               <span>100%</span>
@@ -783,7 +783,7 @@ function ModuleConfigDialog({
 
           <div>
             <p className="text-[0.85rem] font-medium mb-1">Batch Size: {batchSize}</p>
-            <p className="text-[0.75rem] text-muted-foreground mb-2">
+            <p className="text-xs text-muted-foreground mb-2">
               Number of items to process per run
             </p>
             <Slider
@@ -798,7 +798,7 @@ function ModuleConfigDialog({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[0.85rem] font-medium">Auto-Approve</p>
-              <p className="text-[0.75rem] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Automatically apply changes above confidence threshold
               </p>
             </div>

@@ -551,7 +551,7 @@ export function VenueFilters({
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
             Refine
           </span>
@@ -559,7 +559,7 @@ export function VenueFilters({
 
         {/* City input */}
         <div className="max-w-[400px] flex flex-col gap-1.5">
-            <Label htmlFor="city" className="text-[11px] uppercase tracking-wider text-muted-foreground">City</Label>
+            <Label htmlFor="city" className="text-xs2 uppercase tracking-wider text-muted-foreground">City</Label>
             <Input
               id="city"
               placeholder="Enter city..."
@@ -683,12 +683,12 @@ function FilterDropdown({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+      <Label className="text-xs2 uppercase tracking-wider text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {label}
           {selected.length > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-[10px] font-semibold normal-case tracking-normal">
+            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-foreground text-background text-2xs font-semibold normal-case tracking-normal">
               {selected.length}
             </span>
           )}

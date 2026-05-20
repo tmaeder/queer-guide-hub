@@ -138,7 +138,7 @@ export function MarketplaceCard({
                     <HighlightedText text={listing.business_name} query={searchQuery} />
                   )}
                   {provenance && (
-                    <span className="ml-1.5 text-[11px] uppercase tracking-wider text-muted-foreground/70 inline-flex items-center gap-1">
+                    <span className="ml-1.5 text-xs2 uppercase tracking-wider text-muted-foreground/70 inline-flex items-center gap-1">
                       · {provenance}
                       {isAffiliate && (
                         <BadgeDollarSign
@@ -172,13 +172,13 @@ export function MarketplaceCard({
                     <span
                       key={p.key}
                       title={p.title}
-                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                     >
                       {p.label}
                     </span>
                   ))}
                   {pills.length > 2 && (
-                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 self-center">
+                    <span className="text-2xs uppercase tracking-[0.14em] text-muted-foreground/70 self-center">
                       +{pills.length - 2}
                     </span>
                   )}
@@ -188,7 +188,7 @@ export function MarketplaceCard({
                     <span
                       key={p.key}
                       title={p.title}
-                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                      className="inline-flex items-center rounded-full border border-border bg-background/60 px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                     >
                       {p.label}
                     </span>
@@ -211,7 +211,7 @@ export function MarketplaceCard({
             <div className="flex flex-col">
               <div className="flex items-baseline gap-1.5">
                 {price.modifier && (
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
+                  <span className="text-2xs uppercase tracking-wider text-muted-foreground">{price.modifier}</span>
                 )}
                 <p className="text-base font-bold leading-none">{price.primary}</p>
               </div>
@@ -219,7 +219,7 @@ export function MarketplaceCard({
                 <p className="text-xs text-muted-foreground mt-0.5">{price.secondary}</p>
               )}
               {viewsCount > 50 && (
-                <p className="text-[11px] text-muted-foreground/80 mt-0.5">{viewsCount.toLocaleString()} views</p>
+                <p className="text-xs2 text-muted-foreground/80 mt-0.5">{viewsCount.toLocaleString()} views</p>
               )}
               <div className="flex items-center gap-1.5 mt-1.5">
                 {listing.shipping_available && <Badge variant="outline">Ships</Badge>}

@@ -23,11 +23,11 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold"
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs2 font-semibold"
                 style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
               >
                 <Heart size={10} fill="currentColor" />
-                <span className="text-[11px] font-semibold">
+                <span className="text-xs2 font-semibold">
                   {t('places.social.friendsSaved', {
                     defaultValue: '{{count}} friend(s) saved',
                     count: signal.friends_saved,
@@ -43,9 +43,9 @@ export function SocialSignalBadges({ signal, tripUsageThreshold = 3 }: Props) {
         {showTrips && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-muted/40 text-muted-foreground">
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs2 font-semibold bg-muted/40 text-muted-foreground">
                 <Users size={10} />
-                <span className="text-[11px] font-semibold">
+                <span className="text-xs2 font-semibold">
                   {t('places.social.tripUsage', {
                     defaultValue: 'in {{count}} trip(s)',
                     count: signal.trip_usage,

@@ -189,7 +189,7 @@ export function DayCard({
                   {format(new Date(day.date), 'EEEE, MMM d')}
                 </p>
                 {isToday && (
-                  <Badge variant="default" className="rounded-full text-[10px]">
+                  <Badge variant="default" className="rounded-full text-2xs">
                     {t('trips.timeline.today', 'Today')}
                   </Badge>
                 )}
@@ -314,7 +314,7 @@ export function DayCard({
               return (
                 <div key={slot} className="mb-2 last:mb-0">
                   <div className="flex items-center justify-between mb-1.5 px-1">
-                    <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    <div className="inline-flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       <Icon style={{ width: 11, height: 11 }} aria-hidden />
                       {t(`trips.timeline.slot.${slot}`, defaultSlotLabel(slot))}
                     </div>
@@ -322,7 +322,7 @@ export function DayCard({
                       variant="ghost"
                       size="sm"
                       onClick={() => onAddPlace(slot)}
-                      className="h-6 px-2 text-[11px] opacity-60 hover:opacity-100"
+                      className="h-6 px-2 text-xs2 opacity-60 hover:opacity-100"
                       aria-label={t('trips.timeline.addToSlot', 'Add to {{slot}}', {
                         slot,
                       })}

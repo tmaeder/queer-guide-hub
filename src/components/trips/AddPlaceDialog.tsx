@@ -236,7 +236,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
     <Dialog open={open} onOpenChange={(o) => !o && resetAndClose()}>
       <DialogContent className="rounded-container">
         <DialogHeader>
-          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
             {t('trips.addPlace.eyebrow', 'New place')}
           </span>
@@ -358,7 +358,7 @@ export function AddPlaceDialog({ open, onClose, tripId, days, preselectedDayId }
                       >
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-medium">{r.name}</span>
-                          <Badge variant="outline" className="rounded-full text-[10px] uppercase tracking-wider">{r.type}</Badge>
+                          <Badge variant="outline" className="rounded-full text-2xs uppercase tracking-wider">{r.type}</Badge>
                           {r.type === 'venue' && (
                             <SocialSignalBadges signal={socialSignals?.get(r.id)} />
                           )}

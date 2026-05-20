@@ -36,7 +36,7 @@ function IconBadge({ icon: Icon, size = 16 }: { icon: React.ComponentType<{ size
 function CountBadge({ count }: { count: number | undefined }) {
   if (count === undefined) return null;
   return (
-    <span className="bg-muted text-muted-foreground inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-[0.65rem] font-semibold">
+    <span className="bg-muted text-muted-foreground inline-flex items-center justify-center rounded h-5 min-w-7 px-1.5 text-2xs font-semibold">
       {count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count}
     </span>
   );
@@ -142,7 +142,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
           </div>
           <div>
             <p className="text-sm font-bold tracking-tight leading-tight">Admin Console</p>
-            <p className="text-[0.7rem] text-muted-foreground/70">Manage everything</p>
+            <p className="text-xs2 text-muted-foreground/70">Manage everything</p>
           </div>
           {isAdmin && (
             <Tooltip>
@@ -179,11 +179,11 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                     <span className={`flex items-center transition-transform ${isOpen ? '' : '-rotate-90'}`}>
                       <ChevronDown size={14} />
                     </span>
-                    <span className="flex-1 text-left text-[0.65rem] font-bold tracking-[0.08em] text-muted-foreground/70">
+                    <span className="flex-1 text-left text-2xs font-bold tracking-[0.08em] text-muted-foreground/70">
                       {section.label.toUpperCase()}
                     </span>
                     {!countsLoading && (
-                      <span className="text-[0.6rem] font-medium text-muted-foreground/70">
+                      <span className="text-2xs font-medium text-muted-foreground/70">
                         {filteredItems.length}
                       </span>
                     )}
@@ -237,7 +237,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
           <p className="font-semibold text-[0.8rem] leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
             {userDisplayName}
           </p>
-          <p className="text-[0.65rem] text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+          <p className="text-2xs text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
             {userEmail}
           </p>
         </div>

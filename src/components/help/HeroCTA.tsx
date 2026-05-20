@@ -79,17 +79,17 @@ export function HeroCTA({ hotlines, country }: { hotlines: Hotline[]; country: s
           {t('help.hero_label', 'Recommended right now')}
         </span>
         {is247(hero.hours) && (
-          <Badge variant="default" className="text-[10px]">
+          <Badge variant="default" className="text-2xs">
             {t('help.badge_24_7', '24/7')}
           </Badge>
         )}
         {hero.free && (
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-2xs">
             {t('help.badge_free', 'Free')}
           </Badge>
         )}
         {hero.anonymous && (
-          <Badge variant="outline" className="text-[10px]">
+          <Badge variant="outline" className="text-2xs">
             {t('help.badge_anonymous', 'Anonymous')}
           </Badge>
         )}

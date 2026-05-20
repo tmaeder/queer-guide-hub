@@ -78,7 +78,7 @@ export function FeedbackFilters({
             Filters
             {filterCount > 0 && (
               <span
-                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[0.6rem] font-bold flex items-center justify-center"
+                className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-2xs font-bold flex items-center justify-center"
               >
                 {filterCount}
               </span>

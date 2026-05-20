@@ -54,7 +54,7 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
       {/* Content types */}
       <div className="flex gap-1 flex-wrap mb-3">
         {module.content_types.map((ct) => (
-          <Badge key={ct} variant="outline" className="text-[0.7rem] h-[22px]">
+          <Badge key={ct} variant="outline" className="text-xs2 h-[22px]">
             {ct}
           </Badge>
         ))}
@@ -89,7 +89,7 @@ export function ModuleCard({ module, onToggle, onRun, onSettings, isRunning }: P
             : 'Never run'}
         </p>
         {module.last_run_status && (
-          <Badge variant={statusVariant} className="h-5 text-[0.65rem]">
+          <Badge variant={statusVariant} className="h-5 text-2xs">
             {module.last_run_status}
           </Badge>
         )}

@@ -267,7 +267,7 @@ export default function MediaPanel({ sourceTable, sourceId }: MediaPanelProps) {
                   {/* Role badge */}
                   <Badge
                     variant="outline"
-                    className={`text-[0.65rem] h-5 ${getRoleBadgeClass(attachment.media_role)}`}
+                    className={`text-2xs h-5 ${getRoleBadgeClass(attachment.media_role)}`}
                   >
                     {attachment.media_role}
                   </Badge>

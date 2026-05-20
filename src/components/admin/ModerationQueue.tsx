@@ -306,7 +306,7 @@ export function ModerationQueue() {
                       {/* Top row: badges + actions */}
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <Badge
-                          className="text-white font-semibold text-[0.7rem]"
+                          className="text-white font-semibold text-xs2"
                           style={{ backgroundColor: STATUS_COLORS[flag.status] || 'hsl(var(--muted-foreground))' }}
                         >
                           {flag.status}
@@ -317,7 +317,7 @@ export function ModerationQueue() {
                         <Badge variant="outline">
                           {CONTENT_TYPE_LABELS[flag.content_type] || flag.content_type}
                         </Badge>
-                        <Badge variant="outline" className="gap-1 text-[0.7rem]">
+                        <Badge variant="outline" className="gap-1 text-xs2">
                           {flag.source === 'system' ? (
                             <Bot style={{ width: 12, height: 12 }} />
                           ) : (

@@ -328,7 +328,7 @@ export function FeedbackDetailDrawer({
                             <Badge
                               key={l}
                               variant="outline"
-                              className="cursor-pointer text-[0.6rem]"
+                              className="cursor-pointer text-2xs"
                               onClick={() => {
                                 onAddLabel(l);
                                 setLabelPopoverOpen(false);

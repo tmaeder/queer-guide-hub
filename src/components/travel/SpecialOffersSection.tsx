@@ -96,7 +96,7 @@ export function SpecialOffersSection() {
                 </p>
               </div>
               {offer.departDate && (
-                <p className="text-[0.7rem] text-muted-foreground mb-1">
+                <p className="text-xs2 text-muted-foreground mb-1">
                   {new Date(offer.departDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   {offer.returnDate && ` - ${new Date(offer.returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                 </p>

@@ -97,7 +97,7 @@ export function DataQualityDashboard() {
       ) : (
         <div className="border border-border rounded-element overflow-hidden bg-background">
           <div
-            className="grid px-4 py-2.5 bg-muted border-b border-border text-[0.7rem] font-bold uppercase tracking-wider text-muted-foreground"
+            className="grid px-4 py-2.5 bg-muted border-b border-border text-xs2 font-bold uppercase tracking-wider text-muted-foreground"
             style={{ gridTemplateColumns: '2fr repeat(6, 1fr)' }}
           >
             <div>Type</div>
@@ -146,7 +146,7 @@ function SummaryTile({
     <div className="p-3 border border-border rounded-element bg-background flex flex-col gap-1">
       <div className="flex items-center gap-1.5">
         <Icon size={14} color={color} />
-        <p className="text-[0.7rem] text-muted-foreground">{label}</p>
+        <p className="text-xs2 text-muted-foreground">{label}</p>
       </div>
       <p className="text-2xl font-bold" style={{ color }}>
         {value.toLocaleString()}

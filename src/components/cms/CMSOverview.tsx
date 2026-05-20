@@ -342,7 +342,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                     </div>
                     {reviewCount > 0 ? (
                       <Badge
-                        className="h-[22px] text-[0.7rem] font-semibold"
+                        className="h-[22px] text-xs2 font-semibold"
                         style={{
                           background: alphaHex('hsl(var(--foreground) / 0.55)', 0.12),
                           color: 'hsl(var(--foreground) / 0.55)',
@@ -352,7 +352,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
                       </Badge>
                     ) : (
                       <Badge
-                        className="h-[22px] text-[0.7rem] font-semibold"
+                        className="h-[22px] text-xs2 font-semibold"
                         style={{
                           background: alphaHex('hsl(var(--foreground))', 0.12),
                           color: 'hsl(var(--foreground))',

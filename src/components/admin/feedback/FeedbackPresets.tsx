@@ -56,7 +56,7 @@ export function FeedbackPresets({ state, update, clearFilters, currentUserId }: 
             key={id}
             type="button"
             onClick={() => apply(id)}
-            className={`inline-flex items-center gap-1.5 text-[0.7rem] px-2 py-1 rounded-full cursor-pointer border transition ${
+            className={`inline-flex items-center gap-1.5 text-xs2 px-2 py-1 rounded-full cursor-pointer border transition ${
               on
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-transparent text-foreground border-border hover:bg-muted/40'

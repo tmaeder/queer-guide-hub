@@ -102,7 +102,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 mb-0.5">
                       <span className="text-xs font-bold">{c.display_name}</span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-2xs text-muted-foreground">
                         {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
                       </span>
                     </div>
@@ -157,7 +157,7 @@ export function PlaceCommentThread({ tripId, placeId, comments, disabled, isOwne
                 </Button>
               </div>
               {post.isError && (
-                <span className="text-[11px] text-destructive">
+                <span className="text-xs2 text-destructive">
                   Could not post comment.
                 </span>
               )}

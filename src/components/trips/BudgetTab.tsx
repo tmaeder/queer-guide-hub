@@ -167,7 +167,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       <Card>
         <CardContent>
           <div className="flex items-center justify-between mb-1">
-            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem]">
+            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2">
               {t('trips.budget.totalSpend')}
             </span>
             <Badge variant="secondary">
@@ -211,7 +211,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {chartData.length > 0 && (
         <Card className="mt-3">
           <CardContent>
-            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem] block mb-1">
+            <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2 block mb-1">
               {t('trips.budget.spendingByCategory')}
             </span>
             <div style={{ height: 200 }}>
@@ -336,7 +336,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {Object.keys(summary.perPersonBalance).length > 0 && (
         <div className="mt-4">
           <div className="border-t border-border mb-2" />
-          <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-[0.7rem] block mb-1">
+          <span className="uppercase tracking-[0.06em] font-bold text-muted-foreground text-xs2 block mb-1">
             {t('trips.budget.settlements')}
           </span>
           {Object.entries(summary.perPersonBalance).map(([cur, settlements]) =>
@@ -344,13 +344,13 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               <Card key={`${cur}-${i}`} className="mb-1">
                 <CardContent>
                   <div className="flex items-center gap-2">
-                    <Avatar className="w-6 h-6 text-[11px]">
+                    <Avatar className="w-6 h-6 text-xs2">
                       {memberAvatar(s.from) && <AvatarImage src={memberAvatar(s.from)} />}
                       <AvatarFallback>{memberName(s.from)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{memberName(s.from)}</span>
                     <ArrowRight size={14} className="text-muted-foreground" />
-                    <Avatar className="w-6 h-6 text-[11px]">
+                    <Avatar className="w-6 h-6 text-xs2">
                       {memberAvatar(s.to) && <AvatarImage src={memberAvatar(s.to)} />}
                       <AvatarFallback>{memberName(s.to)[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>

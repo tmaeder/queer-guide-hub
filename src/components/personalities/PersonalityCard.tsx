@@ -239,7 +239,7 @@ export function PersonalityCard({ personality, loading, onClick }: PersonalityCa
             <div className="text-xs text-muted-foreground">{personality.profession}</div>
           )}
           {metaParts.length > 0 && (
-            <div className="text-[11px] text-muted-foreground/80">
+            <div className="text-xs2 text-muted-foreground/80">
               {metaParts.join(' · ')}
             </div>
           )}

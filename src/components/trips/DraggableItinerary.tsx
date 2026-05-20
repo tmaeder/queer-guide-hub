@@ -239,7 +239,7 @@ export function DraggableItinerary({
           <div className="border border-dashed border-border rounded-container p-5 mb-4 bg-muted/40 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
                   <Inbox style={{ width: 12, height: 12 }} aria-hidden="true" />
                   {t('trips.itinerary.unassigned')}
                 </span>

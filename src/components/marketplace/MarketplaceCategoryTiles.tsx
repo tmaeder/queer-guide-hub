@@ -90,7 +90,7 @@ export function MarketplaceCategoryTiles() {
                   </div>
                   <div className="flex flex-col gap-1 mt-3">
                     <span className="text-sm font-semibold leading-tight text-balance">{prettify(tile.slug)}</span>
-                    <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="text-xs2 uppercase tracking-[0.14em] text-muted-foreground">
                       {tile.count.toLocaleString()} listing{tile.count !== 1 ? 's' : ''}
                     </span>
                   </div>

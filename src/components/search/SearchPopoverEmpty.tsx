@@ -26,7 +26,7 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
       {tiles.length > 0 && (
         <div style={{ padding: '12px 12px 8px' }}>
           <div
-            className="text-[10px] uppercase tracking-wider text-muted-foreground"
+            className="text-2xs uppercase tracking-wider text-muted-foreground"
             style={{ fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}
           >
             <TrendingUp style={{ height: 11, width: 11 }} />
@@ -81,7 +81,7 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
                       {name}
                     </div>
                     <div
-                      className="text-[10px] text-muted-foreground"
+                      className="text-2xs text-muted-foreground"
                       style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                     >
                       {[hit.city, hit.country].filter(Boolean).join(' · ') || hit.type}
@@ -95,7 +95,7 @@ export function SearchPopoverEmpty({ trending, onSelectTrending, onBrowse }: Sea
       )}
 
       <div style={{ padding: '12px 12px 16px', borderTop: tiles.length > 0 ? '1px solid hsl(var(--border))' : 0 }}>
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground" style={{ fontWeight: 600, marginBottom: 6, padding: '0 4px' }}>
+        <div className="text-2xs uppercase tracking-wider text-muted-foreground" style={{ fontWeight: 600, marginBottom: 6, padding: '0 4px' }}>
           {t('search.browse', 'Browse')}
         </div>
         {browseLinks.map((link) => {

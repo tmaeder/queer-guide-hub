@@ -81,7 +81,7 @@ function CellTitle({
 function Metric({ label, value, ok }: { label: string; value: string; ok: boolean }) {
   return (
     <div className="p-2 bg-muted">
-      <div className="text-[0.65rem] font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
       <div className={`text-base font-bold leading-none mt-1 ${ok ? '' : 'text-destructive'}`}>
@@ -157,14 +157,14 @@ function ReviewQueueCell({ data }: { data: CockpitData }) {
               <q.icon size={13} className="text-muted-foreground" aria-hidden />
               <span className="text-sm font-medium">{q.label}</span>
             </span>
-            <Badge variant="secondary" className="h-5 text-[0.7rem] font-bold rounded-element">
+            <Badge variant="secondary" className="h-5 text-xs2 font-bold rounded-element">
               {q.count.toLocaleString()}
             </Badge>
           </button>
         ))}
       </div>
       {review.total > 0 && (
-        <div className="text-[0.7rem] font-semibold mt-2 text-muted-foreground">
+        <div className="text-xs2 font-semibold mt-2 text-muted-foreground">
           {review.total.toLocaleString()} total items
         </div>
       )}
@@ -214,7 +214,7 @@ function QualityCell({ data }: { data: CockpitData }) {
     >
       <div className="text-center py-1">
         <div className="text-4xl font-bold leading-none">{quality.overallScore}%</div>
-        <div className="text-[0.7rem] font-medium text-muted-foreground mt-1">Overall Score</div>
+        <div className="text-xs2 font-medium text-muted-foreground mt-1">Overall Score</div>
       </div>
       <div className="bg-muted mt-2" style={{ height: 4 }}>
         <div className="h-full bg-foreground" style={{ width: `${quality.overallScore}%` }} />
@@ -222,11 +222,11 @@ function QualityCell({ data }: { data: CockpitData }) {
       <div className="flex justify-center gap-4 mt-2">
         <span className="flex items-center gap-1">
           <AlertTriangle size={11} className="text-muted-foreground" aria-hidden />
-          <span className="text-[0.7rem] font-medium">{quality.warnings} warn</span>
+          <span className="text-xs2 font-medium">{quality.warnings} warn</span>
         </span>
         <span className="flex items-center gap-1">
           <AlertCircle size={11} className="text-muted-foreground" aria-hidden />
-          <span className="text-[0.7rem] font-medium">{quality.critical} critical</span>
+          <span className="text-xs2 font-medium">{quality.critical} critical</span>
         </span>
       </div>
     </BentoCell>
@@ -262,7 +262,7 @@ function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
           <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Content Overview
           </h3>
-          <span className="text-[0.7rem] text-muted-foreground">
+          <span className="text-xs2 text-muted-foreground">
             {total.toLocaleString()} total items
           </span>
         </div>
@@ -280,7 +280,7 @@ function ContentOverviewCell({ stats }: { stats: CockpitData['stats'] }) {
             <div className="text-base font-bold leading-none">
               {(stats[key as keyof typeof stats] ?? 0).toLocaleString()}
             </div>
-            <div className="font-medium text-muted-foreground text-[0.65rem]">{label}</div>
+            <div className="font-medium text-muted-foreground text-2xs">{label}</div>
           </button>
         ))}
       </div>

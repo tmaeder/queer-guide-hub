@@ -222,7 +222,7 @@ export default function ExternalImageSearch({
 
                     {/* Source badge */}
                     <span
-                      className="absolute top-1.5 left-1.5 h-5 px-1.5 text-[0.65rem] font-semibold text-white rounded capitalize flex items-center"
+                      className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs font-semibold text-white rounded capitalize flex items-center"
                       style={{ backgroundColor: SOURCE_COLORS[image.source] || 'hsl(var(--muted-foreground))' }}
                     >
                       {image.source === 'wikipedia' ? 'Wiki' : image.source}
@@ -232,13 +232,13 @@ export default function ExternalImageSearch({
                     <div className="p-1.5">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <p className="text-[0.7rem] font-medium block truncate">
+                          <p className="text-xs2 font-medium block truncate">
                             {image.alt}
                           </p>
                         </TooltipTrigger>
                         <TooltipContent>{image.alt}</TooltipContent>
                       </Tooltip>
-                      <p className="text-[0.65rem] text-muted-foreground block truncate">
+                      <p className="text-2xs text-muted-foreground block truncate">
                         {image.photographer}
                       </p>
                     </div>
@@ -280,7 +280,7 @@ export default function ExternalImageSearch({
               </p>
               <div className="flex flex-row gap-1 items-center">
                 {selectedImage.license && (
-                  <Badge variant="outline" className="h-[18px] text-[0.6rem]">
+                  <Badge variant="outline" className="h-[18px] text-2xs">
                     {selectedImage.license}
                   </Badge>
                 )}

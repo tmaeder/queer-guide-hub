@@ -86,7 +86,7 @@ export function TripsToolbar({
               >
                 {t(`trips.toolbar.status.${status}`)}
                 <span
-                  className="ml-1 text-[0.6875rem] opacity-70"
+                  className="ml-1 text-xs2 opacity-70"
                   style={{ fontVariantNumeric: 'tabular-nums' }}
                 >
                   {counts[status] ?? 0}

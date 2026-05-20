@@ -73,7 +73,7 @@ export function RunHistoryTable({ runs, modules }: Props) {
                   {mod?.display_name ?? run.module_id.slice(0, 8)}
                 </p>
                 {run.content_type && (
-                  <Badge variant="outline" className="h-[18px] text-[0.65rem] mt-0.5">
+                  <Badge variant="outline" className="h-[18px] text-2xs mt-0.5">
                     {run.content_type}
                   </Badge>
                 )}
@@ -103,7 +103,7 @@ export function RunHistoryTable({ runs, modules }: Props) {
               </TableCell>
               <TableCell className="text-right">
                 {hasErrors ? (
-                  <Badge variant="destructive" className="h-5 text-[0.7rem]">
+                  <Badge variant="destructive" className="h-5 text-xs2">
                     {run.errors}
                   </Badge>
                 ) : (

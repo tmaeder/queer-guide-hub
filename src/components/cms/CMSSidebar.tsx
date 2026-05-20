@@ -54,7 +54,7 @@ interface CMSSidebarProps {
 function SectionLabel({ children }: { children: string }) {
   return (
     <p
-      className="block px-5 pt-4 pb-1 text-[0.65rem] font-bold text-muted-foreground/60 uppercase select-none"
+      className="block px-5 pt-4 pb-1 text-2xs font-bold text-muted-foreground/60 uppercase select-none"
       style={{ letterSpacing: '0.08em' }}
     >
       {children}
@@ -118,7 +118,7 @@ function CountBadge({ count, color }: { count: number | undefined; color?: strin
   return (
     <Badge
       variant="secondary"
-      className="h-5 text-[0.65rem] font-semibold min-w-[28px] px-1.5"
+      className="h-5 text-2xs font-semibold min-w-[28px] px-1.5"
       style={{
         backgroundColor: color ? color + '14' : undefined,
         color: color || undefined,
@@ -213,7 +213,7 @@ export function CMSSidebar({
             >
               Content Hub
             </p>
-            <p className="text-muted-foreground/60 text-[0.7rem]">Manage all content</p>
+            <p className="text-muted-foreground/60 text-xs2">Manage all content</p>
           </div>
         </div>
       </div>
@@ -253,7 +253,7 @@ export function CMSSidebar({
             </span>
             <span className="text-[0.85rem] font-semibold flex-1">Content</span>
             {!countsLoading && (
-              <span className="text-muted-foreground/60 text-[0.65rem] font-medium">
+              <span className="text-muted-foreground/60 text-2xs font-medium">
                 {contentTypes.length} types
               </span>
             )}
@@ -357,7 +357,7 @@ export function CMSSidebar({
             </span>
             {reviewCount > 0 && (
               <Badge
-                className="h-5 text-[0.65rem] font-bold min-w-[24px] px-1.5"
+                className="h-5 text-2xs font-bold min-w-[24px] px-1.5"
                 style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}
               >
                 {reviewCount}
@@ -442,7 +442,7 @@ export function CMSSidebar({
         </Avatar>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-[0.8rem] leading-tight truncate">{userDisplayName}</p>
-          <p className="text-muted-foreground/60 text-[0.65rem] leading-tight truncate block">
+          <p className="text-muted-foreground/60 text-2xs leading-tight truncate block">
             {userEmail}
           </p>
         </div>

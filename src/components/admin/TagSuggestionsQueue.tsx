@@ -177,12 +177,12 @@ export function TagSuggestionsQueue() {
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <p className="font-semibold text-[0.9rem]">{item.suggested_tag_name}</p>
                     <Badge variant="outline">{item.entity_type}</Badge>
-                    <Badge variant="outline" className="text-[0.7rem] gap-1">
+                    <Badge variant="outline" className="text-xs2 gap-1">
                       <SourceIcon style={{ width: 12, height: 12 }} />
                       {sourceInfo.label}
                     </Badge>
                     <span
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.7rem] font-semibold"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs2 font-semibold"
                       style={{ backgroundColor: `${confidenceColor}15`, color: confidenceColor }}
                     >
                       {(item.confidence * 100).toFixed(0)}%

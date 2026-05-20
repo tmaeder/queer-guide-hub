@@ -168,7 +168,7 @@ function RailSection({ heading, children }: { heading: string; children: React.R
   return (
     <div style={{ paddingTop: 8, paddingBottom: 4 }}>
       <div
-        className="text-[10px] uppercase tracking-wider text-muted-foreground"
+        className="text-2xs uppercase tracking-wider text-muted-foreground"
         style={{ padding: '4px 12px 6px', fontWeight: 600 }}
       >
         {heading}
@@ -275,7 +275,7 @@ function ScopeRow({
       </span>
       {count !== null && (
         <span
-          className="text-[11px]"
+          className="text-xs2"
           style={{ color: 'hsl(var(--muted-foreground))', fontVariantNumeric: 'tabular-nums' }}
         >
           {count === 0 ? '—' : count}

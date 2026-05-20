@@ -79,7 +79,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
           <span className="text-xs font-semibold text-foreground">Meta Title</span>
           <span
             className={cn(
-              'text-[0.7rem]',
+              'text-xs2',
               titleOver ? 'text-destructive' : 'text-muted-foreground',
             )}
           >
@@ -102,7 +102,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
           <span className="text-xs font-semibold text-foreground">Meta Description</span>
           <span
             className={cn(
-              'text-[0.7rem]',
+              'text-xs2',
               descOver ? 'text-destructive' : 'text-muted-foreground',
             )}
           >

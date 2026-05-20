@@ -23,7 +23,7 @@ export function MarketplaceCityChips() {
             >
               <MapPin style={{ width: 12, height: 12 }} aria-hidden="true" />
               <span>{c.name}</span>
-              <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <span className="text-xs2 uppercase tracking-[0.14em] text-muted-foreground">
                 {c.count}
               </span>
             </LocalizedLink>
@@ -34,7 +34,7 @@ export function MarketplaceCityChips() {
             >
               <MapPin style={{ width: 12, height: 12 }} aria-hidden="true" />
               {c.name}
-              <span className="text-[11px] uppercase tracking-[0.14em]">{c.count}</span>
+              <span className="text-xs2 uppercase tracking-[0.14em]">{c.count}</span>
             </span>
           ),
         )}

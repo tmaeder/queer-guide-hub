@@ -84,14 +84,14 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
       {/* Header */}
       <div className="px-4 py-3 border-b space-y-1.5">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="text-[10px] normal-case">
+          <Badge variant="outline" className="text-2xs normal-case">
             {humanize(item.queue_type)}
           </Badge>
-          <Badge variant="secondary" className="text-[10px] normal-case">
+          <Badge variant="secondary" className="text-2xs normal-case">
             {humanize(item.content_type)}
           </Badge>
           {item.confidence_score !== null && (
-            <span className="text-[10px] text-muted-foreground tabular-nums ml-auto">
+            <span className="text-2xs text-muted-foreground tabular-nums ml-auto">
               Confidence: {(item.confidence_score * 100).toFixed(0)}%
             </span>
           )}
@@ -100,7 +100,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
         {item.subtitle && (
           <p className="text-xs text-muted-foreground">{humanize(item.subtitle)}</p>
         )}
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-3 text-2xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <Clock className="h-3 w-3" />
             {formatDate(item.created_at)}
@@ -132,7 +132,7 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
 
             {diffs.length > 0 && (
               <div className="border-t">
-                <p className="px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
+                <p className="px-3 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
                   Changes
                 </p>
                 <FieldDiffView diffs={diffs} />
@@ -142,13 +142,13 @@ export function TriageDetailPanel({ item, onAction, isActionLoading }: TriageDet
             {/* Structured meta */}
             {metaEntries.length > 0 && (
               <div className="border-t">
-                <p className="px-3 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
+                <p className="px-3 py-1.5 text-2xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/50">
                   Context
                 </p>
                 <div className="divide-y">
                   {metaEntries.map(([key, value]) => (
                     <div key={key} className="flex items-baseline gap-3 px-3 py-1.5 text-xs">
-                      <span className="text-muted-foreground shrink-0 w-32 text-[10px] uppercase tracking-wider">
+                      <span className="text-muted-foreground shrink-0 w-32 text-2xs uppercase tracking-wider">
                         {formatMetaKey(key)}
                       </span>
                       <span className="min-w-0 break-words">

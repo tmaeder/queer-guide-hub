@@ -407,7 +407,7 @@ export default function MediaPickerDialog({
 
                         {/* External source badge */}
                         {item.external_source && (
-                          <span className="absolute top-1.5 left-1.5 h-5 px-1.5 text-[0.65rem] capitalize bg-black/60 text-white rounded flex items-center">
+                          <span className="absolute top-1.5 left-1.5 h-5 px-1.5 text-2xs capitalize bg-black/60 text-white rounded flex items-center">
                             {item.external_source}
                           </span>
                         )}

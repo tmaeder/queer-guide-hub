@@ -192,7 +192,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
                           {doc.notes}
                         </p>
                       )}
-                      <p className="text-[0.6875rem] text-muted-foreground mt-0.5">
+                      <p className="text-xs2 text-muted-foreground mt-0.5">
                         {t('docs.list.uploaded', 'Uploaded')}{' '}
                         {format(new Date(doc.created_at), 'MMM d, yyyy')}
                       </p>

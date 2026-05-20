@@ -45,13 +45,13 @@ export function StorySuggestionsPanel({ suggestions, onAccept, onDismiss }: Prop
               {s.proposed_title}
             </p>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="h-[18px] text-[0.65rem]">
+              <Badge variant="secondary" className="h-[18px] text-2xs">
                 {s.member_ids.length} items
               </Badge>
-              <Badge variant="secondary" className="h-[18px] text-[0.65rem]">
+              <Badge variant="secondary" className="h-[18px] text-2xs">
                 {Math.round(s.avg_similarity * 100)}% match
               </Badge>
-              <Badge variant="secondary" className="h-[18px] text-[0.65rem]">
+              <Badge variant="secondary" className="h-[18px] text-2xs">
                 {s.method}
               </Badge>
             </div>

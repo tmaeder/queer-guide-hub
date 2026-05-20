@@ -208,7 +208,7 @@ export const EmailIngestionsPanel = () => {
                             {ing.ai_extraction && (
                               <div className="mt-2">
                                 <span className="text-xs font-semibold">AI Extraction:</span>
-                                <pre className="mt-1 p-2 bg-card rounded text-[0.7rem] overflow-auto max-h-[200px] border">
+                                <pre className="mt-1 p-2 bg-card rounded text-xs2 overflow-auto max-h-[200px] border">
                                   {JSON.stringify(ing.ai_extraction, null, 2)}
                                 </pre>
                               </div>

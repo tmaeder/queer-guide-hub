@@ -90,7 +90,7 @@ export function RevisionPanel({ sourceTable, sourceId }: RevisionPanelProps) {
                     <Clock size={10} className="text-muted-foreground" />
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-[0.7rem] text-muted-foreground">
+                        <span className="text-xs2 text-muted-foreground">
                           {formatRelativeTime(revision.created_at)}
                         </span>
                       </TooltipTrigger>
@@ -101,7 +101,7 @@ export function RevisionPanel({ sourceTable, sourceId }: RevisionPanelProps) {
 
                 {revision.change_summary && (
                   <span
-                    className="block overflow-hidden text-ellipsis whitespace-nowrap text-[0.7rem] text-muted-foreground mt-0.5"
+                    className="block overflow-hidden text-ellipsis whitespace-nowrap text-xs2 text-muted-foreground mt-0.5"
                   >
                     {revision.change_summary}
                   </span>

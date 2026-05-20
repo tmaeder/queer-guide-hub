@@ -88,7 +88,7 @@ export function EntityCard({
         {overlay && (
           <div className="absolute inset-x-0 bottom-0 z-10 p-4 text-background">
             {eyebrow && (
-              <div className="text-[11px] font-medium uppercase tracking-[0.14em] opacity-80">
+              <div className="text-xs2 font-medium uppercase tracking-[0.14em] opacity-80">
                 {eyebrow}
               </div>
             )}
@@ -103,7 +103,7 @@ export function EntityCard({
       {!overlay && (
         <div className="flex flex-1 flex-col gap-1.5 p-4">
           {eyebrow && (
-            <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="text-xs2 font-medium uppercase tracking-[0.14em] text-muted-foreground">
               {eyebrow}
             </div>
           )}

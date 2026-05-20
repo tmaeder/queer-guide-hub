@@ -100,7 +100,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
           {t('trips.discover.filtersButton', 'Filters')}
           {activeCount > 0 && (
             <span
-              className="ml-2 inline-flex items-center justify-center rounded-full bg-background text-foreground text-[0.6875rem] font-bold h-5 min-w-5 px-1"
+              className="ml-2 inline-flex items-center justify-center rounded-full bg-background text-foreground text-xs2 font-bold h-5 min-w-5 px-1"
               aria-label={t('trips.discover.activeCountAria', '{{count}} active', {
                 count: activeCount,
               })}
@@ -195,7 +195,7 @@ export function DiscoverFilters({ value, onChange }: Props) {
                 'Minimum equality score',
               )}
             />
-            <p className="text-[0.6875rem] text-muted-foreground mt-2 leading-relaxed">
+            <p className="text-xs2 text-muted-foreground mt-2 leading-relaxed">
               {t(
                 'trips.discover.filters.minEqualityHint',
                 'Hides trips visiting countries below this LGBTQ+ legal equality score.',

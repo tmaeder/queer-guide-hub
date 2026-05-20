@@ -28,7 +28,7 @@ export function SavedSearchesButton() {
           <Bookmark style={{ width: 14, height: 14, marginRight: 6 }} aria-hidden="true" />
           Saved searches
           {searches.length > 0 && (
-            <span className="ml-1.5 text-[11px] rounded-full bg-muted px-1.5 py-0 leading-tight">
+            <span className="ml-1.5 text-xs2 rounded-full bg-muted px-1.5 py-0 leading-tight">
               {searches.length}
             </span>
           )}

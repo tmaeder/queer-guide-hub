@@ -162,7 +162,7 @@ export default function ResourceTopic() {
                   >
                     <p className="font-semibold text-sm line-clamp-2">{n.title}</p>
                     {n.publisher_name && (
-                      <p className="mt-1 text-[0.7rem] text-muted-foreground">{n.publisher_name}</p>
+                      <p className="mt-1 text-xs2 text-muted-foreground">{n.publisher_name}</p>
                     )}
                   </LocalizedLink>
                 </li>

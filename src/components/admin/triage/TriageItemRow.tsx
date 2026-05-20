@@ -101,19 +101,19 @@ export function TriageItemRow({
 
         {/* Meta row */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <Badge variant="outline" className="shrink-0 text-[10px] font-normal normal-case px-1.5 py-0 h-4">
+          <Badge variant="outline" className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4">
             {QUEUE_LABELS[item.queue_type] ?? humanize(item.queue_type)}
           </Badge>
-          <Badge variant="secondary" className="shrink-0 text-[10px] font-normal normal-case px-1.5 py-0 h-4">
+          <Badge variant="secondary" className="shrink-0 text-2xs font-normal normal-case px-1.5 py-0 h-4">
             {contentLabel}
           </Badge>
           {item.has_diff && (
-            <Badge variant="outline" className="shrink-0 text-[10px] px-1 py-0 h-4">
+            <Badge variant="outline" className="shrink-0 text-2xs px-1 py-0 h-4">
               diff
             </Badge>
           )}
           {item.subtitle && (
-            <span className="text-[10px] text-muted-foreground truncate">
+            <span className="text-2xs text-muted-foreground truncate">
               {humanize(item.subtitle)}
             </span>
           )}
@@ -122,11 +122,11 @@ export function TriageItemRow({
 
       {/* Right side: confidence + age */}
       <div className="flex flex-col items-end gap-0.5 shrink-0">
-        <span className="text-[10px] text-muted-foreground tabular-nums">
+        <span className="text-2xs text-muted-foreground tabular-nums">
           {formatAge(item.created_at)}
         </span>
         {conf && (
-          <span className={cn('text-[10px] tabular-nums', conf.className)}>
+          <span className={cn('text-2xs tabular-nums', conf.className)}>
             {conf.text}
           </span>
         )}

@@ -200,21 +200,21 @@ export const EventCard = memo(function EventCard({
                   <div className="flex gap-1">
                     {isVisited && (
                       <div
-                        className="inline-flex items-center px-1.5 py-0.5 text-[0.65rem] font-semibold bg-foreground/80 text-background"
+                        className="inline-flex items-center px-1.5 py-0.5 text-2xs font-semibold bg-foreground/80 text-background"
                         title="Visited"
                       >
                         ✓ Visited
                       </div>
                     )}
                     {tripStatus?.isInTrip && (
-                      <div className="flex items-center gap-0.5 bg-primary text-primary-foreground rounded-full px-1 py-0.5 text-[0.7rem] font-semibold">
+                      <div className="flex items-center gap-0.5 bg-primary text-primary-foreground rounded-full px-1 py-0.5 text-xs2 font-semibold">
                         <Luggage className="w-3 h-3" />
                         In trip
                       </div>
                     )}
                     {overlapsActiveTrip && (
                       <div
-                        className="flex items-center gap-0.5 bg-background text-primary border border-primary rounded-full px-1 py-0.5 text-[0.7rem] font-semibold"
+                        className="flex items-center gap-0.5 bg-background text-primary border border-primary rounded-full px-1 py-0.5 text-xs2 font-semibold"
                         title={`Happens during ${activeTrip?.title}`}
                       >
                         <Calendar className="w-3 h-3" />

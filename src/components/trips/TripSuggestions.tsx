@@ -241,7 +241,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                       {venue.foursquare_rating && (
                         <div className="flex items-center gap-0.5">
                           <Star size={10} className="text-foreground" />
-                          <span className="text-[11px]">{venue.foursquare_rating}</span>
+                          <span className="text-xs2">{venue.foursquare_rating}</span>
                         </div>
                       )}
                     </div>
@@ -273,7 +273,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
                     <div className="flex items-center gap-1.5">
                       {event.event_type && <Badge variant="outline">{event.event_type}</Badge>}
                       {event.start_date && (
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-xs2 text-muted-foreground">
                           {new Date(event.start_date).toLocaleDateString(undefined, {
                             month: 'short',
                             day: 'numeric',

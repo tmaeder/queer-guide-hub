@@ -47,7 +47,7 @@ function Panel({ title, open, onOpenChange, badge, children }: PanelProps) {
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold">{title}</span>
               {badge !== undefined && badge > 0 && (
-                <Badge variant="secondary" className="h-5 text-[0.7rem] font-semibold px-1.5">
+                <Badge variant="secondary" className="h-5 text-xs2 font-semibold px-1.5">
                   {badge}
                 </Badge>
               )}

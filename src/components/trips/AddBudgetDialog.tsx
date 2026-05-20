@@ -181,11 +181,11 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
                   return (
                     <SelectItem key={m.user_id} value={m.user_id}>
                       <span className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5 text-[11px]">
+                        <Avatar className="h-5 w-5 text-xs2">
                           {m.profiles?.avatar_url && (
                             <AvatarImage src={m.profiles.avatar_url} alt="" />
                           )}
-                          <AvatarFallback className="text-[11px]">{initial}</AvatarFallback>
+                          <AvatarFallback className="text-xs2">{initial}</AvatarFallback>
                         </Avatar>
                         {m.profiles?.display_name || t('common.unknown', 'Unknown')}
                       </span>
@@ -220,7 +220,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
                       {m.profiles?.avatar_url && (
                         <AvatarImage src={m.profiles.avatar_url} alt="" />
                       )}
-                      <AvatarFallback className="text-[10px]">{initial}</AvatarFallback>
+                      <AvatarFallback className="text-2xs">{initial}</AvatarFallback>
                     </Avatar>
                     {m.profiles?.display_name || 'Unknown'}
                   </button>

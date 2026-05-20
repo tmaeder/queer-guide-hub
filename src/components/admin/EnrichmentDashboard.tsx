@@ -103,7 +103,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
         <h3 className="text-sm font-semibold">Pipeline Health (24h)</h3>
         {health.queueDepth > 0 && (
           <Badge
-            className="ml-auto h-5 text-[0.7rem] font-semibold"
+            className="ml-auto h-5 text-xs2 font-semibold"
             style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
           >
             {health.queueDepth} queued
@@ -131,7 +131,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
             {Object.entries(health.avgDurationMs).map(([step, ms]) => (
               <span
                 key={step}
-                className="inline-flex items-center rounded border px-2 h-[22px] text-[0.7rem]"
+                className="inline-flex items-center rounded border px-2 h-[22px] text-xs2"
                 style={{
                   borderColor: health.failuresByStep[step]
                     ? 'hsl(var(--muted))'
@@ -151,7 +151,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
           {Object.entries(health.failuresByStep).map(([step, count]) => (
             <span
               key={step}
-              className="inline-flex items-center gap-1 rounded px-2 h-[22px] text-[0.7rem]"
+              className="inline-flex items-center gap-1 rounded px-2 h-[22px] text-xs2"
               style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
             >
               <AlertCircle size={12} />
@@ -306,7 +306,7 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
         <h3 className="text-sm font-semibold">Needs Attention</h3>
         {needsAttention.total > 0 && (
           <Badge
-            className="ml-auto h-5 text-[0.7rem] font-bold"
+            className="ml-auto h-5 text-xs2 font-bold"
             style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
           >
             {needsAttention.total}
@@ -391,7 +391,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
         </div>
         <h3 className="text-sm font-semibold">Review Queue</h3>
         <Badge
-          className="ml-auto h-5 text-[0.7rem] font-semibold"
+          className="ml-auto h-5 text-xs2 font-semibold"
           style={{
             background: items.length > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
             color: items.length > 0 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--foreground))',
@@ -429,7 +429,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span
-                        className="inline-flex items-center rounded px-1.5 h-[18px] text-[0.6rem] font-semibold"
+                        className="inline-flex items-center rounded px-1.5 h-[18px] text-2xs font-semibold"
                         style={{
                           background: 'hsl(var(--muted))',
                           color: typeMeta.color,
@@ -437,7 +437,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
                       >
                         {typeMeta.label}
                       </span>
-                      <span className="inline-flex items-center rounded border px-1.5 h-[18px] text-[0.6rem]">
+                      <span className="inline-flex items-center rounded border px-1.5 h-[18px] text-2xs">
                         {entityMeta?.label ?? item.entity_type}
                       </span>
                     </div>
@@ -542,7 +542,7 @@ function FailedEnrichmentsCard() {
         </div>
         <h3 className="text-sm font-semibold">Failed Enrichments (7d)</h3>
         <Badge
-          className="ml-auto h-5 text-[0.7rem] font-semibold"
+          className="ml-auto h-5 text-xs2 font-semibold"
           style={{
             background: items.length > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
             color: items.length > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
@@ -579,13 +579,13 @@ function FailedEnrichmentsCard() {
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="inline-flex items-center rounded border px-1.5 h-[18px] text-[0.6rem]">
+                      <span className="inline-flex items-center rounded border px-1.5 h-[18px] text-2xs">
                         {entityMeta?.label ?? item.entity_type}
                       </span>
                       {item.failed_steps?.map((step) => (
                         <span
                           key={step}
-                          className="inline-flex items-center rounded px-1.5 h-[18px] text-[0.6rem] font-semibold"
+                          className="inline-flex items-center rounded px-1.5 h-[18px] text-2xs font-semibold"
                           style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
                         >
                           {STEP_LABELS[step] ?? step}

@@ -215,7 +215,7 @@ export function StoryDetailDrawer({
               style={{ borderLeft: '3px solid hsl(var(--foreground))' }}
             >
               <div
-                className="flex items-center gap-2 text-[0.65rem] font-bold uppercase"
+                className="flex items-center gap-2 text-2xs font-bold uppercase"
                 style={{ color: 'hsl(var(--foreground))', letterSpacing: 0.5 }}
               >
                 <Sparkles size={12} />
@@ -227,7 +227,7 @@ export function StoryDetailDrawer({
                     variant="ghost"
                     disabled={renarrating}
                     onClick={onRenarrate}
-                    className="h-auto py-0 px-1 text-[0.65rem]"
+                    className="h-auto py-0 px-1 text-2xs"
                   >
                     {renarrating ? 'Generating…' : story.narrative_edited ? 'Re-generate' : 'Refresh'}
                   </Button>
@@ -356,7 +356,7 @@ export function StoryDetailDrawer({
                 <Badge
                   key={l}
                   variant="secondary"
-                  className="h-5 text-[0.7rem] gap-1 cursor-pointer"
+                  className="h-5 text-xs2 gap-1 cursor-pointer"
                   onClick={() => onRemoveLabel(l)}
                 >
                   {l}

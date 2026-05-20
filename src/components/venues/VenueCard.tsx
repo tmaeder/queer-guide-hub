@@ -214,14 +214,14 @@ export function VenueCard({
               {/* Open-now badge — bottom right */}
               {openNow === true && (
                 <div className="absolute bottom-2 right-2">
-                  <Badge className="font-bold text-[0.6rem] h-5 px-1.5">Open now</Badge>
+                  <Badge className="font-bold text-2xs h-5 px-1.5">Open now</Badge>
                 </div>
               )}
 
               {/* Closed badge */}
               {venue.closed_at && new Date(venue.closed_at) <= new Date() && (
                 <div className="absolute top-2 right-11">
-                  <Badge variant="destructive" className="font-bold text-[0.65rem] h-5">Closed</Badge>
+                  <Badge variant="destructive" className="font-bold text-2xs h-5">Closed</Badge>
                 </div>
               )}
 
@@ -295,7 +295,7 @@ export function VenueCard({
                   {topTags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-[0.65rem] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
+                      className="text-2xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
                     >
                       {tag}
                     </span>
@@ -303,7 +303,7 @@ export function VenueCard({
                 </div>
               )}
               {updatedLabel && (
-                <p className="mt-2 text-[0.65rem] text-muted-foreground">Updated {updatedLabel}</p>
+                <p className="mt-2 text-2xs text-muted-foreground">Updated {updatedLabel}</p>
               )}
             </div>
           </Card>

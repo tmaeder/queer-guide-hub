@@ -87,9 +87,9 @@ export function TripChatTab({ tripId }: Props) {
               {visibleMembers.map((m) => (
                 <Tooltip key={m.user_id}>
                   <TooltipTrigger asChild>
-                    <Avatar className="h-[22px] w-[22px] border border-background text-[11px]">
+                    <Avatar className="h-[22px] w-[22px] border border-background text-xs2">
                       {m.avatar_url && <AvatarImage src={m.avatar_url} alt={m.display_name ?? ''} />}
-                      <AvatarFallback className="text-[11px]">
+                      <AvatarFallback className="text-xs2">
                         {(m.display_name ?? '?').slice(0, 1).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -101,12 +101,12 @@ export function TripChatTab({ tripId }: Props) {
               ))}
               {overflow > 0 && (
                 <Avatar className="h-[22px] w-[22px] border border-background bg-muted">
-                  <AvatarFallback className="text-[11px]">+{overflow}</AvatarFallback>
+                  <AvatarFallback className="text-xs2">+{overflow}</AvatarFallback>
                 </Avatar>
               )}
             </div>
           </TooltipProvider>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs2 text-muted-foreground">
             {t('trips.chat.viewing', {
               defaultValue: '{{count}} viewing now',
               count: presentMembers.length,
@@ -158,7 +158,7 @@ export function TripChatTab({ tripId }: Props) {
                   </p>
                 )}
                 <p className="text-sm whitespace-pre-wrap">{m.content}</p>
-                <p className="text-[11px] opacity-70 mt-1">
+                <p className="text-xs2 opacity-70 mt-1">
                   {format(new Date(m.created_at), 'MMM d, HH:mm')}
                 </p>
               </div>

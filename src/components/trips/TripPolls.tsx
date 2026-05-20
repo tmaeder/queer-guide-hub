@@ -162,7 +162,7 @@ export function TripPolls({ tripId }: Props) {
                         />
                         <div className="relative z-10 flex items-center justify-between w-full">
                           <span className={`text-[13px] ${hasVoted ? 'font-semibold' : ''}`}>{opt.text}</span>
-                          <span className="text-[11px] text-muted-foreground">
+                          <span className="text-xs2 text-muted-foreground">
                             {voteCount} {totalVotes > 0 && `(${Math.round(pct)}%)`}
                           </span>
                         </div>
@@ -173,13 +173,13 @@ export function TripPolls({ tripId }: Props) {
 
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-2xs text-muted-foreground">
                       {totalVotes} {totalVotes === 1 ? t('trips.polls.totalVote', 'total vote') : t('trips.polls.totalVotes', 'total votes')}
                     </span>
                     {poll.deadline && !isClosed && (
                       <div className="flex items-center gap-0.5">
                         <Clock size={10} className="text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-2xs text-muted-foreground">
                           {formatDistanceToNow(new Date(poll.deadline), { addSuffix: true })}
                         </span>
                       </div>

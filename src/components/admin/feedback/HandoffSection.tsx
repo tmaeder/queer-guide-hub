@@ -138,7 +138,7 @@ export function HandoffSection({
 
         {/* Timeline */}
         {sorted.length === 0 ? (
-          <span className="block py-2 px-3 bg-muted rounded text-[0.7rem] text-muted-foreground">
+          <span className="block py-2 px-3 bg-muted rounded text-xs2 text-muted-foreground">
             No handoffs yet. Click <strong>Copy prompt for Claude</strong> to send this ticket to Claude Code.
           </span>
         ) : (
@@ -162,10 +162,10 @@ export function HandoffSection({
                     style={{ color: 'var(--muted-foreground)', flexShrink: 0 }}
                   />
                   <div className="flex-1 min-w-0">
-                    <span className="text-[0.7rem] block">
+                    <span className="text-xs2 block">
                       <strong>{h.by_name}</strong> → {targetMeta.label}
                     </span>
-                    <span className="text-[0.6rem] block text-muted-foreground">
+                    <span className="text-2xs block text-muted-foreground">
                       {timeAgo(h.at)}
                       {h.status_at && h.status !== 'sent' && (
                         <>
@@ -175,7 +175,7 @@ export function HandoffSection({
                       )}
                     </span>
                     {h.note && (
-                      <span className="text-[0.65rem] block mt-0.5 italic">
+                      <span className="text-2xs block mt-0.5 italic">
                         “{h.note}”
                       </span>
                     )}
@@ -183,7 +183,7 @@ export function HandoffSection({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span
-                        className="inline-flex items-center gap-0.5 px-1 text-[0.6rem] font-bold"
+                        className="inline-flex items-center gap-0.5 px-1 text-2xs font-bold"
                         style={{ color: statusMeta.color }}
                       >
                         <StatusIcon size={11} />

@@ -109,7 +109,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
 
       {report.crossBorderWarnings.length > 0 && (
         <div className="mb-3">
-          <p className="font-bold mb-1 uppercase tracking-[0.04em] text-[0.7rem] text-muted-foreground">
+          <p className="font-bold mb-1 uppercase tracking-[0.04em] text-xs2 text-muted-foreground">
             {t('trips.safety.crossBorderHeading')}
           </p>
           {report.crossBorderWarnings.map((w, i) => (
@@ -123,7 +123,7 @@ export function TripSafetyBriefing({ tripPlaces, tripDays, tripId }: Props) {
       )}
 
       <p
-        className={`font-bold mb-1.5 uppercase tracking-[0.04em] text-[0.7rem] text-muted-foreground ${tripId && tripDays ? 'mt-4' : ''}`}
+        className={`font-bold mb-1.5 uppercase tracking-[0.04em] text-xs2 text-muted-foreground ${tripId && tripDays ? 'mt-4' : ''}`}
       >
         {t('trips.safety.countriesHeading')}
       </p>
@@ -172,7 +172,7 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
         </div>
         <div className="flex-1 min-w-0">
           <p
-            className="text-[0.7rem] font-bold uppercase tracking-[0.06em] mb-[0.0625rem]"
+            className="text-xs2 font-bold uppercase tracking-[0.06em] mb-[0.0625rem]"
             style={{ color: visual.fg }}
           >
             {t(`trips.safety.risk.${report.overallRisk}`)}
@@ -427,7 +427,7 @@ function DetailRow({
         />
       )}
       <div className="flex-1 min-w-0">
-        <span className="block uppercase tracking-[0.04em] font-bold text-muted-foreground text-[0.65rem]">
+        <span className="block uppercase tracking-[0.04em] font-bold text-muted-foreground text-2xs">
           {label}
         </span>
         <p

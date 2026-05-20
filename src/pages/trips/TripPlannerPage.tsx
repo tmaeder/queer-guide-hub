@@ -266,7 +266,7 @@ export default function TripPlannerPage() {
 
       {/* Quick action row */}
       <div className="flex items-center justify-between mb-5 gap-3 mt-2">
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs2 font-semibold uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-foreground" aria-hidden="true" />
           {t('trips.planner.placesCount', { count: trip.trip_places.length })}
           {trip.trip_days.length > 0 && (

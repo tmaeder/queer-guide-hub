@@ -151,7 +151,7 @@ export function TripsSignedOutHero() {
                         </span>
                       </div>
                       <div
-                        className="inline-flex items-center gap-1 self-start text-white bg-white/20 px-2 py-0.5 rounded text-[0.7rem] font-semibold"
+                        className="inline-flex items-center gap-1 self-start text-white bg-white/20 px-2 py-0.5 rounded text-xs2 font-semibold"
                       >
                         <ShieldCheck style={{ width: 11, height: 11 }} />
                         {t('trips.signedOut.safeLabel')}

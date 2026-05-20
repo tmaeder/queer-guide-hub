@@ -107,7 +107,7 @@ export function CrisisStrip() {
           <AlertTriangle aria-hidden style={{ width: 18, height: 18 }} />
           <h2 id="crisis-heading" className="text-base font-semibold">{t('resources.crisis.heading')}</h2>
         </div>
-        <Badge variant="secondary" className="text-[0.7rem]">{t('resources.crisis.badge')}</Badge>
+        <Badge variant="secondary" className="text-xs2">{t('resources.crisis.badge')}</Badge>
         <div className="ml-auto flex items-center gap-2">
           <Select value={country} onValueChange={setCountry}>
             <SelectTrigger className="h-8 w-[170px] text-xs" aria-label={t('resources.crisis.chooseCountryAria')}>
@@ -157,7 +157,7 @@ export function CrisisStrip() {
               <Card className="p-4 h-full flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-sm leading-tight">{h.name}</p>
-                  <Badge variant="outline" className="shrink-0 text-[0.65rem]">{countryLabel(h.country)}</Badge>
+                  <Badge variant="outline" className="shrink-0 text-2xs">{countryLabel(h.country)}</Badge>
                 </div>
                 {h.phone && (
                   <a
@@ -169,7 +169,7 @@ export function CrisisStrip() {
                     {h.phone}
                   </a>
                 )}
-                <div className="flex flex-wrap gap-2 text-[0.7rem] text-muted-foreground mt-auto">
+                <div className="flex flex-wrap gap-2 text-xs2 text-muted-foreground mt-auto">
                   {h.hours && (
                     <span className="inline-flex items-center gap-1">
                       <Clock aria-hidden style={{ width: 12, height: 12 }} />

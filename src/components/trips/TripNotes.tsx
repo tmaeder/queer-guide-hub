@@ -193,11 +193,11 @@ export function TripNotes({ tripId }: Props) {
               <div className="flex items-center gap-2 mt-1.5">
                 <Avatar className="w-[18px] h-[18px]">
                   {note.author?.avatar_url && <AvatarImage src={note.author.avatar_url} />}
-                  <AvatarFallback className="text-[10px]">
+                  <AvatarFallback className="text-2xs">
                     {(note.author?.display_name || 'U')[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-2xs text-muted-foreground">
                   {formatDistanceToNow(new Date(note.updated_at), { addSuffix: true })}
                 </span>
               </div>

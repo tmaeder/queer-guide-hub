@@ -45,14 +45,14 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
               >
                 <div className="flex items-center gap-1 mb-1">
                   <Avatar className="w-[18px] h-[18px]">
-                    <AvatarFallback className="text-[0.6rem]">
+                    <AvatarFallback className="text-2xs">
                       {isGithub ? <Github size={10} /> : r.by_name.slice(0, 1).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-[0.7rem] font-semibold">
+                  <span className="text-xs2 font-semibold">
                     {isGithub ? r.by_name.slice(3) : r.by_name}
                   </span>
-                  <span className="text-[0.6rem] text-muted-foreground">{timeAgo(r.at)}</span>
+                  <span className="text-2xs text-muted-foreground">{timeAgo(r.at)}</span>
                   {r.emailed && (
                     <span
                       title={
@@ -120,7 +120,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
       />
       <div className="flex items-center mt-2 gap-2">
         {canEmail ? (
-          <label className="flex items-center gap-2 text-[0.7rem] cursor-pointer">
+          <label className="flex items-center gap-2 text-xs2 cursor-pointer">
             <Switch checked={notify} onCheckedChange={setNotify} />
             <span>Email submitter ({contactEmail})</span>
           </label>

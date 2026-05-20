@@ -184,7 +184,7 @@ export function DuplicateFinderPanel() {
                               </div>
                             )}
                             <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">
-                              <p className="text-white text-[10px] truncate">
+                              <p className="text-white text-2xs truncate">
                                 {new Date(item.created_at).toLocaleDateString()}
                               </p>
                             </div>

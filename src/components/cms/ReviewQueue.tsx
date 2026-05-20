@@ -417,7 +417,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                     </div>
                     <p className="text-base font-semibold flex-1">{item.title}</p>
                     <Badge
-                      className="h-[22px] text-[0.7rem] font-semibold flex-shrink-0"
+                      className="h-[22px] text-xs2 font-semibold flex-shrink-0"
                       style={{
                         backgroundColor: item.contentTypeColor + '18',
                         color: item.contentTypeColor,

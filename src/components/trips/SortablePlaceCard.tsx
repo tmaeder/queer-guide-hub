@@ -48,7 +48,7 @@ function BookingBadge({ status, confirmationCode }: BookingBadgeProps) {
     return (
       <span
         data-testid="booking-badge-completed"
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-badge bg-muted text-muted-foreground"
+        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge bg-muted text-muted-foreground"
       >
         Visited
       </span>
@@ -58,7 +58,7 @@ function BookingBadge({ status, confirmationCode }: BookingBadgeProps) {
     return (
       <span
         data-testid="booking-badge-booked"
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-badge bg-foreground text-background"
+        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge bg-foreground text-background"
       >
         <Check className="w-2.5 h-2.5" />
         Booked{confirmationCode ? ` · ${confirmationCode}` : ''}
@@ -68,7 +68,7 @@ function BookingBadge({ status, confirmationCode }: BookingBadgeProps) {
   return (
     <span
       data-testid="booking-badge-intent"
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-badge border border-dashed border-border text-muted-foreground"
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-badge border border-dashed border-border text-muted-foreground"
     >
       Not booked
     </span>
@@ -161,7 +161,7 @@ export function SortablePlaceCard({
           {place.start_time && (
             <div className="flex items-center gap-0.5 text-muted-foreground">
               <Clock className="w-2.5 h-2.5" />
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs2 text-muted-foreground">
                 {place.start_time.slice(0, 5)}
                 {place.end_time && ` - ${place.end_time.slice(0, 5)}`}
               </span>
@@ -174,7 +174,7 @@ export function SortablePlaceCard({
             variant="outline"
             size="sm"
             onClick={() => setBookOpen(true)}
-            className="h-6 px-2 text-[11px]"
+            className="h-6 px-2 text-xs2"
             data-testid="mark-booked-btn"
           >
             Mark booked

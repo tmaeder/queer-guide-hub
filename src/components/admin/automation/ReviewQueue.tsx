@@ -219,7 +219,7 @@ export function ReviewQueue({
                   <p className="text-sm font-semibold truncate max-w-[200px]">
                     {change.content_name}
                   </p>
-                  <Badge variant="outline" className="h-[18px] text-[0.65rem] px-1.5">
+                  <Badge variant="outline" className="h-[18px] text-2xs px-1.5">
                     {change.content_type}
                   </Badge>
                 </div>
@@ -229,7 +229,7 @@ export function ReviewQueue({
               </TableCell>
               <TableCell>
                 <Badge
-                  className={`h-[22px] text-[0.7rem] ${CHANGE_TYPE_CLASS[change.change_type] ?? 'bg-muted text-muted-foreground'}`}
+                  className={`h-[22px] text-xs2 ${CHANGE_TYPE_CLASS[change.change_type] ?? 'bg-muted text-muted-foreground'}`}
                   variant="outline"
                 >
                   {change.change_type}

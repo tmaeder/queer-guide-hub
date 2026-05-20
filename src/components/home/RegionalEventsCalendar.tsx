@@ -234,7 +234,7 @@ const RegionalEventsCalendar = () => {
                   className="block min-w-0 text-foreground no-underline transition-opacity hover:opacity-70"
                 >
                   <div
-                    className="text-[0.6875rem] font-medium uppercase text-muted-foreground"
+                    className="text-xs2 font-medium uppercase text-muted-foreground"
                     style={{ fontFamily: BODY, letterSpacing: '0.08em' }}
                   >
                     {format(day, 'EEE')}
@@ -261,7 +261,7 @@ const RegionalEventsCalendar = () => {
                   </div>
                   {items.length > 1 && (
                     <div
-                      className="mt-1 text-[0.6875rem] text-muted-foreground"
+                      className="mt-1 text-xs2 text-muted-foreground"
                       style={{ fontFamily: BODY }}
                     >
                       +{items.length - 1}

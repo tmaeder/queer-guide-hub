@@ -423,7 +423,7 @@ export function ReviewQueueEnhanced() {
                             </Badge>
                           )}
                           <span
-                            className="inline-flex items-center gap-0.5 px-1.5 rounded text-[0.7rem] font-semibold"
+                            className="inline-flex items-center gap-0.5 px-1.5 rounded text-xs2 font-semibold"
                             style={{
                               backgroundColor: `${confidence.color}15`,
                               color: confidence.color,

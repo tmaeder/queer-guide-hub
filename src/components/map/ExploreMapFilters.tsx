@@ -202,7 +202,7 @@ export const ExploreMapFiltersPanel = ({
           <CollapsibleContent>
             <div className="mt-3 flex gap-2 flex-wrap items-end">
               <div className="flex flex-col gap-1 min-w-[140px]">
-                <Label htmlFor="category-filter" className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                <Label htmlFor="category-filter" className="text-xs2 uppercase tracking-wider text-muted-foreground">
                   Category
                 </Label>
                 <Input

@@ -61,7 +61,7 @@ function PlaceCard({ place, tripId }: PlaceCardProps) {
               )}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="outline" className="h-[18px] text-[11px]">{cat}</Badge>
+              <Badge variant="outline" className="h-[18px] text-xs2">{cat}</Badge>
               {place.start_time && (
                 <span className="flex items-center gap-0.5">
                   <Clock size={10} />

@@ -91,7 +91,7 @@ export function PrideScroller() {
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1 text-[11px] mt-1 text-left hover:text-foreground transition-colors"
+                          className="inline-flex items-center gap-1 text-xs2 mt-1 text-left hover:text-foreground transition-colors"
                           aria-label={t(
                             'pages.travel.pride.equalityAria',
                             'Equality score {{score}}: tap for explanation',

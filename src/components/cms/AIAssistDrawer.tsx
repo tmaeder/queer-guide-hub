@@ -204,7 +204,7 @@ export function AIAssistDrawer({
                   <Icon size={14} />
                   <span className="text-sm font-semibold ml-2">{meta.label}</span>
                   {result?.cached && (
-                    <Badge variant="secondary" className="ml-2 h-[18px] text-[0.65rem]">
+                    <Badge variant="secondary" className="ml-2 h-[18px] text-2xs">
                       cached
                     </Badge>
                   )}

@@ -324,7 +324,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
                         }}
                       />
                       <span>{fieldGroupLabels[group] || group}</span>
-                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-muted text-muted-foreground text-[0.65rem] font-bold leading-[18px] px-1">
+                      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-muted text-muted-foreground text-2xs font-bold leading-[18px] px-1">
                         {count}
                       </span>
                     </TabsTrigger>

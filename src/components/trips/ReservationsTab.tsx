@@ -239,7 +239,7 @@ export function ReservationsTab({ tripId }: Props) {
                           {res.provider && <span>{res.provider}</span>}
                           {res.confirmation_code && (
                             <Badge variant="outline">
-                              <span className="font-mono text-[10px]">
+                              <span className="font-mono text-2xs">
                                 {res.confirmation_code}
                               </span>
                             </Badge>

@@ -535,7 +535,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
                     {link.status === 'AUTO_REMOVED' ? 'Removed' : link.status}
                   </Badge>
                   {link.status === 'BROKEN' && (link.check_count ?? 0) >= 1 && (link.check_count ?? 0) <= 3 && (
-                    <Badge variant="outline" className="text-[0.7rem] bg-muted text-foreground border-border">
+                    <Badge variant="outline" className="text-xs2 bg-muted text-foreground border-border">
                       Recheck {link.check_count}/3
                     </Badge>
                   )}

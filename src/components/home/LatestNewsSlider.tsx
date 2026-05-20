@@ -174,7 +174,7 @@ const LatestNewsSlider = React.memo(() => {
                 </div>
                 <div className="min-w-0">
                   <div
-                    className="mb-1 flex items-center gap-1.5 text-[0.6875rem] font-medium uppercase text-muted-foreground"
+                    className="mb-1 flex items-center gap-1.5 text-xs2 font-medium uppercase text-muted-foreground"
                     style={{ letterSpacing: '0.06em' }}
                   >
                     {a.publisher_name && (
