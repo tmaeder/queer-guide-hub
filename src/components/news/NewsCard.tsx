@@ -106,11 +106,35 @@ export const NewsCard = ({
   const sourceFallback = safeText(sourcesMap[article.source_id]?.name);
   const displaySource = publisherName || sourceFallback;
 
+  // Darken a hex color until it meets WCAG 1.4.3 (4.5:1) against white.
+  // Defensive shim — some news_categories rows hold Tailwind -500 hexes
+  // (#ef4444 etc.) that fail when rendered behind white badge text.
+  const ensureContrastOnWhite = (hex: string): string => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+    if (!m) return hex;
+    const channel = (c: number) => {
+      const s = c / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    };
+    let r = parseInt(m[1].slice(0, 2), 16);
+    let g = parseInt(m[1].slice(2, 4), 16);
+    let b = parseInt(m[1].slice(4, 6), 16);
+    for (let i = 0; i < 20; i++) {
+      const L = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+      const ratio = 1.05 / (L + 0.05);
+      if (ratio >= 4.5) break;
+      r = Math.max(0, Math.round(r * 0.88));
+      g = Math.max(0, Math.round(g * 0.88));
+      b = Math.max(0, Math.round(b * 0.88));
+    }
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+  };
+
   const getCategoryColor = (category: string) => {
     const catEntry = Object.values(categoriesMap).find(
       c => c.slug === category || c.name.toLowerCase() === category.toLowerCase()
     );
-    if (catEntry) return catEntry.color;
+    if (catEntry) return ensureContrastOnWhite(catEntry.color);
     // Tailwind -700 shades: each ≥ 4.5:1 contrast on white text (WCAG 1.4.3).
     const fallback: Record<string, string> = {
       politics: '#1d4ed8', 'human-rights': '#b91c1c', entertainment: '#6d28d9',
