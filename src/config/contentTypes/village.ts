@@ -160,7 +160,7 @@ export const queerVillageContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: Home,
   label: { singular: 'Queer Village', plural: 'Queer Villages' },
-  color: '#d946ef',
+  color: 'hsl(var(--foreground))',
   fields: queerVillageFields,
   listSelect:
     '*,cities(name,population),countries(name,lgbt_legal_status,population),venues(count),events(count)',

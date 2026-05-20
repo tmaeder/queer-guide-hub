@@ -575,8 +575,8 @@ export function AdminEditDialog({
             />
             {resolvedFields[field.name] && (
               <div className="flex items-center gap-1 mt-1">
-                <Check style={{ width: 14, height: 14, color: '#22c55e' }} />
-                <span className="text-xs" style={{ color: '#22c55e' }}>
+                <Check style={{ width: 14, height: 14, color: 'hsl(var(--foreground))' }} />
+                <span className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>
                   City & country linked
                 </span>
               </div>
@@ -610,9 +610,9 @@ export function AdminEditDialog({
               {hasResolver && (
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   {resolving && (
-                    <Loader2 size={14} style={{ color: '#999' }} className="animate-spin" />
+                    <Loader2 size={14} style={{ color: 'hsl(var(--muted-foreground))' }} className="animate-spin" />
                   )}
-                  {isResolved && <Check size={14} style={{ color: '#22c55e' }} />}
+                  {isResolved && <Check size={14} style={{ color: 'hsl(var(--foreground))' }} />}
                 </div>
               )}
             </div>
@@ -622,7 +622,7 @@ export function AdminEditDialog({
               </span>
             )}
             {hasResolver && isResolved && (
-              <span className="text-xs block" style={{ color: '#22c55e' }}>
+              <span className="text-xs block" style={{ color: 'hsl(var(--foreground))' }}>
                 {field.resolverType === 'nationality' ? 'Country linked' : 'City & country linked'}
               </span>
             )}

@@ -109,8 +109,8 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
             <span
               key={idx}
               style={{
-                backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                color: '#dc2626',
+                backgroundColor: 'hsl(var(--destructive) / 0.15)',
+                color: 'hsl(var(--destructive))',
                 textDecoration: 'line-through',
                 borderRadius: '2px',
                 padding: '0 2px',
@@ -125,8 +125,8 @@ function InlineDiff({ oldStr, newStr }: { oldStr: string; newStr: string }) {
             <span
               key={idx}
               style={{
-                backgroundColor: 'rgba(34, 197, 94, 0.15)',
-                color: '#16a34a',
+                backgroundColor: 'hsl(var(--foreground) / 0.15)',
+                color: 'hsl(var(--foreground))',
                 borderRadius: '2px',
                 padding: '0 2px',
               }}
@@ -197,8 +197,8 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                   <div
                     className="rounded p-3"
                     style={{
-                      backgroundColor: 'rgba(239, 68, 68, 0.08)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      backgroundColor: 'hsl(var(--destructive) / 0.08)',
+                      border: '1px solid hsl(var(--destructive) / 0.2)',
                     }}
                   >
                     <span className="block mb-1 text-xs font-semibold text-destructive">
@@ -220,11 +220,11 @@ export function RevisionDiff({ changes, onClose }: RevisionDiffProps) {
                   <div
                     className="rounded p-3"
                     style={{
-                      backgroundColor: 'rgba(34, 197, 94, 0.08)',
-                      border: '1px solid rgba(34, 197, 94, 0.2)',
+                      backgroundColor: 'hsl(var(--foreground) / 0.08)',
+                      border: '1px solid hsl(var(--foreground) / 0.2)',
                     }}
                   >
-                    <span className="block mb-1 text-xs font-semibold" style={{ color: '#16a34a' }}>
+                    <span className="block mb-1 text-xs font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                       Added
                     </span>
                     <div

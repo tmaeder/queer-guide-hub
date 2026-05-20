@@ -118,7 +118,7 @@ export const ReviewItemCard = ({
               {item.reasoning && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <AlertTriangle size={14} style={{ color: '#d97706', cursor: 'help' }} />
+                    <AlertTriangle size={14} style={{ color: 'hsl(var(--foreground) / 0.55)', cursor: 'help' }} />
                   </TooltipTrigger>
                   <TooltipContent>{item.reasoning}</TooltipContent>
                 </Tooltip>

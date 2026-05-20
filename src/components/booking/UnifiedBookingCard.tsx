@@ -50,7 +50,7 @@ export function UnifiedBookingCard({ result, originCity, onAddToTrip }: UnifiedB
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-[var(--shadow-aceternity-sm)] transition-shadow">
       {result.imageUrl && (
         <img
           src={result.imageUrl}

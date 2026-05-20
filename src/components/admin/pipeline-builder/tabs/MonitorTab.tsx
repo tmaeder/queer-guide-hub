@@ -216,11 +216,11 @@ export default function MonitorTab() {
       <div className="flex flex-col gap-5">
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <StatCard icon={Play} color="text-blue-600 dark:text-blue-400" value={stats.running} label="Running" />
-          <StatCard icon={CheckCircle} color="text-green-600 dark:text-green-400" value={stats.completed} label="Completed" />
+          <StatCard icon={Play} color="text-foreground" value={stats.running} label="Running" />
+          <StatCard icon={CheckCircle} color="text-foreground" value={stats.completed} label="Completed" />
           <StatCard icon={XCircle} color="text-destructive" value={stats.failed} label="Failed" />
-          <StatCard icon={Database} color="text-indigo-600" value={totalStaging} label="Staging Items" />
-          <StatCard icon={BarChart3} color="text-amber-600 dark:text-amber-400" value={stats.total} label="Total Runs" />
+          <StatCard icon={Database} color="text-muted-foreground" value={totalStaging} label="Staging Items" />
+          <StatCard icon={BarChart3} color="text-muted-foreground" value={stats.total} label="Total Runs" />
         </div>
 
         {/* Charts */}
@@ -260,8 +260,8 @@ export default function MonitorTab() {
                   <ChartTooltip
                     contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 6, fontSize: 11 }}
                   />
-                  <Line type="monotone" dataKey="completed" stroke="rgb(22 163 74)" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="completed" stroke="hsl(var(--foreground))" strokeWidth={2} dot={false} strokeDasharray="0" />
+                  <Line type="monotone" dataKey="failed" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} strokeDasharray="4 2" />
                 </LineChart>
               </ResponsiveContainer>
             </div>

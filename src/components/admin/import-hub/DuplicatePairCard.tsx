@@ -14,7 +14,7 @@ interface DuplicatePairCardProps {
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const pct = (confidence * 100).toFixed(0);
-  const color = confidence >= 0.9 ? '#16a34a' : confidence >= 0.7 ? '#ca8a04' : '#dc2626';
+  const color = confidence >= 0.9 ? 'hsl(var(--foreground))' : confidence >= 0.7 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
   const label = confidence >= 0.9 ? 'High' : confidence >= 0.7 ? 'Medium' : 'Low';
   return (
     <span
@@ -68,7 +68,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
             <Button
               size="sm"
               onClick={() => onMerge(pair)}
-              style={{ display: 'flex', gap: 6, backgroundColor: '#3b82f6', color: 'white' }}
+              style={{ display: 'flex', gap: 6, backgroundColor: 'hsl(var(--muted-foreground))', color: 'white' }}
             >
               <Merge style={{ width: 14, height: 14 }} />
               Merge
@@ -108,7 +108,7 @@ export function DuplicatePairCard({ pair, onMerge }: DuplicatePairCardProps) {
                   <CardContent>
                     {entityA ? (
                       <>
-                        <p className="mb-2 text-sm font-semibold" style={{ color: '#3b82f6' }}>
+                        <p className="mb-2 text-sm font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>
                           Record A: {String(entityA[nameField] || 'Unknown')}
                         </p>
                         <StructuredFieldDisplay entityType={pair.entity_type} data={entityA} />
