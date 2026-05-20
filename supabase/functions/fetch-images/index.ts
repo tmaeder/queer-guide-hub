@@ -34,6 +34,72 @@ const COASTAL_CITIES = new Set([
   'tallinn', 'riga', 'gdansk', 'cartagena', 'havana', 'miami',
 ])
 
+const CITY_PRIDE_KEYWORDS: Record<string, string> = {
+  // Western Europe — biggest queer hubs
+  'berlin': 'Berlin Pride Christopher Street Day parade rainbow',
+  'madrid': 'Madrid Pride Chueca rainbow parade',
+  'barcelona': 'Barcelona Pride Eixample rainbow parade',
+  'amsterdam': 'Amsterdam Pride canal parade rainbow',
+  'paris': 'Paris Pride Marche des Fiertés Marais rainbow',
+  'london': 'London Pride Soho rainbow parade',
+  'brussels': 'Brussels Pride rainbow parade',
+  'vienna': 'Vienna Pride Regenbogenparade rainbow',
+  'lisbon': 'Lisbon Pride parade rainbow Portugal',
+  'rome': 'Rome Pride Roma Pride rainbow parade',
+  'milan': 'Milan Pride parade rainbow',
+  'cologne': 'Cologne Pride CSD rainbow parade',
+  'frankfurt': 'Frankfurt Pride CSD rainbow',
+  'hamburg': 'Hamburg Pride CSD rainbow',
+  'munich': 'Munich Pride CSD rainbow',
+  // Nordics
+  'stockholm': 'Stockholm Pride parade rainbow',
+  'copenhagen': 'Copenhagen Pride parade rainbow',
+  'oslo': 'Oslo Pride parade rainbow',
+  'helsinki': 'Helsinki Pride parade rainbow',
+  'reykjavik': 'Reykjavik Pride parade rainbow Iceland',
+  // British Isles
+  'dublin': 'Dublin Pride parade rainbow Ireland',
+  'manchester': 'Manchester Pride Canal Street rainbow',
+  'brighton': 'Brighton Pride parade rainbow UK',
+  // Mediterranean
+  'sitges': 'Sitges Pride beach rainbow',
+  'valletta': 'Malta Pride Valletta rainbow',
+  'mykonos': 'Mykonos gay beach rainbow',
+  'tel aviv': 'Tel Aviv Pride parade rainbow beach',
+  // North America
+  'new york': 'New York Pride march Stonewall rainbow',
+  'san francisco': 'San Francisco Pride Castro rainbow parade',
+  'los angeles': 'Los Angeles Pride West Hollywood rainbow',
+  'chicago': 'Chicago Pride Boystown Northalsted rainbow',
+  'miami': 'Miami Beach Pride rainbow',
+  'washington': 'DC Capital Pride rainbow parade',
+  'atlanta': 'Atlanta Pride rainbow parade',
+  'seattle': 'Seattle Pride rainbow parade',
+  'philadelphia': 'Philadelphia Pride Gayborhood rainbow',
+  'boston': 'Boston Pride rainbow parade',
+  'toronto': 'Toronto Pride Church Wellesley rainbow parade',
+  'montreal': 'Montréal Pride Fierté rainbow parade',
+  'vancouver': 'Vancouver Pride Davie Village rainbow',
+  'mexico city': 'Mexico City Marcha del Orgullo rainbow',
+  // Latin America
+  'são paulo': 'São Paulo Pride Avenida Paulista rainbow',
+  'sao paulo': 'São Paulo Pride Avenida Paulista rainbow',
+  'rio de janeiro': 'Rio de Janeiro Pride rainbow Copacabana',
+  'buenos aires': 'Buenos Aires Marcha del Orgullo rainbow',
+  'montevideo': 'Montevideo Pride parade rainbow',
+  'santiago': 'Santiago Chile Pride rainbow parade',
+  // Asia-Pacific
+  'sydney': 'Sydney Mardi Gras parade rainbow Oxford Street',
+  'melbourne': 'Melbourne Pride Midsumma rainbow',
+  'auckland': 'Auckland Pride parade rainbow',
+  'bangkok': 'Bangkok Pride Silom rainbow parade',
+  'taipei': 'Taipei Pride parade rainbow',
+  'tokyo': 'Tokyo Rainbow Pride Shinjuku Ni-chome',
+  // Africa
+  'cape town': 'Cape Town Pride rainbow parade',
+  'johannesburg': 'Johannesburg Pride rainbow parade',
+}
+
 const COUNTRY_KEYWORDS: Record<string, string> = {
   'france': 'Paris Eiffel Tower France',
   'italy': 'Rome Colosseum Italy',
@@ -229,10 +295,13 @@ async function processCity(supabase: SupabaseClient, id: string, name: string, c
   if (existing?.curated_image_url) return { success: true, image_url: existing.curated_image_url, cached: true, source: 'curated' }
   if (!force && !existing?.image_flagged && existing?.image_url) return { success: true, image_url: existing.image_url, cached: true }
 
-  const queries = [
-    country ? `${name} ${country}` : name,
-    `${name} city landmark`,
-  ]
+  // Editorial pride-first queries for queer-essential cities. Bias image search
+  // toward Pride parades, rainbow imagery, and historic LGBTQ+ landmarks for
+  // cities that are queer travel destinations. Falls back to generic landmark
+  // queries for everywhere else.
+  const cityKey = name.toLowerCase()
+  const primaryQuery = CITY_PRIDE_KEYWORDS[cityKey] ?? (country ? `${name} ${country}` : name)
+  const queries = [primaryQuery, `${name} city landmark`]
   const best = await findBestScoredImage(queries, (img) => scoreCityImage(img, name, country), pK, uK)
 
   if (!best || !isAcceptable(best.score)) {
