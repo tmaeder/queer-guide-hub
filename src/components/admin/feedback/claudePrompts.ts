@@ -41,13 +41,13 @@ const SERVICE_FILE_HINTS: Record<string, string> = {
 };
 
 export const SERVICE_COLORS: Record<string, string> = {
-  'cloudflare-worker': '#f38020',
-  'edge-function': '#3ecf8e',
-  scraper: '#8b5cf6',
-  frontend: '#3b82f6',
-  sentry: '#362d59',
-  'github-actions': '#24292e',
-  'supabase-advisor': '#3ecf8e',
+  'cloudflare-worker': 'hsl(var(--foreground) / 0.55)',
+  'edge-function': 'hsl(var(--foreground))',
+  scraper: 'hsl(var(--foreground) / 0.55)',
+  frontend: 'hsl(var(--muted-foreground))',
+  sentry: 'hsl(var(--foreground))',
+  'github-actions': 'hsl(var(--foreground))',
+  'supabase-advisor': 'hsl(var(--foreground))',
 };
 
 export function formatClaudePrompt(item: FeedbackSubmission): string {

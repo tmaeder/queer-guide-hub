@@ -102,7 +102,7 @@ export function AffiliatePartnersManager() {
     return (
       <div className="p-6 max-w-[1000px] mx-auto">
         <div className="rounded-element border bg-card p-8 text-center">
-          <AlertCircle style={{ width: 32, height: 32, color: '#ef4444', margin: '0 auto 12px' }} />
+          <AlertCircle style={{ width: 32, height: 32, color: 'hsl(var(--destructive))', margin: '0 auto 12px' }} />
           <h6 className="text-lg font-medium mb-1">Failed to load affiliate partners</h6>
           <p className="text-muted-foreground mb-4">{fetchError}</p>
           <Button onClick={fetchPartners} variant="outline">

@@ -130,7 +130,7 @@ export const GroupPostCard = ({
 
   return (
     <Card>
-      <div className={`hover:shadow-md transition-shadow ${className ?? ''}`}>
+      <div className={`hover:shadow-[var(--shadow-aceternity-sm)] transition-shadow ${className ?? ''}`}>
         <CardHeader>
           <div className="pb-3">
             <div className="flex items-start gap-3">

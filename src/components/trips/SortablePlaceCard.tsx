@@ -230,7 +230,7 @@ export function PlaceCardOverlay({ place }: { place: TripPlace }) {
   const ringColor = getScoreRingColor(eqScore);
 
   return (
-    <div className="flex items-center gap-2 rounded-container border border-foreground bg-background px-3 py-2 w-[320px] opacity-95 shadow-xl">
+    <div className="flex items-center gap-2 rounded-container border border-foreground bg-background px-3 py-2 w-[320px] opacity-95 shadow-[var(--shadow-aceternity-lg)]">
       <GripVertical className="w-3.5 h-3.5 shrink-0 opacity-40" />
       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
         <Icon className="w-3 h-3" />

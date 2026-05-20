@@ -93,12 +93,12 @@ export function extractStatus(
 export function getStatusColor(status: string | undefined): string {
   if (!status) return 'transparent';
   const s = status.toLowerCase();
-  if (['published', 'active', 'public', 'verified'].includes(s)) return '#10b981';
-  if (['draft', 'pending'].includes(s)) return '#9ca3af';
-  if (['review', 'restricted'].includes(s)) return '#f59e0b';
-  if (['archived', 'expired', 'sold', 'completed', 'rejected'].includes(s)) return '#6b7280';
-  if (['cancelled'].includes(s)) return '#ef4444';
-  return '#9ca3af';
+  if (['published', 'active', 'public', 'verified'].includes(s)) return 'hsl(var(--foreground))';
+  if (['draft', 'pending'].includes(s)) return 'hsl(var(--muted-foreground))';
+  if (['review', 'restricted'].includes(s)) return 'hsl(var(--foreground) / 0.55)';
+  if (['archived', 'expired', 'sold', 'completed', 'rejected'].includes(s)) return 'hsl(var(--muted-foreground))';
+  if (['cancelled'].includes(s)) return 'hsl(var(--destructive))';
+  return 'hsl(var(--muted-foreground))';
 }
 
 export function getStatusLabel(status: string | undefined): string {

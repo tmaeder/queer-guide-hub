@@ -35,7 +35,7 @@ export const communityGroupsContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: UsersRound,
   label: { singular: 'Group', plural: 'Groups' },
-  color: '#a855f7',
+  color: 'hsl(var(--foreground))',
   fields: groupFields,
   defaults: { is_private: false },
   fieldGroupOrder: ['basic', 'details', 'media', 'settings'],

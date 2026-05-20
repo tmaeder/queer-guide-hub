@@ -285,7 +285,7 @@ export default function AdminIngestionRules() {
                       if (confirm(`Delete rule "${r.name}"?`)) deleteMut.mutate(r.id);
                     }}
                   >
-                    <Trash2 style={{ width: 14, height: 14, color: '#ef4444' }} />
+                    <Trash2 style={{ width: 14, height: 14, color: 'hsl(var(--destructive))' }} />
                   </Button>
                 </div>
               ))}
