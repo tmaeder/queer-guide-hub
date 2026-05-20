@@ -52,7 +52,7 @@ export const ChatGPTConnection = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'hsl(var(--muted-foreground))' }}>
             <RefreshCw style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} />
             Loading connection status...
           </div>
@@ -62,8 +62,8 @@ export const ChatGPTConnection = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {isConnected ? (
                 <>
-                  <CheckCircle style={{ width: 20, height: 20, color: '#22c55e' }} />
-                  <span style={{ fontWeight: 500, color: '#22c55e' }}>Connected via OAuth</span>
+                  <CheckCircle style={{ width: 20, height: 20, color: 'hsl(var(--foreground))' }} />
+                  <span style={{ fontWeight: 500, color: 'hsl(var(--foreground))' }}>Connected via OAuth</span>
                   {status?.expires_at && (
                     <Badge variant="secondary">Expires in {formatExpiry(status.expires_at)}</Badge>
                   )}
@@ -73,14 +73,14 @@ export const ChatGPTConnection = () => {
                 </>
               ) : usingFallback ? (
                 <>
-                  <AlertTriangle style={{ width: 20, height: 20, color: '#f59e0b' }} />
-                  <span style={{ fontWeight: 500, color: '#f59e0b' }}>Using API Key Fallback</span>
+                  <AlertTriangle style={{ width: 20, height: 20, color: 'hsl(var(--foreground) / 0.55)' }} />
+                  <span style={{ fontWeight: 500, color: 'hsl(var(--foreground) / 0.55)' }}>Using API Key Fallback</span>
                   <Badge variant="secondary">ENV: OPENAI_API_KEY</Badge>
                 </>
               ) : (
                 <>
-                  <XCircle style={{ width: 20, height: 20, color: '#ef4444' }} />
-                  <span style={{ fontWeight: 500, color: '#ef4444' }}>Not Connected</span>
+                  <XCircle style={{ width: 20, height: 20, color: 'hsl(var(--destructive))' }} />
+                  <span style={{ fontWeight: 500, color: 'hsl(var(--destructive))' }}>Not Connected</span>
                   {hasFallback && <Badge variant="outline">API key fallback available</Badge>}
                 </>
               )}
@@ -88,13 +88,13 @@ export const ChatGPTConnection = () => {
 
             {/* Organization info */}
             {status?.organization_id && (
-              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+              <div style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
                 Organization: {status.organization_id}
               </div>
             )}
 
             {/* Description of what AI enrichment does */}
-            <div style={{ fontSize: '13px', color: '#9ca3af', lineHeight: '1.5' }}>
+            <div style={{ fontSize: '13px', color: 'hsl(var(--muted-foreground))', lineHeight: '1.5' }}>
               When connected, ChatGPT automatically enriches imported venues with LGBTQ+ contextual
               descriptions, classifies events, generates personality bios, and adds relevant tags
               during imports and scraping.

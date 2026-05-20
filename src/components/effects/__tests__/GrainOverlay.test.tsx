@@ -6,20 +6,15 @@ import { render } from '@testing-library/react';
 import { GrainOverlay } from '../GrainOverlay';
 
 describe('GrainOverlay', () => {
-  it('renders aria-hidden div with default opacity', () => {
+  // 2026-05-19 — decorative SVG grain effect gutted as part of the monochrome
+  // refactor (commit 6efd9835). Renders nothing; opacity prop accepted for
+  // API compatibility but has no rendered effect.
+  it('renders null', () => {
     const { container } = render(<GrainOverlay />);
-    const el = container.firstChild as HTMLElement;
-    expect(el).toHaveAttribute('aria-hidden');
-    expect(el.style.opacity).toBe('0.03');
+    expect(container.firstChild).toBeNull();
   });
 
-  it('honors custom opacity', () => {
-    const { container } = render(<GrainOverlay opacity={0.5} />);
-    expect((container.firstChild as HTMLElement).style.opacity).toBe('0.5');
-  });
-
-  it('uses pointer-events-none', () => {
-    const { container } = render(<GrainOverlay />);
-    expect(container.firstChild).toHaveClass('pointer-events-none');
+  it('accepts opacity prop without throwing', () => {
+    expect(() => render(<GrainOverlay opacity={0.5} />)).not.toThrow();
   });
 });

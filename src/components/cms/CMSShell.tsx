@@ -306,7 +306,7 @@ export function CMSShell() {
             top: 80,
             left: 8,
             zIndex: 1200,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+            boxShadow: '0 2px 12px hsl(var(--foreground) / 0.1)',
             paddingLeft: 8,
             paddingRight: 12,
             paddingTop: 6,
@@ -344,7 +344,7 @@ export function CMSShell() {
                 return (
                   <div key={i} className="flex items-center">
                     {i > 0 && (
-                      <ChevronRight size={14} style={{ color: '#94a3b8', margin: '0 6px' }} />
+                      <ChevronRight size={14} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 6px' }} />
                     )}
                     {isLast ? (
                       <span

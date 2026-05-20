@@ -125,7 +125,7 @@ export const personalityContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: Users,
   label: { singular: 'Personality', plural: 'Personalities' },
-  color: '#f59e0b',
+  color: 'hsl(var(--foreground))',
   fields: personalityFields,
   defaults: { is_living: true, visibility: 'public', verification_status: 'pending', is_adult: false },
   fieldGroupOrder: ['basic', 'details', 'lgbtq', 'media', 'settings', 'external'],

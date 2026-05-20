@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
-import { MagneticButton } from '@/components/motion';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -158,8 +157,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
             currentData={village as Record<string, unknown>}
             onSaved={() => window.location.reload()}
           />
-          <MagneticButton>
-            <Button variant="outline" size="sm" onClick={onFavoriteToggle}>
+                      <Button variant="outline" size="sm" onClick={onFavoriteToggle}>
               <Heart
                 style={{
                   height: 16,
@@ -170,17 +168,14 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
               />
               {isFavorited ? 'Favorited' : 'Favorite'}
             </Button>
-          </MagneticButton>
-          {village.website && (
-            <MagneticButton>
-              <Button variant="outline" size="sm" asChild>
+                    {village.website && (
+                          <Button variant="outline" size="sm" asChild>
                 <a href={village.website} target="_blank" rel="noopener noreferrer">
                   <ExternalLink style={{ height: 16, width: 16, marginRight: 6 }} />
                   Website
                 </a>
               </Button>
-            </MagneticButton>
-          )}
+                      )}
         </div>
       </div>
 

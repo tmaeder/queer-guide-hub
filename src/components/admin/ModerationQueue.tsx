@@ -45,10 +45,10 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const STATUS_COLORS: Record<string, string> = {
-  OPEN: '#f59e0b',
-  IN_REVIEW: '#3b82f6',
-  RESOLVED: '#10b981',
-  REJECTED: '#6b7280',
+  OPEN: 'hsl(var(--foreground) / 0.55)',
+  IN_REVIEW: 'hsl(var(--muted-foreground))',
+  RESOLVED: 'hsl(var(--foreground))',
+  REJECTED: 'hsl(var(--muted-foreground))',
 };
 
 const FLAG_TYPE_LABELS: Record<string, string> = {
@@ -307,7 +307,7 @@ export function ModerationQueue() {
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <Badge
                           className="text-white font-semibold text-[0.7rem]"
-                          style={{ backgroundColor: STATUS_COLORS[flag.status] || '#6b7280' }}
+                          style={{ backgroundColor: STATUS_COLORS[flag.status] || 'hsl(var(--muted-foreground))' }}
                         >
                           {flag.status}
                         </Badge>

@@ -68,7 +68,7 @@ export function TagMergeCandidates() {
   });
 
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 16, background: '#fff' }}>
+    <div style={{ border: '1px solid hsl(var(--border))', borderRadius: 8, marginBottom: 16, background: 'hsl(var(--background))' }}>
       <button
         onClick={() => setOpen(!open)}
         style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: 12, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}
@@ -76,11 +76,11 @@ export function TagMergeCandidates() {
         <GitMerge style={{ width: 16, height: 16 }} />
         Tag merge candidates
         {dups && dups.length > 0 && (
-          <Badge variant="outline" style={{ background: '#fef3c7', color: '#a16207', borderColor: '#fde68a' }}>
+          <Badge variant="outline" style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)', borderColor: 'hsl(var(--muted))' }}>
             {dups.length} pending
           </Badge>
         )}
-        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#6b7280', fontWeight: 400 }}>
+        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'hsl(var(--muted-foreground))', fontWeight: 400 }}>
           {open && (
             <>
               <span>Threshold:</span>
@@ -88,7 +88,7 @@ export function TagMergeCandidates() {
                 type="number" step="0.05" min="0.3" max="0.95" value={threshold}
                 onClick={(e) => e.stopPropagation()}
                 onChange={(e) => setThreshold(Number(e.target.value))}
-                style={{ width: 60, padding: '2px 6px', border: '1px solid #e5e7eb', borderRadius: 4, fontSize: 12 }}
+                style={{ width: 60, padding: '2px 6px', border: '1px solid hsl(var(--border))', borderRadius: 4, fontSize: 12 }}
               />
             </>
           )}
@@ -97,17 +97,17 @@ export function TagMergeCandidates() {
       </button>
 
       {open && (
-        <div style={{ padding: 12, borderTop: '1px solid #e5e7eb' }}>
-          {isLoading && <div style={{ color: '#9ca3af', fontSize: 13 }}>Finding candidates…</div>}
+        <div style={{ padding: 12, borderTop: '1px solid hsl(var(--border))' }}>
+          {isLoading && <div style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}>Finding candidates…</div>}
           {!isLoading && (!dups || dups.length === 0) && (
-            <div style={{ color: '#9ca3af', fontSize: 13 }}>No candidates above threshold {threshold}.</div>
+            <div style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}>No candidates above threshold {threshold}.</div>
           )}
           {!isLoading && dups && dups.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 60px 200px', gap: 8, fontSize: 13 }}>
-              <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280' }}>Tag A (usage)</div>
-              <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280' }}>Tag B (usage)</div>
-              <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', textAlign: 'right' }}>Sim</div>
-              <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', textAlign: 'center' }}>Action</div>
+              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>Tag A (usage)</div>
+              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>Tag B (usage)</div>
+              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))', textAlign: 'right' }}>Sim</div>
+              <div style={{ fontWeight: 600, fontSize: 11, color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>Action</div>
               {dups.map((d, i) => {
                 const a = tagMeta?.[d.tag_a_id];
                 const b = tagMeta?.[d.tag_b_id];
@@ -117,14 +117,14 @@ export function TagMergeCandidates() {
                 return (
                   <div key={i} style={{ display: 'contents' }}>
                     <div>
-                      <code style={{ background: aWins ? '#dcfce7' : '#f3f4f6', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{d.tag_a_slug}</code>
-                      <span style={{ color: '#9ca3af', fontSize: 11, marginLeft: 4 }}>{aUsage}</span>
+                      <code style={{ background: aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{d.tag_a_slug}</code>
+                      <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, marginLeft: 4 }}>{aUsage}</span>
                     </div>
                     <div>
-                      <code style={{ background: !aWins ? '#dcfce7' : '#f3f4f6', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{d.tag_b_slug}</code>
-                      <span style={{ color: '#9ca3af', fontSize: 11, marginLeft: 4 }}>{bUsage}</span>
+                      <code style={{ background: !aWins ? 'hsl(var(--muted))' : 'hsl(var(--muted))', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{d.tag_b_slug}</code>
+                      <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, marginLeft: 4 }}>{bUsage}</span>
                     </div>
-                    <div style={{ textAlign: 'right', color: '#6b7280', fontFamily: 'monospace', fontSize: 11 }}>
+                    <div style={{ textAlign: 'right', color: 'hsl(var(--muted-foreground))', fontFamily: 'monospace', fontSize: 11 }}>
                       {(d.similarity * 100).toFixed(0)}%
                     </div>
                     <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>

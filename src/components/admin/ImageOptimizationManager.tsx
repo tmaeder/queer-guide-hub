@@ -196,10 +196,10 @@ export function ImageOptimizationManager() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />;
-      case 'processing': return <RefreshCw style={{ height: 16, width: 16, color: '#3b82f6', animation: 'spin 1s linear infinite' }} />;
-      case 'failed': return <AlertCircle style={{ height: 16, width: 16, color: '#ef4444' }} />;
-      case 'pending': return <Clock style={{ height: 16, width: 16, color: '#eab308' }} />;
+      case 'completed': return <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />;
+      case 'processing': return <RefreshCw style={{ height: 16, width: 16, color: 'hsl(var(--muted-foreground))', animation: 'spin 1s linear infinite' }} />;
+      case 'failed': return <AlertCircle style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
+      case 'pending': return <Clock style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.55)' }} />;
       default: return <FileImage style={{ height: 16, width: 16, color: 'var(--muted-foreground)' }} />;
     }
   };
@@ -287,7 +287,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <FileImage style={{ height: 20, width: 20, color: '#3b82f6' }} />
+                      <FileImage style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
                       <div>
                         <p className="font-bold" style={{ fontSize: '1.5rem' }}>{images.length}</p>
                         <p className="text-sm text-muted-foreground">Total Images</p>
@@ -299,7 +299,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <HardDrive style={{ height: 20, width: 20, color: '#555555' }} />
+                      <HardDrive style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
                       <div>
                         <p className="font-bold" style={{ fontSize: '1.5rem' }}>
                           {formatFileSize(images.reduce((sum, img) => sum + img.originalSize, 0))}
@@ -313,7 +313,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <Server style={{ height: 20, width: 20, color: '#22c55e' }} />
+                      <Server style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
                       <div>
                         <p className="font-bold" style={{ fontSize: '1.5rem' }}>
                           {jobs.filter(job => job.status === 'completed').length}
@@ -327,7 +327,7 @@ export function ImageOptimizationManager() {
                 <Card>
                   <CardContent>
                     <div className="flex items-center gap-2">
-                      <Zap style={{ height: 20, width: 20, color: '#f97316' }} />
+                      <Zap style={{ height: 20, width: 20, color: 'hsl(var(--foreground) / 0.55)' }} />
                       <div>
                         <p className="font-bold" style={{ fontSize: '1.5rem' }}>21</p>
                         <p className="text-sm text-muted-foreground">Files per Image</p>
@@ -426,15 +426,15 @@ export function ImageOptimizationManager() {
                           <p className="text-xs text-muted-foreground">Total</p>
                         </div>
                         <div>
-                          <p className="font-bold" style={{ fontSize: '1.5rem', color: '#2563eb' }}>{job.processed_images}</p>
+                          <p className="font-bold" style={{ fontSize: '1.5rem', color: 'hsl(var(--muted-foreground))' }}>{job.processed_images}</p>
                           <p className="text-xs text-muted-foreground">Processed</p>
                         </div>
                         <div>
-                          <p className="font-bold" style={{ fontSize: '1.5rem', color: '#16a34a' }}>{job.successful_images}</p>
+                          <p className="font-bold" style={{ fontSize: '1.5rem', color: 'hsl(var(--foreground))' }}>{job.successful_images}</p>
                           <p className="text-xs text-muted-foreground">Success</p>
                         </div>
                         <div>
-                          <p className="font-bold" style={{ fontSize: '1.5rem', color: '#dc2626' }}>{job.failed_images}</p>
+                          <p className="font-bold" style={{ fontSize: '1.5rem', color: 'hsl(var(--destructive))' }}>{job.failed_images}</p>
                           <p className="text-xs text-muted-foreground">Failed</p>
                         </div>
                       </div>

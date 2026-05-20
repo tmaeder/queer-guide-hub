@@ -9,7 +9,7 @@ export const feedbackContentType: ContentTypeConfig = {
   descriptionField: 'description',
   icon: MessageSquarePlus,
   label: { singular: 'Feedback', plural: 'Feedback' },
-  color: '#DB2777',
+  color: 'hsl(var(--foreground))',
   fields: [
     { name: 'title', label: 'Title', type: 'text', required: true, group: 'basic', maxLength: 200 },
     { name: 'description', label: 'Description', type: 'textarea', required: true, group: 'basic', colSpan: 2 },

@@ -40,23 +40,23 @@ import { StructuredFieldDisplay } from './StructuredFieldDisplay';
 import { SideBySideComparison } from './SideBySideComparison';
 
 const CONFIDENCE_COLORS: Record<string, string> = {
-  high: '#16a34a',
-  medium: '#ca8a04',
-  low: '#dc2626',
+  high: 'hsl(var(--foreground))',
+  medium: 'hsl(var(--foreground) / 0.55)',
+  low: 'hsl(var(--destructive))',
 };
 
 function getConfidenceLevel(score: number | null): { level: string; color: string } {
-  if (score === null) return { level: 'unknown', color: '#6b7280' };
+  if (score === null) return { level: 'unknown', color: 'hsl(var(--muted-foreground))' };
   if (score >= 0.9) return { level: 'high', color: CONFIDENCE_COLORS.high };
   if (score >= 0.7) return { level: 'medium', color: CONFIDENCE_COLORS.medium };
   return { level: 'low', color: CONFIDENCE_COLORS.low };
 }
 
 const DEDUP_STATUS_COLORS: Record<string, string> = {
-  unique: '#16a34a',
-  duplicate: '#dc2626',
-  merge_candidate: '#ca8a04',
-  pending: '#6b7280',
+  unique: 'hsl(var(--foreground))',
+  duplicate: 'hsl(var(--destructive))',
+  merge_candidate: 'hsl(var(--foreground) / 0.55)',
+  pending: 'hsl(var(--muted-foreground))',
 };
 
 export function ReviewQueueEnhanced() {
@@ -288,7 +288,7 @@ export function ReviewQueueEnhanced() {
                   onClick={handleBulkApprove}
                   disabled={stagingAction.isPending}
                   className="flex gap-1.5"
-                  style={{ backgroundColor: '#16a34a', color: 'white' }}
+                  style={{ backgroundColor: 'hsl(var(--foreground))', color: 'white' }}
                 >
                   <ThumbsUp className="h-3.5 w-3.5" />
                   Approve
@@ -383,7 +383,7 @@ export function ReviewQueueEnhanced() {
             const title = normalized.title || normalized.name || 'Untitled';
             const isExpanded = expandedId === item.id;
             const isComparing = compareItemId === item.id;
-            const dedupColor = DEDUP_STATUS_COLORS[item.dedup_status] || '#6b7280';
+            const dedupColor = DEDUP_STATUS_COLORS[item.dedup_status] || 'hsl(var(--muted-foreground))';
 
             return (
               <Card
@@ -469,7 +469,7 @@ export function ReviewQueueEnhanced() {
                                   disabled={stagingAction.isPending}
                                   className="flex gap-1"
                                   style={{
-                                    backgroundColor: '#ca8a04',
+                                    backgroundColor: 'hsl(var(--foreground) / 0.55)',
                                     color: 'white',
                                     padding: '4px 8px',
                                   }}
@@ -486,7 +486,7 @@ export function ReviewQueueEnhanced() {
                             onClick={() => handleApprove(item.id)}
                             disabled={stagingAction.isPending}
                             style={{
-                              backgroundColor: '#16a34a',
+                              backgroundColor: 'hsl(var(--foreground))',
                               color: 'white',
                               padding: '4px 8px',
                             }}

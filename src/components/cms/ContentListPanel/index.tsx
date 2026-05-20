@@ -37,7 +37,7 @@ interface ContentListPanelProps {
 export function ContentListPanel(props: ContentListPanelProps) {
   const c = useContentListController(props);
 
-  const typeColor = c.config?.color || '#6b7280';
+  const typeColor = c.config?.color || 'hsl(var(--muted-foreground))';
   const Icon = c.config?.icon;
 
   return (

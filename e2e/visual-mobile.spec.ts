@@ -11,7 +11,8 @@ import { test, expect } from '@playwright/test';
 const ROUTES = ['/', '/venues', '/events', '/news', '/marketplace', '/cities'];
 
 // Routes with live tickers / changing content need looser pixel thresholds.
-const LIVE_CONTENT_ROUTES = new Set(['/news']);
+// Added 2026-05-20: /, /venues have rotating hero + featured rails too.
+const LIVE_CONTENT_ROUTES = new Set(['/', '/news', '/venues']);
 
 test.describe('Mobile visual regression', () => {
   test.setTimeout(60_000);
@@ -23,9 +24,11 @@ test.describe('Mobile visual regression', () => {
       await page.waitForSelector('main', { timeout: 30_000 }).catch(() => {});
       // Allow image-lazy + animation transitions to settle.
       await page.waitForTimeout(1500);
+      // /venues shuffles its hero + featured rails hard between requests.
+      const threshold = route === '/venues' ? 0.35 : LIVE_CONTENT_ROUTES.has(route) ? 0.15 : 0.02;
       await expect(page).toHaveScreenshot(`${route.replace(/\//g, '_') || '_root'}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: LIVE_CONTENT_ROUTES.has(route) ? 0.15 : 0.02,
+        maxDiffPixelRatio: threshold,
         animations: 'disabled',
       });
     });

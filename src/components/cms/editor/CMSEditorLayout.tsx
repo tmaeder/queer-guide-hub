@@ -53,14 +53,14 @@ const fieldGroupIcons: Record<FieldGroup, React.ElementType> = {
 
 /** Map field groups to dot colors */
 const fieldGroupColors: Record<FieldGroup, string> = {
-  basic: '#3b82f6',
+  basic: 'hsl(var(--muted-foreground))',
   details: brandColors.main,
-  location: '#10b981',
-  media: '#f59e0b',
-  seo: '#06b6d4',
-  settings: '#6b7280',
-  lgbtq: '#ec4899',
-  external: '#94a3b8',
+  location: 'hsl(var(--foreground))',
+  media: 'hsl(var(--foreground) / 0.55)',
+  seo: 'hsl(var(--muted-foreground))',
+  settings: 'hsl(var(--muted-foreground))',
+  lgbtq: 'hsl(var(--foreground))',
+  external: 'hsl(var(--muted-foreground))',
 };
 
 interface CMSEditorLayoutProps {
@@ -253,7 +253,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
   // Color for progress bar based on completion
   const progressColor =
-    requiredProgress === 100 ? '#22c55e' : requiredProgress >= 60 ? '#f59e0b' : '#ef4444';
+    requiredProgress === 100 ? 'hsl(var(--foreground))' : requiredProgress >= 60 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
 
   return (
     <div className="scale-in flex flex-col h-full bg-background">

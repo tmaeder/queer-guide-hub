@@ -21,22 +21,22 @@ const CARDS: Array<{
   color: string;
   format?: (v: unknown) => string;
 }> = [
-  { key: 'pending_changes', label: 'Pending Review', icon: AlertTriangle, color: '#f59e0b' },
-  { key: 'auto_approved_24h', label: 'Auto-Approved (24h)', icon: CheckCircle2, color: '#10b981' },
-  { key: 'total_proposed_24h', label: 'Total Proposed (24h)', icon: TrendingUp, color: '#6366f1' },
-  { key: 'modules_enabled', label: 'Modules Active', icon: Zap, color: '#ec4899' },
+  { key: 'pending_changes', label: 'Pending Review', icon: AlertTriangle, color: 'hsl(var(--foreground) / 0.55)' },
+  { key: 'auto_approved_24h', label: 'Auto-Approved (24h)', icon: CheckCircle2, color: 'hsl(var(--foreground))' },
+  { key: 'total_proposed_24h', label: 'Total Proposed (24h)', icon: TrendingUp, color: 'hsl(var(--muted-foreground))' },
+  { key: 'modules_enabled', label: 'Modules Active', icon: Zap, color: 'hsl(var(--foreground))' },
   {
     key: 'approval_rate',
     label: 'Auto-Approval Rate',
     icon: Layers,
-    color: '#3b82f6',
+    color: 'hsl(var(--muted-foreground))',
     format: (v) => `${Math.round((v as number) * 100)}%`,
   },
   {
     key: 'last_run',
     label: 'Last Run',
     icon: Clock,
-    color: '#64748b',
+    color: 'hsl(var(--muted-foreground))',
     format: (v) => (v ? formatDistanceToNow(new Date(v as string), { addSuffix: true }) : 'Never'),
   },
 ];

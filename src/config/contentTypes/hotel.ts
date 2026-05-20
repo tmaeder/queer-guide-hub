@@ -140,7 +140,7 @@ export const hotelContentType: ContentTypeConfig = {
   imageField: 'images',
   icon: Hotel,
   label: { singular: 'Hotel', plural: 'Hotels & BnBs' },
-  color: '#0ea5e9',
+  color: 'hsl(var(--foreground))',
   fields: hotelFields,
   defaults: { featured: false, verified: false, lgbtq_friendly: false },
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'settings', 'external'],

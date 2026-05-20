@@ -22,9 +22,9 @@ interface AutoTagPanelProps {
 
 /** Confidence → color mapping */
 function confidenceColor(c: number): string {
-  if (c >= 0.85) return '#16a34a'; // green
-  if (c >= 0.6) return '#ca8a04';  // amber
-  return '#dc2626';                 // red
+  if (c >= 0.85) return 'hsl(var(--foreground))'; // green
+  if (c >= 0.6) return 'hsl(var(--foreground) / 0.55)';  // amber
+  return 'hsl(var(--destructive))';                 // red
 }
 
 function confidenceLabel(c: number): string {
@@ -170,8 +170,8 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
         {applied && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 py-2">
-              <Check style={{ height: 14, width: 14, color: '#16a34a' }} />
-              <span className="text-xs font-medium" style={{ color: '#16a34a' }}>
+              <Check style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
+              <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                 Tags applied successfully
               </span>
             </div>

@@ -37,7 +37,7 @@ export function RunHistoryTable({ runs, modules }: Props) {
   if (runs.length === 0) {
     return (
       <div className="text-center py-12">
-        <Clock size={48} style={{ color: '#94a3b8', margin: '0 auto 16px' }} />
+        <Clock size={48} style={{ color: 'hsl(var(--muted-foreground))', margin: '0 auto 16px' }} />
         <h3 className="text-lg text-muted-foreground">
           No run history yet
         </h3>

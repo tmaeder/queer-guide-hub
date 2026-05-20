@@ -32,7 +32,7 @@ export function QuickExit() {
         variant="destructive"
         size="lg"
         onClick={performQuickExit}
-        className="pointer-events-auto shadow-lg"
+        className="pointer-events-auto shadow-[var(--shadow-aceternity)]"
         aria-label={t('help.quick_exit_aria', 'Leave this page immediately (ESC)')}
       >
         <LogOut size={18} className="mr-2" />
