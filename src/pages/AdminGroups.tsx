@@ -50,7 +50,7 @@ export default function AdminGroups() {
               style={{
                 height: 36,
                 width: 36,
-                background: 'linear-gradient(135deg, #DB2777, #F472B6)',
+                background: 'hsl(var(--foreground))',
                 fontSize: '0.875rem',
               }}
             >
@@ -101,7 +101,7 @@ export default function AdminGroups() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>Featured</Badge>
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>Featured</Badge>
           ) : null,
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
@@ -109,7 +109,7 @@ export default function AdminGroups() {
         header: 'Tags',
         cell: (info) => {
           const tags = info.getValue();
-          if (!tags || tags.length === 0) return <span style={{ color: '#999' }}>-</span>;
+          if (!tags || tags.length === 0) return <span className="text-muted-foreground">-</span>;
           return (
             <div className="flex flex-wrap gap-1">
               {tags.slice(0, 2).map((t) => (

@@ -148,7 +148,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
           {/* Title line */}
           <p
             className="text-base font-medium leading-snug overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{ color: '#1a0dab', fontFamily: 'Arial, sans-serif' }}
+            style={{ color: 'hsl(var(--muted-foreground))', fontFamily: 'Arial, sans-serif' }}
           >
             {truncatedTitle}
           </p>
@@ -156,7 +156,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
           {/* URL line */}
           <span
             className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-[0.8rem]"
-            style={{ color: '#006621', fontFamily: 'Arial, sans-serif' }}
+            style={{ color: 'hsl(var(--foreground))', fontFamily: 'Arial, sans-serif' }}
           >
             {previewUrl}
           </span>
@@ -165,7 +165,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
           <span
             className="mt-1 overflow-hidden text-[0.8rem] leading-snug"
             style={{
-              color: '#545454',
+              color: 'hsl(var(--muted-foreground))',
               fontFamily: 'Arial, sans-serif',
               display: '-webkit-box',
               WebkitLineClamp: 3,

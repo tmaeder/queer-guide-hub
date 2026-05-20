@@ -96,13 +96,13 @@ export function VenueIngestStatsPanel() {
                     <span style={{ fontWeight: 500 }}>{h.target_table}</span>
                     <span>{h.total.toLocaleString()}</span>
                     <span>{h.pending}</span>
-                    <span style={{ color: h.rejected > 0 ? '#dc2626' : undefined }}>{h.rejected}</span>
-                    <span style={{ color: h.review_pending > 0 ? '#ca8a04' : undefined }}>{h.review_pending}</span>
-                    <span style={{ color: h.stuck_normalize > 0 ? '#dc2626' : undefined }}>{h.stuck_normalize}</span>
-                    <span style={{ color: h.stuck_validate > 0 ? '#dc2626' : undefined }}>{h.stuck_validate}</span>
-                    <span style={{ color: h.stuck_dedup > 0 ? '#dc2626' : undefined }}>{h.stuck_dedup}</span>
-                    <span style={{ color: h.stuck_commit > 0 ? '#dc2626' : undefined }}>{h.stuck_commit}</span>
-                    <span style={{ color: h.review_stale > 0 ? '#ca8a04' : undefined, fontWeight: anyStuck > 0 ? 600 : undefined }}>{h.review_stale}</span>
+                    <span style={{ color: h.rejected > 0 ? 'hsl(var(--destructive))' : undefined }}>{h.rejected}</span>
+                    <span style={{ color: h.review_pending > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined }}>{h.review_pending}</span>
+                    <span style={{ color: h.stuck_normalize > 0 ? 'hsl(var(--destructive))' : undefined }}>{h.stuck_normalize}</span>
+                    <span style={{ color: h.stuck_validate > 0 ? 'hsl(var(--destructive))' : undefined }}>{h.stuck_validate}</span>
+                    <span style={{ color: h.stuck_dedup > 0 ? 'hsl(var(--destructive))' : undefined }}>{h.stuck_dedup}</span>
+                    <span style={{ color: h.stuck_commit > 0 ? 'hsl(var(--destructive))' : undefined }}>{h.stuck_commit}</span>
+                    <span style={{ color: h.review_stale > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined, fontWeight: anyStuck > 0 ? 600 : undefined }}>{h.review_stale}</span>
                   </div>
                 );
               })}

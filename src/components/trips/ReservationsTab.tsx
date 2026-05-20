@@ -105,7 +105,7 @@ export function ReservationsTab({ tripId }: Props) {
       return (
         <Badge variant="outline">
           <span className="inline-flex items-center gap-1">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-foreground" />
             {t('trips.reservations.status.confirmed')}
           </span>
         </Badge>

@@ -249,8 +249,8 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
 
           {activeStep === 2 && (
             <div className="py-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500">
-                <Check style={{ height: 28, width: 28, color: 'white' }} />
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background">
+                <Check className="h-7 w-7" />
               </div>
               <h3 className="mb-2 text-lg font-bold">
                 {hotel.supportsInApp ? 'Booking Confirmed!' : 'Reservation Saved'}

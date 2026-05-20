@@ -265,15 +265,15 @@ function OverviewTab({
   definitions: WorkflowDefinition[];
 }) {
   const statCards = [
-    { label: 'Total (24h)', value: stats.totalRuns, color: '#6366f1' },
-    { label: 'Running', value: stats.runningRuns, color: '#3b82f6' },
-    { label: 'Completed', value: stats.completedRuns, color: '#10b981' },
-    { label: 'Failed', value: stats.failedRuns, color: '#ef4444' },
-    { label: 'Queued', value: stats.queuedRuns, color: '#f59e0b' },
-    { label: 'Dead Letter', value: stats.deadLetterRuns, color: '#dc2626' },
+    { label: 'Total (24h)', value: stats.totalRuns, color: 'hsl(var(--muted-foreground))' },
+    { label: 'Running', value: stats.runningRuns, color: 'hsl(var(--muted-foreground))' },
+    { label: 'Completed', value: stats.completedRuns, color: 'hsl(var(--foreground))' },
+    { label: 'Failed', value: stats.failedRuns, color: 'hsl(var(--destructive))' },
+    { label: 'Queued', value: stats.queuedRuns, color: 'hsl(var(--foreground) / 0.55)' },
+    { label: 'Dead Letter', value: stats.deadLetterRuns, color: 'hsl(var(--destructive))' },
     // Admin data-viz palette — documented chromatic exception (CLAUDE.md).
-    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: '#ec4899' },
-    { label: 'Definitions', value: definitions.length, color: '#64748b' },
+    { label: 'Avg Duration', value: formatDuration(stats.avgDurationMs), color: 'hsl(var(--foreground))' },
+    { label: 'Definitions', value: definitions.length, color: 'hsl(var(--muted-foreground))' },
   ];
 
   return (

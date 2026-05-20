@@ -286,7 +286,7 @@ function SortableErrorCard({
     transition,
     opacity: isDragging ? 0.4 : 1,
   };
-  const color = SERVICE_COLORS[item.data.service] || '#888';
+  const color = SERVICE_COLORS[item.data.service] || 'hsl(var(--muted-foreground))';
   const withClaude = !!item.github_issue_url && item.feedback_status !== 'done';
   const advisorMeta = item.data.metadata as
     | { source?: string; advisor_type?: string; severity?: string }
@@ -294,10 +294,10 @@ function SortableErrorCard({
   const isAdvisor = advisorMeta?.source === 'supabase-advisor';
   const severityColor =
     advisorMeta?.severity === 'ERROR'
-      ? '#ef4444'
+      ? 'hsl(var(--destructive))'
       : advisorMeta?.severity === 'WARN'
-        ? '#f59e0b'
-        : '#6b7280';
+        ? 'hsl(var(--foreground) / 0.55)'
+        : 'hsl(var(--muted-foreground))';
 
   return (
     <div ref={setNodeRef} style={style}>
@@ -349,7 +349,7 @@ function SortableErrorCard({
                 style={{
                   borderColor: severityColor,
                   backgroundColor: severityColor,
-                  color: '#fff',
+                  color: 'hsl(var(--background))',
                   fontSize: '0.7rem',
                   padding: '2px 6px',
                   fontWeight: 700,
@@ -362,9 +362,9 @@ function SortableErrorCard({
               <Badge
                 variant="outline"
                 style={{
-                  borderColor: '#8b5cf6',
-                  backgroundColor: '#8b5cf6',
-                  color: '#fff',
+                  borderColor: 'hsl(var(--foreground) / 0.55)',
+                  backgroundColor: 'hsl(var(--foreground) / 0.55)',
+                  color: 'hsl(var(--background))',
                   fontSize: '0.7rem',
                   padding: '2px 6px',
                   display: 'inline-flex',
@@ -462,7 +462,7 @@ function SortableErrorCard({
                   alignItems: 'center',
                   gap: 4,
                   backgroundColor: 'hsl(var(--foreground))',
-                  color: '#fff',
+                  color: 'hsl(var(--background))',
                 }}
               >
                 <MessageSquarePlus style={{ width: 12, height: 12 }} />

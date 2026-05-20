@@ -254,7 +254,7 @@ export default function AdminHotels() {
         header: 'LGBTQ+',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: '#dbeafe', color: '#1e40af' }}>LGBTQ+</Badge>
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>LGBTQ+</Badge>
           ) : null,
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
       }),
@@ -262,7 +262,7 @@ export default function AdminHotels() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
               <Star style={{ height: 12, width: 12, marginRight: 4 }} />
               Featured
             </Badge>

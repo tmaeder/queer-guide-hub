@@ -369,14 +369,14 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
       {/* FABs */}
       <Button
         variant="outline"
-        className="fixed bottom-[84px] right-7 h-10 w-10 p-0 rounded-full bg-background border-border shadow-md"
+        className="fixed bottom-[84px] right-7 h-10 w-10 p-0 rounded-full bg-background border-border shadow-[var(--shadow-aceternity-sm)]"
         onClick={() => setEstimateOpen(true)}
         aria-label={t('trips.budget.estimateCosts', { defaultValue: 'Estimate costs' })}
       >
         <Sparkles size={18} />
       </Button>
       <Button
-        className="fixed bottom-6 right-6 h-14 w-14 p-0 rounded-full text-white shadow-lg hover:opacity-90"
+        className="fixed bottom-6 right-6 h-14 w-14 p-0 rounded-full text-white shadow-[var(--shadow-aceternity)] hover:opacity-90"
         style={{ backgroundColor: brand }}
         onClick={() => setDialogOpen(true)}
       >

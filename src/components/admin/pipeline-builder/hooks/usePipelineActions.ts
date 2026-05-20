@@ -285,7 +285,7 @@ export function usePipelineActions(a: Args) {
           config: n.data?.config || {},
           nodeTypeSlug: n.data?.nodeTypeSlug || n.type,
           icon: nt?.icon || 'Box',
-          color: nt?.color || '#6b7280',
+          color: nt?.color || 'hsl(var(--muted-foreground))',
           category: nt?.category,
           description: nt?.description,
           inputPorts: nt?.input_ports || [],
@@ -315,7 +315,7 @@ export function usePipelineActions(a: Args) {
         data: {
           ...n.data,
           icon: nt?.icon || (n.data as { icon?: string })?.icon || 'Box',
-          color: nt?.color || (n.data as { color?: string })?.color || '#6b7280',
+          color: nt?.color || (n.data as { color?: string })?.color || 'hsl(var(--muted-foreground))',
           inputPorts: nt?.input_ports || [],
           outputPorts: nt?.output_ports || [],
         },

@@ -63,10 +63,10 @@ export default function PipelineDashboard() {
   const recentCompleted = runs?.filter(r => r.status === 'completed').length || 0;
   const recentFailed = runs?.filter(r => r.status === 'failed').length || 0;
 
-  const statCardStyle: React.CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '16px 16px 12px', background: '#fff' };
+  const statCardStyle: React.CSSProperties = { border: '1px solid hsl(var(--border))', borderRadius: 8, padding: '16px 16px 12px', background: 'hsl(var(--background))' };
   const statIconRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8 };
   const statValue: React.CSSProperties = { fontSize: 24, fontWeight: 700 };
-  const statLabel: React.CSSProperties = { fontSize: 12, color: '#9ca3af', marginTop: 4 };
+  const statLabel: React.CSSProperties = { fontSize: 12, color: 'hsl(var(--muted-foreground))', marginTop: 4 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -74,35 +74,35 @@ export default function PipelineDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16 }}>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <Play style={{ width: 16, height: 16, color: '#3b82f6' }} />
+            <Play style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
             <span style={statValue}>{runningCount}</span>
           </div>
           <p style={statLabel}>Running</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <CheckCircle style={{ width: 16, height: 16, color: '#22c55e' }} />
+            <CheckCircle style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />
             <span style={statValue}>{recentCompleted}</span>
           </div>
           <p style={statLabel}>Completed</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <XCircle style={{ width: 16, height: 16, color: '#ef4444' }} />
+            <XCircle style={{ width: 16, height: 16, color: 'hsl(var(--destructive))' }} />
             <span style={statValue}>{recentFailed}</span>
           </div>
           <p style={statLabel}>Failed</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            <Database style={{ width: 16, height: 16, color: '#6366f1' }} />
+            <Database style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
             <span style={statValue}>{totalStaging}</span>
           </div>
           <p style={statLabel}>Staging Items</p>
         </div>
         <div style={statCardStyle}>
           <div style={statIconRow}>
-            {openCircuits > 0 ? <AlertTriangle style={{ width: 16, height: 16, color: '#ef4444' }} /> : <Shield style={{ width: 16, height: 16, color: '#22c55e' }} />}
+            {openCircuits > 0 ? <AlertTriangle style={{ width: 16, height: 16, color: 'hsl(var(--destructive))' }} /> : <Shield style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />}
             <span style={statValue}>{openCircuits}</span>
           </div>
           <p style={statLabel}>Open Circuits</p>
@@ -223,7 +223,7 @@ export default function PipelineDashboard() {
             <CardContent>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 {circuitBreakers?.map(cb => (
-                  <div key={cb.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
+                  <div key={cb.id} style={{ border: '1px solid hsl(var(--border))', borderRadius: 8, padding: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontWeight: 500, fontSize: 14 }}>{cb.api_name}</span>
                       <Badge variant="outline" className={`text-xs ${cbStateColors[cb.state]}`}>
@@ -271,9 +271,9 @@ export default function PipelineDashboard() {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
                       {stagingStats.map(s => (
-                        <div key={s.status} style={{ border: '1px solid #e5e7eb', borderRadius: 6, padding: 12, textAlign: 'center' }}>
+                        <div key={s.status} style={{ border: '1px solid hsl(var(--border))', borderRadius: 6, padding: 12, textAlign: 'center' }}>
                           <div style={{ fontSize: 20, fontWeight: 700 }}>{s.count.toLocaleString()}</div>
-                          <div style={{ fontSize: 12, color: '#9ca3af', textTransform: 'capitalize' }}>{s.status}</div>
+                          <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', textTransform: 'capitalize' }}>{s.status}</div>
                         </div>
                       ))}
                     </div>
