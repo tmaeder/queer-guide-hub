@@ -104,19 +104,19 @@ export default function About() {
         <div className="relative">
           <TextGenerateEffect
             words="Built by queers, for everyone."
-            className="font-bold leading-[1.05] mb-4 md:mb-6 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
+            className="font-bold leading-[1.05] mb-4 md:mb-6 text-display sm:text-hero md:text-hero-xl"
             style={{ letterSpacing: '0.02em' }}
             as="h1"
             staggerDelay={0.07}
           />
-          <div className="reveal-up reveal-delay-1 text-[1.125rem] md:text-[1.375rem] text-muted-foreground mb-3">
+          <div className="reveal-up reveal-delay-1 text-lg md:text-title text-muted-foreground mb-3">
             <span className="mr-1.5">A guide for queer</span>
             <WordRotate
               className="text-foreground font-semibold"
               words={['travellers', 'locals', 'activists', 'researchers', 'allies']}
             />
           </div>
-          <p className="reveal-up reveal-delay-2 text-[1.0625rem] sm:text-[1.1875rem] md:text-[1.375rem] text-muted-foreground leading-[1.7] max-w-[720px]">
+          <p className="reveal-up reveal-delay-2 text-body-lg sm:text-lg md:text-title text-muted-foreground leading-[1.7] max-w-[720px]">
             The Queer Guide connects LGBTQ+ people and allies with safe venues,
             vibrant events, and communities that get you — wherever you are in the world.
           </p>
@@ -132,7 +132,7 @@ export default function About() {
           {statItems.map((stat, i) => (
             <div key={i} className="text-center">
               <div
-                className="font-bold leading-[1.1] text-[2.5rem] sm:text-[3rem] md:text-[4rem]"
+                className="font-bold leading-[1.1] text-display sm:text-5xl md:text-hero"
                 style={{
                   letterSpacing: '-0.03em',
                 }}
@@ -144,7 +144,7 @@ export default function About() {
                 )}
               </div>
               <p
-                className="opacity-60 mt-1 font-medium uppercase text-[0.7rem]"
+                className="opacity-60 mt-1 font-medium uppercase text-xs2"
                 style={{ letterSpacing: '0.02em' }}
               >
                 {stat.label}
@@ -157,16 +157,16 @@ export default function About() {
       {/* Our Story */}
       <ScrollReveal direction="up">
         <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
-          <h2 className="font-bold mb-6 md:mb-8 text-[1.75rem] md:text-[2.25rem]">Our Story</h2>
+          <h2 className="font-bold mb-6 md:mb-8 text-headline md:text-4xl">Our Story</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             <div className="flex flex-col gap-5">
-              <p className="text-muted-foreground leading-[1.8] text-[1.0625rem]">
+              <p className="text-muted-foreground leading-[1.8] text-body-lg">
                 Finding a queer-friendly bar shouldn't require a group chat, three Reddit threads,
                 and a leap of faith. We started The Queer Guide because we were tired of guessing
                 which spaces were actually safe — and which just slapped a rainbow on their logo in June.
               </p>
-              <p className="text-muted-foreground leading-[1.8] text-[1.0625rem]">
+              <p className="text-muted-foreground leading-[1.8] text-body-lg">
                 What began as a personal list of trusted venues has grown into a global platform — verified
                 by the community, powered by real experiences, and always free to use. Whether you're
                 traveling solo, moving to a new city, or just looking for your people on a Friday night,
@@ -207,7 +207,7 @@ export default function About() {
         className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
         style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
       >
-        <h2 className="reveal-up font-bold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">
+        <h2 className="reveal-up font-bold mb-8 md:mb-10 text-headline md:text-4xl">
           What We Offer
         </h2>
 
@@ -231,7 +231,7 @@ export default function About() {
                     }}
                   >
                     <p
-                      className="font-bold text-base md:text-[1.0625rem] flex items-center gap-2"
+                      className="font-bold text-base md:text-body-lg flex items-center gap-2"
                     >
                       <Icon style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden="true" />
                       {feature.title}
@@ -248,7 +248,7 @@ export default function About() {
       {/* Our Values */}
       <ScrollReveal direction="up">
         <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
-          <h2 className="font-bold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">Our Values</h2>
+          <h2 className="font-bold mb-8 md:mb-10 text-headline md:text-4xl">Our Values</h2>
 
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             {values.map((value) => {
@@ -273,10 +273,10 @@ export default function About() {
           className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
           style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
         >
-          <h2 className="font-bold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">
+          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">
             The People Behind It
           </h2>
-          <p className="text-muted-foreground mb-8 md:mb-10 text-[1.0625rem] leading-[1.7] max-w-[600px]">
+          <p className="text-muted-foreground mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
             The Queer Guide isn't run by a corporation — it's powered by passionate
             community members who volunteer their time and energy.
           </p>
@@ -307,8 +307,8 @@ export default function About() {
       {/* Get Involved CTA */}
       <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8 bg-foreground text-background">
         <ScrollReveal direction="up">
-          <h2 className="font-bold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">Get Involved</h2>
-          <p className="opacity-60 mb-8 md:mb-10 text-[1.0625rem] leading-[1.7] max-w-[600px]">
+          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">Get Involved</h2>
+          <p className="opacity-60 mb-8 md:mb-10 text-body-lg leading-[1.7] max-w-[600px]">
             This platform grows because people like you contribute. Here's how you can help.
           </p>
 
@@ -351,7 +351,7 @@ export default function About() {
       {/* Timeline — How we got here */}
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-bold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">How we got here</h2>
+          <h2 className="font-bold mb-2 md:mb-4 text-headline md:text-4xl">How we got here</h2>
           <p className="text-muted-foreground mb-8 max-w-2xl">A side-project that became a global directory.</p>
         </div>
         <Timeline

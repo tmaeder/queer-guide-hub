@@ -251,14 +251,14 @@ function SharedTripPage() {
         />
         <div className="relative z-[1] w-full px-[1.25rem] md:px-4 py-[1.25rem] md:py-3">
           <div
-            className="inline-flex items-center gap-0.5 px-[0.625rem] rounded-full text-white text-[0.7rem] font-bold uppercase tracking-[0.04em] mb-[0.3125rem]"
+            className="inline-flex items-center gap-0.5 px-[0.625rem] rounded-full text-white text-xs2 font-bold uppercase tracking-[0.04em] mb-[0.3125rem]"
             style={{ backgroundColor: 'rgba(255,255,255,0.18)', padding: '1px 10px' }}
           >
             <Sparkles style={{ width: 12, height: 12 }} />
             {t('trips.shared.badge')}
           </div>
           <h1
-            className="text-white text-[1.75rem] md:text-[2.25rem] font-bold"
+            className="text-white text-headline md:text-4xl font-bold"
             style={{
               fontFamily: 'var(--font-heading)',
               lineHeight: 1.1,
@@ -455,7 +455,7 @@ function SharedTripPage() {
               </div>
               <div className="flex-1 text-center sm:text-left">
                 <p
-                  className="font-bold text-[1.1rem]"
+                  className="font-bold text-body-lg"
                   style={{ fontFamily: 'var(--font-heading)', letterSpacing: '-0.01em' }}
                 >
                   {t('trips.shared.ctaTitle')}

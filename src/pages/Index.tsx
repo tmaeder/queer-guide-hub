@@ -127,7 +127,7 @@ const Index = React.memo(() => {
               const inner = (
                 <>
                   <div
-                    className="font-bold text-[2.5rem] sm:text-[3rem] md:text-[4rem] leading-[1.1]"
+                    className="font-bold text-display sm:text-5xl md:text-hero leading-[1.1]"
                     style={{
                       letterSpacing: '-0.03em',
                     }}
