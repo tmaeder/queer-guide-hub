@@ -9,14 +9,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "jose": "^5.9.6",
+    "jose": "^6.2.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.15.2",
-    "@cloudflare/workers-types": "^4.20250414.0",
+    "@cloudflare/vitest-pool-workers": "^0.16.7",
+    "@cloudflare/workers-types": "^4.20260519.1",
     "typescript": "^5.6.0",
-    "vitest": "^4.1.5",
+    "vitest": "^4.1.6",
     "wrangler": "^4.84.0"
   }
 }

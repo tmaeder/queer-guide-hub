@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTrackClick } from '@/hooks/useSearchActions';
 import { trackSearchUx } from '@/lib/searchClient';
@@ -8,56 +8,25 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SearchInputTyped } from '@/components/ui/search-input-typed';
-import {
-  Command,
-  CommandEmpty,
-  CommandList,
-  CommandSeparator,
-  CommandGroup,
-  CommandItem,
-} from '@/components/ui/command';
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover';
-import {
-  Search,
-  X,
-  Clock,
-  SlidersHorizontal,
-  Mic,
-  MapPin,
-  CalendarDays,
-  Globe,
-  Users,
-  ShoppingBag,
-  Navigation,
-} from 'lucide-react';
-import { useSearchSuggestions, SearchSuggestion, TYPE_ICONS } from '@/hooks/useSearchSuggestions';
+import { Search, X, Mic, SlidersHorizontal } from 'lucide-react';
+import { useSearchSuggestions, type SearchSuggestion } from '@/hooks/useSearchSuggestions';
 import { useTrendingSuggestions } from '@/hooks/useTrendingSuggestions';
 import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useNearMe } from '@/hooks/useNearMe';
-import { TrendingUp } from 'lucide-react';
-const SearchFiltersPanel = lazy(() =>
-  import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
-);
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearchHotkey } from '@/hooks/useSearchHotkey';
 import { SearchScopeChips } from './SearchScopeChips';
+import { SearchPopoverRail } from './SearchPopoverRail';
+import { SearchPopoverResults } from './SearchPopoverResults';
+import { SearchPopoverEmpty } from './SearchPopoverEmpty';
 import type { SearchFilters } from '@/hooks/useSearch';
 
-const contentTypeLabels: Record<string, string> = {
-  venue: 'Venues',
-  event: 'Events',
-  marketplace: 'Marketplace',
-  news: 'News',
-  city: 'Cities',
-  country: 'Countries',
-  personality: 'Personalities',
-  tag: 'Tags',
-  queer_village: 'Queer Villages',
-  user: 'Members',
-  group: 'Groups',
-};
+const SearchFiltersPanel = lazy(() =>
+  import('./SearchFiltersPanel').then((m) => ({ default: m.SearchFiltersPanel })),
+);
 
-const TYPE_ORDER = ['city', 'country', 'venue', 'event', 'personality', 'news', 'queer_village', 'marketplace', 'tag', 'user', 'group'];
+const RAIL_SCOPE_IDS = ['venue', 'event', 'city', 'country', 'personality', 'news', 'marketplace', 'tag', 'queer_village'];
 
 function KbdHint({ label, desc }: { label: string; desc: string }) {
   return (
@@ -81,74 +50,27 @@ function KbdHint({ label, desc }: { label: string; desc: string }) {
   );
 }
 
-/** Allow only `<em>…</em>` (Meili's default highlight tag); strip everything else. */
-function sanitizeMeiliHighlight(html: string): string {
-  return html
-    .replace(/<(?!\/?em\b)[^>]+>/gi, '')
-    .replace(/<em\b[^>]*>/gi, '<em>');
-}
-
-function HighlightedText({
-  text,
-  query,
-  html,
-}: {
-  text: string;
-  query: string;
-  html?: string | null;
-}) {
-  if (!text) return null;
-  // Prefer server-side Meili highlight when present — it covers typo-tolerant
-  // matches that a client substring search would miss.
-  if (html && /<em>/i.test(html)) {
-    const safe = sanitizeMeiliHighlight(html);
-    return (
-      <span
-        // Only <em> survives sanitization above; styled via the parent rule below.
-        dangerouslySetInnerHTML={{ __html: safe }}
-        style={
-          {
-            ['--em-weight' as string]: '600',
-          } as React.CSSProperties
-        }
-        className="qg-search-highlight"
-      />
-    );
-  }
-  const q = query.trim();
-  if (!q) return <>{text}</>;
-  const lower = text.toLowerCase();
-  const needle = q.toLowerCase();
-  const idx = lower.indexOf(needle);
-  if (idx === -1) return <>{text}</>;
-  return (
-    <>
-      {text.slice(0, idx)}
-      <mark
-        style={{
-          background: 'transparent',
-          color: 'inherit',
-          fontWeight: 600,
-          textDecoration: 'underline',
-          textUnderlineOffset: 2,
-        }}
-      >
-        {text.slice(idx, idx + needle.length)}
-      </mark>
-      {text.slice(idx + needle.length)}
-    </>
-  );
-}
-
-function TypeHeading({ type }: { type: string }) {
-  const Icon = TYPE_ICONS[type];
-  const label = contentTypeLabels[type] || type;
-  return (
-    <span className="flex items-center gap-1.5">
-      {Icon && React.createElement(Icon, { style: { height: 12, width: 12 } })}
-      {label}
-    </span>
-  );
+function prefetchRoute(suggestion: SearchSuggestion) {
+  const slug = suggestion.slug || suggestion.id;
+  const href =
+    suggestion.type === 'venue' ? `/venues/${slug}`
+    : suggestion.type === 'event' ? `/events/${slug}`
+    : suggestion.type === 'marketplace' ? `/marketplace/${slug}`
+    : suggestion.type === 'personality' ? `/personalities/${slug}`
+    : suggestion.type === 'city' ? `/city/${slug}`
+    : suggestion.type === 'country' ? `/country/${slug}`
+    : suggestion.type === 'queer_village' ? `/queer-villages/${slug}`
+    : suggestion.type === 'news' ? `/news/${slug}`
+    : null;
+  if (!href) return;
+  try {
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.as = 'document';
+    link.href = href;
+    document.head.appendChild(link);
+    setTimeout(() => link.remove(), 30_000);
+  } catch { /* ignore */ }
 }
 
 export const UniversalSearchBar = () => {
@@ -158,13 +80,18 @@ export const UniversalSearchBar = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({ types: [] });
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [_isFocused, setIsFocused] = useState(false);
+  const [focusedPane, setFocusedPane] = useState<'rail' | 'results'>('results');
+  const [resultsFocused, setResultsFocused] = useState<number | null>(null);
+  const [railFocused, setRailFocused] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const justSelectedRef = useRef(false);
   const navigate = useLocalizedNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
+
+  const activeScope = filters.types && filters.types.length === 1 ? filters.types[0] : null;
+  const scopeArray = activeScope ? [activeScope] : undefined;
 
   const prevPathRef = useRef(location.pathname);
   useEffect(() => {
@@ -179,15 +106,14 @@ export const UniversalSearchBar = () => {
     }
   }, [location.pathname]);
 
-  const { suggestions, loading: suggestionsLoading, error: suggestionsError } = useSearchSuggestions(query, filters.types);
+  const { suggestions, countsByType, loading: suggestionsLoading, error: suggestionsError } =
+    useSearchSuggestions(query, scopeArray);
   const { trending } = useTrendingSuggestions(isOpen && !query);
   const voice = useVoiceSearch();
   const nearMe = useNearMe();
 
   useEffect(() => {
-    if (voice.transcript) {
-      setQuery(voice.transcript);
-    }
+    if (voice.transcript) setQuery(voice.transcript);
   }, [voice.transcript]);
 
   useEffect(() => {
@@ -197,15 +123,20 @@ export const UniversalSearchBar = () => {
     }
   }, []);
 
+  // Reset virtual focus when results change
+  useEffect(() => {
+    setResultsFocused(null);
+  }, [suggestions.length, activeScope]);
+
   const saveRecentSearch = (searchTerm: string) => {
     if (!searchTerm.trim()) return;
-    const updated = [searchTerm, ...recentSearches.filter((s) => s !== searchTerm)].slice(0, 5);
+    const updated = [searchTerm, ...recentSearches.filter((s) => s !== searchTerm)].slice(0, 10);
     setRecentSearches(updated);
     localStorage.setItem('recent-searches', JSON.stringify(updated));
   };
 
-  const handleSearch = (searchQuery?: string) => {
-    const searchTerm = searchQuery || query;
+  const handleSearch = useCallback((searchQuery?: string) => {
+    const searchTerm = searchQuery ?? query;
     if (!searchTerm.trim()) return;
     saveRecentSearch(searchTerm);
     const params = new URLSearchParams({
@@ -215,10 +146,9 @@ export const UniversalSearchBar = () => {
       ...(filters.categories && filters.categories.length > 0 && { categories: filters.categories.join(',') }),
       ...(filters.cluster_ids && filters.cluster_ids.length > 0 && { clusters: filters.cluster_ids.join(',') }),
     });
-    // Fire-and-forget telemetry — feeds future trending + analytics dashboards.
     void trackSearchUx('search_submit', {
       query: searchTerm,
-      scope: filters.types && filters.types.length === 1 ? filters.types[0] : 'all',
+      scope: activeScope || 'all',
       filters_count:
         (filters.types?.length || 0)
         + (filters.location ? 1 : 0)
@@ -228,9 +158,10 @@ export const UniversalSearchBar = () => {
     });
     navigate(`/search?${params}`);
     setIsOpen(false);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, filters, activeScope, navigate]);
 
-  const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
+  const handleSelectSuggestion = useCallback((suggestion: SearchSuggestion) => {
     justSelectedRef.current = true;
     const displayName = suggestion.name || suggestion.title;
     setQuery(displayName || '');
@@ -253,27 +184,119 @@ export const UniversalSearchBar = () => {
       default: navigate(`/search?q=${encodeURIComponent(displayName || '')}&types=${suggestion.type}&direct=true`);
     }
     setIsOpen(false);
-  };
+  }, [navigate, trackClickFromSearch]);
+
+  const setScope = useCallback((scope: string | null) => {
+    setFilters((f) => ({ ...f, types: scope ? [scope] : [] }));
+    void trackSearchUx('scope_switch', { from: activeScope || 'all', to: scope || 'all', via: 'click' });
+    inputRef.current?.focus();
+  }, [activeScope]);
+
+  // Rail navigable list: [All, ...RAIL_SCOPE_IDS]
+  const railLength = 1 + RAIL_SCOPE_IDS.length;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSearch();
-    else if (e.key === 'Escape') { setIsOpen(false); inputRef.current?.blur(); }
-    else if (e.key === 'Tab' && !e.shiftKey && query && suggestions[0]) {
-      // Tab-to-complete: extend the input to the top suggestion's display name
-      // when the user is mid-typing and a suggestion exists.
+    // Alt+1..9 → scope shortcut
+    if (e.altKey && /^[1-9]$/.test(e.key)) {
+      const idx = parseInt(e.key, 10) - 1;
+      if (idx === 0) {
+        setScope(null);
+      } else {
+        const id = RAIL_SCOPE_IDS[idx - 1];
+        if (id) setScope(id);
+      }
+      e.preventDefault();
+      void trackSearchUx('scope_switch', { from: activeScope || 'all', to: idx === 0 ? 'all' : RAIL_SCOPE_IDS[idx - 1], via: 'key' });
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+      inputRef.current?.blur();
+      return;
+    }
+
+    if (e.key === 'Tab' && !e.shiftKey && query && suggestions[0]) {
       const top = suggestions[0];
       const candidate = (top.name || top.title || '').toString();
       if (candidate && candidate.toLowerCase().startsWith(query.toLowerCase()) && candidate !== query) {
         e.preventDefault();
         setQuery(candidate);
+        return;
       }
     }
+
+    if (e.key === 'ArrowLeft') {
+      if (focusedPane !== 'rail') {
+        setFocusedPane('rail');
+        // Map current scope to rail index
+        const currentRailIdx = activeScope ? 1 + RAIL_SCOPE_IDS.indexOf(activeScope) : 0;
+        setRailFocused(currentRailIdx >= 0 ? currentRailIdx : 0);
+        e.preventDefault();
+      }
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      if (focusedPane !== 'results') {
+        setFocusedPane('results');
+        setResultsFocused(suggestions.length > 0 ? 0 : null);
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (focusedPane === 'rail') {
+        setRailFocused((i) => {
+          const next = i === null ? 0 : (i + 1) % railLength;
+          return next;
+        });
+      } else {
+        setResultsFocused((i) => {
+          if (suggestions.length === 0) return null;
+          if (i === null) return 0;
+          return Math.min(i + 1, suggestions.length - 1);
+        });
+      }
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (focusedPane === 'rail') {
+        setRailFocused((i) => {
+          if (i === null) return railLength - 1;
+          return (i - 1 + railLength) % railLength;
+        });
+      } else {
+        setResultsFocused((i) => {
+          if (i === null || i === 0) return null;
+          return i - 1;
+        });
+      }
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      if (focusedPane === 'rail' && railFocused !== null) {
+        e.preventDefault();
+        if (railFocused === 0) {
+          setScope(null);
+        } else {
+          const id = RAIL_SCOPE_IDS[railFocused - 1];
+          if (id) setScope(id);
+        }
+        setFocusedPane('results');
+        return;
+      }
+      if (focusedPane === 'results' && resultsFocused !== null && suggestions[resultsFocused]) {
+        e.preventDefault();
+        handleSelectSuggestion(suggestions[resultsFocused]);
+        return;
+      }
+      handleSearch();
+    }
   };
-
-  const handleRecentSearch = (searchTerm: string) => { setQuery(searchTerm); handleSearch(searchTerm); };
-  const clearRecentSearches = () => { setRecentSearches([]); localStorage.removeItem('recent-searches'); };
-
-  const activeFiltersCount = (filters.types?.length || 0) + (filters.location ? 1 : 0) + (filters.categories?.length || 0) + (filters.priceRange ? 1 : 0) + (filters.rating ? 1 : 0);
 
   useEffect(() => {
     if (isOpen && inputRef.current) setTimeout(() => inputRef.current?.focus(), 0);
@@ -287,58 +310,105 @@ export const UniversalSearchBar = () => {
   const isMac =
     typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform);
 
-  const groupedSuggestions = suggestions.reduce<Record<string, SearchSuggestion[]>>((acc, s) => {
-    const t = s.type || 'other';
-    if (!acc[t]) acc[t] = [];
-    acc[t].push(s);
-    return acc;
-  }, {});
+  const activeFiltersCount =
+    (filters.types?.length || 0)
+    + (filters.location ? 1 : 0)
+    + (filters.categories?.length || 0)
+    + (filters.priceRange ? 1 : 0)
+    + (filters.rating ? 1 : 0);
+
+  const removeRecent = (index: number) => {
+    const updated = recentSearches.filter((_, i) => i !== index);
+    setRecentSearches(updated);
+    localStorage.setItem('recent-searches', JSON.stringify(updated));
+  };
+
+  const clearRecents = () => {
+    setRecentSearches([]);
+    localStorage.removeItem('recent-searches');
+  };
 
   return (
     <div className="flex-1 min-w-0">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverAnchor asChild>
-          <div
-            className="relative transition-transform duration-200 ease-out"
-            style={{
-              transform: isOpen ? 'scale(1.02)' : 'scale(1)',
-              backdropFilter: isOpen ? 'blur(8px)' : 'blur(0px)',
-              transition: 'transform 200ms ease-out, backdrop-filter 200ms ease-out',
-            }}
-          >
-            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- search role + keyboard handler delegates focus to inner combobox */}
-            <div role="search" aria-label="Site search" className="flex items-center cursor-text bg-background transition-all"
+          <div className="relative">
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
+              role="search"
+              aria-label="Site search"
+              className="flex items-center cursor-text bg-background"
               onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   setIsOpen(true);
                   setTimeout(() => inputRef.current?.focus(), 0);
                 }
-              }}>
-              <span aria-hidden="true" className="inline-flex items-center justify-center"
-                style={{ height: isMobile ? 48 : 40, paddingLeft: isMobile ? 16 : 12, paddingRight: isMobile ? 16 : 12, color: 'hsl(var(--muted-foreground))', pointerEvents: 'none', flexShrink: 0 }}>
+              }}
+            >
+              <span
+                aria-hidden="true"
+                className="inline-flex items-center justify-center"
+                style={{
+                  height: isMobile ? 48 : 40,
+                  paddingLeft: isMobile ? 16 : 12,
+                  paddingRight: isMobile ? 16 : 12,
+                  color: 'hsl(var(--muted-foreground))',
+                  pointerEvents: 'none',
+                  flexShrink: 0,
+                }}
+              >
                 <Search style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />
               </span>
               <div className="flex-1 relative">
-                <SearchInputTyped ref={inputRef} aria-label={t('search.ariaLabel', 'Search Queer Guide')} role="combobox" aria-autocomplete="list" aria-expanded={isOpen} aria-controls="qg-search-listbox" aria-haspopup="listbox"
-                  placeholders={isMobile ? [t('search.placeholders.generic', 'Search...')] : location.pathname.startsWith('/admin') ? [t('search.placeholders.generic', 'Search...')] : location.pathname.startsWith('/hotels') ? [t('search.placeholders.hotels', 'Search hotels...')] : [t('search.placeholders.venues', 'Search venues...'), t('search.placeholders.events', 'Find events...'), t('search.placeholders.marketplace', 'Browse marketplace...'), t('search.placeholders.people', 'Discover people...'), t('search.placeholders.news', 'Read news...'), t('search.placeholders.resources', 'Explore resources...'), t('search.placeholders.personalities', 'Meet personalities...')]}
-                  typingSpeed={75} pauseDuration={2000} showCursor={true} cursorCharacter="|" value={query}
-                  onValueChange={(value) => { setQuery(value); if (!isOpen && !justSelectedRef.current) setIsOpen(true); justSelectedRef.current = false; }}
+                <SearchInputTyped
+                  ref={inputRef}
+                  aria-label={t('search.ariaLabel', 'Search Queer Guide')}
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={isOpen}
+                  aria-controls="qg-search-listbox"
+                  aria-haspopup="listbox"
+                  placeholders={
+                    isMobile ? [t('search.placeholders.generic', 'Search...')]
+                    : location.pathname.startsWith('/admin') ? [t('search.placeholders.generic', 'Search...')]
+                    : location.pathname.startsWith('/hotels') ? [t('search.placeholders.hotels', 'Search hotels...')]
+                    : [
+                        t('search.placeholders.venues', 'Search venues...'),
+                        t('search.placeholders.events', 'Find events...'),
+                        t('search.placeholders.marketplace', 'Browse marketplace...'),
+                        t('search.placeholders.people', 'Discover people...'),
+                        t('search.placeholders.news', 'Read news...'),
+                        t('search.placeholders.resources', 'Explore resources...'),
+                        t('search.placeholders.personalities', 'Meet personalities...'),
+                      ]
+                  }
+                  typingSpeed={75}
+                  pauseDuration={2000}
+                  showCursor={true}
+                  cursorCharacter="|"
+                  value={query}
+                  onValueChange={(value) => {
+                    setQuery(value);
+                    if (!isOpen && !justSelectedRef.current) setIsOpen(true);
+                    justSelectedRef.current = false;
+                  }}
                   onKeyDown={handleKeyDown}
-                  onFocus={() => { setIsFocused(true); setIsOpen(true); }}
-                  onBlur={() => setIsFocused(false)}
-                  style={{ width: '100%', border: 0, backgroundColor: 'transparent', boxShadow: 'none', outline: 'none', fontSize: isMobile ? '1rem' : '0.875rem' }}
-                  autoComplete="off" />
+                  onFocus={() => setIsOpen(true)}
+                  style={{
+                    width: '100%',
+                    border: 0,
+                    backgroundColor: 'transparent',
+                    boxShadow: 'none',
+                    outline: 'none',
+                    fontSize: isMobile ? '1rem' : '0.875rem',
+                  }}
+                  autoComplete="off"
+                />
                 {!query && (
                   <span
                     className="flex items-center"
-                    style={{
-                      position: 'absolute',
-                      right: 8,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      gap: 6,
-                    }}
+                    style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', gap: 6 }}
                   >
                     {voice.supported && (
                       <Button
@@ -382,270 +452,349 @@ export const UniversalSearchBar = () => {
                 )}
                 {query && (
                   <span className="flex items-center gap-1" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)' }}>
-                    {suggestionsLoading && <Loader2 className="animate-spin" style={{ height: isMobile ? 14 : 12, width: isMobile ? 14 : 12, color: 'hsl(var(--muted-foreground))' }} />}
-                    <Button variant="ghost" size="sm" aria-label="Clear search" style={{ height: isMobile ? 32 : 24, width: isMobile ? 32 : 24, padding: 0, color: 'hsl(var(--muted-foreground))' }}
-                      onClick={() => { setQuery(''); inputRef.current?.focus(); }}>
+                    {suggestionsLoading && (
+                      <Loader2
+                        className="animate-spin"
+                        style={{ height: isMobile ? 14 : 12, width: isMobile ? 14 : 12, color: 'hsl(var(--muted-foreground))' }}
+                      />
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Clear search"
+                      style={{
+                        height: isMobile ? 32 : 24,
+                        width: isMobile ? 32 : 24,
+                        padding: 0,
+                        color: 'hsl(var(--muted-foreground))',
+                      }}
+                      onClick={() => { setQuery(''); inputRef.current?.focus(); }}
+                    >
                       <X style={{ height: isMobile ? 16 : 12, width: isMobile ? 16 : 12 }} />
                     </Button>
                   </span>
                 )}
               </div>
-              <Button variant="ghost" size="sm" aria-label="Search filters"
-                style={{ height: isMobile ? 48 : 40, paddingLeft: isMobile ? 16 : 12, paddingRight: isMobile ? 16 : 12, color: 'inherit', position: 'relative', flexShrink: 0 }}
-                onClick={() => setShowFilters(!showFilters)}>
-                <SlidersHorizontal style={{ height: isMobile ? 20 : 16, width: isMobile ? 20 : 16 }} />
-                {activeFiltersCount > 0 && <Badge variant="destructive">{activeFiltersCount}</Badge>}
-              </Button>
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Search filters"
+                  style={{
+                    height: 48,
+                    paddingLeft: 16,
+                    paddingRight: 16,
+                    color: 'inherit',
+                    position: 'relative',
+                    flexShrink: 0,
+                  }}
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <SlidersHorizontal style={{ height: 20, width: 20 }} />
+                  {activeFiltersCount > 0 && <Badge variant="destructive">{activeFiltersCount}</Badge>}
+                </Button>
+              )}
             </div>
           </div>
         </PopoverAnchor>
         <PopoverContent
-          style={isMobile ? { position: 'fixed', inset: 0, width: '100vw', height: '100dvh', maxHeight: '100dvh', borderRadius: 0, padding: 0, zIndex: 50 } : { width: 600, padding: 0, zIndex: 50 }}
+          style={
+            isMobile
+              ? { position: 'fixed', inset: 0, width: '100vw', height: '100dvh', maxHeight: '100dvh', borderRadius: 0, padding: 0, zIndex: 50 }
+              : { width: 'min(820px, calc(100vw - 32px))', padding: 0, zIndex: 50, borderRadius: 0 }
+          }
           align="start"
           onOpenAutoFocus={(e) => { e.preventDefault(); setTimeout(() => inputRef.current?.focus(), 0); }}
           onCloseAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}
-          onEscapeKeyDown={() => setIsOpen(false)}>
-          {isMobile && (
-            <div className="flex items-center justify-between border-b border-border px-3 py-2">
-              <button type="button" onClick={() => setIsOpen(false)} className="text-sm font-medium text-primary px-2 py-1 -ml-2" aria-label="Close search">Cancel</button>
-              {query && <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus(); }} className="text-sm text-muted-foreground px-2 py-1 -mr-2" aria-label="Clear search">Clear</button>}
-            </div>
-          )}
-          <Command shouldFilter={false} style={{ background: 'transparent' }}>
-            <SearchScopeChips
-              activeScope={filters.types && filters.types.length === 1 ? filters.types[0] : null}
-              onScopeChange={(scope) =>
-                setFilters({ ...filters, types: scope ? [scope] : [] })
-              }
+          onEscapeKeyDown={() => setIsOpen(false)}
+        >
+          {isMobile ? (
+            <MobileLayout
+              query={query}
+              activeScope={activeScope}
+              suggestions={suggestions}
+              countsByType={countsByType}
+              loading={suggestionsLoading}
+              error={suggestionsError}
+              trending={trending}
+              recentSearches={recentSearches}
+              showFilters={showFilters}
+              filters={filters}
+              setFilters={setFilters}
+              setScope={setScope}
+              onSelect={handleSelectSuggestion}
+              onSearchAll={() => handleSearch()}
+              onClose={() => setIsOpen(false)}
+              onClear={() => { setQuery(''); inputRef.current?.focus(); }}
+              setQuery={setQuery}
+              navigate={navigate}
+              removeRecent={removeRecent}
+              clearRecents={clearRecents}
+              nearMe={nearMe}
             />
-            {showFilters && (
-              <Suspense fallback={null}>
-                <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
-                <CommandSeparator />
-              </Suspense>
-            )}
-            <CommandList id="qg-search-listbox" style={{ maxHeight: 384 }}>
-              {!query && nearMe.supported && (
-                <>
-                  <CommandGroup>
-                    <CommandItem
-                      onSelect={async () => {
-                        const c = await nearMe.request();
-                        if (!c) return;
-                        setIsOpen(false);
-                        navigate(`/search?lat=${c.lat}&lng=${c.lng}&radius=25000`);
-                      }}
-                      style={{ cursor: 'pointer', padding: '8px 12px' }}
-                    >
-                      <Navigation style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-                      <span className="text-sm">{t('search.nearMe', 'Near me')}</span>
-                      {nearMe.loading && <Loader2 className="animate-spin" style={{ height: 12, width: 12, marginLeft: 8 }} />}
-                    </CommandItem>
-                  </CommandGroup>
-                  <CommandSeparator />
-                </>
-              )}
-              {!query && (
-                <>
-                  <CommandGroup heading={t('search.browse', 'Browse')}>
-                    {[
-                      { label: t('search.quickLinks.places', 'Places'), icon: MapPin, path: '/places' },
-                      { label: t('search.quickLinks.cities', 'Cities'), icon: Globe, path: '/cities' },
-                      { label: t('search.quickLinks.eventsWeekend', 'Events this weekend'), icon: CalendarDays, path: '/events?range=weekend' },
-                      { label: t('search.quickLinks.personalities', 'Personalities'), icon: Users, path: '/personalities' },
-                      { label: t('search.quickLinks.marketplace', 'Marketplace'), icon: ShoppingBag, path: '/marketplace' },
-                    ].map((link) => {
-                      const Icon = link.icon;
-                      return (
-                        <CommandItem
-                          key={link.path}
-                          onSelect={() => { setIsOpen(false); navigate(link.path); }}
-                          style={{ cursor: 'pointer', padding: '8px 12px' }}
-                        >
-                          <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-                          <span className="text-sm">{link.label}</span>
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                  <CommandSeparator />
-                </>
-              )}
-              {!query && trending.length > 0 && (
-                <>
-                  <CommandGroup
-                    heading={
-                      <span className="flex items-center gap-1.5">
-                        <TrendingUp style={{ height: 12, width: 12 }} />
-                        {t('search.trending', 'Trending')}
-                      </span>
-                    }
-                  >
-                    {trending.slice(0, 6).map((hit) => {
-                      const type = hit.type;
-                      const Icon = TYPE_ICONS[type] || TrendingUp;
-                      const name = (hit.title || hit.name || '') as string;
-                      const subtitle = (hit.city || hit.country) as string | undefined;
-                      if (!name) return null;
-                      return (
-                        <CommandItem
-                          key={`trending-${type}-${hit.id}`}
-                          onSelect={() =>
-                            handleSelectSuggestion({
-                              id: hit.id,
-                              name,
-                              type,
-                              icon: Icon,
-                              subtitle,
-                              title: name,
-                              slug: hit.slug as string | undefined,
-                            })
-                          }
-                          style={{ cursor: 'pointer', padding: '8px 12px' }}
-                        >
-                          <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-                          <div className="flex flex-col items-start flex-1 min-w-0">
-                            <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">{name}</span>
-                            {subtitle && <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap w-full">{subtitle}</span>}
-                          </div>
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                  <CommandSeparator />
-                </>
-              )}
-              {!query && recentSearches.length > 0 && (
-                <>
-                  <CommandGroup heading={t('search.recentSearches', 'Recent searches')}>
-                    {recentSearches.map((search, index) => (
-                      <CommandItem key={index} onSelect={() => handleRecentSearch(search)} style={{ cursor: 'pointer' }}>
-                        <Clock style={{ height: 16, width: 16, marginRight: 8, color: 'hsl(var(--muted-foreground))' }} />
-                        <span className="flex-1">{search}</span>
-                        <Button variant="ghost" size="sm" aria-label={`Remove "${search}" from recent searches`} style={{ height: 24, width: 24, padding: 0, marginLeft: 4 }}
-                          onClick={(e) => { e.stopPropagation(); const updated = recentSearches.filter((_, i) => i !== index); setRecentSearches(updated); localStorage.setItem('recent-searches', JSON.stringify(updated)); }}>
-                          <X style={{ height: 12, width: 12 }} />
-                        </Button>
-                      </CommandItem>
-                    ))}
-                    <CommandItem onSelect={clearRecentSearches} style={{ cursor: 'pointer', color: 'hsl(var(--muted-foreground))' }}>
-                      <X style={{ height: 16, width: 16, marginRight: 8 }} />Clear recent searches
-                    </CommandItem>
-                  </CommandGroup>
-                  <CommandSeparator />
-                </>
-              )}
-              {TYPE_ORDER.filter((type) => groupedSuggestions[type]).map((type) => (
-                <CommandGroup key={type} heading={<TypeHeading type={type} />}>
-                  {groupedSuggestions[type].map((suggestion) => {
-                    const Icon = suggestion.icon;
-                    const displayName = suggestion.name || suggestion.title;
-                    const subtitle = suggestion.subtitle;
-                    const slug = suggestion.slug || suggestion.id;
-                    const prefetchHref =
-                      suggestion.type === 'venue' ? `/venues/${slug}`
-                      : suggestion.type === 'event' ? `/events/${slug}`
-                      : suggestion.type === 'marketplace' ? `/marketplace/${slug}`
-                      : suggestion.type === 'personality' ? `/personalities/${slug}`
-                      : suggestion.type === 'city' ? `/city/${slug}`
-                      : suggestion.type === 'country' ? `/country/${slug}`
-                      : suggestion.type === 'queer_village' ? `/queer-villages/${slug}`
-                      : suggestion.type === 'news' ? `/news/${slug}`
-                      : null;
-                    return (
-                      <CommandItem
-                        key={`${suggestion.type}-${suggestion.id}`}
-                        onSelect={() => handleSelectSuggestion(suggestion)}
-                        onMouseEnter={() => {
-                          if (!prefetchHref) return;
-                          // Browser-native warm-up: a <link rel="prefetch"> hint
-                          // tells Chromium to fetch the route bundle. Cheap, fire-and-forget.
-                          try {
-                            const link = document.createElement('link');
-                            link.rel = 'prefetch';
-                            link.as = 'document';
-                            link.href = prefetchHref;
-                            document.head.appendChild(link);
-                            setTimeout(() => link.remove(), 30_000);
-                          } catch { /* ignore */ }
-                        }}
-                        style={{ cursor: 'pointer', padding: '8px 12px' }}
-                      >
-                        <Icon style={{ height: 16, width: 16, marginRight: 12, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-                        <div className="flex flex-col items-start flex-1 min-w-0">
-                          <span className="font-medium text-sm overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                            <HighlightedText text={displayName || ''} query={query} html={suggestion.nameHtml} />
-                          </span>
-                          {subtitle && <span className="text-xs text-muted-foreground overflow-hidden text-ellipsis whitespace-nowrap w-full">{subtitle}</span>}
-                        </div>
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              ))}
-              {suggestions.length === 0 && query.length >= 2 && !suggestionsLoading && (
-                <CommandEmpty style={{ padding: '24px 0', textAlign: 'center' }}>
-                  <div className="flex flex-col items-center gap-2">
-                    {suggestionsError ? (
-                      <div role="alert" className="flex flex-col items-center gap-2">
-                        <Search style={{ height: 32, width: 32, opacity: 0.5, color: 'hsl(var(--destructive))' }} />
-                        <p style={{ color: 'hsl(var(--destructive))' }}>Search is temporarily unavailable</p>
-                        <span className="text-xs text-muted-foreground">{suggestionsError}</span>
-                      </div>
-                    ) : (
-                      <>
-                        <Search style={{ height: 32, width: 32, opacity: 0.5 }} />
-                        <p>No results found for &ldquo;{query}&rdquo;</p>
-                        <span className="text-xs text-muted-foreground">Try different keywords or adjust your filters</span>
-                      </>
-                    )}
-                  </div>
-                </CommandEmpty>
-              )}
-            </CommandList>
-            <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-              {suggestionsError ? suggestionsError : suggestionsLoading ? 'Searching…' : query && suggestions.length ? `${suggestions.length} results for ${query}` : query ? `No results for ${query}` : ''}
-            </div>
-            {suggestionsLoading && suggestions.length === 0 && (
-              <div className="py-6 text-center text-muted-foreground">
-                <div className="flex flex-col items-center gap-2">
-                  <Loader2 className="animate-spin" size={24} aria-label="Searching" />
-                  <span className="text-sm">Searching...</span>
-                </div>
-              </div>
-            )}
-            {query && (
-              <div className="p-3 border-t border-border">
-                <Button onClick={() => handleSearch()} variant="default" style={{ width: '100%' }} size="sm">
-                  <Search style={{ height: 16, width: 16, marginRight: 8 }} />
-                  Search for &ldquo;{query.length > 20 ? query.slice(0, 20) + '...' : query}&rdquo;
-                </Button>
-              </div>
-            )}
-            {!isMobile && (
-              <div
-                className="flex items-center justify-between border-t border-border"
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '0.7rem',
-                  color: 'hsl(var(--muted-foreground))',
-                  gap: 12,
-                }}
-                aria-hidden="true"
-              >
-                <span className="inline-flex items-center" style={{ gap: 8 }}>
-                  <KbdHint label="↑↓" desc={t('search.kbd.navigate', 'Navigate')} />
-                  <KbdHint label="↵" desc={t('search.kbd.select', 'Select')} />
-                  <KbdHint label="Tab" desc={t('search.kbd.complete', 'Complete')} />
-                </span>
-                <span className="inline-flex items-center" style={{ gap: 8 }}>
-                  <KbdHint label="Esc" desc={t('search.kbd.close', 'Close')} />
-                </span>
-              </div>
-            )}
-          </Command>
+          ) : (
+            <DesktopLayout
+              query={query}
+              activeScope={activeScope}
+              suggestions={suggestions}
+              countsByType={countsByType}
+              loading={suggestionsLoading}
+              error={suggestionsError}
+              trending={trending}
+              recentSearches={recentSearches}
+              showFilters={showFilters}
+              setShowFilters={setShowFilters}
+              filters={filters}
+              setFilters={setFilters}
+              setScope={setScope}
+              onSelect={handleSelectSuggestion}
+              onSelectIndex={(s, i) => { setResultsFocused(i); handleSelectSuggestion(s); }}
+              resultsFocused={focusedPane === 'results' ? resultsFocused : null}
+              railFocused={focusedPane === 'rail' ? railFocused : null}
+              setResultsFocused={(i) => { setResultsFocused(i); setFocusedPane('results'); }}
+              setRailFocused={(i) => { setRailFocused(i); setFocusedPane('rail'); }}
+              activeFiltersCount={activeFiltersCount}
+              onSearchAll={() => handleSearch()}
+              removeRecent={removeRecent}
+              clearRecents={clearRecents}
+              onSelectRecent={(term) => { setQuery(term); handleSearch(term); }}
+              nearMeSupported={nearMe.supported}
+              nearMeLoading={nearMe.loading}
+              onNearMe={async () => {
+                const c = await nearMe.request();
+                if (!c) return;
+                setIsOpen(false);
+                navigate(`/search?lat=${c.lat}&lng=${c.lng}&radius=25000`);
+              }}
+              onBrowseAll={() => { setIsOpen(false); navigate('/search'); }}
+              onSelectTrending={(hit) => handleSelectSuggestion({
+                id: hit.id,
+                name: (hit.title || hit.name || '') as string,
+                type: hit.type,
+                icon: () => null,
+                title: (hit.title || hit.name || '') as string,
+                subtitle: hit.city as string | undefined,
+                slug: hit.slug as string | undefined,
+              })}
+              onBrowse={(path) => { setIsOpen(false); navigate(path); }}
+              onPrefetch={prefetchRoute}
+              isMac={isMac}
+            />
+          )}
         </PopoverContent>
       </Popover>
     </div>
   );
 };
+
+interface DesktopLayoutProps {
+  query: string;
+  activeScope: string | null;
+  suggestions: SearchSuggestion[];
+  countsByType: Record<string, number>;
+  loading: boolean;
+  error: string | null;
+  trending: ReturnType<typeof useTrendingSuggestions>['trending'];
+  recentSearches: string[];
+  showFilters: boolean;
+  setShowFilters: (b: boolean) => void;
+  filters: SearchFilters;
+  setFilters: (f: SearchFilters) => void;
+  setScope: (s: string | null) => void;
+  onSelect: (s: SearchSuggestion) => void;
+  onSelectIndex: (s: SearchSuggestion, i: number) => void;
+  resultsFocused: number | null;
+  railFocused: number | null;
+  setResultsFocused: (i: number | null) => void;
+  setRailFocused: (i: number | null) => void;
+  activeFiltersCount: number;
+  onSearchAll: () => void;
+  removeRecent: (i: number) => void;
+  clearRecents: () => void;
+  onSelectRecent: (term: string) => void;
+  nearMeSupported: boolean;
+  nearMeLoading: boolean;
+  onNearMe: () => void;
+  onBrowseAll: () => void;
+  onSelectTrending: (hit: ReturnType<typeof useTrendingSuggestions>['trending'][number]) => void;
+  onBrowse: (path: string) => void;
+  onPrefetch: (s: SearchSuggestion) => void;
+  isMac: boolean;
+}
+
+function DesktopLayout(props: DesktopLayoutProps) {
+  const { t } = useTranslation();
+  const {
+    query, activeScope, suggestions, countsByType, loading, error, trending,
+    recentSearches, showFilters, setShowFilters, filters, setFilters, setScope,
+    onSelectIndex, resultsFocused, railFocused, setResultsFocused,
+    activeFiltersCount, onSearchAll, removeRecent, clearRecents, onSelectRecent,
+    nearMeSupported, nearMeLoading, onNearMe, onBrowseAll, onSelectTrending,
+    onBrowse, onPrefetch, isMac,
+  } = props;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 320 }} id="qg-search-listbox">
+      <div style={{ display: 'flex', flex: 1, minHeight: 320, maxHeight: 560 }}>
+        <SearchPopoverRail
+          query={query}
+          activeScope={activeScope}
+          countsByType={countsByType}
+          recents={recentSearches}
+          onSelectScope={setScope}
+          onSelectRecent={onSelectRecent}
+          onRemoveRecent={removeRecent}
+          onClearRecents={clearRecents}
+          nearMeSupported={nearMeSupported}
+          nearMeLoading={nearMeLoading}
+          onNearMe={onNearMe}
+          onBrowseAll={onBrowseAll}
+          focusedIndex={railFocused}
+        />
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          {showFilters && (
+            <Suspense fallback={null}>
+              <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
+            </Suspense>
+          )}
+          {query.length === 0 ? (
+            <SearchPopoverEmpty
+              trending={trending}
+              onSelectTrending={onSelectTrending}
+              onBrowse={onBrowse}
+            />
+          ) : (
+            <SearchPopoverResults
+              query={query}
+              activeScope={activeScope}
+              suggestions={suggestions}
+              countsByType={countsByType}
+              loading={loading}
+              error={error}
+              focusedIndex={resultsFocused}
+              onSelect={onSelectIndex}
+              onHover={(i) => setResultsFocused(i)}
+              onPrefetch={onPrefetch}
+              onToggleFilters={() => setShowFilters(!showFilters)}
+              filtersOpen={showFilters}
+              activeFiltersCount={activeFiltersCount}
+              onSearchAll={onSearchAll}
+              onClearScope={() => setScope(null)}
+            />
+          )}
+        </div>
+      </div>
+      <div
+        className="flex items-center justify-between border-t border-border"
+        style={{ padding: '6px 12px', fontSize: '0.7rem', color: 'hsl(var(--muted-foreground))', gap: 12 }}
+        aria-hidden="true"
+      >
+        <span className="inline-flex items-center" style={{ gap: 8 }}>
+          <KbdHint label="↑↓" desc={t('search.kbd.navigate', 'Navigate')} />
+          <KbdHint label="↵" desc={t('search.kbd.select', 'Select')} />
+          <KbdHint label={isMac ? '⌥1-9' : 'Alt+1-9'} desc={t('search.kbd.scope', 'Scope')} />
+          <KbdHint label="⇥" desc={t('search.kbd.complete', 'Complete')} />
+        </span>
+        <span className="inline-flex items-center" style={{ gap: 8 }}>
+          {query && (
+            <button
+              type="button"
+              onClick={onSearchAll}
+              style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit', textDecoration: 'underline' }}
+            >
+              {t('search.seeAll', 'See all results')} →
+            </button>
+          )}
+          <KbdHint label="Esc" desc={t('search.kbd.close', 'Close')} />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+interface MobileLayoutProps {
+  query: string;
+  activeScope: string | null;
+  suggestions: SearchSuggestion[];
+  countsByType: Record<string, number>;
+  loading: boolean;
+  error: string | null;
+  trending: ReturnType<typeof useTrendingSuggestions>['trending'];
+  recentSearches: string[];
+  showFilters: boolean;
+  filters: SearchFilters;
+  setFilters: (f: SearchFilters) => void;
+  setScope: (s: string | null) => void;
+  onSelect: (s: SearchSuggestion) => void;
+  onSearchAll: () => void;
+  onClose: () => void;
+  onClear: () => void;
+  setQuery: (q: string) => void;
+  navigate: (path: string) => void;
+  removeRecent: (i: number) => void;
+  clearRecents: () => void;
+  nearMe: ReturnType<typeof useNearMe>;
+}
+
+function MobileLayout(props: MobileLayoutProps) {
+  const { t } = useTranslation();
+  const {
+    query, activeScope, suggestions, countsByType, loading, error, trending,
+    showFilters, filters, setFilters, setScope, onSelect, onSearchAll, onClose,
+    onClear, navigate,
+  } = props;
+
+  return (
+    <>
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
+        <button type="button" onClick={onClose} className="text-sm font-medium text-primary px-2 py-1 -ml-2" aria-label="Close search">
+          {t('common.cancel', 'Cancel')}
+        </button>
+        {query && (
+          <button type="button" onClick={onClear} className="text-sm text-muted-foreground px-2 py-1 -mr-2" aria-label="Clear search">
+            {t('common.clear', 'Clear')}
+          </button>
+        )}
+      </div>
+      <SearchScopeChips activeScope={activeScope} onScopeChange={setScope} />
+      {showFilters && (
+        <Suspense fallback={null}>
+          <SearchFiltersPanel filters={filters} onFiltersChange={setFilters} />
+        </Suspense>
+      )}
+      {query.length === 0 ? (
+        <SearchPopoverEmpty
+          trending={trending}
+          onSelectTrending={(hit) => onSelect({
+            id: hit.id,
+            name: (hit.title || hit.name || '') as string,
+            type: hit.type,
+            icon: () => null,
+            title: (hit.title || hit.name || '') as string,
+            subtitle: hit.city as string | undefined,
+            slug: hit.slug as string | undefined,
+          })}
+          onBrowse={(path) => { onClose(); navigate(path); }}
+        />
+      ) : (
+        <SearchPopoverResults
+          query={query}
+          activeScope={activeScope}
+          suggestions={suggestions}
+          countsByType={countsByType}
+          loading={loading}
+          error={error}
+          focusedIndex={null}
+          onSelect={(s) => onSelect(s)}
+          onHover={() => undefined}
+          onPrefetch={prefetchRoute}
+          onToggleFilters={() => undefined}
+          filtersOpen={false}
+          activeFiltersCount={0}
+          onSearchAll={onSearchAll}
+          onClearScope={() => setScope(null)}
+        />
+      )}
+    </>
+  );
+}
