@@ -49,28 +49,19 @@
   --text-body-lg: 1.0625rem;
   --text-body-lg--line-height: 1.7;
 
-  /* ── Border radius — Aceternity-inspired soft scale ─────────────── */
+  /* ── Border radius — semantic 3-tier system + flat + full ──────────
+     Legacy --radius-{xs..4xl} ladder retired 2026-05-20 (UI audit P6);
+     no consumers remain. The semantic trio is the public API.
+     Source of truth for Aceternity + shadcn alignment. Prior versions
+     of this file had 3 overlapping --radius-element declarations
+     (admin 0.25rem, strict-flat 0, sensitive 2px) all at global @theme
+     scope, fighting via CSS last-wins. Scoped variants are now expressed
+     via class selectors below (.admin-shell, .sensitive-controls). */
   --radius-none: 0;
-  --radius-xs: 0.25rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 1.125rem;
-  --radius-2xl: 1.5rem;
-  --radius-3xl: 2rem;
-  --radius-4xl: 2.5rem;
-  --radius-full: 9999px;
-
-  /* ── Semantic radius — 3-tier system (container / element / badge) ──
-     Source of truth for Aceternity + shadcn alignment. Single declaration
-     each — prior versions of this file had 3 overlapping --radius-element
-     declarations (admin 0.25rem, strict-flat 0, sensitive 2px) all at
-     global @theme scope, fighting via CSS last-wins. Scoped variants are
-     now expressed via class selectors below (.admin-shell, .sensitive-
-     controls), not @theme overrides. */
   --radius-container: 1rem;     /* 16px — Bento grids, large cards, hero blocks */
   --radius-element:   0.5rem;   /* 8px  — buttons, inputs, list rows, nested cards */
   --radius-badge:     0.25rem;  /* 4px  — tags, chips, status pills, metadata */
+  --radius-full:      9999px;
 
   /* ── Colors — CSS-variable-based monochrome ────────────────────── */
   --color-border: hsl(var(--border));
