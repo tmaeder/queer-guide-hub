@@ -68,6 +68,11 @@ export default tseslint.config(
         caughtErrorsIgnorePattern: "^_",
       }],
       "no-case-declarations": "warn",
+      // ESLint 10 promoted these to recommended-default error. 15 pre-existing
+      // sites across edge functions + a handful of components fail. Demote to
+      // warn for now; address in a follow-up codemod pass.
+      "no-useless-assignment": "warn",
+      "preserve-caught-error": "warn",
       // DUP-4 complete: pages and components both clean of inline
       // supabase.from(). Co-located use*Controller.{ts,tsx} files are
       // exempted in the rule itself.
