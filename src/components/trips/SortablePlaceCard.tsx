@@ -125,7 +125,7 @@ export function SortablePlaceCard({
   return (
     <div ref={setNodeRef} style={style}>
       <div
-        className={`group flex items-center gap-2 bg-background border ${borderClass} rounded-container px-3 py-2 mb-1.5 min-h-[44px] transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
+        className={`group flex items-center gap-2 bg-background border ${borderClass} rounded-container px-3 py-2 mb-1.5 min-h-11 transition-all hover:bg-muted/60 ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       >
         <div
           {...attributes}
@@ -196,7 +196,7 @@ export function SortablePlaceCard({
           variant="ghost"
           size="sm"
           onClick={() => onDelete(place.id)}
-          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity p-0.5 min-h-11 min-w-11 flex items-center justify-center"
         >
           <X className="w-3.5 h-3.5" />
         </Button>

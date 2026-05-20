@@ -163,7 +163,7 @@ export function AdminShell() {
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Breadcrumb bar */}
           {breadcrumbs.length > 1 && (
-            <div className="px-4 sm:px-6 py-2.5 bg-background border-b border-border flex items-center min-h-[44px]">
+            <div className="px-4 sm:px-6 py-2.5 bg-background border-b border-border flex items-center min-h-11">
               <nav aria-label="Breadcrumb">
                 <ol className="flex items-center flex-nowrap">
                   {breadcrumbs.map((crumb, i) => {

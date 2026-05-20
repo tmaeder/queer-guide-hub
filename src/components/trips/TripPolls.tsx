@@ -219,7 +219,7 @@ export function TripPolls({ tripId }: Props) {
                   placeholder={t('trips.polls.optionPlaceholder', 'Option {{n}}', { n: idx + 1 })}
                 />
                 {options.length > 2 && (
-                  <Button variant="ghost" size="sm" onClick={() => removeOption(idx)} className="min-w-[44px] min-h-[44px]">
+                  <Button variant="ghost" size="sm" onClick={() => removeOption(idx)} className="min-w-11 min-h-11">
                     <X size={14} />
                   </Button>
                 )}

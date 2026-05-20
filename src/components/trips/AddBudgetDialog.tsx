@@ -210,7 +210,7 @@ export function AddBudgetDialog({ open, onClose, tripId, members, defaultCurrenc
                     type="button"
                     onClick={() => toggleSplitMember(m.user_id)}
                     className={cn(
-                      'inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm min-h-[44px] cursor-pointer transition-colors',
+                      'inline-flex items-center gap-2 rounded-full border pl-1 pr-3 py-1 text-sm min-h-11 cursor-pointer transition-colors',
                       selected
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-background border-border hover:bg-muted',

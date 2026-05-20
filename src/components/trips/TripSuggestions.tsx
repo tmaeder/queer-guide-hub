@@ -231,7 +231,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
               {cityVenues.map((venue) => (
                 <div
                   key={venue.id}
-                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
+                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
                 >
                   <MapPin size={13} className="text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -265,7 +265,7 @@ export function TripSuggestions({ tripId, places, startDate, endDate }: Props) {
               {cityEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-[44px]"
+                  className="flex items-center gap-2 py-1.5 border-b border-border min-h-11"
                 >
                   <Calendar size={13} className="text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
