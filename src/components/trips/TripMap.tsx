@@ -385,7 +385,10 @@ export function TripMap({ places, days, startDate, endDate }: Props) {
     <div className="w-full rounded-element overflow-hidden relative h-[calc(100dvh-360px)] md:h-[calc(100dvh-320px)] min-h-[360px] md:min-h-[520px]">
       {/* Day filter + layer toggle chips */}
       <div
-        className="absolute top-3 left-3 right-24 z-[2] flex gap-1.5 overflow-x-auto pb-1"
+        role="group"
+        aria-label="Map day and layer filters"
+        tabIndex={0}
+        className="absolute top-3 left-3 right-24 z-[2] flex gap-1.5 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         style={{ scrollbarWidth: 'none' }}
       >
         {sortedDays.length > 0 && (
