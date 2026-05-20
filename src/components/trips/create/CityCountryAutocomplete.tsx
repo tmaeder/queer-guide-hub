@@ -213,7 +213,7 @@ export function CityCountryAutocomplete({
         <div
           id={`${id}-listbox`}
           role="listbox"
-          className="absolute left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-background border border-border rounded-element shadow-lg"
+          className="absolute left-0 right-0 mt-1 max-h-80 overflow-y-auto bg-background border border-border rounded-element shadow-[var(--shadow-aceternity)]"
           style={{ zIndex: 1500 }}
         >
           {options.length === 0 && !loading && (

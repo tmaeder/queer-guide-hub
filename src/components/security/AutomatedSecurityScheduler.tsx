@@ -164,11 +164,11 @@ export function AutomatedSecurityScheduler() {
   const getStatusIcon = (status: ScheduledTask['status']) => {
     switch (status) {
       case 'active':
-        return <Shield style={{ height: 16, width: 16, color: '#16a34a' }} />;
+        return <Shield style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />;
       case 'pending':
-        return <Clock style={{ height: 16, width: 16, color: '#ca8a04' }} />;
+        return <Clock style={{ height: 16, width: 16, color: 'hsl(var(--foreground) / 0.55)' }} />;
       case 'error':
-        return <AlertCircle style={{ height: 16, width: 16, color: '#dc2626' }} />;
+        return <AlertCircle style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />;
     }
   };
 

@@ -13,10 +13,10 @@ import { cn } from '@/lib/utils';
 import type { AdminProfile, FeedbackSubmission, SubmissionStoryRef } from './types';
 
 const HANDOFF_CHIP: Record<string, { label: string; color: string; bg: string }> = {
-  sent: { label: 'Sent', color: '#fff', bg: '#3b82f6' },
-  in_progress: { label: 'Working', color: '#fff', bg: '#f59e0b' },
-  resolved: { label: 'Resolved', color: '#fff', bg: '#22c55e' },
-  failed: { label: 'Failed', color: '#fff', bg: '#ef4444' },
+  sent: { label: 'Sent', color: 'hsl(var(--background))', bg: 'hsl(var(--muted-foreground))' },
+  in_progress: { label: 'Working', color: 'hsl(var(--background))', bg: 'hsl(var(--foreground) / 0.55)' },
+  resolved: { label: 'Resolved', color: 'hsl(var(--background))', bg: 'hsl(var(--foreground))' },
+  failed: { label: 'Failed', color: 'hsl(var(--background))', bg: 'hsl(var(--destructive))' },
 };
 
 interface Props {
@@ -72,11 +72,11 @@ export function FeedbackCard({
     item.feedback_status !== 'done' && !item.is_spam && !item.duplicate_of;
   const slaColor =
     slaOpen && ageDays >= 14
-      ? '#dc2626'
+      ? 'hsl(var(--destructive))'
       : slaOpen && ageDays >= 7
-        ? '#f97316'
+        ? 'hsl(var(--foreground) / 0.55)'
         : slaOpen && ageDays >= 3
-          ? '#f59e0b'
+          ? 'hsl(var(--foreground) / 0.55)'
           : null;
 
   // Only P0 and P1 get visible priority markers. P2 (default) and P3
@@ -195,7 +195,7 @@ export function FeedbackCard({
                       paddingRight: 3,
                       borderRadius: 3,
                       background: prio.color,
-                      color: '#fff',
+                      color: 'hsl(var(--background))',
                       fontSize: '0.55rem',
                       fontWeight: 700,
                       letterSpacing: 0.3,
@@ -285,7 +285,7 @@ export function FeedbackCard({
             isForwarded && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+                  <Github style={{ width: 10, height: 10, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                 </TooltipTrigger>
                 <TooltipContent>
                   {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
@@ -308,7 +308,7 @@ export function FeedbackCard({
               <TooltipTrigger asChild>
                 <span
                   className="inline-flex items-center flex-shrink-0"
-                  style={{ gap: 1, color: '#ef4444' }}
+                  style={{ gap: 1, color: 'hsl(var(--destructive))' }}
                 >
                   <AlertTriangle style={{ width: 10, height: 10 }} />
                   {errorCount}
@@ -500,7 +500,7 @@ export function FeedbackCard({
               isForwarded && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Github style={{ width: 10, height: 10, color: '#6366f1', flexShrink: 0 }} />
+                    <Github style={{ width: 10, height: 10, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   </TooltipTrigger>
                   <TooltipContent>
                     {`GitHub #${item.github_issue_number}${withClaude ? ' (open)' : ''}`}
@@ -514,7 +514,7 @@ export function FeedbackCard({
                 <TooltipTrigger asChild>
                   <span
                     className="inline-flex items-center flex-shrink-0"
-                    style={{ gap: 1, color: '#ef4444' }}
+                    style={{ gap: 1, color: 'hsl(var(--destructive))' }}
                   >
                     <AlertTriangle style={{ width: 10, height: 10 }} />
                     {errorCount}

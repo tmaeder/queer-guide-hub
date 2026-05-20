@@ -188,7 +188,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               ) : (
                 <ChevronRight style={{ width: 14, height: 14 }} />
               )}
-              <AlertTriangle style={{ width: 12, height: 12, color: '#ef4444' }} />
+              <AlertTriangle style={{ width: 12, height: 12, color: 'hsl(var(--destructive))' }} />
               <span className="text-xs font-semibold">
                 Console errors ({ctx.errors.length})
               </span>
@@ -214,7 +214,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                       borderBottom: '1px solid hsl(var(--border))',
                     }}
                   >
-                    <span className="block" style={{ color: '#ef4444', fontSize: '0.65rem' }}>
+                    <span className="block" style={{ color: 'hsl(var(--destructive))', fontSize: '0.65rem' }}>
                       {err.message}
                     </span>
                     {err.stack && (
@@ -245,7 +245,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
               ) : (
                 <ChevronRight style={{ width: 14, height: 14 }} />
               )}
-              <Wifi style={{ width: 12, height: 12, color: '#f59e0b' }} />
+              <Wifi style={{ width: 12, height: 12, color: 'hsl(var(--foreground) / 0.55)' }} />
               <span className="text-xs font-semibold">
                 Network failures ({ctx.network_failures.length})
               </span>
@@ -265,7 +265,7 @@ export function DrawerContextPanel({ ctx, screenshotUrl, voteCount, submittedAt 
                 {ctx.network_failures.map((nf, i) => (
                   <div key={i} style={{ marginBottom: 4 }}>
                     <span className="block" style={{ fontSize: '0.65rem' }}>
-                      <span style={{ color: '#f59e0b', fontWeight: 700 }}>{nf.status}</span>{' '}
+                      <span style={{ color: 'hsl(var(--foreground) / 0.55)', fontWeight: 700 }}>{nf.status}</span>{' '}
                       {nf.method} {nf.url}
                     </span>
                   </div>

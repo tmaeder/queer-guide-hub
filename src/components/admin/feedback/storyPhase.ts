@@ -57,15 +57,15 @@ export const PHASE_LABELS: Record<StoryPhase, string> = {
 };
 
 export const PHASE_COLORS: Record<StoryPhase, string> = {
-  new: '#94a3b8',
-  awaiting_review: '#3b82f6',
-  needs_more_context: '#a855f7',
-  approved: '#0ea5e9',
-  fix_in_progress: '#f59e0b',
-  fix_proposed: '#22c55e',
-  retesting: '#eab308',
-  needs_manual_followup: '#ef4444',
-  ready_to_verify: '#10b981',
-  resolved: '#6b7280',
-  archived: '#475569',
+  new: 'hsl(var(--muted-foreground))',
+  awaiting_review: 'hsl(var(--muted-foreground))',
+  needs_more_context: 'hsl(var(--foreground) / 0.55)',
+  approved: 'hsl(var(--muted-foreground))',
+  fix_in_progress: 'hsl(var(--foreground) / 0.55)',
+  fix_proposed: 'hsl(var(--foreground))',
+  retesting: 'hsl(var(--foreground) / 0.55)',
+  needs_manual_followup: 'hsl(var(--destructive))',
+  ready_to_verify: 'hsl(var(--foreground))',
+  resolved: 'hsl(var(--muted-foreground))',
+  archived: 'hsl(var(--muted-foreground))',
 };

@@ -18,10 +18,12 @@ describe('ShineButton', () => {
     expect(onClick).toHaveBeenCalled();
   });
 
-  it('applies the shine-on-hover class plus a custom className', () => {
+  it('applies a custom className alongside the monochrome defaults', () => {
+    // Post-gutting (2026-05-19) ShineButton no longer adds shine-on-hover;
+    // the shimmer overlay was removed in favor of plain monochrome styling.
     render(<ShineButton className="extra">x</ShineButton>);
     const btn = screen.getByRole('button');
-    expect(btn).toHaveClass('shine-on-hover');
     expect(btn).toHaveClass('extra');
+    expect(btn).toHaveClass('bg-foreground');
   });
 });

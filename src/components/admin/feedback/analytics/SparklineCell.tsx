@@ -9,7 +9,7 @@ interface Props {
  * Tiny inline sparkline (no recharts dependency for this — keeps API-errors row
  * rendering cheap when the list is long). Shows a filled area + last-point dot.
  */
-export function SparklineCell({ data, color = '#3b82f6', width = 90, height = 22 }: Props) {
+export function SparklineCell({ data, color = 'hsl(var(--muted-foreground))', width = 90, height = 22 }: Props) {
   if (data.length === 0) {
     return <span style={{ display: 'inline-block', width, height }} />;
   }

@@ -50,12 +50,12 @@ import { MergeDialog } from './import-hub/MergeDialog';
 // ==================== Entity Type Config ====================
 
 const ENTITY_TYPES = [
-  { key: 'venues', label: 'Venues', icon: MapPin, color: '#ef4444' },
-  { key: 'events', label: 'Events', icon: Calendar, color: '#f59e0b' },
+  { key: 'venues', label: 'Venues', icon: MapPin, color: 'hsl(var(--destructive))' },
+  { key: 'events', label: 'Events', icon: Calendar, color: 'hsl(var(--foreground) / 0.55)' },
   { key: 'personalities', label: 'Personalities', icon: Users, color: 'hsl(var(--foreground))' },
-  { key: 'news_articles', label: 'News', icon: Newspaper, color: '#3b82f6' },
-  { key: 'cities', label: 'Cities', icon: Building2, color: '#10b981' },
-  { key: 'tags', label: 'Tags', icon: Tag, color: '#ec4899' },
+  { key: 'news_articles', label: 'News', icon: Newspaper, color: 'hsl(var(--muted-foreground))' },
+  { key: 'cities', label: 'Cities', icon: Building2, color: 'hsl(var(--foreground))' },
+  { key: 'tags', label: 'Tags', icon: Tag, color: 'hsl(var(--foreground))' },
 ] as const;
 
 // ==================== Main Component ====================
@@ -89,8 +89,8 @@ export function AutoCleanDuplicatesTab() {
       <div className="grid grid-cols-3 md:grid-cols-6" style={{ gap: 12 }}>
         {ENTITY_TYPES.map(({ key, label, icon: Icon, color }) => {
           const count = (counts as unknown as Record<string, number>)?.[key] ?? 0;
-          const bg = count === 0 ? '#10b98115' : count <= 5 ? '#f59e0b15' : '#ef444415';
-          const border = count === 0 ? '#10b98130' : count <= 5 ? '#f59e0b30' : '#ef444430';
+          const bg = count === 0 ? 'hsl(var(--foreground) / 0.08)' : count <= 5 ? 'hsl(var(--foreground) / 0.08)' : 'hsl(var(--destructive) / 0.08)';
+          const border = count === 0 ? 'hsl(var(--foreground) / 0.08)' : count <= 5 ? 'hsl(var(--foreground) / 0.08)' : 'hsl(var(--destructive) / 0.08)';
           return (
             <div
               key={key}
@@ -223,7 +223,7 @@ function ScanAndCleanSection({
 
                 <Button
                   onClick={onAutoClean}
-                  style={{ display: 'flex', gap: 8, backgroundColor: '#10b981', color: 'white' }}
+                  style={{ display: 'flex', gap: 8, backgroundColor: 'hsl(var(--foreground))', color: 'white' }}
                 >
                   <Zap style={{ width: 16, height: 16 }} />
                   Auto Clean &ge;{(threshold * 100).toFixed(0)}%
@@ -329,13 +329,13 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
                 paddingBottom: 2,
                 borderRadius: 2,
                 fontSize: '0.75rem',
-                backgroundColor: isDone ? '#10b98115' : isCurrent ? '#3b82f615' : 'var(--muted)',
-                border: `1px solid ${isDone ? '#10b98130' : isCurrent ? '#3b82f630' : 'transparent'}`,
+                backgroundColor: isDone ? 'hsl(var(--foreground) / 0.08)' : isCurrent ? 'hsl(var(--muted-foreground) / 0.08)' : 'var(--muted)',
+                border: `1px solid ${isDone ? 'hsl(var(--foreground) / 0.08)' : isCurrent ? 'hsl(var(--muted-foreground) / 0.08)' : 'transparent'}`,
                 transition: 'all 0.2s',
               }}
             >
               {isDone ? (
-                <CheckCircle style={{ width: 12, height: 12, color: '#10b981' }} />
+                <CheckCircle style={{ width: 12, height: 12, color: 'hsl(var(--foreground))' }} />
               ) : isCurrent ? (
                 <Loader2 className="animate-spin" style={{ width: 12, height: 12 }} aria-label="Loading" />
               ) : (
@@ -365,8 +365,8 @@ function BatchProgressDisplay({ progress }: { progress: BatchProgress }) {
               paddingBottom: 2,
               borderRadius: 2,
               fontSize: '0.75rem',
-              backgroundColor: '#6366f115',
-              border: '1px solid #6366f130',
+              backgroundColor: 'hsl(var(--muted-foreground) / 0.08)',
+              border: '1px solid hsl(var(--border))',
             }}
           >
             <Loader2 className="animate-spin" style={{ width: 12, height: 12 }} aria-label="Loading" />
@@ -395,12 +395,12 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               paddingTop: 8,
               paddingBottom: 8,
               borderRadius: 4,
-              backgroundColor: result.dry_run ? '#3b82f615' : '#10b98115',
-              border: `1px solid ${result.dry_run ? '#3b82f630' : '#10b98130'}`,
+              backgroundColor: result.dry_run ? 'hsl(var(--muted-foreground) / 0.08)' : 'hsl(var(--foreground) / 0.08)',
+              border: `1px solid ${result.dry_run ? 'hsl(var(--muted-foreground) / 0.08)' : 'hsl(var(--foreground) / 0.08)'}`,
             }}
           >
             <CheckCircle
-              style={{ width: 16, height: 16, color: result.dry_run ? '#3b82f6' : '#10b981' }}
+              style={{ width: 16, height: 16, color: result.dry_run ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))' }}
             />
             <p className="text-sm font-semibold">
               {result.dry_run ? 'Would auto-merge' : 'Auto-merged'}: {result.total_auto_merged}
@@ -417,11 +417,11 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               paddingTop: 8,
               paddingBottom: 8,
               borderRadius: 4,
-              backgroundColor: '#f59e0b15',
-              border: '1px solid #f59e0b30',
+              backgroundColor: 'hsl(var(--foreground) / 0.08)',
+              border: '1px solid hsl(var(--border))',
             }}
           >
-            <AlertTriangle style={{ width: 16, height: 16, color: '#f59e0b' }} />
+            <AlertTriangle style={{ width: 16, height: 16, color: 'hsl(var(--foreground) / 0.55)' }} />
             <p className="text-sm font-semibold">Flagged for review: {result.total_flagged}</p>
           </div>
         )}
@@ -435,11 +435,11 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
               paddingTop: 8,
               paddingBottom: 8,
               borderRadius: 4,
-              backgroundColor: '#10b98115',
-              border: '1px solid #10b98130',
+              backgroundColor: 'hsl(var(--foreground) / 0.08)',
+              border: '1px solid hsl(var(--border))',
             }}
           >
-            <CheckCircle style={{ width: 16, height: 16, color: '#10b981' }} />
+            <CheckCircle style={{ width: 16, height: 16, color: 'hsl(var(--foreground))' }} />
             <p className="text-sm font-semibold">No duplicates found</p>
           </div>
         )}
@@ -528,14 +528,14 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                   </p>
                   {allScanned && (
                     <CheckCircle
-                      style={{ width: 12, height: 12, color: '#10b981', flexShrink: 0 }}
+                      style={{ width: 12, height: 12, color: 'hsl(var(--foreground))', flexShrink: 0 }}
                     />
                   )}
                 </div>
                 <p
                   className="text-sm"
                   style={{
-                    color: data.auto_merged > 0 ? '#10b981' : undefined,
+                    color: data.auto_merged > 0 ? 'hsl(var(--foreground))' : undefined,
                     fontWeight: data.auto_merged > 0 ? 600 : 400,
                   }}
                 >
@@ -544,7 +544,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                 <p
                   className="text-sm"
                   style={{
-                    color: data.flagged_for_review > 0 ? '#f59e0b' : undefined,
+                    color: data.flagged_for_review > 0 ? 'hsl(var(--foreground) / 0.55)' : undefined,
                     fontWeight: data.flagged_for_review > 0 ? 600 : 400,
                   }}
                 >
@@ -552,7 +552,7 @@ function ResultsSummary({ result }: { result: AutoCleanResult }) {
                 </p>
                 <p
                   style={{
-                    color: data.errors?.length > 0 ? '#ef4444' : 'var(--muted-foreground)',
+                    color: data.errors?.length > 0 ? 'hsl(var(--destructive))' : 'var(--muted-foreground)',
                     fontSize: '0.8rem',
                   }}
                 >
@@ -584,7 +584,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
     <Card>
       <CardHeader>
         <CardTitle style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.95rem' }}>
-          <Inbox style={{ width: 16, height: 16, color: '#6366f1' }} />
+          <Inbox style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground))' }} />
           Import Staging Cleanup
           {total > 0 && (
             <Badge variant={dryRun ? 'secondary' : 'default'} style={{ marginLeft: 8 }}>
@@ -605,7 +605,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
             <StagingStat
               label="Duplicates skipped"
               value={staging.phase1_skipped_duplicates}
-              color="#ef4444"
+              color="hsl(var(--destructive))"
               dryRun={dryRun}
             />
           )}
@@ -613,7 +613,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
             <StagingStat
               label="Merge candidates skipped"
               value={staging.phase2_skipped_merge_candidates}
-              color="#f59e0b"
+              color="hsl(var(--foreground) / 0.55)"
               dryRun={dryRun}
             />
           )}
@@ -621,7 +621,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
             <StagingStat
               label="Pending items scanned"
               value={staging.phase3_scanned_pending}
-              color="#6366f1"
+              color="hsl(var(--muted-foreground))"
               dryRun={dryRun}
             />
           )}
@@ -629,7 +629,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
             <StagingStat
               label="New duplicates found"
               value={staging.phase3_new_duplicates}
-              color="#dc2626"
+              color="hsl(var(--destructive))"
               dryRun={dryRun}
             />
           )}
@@ -637,7 +637,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
             <StagingStat
               label="New merge candidates"
               value={staging.phase3_new_merge_candidates}
-              color="#ca8a04"
+              color="hsl(var(--foreground) / 0.55)"
               dryRun={dryRun}
             />
           )}
@@ -645,7 +645,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
             <StagingStat
               label="Confirmed unique"
               value={staging.phase3_new_unique}
-              color="#10b981"
+              color="hsl(var(--foreground))"
               dryRun={dryRun}
             />
           )}
@@ -653,7 +653,7 @@ function StagingResultsCard({ staging, dryRun }: { staging: StagingCleanResult; 
         {staging.errors?.length > 0 && (
           <span
             className="text-xs block"
-            style={{ color: '#ef4444', marginTop: 8 }}
+            style={{ color: 'hsl(var(--destructive))', marginTop: 8 }}
           >
             Errors: {staging.errors.slice(0, 3).join('; ')}
             {staging.errors.length > 3 && ` (+${staging.errors.length - 3} more)`}
@@ -756,7 +756,7 @@ function PendingReviewSection() {
                 marginBottom: 16,
               }}
             >
-              <CheckCircle style={{ width: 40, height: 40, color: '#10b981' }} />
+              <CheckCircle style={{ width: 40, height: 40, color: 'hsl(var(--foreground))' }} />
             </div>
             <h3 className="font-semibold mb-2" style={{ fontSize: '1.125rem' }}>
               No Pending Duplicates
@@ -771,7 +771,7 @@ function PendingReviewSection() {
           {highConfidence.length > 0 && (
             <DuplicateGroup
               label="High Confidence"
-              color="#dc2626"
+              color="hsl(var(--destructive))"
               pairs={highConfidence}
               onMerge={handleMerge}
             />
@@ -779,7 +779,7 @@ function PendingReviewSection() {
           {medConfidence.length > 0 && (
             <DuplicateGroup
               label="Medium Confidence"
-              color="#ca8a04"
+              color="hsl(var(--foreground) / 0.55)"
               pairs={medConfidence}
               onMerge={handleMerge}
             />
@@ -787,7 +787,7 @@ function PendingReviewSection() {
           {lowConfidence.length > 0 && (
             <DuplicateGroup
               label="Low Confidence"
-              color="#6b7280"
+              color="hsl(var(--muted-foreground))"
               pairs={lowConfidence}
               onMerge={handleMerge}
             />
@@ -886,7 +886,7 @@ function MergeHistorySection() {
                     fontSize: '0.85rem',
                   }}
                 >
-                  <Merge style={{ width: 14, height: 14, color: '#3b82f6', flexShrink: 0 }} />
+                  <Merge style={{ width: 14, height: 14, color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="text-sm font-medium">
                       {(details.entity_type as string) || 'unknown'}: Kept "

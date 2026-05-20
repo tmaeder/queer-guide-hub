@@ -225,7 +225,7 @@ export const venueContentType: ContentTypeConfig = {
   imageField: 'images',
   icon: Building,
   label: { singular: 'Venue', plural: 'Venues' },
-  color: '#DB2777',
+  color: 'hsl(var(--foreground))',
   fields: venueFields,
   defaults: { featured: false, verified: false, verification_status: 'pending' },
   validate: validateVenue,

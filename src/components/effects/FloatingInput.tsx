@@ -1,35 +1,24 @@
-import { useState, useId, forwardRef } from 'react';
-import { motion } from 'motion/react';
+import { useId, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
-interface FloatingInputProps
-  extends Omit<React.ComponentProps<'input'>, 'placeholder'> {
+interface FloatingInputProps extends Omit<React.ComponentProps<'input'>, 'placeholder'> {
   label: string;
 }
 
+/**
+ * FloatingInput — Aceternity-style floating-label input, simplified
+ * 2026-05-19. Pure CSS peer-placeholder-shown floating, no motion.
+ */
 export const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
-  ({ label, className, value, defaultValue, onFocus, onBlur, ...props }, ref) => {
-    const id = useId();
-    const [focused, setFocused] = useState(false);
-    const hasValue =
-      value !== undefined ? String(value).length > 0 : !!defaultValue;
-    const floated = focused || hasValue;
-
+  ({ label, className, id: idProp, ...props }, ref) => {
+    const fallbackId = useId();
+    const id = idProp ?? fallbackId;
     return (
       <div className="relative">
         <input
           ref={ref}
           id={id}
-          value={value}
-          defaultValue={defaultValue}
-          onFocus={(e) => {
-            setFocused(true);
-            onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setFocused(false);
-            onBlur?.(e);
-          }}
+          placeholder=" "
           className={cn(
             'peer flex h-12 w-full border border-input bg-background px-3 pt-4 pb-1 text-base md:text-sm text-foreground',
             'focus:outline-none focus:border-foreground focus:ring-0',
@@ -38,19 +27,16 @@ export const FloatingInput = forwardRef<HTMLInputElement, FloatingInputProps>(
           )}
           {...props}
         />
-        <motion.label
+        <label
           htmlFor={id}
-          className="absolute left-3 origin-left pointer-events-none text-muted-foreground"
-          initial={false}
-          animate={{
-            y: floated ? 4 : 14,
-            scale: floated ? 0.75 : 1,
-            opacity: 1,
-          }}
-          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+          className={cn(
+            'absolute left-3 top-3.5 origin-left pointer-events-none text-muted-foreground transition-all',
+            'peer-focus:top-1 peer-focus:scale-75 peer-focus:opacity-70',
+            'peer-[:not(:placeholder-shown)]:top-1 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:opacity-70',
+          )}
         >
           {label}
-        </motion.label>
+        </label>
       </div>
     );
   },

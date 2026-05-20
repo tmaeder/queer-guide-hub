@@ -166,7 +166,7 @@ export function RevisionHistory({ sourceTable, sourceId }: RevisionHistoryProps)
                   <div className="flex flex-col items-center pt-1">
                     <div
                       className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: index === 0 ? 'hsl(var(--primary))' : '#9ca3af' }}
+                      style={{ backgroundColor: index === 0 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
                     />
                     {index < revisions.length - 1 && (
                       <div className="w-px flex-1 bg-border mt-1" />

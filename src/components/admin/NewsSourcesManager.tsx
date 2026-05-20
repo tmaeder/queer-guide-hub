@@ -382,7 +382,7 @@ export function NewsSourcesManager() {
         </Card>
         <Card>
           <CardContent style={{ padding: 16 }}>
-            <div className="text-2xl font-bold" style={{ color: '#16a34a' }}>{activeSourcesCount}</div>
+            <div className="text-2xl font-bold" style={{ color: 'hsl(var(--foreground))' }}>{activeSourcesCount}</div>
             <span className="text-xs text-muted-foreground">Active</span>
           </CardContent>
         </Card>
@@ -417,15 +417,15 @@ export function NewsSourcesManager() {
             <div className="flex flex-col gap-4">
               {sources.map((source) => (
                 <Collapsible key={source.id}>
-                  <Card style={{ transition: 'border-color 0.2s', borderColor: source.is_active ? '#bbf7d0' : '#e5e7eb' }}>
+                  <Card style={{ transition: 'border-color 0.2s', borderColor: source.is_active ? 'hsl(var(--muted))' : 'hsl(var(--muted))' }}>
                     <CardContent style={{ padding: 16 }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
                             {source.source_type === 'rss' || source.url?.includes('feed') ? (
-                              <Rss className="h-4 w-4" style={{ color: '#f97316' }} />
+                              <Rss className="h-4 w-4" style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                             ) : (
-                              <Globe className="h-4 w-4" style={{ color: '#3b82f6' }} />
+                              <Globe className="h-4 w-4" style={{ color: 'hsl(var(--muted-foreground))' }} />
                             )}
                             <span className="font-medium">{source.name}</span>
                           </div>
@@ -556,9 +556,9 @@ export function NewsSourcesManager() {
                             <div className="md:col-span-3">
                               <span className="font-medium">Status:</span>
                               <p className="text-sm" style={{
-                                color: source.status === 'error' ? '#dc2626' :
-                                  source.status === 'processing' ? '#ca8a04' :
-                                  '#16a34a'
+                                color: source.status === 'error' ? 'hsl(var(--destructive))' :
+                                  source.status === 'processing' ? 'hsl(var(--foreground) / 0.55)' :
+                                  'hsl(var(--foreground))'
                               }}>
                                 {source.status}
                                 {source.last_error && ` - ${source.last_error}`}
@@ -600,7 +600,7 @@ export function NewsSourcesManager() {
                   {keyword}
                   <button
                     onClick={() => removeKeyword(keyword)}
-                    style={{ marginLeft: 4, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
+                    style={{ marginLeft: 4, color: 'hsl(var(--destructive))', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
                     ×
                   </button>

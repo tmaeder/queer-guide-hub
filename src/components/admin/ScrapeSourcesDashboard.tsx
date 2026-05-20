@@ -34,21 +34,21 @@ import { useScrapeSourcesManager, ScrapeSource, ScrapeRun } from '@/hooks/useScr
 
 const CONTENT_TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; label: string }> =
   {
-    products: { icon: <Store size={14} />, color: '#9c27b0', label: 'Products' },
-    events: { icon: <CalendarDays size={14} />, color: '#2196f3', label: 'Events' },
+    products: { icon: <Store size={14} />, color: 'hsl(var(--foreground) / 0.55)', label: 'Products' },
+    events: { icon: <CalendarDays size={14} />, color: 'hsl(var(--muted-foreground))', label: 'Events' },
     accommodations: {
       icon: <Hotel size={14} />,
-      color: '#ff9800',
+      color: 'hsl(var(--foreground) / 0.55)',
       label: 'Accommodations',
     },
-    cities: { icon: <Building2 size={14} />, color: '#4caf50', label: 'Cities' },
+    cities: { icon: <Building2 size={14} />, color: 'hsl(var(--foreground))', label: 'Cities' },
     queer_villages: {
       icon: <Building2 size={14} />,
-      color: '#00bcd4',
+      color: 'hsl(var(--muted-foreground))',
       label: 'Queer Villages',
     },
-    news: { icon: <FileText size={14} />, color: '#f44336', label: 'News' },
-    countries: { icon: <Globe size={14} />, color: '#607d8b', label: 'Countries' },
+    news: { icon: <FileText size={14} />, color: 'hsl(var(--destructive))', label: 'News' },
+    countries: { icon: <Globe size={14} />, color: 'hsl(var(--muted-foreground))', label: 'Countries' },
   };
 
 function formatRelativeTime(date: string | null): string {
@@ -157,7 +157,7 @@ export const ScrapeSourcesDashboard = () => {
         {Object.entries(grouped).map(([type, srcs]) => {
           const config = CONTENT_TYPE_CONFIG[type] || {
             icon: <Globe size={14} />,
-            color: '#999',
+            color: 'hsl(var(--muted-foreground))',
             label: type,
           };
           return (
@@ -207,7 +207,7 @@ export const ScrapeSourcesDashboard = () => {
             {sources.map((source) => {
               const typeConfig = CONTENT_TYPE_CONFIG[source.content_type] || {
                 icon: null,
-                color: '#999',
+                color: 'hsl(var(--muted-foreground))',
                 label: source.content_type,
               };
               const hasError = source.consecutive_failures > 0;
