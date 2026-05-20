@@ -31,7 +31,12 @@ export function PrideScroller() {
       </div>
 
       {isLoading ? (
-        <div className="flex gap-3 overflow-x-auto pb-1">
+        <div
+          role="group"
+          aria-label={t('pages.travel.pride.title', 'Pride this season')}
+          tabIndex={0}
+          className="flex gap-3 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           {[0, 1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-[140px] rounded shrink-0" style={{ width: 240 }} />
           ))}
@@ -41,7 +46,12 @@ export function PrideScroller() {
           {t('pages.travel.pride.empty', 'No upcoming Pride events.')}
         </p>
       ) : (
-        <div className="flex gap-3 overflow-x-auto pb-1">
+        <div
+          role="group"
+          aria-label={t('pages.travel.pride.title', 'Pride this season')}
+          tabIndex={0}
+          className="flex gap-3 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
           {data.map((event) => {
             const range = formatRange(event.start_date, event.end_date);
             const safety = event.country?.equality_score;

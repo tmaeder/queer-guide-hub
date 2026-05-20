@@ -68,25 +68,25 @@ export function DataQualityDashboard() {
 
       {/* Summary tiles */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-        <SummaryTile label="Total items" value={totals.total} icon={FileText} color="#64748b" />
-        <SummaryTile label="Published" value={totals.published} icon={CheckCircle2} color="#10b981" />
+        <SummaryTile label="Total items" value={totals.total} icon={FileText} color="hsl(var(--muted-foreground))" />
+        <SummaryTile label="Published" value={totals.published} icon={CheckCircle2} color="hsl(var(--foreground))" />
         <SummaryTile
           label="Missing required"
           value={totals.missingRequired}
           icon={AlertTriangle}
-          color={totals.missingRequired > 0 ? '#ef4444' : '#94a3b8'}
+          color={totals.missingRequired > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))'}
         />
         <SummaryTile
           label={`Stale > ${STALE_DAYS}d`}
           value={totals.stale}
           icon={Clock}
-          color={totals.stale > 0 ? '#f59e0b' : '#94a3b8'}
+          color={totals.stale > 0 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--muted-foreground))'}
         />
         <SummaryTile
           label="Untranslated fields"
           value={totals.untranslated}
           icon={Languages}
-          color={totals.untranslated > 0 ? '#8b5cf6' : '#94a3b8'}
+          color={totals.untranslated > 0 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--muted-foreground))'}
         />
       </div>
 
@@ -181,7 +181,7 @@ function QualityRowView({ row }: { row: QualityRow }) {
         {row.error && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span><AlertTriangle size={14} color="#ef4444" /></span>
+              <span><AlertTriangle size={14} color="hsl(var(--destructive))" /></span>
             </TooltipTrigger>
             <TooltipContent>{row.error}</TooltipContent>
           </Tooltip>

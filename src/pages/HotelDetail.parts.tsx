@@ -1,6 +1,5 @@
 import { ScrollReveal } from '@/components/animation/ScrollReveal';
 import { ParallaxHero } from '@/components/effects/ParallaxHero';
-import { MagneticButton } from '@/components/motion';
 import {
   Star,
   MapPin,
@@ -75,13 +74,11 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <MagneticButton>
-            <Button variant="outline" size="sm" onClick={onAddToTrip}>
+                      <Button variant="outline" size="sm" onClick={onAddToTrip}>
               <Luggage className="w-3.5 h-3.5 mr-1.5" />
               Add to Trip
             </Button>
-          </MagneticButton>
-          {isInTrip && (
+                    {isInTrip && (
             <Badge variant="secondary">
               In {tripCount} trip{tripCount !== 1 ? 's' : ''}
             </Badge>
@@ -96,15 +93,13 @@ export function HotelHero({ hotel, cityName, countryName, tripCount, isInTrip, o
             onSaved={() => window.location.reload()}
           />
           {hotel.booking_url && (
-            <MagneticButton>
-              <Button size="sm" asChild>
+                          <Button size="sm" asChild>
                 <a href={hotel.booking_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="w-4 h-4 mr-1.5" />
                   Book Now
                 </a>
               </Button>
-            </MagneticButton>
-          )}
+                      )}
           {showWebsite && (
             <Button variant="outline" size="sm" asChild>
               <a href={hotel.website!} target="_blank" rel="noopener noreferrer">

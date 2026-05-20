@@ -33,6 +33,7 @@ describe('StoryCard', () => {
   });
 
   it('uses hero image when provided', () => {
+    // Image has role="presentation" (decorative — story title carries semantics).
     const { container } = render(
       <StoryCard story={story} hero={{ image_url: '/hero.jpg', excerpt: 'lead' } as never} />,
     );

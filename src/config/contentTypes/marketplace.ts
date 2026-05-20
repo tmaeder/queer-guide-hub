@@ -77,7 +77,7 @@ export const marketplaceContentType: ContentTypeConfig = {
   imageField: 'images',
   icon: ShoppingBag,
   label: { singular: 'Listing', plural: 'Marketplace Listings' },
-  color: '#f97316',
+  color: 'hsl(var(--foreground))',
   fields: marketplaceFields,
   defaults: {
     status: 'active',

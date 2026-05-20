@@ -44,11 +44,11 @@ const AXIS_LABEL: Record<VisibilityAxis, string> = {
 function ScoreBar({ score }: { score: number }) {
   const pct = Math.round(score * 100);
   const label = scoreLabel(score);
-  const color = label === 'high' ? '#10b981' : label === 'medium' ? '#f59e0b' : '#ef4444';
+  const color = label === 'high' ? 'hsl(var(--foreground))' : label === 'medium' ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
   return (
     <div className="min-w-[80px]">
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}>
+        <div className="flex-1 h-1.5 rounded" style={{ backgroundColor: 'hsl(var(--foreground) / 0.06)' }}>
           <div className="h-full rounded" style={{ width: `${pct}%`, backgroundColor: color }} />
         </div>
         <span className="text-xs min-w-[36px] text-right">{pct}%</span>

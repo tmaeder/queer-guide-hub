@@ -58,7 +58,7 @@ jobs:
           fi
 
       - name: Checkout fix branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.head.outputs.branch }}
           fetch-depth: 1

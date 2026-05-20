@@ -415,12 +415,12 @@ export default function AdminEvents() {
           const s = info.getValue();
           if (!s) return '-';
           const colors: Record<string, { bg: string; fg: string }> = {
-            active: { bg: '#dcfce7', fg: '#166534' },
-            cancelled: { bg: '#fee2e2', fg: '#991b1b' },
-            postponed: { bg: '#fef3c7', fg: '#92400e' },
-            completed: { bg: '#e0e7ff', fg: '#3730a3' },
+            active: { bg: 'hsl(var(--muted))', fg: 'hsl(var(--foreground))' },
+            cancelled: { bg: 'hsl(var(--muted))', fg: 'hsl(var(--destructive))' },
+            postponed: { bg: 'hsl(var(--muted))', fg: 'hsl(var(--foreground) / 0.7)' },
+            completed: { bg: 'hsl(var(--muted))', fg: 'hsl(var(--foreground))' },
           };
-          const c = colors[s] || { bg: '#f1f5f9', fg: '#475569' };
+          const c = colors[s] || { bg: 'hsl(var(--muted))', fg: 'hsl(var(--muted-foreground))' };
           return <Badge style={{ backgroundColor: c.bg, color: c.fg }}>{s}</Badge>;
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
@@ -429,7 +429,7 @@ export default function AdminEvents() {
         header: 'Free',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: '#dcfce7', color: '#166534' }}>Free</Badge>
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>Free</Badge>
           ) : (
             <span style={{ color: 'var(--muted-foreground)' }}>
               {info.row.original.price_min ? formatCurrency(info.row.original.price_min) : '-'}
@@ -441,7 +441,7 @@ export default function AdminEvents() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
               <Star style={{ height: 12, width: 12, marginRight: 4 }} />
               Featured
             </Badge>

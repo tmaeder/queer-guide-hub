@@ -71,16 +71,16 @@ export function GeoLinkPanel({
         <div className="flex items-center gap-2 flex-wrap">
           {isFullyLinked ? (
             <>
-              <Check style={{ height: 14, width: 14, color: '#16a34a' }} />
-              <p className="text-sm font-medium" style={{ color: '#16a34a' }}>Linked</p>
+              <Check style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
+              <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>Linked</p>
               {locationDisplay && (
                 <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               )}
             </>
           ) : isPartiallyLinked ? (
             <>
-              <AlertCircle style={{ height: 14, width: 14, color: '#ca8a04' }} />
-              <p className="text-sm font-medium" style={{ color: '#ca8a04' }}>Partially linked</p>
+              <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
+              <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>Partially linked</p>
               {locationDisplay && (
                 <p className="text-sm text-muted-foreground">{locationDisplay}</p>
               )}
@@ -111,8 +111,8 @@ export function GeoLinkPanel({
         {linked && resultItem && !loading && (
           <div className="bg-muted p-2 flex flex-col gap-1">
             <div className="flex items-center gap-1">
-              <Check style={{ height: 12, width: 12, color: '#16a34a' }} />
-              <span className="text-xs font-medium" style={{ color: '#16a34a' }}>
+              <Check style={{ height: 12, width: 12, color: 'hsl(var(--foreground))' }} />
+              <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                 {resultItem.status === 'linked' ? 'Fully linked' : 'Partially linked'}
               </span>
             </div>

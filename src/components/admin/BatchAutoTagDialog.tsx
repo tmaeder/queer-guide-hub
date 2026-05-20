@@ -162,7 +162,7 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
           {result && !loading && (
             <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" style={{ color: '#16a34a' }} />
+                <CheckCircle className="h-4 w-4" style={{ color: 'hsl(var(--foreground))' }} />
                 <p className="text-sm font-semibold">Batch Complete</p>
               </div>
 
@@ -180,13 +180,13 @@ export default function BatchAutoTagDialog({ onComplete }: BatchAutoTagDialogPro
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle className="h-3.5 w-3.5" style={{ color: '#16a34a' }} />
+                  <CheckCircle className="h-3.5 w-3.5" style={{ color: 'hsl(var(--foreground))' }} />
                   <p className="text-sm">
                     <strong>{result.total_auto_approved}</strong> auto-approved
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <AlertCircle className="h-3.5 w-3.5" style={{ color: '#ca8a04' }} />
+                  <AlertCircle className="h-3.5 w-3.5" style={{ color: 'hsl(var(--foreground) / 0.55)' }} />
                   <p className="text-sm">
                     <strong>{result.new_tags_created}</strong> new tags created
                   </p>
