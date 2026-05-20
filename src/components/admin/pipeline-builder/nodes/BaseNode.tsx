@@ -52,8 +52,8 @@ function BaseNode({ data, selected }: NodeProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <div
-        className={`rounded-element border-2 bg-background shadow-sm min-w-[200px] max-w-[280px] transition-all ${
-          selected ? 'ring-2 ring-ring shadow-md scale-[1.02]' : 'hover:shadow-md'
+        className={`rounded-element border-2 bg-background min-w-[200px] max-w-[280px] transition-all ${
+          selected ? 'ring-2 ring-ring scale-[1.02]' : 'hover:border-foreground/40'
         } ${status === 'failed' ? 'border-destructive' : ''}`}
         style={{ borderColor: status === 'failed' ? undefined : color }}
       >
@@ -80,7 +80,7 @@ function BaseNode({ data, selected }: NodeProps) {
 
         {/* Header */}
         <div
-          className="flex items-center gap-2 px-3 py-2.5 rounded-t-md"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-t-element"
           style={{ backgroundColor: `${color}12` }}
         >
           {IconComponent && <IconComponent className="h-4 w-4 shrink-0" />}

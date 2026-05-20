@@ -104,7 +104,7 @@ export default function About() {
         <div className="relative">
           <TextGenerateEffect
             words="Built by queers, for everyone."
-            className="font-extrabold leading-[1.05] mb-4 md:mb-6 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
+            className="font-bold leading-[1.05] mb-4 md:mb-6 text-[2.5rem] sm:text-[4rem] md:text-[5.5rem]"
             style={{ letterSpacing: '0.02em' }}
             as="h1"
             staggerDelay={0.07}
@@ -132,7 +132,7 @@ export default function About() {
           {statItems.map((stat, i) => (
             <div key={i} className="text-center">
               <div
-                className="font-extrabold leading-[1.1] text-[2.5rem] sm:text-[3rem] md:text-[4rem]"
+                className="font-bold leading-[1.1] text-[2.5rem] sm:text-[3rem] md:text-[4rem]"
                 style={{
                   letterSpacing: '-0.03em',
                 }}
@@ -157,7 +157,7 @@ export default function About() {
       {/* Our Story */}
       <ScrollReveal direction="up">
         <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
-          <h2 className="font-extrabold mb-6 md:mb-8 text-[1.75rem] md:text-[2.25rem]">Our Story</h2>
+          <h2 className="font-bold mb-6 md:mb-8 text-[1.75rem] md:text-[2.25rem]">Our Story</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             <div className="flex flex-col gap-5">
@@ -207,7 +207,7 @@ export default function About() {
         className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
         style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
       >
-        <h2 className="reveal-up font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">
+        <h2 className="reveal-up font-bold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">
           What We Offer
         </h2>
 
@@ -248,7 +248,7 @@ export default function About() {
       {/* Our Values */}
       <ScrollReveal direction="up">
         <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8">
-          <h2 className="font-extrabold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">Our Values</h2>
+          <h2 className="font-bold mb-8 md:mb-10 text-[1.75rem] md:text-[2.25rem]">Our Values</h2>
 
           <StaggerGrid className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             {values.map((value) => {
@@ -273,7 +273,7 @@ export default function About() {
           className="py-16 md:py-28 px-4 sm:px-6 md:px-8 dark:bg-background"
           style={{ backgroundColor: 'hsl(var(--surface-container-low))' }}
         >
-          <h2 className="font-extrabold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">
+          <h2 className="font-bold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">
             The People Behind It
           </h2>
           <p className="text-muted-foreground mb-8 md:mb-10 text-[1.0625rem] leading-[1.7] max-w-[600px]">
@@ -307,7 +307,7 @@ export default function About() {
       {/* Get Involved CTA */}
       <section className="py-16 md:py-28 px-4 sm:px-6 md:px-8 bg-foreground text-background">
         <ScrollReveal direction="up">
-          <h2 className="font-extrabold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">Get Involved</h2>
+          <h2 className="font-bold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">Get Involved</h2>
           <p className="opacity-60 mb-8 md:mb-10 text-[1.0625rem] leading-[1.7] max-w-[600px]">
             This platform grows because people like you contribute. Here's how you can help.
           </p>
@@ -351,7 +351,7 @@ export default function About() {
       {/* Timeline — How we got here */}
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-extrabold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">How we got here</h2>
+          <h2 className="font-bold mb-2 md:mb-4 text-[1.75rem] md:text-[2.25rem]">How we got here</h2>
           <p className="text-muted-foreground mb-8 max-w-2xl">A side-project that became a global directory.</p>
         </div>
         <Timeline
@@ -398,7 +398,7 @@ export default function About() {
 
       {/* Lamp CTA */}
       <LampEffect className="min-h-[26rem] py-12">
-        <h2 className="bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-center text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-transparent">
+        <h2 className="text-center text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
           Help us write the next chapter.
         </h2>
         <p className="mt-3 text-center text-muted-foreground max-w-xl">

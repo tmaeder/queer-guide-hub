@@ -258,7 +258,7 @@ function SharedTripPage() {
             {t('trips.shared.badge')}
           </div>
           <h1
-            className="text-white text-[1.75rem] md:text-[2.25rem] font-extrabold"
+            className="text-white text-[1.75rem] md:text-[2.25rem] font-bold"
             style={{
               fontFamily: 'var(--font-heading)',
               lineHeight: 1.1,
@@ -455,7 +455,7 @@ function SharedTripPage() {
               </div>
               <div className="flex-1 text-center sm:text-left">
                 <p
-                  className="font-extrabold text-[1.1rem]"
+                  className="font-bold text-[1.1rem]"
                   style={{ fontFamily: 'var(--font-heading)', letterSpacing: '-0.01em' }}
                 >
                   {t('trips.shared.ctaTitle')}

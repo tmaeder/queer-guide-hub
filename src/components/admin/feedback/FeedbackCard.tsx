@@ -114,7 +114,7 @@ export function FeedbackCard({
         className={cn(
           'group relative rounded border cursor-pointer transition-all',
           focused
-            ? 'border-primary shadow-md'
+            ? 'border-primary ring-1 ring-ring'
             : selected
               ? 'border-primary/50'
               : 'border-border',

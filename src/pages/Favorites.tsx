@@ -208,7 +208,7 @@ export default function Favorites() {
         <Card key={`${item.type}-${item.id}`}>
           <div className="relative">
             {item.image_url ? (
-              <div className="aspect-video relative overflow-hidden rounded-t-md">
+              <div className="aspect-video relative overflow-hidden rounded-t-container">
                 <img
                   src={item.image_url}
                   alt={item.title}
@@ -225,7 +225,7 @@ export default function Favorites() {
                 </div>
               </div>
             ) : (
-              <div className="aspect-video bg-accent rounded-t-md flex items-center justify-center relative">
+              <div className="aspect-video bg-accent rounded-t-container flex items-center justify-center relative">
                 {getIcon()}
                 <div className="absolute top-2 right-2">
                   <FavoriteButton itemId={item.id} type={item.type} variant="ghost" />

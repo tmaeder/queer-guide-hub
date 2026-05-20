@@ -178,7 +178,7 @@ function RiskSnapshot({ report }: { report: TripSafetyReport }) {
             {t(`trips.safety.risk.${report.overallRisk}`)}
           </p>
           <h6
-            className="text-lg font-extrabold mb-0.5"
+            className="text-lg font-bold mb-0.5"
           >
             {t(`trips.safety.headline.${report.overallRisk}`)}
           </h6>
@@ -302,7 +302,7 @@ function CountryAccordion({
                 aria-hidden="true"
               >
                 <span
-                  className="text-base font-extrabold leading-none"
+                  className="text-base font-bold leading-none"
                 >
                   {country.equality_score ?? '—'}
                 </span>

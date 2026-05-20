@@ -98,7 +98,7 @@ const RegionalEventsCalendar = () => {
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-4">
         <div className="flex flex-wrap items-baseline gap-4">
           <h2
-            className="m-0 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight md:text-[2.25rem]"
+            className="m-0 text-[1.75rem] font-bold leading-[1.1] tracking-tight md:text-[2.25rem]"
             style={{ fontFamily: DISPLAY }}
           >
             {headline}
@@ -140,7 +140,7 @@ const RegionalEventsCalendar = () => {
               />
             </div>
           <div
-            className="mb-2 text-sm font-extrabold uppercase text-[hsl(var(--foreground))] md:text-base"
+            className="mb-2 text-sm font-bold uppercase text-[hsl(var(--foreground))] md:text-base"
             style={{
               fontFamily: DISPLAY,
               letterSpacing: '0.04em',

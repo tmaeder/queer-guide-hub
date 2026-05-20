@@ -80,7 +80,7 @@ const CardImage = ({
   const referrerPolicy = isTrustedSrc(effectiveSrc) ? undefined : 'no-referrer';
 
   return (
-    <div className="relative overflow-hidden rounded-t-xl" style={{ height }}>
+    <div className="relative overflow-hidden rounded-t-container" style={{ height }}>
       <img
         src={effectiveSrc}
         alt={alt}

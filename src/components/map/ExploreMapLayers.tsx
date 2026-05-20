@@ -83,12 +83,12 @@ export const ExploreMapLayers = ({
                     // (≥4.5:1) against panel bg for all 7 layer colors,
                     // including amber Hotels which fails the prior tint approach.
                     backgroundColor: enabled ? color : 'transparent',
-                    color: enabled ? '#ffffff' : 'hsl(var(--muted-foreground))',
+                    color: enabled ? 'hsl(var(--background))' : 'hsl(var(--muted-foreground))',
                     borderColor: enabled ? color : 'hsl(var(--border))',
                     outlineColor: color,
                   }}
                 >
-                  <Icon size={13} style={{ color: enabled ? '#ffffff' : 'hsl(var(--muted-foreground))' }} />
+                  <Icon size={13} style={{ color: enabled ? 'hsl(var(--background))' : 'hsl(var(--muted-foreground))' }} />
                   {`${label}${enabled && count > 0 ? ` (${count})` : ''}`}
                 </button>
               );

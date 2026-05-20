@@ -82,7 +82,7 @@ export function CityHero({
         <div className="flex gap-2 flex-shrink-0 mt-2 flex-wrap">
           <LocalizedLink
             to={`/travel?city=${encodeURIComponent(city.slug || String(city.id))}`}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5 no-underline"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5 no-underline"
           >
             <Plane style={{ height: 14, width: 14 }} aria-hidden="true" />
             Plan a trip in {city.name}

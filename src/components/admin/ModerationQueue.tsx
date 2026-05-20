@@ -291,7 +291,7 @@ export function ModerationQueue() {
               <Card
                 key={flag.id}
                 className={cn(
-                  'border transition-all hover:shadow-md',
+                  'border transition-colors hover:bg-muted/40',
                   selectedIds.includes(flag.id) ? 'border-primary' : 'border-border',
                 )}
               >

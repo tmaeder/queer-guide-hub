@@ -124,7 +124,7 @@ export const UserDirectoryGrid = ({
                           animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         }}
                       >
-                        <Check style={{ height: 12, width: 12, color: '#ffffff' }} />
+                        <Check style={{ height: 12, width: 12, color: 'hsl(var(--background))' }} />
                       </div>
                     )}
                   </div>

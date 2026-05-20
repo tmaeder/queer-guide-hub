@@ -102,7 +102,7 @@ export function SpecialOffersSection() {
                 </p>
               )}
               <div className="flex justify-between items-center mt-2">
-                <p className="font-extrabold text-[1.1rem] text-primary">
+                <p className="font-bold text-[1.1rem] text-primary">
                   €{Math.round(offer.price)}
                 </p>
                 <Button

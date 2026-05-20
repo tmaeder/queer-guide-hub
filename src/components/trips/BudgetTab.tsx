@@ -178,7 +178,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
             {Object.keys(summary.totalByCurrency).length > 1 && summary.totalConverted != null ? (
               <>
                 <span
-                  className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
+                  className="text-[1.5rem] md:text-[1.75rem] font-bold tabular-nums"
                 >
                   {formatAmount(summary.totalConverted, defaultCurrency)}
                 </span>
@@ -192,7 +192,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               Object.entries(summary.totalByCurrency).map(([cur, total]) => (
                 <span
                   key={cur}
-                  className="text-[1.5rem] md:text-[1.75rem] font-extrabold tabular-nums"
+                  className="text-[1.5rem] md:text-[1.75rem] font-bold tabular-nums"
                 >
                   {formatAmount(total, cur)}
                 </span>

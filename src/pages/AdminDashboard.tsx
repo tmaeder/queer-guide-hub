@@ -213,7 +213,7 @@ function QualityCell({ data }: { data: CockpitData }) {
       }
     >
       <div className="text-center py-1">
-        <div className="text-4xl font-extrabold leading-none">{quality.overallScore}%</div>
+        <div className="text-4xl font-bold leading-none">{quality.overallScore}%</div>
         <div className="text-[0.7rem] font-medium text-muted-foreground mt-1">Overall Score</div>
       </div>
       <div className="bg-muted mt-2" style={{ height: 4 }}>

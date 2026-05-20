@@ -191,7 +191,7 @@ export function HotelBookingFlow({ hotel, open, onClose, tripId, onBooked }: Hot
                   <Badge variant="secondary">Rating: {hotel.rating.toFixed(1)}</Badge>
                 </div>
               )}
-              <p className="mt-4 text-2xl font-extrabold text-primary">
+              <p className="mt-4 text-2xl font-bold text-primary">
                 {formatPrice(hotel.price, hotel.currency)}
                 {hasValidPrice(hotel.price) && (
                   <span className="text-sm font-normal text-muted-foreground"> / night</span>

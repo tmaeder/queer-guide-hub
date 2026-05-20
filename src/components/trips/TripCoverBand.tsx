@@ -75,7 +75,7 @@ export function TripCoverBand({
           </div>
 
           <h3
-            className="text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight"
+            className="text-white text-3xl md:text-4xl font-bold leading-tight tracking-tight"
             style={{ textShadow: '0 2px 16px rgba(0,0,0,0.35)' }}
           >
             {displayTitle}

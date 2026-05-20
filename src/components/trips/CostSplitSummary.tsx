@@ -130,7 +130,7 @@ export function CostSplitSummary({ tripId, members, defaultCurrency }: Props) {
             <p className="flex-1 text-sm">{displayName(b.user_id)}</p>
             <p
               className="text-sm font-bold tabular-nums"
-              style={{ color: b.net > 0 ? 'var(--success, #16a34a)' : 'var(--destructive)' }}
+              style={{ color: b.net > 0 ? 'hsl(var(--foreground))' : 'hsl(var(--destructive))' }}
             >
               {b.net > 0 ? '+' : ''}
               {fmt(b.net)}

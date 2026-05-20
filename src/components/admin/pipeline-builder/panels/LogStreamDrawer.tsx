@@ -105,7 +105,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
   if (!pipelineRunId) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 bg-popover border-t border-border shadow-2xl max-h-[50vh] flex flex-col animate-in slide-in-from-bottom-4 duration-150">
+    <div className="fixed bottom-0 left-0 right-0 z-30 bg-popover border-t border-border max-h-[50vh] flex flex-col animate-in slide-in-from-bottom-4 duration-150">
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 bg-muted/30">
         <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-xs font-semibold">Run log stream</span>

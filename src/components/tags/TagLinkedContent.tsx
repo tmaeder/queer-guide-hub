@@ -34,7 +34,7 @@ function VenueCard({ v, onClick }: { v: TagContentResult['venues'][number]; onCl
               backdropFilter: 'blur(4px)',
             }}
           >
-            <Star style={{ width: 12, height: 12, fill: '#f59e0b', color: '#f59e0b' }} />
+            <Star style={{ width: 12, height: 12, fill: 'hsl(var(--foreground))', color: 'hsl(var(--foreground))' }} />
             <span style={{ fontSize: '0.75rem', fontWeight: 700, lineHeight: 1 }}>
               {(v.foursquare_rating / 10).toFixed(1)}
             </span>

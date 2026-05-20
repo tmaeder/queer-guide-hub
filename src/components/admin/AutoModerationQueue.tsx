@@ -440,7 +440,7 @@ function FlagCard({
 
   return (
     <Card
-      className="border transition-all duration-200 hover:shadow-md"
+      className="border transition-colors duration-200 hover:bg-muted/40"
       style={{ borderColor: selected ? 'hsl(var(--primary))' : undefined }}
     >
       <CardContent className="py-4">

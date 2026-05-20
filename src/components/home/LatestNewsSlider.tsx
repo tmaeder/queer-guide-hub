@@ -80,7 +80,7 @@ const LatestNewsSlider = React.memo(() => {
       {/* Header */}
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <h2
-          className="m-0 text-[1.75rem] font-extrabold leading-[1.1] tracking-tight md:text-[2.25rem]"
+          className="m-0 text-[1.75rem] font-bold leading-[1.1] tracking-tight md:text-[2.25rem]"
           style={{ fontFamily: DISPLAY_FONT }}
         >
           {t('home.news.title', 'Latest News')}
@@ -132,7 +132,7 @@ const LatestNewsSlider = React.memo(() => {
             </span>
           </div>
           <h3
-            className="m-0 mb-3 overflow-hidden font-extrabold leading-[1.1]"
+            className="m-0 mb-3 overflow-hidden font-bold leading-[1.1]"
             style={{
               fontFamily: DISPLAY_FONT,
               fontSize: 'clamp(1.75rem, 4vw, 3rem)',

@@ -24,10 +24,10 @@ interface PageHeroProps {
 }
 
 const PRIMARY_CLASSES =
-  'inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5 no-underline';
+  'inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5 no-underline';
 
 const SECONDARY_CLASSES =
-  'inline-flex items-center gap-2 rounded-full border border-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline';
+  'inline-flex items-center gap-2 rounded-full border border-foreground px-7 py-4 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline';
 
 function CtaButton({ cta, primary }: { cta: CTA; primary: boolean }) {
   const cls = primary ? PRIMARY_CLASSES : SECONDARY_CLASSES;
@@ -94,7 +94,7 @@ export function PageHero({
         )}
         <h1
           className={cn(
-            'mt-4 font-extrabold tracking-tight leading-[0.95] text-foreground',
+            'mt-4 font-bold tracking-tight leading-[0.95] text-foreground',
             SIZE_TITLE[size],
           )}
         >

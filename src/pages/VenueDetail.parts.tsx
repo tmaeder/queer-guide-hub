@@ -223,7 +223,7 @@ export function VenueHero({
           <button
             type="button"
             onClick={onAddToTrip}
-            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-extrabold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5"
           >
             <Luggage style={{ width: 14, height: 14 }} aria-hidden="true" />
             Add to trip

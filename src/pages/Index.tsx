@@ -62,7 +62,7 @@ const Index = React.memo(() => {
         {/* Text panel */}
         <div className="md:flex-[0_0_35%] flex flex-col justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-0">
           <h1
-            className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] mb-4 text-foreground"
+            className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold leading-[1.05] mb-4 text-foreground"
             style={{ letterSpacing: '-0.04em' }}
           >
             {t('home.heroLine1', 'Queer venues,')}{' '}
@@ -78,7 +78,7 @@ const Index = React.memo(() => {
             <button
               type="button"
               onClick={() => navigate('/directory')}
-              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-extrabold tracking-tight text-background transition-transform duration-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-bold tracking-tight text-background transition-transform duration-200 hover:-translate-y-0.5"
             >
               <Calendar size={16} aria-hidden="true" />
               {t('home.browseDirectory', 'Browse the directory')}
@@ -127,7 +127,7 @@ const Index = React.memo(() => {
               const inner = (
                 <>
                   <div
-                    className="font-extrabold text-[2.5rem] sm:text-[3rem] md:text-[4rem] leading-[1.1]"
+                    className="font-bold text-[2.5rem] sm:text-[3rem] md:text-[4rem] leading-[1.1]"
                     style={{
                       letterSpacing: '-0.03em',
                     }}
@@ -171,7 +171,7 @@ const Index = React.memo(() => {
       <section className="px-4 sm:px-6 md:px-8 py-10 md:py-14">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between mb-4">
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               {t('home.trendingCities', 'Trending cities')}
             </h2>
             <LocalizedLink to="/cities" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -195,7 +195,7 @@ const Index = React.memo(() => {
 
       {/* ── Browse categories ───────────────────────────────────────── */}
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8">
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-8">
           {t('home.browse', 'Browse')}
         </h2>
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
@@ -239,7 +239,7 @@ const Index = React.memo(() => {
       {/* ── Final CTA — plain monochrome ─────────────────────────── */}
       <section className="px-4 sm:px-6 md:px-8 py-20 md:py-28 bg-foreground text-background text-center">
         <h2
-          className="text-3xl md:text-5xl font-extrabold tracking-tight max-w-3xl mx-auto"
+          className="text-3xl md:text-5xl font-bold tracking-tight max-w-3xl mx-auto"
           style={{ letterSpacing: '-0.03em' }}
         >
           {t('home.cta.title', 'Built by the community,')} {t('home.cta.title2', 'for the community.')}
@@ -250,14 +250,14 @@ const Index = React.memo(() => {
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <LocalizedLink
             to="/submit"
-            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-7 py-4 text-sm font-extrabold tracking-tight hover:opacity-90 transition-opacity"
+            className="inline-flex items-center justify-center rounded-full bg-background text-foreground px-7 py-4 text-sm font-bold tracking-tight hover:opacity-90 transition-opacity"
             style={{ textDecoration: 'none' }}
           >
             {t('home.cta.submit', 'Add a venue')}
           </LocalizedLink>
           <LocalizedLink
             to="/about"
-            className="inline-flex items-center justify-center rounded-full border border-background text-background px-7 py-4 text-sm font-extrabold tracking-tight hover:bg-background hover:text-foreground transition-colors"
+            className="inline-flex items-center justify-center rounded-full border border-background text-background px-7 py-4 text-sm font-bold tracking-tight hover:bg-background hover:text-foreground transition-colors"
             style={{ textDecoration: 'none' }}
           >
             {t('home.cta.about', 'Read the mission')}

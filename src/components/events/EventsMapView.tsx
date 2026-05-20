@@ -179,8 +179,8 @@ export function EventsMapView({ events, height = 600, className }: EventsMapView
         const html = `
           <div style="font-family: Inter, system-ui, sans-serif; max-width: 220px;">
             <div style="font-weight: 600; font-size: 14px; line-height: 1.3; margin-bottom: 4px;">${escapeHtml(props.title)}</div>
-            <div style="font-size: 12px; color: #525252; margin-bottom: 8px;">${escapeHtml(dateLabel)}${props.city ? ' · ' + escapeHtml(props.city) : ''}</div>
-            <a href="/events/${escapeHtml(props.slug)}" data-event-link style="font-size: 12px; font-weight: 500; text-decoration: underline; color: #0a0a0a;">View event</a>
+            <div style="font-size: 12px; color: hsl(var(--muted-foreground)); margin-bottom: 8px;">${escapeHtml(dateLabel)}${props.city ? ' · ' + escapeHtml(props.city) : ''}</div>
+            <a href="/events/${escapeHtml(props.slug)}" data-event-link style="font-size: 12px; font-weight: 500; text-decoration: underline; color: hsl(var(--foreground));">View event</a>
           </div>
         `;
         popupRef.current?.remove();

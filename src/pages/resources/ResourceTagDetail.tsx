@@ -125,7 +125,7 @@ export function ResourceTagDetail({
                 {getCategoryShortName(primary.name)}
               </p>
             )}
-            <h1 className="text-2xl font-extrabold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)', lineHeight: 1.1 }}>
+            <h1 className="text-2xl font-bold text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)', lineHeight: 1.1 }}>
               {selectedTag.name}
             </h1>
           </div>

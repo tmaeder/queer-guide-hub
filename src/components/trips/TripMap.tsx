@@ -29,11 +29,11 @@ function PopupContent({ name, subtitle, category }: PopupContentProps) {
     <div style={{ fontSize: 13, lineHeight: 1.4 }}>
       <strong>{name}</strong>
       <br />
-      <span style={{ color: '#666' }}>{subtitle}</span>
+      <span style={{ color: 'hsl(var(--muted-foreground))' }}>{subtitle}</span>
       {category && (
         <>
           <br />
-          <span style={{ fontSize: 11, color: '#999' }}>{category}</span>
+          <span style={{ fontSize: 11, color: 'hsl(var(--muted-foreground))' }}>{category}</span>
         </>
       )}
     </div>

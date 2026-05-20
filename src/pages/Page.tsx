@@ -55,7 +55,7 @@ export default function Page() {
             {page.category}
           </Badge>
         )}
-        <h1 className="text-4xl font-extrabold leading-tight mb-2">{page.title}</h1>
+        <h1 className="text-4xl font-bold leading-tight mb-2">{page.title}</h1>
         {page.subtitle && (
           <h6 className="text-xl text-muted-foreground font-normal mb-2">{page.subtitle}</h6>
         )}

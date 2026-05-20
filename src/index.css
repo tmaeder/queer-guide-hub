@@ -322,7 +322,7 @@
   background: hsl(var(--popover)) !important;
   color: hsl(var(--popover-foreground)) !important;
   border: 1px solid hsl(var(--border)) !important;
-  border-radius: var(--radius-lg) !important;
+  border-radius: var(--radius-container) !important;
   box-shadow: var(--shadow-aceternity) !important;
 }
 .maplibregl-popup-anchor-top .maplibregl-popup-tip,

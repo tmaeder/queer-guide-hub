@@ -204,7 +204,7 @@ export function CityCountryAutocomplete({
           {loading ? (
             <Loader2 size={16} className="animate-spin" />
           ) : value ? (
-            <Check size={16} style={{ color: '#10B981' }} />
+            <Check size={16} style={{ color: 'hsl(var(--foreground))' }} />
           ) : null}
         </span>
       </div>

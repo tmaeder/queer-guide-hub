@@ -165,7 +165,7 @@ export function PackingTab({ tripId }: Props) {
       <div className="p-4 md:p-5 mb-6">
         <div className="flex items-baseline justify-between mb-2 gap-2">
           <p
-            className="font-extrabold text-[1.375rem]"
+            className="font-bold text-[1.375rem]"
             style={{
               letterSpacing: '-0.02em',
               fontVariantNumeric: 'tabular-nums',

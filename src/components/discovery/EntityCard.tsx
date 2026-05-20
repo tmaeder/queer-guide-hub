@@ -92,7 +92,7 @@ export function EntityCard({
                 {eyebrow}
               </div>
             )}
-            <h3 className="mt-1 text-lg md:text-xl font-extrabold tracking-tight leading-tight">
+            <h3 className="mt-1 text-lg md:text-xl font-bold tracking-tight leading-tight">
               {title}
             </h3>
             {meta && <div className="mt-1 text-xs opacity-80 tabular-nums">{meta}</div>}
@@ -107,7 +107,7 @@ export function EntityCard({
               {eyebrow}
             </div>
           )}
-          <h3 className="text-lg font-extrabold tracking-tight leading-tight text-foreground">
+          <h3 className="text-lg font-bold tracking-tight leading-tight text-foreground">
             {title}
           </h3>
           {meta && (
