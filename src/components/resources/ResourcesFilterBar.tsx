@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -73,6 +74,7 @@ export function ResourcesFilterBar({
   onSortDirectionToggle,
   categoriesTree,
 }: ResourcesFilterBarProps) {
+  const { t } = useTranslation();
   const advancedActive = usageFilter !== 'all' || hasImageFilter || sortDirection !== 'desc';
   const [advancedOpen, setAdvancedOpen] = useState(advancedActive);
 
@@ -92,18 +94,18 @@ export function ResourcesFilterBar({
             }}
           />
           <Input
-            placeholder="Search tags, categories, descriptions..."
+            placeholder={t('resources.filter.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => onSearch(e.target.value)}
-            aria-label="Search resources"
+            aria-label={t('resources.filter.searchAria')}
             style={{ paddingLeft: 48, height: 44, fontSize: '1rem' }}
           />
         </div>
         <div className="flex gap-1">
           {[
-            { mode: 'chips' as DisplayMode, icon: Tag, label: 'Chips' },
-            { mode: 'grid' as DisplayMode, icon: LayoutGrid, label: 'Grid' },
-            { mode: 'list' as DisplayMode, icon: List, label: 'List' },
+            { mode: 'chips' as DisplayMode, icon: Tag, label: t('resources.filter.view.chips') },
+            { mode: 'grid' as DisplayMode, icon: LayoutGrid, label: t('resources.filter.view.grid') },
+            { mode: 'list' as DisplayMode, icon: List, label: t('resources.filter.view.list') },
           ].map(({ mode, icon: Icon, label }) => (
             <Button
               key={mode}
@@ -111,8 +113,8 @@ export function ResourcesFilterBar({
               size="lg"
               style={{ height: 44, width: 44, padding: 0 }}
               onClick={() => onDisplayModeChange(mode)}
-              title={`${label} view`}
-              aria-label={`${label} view`}
+              title={`${label}${t('resources.filter.view.ariaSuffix')}`}
+              aria-label={`${label}${t('resources.filter.view.ariaSuffix')}`}
               aria-pressed={displayMode === mode}
             >
               <Icon style={{ width: 18, height: 18 }} />
@@ -124,8 +126,8 @@ export function ResourcesFilterBar({
             size="lg"
             style={{ height: 44, width: 44, padding: 0 }}
             onClick={onToggleGraph}
-            title="Tag relationship graph"
-            aria-label="Tag relationship graph"
+            title={t('resources.filter.graph')}
+            aria-label={t('resources.filter.graph')}
             aria-pressed={viewMode === 'graph'}
           >
             <Network style={{ width: 18, height: 18 }} />
@@ -135,12 +137,12 @@ export function ResourcesFilterBar({
 
       <div className="flex flex-wrap gap-3 items-center">
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
-          <SelectTrigger style={{ width: 220, height: 40 }} aria-label="Filter by category">
+          <SelectTrigger style={{ width: 220, height: 40 }} aria-label={t('resources.filter.filterAria')}>
             <Filter style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t('resources.filter.categoryPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('resources.filter.allCategories')}</SelectItem>
             {parentOrder
               .map((name) => categoriesTree.find((c) => c.name === name))
               .filter((cat): cat is CategoryTreeNode => !!cat)
@@ -163,14 +165,14 @@ export function ResourcesFilterBar({
           value={sortBy}
           onValueChange={(value: string) => onSortByChange(value as SortOption)}
         >
-          <SelectTrigger style={{ width: 150, height: 40 }} aria-label="Sort by">
+          <SelectTrigger style={{ width: 150, height: 40 }} aria-label={t('resources.filter.sortAria')}>
             <TrendingUp style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
-            <SelectValue placeholder="Sort by" />
+            <SelectValue placeholder={t('resources.filter.sortPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="usage">Most used</SelectItem>
-            <SelectItem value="alphabetical">Alphabetical</SelectItem>
-            <SelectItem value="recent">Newest</SelectItem>
+            <SelectItem value="usage">{t('resources.filter.sortMostUsed')}</SelectItem>
+            <SelectItem value="alphabetical">{t('resources.filter.sortAlphabetical')}</SelectItem>
+            <SelectItem value="recent">{t('resources.filter.sortNewest')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -183,7 +185,7 @@ export function ResourcesFilterBar({
               aria-expanded={advancedOpen}
             >
               <Sliders style={{ width: 14, height: 14, marginRight: 6 }} />
-              Advanced
+              {t('resources.filter.advanced')}
               <ChevronDown
                 style={{
                   width: 14,
@@ -197,14 +199,14 @@ export function ResourcesFilterBar({
           </CollapsibleTrigger>
           <CollapsibleContent className="w-full mt-3 flex flex-wrap gap-3 items-center">
             <Select value={usageFilter} onValueChange={onUsageFilterChange}>
-              <SelectTrigger style={{ width: 140, height: 40 }} aria-label="Filter by usage">
+              <SelectTrigger style={{ width: 140, height: 40 }} aria-label={t('resources.filter.usageAria')}>
                 <BarChart3 style={{ width: 16, height: 16, marginRight: 8, flexShrink: 0 }} />
-                <SelectValue placeholder="Usage" />
+                <SelectValue placeholder={t('resources.filter.usagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tags</SelectItem>
-                <SelectItem value="used">Used</SelectItem>
-                <SelectItem value="unused">Unused</SelectItem>
+                <SelectItem value="all">{t('resources.filter.usageAll')}</SelectItem>
+                <SelectItem value="used">{t('resources.filter.usageUsed')}</SelectItem>
+                <SelectItem value="unused">{t('resources.filter.usageUnused')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -213,12 +215,12 @@ export function ResourcesFilterBar({
               size="sm"
               style={{ height: 40 }}
               onClick={() => onHasImageFilterChange(!hasImageFilter)}
-              title="Only show tags with images"
-              aria-label="Only show tags with images"
+              title={t('resources.filter.hasImageTitle')}
+              aria-label={t('resources.filter.hasImageTitle')}
               aria-pressed={hasImageFilter}
             >
               <Image style={{ width: 16, height: 16, marginRight: 6 }} />
-              Has Image
+              {t('resources.filter.hasImage')}
             </Button>
 
             <Button
@@ -226,8 +228,8 @@ export function ResourcesFilterBar({
               size="sm"
               style={{ height: 40, width: 40, padding: 0 }}
               onClick={onSortDirectionToggle}
-              title={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
-              aria-label={`Sort direction (${sortDirection === 'asc' ? 'ascending' : 'descending'})`}
+              title={sortDirection === 'asc' ? t('resources.filter.sortDirAsc') : t('resources.filter.sortDirDesc')}
+              aria-label={sortDirection === 'asc' ? t('resources.filter.sortDirAsc') : t('resources.filter.sortDirDesc')}
               aria-pressed={sortDirection === 'desc'}
             >
               {sortDirection === 'asc' ? (
@@ -242,7 +244,7 @@ export function ResourcesFilterBar({
 
       {(filterCategory !== 'all' || usageFilter !== 'all' || hasImageFilter) && (
         <div className="flex flex-wrap gap-2 mt-4 items-center">
-          <span className="text-xs text-muted-foreground">Active:</span>
+          <span className="text-xs text-muted-foreground">{t('resources.filter.active')}</span>
           {filterCategory !== 'all' && (
             <button
               type="button"
@@ -258,7 +260,7 @@ export function ResourcesFilterBar({
               onClick={() => onUsageFilterChange('all')}
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
-              {usageFilter === 'used' ? 'Used' : 'Unused'} ✕
+              {usageFilter === 'used' ? t('resources.filter.usageUsed') : t('resources.filter.usageUnused')} ✕
             </button>
           )}
           {hasImageFilter && (
@@ -267,7 +269,7 @@ export function ResourcesFilterBar({
               onClick={() => onHasImageFilterChange(false)}
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-badge cursor-pointer bg-secondary text-xs hover:opacity-80"
             >
-              Has Image ✕
+              {t('resources.filter.hasImage')} ✕
             </button>
           )}
           <button
@@ -279,7 +281,7 @@ export function ResourcesFilterBar({
             }}
             className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
           >
-            Clear all
+            {t('resources.filter.clearAll')}
           </button>
         </div>
       )}

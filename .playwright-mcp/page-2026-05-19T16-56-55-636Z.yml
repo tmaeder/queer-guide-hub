@@ -1,0 +1,105 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e5]:
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - link "Queer Guide" [ref=e9] [cursor=pointer]:
+              - /url: /
+              - img [ref=e10]
+              - generic [ref=e11]: Queer Guide
+            - search "Site search" [ref=e15]:
+              - generic:
+                - img
+              - generic [ref=e16]:
+                - generic [ref=e17]:
+                  - combobox "Search Queer Guide" [ref=e18]
+                  - generic:
+                    - generic:
+                      - generic: "|"
+                - generic [ref=e19]:
+                  - button "Voice search" [ref=e20]:
+                    - img
+                  - generic: ⌘K
+              - button "Search filters" [ref=e21]:
+                - img
+            - generic [ref=e22]:
+              - button "Contribute" [ref=e23]:
+                - img
+              - button "Open user menu" [ref=e24]:
+                - img "Account menu" [ref=e26]
+          - navigation "Primary" [ref=e27]:
+            - link "Venues" [ref=e28] [cursor=pointer]:
+              - /url: /venues
+            - link "Events" [ref=e29] [cursor=pointer]:
+              - /url: /events
+            - link "Places" [ref=e30] [cursor=pointer]:
+              - /url: /places
+            - link "Marketplace" [ref=e31] [cursor=pointer]:
+              - /url: /marketplace
+            - link "News" [ref=e32] [cursor=pointer]:
+              - /url: /news
+            - button "More" [ref=e33]:
+              - text: More
+              - img [ref=e34]
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Claim your unique queer.guide identity
+        - generic [ref=e38]:
+          - button "Choose username" [ref=e39]
+          - button "Dismiss" [ref=e40]:
+            - img [ref=e41]
+    - generic [ref=e44]:
+      - status [ref=e45]
+      - main [ref=e46]
+    - contentinfo [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - navigation "Footer navigation" [ref=e52]:
+            - link "About" [ref=e54] [cursor=pointer]:
+              - /url: /about
+              - generic [ref=e55]: About
+            - generic [ref=e56]:
+              - generic [ref=e57]: ·
+              - link "Legal" [ref=e58] [cursor=pointer]:
+                - /url: /legal
+                - generic [ref=e59]: Legal
+            - generic [ref=e60]:
+              - generic [ref=e61]: ·
+              - link "Accessibility" [ref=e62] [cursor=pointer]:
+                - /url: /accessibility
+                - generic [ref=e63]: Accessibility
+            - generic [ref=e64]:
+              - generic [ref=e65]: ·
+              - link "Privacy" [ref=e66] [cursor=pointer]:
+                - /url: /privacy
+                - generic [ref=e67]: Privacy
+            - generic [ref=e68]:
+              - generic [ref=e69]: ·
+              - link "Terms" [ref=e70] [cursor=pointer]:
+                - /url: /terms
+                - generic [ref=e71]: Terms
+            - generic [ref=e72]:
+              - generic [ref=e73]: ·
+              - link "Contact" [ref=e74] [cursor=pointer]:
+                - /url: /contact
+                - generic [ref=e75]: Contact
+            - generic [ref=e76]:
+              - generic [ref=e77]: ·
+              - link "Support Us" [ref=e78] [cursor=pointer]:
+                - /url: /donate
+                - generic [ref=e79]: Support Us
+          - generic [ref=e80]: © 2026 Queer Guide
+        - generic [ref=e81]:
+          - combobox "Select language" [ref=e82]:
+            - img [ref=e83]
+            - generic: English
+            - img [ref=e86]
+          - button "Toggle theme" [ref=e88]:
+            - img
+          - button "Scroll to top" [ref=e89]:
+            - img

@@ -22,7 +22,7 @@ const MarketplaceMerchant = lazyRetry(() => import('./pages/MarketplaceMerchant'
 const MarketplaceShare = lazyRetry(() => import('./pages/MarketplaceShare'));
 
 const Places = lazyRetry(() => import('./pages/Places'));
-const Resources = lazyRetry(() => import('./pages/Ressources'));
+const Resources = lazyRetry(() => import('./pages/Resources'));
 const ResourceTopic = lazyRetry(() => import('./pages/resources/ResourceTopic'));
 const UserDirectory = lazyRetry(() => import('./pages/UserDirectory'));
 const Personalities = lazyRetry(() => import('./pages/Personalities'));

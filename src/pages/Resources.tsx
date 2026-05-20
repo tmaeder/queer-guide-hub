@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { useParams, useSearchParams } from 'react-router';
+import { useTranslation, Trans } from 'react-i18next';
 import { useLocalizedNavigate } from '@/hooks/useLocalizedNavigate';
 import {
   useCentralizedTags,
@@ -33,7 +34,8 @@ import { isRealTagImage, type ViewMode, type DisplayMode, type SortOption } from
 
 const TagRelationshipGraph = lazy(() => import('@/components/tags/TagRelationshipGraph'));
 
-export default function Ressources() {
+export default function Resources() {
+  const { t } = useTranslation();
   const { tagName, categorySlug } = useParams<{ tagName: string; categorySlug: string }>();
   const navigate = useLocalizedNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -148,13 +150,11 @@ export default function Ressources() {
     if (viewMode === 'search') return; // already populated
     if (tagName || categorySlug) return; // tag-detail / category routes own the page
     const lower = searchQuery.toLowerCase();
-    const local = allTags
-      .filter(
-        (t) =>
-          t.name.toLowerCase().includes(lower) ||
-          (t.description && t.description.toLowerCase().includes(lower)),
-      )
-      .slice(0, 50);
+    const local = allTags.filter(
+      (t) =>
+        t.name.toLowerCase().includes(lower) ||
+        (t.description && t.description.toLowerCase().includes(lower)),
+    );
     setSearchResults(local);
     setViewMode('search');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,13 +297,11 @@ export default function Ressources() {
         return;
       }
       const lower = query.toLowerCase();
-      const local = allTags
-        .filter(
-          (t) =>
-            t.name.toLowerCase().includes(lower) ||
-            (t.description && t.description.toLowerCase().includes(lower)),
-        )
-        .slice(0, 50);
+      const local = allTags.filter(
+        (t) =>
+          t.name.toLowerCase().includes(lower) ||
+          (t.description && t.description.toLowerCase().includes(lower)),
+      );
       setSearchResults(local);
       setViewMode('search');
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
@@ -355,7 +353,7 @@ export default function Ressources() {
     return (
       <div className="container mx-auto py-8 md:py-16 px-4">
         <ErrorState
-          message="Something went wrong while loading resources. Please try again later."
+          message={t('resources.errorLoading')}
           onRetry={() => window.location.reload()}
         />
       </div>
@@ -369,9 +367,12 @@ export default function Ressources() {
         className="container mx-auto py-16 md:py-24 px-4 text-center"
         data-testid="tag-not-found"
       >
-        <h1 className="text-3xl font-bold mb-2">Tag not found</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('resources.tagNotFound.title')}</h1>
         <p className="text-muted-foreground mb-6">
-          We couldn&apos;t find a tag matching{' '}
+          <Trans
+            i18nKey="resources.tagNotFound.bodyPrefix"
+            values={{ tag: tagName ?? '' }}
+          />
           <code className="px-1 py-0.5 rounded bg-muted">/{tagName ?? ''}</code>.
         </p>
         <Button
@@ -382,7 +383,7 @@ export default function Ressources() {
             navigate('/resources');
           }}
         >
-          Browse all resources
+          {t('resources.tagNotFound.browse')}
         </Button>
       </div>
     );
@@ -439,11 +440,11 @@ export default function Ressources() {
 
       <header className="mb-6 md:mb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
-          Support
+          {t('resources.hero.eyebrow')}
         </p>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Help &amp; resources.</h1>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{t('resources.hero.title')}</h1>
         <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-2xl">
-          Crisis support, practical guides, and the people and organisations behind them.
+          {t('resources.hero.lede')}
         </p>
       </header>
 
@@ -465,11 +466,11 @@ export default function Ressources() {
               <CardTitle>
                 <div className="flex items-center gap-2">
                   <Network style={{ width: 20, height: 20 }} />
-                  <span className="text-base">Tag Relationship Graph</span>
+                  <span className="text-base">{t('resources.graph.title')}</span>
                 </div>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Explore how tags relate by semantic similarity and co-occurrence
+                {t('resources.graph.description')}
               </p>
             </CardHeader>
             <CardContent>
@@ -492,9 +493,9 @@ export default function Ressources() {
             <button
               type="button"
               className="w-full flex items-center justify-between gap-3 rounded-element border border-border bg-background px-4 py-3 text-left hover:bg-muted transition-colors group"
-              aria-label="Browse all topics, search and advanced filters"
+              aria-label={t('resources.disclosureAria')}
             >
-              <span className="font-semibold text-sm">Browse all topics &amp; search</span>
+              <span className="font-semibold text-sm">{t('resources.disclosure')}</span>
               <ChevronDown
                 aria-hidden
                 className="opacity-60 transition-transform group-data-[state=open]:rotate-180"

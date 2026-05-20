@@ -27,18 +27,23 @@ const GERMAN_MARKERS = [
 
 // `page.content()` returns serialized HTML, so `&` becomes `&amp;`. Match
 // either form so this test isn't fragile to that serialization detail.
+// We deliberately do NOT check for the filter labels ('All countries' /
+// 'All topics') — those live inside a Radix Select that lazy-mounts its
+// SelectContent only after the dropdown is opened, so they're absent from
+// page.content() on first paint even though i18n has loaded.
 const ENGLISH_MARKERS = [
   'Help &amp; Crisis Hotlines',
   'In acute danger',
-  'All countries',
-  'All topics',
 ];
 
 test.describe('@p0-2 /help locale', () => {
   test('English session: /help renders no German markers', async ({ page }) => {
     await page.goto('/en/help');
-    // Wait for the first heading so we know i18n + page have hydrated.
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    // `h1` is in the prerendered shell — wait for the emergency banner heading,
+    // which is React-rendered + i18n-gated but always visible (not behind a
+    // Radix Select portal like 'All countries'). Then page.content() includes
+    // the still-portaled SelectContent for the substring assertions below.
+    await expect(page.getByText('In acute danger').first()).toBeVisible({ timeout: 20_000 });
     const html = await page.content();
     for (const marker of GERMAN_MARKERS) {
       expect(
@@ -53,7 +58,8 @@ test.describe('@p0-2 /help locale', () => {
 
   test('German session: /de/help renders the German bundle', async ({ page }) => {
     await page.goto('/de/help');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    // Same hydration anchor as the English test, German variant.
+    await expect(page.getByText('Akute Gefahr').first()).toBeVisible({ timeout: 20_000 });
     const html = await page.content();
     // We expect the de.json bundle to provide German strings — at least one
     // German emergency or topic word must be present.
@@ -65,7 +71,7 @@ test.describe('@p0-2 /help locale', () => {
     const ctx = await browser.newContext({ locale: 'en-US' });
     const page = await ctx.newPage();
     await page.goto('/help');
-    await page.waitForSelector('h1', { timeout: 15_000 });
+    await expect(page.getByText('In acute danger').first()).toBeVisible({ timeout: 20_000 });
     const html = await page.content();
     for (const marker of GERMAN_MARKERS) {
       expect(html.includes(marker), `EN browser /help leaked "${marker}"`).toBe(false);

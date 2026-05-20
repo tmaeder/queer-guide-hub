@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Briefcase } from 'lucide-react';
@@ -13,15 +14,16 @@ export function ResourceProfessions({
   onBack,
   onNavigate,
 }: ResourceProfessionsProps) {
+  const { t } = useTranslation();
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
         <Button variant="secondary" size="sm" onClick={onBack}>
           <ArrowLeft style={{ width: 14, height: 14, marginRight: 6 }} />
-          Back
+          {t('resources.professions.back')}
         </Button>
         <Briefcase style={{ width: 18, height: 18 }} />
-        <h6 className="text-base font-semibold">Professions</h6>
+        <h6 className="text-base font-semibold">{t('resources.professions.title')}</h6>
         <Badge variant="secondary">{professions.length}</Badge>
       </div>
       <div className="flex flex-wrap gap-2">

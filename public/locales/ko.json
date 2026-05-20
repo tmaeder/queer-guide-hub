@@ -1482,7 +1482,16 @@
       "sort": {
         "dateAsc": "[KO] Soonest first",
         "dateDesc": "[KO] Latest first"
-      }
+      },
+      "searchLabel": "이벤트 검색",
+      "searchPlaceholder": "이벤트, 도시, 주최자 검색",
+      "filters": "필터",
+      "viewMode": "보기 모드",
+      "resultsCount_one": "이벤트 {{count}}개",
+      "resultsCount_other": "이벤트 {{count}}개",
+      "resultsNear_one": "{{city}} 근처 이벤트 {{count}}개",
+      "resultsNear_other": "{{city}} 근처 이벤트 {{count}}개",
+      "showWorldwide": "전 세계 보기"
     },
     "eventDetail": {
       "loadFailed": "이벤트 상세 정보를 불러올 수 없습니다.",
@@ -1538,10 +1547,10 @@
     "travel": {
       "title": "여행",
       "subtitle": "LGBTQ+ 친화적 여행지의 항공편, 호텔, 활동 찾기",
-      "activitiesComingSoon": "활동은 곧 제공됩니다.",
-      "browseDestinations": "여행지 둘러보기",
-      "exploreCta": "여행지",
-      "exploreDescription": "안전 정보와 여행 가이드가 있는 도시와 국가.",
+      "activitiesComingSoon": "액티비티 곧 공개.",
+      "browseDestinations": "여행지 보기",
+      "exploreCta": "LGBTQ+ 친화 여행지",
+      "exploreDescription": "안전 정보와 가이드가 있는 도시와 국가 보기.",
       "hotels": {
         "typeLabel": "[KO] Type",
         "priceMin": "[KO] Min €",
@@ -1561,45 +1570,45 @@
         }
       },
       "hero": {
-        "title": "[KO] Plan a trip",
-        "subtitle": "[KO] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[KO] Where to?",
-        "start": "[KO] Start",
-        "end": "[KO] End",
-        "cta": "[KO] Plan this trip",
-        "discover": "[KO] Or",
-        "discoverLink": "[KO] browse public trips",
-        "discoverTail": "[KO] from the community.",
+        "title": "여행 계획",
+        "subtitle": "퀴어 친화적인 일정 만들기: 도시 선택, 프라이드 이벤트, 바, 호텔, 안전 정보를 모아 저장하고 공유하세요.",
+        "cityLabel": "어디로?",
+        "start": "시작",
+        "end": "종료",
+        "cta": "이 여행 계획하기",
+        "discover": "또는",
+        "discoverLink": "공개 여행 보기",
+        "discoverTail": "커뮤니티에서.",
         "errors": {
-          "city": "[KO] Pick a city to plan a trip."
+          "city": "계획할 도시를 선택하세요."
         },
         "activeTripHeading": "여행 계속하기",
         "openTrip": "여행 열기"
       },
       "resume": {
-        "title": "[KO] Continue planning",
-        "placeCount": "[KO] {{count}} places"
+        "title": "계획 계속하기",
+        "placeCount": "{{count}}개 장소"
       },
       "pride": {
-        "title": "[KO] Pride this season",
-        "window": "[KO] Next 4 months",
-        "empty": "[KO] No upcoming Pride events.",
-        "safety": "[KO] Equality score",
+        "title": "이번 시즌의 프라이드",
+        "window": "향후 4개월",
+        "empty": "예정된 프라이드 이벤트가 없습니다.",
+        "safety": "평등 점수",
         "equalityTooltip": "평등 점수는 이 나라의 LGBTQ+ 법적 보호를 반영합니다. 높을수록 안전합니다.",
         "equalityAria": "평등 점수 {{score}}: 탭하여 설명"
       },
       "inspiration": {
-        "villages": "[KO] Queer villages",
-        "publicTrips": "[KO] Public trips",
-        "viewAll": "[KO] View all",
-        "noVillages": "[KO] No villages yet.",
-        "noTrips": "[KO] No public trips yet.",
+        "villages": "퀴어 빌리지",
+        "publicTrips": "공개 여행",
+        "viewAll": "전체 보기",
+        "noVillages": "아직 빌리지가 없습니다.",
+        "noTrips": "아직 공개 여행이 없습니다.",
         "heading": "영감",
         "visitedFilterLabel": "방문:"
       },
       "bookNow": {
-        "title": "[KO] Book now",
-        "subtitle": "[KO] Search flights, hotels, and activities directly — no trip required.",
+        "title": "바로 예약",
+        "subtitle": "항공편, 호텔, 액티비티를 바로 검색 — 여행 계획 없이도.",
         "headline": "여행 없이 예약"
       },
       "plan": {
@@ -1813,6 +1822,133 @@
       "linkCopied": "링크 복사됨",
       "linkCopiedDescription": "이제 붙여넣을 수 있습니다",
       "shareFailed": "공유 실패"
+    }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "지원",
+      "title": "도움말 및 자료.",
+      "lede": "위기 지원, 실용 가이드, 그리고 그 뒤의 사람과 단체."
+    },
+    "errorLoading": "자료를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.",
+    "disclosure": "모든 주제 및 검색",
+    "disclosureAria": "모든 주제, 검색, 고급 필터",
+    "browseAllTopics": "모든 주제",
+    "professions": {
+      "title": "직업",
+      "description": "직업별 LGBTQ+ 인물 찾기",
+      "back": "뒤로"
+    },
+    "category": {
+      "back": "뒤로",
+      "viewAll": "모두 보기 →",
+      "comingSoon": "곧 공개",
+      "tagCount": "태그 {{count}}개",
+      "tagCountTotal": "총 태그 {{count}}개 (모든 하위 카테고리)",
+      "tagCountTotalAria": "모든 하위 카테고리에 걸쳐 총 {{count}}개의 태그",
+      "totalChildHint": "각 하위 카테고리의 수치는 직접 할당된 태그 수입니다",
+      "supportNewsAlert": "즉시 도움이 필요하세요? 위기 상담 전화 디렉터리를 확인하세요.",
+      "crisisHotlines": "위기 상담 전화",
+      "emptyTitle": "이 카테고리에 아직 태그가 없습니다",
+      "emptyDescription": "잠시 후 다시 와 보세요 — 채워지는 중입니다.",
+      "subcategoryEmptyTitle": "아직 태그가 없습니다",
+      "subcategoryEmptyDescription": "이 하위 카테고리는 채워지는 중입니다."
+    },
+    "crisis": {
+      "heading": "위기와 안전",
+      "badge": "무료, 익명",
+      "chooseCountryAria": "국가 선택",
+      "callEmergencyPrefix": "지금 위험한가요? ",
+      "callEmergencySuffix": "로 전화 ({{country}}).",
+      "callEmergencySuffixInt": "로 전화.",
+      "noLocal": "{{country}}의 상담 전화가 아직 없습니다 — 국제 전화를 표시합니다.",
+      "callAria": "{{name}} ({{phone}})에 전화",
+      "noHotlinesLoaded": "상담 전화가 아직 로드되지 않았습니다.",
+      "listAria": "위기 상담 전화",
+      "seeAll": "모든 상담 전화 보기"
+    },
+    "topicHubs": {
+      "heading": "주제"
+    },
+    "topic": {
+      "back": "자료",
+      "notFound": "주제를 찾을 수 없습니다",
+      "backToResources": "자료로 돌아가기",
+      "metaSuffix": "자료",
+      "metaNotFound": "주제를 찾을 수 없습니다",
+      "stats": "가이드 {{guides}} · 단체 {{orgs}} · 기사 {{news}}",
+      "guidesHeading": "가이드",
+      "guidesEmpty": "이 주제로 발행된 가이드가 아직 없습니다.",
+      "orgsHeading": "단체",
+      "orgsEmpty": "이 주제의 단체가 아직 등록되지 않았습니다.",
+      "newsHeading": "최신 뉴스",
+      "newsEmpty": "이 주제의 최신 기사가 아직 없습니다.",
+      "moreTopics": "다른 주제"
+    },
+    "orgs": {
+      "heading": "지원 단체",
+      "filterAria": "국가별로 단체 필터",
+      "noLocal": "{{country}}의 단체가 아직 없습니다 — 글로벌 단체를 표시합니다.",
+      "browseAll": "모든 단체 보기",
+      "emptyPrefix": "아직 등록된 지원 단체가 없습니다. Chrome 확장으로 제출하거나 ",
+      "emptyLink": "문의하기",
+      "emptySuffix": "."
+    },
+    "filter": {
+      "searchPlaceholder": "태그, 카테고리, 설명 검색…",
+      "searchAria": "자료 검색",
+      "filterAria": "카테고리로 필터",
+      "categoryPlaceholder": "카테고리",
+      "allCategories": "모든 카테고리",
+      "sortAria": "정렬",
+      "sortPlaceholder": "정렬",
+      "sortMostUsed": "많이 사용",
+      "sortAlphabetical": "가나다순",
+      "sortNewest": "최신",
+      "advanced": "고급",
+      "usageAria": "사용량으로 필터",
+      "usagePlaceholder": "사용량",
+      "usageAll": "모든 태그",
+      "usageUsed": "사용 중",
+      "usageUnused": "미사용",
+      "hasImage": "이미지 있음",
+      "hasImageTitle": "이미지가 있는 태그만 표시",
+      "sortDirAsc": "오름차순",
+      "sortDirDesc": "내림차순",
+      "active": "활성:",
+      "clearAll": "모두 지우기",
+      "view": {
+        "chips": "칩",
+        "grid": "격자",
+        "list": "목록",
+        "ariaSuffix": " 보기"
+      },
+      "graph": "태그 관계 그래프"
+    },
+    "search": {
+      "resultsHeading": "검색 결과",
+      "categoryTagsHeading": "{{category}} 태그",
+      "filteredHeading": "필터링된 태그",
+      "countBadge": "{{visible}} / {{total}}",
+      "countAria": "일치하는 태그 {{count}}개",
+      "showMore": "{{count}}개 더 보기",
+      "empty": {
+        "title": "결과 없음",
+        "description": "검색 범위를 넓히거나 필터를 지워 보세요."
+      }
+    },
+    "tagNotFound": {
+      "title": "태그를 찾을 수 없음",
+      "bodyPrefix": "일치하는 태그를 찾을 수 없습니다: ",
+      "browse": "모든 자료 보기"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "자료",
+      "noDefinition": "이 용어에 대한 정의가 아직 없습니다."
+    },
+    "graph": {
+      "title": "태그 관계 그래프",
+      "description": "의미적 유사성과 동시 발생을 통한 태그 관계 탐색"
     }
   }
 }

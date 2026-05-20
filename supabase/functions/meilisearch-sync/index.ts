@@ -991,6 +991,12 @@ async function reconcileType(supabase: any, type: string): Promise<{
     if (DEDUP_TABLES.has(table)) {
       query = query.is('duplicate_of_id', null)
     }
+    // Keep reconcile aligned with fetchVenues — refuge-restrooms entries are
+    // intentionally excluded from the public venue index. Without this filter,
+    // reconcile re-resurrects 900+ orphaned restroom IDs every run.
+    if (table === 'venues') {
+      query = query.neq('data_source', 'refuge-restrooms')
+    }
     const { data, error } = await query.range(from, from + PAGE - 1)
     if (error) throw new Error(`source query ${table}: ${error.message}`)
     if (!data || data.length === 0) break

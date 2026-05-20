@@ -1607,9 +1607,9 @@
       "title": "旅行",
       "subtitle": "LGBTQ+フレンドリーな目的地のフライト、ホテル、アクティビティを検索",
       "activitiesComingSoon": "アクティビティは近日公開。",
-      "browseDestinations": "目的地を探す",
-      "exploreCta": "目的地",
-      "exploreDescription": "安全情報とトラベルガイド付きの都市と国。",
+      "browseDestinations": "目的地を見る",
+      "exploreCta": "LGBTQ+フレンドリーな目的地",
+      "exploreDescription": "安全情報と旅行ガイドのある都市と国を閲覧。",
       "hotels": {
         "typeLabel": "[JA] Type",
         "priceMin": "[JA] Min €",
@@ -1629,45 +1629,45 @@
         }
       },
       "hero": {
-        "title": "[JA] Plan a trip",
-        "subtitle": "[JA] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[JA] Where to?",
-        "start": "[JA] Start",
-        "end": "[JA] End",
-        "cta": "[JA] Plan this trip",
-        "discover": "[JA] Or",
-        "discoverLink": "[JA] browse public trips",
-        "discoverTail": "[JA] from the community.",
+        "title": "旅行を計画する",
+        "subtitle": "クィアフレンドリーな旅程を作成：都市を選び、プライドイベント、バー、ホテル、各立ち寄り先の安全情報を集めて、保存・共有・持ち運び。",
+        "cityLabel": "行き先は？",
+        "start": "開始",
+        "end": "終了",
+        "cta": "この旅行を計画",
+        "discover": "または",
+        "discoverLink": "公開された旅行を見る",
+        "discoverTail": "コミュニティから。",
         "errors": {
-          "city": "[JA] Pick a city to plan a trip."
+          "city": "計画する都市を選んでください。"
         },
         "activeTripHeading": "旅行を続ける",
         "openTrip": "旅行を開く"
       },
       "resume": {
-        "title": "[JA] Continue planning",
-        "placeCount": "[JA] {{count}} places"
+        "title": "計画を続ける",
+        "placeCount": "{{count}}か所"
       },
       "pride": {
-        "title": "[JA] Pride this season",
-        "window": "[JA] Next 4 months",
-        "empty": "[JA] No upcoming Pride events.",
-        "safety": "[JA] Equality score",
+        "title": "今シーズンのプライド",
+        "window": "今後4ヶ月",
+        "empty": "今後のプライドイベントはありません。",
+        "safety": "平等スコア",
         "equalityTooltip": "平等スコアはこの国のLGBTQ+の法的保護を示します。高いほど安全です。",
         "equalityAria": "平等スコア{{score}}: タップで説明"
       },
       "inspiration": {
-        "villages": "[JA] Queer villages",
-        "publicTrips": "[JA] Public trips",
-        "viewAll": "[JA] View all",
-        "noVillages": "[JA] No villages yet.",
-        "noTrips": "[JA] No public trips yet.",
+        "villages": "クィア・ヴィレッジ",
+        "publicTrips": "公開旅行",
+        "viewAll": "すべて見る",
+        "noVillages": "まだヴィレッジはありません。",
+        "noTrips": "まだ公開旅行はありません。",
         "heading": "インスピレーション",
         "visitedFilterLabel": "訪問済み:"
       },
       "bookNow": {
-        "title": "[JA] Book now",
-        "subtitle": "[JA] Search flights, hotels, and activities directly — no trip required.",
+        "title": "直接予約",
+        "subtitle": "フライト、ホテル、アクティビティを直接検索 — 旅行プラン不要。",
         "headline": "旅行なしで予約"
       },
       "plan": {
@@ -1881,6 +1881,133 @@
       "linkCopied": "リンクをコピーしました",
       "linkCopiedDescription": "貼り付けることができます",
       "shareFailed": "共有に失敗しました"
+    }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "サポート",
+      "title": "ヘルプとリソース。",
+      "lede": "危機支援、実用ガイド、その背後にある人々と団体。"
+    },
+    "errorLoading": "リソースの読み込みに失敗しました。後ほどお試しください。",
+    "disclosure": "すべてのトピックと検索",
+    "disclosureAria": "すべてのトピック、検索、詳細フィルター",
+    "browseAllTopics": "すべてのトピック",
+    "professions": {
+      "title": "職業",
+      "description": "職業で LGBTQ+ パーソナリティを探す",
+      "back": "戻る"
+    },
+    "category": {
+      "back": "戻る",
+      "viewAll": "すべて見る →",
+      "comingSoon": "近日公開",
+      "tagCount": "タグ {{count}} 件",
+      "tagCountTotal": "タグ {{count}} 件（全サブカテゴリ）",
+      "tagCountTotalAria": "全サブカテゴリで {{count}} 件のタグ",
+      "totalChildHint": "各サブカテゴリの数は直接割り当てられたタグの数です",
+      "supportNewsAlert": "今すぐ助けが必要ですか？危機ホットラインの一覧を見る。",
+      "crisisHotlines": "危機ホットライン",
+      "emptyTitle": "このカテゴリにはまだタグがありません",
+      "emptyDescription": "まもなく追加されます。",
+      "subcategoryEmptyTitle": "まだタグがありません",
+      "subcategoryEmptyDescription": "このサブカテゴリは追加中です。"
+    },
+    "crisis": {
+      "heading": "危機と安全",
+      "badge": "無料・匿名",
+      "chooseCountryAria": "国を選択",
+      "callEmergencyPrefix": "今すぐ危険ですか？ ",
+      "callEmergencySuffix": "に電話（{{country}}）。",
+      "callEmergencySuffixInt": "に電話。",
+      "noLocal": "{{country}} のホットラインはまだ登録されていません — 国際版を表示。",
+      "callAria": "{{name}}（{{phone}}）に電話",
+      "noHotlinesLoaded": "ホットラインはまだ読み込まれていません。",
+      "listAria": "危機ホットライン",
+      "seeAll": "すべてのホットラインを見る"
+    },
+    "topicHubs": {
+      "heading": "トピック"
+    },
+    "topic": {
+      "back": "リソース",
+      "notFound": "トピックが見つかりません",
+      "backToResources": "リソースに戻る",
+      "metaSuffix": "リソース",
+      "metaNotFound": "トピックが見つかりません",
+      "stats": "ガイド {{guides}} · 団体 {{orgs}} · 記事 {{news}}",
+      "guidesHeading": "ガイド",
+      "guidesEmpty": "このトピックのガイドはまだ公開されていません。",
+      "orgsHeading": "団体",
+      "orgsEmpty": "このトピックの団体はまだ登録されていません。",
+      "newsHeading": "最新ニュース",
+      "newsEmpty": "このトピックの最新記事はまだありません。",
+      "moreTopics": "他のトピック"
+    },
+    "orgs": {
+      "heading": "支援団体",
+      "filterAria": "国で団体を絞り込む",
+      "noLocal": "{{country}} の団体はまだ登録されていません — グローバル団体を表示。",
+      "browseAll": "すべての団体を見る",
+      "emptyPrefix": "支援団体はまだ登録されていません。Chrome 拡張で送るか ",
+      "emptyLink": "お問い合わせ",
+      "emptySuffix": "。"
+    },
+    "filter": {
+      "searchPlaceholder": "タグ、カテゴリ、説明を検索…",
+      "searchAria": "リソースを検索",
+      "filterAria": "カテゴリで絞り込む",
+      "categoryPlaceholder": "カテゴリ",
+      "allCategories": "すべてのカテゴリ",
+      "sortAria": "並び替え",
+      "sortPlaceholder": "並び替え",
+      "sortMostUsed": "使用順",
+      "sortAlphabetical": "アルファベット順",
+      "sortNewest": "新着順",
+      "advanced": "詳細",
+      "usageAria": "使用状況で絞り込む",
+      "usagePlaceholder": "使用状況",
+      "usageAll": "すべてのタグ",
+      "usageUsed": "使用中",
+      "usageUnused": "未使用",
+      "hasImage": "画像あり",
+      "hasImageTitle": "画像のあるタグだけ表示",
+      "sortDirAsc": "昇順",
+      "sortDirDesc": "降順",
+      "active": "アクティブ:",
+      "clearAll": "すべてクリア",
+      "view": {
+        "chips": "チップ",
+        "grid": "グリッド",
+        "list": "リスト",
+        "ariaSuffix": " ビュー"
+      },
+      "graph": "タグ関係グラフ"
+    },
+    "search": {
+      "resultsHeading": "検索結果",
+      "categoryTagsHeading": "{{category}} のタグ",
+      "filteredHeading": "絞り込みタグ",
+      "countBadge": "{{visible}} / {{total}}",
+      "countAria": "一致するタグ {{count}} 件",
+      "showMore": "さらに {{count}} 件表示",
+      "empty": {
+        "title": "結果なし",
+        "description": "範囲を広げるか、フィルターをクリアしてください。"
+      }
+    },
+    "tagNotFound": {
+      "title": "タグが見つかりません",
+      "bodyPrefix": "次のタグが見つかりませんでした：",
+      "browse": "すべてのリソースを見る"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "リソース",
+      "noDefinition": "この用語にはまだ定義がありません。"
+    },
+    "graph": {
+      "title": "タグ関係グラフ",
+      "description": "意味的類似度と共起でタグの関係を探る"
     }
   }
 }

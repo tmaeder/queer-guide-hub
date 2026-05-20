@@ -40,8 +40,11 @@ test.describe('/trips create dialog (signed out)', () => {
         !/failed to fetch dynamically imported module/i.test(e) &&
         !/manifest\.webmanifest/i.test(e) &&
         // Network/cert errors are infrastructure, not application code.
-        // Sandboxed CI runners may not trust the public CA chain.
-        !/net::ERR_(CERT|DNS|NAME|CONNECTION|NETWORK|INTERNET)_/i.test(e),
+        // Sandboxed CI runners may not trust the public CA chain. Bare
+        // ERR_FAILED / ERR_ABORTED also surface when vite preview aborts
+        // a request mid-flight (cancelled prefetch after navigation).
+        !/net::ERR_(CERT|DNS|NAME|CONNECTION|NETWORK|INTERNET)_/i.test(e) &&
+        !/Failed to load resource:.*net::ERR_(FAILED|ABORTED)/i.test(e),
     );
     expect(ours, `Unexpected errors:\n${ours.join('\n')}`).toHaveLength(0);
   });

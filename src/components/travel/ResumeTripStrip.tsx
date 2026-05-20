@@ -1,12 +1,11 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { LocalizedLink } from '@/components/routing/LocalizedLink';
 import { useTrips } from '@/hooks/useTrips';
 import { useAuth } from '@/hooks/useAuth';
 import { useActiveTrip } from '@/hooks/useActiveTrip';
+import { useMeaningfulTrips } from '@/hooks/useMeaningfulTrips';
 import { resolveTripTitle } from '@/components/trips/tripTitle';
-import { isMeaningfulTrip } from '@/components/trips/tripsFilters';
 
 /**
  * "Active trip" hero card on /travel. Shows the user's most relevant in-progress
@@ -17,16 +16,9 @@ import { isMeaningfulTrip } from '@/components/trips/tripsFilters';
 export function ResumeTripStrip() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: trips, isLoading } = useTrips();
+  const { isLoading } = useTrips();
   const { activeTrip, setActiveTripId } = useActiveTrip();
-
-  const meaningful = useMemo(
-    () =>
-      (trips ?? [])
-        .filter((trip) => trip.status === 'planning' || trip.status === 'active')
-        .filter(isMeaningfulTrip),
-    [trips],
-  );
+  const meaningful = useMeaningfulTrips();
 
   if (!user || isLoading) return null;
   if (meaningful.length === 0) return null;
@@ -106,17 +98,4 @@ export function ResumeTripStrip() {
       </div>
     </section>
   );
-}
-
-/**
- * Predicate used by Travel.tsx to know whether the active-trip hero will render.
- * Keeps Travel.tsx state-machine decisions in sync with what this component shows.
- */
-export function useHasMeaningfulActiveTrip(): boolean {
-  const { user } = useAuth();
-  const { data: trips } = useTrips();
-  if (!user) return false;
-  return (trips ?? [])
-    .filter((trip) => trip.status === 'planning' || trip.status === 'active')
-    .some(isMeaningfulTrip);
 }

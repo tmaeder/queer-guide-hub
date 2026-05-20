@@ -1607,9 +1607,9 @@
       "title": "Viajes",
       "subtitle": "Encuentra vuelos, hoteles y actividades en destinos LGBTQ+ friendly",
       "activitiesComingSoon": "Actividades próximamente.",
-      "browseDestinations": "Explorar destinos",
-      "exploreCta": "Destinos",
-      "exploreDescription": "Ciudades y países con información de seguridad y guías de viaje.",
+      "browseDestinations": "Ver destinos",
+      "exploreCta": "Destinos LGBTQ+ friendly",
+      "exploreDescription": "Ciudades y países con información de seguridad y guías.",
       "hotels": {
         "typeLabel": "[ES] Type",
         "priceMin": "[ES] Min €",
@@ -1629,45 +1629,47 @@
         }
       },
       "hero": {
-        "title": "[ES] Plan a trip",
-        "subtitle": "[ES] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[ES] Where to?",
-        "start": "[ES] Start",
-        "end": "[ES] End",
-        "cta": "[ES] Plan this trip",
-        "discover": "[ES] Or",
-        "discoverLink": "[ES] browse public trips",
-        "discoverTail": "[ES] from the community.",
+        "title": "Planificar un viaje",
+        "subtitle": "Crea un itinerario queer-friendly: ciudad, eventos Pride, bares, hoteles y datos de seguridad en cada parada.",
+        "cityLabel": "¿A dónde?",
+        "start": "Inicio",
+        "end": "Fin",
+        "cta": "Planificar viaje",
+        "discover": "O",
+        "discoverLink": "ver viajes públicos",
+        "discoverTail": "de la comunidad.",
         "errors": {
-          "city": "[ES] Pick a city to plan a trip."
+          "city": "Elige una ciudad para planificar."
         },
         "activeTripHeading": "Continúa tu viaje",
         "openTrip": "Abrir viaje"
       },
       "resume": {
-        "title": "[ES] Continue planning",
-        "placeCount": "[ES] {{count}} places"
+        "title": "Continuar planificando",
+        "placeCount": "{{count}} lugares",
+        "placeCount_one": "{{count}} lugar",
+        "placeCount_other": "{{count}} lugares"
       },
       "pride": {
-        "title": "[ES] Pride this season",
-        "window": "[ES] Next 4 months",
-        "empty": "[ES] No upcoming Pride events.",
-        "safety": "[ES] Equality score",
+        "title": "Pride esta temporada",
+        "window": "Próximos 4 meses",
+        "empty": "No hay eventos Pride próximos.",
+        "safety": "Índice de igualdad",
         "equalityTooltip": "La puntuación de igualdad refleja las protecciones legales LGBTQ+ de este país. Más alta es más segura.",
         "equalityAria": "Puntuación de igualdad {{score}}: toca para explicación"
       },
       "inspiration": {
-        "villages": "[ES] Queer villages",
-        "publicTrips": "[ES] Public trips",
-        "viewAll": "[ES] View all",
-        "noVillages": "[ES] No villages yet.",
-        "noTrips": "[ES] No public trips yet.",
+        "villages": "Queer Villages",
+        "publicTrips": "Viajes públicos",
+        "viewAll": "Ver todo",
+        "noVillages": "No hay villages aún.",
+        "noTrips": "No hay viajes públicos aún.",
         "heading": "Inspiración",
         "visitedFilterLabel": "Visitados:"
       },
       "bookNow": {
-        "title": "[ES] Book now",
-        "subtitle": "[ES] Search flights, hotels, and activities directly — no trip required.",
+        "title": "Reservar directamente",
+        "subtitle": "Busca vuelos, hoteles y actividades — sin necesidad de viaje.",
         "headline": "Reservar sin viaje"
       },
       "plan": {
@@ -1881,6 +1883,133 @@
       "linkCopied": "Enlace copiado",
       "linkCopiedDescription": "Ya puedes pegarlo",
       "shareFailed": "Error al compartir"
+    }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "Ayuda",
+      "title": "Ayuda y recursos.",
+      "lede": "Apoyo en crisis, guías prácticas, y las personas y organizaciones detrás."
+    },
+    "errorLoading": "Algo salió mal al cargar los recursos. Inténtalo más tarde.",
+    "disclosure": "Todos los temas y búsqueda",
+    "disclosureAria": "Todos los temas, búsqueda y filtros avanzados",
+    "browseAllTopics": "Todos los temas",
+    "professions": {
+      "title": "Profesiones",
+      "description": "Personas LGBTQ+ por profesión",
+      "back": "Atrás"
+    },
+    "category": {
+      "back": "Atrás",
+      "viewAll": "Ver todos →",
+      "comingSoon": "Próximamente",
+      "tagCount": "{{count}} etiquetas",
+      "tagCountTotal": "{{count}} etiquetas en total (en todas las subcategorías)",
+      "tagCountTotalAria": "{{count}} etiquetas en total en todas las subcategorías",
+      "totalChildHint": "El número de cada subcategoría es el de las etiquetas asignadas directamente",
+      "supportNewsAlert": "¿Necesitas ayuda inmediata? Consulta el directorio de líneas de crisis.",
+      "crisisHotlines": "Líneas de crisis",
+      "emptyTitle": "Aún no hay etiquetas en esta categoría",
+      "emptyDescription": "Vuelve pronto — se está llenando.",
+      "subcategoryEmptyTitle": "Aún no hay etiquetas aquí",
+      "subcategoryEmptyDescription": "Esta subcategoría se está poblando."
+    },
+    "crisis": {
+      "heading": "Crisis y seguridad",
+      "badge": "Gratis, anónimo",
+      "chooseCountryAria": "Elegir país",
+      "callEmergencyPrefix": "¿En peligro inmediato? Llama al ",
+      "callEmergencySuffix": " ({{country}}).",
+      "callEmergencySuffixInt": ".",
+      "noLocal": "Aún no hay líneas para {{country}} — mostrando internacionales.",
+      "callAria": "Llamar a {{name}} al {{phone}}",
+      "noHotlinesLoaded": "Aún no hay líneas cargadas.",
+      "listAria": "Líneas de crisis",
+      "seeAll": "Ver todas las líneas"
+    },
+    "topicHubs": {
+      "heading": "Temas"
+    },
+    "topic": {
+      "back": "Recursos",
+      "notFound": "Tema no encontrado",
+      "backToResources": "Volver a recursos",
+      "metaSuffix": "Recursos",
+      "metaNotFound": "Tema no encontrado",
+      "stats": "{{guides}} guías · {{orgs}} orgs · {{news}} artículos",
+      "guidesHeading": "Guías",
+      "guidesEmpty": "Aún no hay guías publicadas para este tema.",
+      "orgsHeading": "Organizaciones",
+      "orgsEmpty": "Aún no hay organizaciones para este tema.",
+      "newsHeading": "Noticias recientes",
+      "newsEmpty": "Aún no hay artículos recientes etiquetados para este tema.",
+      "moreTopics": "Más temas"
+    },
+    "orgs": {
+      "heading": "Organizaciones de apoyo",
+      "filterAria": "Filtrar organizaciones por país",
+      "noLocal": "Aún no hay organizaciones en {{country}} — mostrando globales.",
+      "browseAll": "Ver todas las organizaciones",
+      "emptyPrefix": "Aún no hay organizaciones de apoyo. Envía una por la extensión de Chrome o ",
+      "emptyLink": "escríbenos",
+      "emptySuffix": "."
+    },
+    "filter": {
+      "searchPlaceholder": "Buscar etiquetas, categorías, descripciones…",
+      "searchAria": "Buscar recursos",
+      "filterAria": "Filtrar por categoría",
+      "categoryPlaceholder": "Categoría",
+      "allCategories": "Todas las categorías",
+      "sortAria": "Ordenar por",
+      "sortPlaceholder": "Ordenar por",
+      "sortMostUsed": "Más usadas",
+      "sortAlphabetical": "Alfabético",
+      "sortNewest": "Más recientes",
+      "advanced": "Avanzado",
+      "usageAria": "Filtrar por uso",
+      "usagePlaceholder": "Uso",
+      "usageAll": "Todas las etiquetas",
+      "usageUsed": "Usadas",
+      "usageUnused": "Sin usar",
+      "hasImage": "Con imagen",
+      "hasImageTitle": "Mostrar solo etiquetas con imagen",
+      "sortDirAsc": "Orden ascendente",
+      "sortDirDesc": "Orden descendente",
+      "active": "Activo:",
+      "clearAll": "Quitar todo",
+      "view": {
+        "chips": "Chips",
+        "grid": "Cuadrícula",
+        "list": "Lista",
+        "ariaSuffix": " vista"
+      },
+      "graph": "Gráfico de relaciones"
+    },
+    "search": {
+      "resultsHeading": "Resultados",
+      "categoryTagsHeading": "Etiquetas de {{category}}",
+      "filteredHeading": "Etiquetas filtradas",
+      "countBadge": "{{visible}} de {{total}}",
+      "countAria": "{{count}} etiquetas coincidentes",
+      "showMore": "Mostrar {{count}} más",
+      "empty": {
+        "title": "Sin resultados",
+        "description": "Prueba una búsqueda más amplia o quita los filtros."
+      }
+    },
+    "tagNotFound": {
+      "title": "Etiqueta no encontrada",
+      "bodyPrefix": "No encontramos una etiqueta para ",
+      "browse": "Ver todos los recursos"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "Recursos",
+      "noDefinition": "Aún no hay definición para este término."
+    },
+    "graph": {
+      "title": "Gráfico de relaciones",
+      "description": "Cómo se relacionan las etiquetas por similitud semántica y co-ocurrencia"
     }
   }
 }

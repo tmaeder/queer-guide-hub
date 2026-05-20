@@ -1608,8 +1608,8 @@
       "subtitle": "查找LGBTQ+友好目的地的航班、酒店和活动",
       "activitiesComingSoon": "活动即将推出。",
       "browseDestinations": "浏览目的地",
-      "exploreCta": "目的地",
-      "exploreDescription": "附带安全信息和旅行指南的城市和国家。",
+      "exploreCta": "LGBTQ+ 友好目的地",
+      "exploreDescription": "附有安全信息和旅游指南的城市和国家。",
       "hotels": {
         "typeLabel": "[ZH] Type",
         "priceMin": "[ZH] Min €",
@@ -1629,45 +1629,45 @@
         }
       },
       "hero": {
-        "title": "[ZH] Plan a trip",
-        "subtitle": "[ZH] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[ZH] Where to?",
-        "start": "[ZH] Start",
-        "end": "[ZH] End",
-        "cta": "[ZH] Plan this trip",
-        "discover": "[ZH] Or",
-        "discoverLink": "[ZH] browse public trips",
-        "discoverTail": "[ZH] from the community.",
+        "title": "规划行程",
+        "subtitle": "打造酷儿友好行程：选择城市、收集骄傲活动、酒吧、酒店和每个停靠点的安全信息，保存、分享、带上路。",
+        "cityLabel": "去哪里？",
+        "start": "开始",
+        "end": "结束",
+        "cta": "规划此行",
+        "discover": "或",
+        "discoverLink": "浏览公开行程",
+        "discoverTail": "来自社区。",
         "errors": {
-          "city": "[ZH] Pick a city to plan a trip."
+          "city": "选择一个城市来规划。"
         },
         "activeTripHeading": "继续您的旅行",
         "openTrip": "打开旅行"
       },
       "resume": {
-        "title": "[ZH] Continue planning",
-        "placeCount": "[ZH] {{count}} places"
+        "title": "继续规划",
+        "placeCount": "{{count}} 个地点"
       },
       "pride": {
-        "title": "[ZH] Pride this season",
-        "window": "[ZH] Next 4 months",
-        "empty": "[ZH] No upcoming Pride events.",
-        "safety": "[ZH] Equality score",
+        "title": "本季骄傲活动",
+        "window": "未来 4 个月",
+        "empty": "没有即将到来的骄傲活动。",
+        "safety": "平等指数",
         "equalityTooltip": "平等分数反映该国的LGBTQ+法律保护。越高越安全。",
         "equalityAria": "平等分数 {{score}}：点按以查看说明"
       },
       "inspiration": {
-        "villages": "[ZH] Queer villages",
-        "publicTrips": "[ZH] Public trips",
-        "viewAll": "[ZH] View all",
-        "noVillages": "[ZH] No villages yet.",
-        "noTrips": "[ZH] No public trips yet.",
+        "villages": "酷儿村",
+        "publicTrips": "公开行程",
+        "viewAll": "查看全部",
+        "noVillages": "暂无酷儿村。",
+        "noTrips": "暂无公开行程。",
         "heading": "灵感",
         "visitedFilterLabel": "已访问："
       },
       "bookNow": {
-        "title": "[ZH] Book now",
-        "subtitle": "[ZH] Search flights, hotels, and activities directly — no trip required.",
+        "title": "直接预订",
+        "subtitle": "直接搜索航班、酒店和活动 — 无需行程。",
         "headline": "无旅行直接预订"
       },
       "plan": {
@@ -1881,6 +1881,133 @@
       "linkCopied": "已复制链接",
       "linkCopiedDescription": "现在可以粘贴",
       "shareFailed": "分享失败"
+    }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "帮助",
+      "title": "帮助与资源。",
+      "lede": "危机支援、实用指南，以及背后的人和组织。"
+    },
+    "errorLoading": "加载资源时出错，请稍后再试。",
+    "disclosure": "所有主题与搜索",
+    "disclosureAria": "所有主题、搜索与进阶筛选",
+    "browseAllTopics": "所有主题",
+    "professions": {
+      "title": "职业",
+      "description": "按职业浏览 LGBTQ+ 人物",
+      "back": "返回"
+    },
+    "category": {
+      "back": "返回",
+      "viewAll": "查看全部 →",
+      "comingSoon": "即将上线",
+      "tagCount": "{{count}} 个标签",
+      "tagCountTotal": "共 {{count}} 个标签（所有子分类）",
+      "tagCountTotalAria": "所有子分类共 {{count}} 个标签",
+      "totalChildHint": "每个子分类的数字代表直接归属的标签数",
+      "supportNewsAlert": "需要立即帮助？查看精选危机热线目录。",
+      "crisisHotlines": "危机热线",
+      "emptyTitle": "此分类暂无标签",
+      "emptyDescription": "稍后再来 — 正在填充中。",
+      "subcategoryEmptyTitle": "此处暂无标签",
+      "subcategoryEmptyDescription": "此子分类正在填充。"
+    },
+    "crisis": {
+      "heading": "危机与安全",
+      "badge": "免费，匿名",
+      "chooseCountryAria": "选择国家",
+      "callEmergencyPrefix": "紧急危险？请拨打 ",
+      "callEmergencySuffix": "（{{country}}）。",
+      "callEmergencySuffixInt": "。",
+      "noLocal": "{{country}} 暂无收录的热线 — 显示国际热线。",
+      "callAria": "拨打 {{name}}：{{phone}}",
+      "noHotlinesLoaded": "热线尚未加载。",
+      "listAria": "危机热线",
+      "seeAll": "查看所有热线"
+    },
+    "topicHubs": {
+      "heading": "主题"
+    },
+    "topic": {
+      "back": "资源",
+      "notFound": "未找到主题",
+      "backToResources": "返回资源",
+      "metaSuffix": "资源",
+      "metaNotFound": "未找到主题",
+      "stats": "{{guides}} 篇指南 · {{orgs}} 个组织 · {{news}} 篇文章",
+      "guidesHeading": "指南",
+      "guidesEmpty": "此主题暂无发布的指南。",
+      "orgsHeading": "组织",
+      "orgsEmpty": "此主题暂无收录的组织。",
+      "newsHeading": "最新新闻",
+      "newsEmpty": "此主题暂无最新文章。",
+      "moreTopics": "更多主题"
+    },
+    "orgs": {
+      "heading": "支援组织",
+      "filterAria": "按国家筛选组织",
+      "noLocal": "{{country}} 暂无收录的组织 — 显示全球组织。",
+      "browseAll": "查看所有组织",
+      "emptyPrefix": "尚无支援组织。通过 Chrome 扩展提交，或 ",
+      "emptyLink": "联系我们",
+      "emptySuffix": "。"
+    },
+    "filter": {
+      "searchPlaceholder": "搜索标签、分类、描述…",
+      "searchAria": "搜索资源",
+      "filterAria": "按分类筛选",
+      "categoryPlaceholder": "分类",
+      "allCategories": "全部分类",
+      "sortAria": "排序方式",
+      "sortPlaceholder": "排序方式",
+      "sortMostUsed": "最常用",
+      "sortAlphabetical": "字母顺序",
+      "sortNewest": "最新",
+      "advanced": "进阶",
+      "usageAria": "按使用情况筛选",
+      "usagePlaceholder": "使用情况",
+      "usageAll": "全部标签",
+      "usageUsed": "已使用",
+      "usageUnused": "未使用",
+      "hasImage": "有图片",
+      "hasImageTitle": "只显示带图片的标签",
+      "sortDirAsc": "升序",
+      "sortDirDesc": "降序",
+      "active": "已启用：",
+      "clearAll": "全部清除",
+      "view": {
+        "chips": "标签",
+        "grid": "网格",
+        "list": "列表",
+        "ariaSuffix": "视图"
+      },
+      "graph": "标签关系图"
+    },
+    "search": {
+      "resultsHeading": "搜索结果",
+      "categoryTagsHeading": "{{category}} 标签",
+      "filteredHeading": "已筛选标签",
+      "countBadge": "{{visible}} / {{total}}",
+      "countAria": "{{count}} 个匹配标签",
+      "showMore": "再显示 {{count}} 个",
+      "empty": {
+        "title": "无结果",
+        "description": "试试更宽松的查询，或清除筛选条件。"
+      }
+    },
+    "tagNotFound": {
+      "title": "未找到标签",
+      "bodyPrefix": "未找到匹配的标签：",
+      "browse": "浏览所有资源"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "资源",
+      "noDefinition": "此条目暂无定义。"
+    },
+    "graph": {
+      "title": "标签关系图",
+      "description": "通过语义相似度和共现关系了解标签如何相互关联"
     }
   }
 }

@@ -1482,7 +1482,16 @@
       "sort": {
         "dateAsc": "[DE] Soonest first",
         "dateDesc": "[DE] Latest first"
-      }
+      },
+      "searchLabel": "Veranstaltungen suchen",
+      "searchPlaceholder": "Veranstaltungen, Städte, Veranstalter suchen",
+      "filters": "Filter",
+      "viewMode": "Ansichtsmodus",
+      "resultsCount_one": "{{count}} Veranstaltung",
+      "resultsCount_other": "{{count}} Veranstaltungen",
+      "resultsNear_one": "{{count}} Veranstaltung in der Nähe von {{city}}",
+      "resultsNear_other": "{{count}} Veranstaltungen in der Nähe von {{city}}",
+      "showWorldwide": "Weltweit anzeigen"
     },
     "eventDetail": {
       "loadFailed": "Details zur Veranstaltung konnten nicht geladen werden.",
@@ -1538,9 +1547,9 @@
     "travel": {
       "title": "Reise",
       "subtitle": "Finde Flüge, Hotels und Aktivitäten für LGBTQ+-freundliche Reiseziele",
-      "activitiesComingSoon": "Aktivitäten kommen bald.",
+      "activitiesComingSoon": "Aktivitäten folgen bald.",
       "browseDestinations": "Reiseziele entdecken",
-      "exploreCta": "Reiseziele",
+      "exploreCta": "LGBTQ+-freundliche Reiseziele",
       "exploreDescription": "Städte und Länder mit Sicherheitsinfos und Reiseführern.",
       "hotels": {
         "typeLabel": "[DE] Type",
@@ -1561,45 +1570,47 @@
         }
       },
       "hero": {
-        "title": "[DE] Plan a trip",
-        "subtitle": "[DE] Build a queer-friendly itinerary: pick a city, pull in Pride events, bars, hotels, and safety context for every stop. Save it, share it, take it on the road.",
-        "cityLabel": "[DE] Where to?",
-        "start": "[DE] Start",
-        "end": "[DE] End",
-        "cta": "[DE] Plan this trip",
-        "discover": "[DE] Or",
-        "discoverLink": "[DE] browse public trips",
-        "discoverTail": "[DE] from the community.",
+        "title": "Reise planen",
+        "subtitle": "Erstelle eine queer-freundliche Reise: wähle eine Stadt, sammle Pride-Events, Bars, Hotels und Sicherheitsinfos für jeden Stopp. Speichern, teilen, mitnehmen.",
+        "cityLabel": "Wohin?",
+        "start": "Start",
+        "end": "Ende",
+        "cta": "Reise planen",
+        "discover": "Oder",
+        "discoverLink": "öffentliche Reisen ansehen",
+        "discoverTail": "aus der Community.",
         "errors": {
-          "city": "[DE] Pick a city to plan a trip."
+          "city": "Wähle eine Stadt, um zu planen."
         },
         "activeTripHeading": "Reise fortsetzen",
         "openTrip": "Reise öffnen"
       },
       "resume": {
-        "title": "[DE] Continue planning",
-        "placeCount": "[DE] {{count}} places"
+        "title": "Planung fortsetzen",
+        "placeCount": "{{count}} Orte",
+        "placeCount_one": "{{count}} Ort",
+        "placeCount_other": "{{count}} Orte"
       },
       "pride": {
-        "title": "[DE] Pride this season",
-        "window": "[DE] Next 4 months",
-        "empty": "[DE] No upcoming Pride events.",
-        "safety": "[DE] Equality score",
+        "title": "Pride diese Saison",
+        "window": "Nächste 4 Monate",
+        "empty": "Keine bevorstehenden Pride-Events.",
+        "safety": "Gleichstellungsindex",
         "equalityTooltip": "Der Gleichberechtigungs-Score zeigt den LGBTQ+-Rechtsschutz in diesem Land. Höher ist sicherer.",
         "equalityAria": "Gleichberechtigungs-Score {{score}}: tippen für Erklärung"
       },
       "inspiration": {
-        "villages": "[DE] Queer villages",
-        "publicTrips": "[DE] Public trips",
-        "viewAll": "[DE] View all",
-        "noVillages": "[DE] No villages yet.",
-        "noTrips": "[DE] No public trips yet.",
+        "villages": "Queer Villages",
+        "publicTrips": "Öffentliche Reisen",
+        "viewAll": "Alle ansehen",
+        "noVillages": "Noch keine Villages.",
+        "noTrips": "Noch keine öffentlichen Reisen.",
         "heading": "Inspiration",
         "visitedFilterLabel": "Besucht:"
       },
       "bookNow": {
-        "title": "[DE] Book now",
-        "subtitle": "[DE] Search flights, hotels, and activities directly — no trip required.",
+        "title": "Direkt buchen",
+        "subtitle": "Suche Flüge, Hotels und Aktivitäten — keine Reise erforderlich.",
         "headline": "Buchen ohne Reise"
       },
       "plan": {
@@ -1813,6 +1824,133 @@
       "linkCopied": "Link kopiert",
       "linkCopiedDescription": "Du kannst ihn jetzt einfügen",
       "shareFailed": "Teilen fehlgeschlagen"
+    }
+  },
+  "resources": {
+    "hero": {
+      "eyebrow": "Hilfe",
+      "title": "Hilfe & Ressourcen.",
+      "lede": "Krisenhilfe, praktische Leitfäden und die Menschen und Organisationen dahinter."
+    },
+    "errorLoading": "Beim Laden der Ressourcen ist etwas schiefgelaufen. Bitte später erneut versuchen.",
+    "disclosure": "Alle Themen & Suche",
+    "disclosureAria": "Alle Themen, Suche und erweiterte Filter",
+    "browseAllTopics": "Alle Themen",
+    "professions": {
+      "title": "Berufe",
+      "description": "LGBTQ+ Persönlichkeiten nach Beruf durchsuchen",
+      "back": "Zurück"
+    },
+    "category": {
+      "back": "Zurück",
+      "viewAll": "Alle ansehen →",
+      "comingSoon": "Kommt bald",
+      "tagCount": "{{count}} Tags",
+      "tagCountTotal": "{{count}} Tags insgesamt (über alle Unterkategorien)",
+      "tagCountTotalAria": "{{count}} Tags insgesamt über alle Unterkategorien",
+      "totalChildHint": "Die Zahl jeder Unterkategorie zeigt die direkt zugeordneten Tags",
+      "supportNewsAlert": "Brauchst du sofort Hilfe? Hier findest du Krisen-Hotlines.",
+      "crisisHotlines": "Krisen-Hotlines",
+      "emptyTitle": "Noch keine Tags in dieser Kategorie",
+      "emptyDescription": "Bald wieder vorbeischauen — diese Sammlung wird gefüllt.",
+      "subcategoryEmptyTitle": "Hier sind noch keine Tags",
+      "subcategoryEmptyDescription": "Diese Unterkategorie wird gerade befüllt."
+    },
+    "crisis": {
+      "heading": "Krise & Sicherheit",
+      "badge": "Kostenlos, anonym",
+      "chooseCountryAria": "Land wählen",
+      "callEmergencyPrefix": "In akuter Gefahr? Rufe ",
+      "callEmergencySuffix": " ({{country}}).",
+      "callEmergencySuffixInt": ".",
+      "noLocal": "Noch keine Hotlines für {{country}} erfasst — internationale werden angezeigt.",
+      "callAria": "{{name}} unter {{phone}} anrufen",
+      "noHotlinesLoaded": "Noch keine Hotlines geladen.",
+      "listAria": "Krisen-Hotlines",
+      "seeAll": "Alle Hotlines ansehen"
+    },
+    "topicHubs": {
+      "heading": "Themen"
+    },
+    "topic": {
+      "back": "Ressourcen",
+      "notFound": "Thema nicht gefunden",
+      "backToResources": "Zurück zu Ressourcen",
+      "metaSuffix": "Ressourcen",
+      "metaNotFound": "Thema nicht gefunden",
+      "stats": "{{guides}} Guides · {{orgs}} Orgs · {{news}} Artikel",
+      "guidesHeading": "Guides",
+      "guidesEmpty": "Noch keine Guides für dieses Thema veröffentlicht.",
+      "orgsHeading": "Organisationen",
+      "orgsEmpty": "Noch keine Organisationen für dieses Thema erfasst.",
+      "newsHeading": "Aktuelle Nachrichten",
+      "newsEmpty": "Noch keine aktuellen Artikel zu diesem Thema.",
+      "moreTopics": "Weitere Themen"
+    },
+    "orgs": {
+      "heading": "Hilfsorganisationen",
+      "filterAria": "Organisationen nach Land filtern",
+      "noLocal": "Noch keine Organisationen in {{country}} erfasst — globale werden angezeigt.",
+      "browseAll": "Alle Organisationen ansehen",
+      "emptyPrefix": "Noch keine Hilfsorganisationen erfasst. Reiche eine über die Chrome-Erweiterung ein oder ",
+      "emptyLink": "melde dich",
+      "emptySuffix": "."
+    },
+    "filter": {
+      "searchPlaceholder": "Tags, Kategorien, Beschreibungen suchen…",
+      "searchAria": "Ressourcen durchsuchen",
+      "filterAria": "Nach Kategorie filtern",
+      "categoryPlaceholder": "Kategorie",
+      "allCategories": "Alle Kategorien",
+      "sortAria": "Sortieren nach",
+      "sortPlaceholder": "Sortieren nach",
+      "sortMostUsed": "Meistgenutzt",
+      "sortAlphabetical": "Alphabetisch",
+      "sortNewest": "Neueste",
+      "advanced": "Erweitert",
+      "usageAria": "Nach Nutzung filtern",
+      "usagePlaceholder": "Nutzung",
+      "usageAll": "Alle Tags",
+      "usageUsed": "Genutzt",
+      "usageUnused": "Ungenutzt",
+      "hasImage": "Mit Bild",
+      "hasImageTitle": "Nur Tags mit Bildern anzeigen",
+      "sortDirAsc": "Sortierrichtung (aufsteigend)",
+      "sortDirDesc": "Sortierrichtung (absteigend)",
+      "active": "Aktiv:",
+      "clearAll": "Alle löschen",
+      "view": {
+        "chips": "Chips",
+        "grid": "Raster",
+        "list": "Liste",
+        "ariaSuffix": "-Ansicht"
+      },
+      "graph": "Tag-Beziehungsgraph"
+    },
+    "search": {
+      "resultsHeading": "Suchergebnisse",
+      "categoryTagsHeading": "{{category}} Tags",
+      "filteredHeading": "Gefilterte Tags",
+      "countBadge": "{{visible}} von {{total}}",
+      "countAria": "{{count}} passende Tags",
+      "showMore": "{{count}} weitere anzeigen",
+      "empty": {
+        "title": "Keine Ergebnisse",
+        "description": "Versuche eine breitere Suche oder lösche die Filter."
+      }
+    },
+    "tagNotFound": {
+      "title": "Tag nicht gefunden",
+      "bodyPrefix": "Wir konnten kein Tag finden für ",
+      "browse": "Alle Ressourcen ansehen"
+    },
+    "tagDetail": {
+      "breadcrumbHome": "Ressourcen",
+      "noDefinition": "Noch keine Definition für diesen Begriff."
+    },
+    "graph": {
+      "title": "Tag-Beziehungsgraph",
+      "description": "Wie Tags durch semantische Ähnlichkeit und Co-Vorkommen zusammenhängen"
     }
   }
 }

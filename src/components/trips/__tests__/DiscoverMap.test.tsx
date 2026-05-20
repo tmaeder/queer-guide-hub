@@ -10,8 +10,9 @@ vi.mock('maplibre-gl', () => ({
       on() {} off() {} once() {} remove() {} addControl() {} setStyle() {} fitBounds() {}
       addLayer() {} addSource() {} getLayer() { return null; } getSource() { return null; }
       removeLayer() {} removeSource() {}
-      isStyleLoaded() { return true; }
-      loaded() { return true; }
+      isStyleLoaded() { return false; }
+      loaded() { return false; }
+      getCanvas() { return { style: {} }; }
       flyTo() {} jumpTo() {} resize() {}
     },
     NavigationControl: class {},

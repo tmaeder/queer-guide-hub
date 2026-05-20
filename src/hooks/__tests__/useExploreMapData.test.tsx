@@ -6,9 +6,30 @@ import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { rpc: vi.fn().mockResolvedValue({ data: [], error: null }) },
-}));
+vi.mock('@/integrations/supabase/client', () => {
+  const builder: unknown = new Proxy(
+    {},
+    {
+      get(_t, prop: string) {
+        if (prop === 'then') {
+          return (onFulfilled: (v: { data: unknown[]; error: null }) => unknown) =>
+            Promise.resolve({ data: [], error: null }).then(onFulfilled);
+        }
+        if (prop === 'maybeSingle') {
+          return () => Promise.resolve({ data: null, error: null });
+        }
+        return () => builder;
+      },
+    },
+  );
+  return {
+    supabase: {
+      from: () => builder,
+      rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
+      functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) },
+    },
+  };
+});
 
 import { useExploreMapData, LAYER_COLORS } from '../useExploreMapData';
 

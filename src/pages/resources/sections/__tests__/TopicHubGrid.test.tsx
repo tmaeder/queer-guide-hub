@@ -17,6 +17,13 @@ vi.mock('@/pages/resources/topics.config', () => ({
 vi.mock('@/providers/SafeModeProvider', () => ({
   useSafeMode: () => ({ enabled: false }),
 }));
+vi.mock('@/hooks/useTopicHubs', async () => {
+  const actual = await vi.importActual<typeof import('@/hooks/useTopicHubs')>('@/hooks/useTopicHubs');
+  return {
+    ...actual,
+    useTopicHubs: () => ({ data: [], isLoading: false }),
+  };
+});
 
 import { TopicHubGrid } from '../TopicHubGrid';
 

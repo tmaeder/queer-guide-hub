@@ -1,11 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
-
-interface CuratedIdsApi {
-  ids: Set<string>;
-  register: (key: string, ids: string[]) => void;
-}
-
-const CuratedIdsContext = createContext<CuratedIdsApi | null>(null);
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { CuratedIdsContext, type CuratedIdsApi } from './curatedIdsContextValue';
 
 export function CuratedIdsProvider({ children }: { children: ReactNode }) {
   const byKey = useRef<Map<string, string[]>>(new Map());
@@ -18,15 +12,14 @@ export function CuratedIdsProvider({ children }: { children: ReactNode }) {
     setVersion((v) => v + 1);
   }, []);
 
+  // `version` is in the dep array because byKey is a mutable ref — bumping the
+  // counter is how `register` triggers a recompute of the merged set.
   const value = useMemo<CuratedIdsApi>(() => {
     const all = new Set<string>();
     for (const ids of byKey.current.values()) for (const id of ids) all.add(id);
     return { ids: all, register };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [register, version]);
 
   return <CuratedIdsContext.Provider value={value}>{children}</CuratedIdsContext.Provider>;
-}
-
-export function useCuratedIds(): CuratedIdsApi {
-  return useContext(CuratedIdsContext) ?? { ids: new Set(), register: () => {} };
 }
