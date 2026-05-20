@@ -116,7 +116,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Download dist
         if: needs.build.result == 'success'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
@@ -160,7 +160,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Download dist
         if: needs.build.result == 'success'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
@@ -207,7 +207,7 @@ jobs:
       - run: npm i -g lighthouse@12 serve@14
       - name: Download dist
         if: needs.build.result == 'success'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
