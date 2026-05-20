@@ -28,7 +28,7 @@ export const tagFields: FieldConfig[] = [
       { value: 'merged', label: 'Merged' },
     ],
   },
-  { name: 'color', label: 'Color', type: 'text', group: 'details', placeholder: '#6366f1' },
+  { name: 'color', label: 'Color', type: 'text', group: 'details', placeholder: 'hsl(var(--muted-foreground))' },
   {
     name: 'usage_count',
     label: 'Usage Count',
@@ -69,7 +69,7 @@ export const unifiedTagsContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: Tag,
   label: { singular: 'Tag', plural: 'Tags' },
-  color: '#14b8a6',
+  color: 'hsl(var(--foreground))',
   fields: tagFields,
   defaults: { status: 'active' },
   fieldGroupOrder: ['basic', 'details', 'media'],

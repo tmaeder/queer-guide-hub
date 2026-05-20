@@ -190,34 +190,6 @@ export default tseslint.config(
     },
   },
 
-  // Phase 0 (2026-05-19) — admin chromatic exemption REMOVED. Admin/cms violations
-  // surface as warnings here; Phase 3g flips to error after the chromatic sweep.
-  {
-    files: [
-      "src/components/admin/**/*.{ts,tsx}",
-      "src/components/cms/**/*.{ts,tsx}",
-      "src/components/security/**/*.{ts,tsx}",
-      "src/pages/Admin*.tsx",
-      "src/pages/admin/**/*.{ts,tsx}",
-      "src/pages/admin-*/**/*.{ts,tsx}",
-      "src/pages/SecurityDashboard.tsx",
-      "src/config/feedbackCategories.ts",
-      "src/config/contentTypes/**",
-    ],
-    ignores: ["src/**/__tests__/**", "src/test/**"],
-    rules: {
-      "no-restricted-syntax": [
-        "warn",
-        {
-          selector:
-            "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
-          message:
-            "Admin chromatic exemption was removed 2026-05-19 (refactor/monochrome-2026). Use design tokens or <StatusBadge>.",
-        },
-      ],
-    },
-  },
-
   // P5 RETIRED — rounded / shadow / gradient classes are allowed again
   // in non-admin code as part of the Aceternity-inspired UI overhaul.
   // Color-literal ban above still enforces strict monochrome.
@@ -241,6 +213,41 @@ export default tseslint.config(
             "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
           message:
             "Use semantic radius: rounded-container (cards/modals), rounded-element (buttons/inputs), or rounded-badge (chips/tags). See src/index.css @theme.",
+        },
+      ],
+    },
+  },
+
+  // Phase 3g (2026-05-19) — admin chromatic purge complete. Color-literal rule
+  // is now ERROR for the admin tree (same as public). Combined with the radius
+  // warn since ESLint flat config overrides no-restricted-syntax wholesale.
+  {
+    files: [
+      "src/components/admin/**/*.{ts,tsx}",
+      "src/components/cms/**/*.{ts,tsx}",
+      "src/components/security/**/*.{ts,tsx}",
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**/*.{ts,tsx}",
+      "src/pages/admin-*/**/*.{ts,tsx}",
+      "src/pages/SecurityDashboard.tsx",
+      "src/config/feedbackCategories.ts",
+      "src/config/contentTypes/**",
+    ],
+    ignores: ["src/**/__tests__/**", "src/test/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "Literal[value=/^#[0-9a-fA-F]{3,8}$|^rgba?\\(\\s*\\d|^hsla?\\(\\s*\\d/]",
+          message:
+            "Hardcoded color literal — use design tokens or <StatusBadge>. The admin chromatic exemption was removed 2026-05-19.",
+        },
+        {
+          selector:
+            "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
+          message:
+            "Use semantic radius: rounded-container / rounded-element / rounded-badge. See src/index.css @theme.",
         },
       ],
     },

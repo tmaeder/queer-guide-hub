@@ -28,7 +28,7 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
       style={{ scrollSnapAlign: 'start', textDecoration: 'none', color: 'inherit' }}
     >
       <div
-        className="featured-avatar relative flex items-center justify-center overflow-hidden mb-2 transition-shadow group-hover:shadow-lg"
+        className="featured-avatar relative flex items-center justify-center overflow-hidden mb-2 transition-shadow group-hover:shadow-[var(--shadow-aceternity)]"
         style={{
           width: 160,
           height: 160,

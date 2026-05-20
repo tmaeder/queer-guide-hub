@@ -22,10 +22,10 @@ function useUserStats() {
 }
 
 const cards = [
-  { key: 'totalUsers', label: 'Total Users', icon: Users, color: '#6366f1' },
-  { key: 'newThisWeek', label: 'New This Week', icon: UserPlus, color: '#22c55e' },
-  { key: 'activeNow', label: 'Active Now', icon: Activity, color: '#3b82f6' },
-  { key: 'moderationIssues', label: 'Moderation Issues', icon: ShieldAlert, color: '#ef4444' },
+  { key: 'totalUsers', label: 'Total Users', icon: Users, color: 'hsl(var(--muted-foreground))' },
+  { key: 'newThisWeek', label: 'New This Week', icon: UserPlus, color: 'hsl(var(--foreground))' },
+  { key: 'activeNow', label: 'Active Now', icon: Activity, color: 'hsl(var(--muted-foreground))' },
+  { key: 'moderationIssues', label: 'Moderation Issues', icon: ShieldAlert, color: 'hsl(var(--destructive))' },
 ] as const;
 
 export function UserStatsCards() {

@@ -84,7 +84,7 @@ function PrettyJson({ value, label }: { value: unknown; label: string }) {
           fontSize: 12,
           margin: 0,
           padding: 8,
-          background: 'rgba(0,0,0,0.04)',
+          background: 'hsl(var(--foreground) / 0.04)',
           maxHeight: 200,
           overflow: 'auto',
         }}
@@ -342,8 +342,8 @@ export function SuggestionsTab() {
                                 minHeight: 100,
                                 fontSize: 14,
                                 padding: 8,
-                                background: 'rgba(0,0,0,0.04)',
-                                border: '1px solid rgba(0,0,0,0.2)',
+                                background: 'hsl(var(--foreground) / 0.04)',
+                                border: '1px solid hsl(var(--foreground) / 0.2)',
                               }}
                               value={editing.draft}
                               onChange={(e) =>
@@ -363,8 +363,8 @@ export function SuggestionsTab() {
                                 fontFamily: 'monospace',
                                 fontSize: 12,
                                 padding: 8,
-                                background: 'rgba(0,0,0,0.04)',
-                                border: '1px solid rgba(0,0,0,0.2)',
+                                background: 'hsl(var(--foreground) / 0.04)',
+                                border: '1px solid hsl(var(--foreground) / 0.2)',
                               }}
                               value={editing.draft}
                               onChange={(e) => {

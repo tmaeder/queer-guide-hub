@@ -267,11 +267,11 @@ export function StoryDetailDrawer({
               <div
                 className="p-2.5 flex items-start gap-2"
                 style={{
-                  backgroundColor: 'color-mix(in srgb, #f59e0b 10%, transparent)',
-                  borderLeft: '3px solid #f59e0b',
+                  backgroundColor: 'color-mix(in srgb, hsl(var(--foreground)) 10%, transparent)',
+                  borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
                 }}
               >
-                <AlertCircle size={14} color="#f59e0b" style={{ marginTop: 2, flexShrink: 0 }} />
+                <AlertCircle size={14} color="hsl(var(--foreground) / 0.55)" style={{ marginTop: 2, flexShrink: 0 }} />
                 <span className="text-[0.72rem] leading-snug">
                   {divergence.status_diff > 0 && (
                     <>

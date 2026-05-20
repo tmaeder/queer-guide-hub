@@ -132,7 +132,7 @@ export const countryContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: Globe,
   label: { singular: 'Country', plural: 'Countries' },
-  color: '#6366f1',
+  color: 'hsl(var(--foreground))',
   fields: countryFields,
   fieldGroupOrder: ['basic', 'details', 'location', 'lgbtq', 'media'],
   translatableFields: ['name', 'description', 'lgbt_rights_status'],
