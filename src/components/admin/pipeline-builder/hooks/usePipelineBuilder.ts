@@ -175,7 +175,7 @@ export function usePipelineBuilder(pipelineId?: string) {
             label: (storedData.label as string) || nt?.display_name || slug,
             config: storedData.config || {},
             icon: (storedData.icon as string) || nt?.icon || 'Box',
-            color: (storedData.color as string) || nt?.color || '#6b7280',
+            color: (storedData.color as string) || nt?.color || 'hsl(var(--muted-foreground))',
             category: (storedData.category as string) || nt?.category,
             description: (storedData.description as string) || nt?.description,
             nodeTypeSlug: slug,

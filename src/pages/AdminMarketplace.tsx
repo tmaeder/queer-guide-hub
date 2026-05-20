@@ -220,7 +220,7 @@ export default function AdminMarketplace() {
         header: 'Featured',
         cell: (info) =>
           info.getValue() ? (
-            <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
+            <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
               <Star style={{ height: 12, width: 12, marginRight: 4 }} />
               Featured
             </Badge>

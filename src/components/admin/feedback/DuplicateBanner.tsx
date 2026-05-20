@@ -35,8 +35,8 @@ export function DuplicateBanner({
     <div
       className="mb-4 p-3"
       style={{
-        borderLeft: '3px solid #f59e0b',
-        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+        borderLeft: '3px solid hsl(var(--foreground) / 0.55)',
+        backgroundColor: 'hsl(var(--foreground) / 0.08)',
       }}
     >
       {parentStory && (
@@ -112,7 +112,7 @@ export function DuplicateBanner({
                     suggestionId: s.suggestionId,
                   })
                 }
-                style={{ textTransform: 'none', fontSize: '0.7rem', backgroundColor: '#f59e0b' }}
+                style={{ textTransform: 'none', fontSize: '0.7rem', backgroundColor: 'hsl(var(--foreground) / 0.55)' }}
               >
                 <ArrowRightLeft size={12} className="mr-1" />
                 That's a dup of this

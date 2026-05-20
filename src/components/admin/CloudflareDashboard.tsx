@@ -102,7 +102,7 @@ export function CloudflareDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-element" style={{ backgroundColor: '#f97316' }}>
+          <div className="p-2 rounded-element" style={{ backgroundColor: 'hsl(var(--foreground) / 0.55)' }}>
             <Cloud style={{ height: 24, width: 24, color: 'white' }} />
           </div>
           <div>
@@ -445,14 +445,14 @@ export function CloudflareDashboard() {
                   <div className="flex items-center gap-2">
                     {stats.zoneInfo ? (
                       <>
-                        <CheckCircle style={{ height: 16, width: 16, color: '#22c55e' }} />
+                        <CheckCircle style={{ height: 16, width: 16, color: 'hsl(var(--foreground))' }} />
                         <span className="text-sm">
                           Connected
                         </span>
                       </>
                     ) : (
                       <>
-                        <AlertTriangle style={{ height: 16, width: 16, color: '#ef4444' }} />
+                        <AlertTriangle style={{ height: 16, width: 16, color: 'hsl(var(--destructive))' }} />
                         <span className="text-sm">
                           Not Connected
                         </span>
@@ -462,17 +462,17 @@ export function CloudflareDashboard() {
                   {!stats.zoneInfo && (
                     <div
                       className="mt-4 p-4 rounded-element"
-                      style={{ backgroundColor: '#fefce8', border: '1px solid #fde047' }}
+                      style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
                     >
-                      <h5 className="font-medium mb-2" style={{ color: '#854d0e' }}>
+                      <h5 className="font-medium mb-2" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
                         Setup Required
                       </h5>
-                      <p className="text-sm mb-3" style={{ color: '#a16207' }}>
+                      <p className="text-sm mb-3" style={{ color: 'hsl(var(--foreground) / 0.7)' }}>
                         To use the Cloudflare dashboard, configure the following Supabase secrets:
                       </p>
                       <ol
                         className="text-sm flex flex-col gap-1"
-                        style={{ color: '#a16207', listStyleType: 'decimal', listStylePosition: 'inside' }}
+                        style={{ color: 'hsl(var(--foreground) / 0.7)', listStyleType: 'decimal', listStylePosition: 'inside' }}
                       >
                         <li>Go to Cloudflare Dashboard → My Profile → API Tokens</li>
                         <li>Create a token with Zone:Read permissions for your zone</li>

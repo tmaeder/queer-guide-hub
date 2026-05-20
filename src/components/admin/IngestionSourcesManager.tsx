@@ -75,7 +75,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Zap style={{ height: 20, width: 20, color: '#2563eb' }} />
+              <Zap style={{ height: 20, width: 20, color: 'hsl(var(--muted-foreground))' }} />
               <span className="text-2xl font-bold">{sources.length}</span>
             </div>
             <p className="text-xs text-muted-foreground">Total Sources</p>
@@ -84,7 +84,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <CheckCircle style={{ height: 20, width: 20, color: '#16a34a' }} />
+              <CheckCircle style={{ height: 20, width: 20, color: 'hsl(var(--foreground))' }} />
               <span className="text-2xl font-bold">{enabledCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Enabled</p>
@@ -93,7 +93,7 @@ export const IngestionSourcesManager = () => {
         <Card>
           <CardContent>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <AlertTriangle style={{ height: 20, width: 20, color: '#dc2626' }} />
+              <AlertTriangle style={{ height: 20, width: 20, color: 'hsl(var(--destructive))' }} />
               <span className="text-2xl font-bold">{errorCount}</span>
             </div>
             <p className="text-xs text-muted-foreground">Errors</p>
@@ -129,7 +129,7 @@ export const IngestionSourcesManager = () => {
           return (
             <Card key={source.id} style={{
               backgroundColor: 'var(--card)',
-              borderLeft: `4px solid ${hasError ? '#dc2626' : source.is_enabled ? '#16a34a' : '#6b7280'}`,
+              borderLeft: `4px solid ${hasError ? 'hsl(var(--destructive))' : source.is_enabled ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))'}`,
             }}>
               <CardContent>
                 <div className="flex items-center justify-between">
@@ -157,7 +157,7 @@ export const IngestionSourcesManager = () => {
                         <span>Fetched: {(source.total_items_fetched || 0).toLocaleString()}</span>
                         <span>Approved: {(source.total_items_approved || 0).toLocaleString()}</span>
                         {source.requires_api_key && (
-                          <div className="flex items-center gap-1" style={{ color: '#ca8a04' }}>
+                          <div className="flex items-center gap-1" style={{ color: 'hsl(var(--foreground) / 0.55)' }}>
                             <Key style={{ height: 12, width: 12 }} />
                             {source.requires_api_key}
                           </div>

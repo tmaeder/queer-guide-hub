@@ -41,9 +41,9 @@ interface UserRow {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: '#ef4444',
-  moderator: '#f97316',
-  editor: '#3b82f6',
+  admin: 'hsl(var(--destructive))',
+  moderator: 'hsl(var(--foreground) / 0.55)',
+  editor: 'hsl(var(--muted-foreground))',
   contributor: 'hsl(var(--foreground))',
 };
 
@@ -128,8 +128,8 @@ export default function AdminUsers() {
             <Badge
               variant="outline"
               style={{
-                borderColor: ROLE_COLORS[primary] ?? '#888',
-                color: ROLE_COLORS[primary] ?? '#888',
+                borderColor: ROLE_COLORS[primary] ?? 'hsl(var(--muted-foreground))',
+                color: ROLE_COLORS[primary] ?? 'hsl(var(--muted-foreground))',
                 fontSize: '0.7rem',
               }}
             >
@@ -148,7 +148,7 @@ export default function AdminUsers() {
               width: 8,
               height: 8,
               borderRadius: '50%',
-              backgroundColor: info.getValue() ? '#22c55e' : '#d1d5db',
+              backgroundColor: info.getValue() ? 'hsl(var(--foreground))' : 'hsl(var(--muted))',
             }}
             title={info.getValue() ? 'Online' : 'Offline'}
           />

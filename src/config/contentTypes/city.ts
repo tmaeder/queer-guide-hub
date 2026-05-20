@@ -138,7 +138,7 @@ export const cityContentType: ContentTypeConfig = {
   imageField: 'image_url',
   icon: MapPin,
   label: { singular: 'City', plural: 'Cities' },
-  color: '#10b981',
+  color: 'hsl(var(--foreground))',
   fields: cityFields,
   listSelect: '*,countries(name,equality_score,lgbt_legal_status),venues(count),events(count)',
   fieldGroupOrder: ['basic', 'location', 'details', 'lgbtq', 'media', 'external'],

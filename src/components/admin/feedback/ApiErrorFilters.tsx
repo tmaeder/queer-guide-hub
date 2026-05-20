@@ -36,9 +36,9 @@ const SOURCE_LABELS: Record<ErrorSource, string> = {
 };
 
 const SEVERITY_COLORS: Record<ErrorSeverity, string> = {
-  ERROR: '#ef4444',
-  WARN: '#f59e0b',
-  INFO: '#6b7280',
+  ERROR: 'hsl(var(--destructive))',
+  WARN: 'hsl(var(--foreground) / 0.55)',
+  INFO: 'hsl(var(--muted-foreground))',
 };
 
 export function ApiErrorFilters({ state, update, counts }: Props) {

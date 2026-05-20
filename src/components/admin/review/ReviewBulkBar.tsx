@@ -31,7 +31,7 @@ export const ReviewBulkBar = ({
   return (
     <div
       className="sticky bottom-4 mx-4 px-4 py-3 flex items-center gap-4 bg-background z-50"
-      style={{ boxShadow: '0 8px 16px rgba(0,0,0,0.15)' }}
+      style={{ boxShadow: '0 8px 16px hsl(var(--foreground) / 0.15)' }}
     >
       <Badge>{selectedCount} selected</Badge>
 
@@ -63,7 +63,7 @@ export const ReviewBulkBar = ({
         size="sm"
         onClick={onBulkApprove}
         disabled={loading}
-        style={{ textTransform: 'none', backgroundColor: 'hsl(142, 71%, 45%)' }}
+        style={{ textTransform: 'none' }}
       >
         <Check size={14} className="mr-1" />
         Approve
