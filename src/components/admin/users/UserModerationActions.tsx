@@ -30,9 +30,9 @@ const STATUS_CONFIG: Record<
   ModerationStatus,
   { label: string; color: string; variant: 'default' | 'secondary' | 'destructive' }
 > = {
-  approved: { label: 'Approved', color: '#22c55e', variant: 'default' },
-  suspended: { label: 'Suspended', color: '#eab308', variant: 'secondary' },
-  banned: { label: 'Banned', color: '#ef4444', variant: 'destructive' },
+  approved: { label: 'Approved', color: 'hsl(var(--foreground))', variant: 'default' },
+  suspended: { label: 'Suspended', color: 'hsl(var(--foreground) / 0.55)', variant: 'secondary' },
+  banned: { label: 'Banned', color: 'hsl(var(--destructive))', variant: 'destructive' },
 };
 
 export function UserModerationActions({
@@ -127,7 +127,7 @@ export function UserModerationActions({
             size="sm"
             onClick={() => setPendingAction('suspended')}
             disabled={loading}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#eab308' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'hsl(var(--foreground) / 0.55)' }}
           >
             <ShieldAlert style={{ height: 14, width: 14 }} />
             Suspend

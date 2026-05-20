@@ -90,13 +90,13 @@ export function ChangeDetailDialog({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="text-xs text-muted-foreground mb-1 block">Old Value</span>
-                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
+                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--destructive) / 0.3)' }}>
                   {formatValue(change.old_value)}
                 </div>
               </div>
               <div>
                 <span className="text-xs text-muted-foreground mb-1 block">New Value</span>
-                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                <div className="p-3 rounded-badge font-mono text-xs whitespace-pre-wrap break-words max-h-[300px] overflow-auto" style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
                   {formatValue(change.new_value)}
                 </div>
               </div>
@@ -104,7 +104,7 @@ export function ChangeDetailDialog({
           )}
 
           {isFlag && (
-            <div className="p-4 rounded-badge" style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a' }}>
+            <div className="p-4 rounded-badge" style={{ backgroundColor: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
               <p className="text-sm">
                 This is a <strong>flag-only</strong> change. No data modification proposed — review
                 the issue described above.

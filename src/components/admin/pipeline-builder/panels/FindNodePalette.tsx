@@ -52,7 +52,7 @@ export default function FindNodePalette({ nodes, onSelect }: FindNodePaletteProp
               {nodes.map(n => {
                 const d = n.data as { label?: string; icon?: string; color?: string; nodeTypeSlug?: string; status?: string };
                 const Icon = resolvePipelineIcon(d.icon);
-                const color = d.color || '#6b7280';
+                const color = d.color || 'hsl(var(--muted-foreground))';
                 return (
                   <CommandItem
                     key={n.id}

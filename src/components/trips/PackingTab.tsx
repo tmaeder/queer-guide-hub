@@ -199,7 +199,10 @@ export function PackingTab({ tripId }: Props) {
 
       {/* Template chip row */}
       <div
-        className="flex gap-2 mb-6 overflow-x-auto pb-1"
+        role="group"
+        aria-label="Packing templates"
+        tabIndex={0}
+        className="flex gap-2 mb-6 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         style={{ scrollbarWidth: 'none' }}
       >
         {TEMPLATES.map((tpl) => (

@@ -89,7 +89,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
   const { health } = data;
   const { last24h } = health;
   const successRate = last24h.total > 0 ? Math.round((last24h.done / last24h.total) * 100) : 100;
-  const statusColor = successRate >= 95 ? '#10b981' : successRate >= 80 ? '#f59e0b' : '#ef4444';
+  const statusColor = successRate >= 95 ? 'hsl(var(--foreground))' : successRate >= 80 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--destructive))';
 
   return (
     <div className={cardCls}>
@@ -112,12 +112,12 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
       </div>
 
       <div className="grid grid-cols-4 gap-3 mb-4">
-        <MetricBox label="Total" value={last24h.total.toLocaleString()} color="#3b82f6" />
-        <MetricBox label="Done" value={last24h.done.toLocaleString()} color="#10b981" />
+        <MetricBox label="Total" value={last24h.total.toLocaleString()} color="hsl(var(--muted-foreground))" />
+        <MetricBox label="Done" value={last24h.done.toLocaleString()} color="hsl(var(--foreground))" />
         <MetricBox
           label="Failed"
           value={last24h.failed.toLocaleString()}
-          color={last24h.failed > 0 ? '#ef4444' : '#10b981'}
+          color={last24h.failed > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))'}
         />
         <MetricBox label="Success Rate" value={`${successRate}%`} color={statusColor} />
       </div>
@@ -136,7 +136,7 @@ function PipelineHealthCard({ data }: { data: EnrichmentDashboardData }) {
                   borderColor: health.failuresByStep[step]
                     ? 'hsl(var(--muted))'
                     : 'hsl(var(--border))',
-                  color: health.failuresByStep[step] ? '#ef4444' : 'hsl(var(--muted-foreground))',
+                  color: health.failuresByStep[step] ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
                 }}
               >
                 {`${STEP_LABELS[step] ?? step}: ${formatMs(ms)}`}
@@ -221,7 +221,7 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
                 {excellentPct > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div style={{ width: `${excellentPct}%`, background: '#10b981' }} />
+                      <div style={{ width: `${excellentPct}%`, background: 'hsl(var(--foreground))' }} />
                     </TooltipTrigger>
                     <TooltipContent>{`Excellent (>=80): ${q.excellent}`}</TooltipContent>
                   </Tooltip>
@@ -229,7 +229,7 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
                 {goodPct > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div style={{ width: `${goodPct}%`, background: '#f59e0b' }} />
+                      <div style={{ width: `${goodPct}%`, background: 'hsl(var(--foreground) / 0.55)' }} />
                     </TooltipTrigger>
                     <TooltipContent>{`Good (40-79): ${q.good}`}</TooltipContent>
                   </Tooltip>
@@ -237,7 +237,7 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
                 {attentionPct > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div style={{ width: `${attentionPct}%`, background: '#ef4444' }} />
+                      <div style={{ width: `${attentionPct}%`, background: 'hsl(var(--destructive))' }} />
                     </TooltipTrigger>
                     <TooltipContent>{`Needs Attention (<40): ${q.needsAttention}`}</TooltipContent>
                   </Tooltip>
@@ -266,21 +266,21 @@ function QualityDistributionCard({ quality }: { quality: QualityDistribution[] }
         <div className="flex items-center gap-1">
           <div
             className="rounded-full"
-            style={{ width: 8, height: 8, background: '#10b981' }}
+            style={{ width: 8, height: 8, background: 'hsl(var(--foreground))' }}
           />
           <span className="text-xs text-muted-foreground">Excellent (80+)</span>
         </div>
         <div className="flex items-center gap-1">
           <div
             className="rounded-full"
-            style={{ width: 8, height: 8, background: '#f59e0b' }}
+            style={{ width: 8, height: 8, background: 'hsl(var(--foreground) / 0.55)' }}
           />
           <span className="text-xs text-muted-foreground">Good (40-79)</span>
         </div>
         <div className="flex items-center gap-1">
           <div
             className="rounded-full"
-            style={{ width: 8, height: 8, background: '#ef4444' }}
+            style={{ width: 8, height: 8, background: 'hsl(var(--destructive))' }}
           />
           <span className="text-xs text-muted-foreground">Needs Attention (&lt;40)</span>
         </div>
@@ -342,14 +342,14 @@ function NeedsAttentionCard({ data }: { data: EnrichmentDashboardData }) {
                 <Icon
                   size={16}
                   style={{
-                    color: count > 0 ? '#ef4444' : meta.color,
+                    color: count > 0 ? 'hsl(var(--destructive))' : meta.color,
                     marginBottom: 4,
                     margin: '0 auto 4px',
                   }}
                 />
                 <div
                   className="text-base font-bold"
-                  style={{ color: count > 0 ? '#ef4444' : '#10b981' }}
+                  style={{ color: count > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))' }}
                 >
                   {count}
                 </div>
@@ -394,7 +394,7 @@ function ReviewQueueCard({ items }: { items: ReviewQueueItem[] }) {
           className="ml-auto h-5 text-[0.7rem] font-semibold"
           style={{
             background: items.length > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
-            color: items.length > 0 ? '#f59e0b' : '#10b981',
+            color: items.length > 0 ? 'hsl(var(--foreground) / 0.55)' : 'hsl(var(--foreground))',
           }}
         >
           {items.length} pending
@@ -545,7 +545,7 @@ function FailedEnrichmentsCard() {
           className="ml-auto h-5 text-[0.7rem] font-semibold"
           style={{
             background: items.length > 0 ? 'hsl(var(--muted))' : 'hsl(var(--muted))',
-            color: items.length > 0 ? '#ef4444' : '#10b981',
+            color: items.length > 0 ? 'hsl(var(--destructive))' : 'hsl(var(--foreground))',
           }}
         >
           {items.length}
@@ -575,7 +575,7 @@ function FailedEnrichmentsCard() {
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <EntityIcon
                     size={14}
-                    style={{ color: entityMeta?.color ?? '#6b7280', flexShrink: 0 }}
+                    style={{ color: entityMeta?.color ?? 'hsl(var(--muted-foreground))', flexShrink: 0 }}
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">

@@ -39,7 +39,7 @@ const emptyForm = {
   slug: '',
   description: '',
   icon: '',
-  color: '#6366f1',
+  color: 'hsl(var(--muted-foreground))',
   sort_order: 0,
   is_active: true,
 };
@@ -67,7 +67,7 @@ export default function AdminVenueCategories() {
       slug: row.slug || '',
       description: row.description || '',
       icon: row.icon || '',
-      color: row.color || '#6366f1',
+      color: row.color || 'hsl(var(--muted-foreground))',
       sort_order: row.sort_order || 0,
       is_active: row.is_active ?? true,
     });
@@ -129,7 +129,7 @@ export default function AdminVenueCategories() {
           <div className="flex items-center gap-2">
             <div
               className="w-4 h-4 rounded-badge flex-shrink-0"
-              style={{ backgroundColor: info.row.original.color || '#6366f1' }}
+              style={{ backgroundColor: info.row.original.color || 'hsl(var(--muted-foreground))' }}
             />
             <div>
               <span style={{ fontWeight: 500 }}>{info.getValue()}</span>

@@ -219,10 +219,10 @@ export default function AdminCountries() {
           const lower = v.toLowerCase();
           const tone =
             lower.includes('legal') || lower.includes('protected') || lower.includes('marriage')
-              ? { backgroundColor: '#dcfce7', color: '#166534' }
+              ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }
               : lower.includes('illegal') || lower.includes('criminal')
-                ? { backgroundColor: '#fee2e2', color: '#991b1b' }
-                : { backgroundColor: '#fef3c7', color: '#92400e' };
+                ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))' }
+                : { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' };
           return <Badge style={tone}>{v}</Badge>;
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,
@@ -243,10 +243,10 @@ export default function AdminCountries() {
           if (v == null) return '-';
           const tone =
             v >= 70
-              ? { backgroundColor: '#dcfce7', color: '#166534' }
+              ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }
               : v >= 40
-                ? { backgroundColor: '#fef3c7', color: '#92400e' }
-                : { backgroundColor: '#fee2e2', color: '#991b1b' };
+                ? { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }
+                : { backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--destructive))' };
           return <Badge style={tone}>{v}</Badge>;
         },
         meta: { serverSortable: true, hideable: true } satisfies AdminColumnMeta,

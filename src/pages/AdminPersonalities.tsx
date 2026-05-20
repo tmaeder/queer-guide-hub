@@ -72,14 +72,14 @@ const columnHelper = createColumnHelper<PersonalityRow>();
 function VerificationBadge({ status }: { status: string }) {
   if (status === 'verified')
     return (
-      <Badge style={{ backgroundColor: '#dcfce7', color: '#166534' }}>
+      <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>
         <Check style={{ height: 12, width: 12, marginRight: 4 }} />
         Verified
       </Badge>
     );
   if (status === 'disputed')
     return (
-      <Badge style={{ backgroundColor: '#fef9c3', color: '#854d0e' }}>
+      <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
         <AlertCircle style={{ height: 12, width: 12, marginRight: 4 }} />
         Disputed
       </Badge>
@@ -89,10 +89,10 @@ function VerificationBadge({ status }: { status: string }) {
 
 function VisibilityBadge({ visibility }: { visibility: string }) {
   if (visibility === 'public')
-    return <Badge style={{ backgroundColor: '#dbeafe', color: '#1e40af' }}>Public</Badge>;
+    return <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>Public</Badge>;
   if (visibility === 'private')
-    return <Badge style={{ backgroundColor: '#f3f4f6', color: '#1f2937' }}>Private</Badge>;
-  return <Badge style={{ backgroundColor: '#ffedd5', color: '#9a3412' }}>Draft</Badge>;
+    return <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}>Private</Badge>;
+  return <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>Draft</Badge>;
 }
 
 export default function AdminPersonalities() {
@@ -313,7 +313,7 @@ export default function AdminPersonalities() {
           <div className="flex flex-col gap-1">
             <VisibilityBadge visibility={info.getValue()} />
             {info.row.original.is_featured && (
-              <Badge style={{ backgroundColor: '#f3e8ff', color: '#6b21a8' }}>
+              <Badge style={{ backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--foreground) / 0.7)' }}>
                 <Star style={{ height: 12, width: 12, marginRight: 4 }} />
                 Featured
               </Badge>

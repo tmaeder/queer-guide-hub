@@ -9,11 +9,11 @@ interface CommentNodeData {
 }
 
 const COLORS = [
-  { name: 'yellow', bg: '#fef9c3', border: '#facc15', text: '#713f12' },
-  { name: 'blue', bg: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' },
-  { name: 'green', bg: '#dcfce7', border: '#22c55e', text: '#14532d' },
-  { name: 'pink', bg: '#fce7f3', border: '#ec4899', text: '#831843' },
-  { name: 'gray', bg: '#f3f4f6', border: '#9ca3af', text: '#111827' },
+  { name: 'yellow', bg: 'hsl(var(--muted))', border: 'hsl(var(--foreground) / 0.55)', text: 'hsl(var(--foreground) / 0.7)' },
+  { name: 'blue', bg: 'hsl(var(--muted))', border: 'hsl(var(--muted-foreground))', text: 'hsl(var(--foreground) / 0.7)' },
+  { name: 'green', bg: 'hsl(var(--muted))', border: 'hsl(var(--foreground))', text: 'hsl(var(--foreground) / 0.7)' },
+  { name: 'pink', bg: 'hsl(var(--muted))', border: 'hsl(var(--foreground))', text: 'hsl(var(--foreground) / 0.7)' },
+  { name: 'gray', bg: 'hsl(var(--muted))', border: 'hsl(var(--muted-foreground))', text: 'hsl(var(--foreground))' },
 ];
 
 function CommentNode({ data, selected, id }: NodeProps) {

@@ -47,7 +47,7 @@ export default function CanvasControls({ pipelineName, hasSelection }: CanvasCon
       if (!container) throw new Error('Canvas not found');
 
       const dataUrl = await toPng(container, {
-        backgroundColor: '#ffffff',
+        backgroundColor: 'hsl(var(--background))',
         pixelRatio: 2,
       });
 

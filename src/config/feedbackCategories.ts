@@ -8,11 +8,14 @@ export interface FeedbackCategory {
   color: string;
 }
 
+// 2026-05-19: chromatic palette retired in favor of monochrome icon + opacity ramp.
+// `color` field kept on the contract so consumers don't need refactoring; visual
+// differentiation now comes from the icon (Bug / Lightbulb / Sparkles / BookOpen).
 export const feedbackCategories: FeedbackCategory[] = [
-  { value: 'bug', label: 'Bug', icon: Bug, color: '#ef4444' },
-  { value: 'idea', label: 'Idea', icon: Lightbulb, color: '#f59e0b' },
-  { value: 'improvement', label: 'Improvement', icon: Sparkles, color: '#8b5cf6' },
-  { value: 'content-idea', label: 'Content Idea', icon: BookOpen, color: '#0ea5e9' },
+  { value: 'bug', label: 'Bug', icon: Bug, color: 'hsl(var(--foreground))' },
+  { value: 'idea', label: 'Idea', icon: Lightbulb, color: 'hsl(var(--foreground) / 0.7)' },
+  { value: 'improvement', label: 'Improvement', icon: Sparkles, color: 'hsl(var(--foreground) / 0.55)' },
+  { value: 'content-idea', label: 'Content Idea', icon: BookOpen, color: 'hsl(var(--foreground) / 0.4)' },
 ];
 
 /** Lookup by value — returns the category or a default */

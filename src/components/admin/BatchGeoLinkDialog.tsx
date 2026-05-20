@@ -145,9 +145,9 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                 ].map(item => (
                   <div key={item.label} className="flex items-center gap-1">
                     {item.count > 0 ? (
-                      <AlertCircle style={{ height: 12, width: 12, color: '#ca8a04' }} />
+                      <AlertCircle style={{ height: 12, width: 12, color: 'hsl(var(--foreground) / 0.55)' }} />
                     ) : (
-                      <CheckCircle style={{ height: 12, width: 12, color: '#16a34a' }} />
+                      <CheckCircle style={{ height: 12, width: 12, color: 'hsl(var(--foreground))' }} />
                     )}
                     <span className="text-xs">
                       <strong>{item.count}</strong> {item.label}
@@ -221,7 +221,7 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
           {totals && !loading && (
             <div className="border border-border rounded-element p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <CheckCircle style={{ height: 18, width: 18, color: '#16a34a' }} />
+                <CheckCircle style={{ height: 18, width: 18, color: 'hsl(var(--foreground))' }} />
                 <span className="text-sm font-semibold">Geo-Link Complete</span>
               </div>
 
@@ -233,13 +233,13 @@ export default function BatchGeoLinkDialog({ onComplete }: BatchGeoLinkDialogPro
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle style={{ height: 14, width: 14, color: '#16a34a' }} />
+                  <CheckCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground))' }} />
                   <span className="text-sm">
                     <strong>{totals.linked}</strong> fully linked
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <AlertCircle style={{ height: 14, width: 14, color: '#ca8a04' }} />
+                  <AlertCircle style={{ height: 14, width: 14, color: 'hsl(var(--foreground) / 0.55)' }} />
                   <span className="text-sm">
                     <strong>{totals.partial}</strong> partial
                   </span>
