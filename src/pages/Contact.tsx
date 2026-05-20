@@ -117,9 +117,9 @@ export default function Contact() {
                       required
                     />
                     <div className="flex flex-col gap-2">
-                      <Label>Category</Label>
+                      <Label id="contact-category-label">Category</Label>
                       <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
-                        <SelectTrigger>
+                        <SelectTrigger aria-labelledby="contact-category-label" aria-label="Category">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
@@ -199,13 +199,11 @@ export default function Contact() {
             {faqs.map((faq, index) => (
               <Card key={index}>
                 <Collapsible open={openFaq === index} onOpenChange={() => setOpenFaq(openFaq === index ? null : index)}>
-                  <CollapsibleTrigger asChild>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold text-[0.9375rem]">{faq.question}</p>
-                        {openFaq === index ? <ChevronDown style={{ width: 18, height: 18, flexShrink: 0 }} /> : <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />}
-                      </div>
-                    </CardHeader>
+                  <CollapsibleTrigger className="flex w-full flex-col gap-1.5 p-6 text-left">
+                    <div className="flex w-full items-center justify-between">
+                      <p className="font-semibold text-[0.9375rem]">{faq.question}</p>
+                      {openFaq === index ? <ChevronDown style={{ width: 18, height: 18, flexShrink: 0 }} /> : <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />}
+                    </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <CardContent>

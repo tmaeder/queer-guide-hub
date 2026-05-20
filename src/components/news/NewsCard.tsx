@@ -111,12 +111,13 @@ export const NewsCard = ({
       c => c.slug === category || c.name.toLowerCase() === category.toLowerCase()
     );
     if (catEntry) return catEntry.color;
+    // Tailwind -700 shades: each ≥ 4.5:1 contrast on white text (WCAG 1.4.3).
     const fallback: Record<string, string> = {
-      politics: '#3b82f6', 'human-rights': '#ef4444', entertainment: '#8b5cf6',
-      culture: '#8b5cf6', health: '#10b981', sports: '#f97316', business: '#f59e0b',
-      technology: '#6366f1', lifestyle: '#ec4899', education: '#06b6d4',
-      legislation: '#3b82f6', transgender: '#8b5cf6', rights: '#ef4444',
-      advocacy: '#f97316', news: '#64748b', community: '#ec4899',
+      politics: '#1d4ed8', 'human-rights': '#b91c1c', entertainment: '#6d28d9',
+      culture: '#6d28d9', health: '#047857', sports: '#c2410c', business: '#b45309',
+      technology: '#4338ca', lifestyle: '#be185d', education: '#0e7490',
+      legislation: '#1d4ed8', transgender: '#6d28d9', rights: '#b91c1c',
+      advocacy: '#c2410c', news: '#475569', community: '#be185d',
     };
     return fallback[category?.toLowerCase()] || '#64748b';
   };

@@ -155,7 +155,10 @@ export function PersonalitiesFiltersBar({ filters, onFiltersChange }: Props) {
 
       {/* Row 2: profession chips */}
       <div
-        className="flex gap-2 overflow-x-auto pb-1"
+        role="group"
+        aria-label="Profession filters"
+        tabIndex={0}
+        className="flex gap-2 overflow-x-auto pb-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         style={{ scrollSnapType: 'x mandatory' }}
       >
         <FilterChip
