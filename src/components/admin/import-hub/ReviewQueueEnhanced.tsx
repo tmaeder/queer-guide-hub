@@ -407,7 +407,7 @@ export function ReviewQueueEnhanced() {
                       {/* Header */}
                       <div className="flex items-center justify-between mb-0.5 flex-wrap gap-1">
                         <div className="flex items-center gap-1 flex-wrap">
-                          <span className="font-semibold text-[0.9rem]">{title}</span>
+                          <span className="font-semibold text-sm">{title}</span>
                           <Badge variant="outline">{item.target_table}</Badge>
                           {item.dedup_status !== 'pending' && item.dedup_status !== 'unique' && (
                             <Badge
@@ -546,7 +546,7 @@ export function ReviewQueueEnhanced() {
 
                           {/* Review Notes */}
                           <div className="flex flex-col gap-1">
-                            <span className="text-sm font-medium text-[0.8rem]">Review Notes</span>
+                            <span className="text-sm font-medium text-13">Review Notes</span>
                             <Textarea
                               placeholder="Add notes..."
                               value={reviewNotes}

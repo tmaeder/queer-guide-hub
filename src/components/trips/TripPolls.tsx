@@ -161,7 +161,7 @@ export function TripPolls({ tripId }: Props) {
                           }}
                         />
                         <div className="relative z-10 flex items-center justify-between w-full">
-                          <span className={`text-[13px] ${hasVoted ? 'font-semibold' : ''}`}>{opt.text}</span>
+                          <span className={`text-13 ${hasVoted ? 'font-semibold' : ''}`}>{opt.text}</span>
                           <span className="text-xs2 text-muted-foreground">
                             {voteCount} {totalVotes > 0 && `(${Math.round(pct)}%)`}
                           </span>
@@ -231,7 +231,7 @@ export function TripPolls({ tripId }: Props) {
 
             <div className="flex items-center gap-2">
               <Switch id="poll-multi" checked={isMultiple} onCheckedChange={setIsMultiple} />
-              <Label htmlFor="poll-multi" className="text-[13px]">
+              <Label htmlFor="poll-multi" className="text-13">
                 {t('trips.polls.allowMultiple', 'Allow multiple choices')}
               </Label>
             </div>

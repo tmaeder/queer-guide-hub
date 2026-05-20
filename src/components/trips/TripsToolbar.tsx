@@ -78,7 +78,7 @@ export function TripsToolbar({
                 onClick={() => onStatusFilterChange(status)}
                 aria-label={status}
                 aria-pressed={selected}
-                className={`normal-case font-semibold text-[0.8125rem] px-3 py-1.5 whitespace-nowrap border-r border-border last:border-r-0 transition-colors ${
+                className={`normal-case font-semibold text-13 px-3 py-1.5 whitespace-nowrap border-r border-border last:border-r-0 transition-colors ${
                   selected
                     ? 'bg-[hsl(var(--foreground))] text-[hsl(var(--background))] hover:bg-[hsl(var(--foreground))]/90'
                     : 'text-muted-foreground hover:bg-muted'

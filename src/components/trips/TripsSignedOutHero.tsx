@@ -53,7 +53,7 @@ export function TripsSignedOutHero() {
               </span>
             </Badge>
 
-            <h2 className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] leading-[1.1] mb-4">
+            <h2 className="text-[2rem] sm:text-[2.5rem] md:text-5xl leading-[1.1] mb-4">
               {t('trips.signedOut.title')}
             </h2>
 

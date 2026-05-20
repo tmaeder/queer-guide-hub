@@ -108,7 +108,7 @@ export function VillageHero({ village, isFavorited, onFavoriteToggle }: VillageH
 
       <div className="mb-2 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="mb-1 text-[1.75rem] font-bold text-foreground lg:text-[2.25rem]">
+          <h1 className="mb-1 text-headline font-bold text-foreground lg:text-4xl">
             {village.countries?.flag_emoji && <>{village.countries.flag_emoji} </>}
             {village.name}
           </h1>

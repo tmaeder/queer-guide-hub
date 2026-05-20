@@ -188,7 +188,7 @@ export function DocumentsList({ tripId, embedded = false }: Props) {
                         )}
                       </div>
                       {doc.notes && (
-                        <p className="text-[0.8125rem] text-muted-foreground mt-0.5">
+                        <p className="text-13 text-muted-foreground mt-0.5">
                           {doc.notes}
                         </p>
                       )}

@@ -272,7 +272,7 @@ export function StoryDetailDrawer({
                 }}
               >
                 <AlertCircle size={14} color="hsl(var(--foreground) / 0.55)" style={{ marginTop: 2, flexShrink: 0 }} />
-                <span className="text-[0.72rem] leading-snug">
+                <span className="text-xs2 leading-snug">
                   {divergence.status_diff > 0 && (
                     <>
                       <strong>{divergence.status_diff}</strong> member

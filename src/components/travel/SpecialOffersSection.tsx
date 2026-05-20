@@ -91,7 +91,7 @@ export function SpecialOffersSection() {
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
                 )}
-                <p className="font-bold text-[0.85rem]">
+                <p className="font-bold text-sm">
                   {offer.origin} → {offer.destination}
                 </p>
               </div>

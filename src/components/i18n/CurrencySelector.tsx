@@ -47,7 +47,7 @@ export function CurrencySelector() {
       <SelectContent>
         {currencies.map((c) => (
           <SelectItem key={c.code} value={c.code}>
-            <span className="text-[0.8125rem]">
+            <span className="text-13">
               {c.code}
               {c.symbol && c.symbol !== c.code ? ` (${c.symbol})` : ''}
             </span>

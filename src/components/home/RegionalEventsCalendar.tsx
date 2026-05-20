@@ -98,13 +98,13 @@ const RegionalEventsCalendar = () => {
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-4">
         <div className="flex flex-wrap items-baseline gap-4">
           <h2
-            className="m-0 text-[1.75rem] font-bold leading-[1.1] tracking-tight md:text-[2.25rem]"
+            className="m-0 text-headline font-bold leading-[1.1] tracking-tight md:text-4xl"
             style={{ fontFamily: DISPLAY }}
           >
             {headline}
           </h2>
           <div
-            className="text-[0.8125rem] uppercase text-muted-foreground md:text-sm"
+            className="text-13 uppercase text-muted-foreground md:text-sm"
             style={{ fontFamily: BODY, letterSpacing: '0.08em' }}
           >
             {monthLabel}
@@ -112,7 +112,7 @@ const RegionalEventsCalendar = () => {
         </div>
         <LocalizedLink
           to="/events"
-          className="whitespace-nowrap text-[0.8125rem] text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
+          className="whitespace-nowrap text-13 text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
           style={{ fontFamily: BODY }}
         >
           {t('common.browseAll', 'Browse all')} →
@@ -241,7 +241,7 @@ const RegionalEventsCalendar = () => {
                   </div>
                   <div
                     className={cn(
-                      'mb-2 text-2xl font-light leading-none md:text-[1.75rem]',
+                      'mb-2 text-2xl font-light leading-none md:text-headline',
                       isToday && 'text-[hsl(var(--foreground))]',
                     )}
                     style={{ fontFamily: DISPLAY, fontVariantNumeric: 'tabular-nums' }}
@@ -249,7 +249,7 @@ const RegionalEventsCalendar = () => {
                     {format(day, 'd')}
                   </div>
                   <div
-                    className="overflow-hidden text-[0.8125rem] font-semibold leading-[1.3]"
+                    className="overflow-hidden text-13 font-semibold leading-[1.3]"
                     style={{
                       fontFamily: DISPLAY,
                       display: '-webkit-box',

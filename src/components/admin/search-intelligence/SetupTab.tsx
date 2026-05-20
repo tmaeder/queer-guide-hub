@@ -159,7 +159,7 @@ export function SetupTab() {
                 {checks.map((c) => (
                   <div
                     key={`${c.category}-${c.name}`}
-                    className="flex flex-row gap-4 items-center font-mono text-[13px]"
+                    className="flex flex-row gap-4 items-center font-mono text-13"
                   >
                     <Badge variant={STATUS_VARIANT[c.status]}>
                       {STATUS_LABEL[c.status]}

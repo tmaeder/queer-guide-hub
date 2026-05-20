@@ -260,7 +260,7 @@ export function TripCard({ trip }: Props) {
               <Calendar
                 style={{ width: 14, height: 14, flexShrink: 0, opacity: 0.7 }}
               />
-              <span className="text-[0.8125rem]">{dateRange}</span>
+              <span className="text-13">{dateRange}</span>
             </span>
             {phase !== 'live' && phase !== 'memory' && (
               <span
@@ -302,7 +302,7 @@ export function TripCard({ trip }: Props) {
                 <MapPin
                   style={{ width: 13, height: 13, flexShrink: 0, opacity: 0.7 }}
                 />
-                <span className="text-[0.8125rem]">
+                <span className="text-13">
                   {t('trips.card.placeCount', { count: placeCount })}
                   {dayCount > 0 &&
                     ` · ${t('trips.card.dayCount', { count: dayCount })}`}

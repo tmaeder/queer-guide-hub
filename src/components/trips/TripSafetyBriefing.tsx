@@ -391,7 +391,7 @@ function CountryAccordion({
                   href={`https://database.ilga.org/${country.code.toLowerCase()}-lgbti`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 mt-0.5 self-start text-[0.8125rem] font-semibold no-underline hover:underline"
+                  className="inline-flex items-center gap-0.5 mt-0.5 self-start text-13 font-semibold no-underline hover:underline"
                   style={{ color: 'hsl(var(--foreground))' }}
                 >
                   {t('trips.safety.viewOnIlga')}

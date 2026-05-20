@@ -205,7 +205,7 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
                           <span className="min-w-9 flex">
                             <IconBadge icon={item.icon} size={15} />
                           </span>
-                          <span className="flex-1 text-left text-[0.85rem]">
+                          <span className="flex-1 text-left text-sm">
                             {item.label}
                           </span>
                           {hasCount &&
@@ -229,12 +229,12 @@ export function AdminSidebar({ contentCounts: externalCounts }: AdminSidebarProp
       <div className="border-t border-border px-4 py-3 flex items-center gap-3 bg-muted/40">
         <Avatar className="h-8 w-8">
           <AvatarImage src={user?.user_metadata?.avatar_url as string | undefined} />
-          <AvatarFallback className="bg-foreground text-background text-[0.8rem] font-semibold">
+          <AvatarFallback className="bg-foreground text-background text-13 font-semibold">
             {userInitial}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[0.8rem] leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+          <p className="font-semibold text-13 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
             {userDisplayName}
           </p>
           <p className="text-2xs text-muted-foreground/70 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">

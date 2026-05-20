@@ -132,11 +132,11 @@ export default function ExternalImageSearch({
       {/* Source tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList variant="fullWidth" className="border-b border-border min-h-9">
-          <TabsTrigger value="stock" className="text-[0.8125rem]">
+          <TabsTrigger value="stock" className="text-13">
             <Camera size={14} className="mr-1" />
             Stock Photos
           </TabsTrigger>
-          <TabsTrigger value="wikimedia" className="text-[0.8125rem]">
+          <TabsTrigger value="wikimedia" className="text-13">
             Wikimedia Commons
           </TabsTrigger>
         </TabsList>

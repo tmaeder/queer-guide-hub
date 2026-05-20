@@ -80,14 +80,14 @@ const LatestNewsSlider = React.memo(() => {
       {/* Header */}
       <div className="mb-4 flex items-baseline justify-between gap-4">
         <h2
-          className="m-0 text-[1.75rem] font-bold leading-[1.1] tracking-tight md:text-[2.25rem]"
+          className="m-0 text-headline font-bold leading-[1.1] tracking-tight md:text-4xl"
           style={{ fontFamily: DISPLAY_FONT }}
         >
           {t('home.news.title', 'Latest News')}
         </h2>
         <LocalizedLink
           to="/news"
-          className="whitespace-nowrap text-[0.8125rem] text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
+          className="whitespace-nowrap text-13 text-foreground no-underline transition-opacity hover:opacity-70 md:text-sm"
         >
           {t('common.allStories', 'All stories')} →
         </LocalizedLink>

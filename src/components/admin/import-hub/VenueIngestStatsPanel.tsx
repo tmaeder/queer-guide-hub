@@ -85,7 +85,7 @@ export function VenueIngestStatsPanel() {
             <p className="text-sm text-muted-foreground">No data.</p>
           ) : (
             <div className="flex flex-col gap-2">
-              <div className="grid gap-2 text-[0.72rem] text-muted-foreground font-semibold uppercase tracking-wide" style={{ gridTemplateColumns: '1.2fr repeat(9, 1fr)' }}>
+              <div className="grid gap-2 text-xs2 text-muted-foreground font-semibold uppercase tracking-wide" style={{ gridTemplateColumns: '1.2fr repeat(9, 1fr)' }}>
                 <span>Target</span><span>Total</span><span>Pending</span><span>Rejected</span><span>Review</span>
                 <span>Stuck Norm</span><span>Stuck Val</span><span>Stuck Dedup</span><span>Stuck Commit</span><span>Review Stale</span>
               </div>
@@ -187,7 +187,7 @@ export function VenueIngestStatsPanel() {
                 <span>Day</span><span>Source</span><span>Staged</span><span>Valid</span><span>Unique</span><span>Dups</span><span>Inserted</span><span>Rejected</span>
               </div>
               {(stats.data ?? []).slice(0, 30).map((r, i) => (
-                <div key={`${r.day}-${r.source}-${i}`} className="grid gap-2 text-[0.8rem] py-1" style={{ gridTemplateColumns: '1.2fr 1fr repeat(6, 80px)', borderTop: i === 0 ? undefined : '1px solid hsl(var(--border))' }}>
+                <div key={`${r.day}-${r.source}-${i}`} className="grid gap-2 text-13 py-1" style={{ gridTemplateColumns: '1.2fr 1fr repeat(6, 80px)', borderTop: i === 0 ? undefined : '1px solid hsl(var(--border))' }}>
                   <span>{new Date(r.day).toLocaleDateString()}</span>
                   <span>{r.source}</span>
                   <span>{r.staged}</span>
@@ -214,7 +214,7 @@ export function VenueIngestStatsPanel() {
           ) : (
             <div className="flex flex-col gap-1">
               {(events.data ?? []).map((e) => (
-                <div key={e.id} className="grid gap-2 text-[0.8rem] py-1" style={{ gridTemplateColumns: '160px 100px 100px 120px 1fr' }}>
+                <div key={e.id} className="grid gap-2 text-13 py-1" style={{ gridTemplateColumns: '160px 100px 100px 120px 1fr' }}>
                   <span className="text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
                   <span><Badge variant="outline">{e.stage}</Badge></span>
                   <span>{e.new_status}</span>

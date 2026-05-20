@@ -507,7 +507,7 @@ function RunsTab({
 
 function RunDetail({ run }: { run: WorkflowRun }) {
   return (
-    <div className="grid grid-cols-1 gap-4 text-[0.8rem] md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 text-13 md:grid-cols-2">
       <div>
         <span className="text-xs font-bold text-muted-foreground">ID</span>
         <p className="font-mono text-xs">{run.id}</p>

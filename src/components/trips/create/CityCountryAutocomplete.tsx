@@ -218,7 +218,7 @@ export function CityCountryAutocomplete({
         >
           {options.length === 0 && !loading && (
             <div className="p-4">
-              <div className="text-[13px] text-muted-foreground mb-2">
+              <div className="text-13 text-muted-foreground mb-2">
                 {t('trips.dialog.create.noCityMatch')}
               </div>
               {onFallbackRequested && (
@@ -229,7 +229,7 @@ export function CityCountryAutocomplete({
                     onFallbackRequested(normalize(debounced));
                     setOpen(false);
                   }}
-                  className="border-0 bg-transparent font-semibold text-[13px] cursor-pointer p-0"
+                  className="border-0 bg-transparent font-semibold text-13 cursor-pointer p-0"
                   style={{ color: 'hsl(var(--foreground))' }}
                 >
                   {t('trips.dialog.create.addNewPlace', {

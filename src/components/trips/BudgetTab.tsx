@@ -178,7 +178,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
             {Object.keys(summary.totalByCurrency).length > 1 && summary.totalConverted != null ? (
               <>
                 <span
-                  className="text-[1.5rem] md:text-[1.75rem] font-bold tabular-nums"
+                  className="text-2xl md:text-headline font-bold tabular-nums"
                 >
                   {formatAmount(summary.totalConverted, defaultCurrency)}
                 </span>
@@ -192,7 +192,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               Object.entries(summary.totalByCurrency).map(([cur, total]) => (
                 <span
                   key={cur}
-                  className="text-[1.5rem] md:text-[1.75rem] font-bold tabular-nums"
+                  className="text-2xl md:text-headline font-bold tabular-nums"
                 >
                   {formatAmount(total, cur)}
                 </span>
@@ -293,7 +293,7 @@ export function BudgetTab({ tripId, members, defaultCurrency }: Props) {
               <Card key={item.id} className="mb-1">
                 <CardContent>
                   <div className="flex items-center gap-[0.3125rem]">
-                    <Avatar className="w-8 h-8 text-[13px]">
+                    <Avatar className="w-8 h-8 text-13">
                       {memberAvatar(item.paid_by) && (
                         <AvatarImage src={memberAvatar(item.paid_by)} />
                       )}

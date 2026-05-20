@@ -117,7 +117,7 @@ function ProtectionRow({
     <div className="flex items-center gap-3 py-2">
       <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
       <div className="min-w-0 flex-1">
-        <p className="text-[0.8125rem] font-medium leading-snug">{label}</p>
+        <p className="text-13 font-medium leading-snug">{label}</p>
       </div>
       <div className="flex flex-shrink-0 gap-1">
         {['SO', 'GI', 'GE', 'SC'].map((dim) => {
@@ -163,7 +163,7 @@ function SimpleRow({
     <div className="flex items-center gap-3 py-2">
       <Icon style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
       <div className="min-w-0 flex-1">
-        <p className="text-[0.8125rem] font-medium leading-snug">{label}</p>
+        <p className="text-13 font-medium leading-snug">{label}</p>
       </div>
       {displayValue ? (
         <div className="flex flex-shrink-0 items-center gap-2">
@@ -238,7 +238,7 @@ export default function LGBTJurisdictionInfo({
             <div className="flex items-center gap-3 py-2">
               <Scale style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
               <div className="flex-1">
-                <p className="text-[0.8125rem] font-medium">Same-Sex Activity</p>
+                <p className="text-13 font-medium">Same-Sex Activity</p>
               </div>
               <div className="flex flex-shrink-0 items-center gap-2">
                 <StatusIcon value={crimLegal} />
@@ -326,7 +326,7 @@ export default function LGBTJurisdictionInfo({
             <div className="flex items-center gap-3 py-2">
               <Heart style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0 }} />
               <div className="flex-1">
-                <p className="text-[0.8125rem] font-medium">Same-Sex Unions</p>
+                <p className="text-13 font-medium">Same-Sex Unions</p>
               </div>
               <div className="flex flex-shrink-0 items-center gap-2">
                 <StatusIcon value={ssuDetails.summary} />
@@ -367,7 +367,7 @@ export default function LGBTJurisdictionInfo({
                     style={{ height: 16, width: 16, color: '#6b7280', flexShrink: 0, marginTop: 2 }}
                   />
                   <div className="flex-1">
-                    <p className="text-[0.8125rem] font-medium">Gender Recognition</p>
+                    <p className="text-13 font-medium">Gender Recognition</p>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {country.lgbti_gender_recognition.gender_marker && (
                         <Badge

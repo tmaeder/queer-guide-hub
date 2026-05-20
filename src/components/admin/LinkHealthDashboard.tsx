@@ -574,7 +574,7 @@ export function LinkHealthDashboard({ embedded }: { embedded?: boolean } = {}) {
                     </button>
                   ) : null}
                 </div>
-                <p className="text-sm font-mono text-[0.8rem] truncate" title={link.original_url}>
+                <p className="text-sm font-mono text-13 truncate" title={link.original_url}>
                   {link.original_url}
                 </p>
                 {link.final_url && link.final_url !== link.original_url && (

@@ -198,7 +198,7 @@ export function AutomationDashboard() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-[0.8rem] text-muted-foreground mt-0.5">
+                        <p className="text-13 text-muted-foreground mt-0.5">
                           {mod.description}
                         </p>
                         <div className="flex gap-4 mt-1 text-xs text-muted-foreground flex-wrap items-center">
@@ -316,7 +316,7 @@ export function AutomationDashboard() {
                         <TableCell>
                           <button
                             type="button"
-                            className="text-[0.85rem] font-medium cursor-pointer hover:underline text-left bg-transparent border-0 p-0"
+                            className="text-sm font-medium cursor-pointer hover:underline text-left bg-transparent border-0 p-0"
                             onClick={() => setSelectedFlag(flag)}
                           >
                             {flag.title}
@@ -449,7 +449,7 @@ export function AutomationDashboard() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.8rem]">{link.field_name}</span>
+                          <span className="text-13">{link.field_name}</span>
                         </TableCell>
                         <TableCell>
                           <span
@@ -533,12 +533,12 @@ export function AutomationDashboard() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.8rem]">
+                          <span className="text-13">
                             {[geo.city, geo.region].filter(Boolean).join(', ')}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.8rem]">
+                          <span className="text-13">
                             {geo.country} {geo.country_code ? `(${geo.country_code})` : ''}
                           </span>
                         </TableCell>
@@ -668,14 +668,14 @@ function FlagDetailDialog({
           </div>
 
           {flag.description && (
-            <p className="text-[0.9rem] text-muted-foreground">{flag.description}</p>
+            <p className="text-sm text-muted-foreground">{flag.description}</p>
           )}
 
           {flag.current_value && (
             <div>
-              <p className="font-semibold text-[0.85rem] mb-1">Current Value</p>
+              <p className="font-semibold text-sm mb-1">Current Value</p>
               <div
-                className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
+                className="p-3 rounded font-mono text-13 whitespace-pre-wrap break-all"
                 style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.current_value, null, 2)}
@@ -685,9 +685,9 @@ function FlagDetailDialog({
 
           {flag.suggested_value && (
             <div>
-              <p className="font-semibold text-[0.85rem] mb-1">Suggested Value</p>
+              <p className="font-semibold text-sm mb-1">Suggested Value</p>
               <div
-                className="p-3 rounded font-mono text-[0.8rem] whitespace-pre-wrap break-all"
+                className="p-3 rounded font-mono text-13 whitespace-pre-wrap break-all"
                 style={{ backgroundColor: 'hsl(var(--muted))' }}
               >
                 {JSON.stringify(flag.suggested_value, null, 2)}
@@ -761,7 +761,7 @@ function ModuleConfigDialog({
         </DialogHeader>
         <div className="flex flex-col gap-6 mt-4">
           <div>
-            <p className="text-[0.85rem] font-medium mb-1">
+            <p className="text-sm font-medium mb-1">
               Confidence Threshold: {threshold.toFixed(0)}%
             </p>
             <p className="text-xs text-muted-foreground mb-2">
@@ -782,7 +782,7 @@ function ModuleConfigDialog({
           </div>
 
           <div>
-            <p className="text-[0.85rem] font-medium mb-1">Batch Size: {batchSize}</p>
+            <p className="text-sm font-medium mb-1">Batch Size: {batchSize}</p>
             <p className="text-xs text-muted-foreground mb-2">
               Number of items to process per run
             </p>
@@ -797,7 +797,7 @@ function ModuleConfigDialog({
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[0.85rem] font-medium">Auto-Approve</p>
+              <p className="text-sm font-medium">Auto-Approve</p>
               <p className="text-xs text-muted-foreground">
                 Automatically apply changes above confidence threshold
               </p>

@@ -143,7 +143,7 @@ export function SortablePlaceCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-[13px] font-medium truncate">
+            <p className="text-13 font-medium truncate">
               {getPlaceName(place)}
             </p>
             {eqScore !== null && (
@@ -237,7 +237,7 @@ export function PlaceCardOverlay({ place }: { place: TripPlace }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[13px] font-medium truncate">
+          <p className="text-13 font-medium truncate">
             {getPlaceName(place)}
           </p>
           {eqScore !== null && (

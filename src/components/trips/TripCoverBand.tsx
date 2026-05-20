@@ -108,7 +108,7 @@ export function TripCoverBand({
               {visibleMembers.map((m) => (
                 <Avatar
                   key={m.id}
-                  className="h-8 w-8 border-2 border-white/60 text-[0.8rem]"
+                  className="h-8 w-8 border-2 border-white/60 text-13"
                 >
                   {m.profiles?.avatar_url && (
                     <AvatarImage
@@ -116,14 +116,14 @@ export function TripCoverBand({
                       alt={m.profiles?.display_name || 'Member'}
                     />
                   )}
-                  <AvatarFallback className="text-[0.8rem]">
+                  <AvatarFallback className="text-13">
                     {(m.profiles?.display_name || 'U')[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               ))}
               {overflow > 0 && (
                 <Avatar className="h-8 w-8 border-2 border-white/60 bg-muted">
-                  <AvatarFallback className="text-[0.8rem]">+{overflow}</AvatarFallback>
+                  <AvatarFallback className="text-13">+{overflow}</AvatarFallback>
                 </Avatar>
               )}
             </div>

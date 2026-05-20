@@ -198,7 +198,7 @@ export function AiPlanTab({ trip }: Props) {
                           </span>
                           <ul className="pl-4 m-0 mt-1 list-disc">
                             {day.places.map((p, i) => (
-                              <li key={i} className="text-[0.8125rem]">
+                              <li key={i} className="text-13">
                                 {p.custom_name ?? p.venue_id ?? p.event_id ?? '—'}
                                 {p.notes && (
                                   <span className="text-muted-foreground ml-2 text-xs">

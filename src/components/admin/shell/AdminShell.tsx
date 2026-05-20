@@ -177,7 +177,7 @@ export function AdminShell() {
                         )}
                         {isLast ? (
                           <span
-                            className="font-semibold text-[0.82rem] text-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block"
+                            className="font-semibold text-13 text-foreground whitespace-nowrap overflow-hidden text-ellipsis max-w-[150px] sm:max-w-[300px] md:max-w-[500px] inline-block"
                           >
                             {crumb.label}
                           </span>
@@ -185,7 +185,7 @@ export function AdminShell() {
                           <button
                             type="button"
                             onClick={() => crumb.route && navigate(crumb.route)}
-                            className="font-medium text-[0.82rem] text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))] bg-transparent border-0 p-0"
+                            className="font-medium text-13 text-muted-foreground cursor-pointer whitespace-nowrap hover:underline hover:text-[hsl(var(--foreground))] bg-transparent border-0 p-0"
                           >
                             {crumb.label}
                           </button>

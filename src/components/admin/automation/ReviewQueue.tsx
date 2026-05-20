@@ -225,7 +225,7 @@ export function ReviewQueue({
                 </div>
               </TableCell>
               <TableCell>
-                <p className="text-sm font-mono text-[0.8rem]">{change.field_name}</p>
+                <p className="text-sm font-mono text-13">{change.field_name}</p>
               </TableCell>
               <TableCell>
                 <Badge

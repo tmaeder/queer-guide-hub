@@ -267,7 +267,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                 size="sm"
                 disabled={bulkLoading}
                 onClick={handleBulkApprove}
-                className="font-semibold text-[0.8rem] bg-foreground hover:bg-foreground text-white"
+                className="font-semibold text-13 bg-foreground hover:bg-foreground text-white"
               >
                 {bulkLoading ? (
                   <Loader2 size={14} className="animate-spin mr-1" />
@@ -282,7 +282,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
               variant="outline"
               disabled={bulkLoading}
               onClick={handleApproveAll}
-              className="font-semibold text-[0.8rem] border-foreground/40 text-foreground hover:bg-muted"
+              className="font-semibold text-13 border-foreground/40 text-foreground hover:bg-muted"
             >
               {bulkLoading ? (
                 <Loader2 size={14} className="animate-spin mr-1" />
@@ -310,7 +310,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
               checked={selectedIds.size === displayItems.length && displayItems.length > 0}
               onCheckedChange={toggleSelectAll}
             />
-            <span className="text-[0.8rem] text-muted-foreground">
+            <span className="text-13 text-muted-foreground">
               {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
             </span>
           </div>
@@ -459,7 +459,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       size="sm"
                       disabled={isActionLoading}
                       onClick={() => handleApprove(item)}
-                      className="font-semibold text-[0.8rem] py-0.5 bg-foreground hover:bg-foreground text-white"
+                      className="font-semibold text-13 py-0.5 bg-foreground hover:bg-foreground text-white"
                     >
                       {isActionLoading ? (
                         <Loader2 size={14} className="animate-spin mr-1" aria-label="Loading" />
@@ -474,7 +474,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       variant="outline"
                       disabled={isActionLoading}
                       onClick={() => handleReject(item)}
-                      className="font-medium text-[0.8rem] py-0.5 border-destructive text-destructive hover:bg-destructive/10"
+                      className="font-medium text-13 py-0.5 border-destructive text-destructive hover:bg-destructive/10"
                     >
                       <ThumbsDown className="w-3.5 h-3.5 mr-1" />
                       Request Changes
@@ -488,7 +488,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                           size="sm"
                           variant="ghost"
                           onClick={() => onEdit(item.metadata.source_table, item.metadata.source_id)}
-                          className="font-medium text-[0.8rem] text-muted-foreground"
+                          className="font-medium text-13 text-muted-foreground"
                         >
                           <Edit className="w-3.5 h-3.5 mr-1" />
                           Review

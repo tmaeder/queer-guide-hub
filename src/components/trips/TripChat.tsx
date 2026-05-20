@@ -131,7 +131,7 @@ export function TripChat({ tripId }: Props) {
                     isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                   )}
                 >
-                  <p className="text-[13px] whitespace-pre-wrap break-words">{msg.content}</p>
+                  <p className="text-13 whitespace-pre-wrap break-words">{msg.content}</p>
                 </div>
 
                 <Button
@@ -179,7 +179,7 @@ export function TripChat({ tripId }: Props) {
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           rows={1}
-          className="flex-1 text-[13px] min-h-[40px] max-h-[120px]"
+          className="flex-1 text-13 min-h-[40px] max-h-[120px]"
         />
         <Button
           variant="ghost"

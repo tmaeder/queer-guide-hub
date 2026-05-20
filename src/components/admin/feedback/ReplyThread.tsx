@@ -105,7 +105,7 @@ export function ReplyThread({ replies, contactEmail, onSend, isSending }: Props)
                     </a>
                   )}
                 </div>
-                <p className="whitespace-pre-wrap text-[0.8rem] leading-snug">{r.body}</p>
+                <p className="whitespace-pre-wrap text-13 leading-snug">{r.body}</p>
               </div>
             );
           })}

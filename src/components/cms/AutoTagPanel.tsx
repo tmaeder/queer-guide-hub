@@ -124,7 +124,7 @@ export function AutoTagPanel({ contentType, contentId, onTagsApplied }: AutoTagP
                     onCheckedChange={() => handleToggle(tag.name)}
                   />
                   <label htmlFor={`autotag-${tag.name}`} className="flex items-center gap-1 flex-wrap flex-1 m-0 cursor-pointer">
-                    <span className="text-[0.8125rem]">{tag.name}</span>
+                    <span className="text-13">{tag.name}</span>
                     <span
                       className="text-xs2 font-semibold leading-none"
                       style={{ color: confidenceColor(tag.confidence) }}

@@ -236,7 +236,7 @@ function renderColumnValue(
     }
     const formatted = n >= 0 && n <= 1 ? n.toFixed(2) : n.toLocaleString();
     return (
-      <span className="text-[0.8rem]" style={{ fontVariantNumeric: 'tabular-nums' }}>
+      <span className="text-13" style={{ fontVariantNumeric: 'tabular-nums' }}>
         {formatted}
       </span>
     );
@@ -261,7 +261,7 @@ function renderColumnValue(
     );
   }
   return (
-    <span className="text-[0.8rem] truncate block">
+    <span className="text-13 truncate block">
       {String(v)}
     </span>
   );

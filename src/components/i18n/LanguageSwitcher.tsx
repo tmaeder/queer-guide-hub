@@ -63,7 +63,7 @@ export function LanguageSwitcher() {
       <SelectContent>
         {SUPPORTED_LOCALES.map((lang) => (
           <SelectItem key={lang} value={lang}>
-            <span className="text-[0.8125rem]">{LANGUAGE_NAMES[lang]}</span>
+            <span className="text-13">{LANGUAGE_NAMES[lang]}</span>
           </SelectItem>
         ))}
       </SelectContent>

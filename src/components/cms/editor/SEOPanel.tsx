@@ -155,7 +155,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
 
           {/* URL line */}
           <span
-            className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-[0.8rem]"
+            className="block mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap text-13"
             style={{ color: 'hsl(var(--foreground))', fontFamily: 'Arial, sans-serif' }}
           >
             {previewUrl}
@@ -163,7 +163,7 @@ export function SEOPanel({ metadata, onUpdate }: SEOPanelProps) {
 
           {/* Description */}
           <span
-            className="mt-1 overflow-hidden text-[0.8rem] leading-snug"
+            className="mt-1 overflow-hidden text-13 leading-snug"
             style={{
               color: 'hsl(var(--muted-foreground))',
               fontFamily: 'Arial, sans-serif',

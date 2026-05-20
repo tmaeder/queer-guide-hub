@@ -301,7 +301,7 @@ export function EmailIngestionsManager() {
 
                   {/* Expanded detail */}
                   <CollapsibleContent style={{ marginTop: 16 }}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[0.85rem]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="font-medium">From:</span>
                         <p className="text-sm text-muted-foreground">{ing.from_address}</p>
@@ -342,7 +342,7 @@ export function EmailIngestionsManager() {
                           <span className="font-medium">Extracted Events ({ing.ai_extraction.events.length}):</span>
                           <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.events.map((ev, i: number) => (
-                              <div key={i} className="flex items-center gap-2 text-[0.8rem] text-muted-foreground">
+                              <div key={i} className="flex items-center gap-2 text-13 text-muted-foreground">
                                 <Calendar style={{ height: 12, width: 12, flexShrink: 0 }} />
                                 <span>
                                   <strong>{ev.title}</strong> — {ev.city}, {ev.country}
@@ -360,7 +360,7 @@ export function EmailIngestionsManager() {
                           <span className="font-medium">Extracted Venues ({ing.ai_extraction.venues.length}):</span>
                           <div className="flex flex-col gap-1 mt-1">
                             {ing.ai_extraction.venues.map((v, i: number) => (
-                              <div key={i} className="flex items-center gap-2 text-[0.8rem] text-muted-foreground">
+                              <div key={i} className="flex items-center gap-2 text-13 text-muted-foreground">
                                 <Building style={{ height: 12, width: 12, flexShrink: 0 }} />
                                 <span>
                                   <strong>{v.name}</strong> — {v.address}, {v.city}

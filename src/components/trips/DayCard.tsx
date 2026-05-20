@@ -166,7 +166,7 @@ export function DayCard({
               aria-hidden="true"
             >
               <span
-                className="text-[9px] font-semibold uppercase opacity-70"
+                className="text-3xs font-semibold uppercase opacity-70"
                 style={{ letterSpacing: '0.18em', lineHeight: 1 }}
               >
                 {t('trips.itinerary.dayShort')}

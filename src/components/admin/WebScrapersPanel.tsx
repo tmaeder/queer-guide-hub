@@ -165,7 +165,7 @@ export const WebScrapersPanel = () => {
             <div key={s.key} className="flex items-center gap-3 p-3 border border-border rounded-badge">
               <s.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="flex-1 min-w-0">
-                <p className="text-[0.85rem] font-semibold">{s.label}</p>
+                <p className="text-sm font-semibold">{s.label}</p>
                 <p className="text-xs2 text-muted-foreground truncate">
                   {s.types} &middot; {s.url}
                 </p>

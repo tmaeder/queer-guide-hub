@@ -175,7 +175,7 @@ export function TagSuggestionsQueue() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <p className="font-semibold text-[0.9rem]">{item.suggested_tag_name}</p>
+                    <p className="font-semibold text-sm">{item.suggested_tag_name}</p>
                     <Badge variant="outline">{item.entity_type}</Badge>
                     <Badge variant="outline" className="text-xs2 gap-1">
                       <SourceIcon style={{ width: 12, height: 12 }} />
