@@ -29,7 +29,8 @@ const rule = {
     },
   },
   create(ctx) {
-    const file = ctx.getFilename().replace(/\\/g, '/');
+    // ESLint 10 removed ctx.getFilename(); use ctx.filename (added in v8.40).
+    const file = (ctx.filename ?? ctx.getFilename()).replace(/\\/g, '/');
     const isPage = file.includes('/src/pages/');
     const isComponent = file.includes('/src/components/');
     if (!isPage && !isComponent) return {};
