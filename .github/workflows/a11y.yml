@@ -71,7 +71,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=8192
           VITE_BASEMAP_ASSETS_URL: 'https://protomaps-tiles.maeder-tobiassimon.workers.dev/basemaps-assets'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
@@ -133,7 +133,7 @@ jobs:
           echo "::error::serve did not become ready"; cat serve.log; exit 1
       - run: npx playwright test e2e/a11y-admin.spec.ts e2e/a11y-events.spec.ts e2e/a11y-header.spec.ts e2e/a11y-dialogs.spec.ts e2e/focus-visible.spec.ts --workers=1
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-a11y-report
           path: playwright-report/
@@ -180,7 +180,7 @@ jobs:
         run: |
           node -e "const r=require('./docs/a11y-audit/axe-postdeploy.json');const bad=r.results.flatMap(x=>(x.violations||[]).filter(v=>v.impact==='serious'||v.impact==='critical'));if(bad.length){console.error('Found',bad.length,'serious/critical');process.exit(1)}console.log('Clean: 0 serious/critical')"
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: axe-postdeploy
           path: |
@@ -270,7 +270,7 @@ jobs:
             exit 1
           fi
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-${{ strategy.job-index }}
           path: lh/
