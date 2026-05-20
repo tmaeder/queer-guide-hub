@@ -306,7 +306,7 @@ function CountryAccordion({
                 >
                   {country.equality_score ?? '—'}
                 </span>
-                <span className="text-[8px] leading-none mt-[0.0625rem] opacity-85">/100</span>
+                <span className="text-3xs leading-none mt-[0.0625rem] opacity-85">/100</span>
               </div>
 
               <div className="min-w-0 flex-1">

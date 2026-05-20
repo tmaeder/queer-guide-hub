@@ -615,7 +615,7 @@ function StatCard({
           <span className="text-xs text-muted-foreground">{label}</span>
           <Icon size={14} style={{ color: color || 'var(--muted-foreground)' }} />
         </div>
-        <p className="text-[1.3rem] font-bold" style={{ color: color || 'inherit' }}>
+        <p className="text-xl font-bold" style={{ color: color || 'inherit' }}>
           {value.toLocaleString()}
           {total != null && (
             <span className="text-xs text-muted-foreground ml-1 font-normal">

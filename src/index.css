@@ -6,7 +6,7 @@
    before they appear in source files — they're the public API of the design
    system and must be applicable to any Aceternity / shadcn component. */
 @source inline("{,hover:,focus:,dark:}rounded-{container,element,badge}");
-@source inline("text-{hero-xl,hero,display,headline,title,body-lg,13,15}");
+@source inline("text-{hero-xl,hero,display,headline,headline-lg,title,body-lg,13,15}");
 @source inline("rounded-{t,b,l,r,tl,tr,bl,br}-{container,element,badge}");
 @source inline("{,hover:,dark:}{text,bg,border}-text-{primary,secondary,muted}");
 @source inline("{,dark:}border-border-hairline");
@@ -28,6 +28,8 @@
   --text-13--line-height: 1.125rem;
   --text-15: 0.9375rem;
   --text-15--line-height: 1.375rem;
+  --text-headline-lg: 2rem;
+  --text-headline-lg--line-height: 1.1;
 
   /* ── Editorial type scale — hero / display / headline tokens ──────
      Added 2026-05-20 (UI audit P5 sub-PR 1) to replace recurring
