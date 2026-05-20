@@ -61,7 +61,7 @@ jobs:
         run: npm run prerender
 
       - name: Upload static artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist-static
           path: dist-static/
