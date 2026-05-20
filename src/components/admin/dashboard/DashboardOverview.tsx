@@ -88,28 +88,28 @@ export function DashboardOverview({ stats, systemHealth, statsLoading }: Dashboa
       icon: Activity,
       color:
         systemHealth.status === 'healthy'
-          ? 'text-green-600'
+          ? 'text-foreground'
           : systemHealth.status === 'warning'
-            ? 'text-yellow-600'
-            : 'text-red-600',
+            ? 'text-foreground'
+            : 'text-destructive',
     },
     {
       title: 'Uptime',
       value: systemHealth.uptime,
       icon: Globe,
-      color: 'text-blue-600',
+      color: 'text-foreground',
     },
     {
       title: 'DB Latency',
       value: `${systemHealth.dbLatency}ms`,
       icon: Activity,
-      color: systemHealth.dbLatency < 100 ? 'text-green-600' : 'text-yellow-600',
+      color: systemHealth.dbLatency < 100 ? 'text-foreground' : 'text-foreground',
     },
     {
       title: 'Storage Used',
       value: `${systemHealth.storageUsed}%`,
       icon: Eye,
-      color: systemHealth.storageUsed < 80 ? 'text-green-600' : 'text-red-600',
+      color: systemHealth.storageUsed < 80 ? 'text-foreground' : 'text-destructive',
     },
   ];
 

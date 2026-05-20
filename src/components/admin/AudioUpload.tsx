@@ -313,7 +313,7 @@ export function AudioUpload({ onUploadComplete }: AudioUploadProps) {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div
-                          className={`w-2 h-2 rounded-full ${audio.status === 'completed' ? 'bg-green-500' : audio.status === 'error' ? 'bg-destructive' : 'bg-yellow-500'}`}
+                          className={`w-2 h-2 rounded-full ${audio.status === 'completed' ? 'bg-foreground' : audio.status === 'error' ? 'bg-destructive' : 'bg-foreground'}`}
                         />
                         <p className="text-sm capitalize">{audio.status}</p>
                       </div>

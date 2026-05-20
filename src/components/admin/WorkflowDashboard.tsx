@@ -72,12 +72,12 @@ const STATUS_CONFIG: Record<
     icon: React.ElementType;
   }
 > = {
-  completed: { label: 'Completed', tone: 'border-emerald-500 text-emerald-700 bg-emerald-50', icon: CheckCircle2 },
-  running: { label: 'Running', tone: 'border-blue-500 text-blue-700 bg-blue-50', icon: Loader2 },
+  completed: { label: 'Completed', tone: 'border-foreground/40 text-foreground bg-muted', icon: CheckCircle2 },
+  running: { label: 'Running', tone: 'border-foreground/40 text-foreground bg-muted', icon: Loader2 },
   queued: { label: 'Queued', tone: 'border-muted text-muted-foreground', icon: Clock },
-  failed: { label: 'Failed', tone: 'border-red-500 text-red-700 bg-red-50', icon: AlertTriangle },
-  dead_letter: { label: 'Dead Letter', tone: 'border-red-500 text-red-700 bg-red-50', icon: Skull },
-  cancelled: { label: 'Cancelled', tone: 'border-amber-500 text-amber-700 bg-amber-50', icon: XCircle },
+  failed: { label: 'Failed', tone: 'border-destructive text-destructive bg-destructive/10', icon: AlertTriangle },
+  dead_letter: { label: 'Dead Letter', tone: 'border-destructive text-destructive bg-destructive/10', icon: Skull },
+  cancelled: { label: 'Cancelled', tone: 'border-border text-foreground bg-muted', icon: XCircle },
 };
 
 function StatusChip({ status }: { status: WorkflowRunStatus }) {
@@ -202,7 +202,7 @@ export function WorkflowDashboard() {
               {key === 'dead_letter' && deadLetterRuns.length > 0 && (
                 <Badge
                   variant="outline"
-                  className="ml-1 h-5 border-red-500 text-[0.7rem] text-red-700"
+                  className="ml-1 h-5 border-destructive text-[0.7rem] text-destructive"
                 >
                   {deadLetterRuns.length}
                 </Badge>
@@ -518,8 +518,8 @@ function RunDetail({ run }: { run: WorkflowRun }) {
       </div>
       {run.error_message && (
         <div className="col-span-full">
-          <span className="text-xs font-bold text-red-600">Error</span>
-          <p className="whitespace-pre-wrap font-mono text-xs text-red-600">
+          <span className="text-xs font-bold text-destructive">Error</span>
+          <p className="whitespace-pre-wrap font-mono text-xs text-destructive">
             {run.error_message}
           </p>
         </div>
@@ -615,7 +615,7 @@ function DefinitionsTab({
                   variant="outline"
                   className={cn(
                     'text-[0.7rem]',
-                    def.is_enabled ? 'border-emerald-500 text-emerald-700' : '',
+                    def.is_enabled ? 'border-foreground/40 text-foreground' : '',
                   )}
                 >
                   {def.is_enabled ? 'Yes' : 'No'}
@@ -668,7 +668,7 @@ function DeadLetterTab({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 rounded-element bg-red-600 p-4 text-white">
+      <div className="flex items-center gap-2 rounded-element bg-destructive p-4 text-white">
         <AlertTriangle size={18} />
         <p className="text-sm font-semibold">
           {runs.length} workflow{runs.length !== 1 ? 's' : ''} in dead letter queue — review and
@@ -678,7 +678,7 @@ function DeadLetterTab({
       {runs.map((run) => (
         <div
           key={run.id}
-          className="rounded-element border border-red-300 bg-card p-4"
+          className="rounded-element border border-destructive bg-card p-4"
         >
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -691,7 +691,7 @@ function DeadLetterTab({
             </Button>
           </div>
           {run.error_message && (
-            <p className="mb-2 font-mono text-xs text-red-600">{run.error_message}</p>
+            <p className="mb-2 font-mono text-xs text-destructive">{run.error_message}</p>
           )}
           <span className="text-xs text-muted-foreground">
             Attempt {run.attempt}/{run.max_attempts} ·{' '}

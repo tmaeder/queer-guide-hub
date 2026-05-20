@@ -145,7 +145,7 @@ export const ReviewItemCard = ({
             {onApprove && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-green-600" onClick={() => onApprove(item.id)}>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-foreground" onClick={() => onApprove(item.id)}>
                     <Check size={16} />
                   </Button>
                 </TooltipTrigger>

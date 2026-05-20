@@ -19,9 +19,9 @@ function sloBadge(s: HotelStats) {
   const success = s.committed / total;
   const dupeRatio = s.duplicates / total;
   const className =
-    success >= 0.7 && dupeRatio < 0.5 ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-    : success >= 0.4                  ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'
-    : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300';
+    success >= 0.7 && dupeRatio < 0.5 ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
+    : success >= 0.4                  ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
+    : 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive';
   return (
     <span className={`inline-block text-2xs px-2 py-0.5 rounded-full font-medium ${className}`}>
       {(success * 100).toFixed(0)}% commit
@@ -32,7 +32,7 @@ function sloBadge(s: HotelStats) {
 function RatioBar({ actual, expected }: { actual: number; expected: number | null }) {
   if (!expected || expected <= 0) return <span className="text-muted-foreground">—</span>;
   const pct = Math.min(1, actual / expected);
-  const bg = pct >= 0.8 ? 'bg-green-500' : pct >= 0.4 ? 'bg-yellow-500' : 'bg-destructive';
+  const bg = pct >= 0.8 ? 'bg-foreground' : pct >= 0.4 ? 'bg-foreground' : 'bg-destructive';
   return (
     <div className="flex items-center gap-2">
       <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -131,10 +131,10 @@ export default function CoverageTab() {
                   <td className="px-3 py-2 tabular-nums">{s.staged}</td>
                   <td className="px-3 py-2 tabular-nums">{s.validated}</td>
                   <td className="px-3 py-2 tabular-nums">{s.unique_items}</td>
-                  <td className={`px-3 py-2 tabular-nums ${s.duplicates ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{s.duplicates}</td>
-                  <td className={`px-3 py-2 tabular-nums ${s.committed ? 'text-green-700 dark:text-green-300 font-semibold' : 'text-muted-foreground'}`}>{s.committed}</td>
+                  <td className={`px-3 py-2 tabular-nums ${s.duplicates ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{s.duplicates}</td>
+                  <td className={`px-3 py-2 tabular-nums ${s.committed ? 'text-foreground dark:text-foreground font-semibold' : 'text-muted-foreground'}`}>{s.committed}</td>
                   <td className={`px-3 py-2 tabular-nums ${s.rejected ? 'text-destructive' : 'text-muted-foreground'}`}>{s.rejected}</td>
-                  <td className={`px-3 py-2 tabular-nums ${s.pending_review ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground'}`}>{s.pending_review}</td>
+                  <td className={`px-3 py-2 tabular-nums ${s.pending_review ? 'text-foreground dark:text-foreground' : 'text-muted-foreground'}`}>{s.pending_review}</td>
                   <td className="px-3 py-2">{sloBadge(s)}</td>
                 </tr>
               ))}
@@ -182,7 +182,7 @@ export default function CoverageTab() {
                     {r.last_run_at ? formatDistanceToNow(new Date(r.last_run_at), { addSuffix: true }) : '—'}
                   </td>
                   <td className="px-3 py-2">
-                    {r.is_enabled ? <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" /> : <span className="text-muted-foreground">—</span>}
+                    {r.is_enabled ? <Check className="h-3.5 w-3.5 text-foreground dark:text-foreground" /> : <span className="text-muted-foreground">—</span>}
                   </td>
                 </tr>
               ))}

@@ -27,9 +27,9 @@ interface AccessDialogProps {
 }
 
 const PERM_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; label: string; className: string }> = {
-  view: { icon: Eye, label: 'View', className: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' },
-  run: { icon: Play, label: 'Run', className: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' },
-  edit: { icon: Pencil, label: 'Edit', className: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' },
+  view: { icon: Eye, label: 'View', className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' },
+  run: { icon: Play, label: 'Run', className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' },
+  edit: { icon: Pencil, label: 'Edit', className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' },
 };
 
 export default function AccessDialog({ pipelineId, pipelineName }: AccessDialogProps) {

@@ -43,10 +43,10 @@ interface Props {
 }
 
 const CHANGE_TYPE_CLASS: Record<string, string> = {
-  normalize: 'bg-blue-100 text-blue-800 border-blue-200',
-  sanitize: 'bg-blue-100 text-blue-800 border-blue-200',
-  enrich: 'bg-green-100 text-green-800 border-green-200',
-  flag: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  normalize: 'bg-muted text-foreground border-foreground/40',
+  sanitize: 'bg-muted text-foreground border-foreground/40',
+  enrich: 'bg-muted text-foreground border-foreground/40',
+  flag: 'bg-muted text-foreground border-border',
   ai_enhance: 'bg-muted text-muted-foreground',
 };
 
@@ -108,7 +108,7 @@ export function ReviewQueue({
   }
 
   const confidenceColor = (c: number) =>
-    c >= 0.9 ? 'bg-green-500' : c >= 0.7 ? 'bg-blue-500' : 'bg-yellow-500';
+    c >= 0.9 ? 'bg-foreground' : c >= 0.7 ? 'bg-foreground' : 'bg-foreground';
 
   return (
     <div className="flex flex-col gap-4">
@@ -279,7 +279,7 @@ export function ReviewQueue({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 text-green-600"
+                          className="h-7 w-7 p-0 text-foreground"
                           onClick={() => onApprove(change.id)}
                           disabled={isApproving}
                         >

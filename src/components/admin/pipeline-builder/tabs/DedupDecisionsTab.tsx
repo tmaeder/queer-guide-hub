@@ -103,8 +103,8 @@ export default function DedupDecisionsTab() {
           <div className="p-6 text-center text-muted-foreground text-xs">Loading…</div>
         ) : rows.length === 0 ? (
           <div className="p-8 text-center">
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
-            <span className="text-sm text-green-600 dark:text-green-400 font-medium">No pending decisions — queue is clean</span>
+            <CheckCircle className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
+            <span className="text-sm text-foreground dark:text-foreground font-medium">No pending decisions — queue is clean</span>
           </div>
         ) : (
           <div className="max-h-[600px] overflow-auto">
@@ -119,8 +119,8 @@ export default function DedupDecisionsTab() {
               <tbody>
                 {rows.map(r => {
                   const confColor =
-                    r.confidence >= 0.85 ? 'text-green-600 dark:text-green-400'
-                    : r.confidence >= 0.75 ? 'text-amber-600 dark:text-amber-400'
+                    r.confidence >= 0.85 ? 'text-foreground dark:text-foreground'
+                    : r.confidence >= 0.75 ? 'text-foreground dark:text-foreground'
                     : 'text-muted-foreground';
                   return (
                     <tr key={r.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">

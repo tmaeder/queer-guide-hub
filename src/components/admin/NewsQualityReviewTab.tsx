@@ -124,9 +124,9 @@ function ScoreChip({ label, value }: { label: string; value: number | null }) {
   const v = value ?? 0;
   const tone =
     v >= 0.75
-      ? 'border-emerald-500 text-emerald-600'
+      ? 'border-foreground/40 text-foreground'
       : v >= 0.5
-        ? 'border-amber-500 text-amber-600'
+        ? 'border-border text-foreground'
         : 'border-muted text-muted-foreground';
   return (
     <Badge variant="outline" className={cn('font-normal', tone)}>
@@ -348,9 +348,9 @@ export default function NewsQualityReviewTab() {
               const pct = s.reject_rate != null ? Math.round(s.reject_rate * 100) : 0;
               const tone =
                 pct > 50
-                  ? 'border-red-500 text-red-600'
+                  ? 'border-destructive text-destructive'
                   : pct > 25
-                    ? 'border-amber-500 text-amber-600'
+                    ? 'border-border text-foreground'
                     : '';
               return (
                 <div
@@ -372,10 +372,10 @@ export default function NewsQualityReviewTab() {
       )}
 
       <div className="mb-6 flex flex-wrap gap-2">
-        <Badge variant="outline" className="border-amber-500 text-amber-600">
+        <Badge variant="outline" className="border-border text-foreground">
           Review: {counts.review}
         </Badge>
-        <Badge variant="outline" className="border-red-500 text-red-600">
+        <Badge variant="outline" className="border-destructive text-destructive">
           Rejected: {counts.rejected}
         </Badge>
       </div>
@@ -416,7 +416,7 @@ export default function NewsQualityReviewTab() {
                   <ScoreChip label="Quality" value={r.quality_score} />
                   {r.sentiment && <Badge variant="outline">{r.sentiment}</Badge>}
                   {r.quality_decision?.isSatire && (
-                    <Badge className="bg-amber-500 text-white">satire</Badge>
+                    <Badge className="bg-foreground text-white">satire</Badge>
                   )}
                   {(r.auto_publish_blocked_reasons ?? []).map((reason) => (
                     <Badge key={reason} variant="outline">
@@ -429,8 +429,8 @@ export default function NewsQualityReviewTab() {
                 variant="outline"
                 className={
                   r.quality_status === 'review'
-                    ? 'border-amber-500 text-amber-600'
-                    : 'border-red-500 text-red-600'
+                    ? 'border-border text-foreground'
+                    : 'border-destructive text-destructive'
                 }
               >
                 {r.quality_status ?? 'pending'}
@@ -545,7 +545,7 @@ export default function NewsQualityReviewTab() {
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="border-red-500 text-red-600"
+                    className="border-destructive text-destructive"
                     onClick={() => markIrrelevant.mutate(selected)}
                     disabled={markIrrelevant.isPending}
                   >
@@ -553,7 +553,7 @@ export default function NewsQualityReviewTab() {
                     Mark irrelevant
                   </Button>
                   <Button
-                    className="bg-emerald-600 text-white hover:bg-emerald-700"
+                    className="bg-foreground text-white hover:bg-foreground"
                     onClick={() => approve.mutate(selected)}
                     disabled={approve.isPending}
                   >

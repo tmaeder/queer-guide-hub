@@ -199,7 +199,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
               variant="outline"
               onClick={handleNeedsFollowup}
               disabled={!followupReason.trim() || markFollowup.isPending}
-              className="text-yellow-600 border-yellow-600"
+              className="text-foreground border-border"
             >
               <ShieldAlert size={14} className="mr-1" />
               Needs more context
@@ -215,7 +215,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
             <Sparkles size={12} /> Dispatch routine
           </p>
           {story.needs_followup_reason && (
-            <p className="text-xs text-yellow-600">
+            <p className="text-xs text-foreground">
               Needs more context: {story.needs_followup_reason}
             </p>
           )}
@@ -270,13 +270,13 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
       {/* Verify */}
       {showVerifyCard && latestRun && latestRetest && (
         <div
-          className="border border-green-600 rounded p-3 flex flex-col gap-2"
+          className="border border-foreground/40 rounded p-3 flex flex-col gap-2"
           data-testid="verify-card"
         >
           <p className="text-sm font-semibold">Ready for verification</p>
           <p className="text-xs text-muted-foreground">Original: {story.title}</p>
           <p className="text-xs">Fix: {latestRun.fix_summary ?? '—'}</p>
-          <p className="text-xs text-green-600">
+          <p className="text-xs text-foreground">
             Retest ({latestRetest.kind}): passed
           </p>
           <div className="flex gap-2 flex-wrap">
@@ -293,7 +293,7 @@ export function RoutineLoopSection({ story, feedbackMembers, errorMembers, membe
               variant="outline"
               onClick={handleReopen}
               disabled={verifying}
-              className="text-yellow-600 border-yellow-600"
+              className="text-foreground border-border"
             >
               <RotateCcw size={14} className="mr-1" />
               Reopen
@@ -388,7 +388,7 @@ function RoutineRunCard({ run, retests, onCancel, onStartRetest, cancelling, ret
         </Badge>
       )}
       {run.risks && (
-        <p className="text-xs text-yellow-600 flex gap-1 items-center">
+        <p className="text-xs text-foreground flex gap-1 items-center">
           <AlertTriangle size={12} /> {run.risks}
         </p>
       )}
@@ -410,7 +410,7 @@ function RoutineRunCard({ run, retests, onCancel, onStartRetest, cancelling, ret
             variant="outline"
             onClick={onCancel}
             disabled={cancelling}
-            className="text-yellow-600 border-yellow-600"
+            className="text-foreground border-border"
           >
             Cancel
           </Button>

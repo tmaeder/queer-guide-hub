@@ -104,7 +104,7 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
         size="sm"
         disabled={busy}
         onClick={() => updateState('published')}
-        className="bg-green-600 hover:bg-green-700 text-white normal-case font-semibold"
+        className="bg-foreground hover:bg-foreground text-white normal-case font-semibold"
       >
         {busy ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
@@ -128,7 +128,7 @@ export function BulkActionsBar({ selections, onClear, onComplete }: BulkActionsB
         variant="outline"
         disabled={busy}
         onClick={() => updateState('archived')}
-        className="border-yellow-500 text-yellow-700 hover:bg-yellow-50 normal-case font-semibold"
+        className="border-border text-foreground hover:bg-muted normal-case font-semibold"
       >
         <Archive size={14} className="mr-1" />
         Archive

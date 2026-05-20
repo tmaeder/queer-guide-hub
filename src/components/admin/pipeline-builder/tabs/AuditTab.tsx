@@ -187,7 +187,7 @@ export default function AuditTab() {
                   if (e.kind === 'save') {
                     return (
                       <div key={`save-${e.id}`} className="p-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
-                        <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground flex items-center justify-center shrink-0">
                           <Save className="h-3.5 w-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -227,9 +227,9 @@ export default function AuditTab() {
                     const StatusIcon = e.status === 'completed' ? CheckCircle2
                                       : e.status === 'failed' ? XCircle
                                       : Loader2;
-                    const statusColorClass = e.status === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-                                            : e.status === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
-                                            : e.status === 'running' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                    const statusColorClass = e.status === 'completed' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
+                                            : e.status === 'failed' ? 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive'
+                                            : e.status === 'running' ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground'
                                             : 'bg-muted text-muted-foreground';
                     return (
                       <div key={`run-${e.id}`} className="p-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
@@ -249,7 +249,7 @@ export default function AuditTab() {
                           </div>
                           <div className="flex items-center gap-3 text-xs2 text-muted-foreground mt-0.5 flex-wrap">
                             <span>
-                              <span className="text-green-700 dark:text-green-300 font-semibold">{e.items_succeeded ?? 0}</span>
+                              <span className="text-foreground dark:text-foreground font-semibold">{e.items_succeeded ?? 0}</span>
                               <span> / {e.items_total ?? 0}</span>
                             </span>
                             <span className="font-mono">{formatDuration(e.duration_ms)}</span>

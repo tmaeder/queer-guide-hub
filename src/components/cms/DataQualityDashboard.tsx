@@ -117,7 +117,7 @@ export function DataQualityDashboard() {
       )}
 
       {rows.some((r) => r.error) && (
-        <Alert className="mt-4 border-yellow-500 text-yellow-700 dark:text-yellow-400">
+        <Alert className="mt-4 border-border text-foreground dark:text-foreground">
           <AlertDescription>
             Some types failed to load metrics. Errors:{' '}
             {rows

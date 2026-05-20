@@ -100,7 +100,7 @@ export default function NodeConfigPanel({ node, nodeTypes, onUpdate, onClose }: 
             <div key={key} className="space-y-1.5">
               <Label className="text-xs flex items-center gap-1">
                 {label}
-                {isRequired && <span className="text-red-500">*</span>}
+                {isRequired && <span className="text-destructive">*</span>}
               </Label>
 
               {prop.description && (

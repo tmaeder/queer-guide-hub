@@ -283,7 +283,7 @@ export function CMSEditorLayout({ contentType, itemId, onClose, onSaved }: CMSEd
 
       {/* ── Error banners ───────────────────────────────────── */}
       {state.errors._conflict && (
-        <Alert className="mx-3 mt-3 border-yellow-500 text-yellow-700">
+        <Alert className="mx-3 mt-3 border-border text-foreground">
           <AlertDescription>{state.errors._conflict}</AlertDescription>
         </Alert>
       )}

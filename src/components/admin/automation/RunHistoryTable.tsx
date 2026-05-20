@@ -92,12 +92,12 @@ export function RunHistoryTable({ runs, modules }: Props) {
                 </p>
               </TableCell>
               <TableCell className="text-right">
-                <p className={`text-sm ${run.changes_auto_approved > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                <p className={`text-sm ${run.changes_auto_approved > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {run.changes_auto_approved}
                 </p>
               </TableCell>
               <TableCell className="text-right">
-                <p className={`text-sm ${run.changes_pending_review > 0 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                <p className={`text-sm ${run.changes_pending_review > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {run.changes_pending_review}
                 </p>
               </TableCell>

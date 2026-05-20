@@ -135,7 +135,7 @@ export function AffiliatePartnersManager() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base font-semibold">{p.partner_name}</span>
-                  <Badge variant="outline" className={p.enabled ? 'border-green-500 text-green-600' : ''}>
+                  <Badge variant="outline" className={p.enabled ? 'border-foreground/40 text-foreground' : ''}>
                     {p.enabled ? 'Active' : 'Disabled'}
                   </Badge>
                 </div>
@@ -154,7 +154,7 @@ export function AffiliatePartnersManager() {
               </div>
               <Button size="sm" variant="ghost" onClick={() => openEdit(p)}><Edit2 className="w-4 h-4" /></Button>
               <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id, p.partner_name)}>
-                <Trash2 className="w-4 h-4 text-red-500" />
+                <Trash2 className="w-4 h-4 text-destructive" />
               </Button>
             </div>
           ))}

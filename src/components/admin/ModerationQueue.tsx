@@ -263,7 +263,7 @@ export function ModerationQueue() {
       {/* Flags list */}
       {flags.length === 0 && !loading ? (
         <div className="text-center py-16">
-          <Flag className="w-12 h-12 text-gray-300 mb-4 mx-auto block" />
+          <Flag className="w-12 h-12 text-muted-foreground mb-4 mx-auto block" />
           <h6 className="font-semibold mb-1">No flags found</h6>
           <p className="text-muted-foreground">
             {Object.keys(filters).length > 0

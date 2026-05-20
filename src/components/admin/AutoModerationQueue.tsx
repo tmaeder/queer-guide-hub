@@ -361,7 +361,7 @@ export function AutoModerationQueue() {
       {/* Flag list */}
       {filteredFlags.length === 0 && !isLoading ? (
         <div className="text-center py-16">
-          <Bot className="w-12 h-12 text-gray-300 mb-4 mx-auto block" />
+          <Bot className="w-12 h-12 text-muted-foreground mb-4 mx-auto block" />
           <h3 className="text-base font-semibold mb-1">No pending automation flags</h3>
           <p className="text-muted-foreground">
             Automation modules haven't generated any flags needing review.

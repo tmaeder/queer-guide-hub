@@ -25,10 +25,10 @@ interface SummaryRow {
 type StatusFilter = 'pending' | 'permanent_failed' | 'all';
 
 const statusClass: Record<string, string> = {
-  pending: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
-  retrying: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-  permanent_failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  resolved: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  pending: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  retrying: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  permanent_failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  resolved: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
 };
 
 export default function DLQTab() {
@@ -106,10 +106,10 @@ export default function DLQTab() {
       <div className="flex flex-col gap-4">
         {/* Header + controls */}
         <div className="flex items-center gap-2 flex-wrap">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertTriangle className="h-4 w-4 text-foreground dark:text-foreground" />
           <span className="text-sm font-semibold">Dead Letter Queue</span>
           <span className="text-xs text-muted-foreground">
-            <strong className="text-foreground">{totals.total}</strong> total · <strong className="text-yellow-700 dark:text-yellow-300">{totals.pending}</strong> pending · <strong className="text-destructive">{totals.failed}</strong> permanent
+            <strong className="text-foreground">{totals.total}</strong> total · <strong className="text-foreground dark:text-foreground">{totals.pending}</strong> pending · <strong className="text-destructive">{totals.failed}</strong> permanent
           </span>
           <div className="flex-1" />
           <FilterButton value="pending" label="Pending" />

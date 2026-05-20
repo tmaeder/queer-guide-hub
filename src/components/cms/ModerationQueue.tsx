@@ -203,7 +203,7 @@ export function ModerationQueue() {
                       </Badge>
                     )}
                     {item.priority > 0 && (
-                      <Badge className="h-[22px] text-[0.7rem] gap-1 bg-yellow-500 text-white hover:bg-yellow-600">
+                      <Badge className="h-[22px] text-[0.7rem] gap-1 bg-foreground text-white hover:bg-foreground">
                         <ShieldAlert size={12} />
                         Priority {item.priority}
                       </Badge>
@@ -231,7 +231,7 @@ export function ModerationQueue() {
                     size="sm"
                     disabled={busy}
                     onClick={() => transition(item.id, { feedback_status: 'approved', status: 'approved' })}
-                    className="font-semibold text-xs bg-green-600 hover:bg-green-700 text-white"
+                    className="font-semibold text-xs bg-foreground hover:bg-foreground text-white"
                   >
                     <ThumbsUp size={14} />
                     Approve
@@ -252,7 +252,7 @@ export function ModerationQueue() {
                       variant="ghost"
                       disabled={busy}
                       onClick={() => transition(item.id, { is_spam: true })}
-                      className="font-medium text-xs text-yellow-600 hover:text-yellow-700"
+                      className="font-medium text-xs text-foreground hover:text-foreground"
                     >
                       <Flag size={14} />
                       Mark spam

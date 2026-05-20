@@ -225,7 +225,7 @@ export default function IntegrationsTab() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="flex items-center gap-1 cursor-help">
-                              {i.last_error ? <XCircle className="h-3 w-3 text-destructive" /> : <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />}
+                              {i.last_error ? <XCircle className="h-3 w-3 text-destructive" /> : <CheckCircle2 className="h-3 w-3 text-foreground dark:text-foreground" />}
                               {formatDistanceToNow(new Date(i.last_triggered_at), { addSuffix: true })}
                             </span>
                           </TooltipTrigger>

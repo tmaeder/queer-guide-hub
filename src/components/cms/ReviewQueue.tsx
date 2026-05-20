@@ -267,7 +267,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                 size="sm"
                 disabled={bulkLoading}
                 onClick={handleBulkApprove}
-                className="font-semibold text-[0.8rem] bg-green-600 hover:bg-green-700 text-white"
+                className="font-semibold text-[0.8rem] bg-foreground hover:bg-foreground text-white"
               >
                 {bulkLoading ? (
                   <Loader2 size={14} className="animate-spin mr-1" />
@@ -282,7 +282,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
               variant="outline"
               disabled={bulkLoading}
               onClick={handleApproveAll}
-              className="font-semibold text-[0.8rem] border-green-600 text-green-600 hover:bg-green-50"
+              className="font-semibold text-[0.8rem] border-foreground/40 text-foreground hover:bg-muted"
             >
               {bulkLoading ? (
                 <Loader2 size={14} className="animate-spin mr-1" />
@@ -459,7 +459,7 @@ export function ReviewQueue({ onEdit: propOnEdit }: ReviewQueueProps) {
                       size="sm"
                       disabled={isActionLoading}
                       onClick={() => handleApprove(item)}
-                      className="font-semibold text-[0.8rem] py-0.5 bg-green-600 hover:bg-green-700 text-white"
+                      className="font-semibold text-[0.8rem] py-0.5 bg-foreground hover:bg-foreground text-white"
                     >
                       {isActionLoading ? (
                         <Loader2 size={14} className="animate-spin mr-1" aria-label="Loading" />

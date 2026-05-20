@@ -191,7 +191,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
                     onClick={() => handleTransitionClick(trans)}
                     className={cn(
                       'w-full justify-start font-medium normal-case',
-                      isPublish && 'bg-green-500 hover:bg-green-600 text-white',
+                      isPublish && 'bg-foreground hover:bg-foreground text-white',
                     )}
                   >
                     {isTransitioning ? (
@@ -215,7 +215,7 @@ export function WorkflowPanel({ contentType, itemId }: WorkflowPanelProps) {
       {commentTarget && (
         <>
           <hr className="border-border" />
-          <div className="rounded-element p-3 bg-gray-50 border border-gray-200">
+          <div className="rounded-element p-3 bg-muted border border-border">
             <p className="text-sm font-semibold mb-1">{commentTarget.label}</p>
             {commentTarget.description && (
               <p className="text-xs text-muted-foreground block mb-1.5">

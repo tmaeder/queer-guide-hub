@@ -68,10 +68,10 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 };
 
 const SEVERITY_CLASS: Record<string, string> = {
-  info: 'bg-blue-100 text-blue-800',
-  warning: 'bg-yellow-100 text-yellow-800',
-  error: 'bg-red-100 text-red-800',
-  critical: 'bg-red-100 text-red-800',
+  info: 'bg-muted text-foreground',
+  warning: 'bg-muted text-foreground',
+  error: 'bg-destructive/10 text-destructive',
+  critical: 'bg-destructive/10 text-destructive',
 };
 
 const FLAG_TYPE_LABELS: Record<string, string> = {
@@ -193,7 +193,7 @@ export function AutomationDashboard() {
                             </Badge>
                           )}
                           {mod.auto_approve && (
-                            <Badge className="bg-green-100 text-green-800 text-[0.7rem] h-5">
+                            <Badge className="bg-muted text-foreground text-[0.7rem] h-5">
                               Auto-approve
                             </Badge>
                           )}
@@ -216,10 +216,10 @@ export function AutomationDashboard() {
                             <Badge
                               className={`text-[0.65rem] h-[18px] ${
                                 mod.last_run_status === 'success'
-                                  ? 'bg-green-100 text-green-800'
+                                  ? 'bg-muted text-foreground'
                                   : mod.last_run_status === 'partial'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
+                                    ? 'bg-muted text-foreground'
+                                    : 'bg-destructive/10 text-destructive'
                               }`}
                             >
                               {mod.last_run_status}
@@ -371,7 +371,7 @@ export function AutomationDashboard() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-7 w-7 p-0 text-green-600"
+                                    className="h-7 w-7 p-0 text-foreground"
                                     disabled={isReviewing}
                                     onClick={() =>
                                       reviewFlag({ flagId: flag.id, action: 'approved' })
@@ -461,7 +461,7 @@ export function AutomationDashboard() {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            className={`text-[0.65rem] ${link.http_status ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
+                            className={`text-[0.65rem] ${link.http_status ? 'bg-muted text-foreground' : 'bg-destructive/10 text-destructive'}`}
                           >
                             {link.http_status || 'Timeout'}
                           </Badge>
@@ -543,7 +543,7 @@ export function AutomationDashboard() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-[0.75rem] text-yellow-700 max-w-[250px] block">
+                          <span className="text-[0.75rem] text-foreground max-w-[250px] block">
                             {geo.mismatch_details}
                           </span>
                         </TableCell>

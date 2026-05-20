@@ -226,6 +226,10 @@ export default tseslint.config(
   // Phase 3g (2026-05-19) — admin chromatic purge complete. Color-literal rule
   // is now ERROR for the admin tree (same as public). Combined with the radius
   // warn since ESLint flat config overrides no-restricted-syntax wholesale.
+  //
+  // P4 (2026-05-20, UI audit) — also block Tailwind chromatic utility classes
+  // (`text-red-500`, `bg-emerald-100`, …) which the hex/rgb/hsl regex above
+  // cannot see. Admin tree uses StatusBadge / semantic tokens only.
   {
     files: [
       "src/components/admin/**/*.{ts,tsx}",
@@ -250,9 +254,102 @@ export default tseslint.config(
         },
         {
           selector:
-            "Literal[value=/\\brounded-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
+            "Literal[value=/\\brounded(-(t|b|l|r|tl|tr|bl|br))?-(xs|sm|md|lg|xl|2xl|3xl|4xl)\\b/]",
           message:
             "Use semantic radius: rounded-container / rounded-element / rounded-badge. See src/index.css @theme.",
+        },
+        {
+          selector:
+            "Literal[value=/\\b(text|bg|border|ring|from|via|to|decoration|divide)-(red|green|emerald|amber|yellow|orange|blue|purple|pink|cyan|indigo|violet|fuchsia|rose|sky|teal|lime|slate|gray|neutral|zinc|stone)-(50|100|200|300|400|500|600|700|800|900|950)\\b/]",
+          message:
+            "Chromatic Tailwind class — use design token (text-foreground / text-muted-foreground / text-destructive / bg-muted / bg-accent) or <StatusBadge>. See src/components/ui/status-badge.tsx.",
+        },
+        {
+          selector:
+            "Literal[value=/\\bfont-extrabold\\b/]",
+          message:
+            "Weight scale is 400/500/600/700. Use font-bold (700); Inter at 700 with the heading's -0.02em tracking already reads as strong as 800.",
+        },
+      ],
+    },
+  },
+
+  // P4 (2026-05-20, UI audit) — warn (not error) on chromatic Tailwind
+  // classes in the public tree. Migrate to tokens; promote to error once
+  // any remaining instances are flushed.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/integrations/supabase/types.ts",
+      "src/**/__tests__/**",
+      "src/test/**",
+      "src/components/admin/**",
+      "src/components/cms/**",
+      "src/components/security/**",
+      "src/pages/Admin*.tsx",
+      "src/pages/admin/**",
+      // Same functional-color allowlist as the hex rule above — these
+      // files legitimately encode data with categorical palettes.
+      "src/theme/**",
+      "src/lib/animation.ts",
+      "src/lib/avatar.ts",
+      "src/config/mapStyle.ts",
+      "src/config/contentTypeRegistry.ts",
+      "src/config/submissionRegistry.ts",
+      "src/config/adminNavigation.ts",
+      "src/config/workflowConfig.ts",
+      "src/utils/equalityScore.ts",
+      "src/components/country/**",
+      "src/components/trips/TripSafetyBriefing.tsx",
+      "src/components/trips/TripCoverBand.tsx",
+      "src/components/trips/TripDocExpiryBanner.tsx",
+      "src/components/trips/TripNudgesBanner.tsx",
+      "src/components/trips/BudgetTab.tsx",
+      "src/components/trips/TripMap.tsx",
+      "src/components/trips/create/CityCountryAutocomplete.tsx",
+      "src/components/news/NewsCard.tsx",
+      "src/components/profile/UserModeBadge.tsx",
+      "src/components/profile/PhotoGallery.tsx",
+      "src/pages/profile/Footprint.tsx",
+      "src/components/user-directory/UserDirectoryGrid.tsx",
+      "src/components/user-directory/UserDirectoryFilters.tsx",
+      "src/components/map/**",
+      "src/components/hotels/HotelsMap.tsx",
+      "src/components/events/EventsMapView.tsx",
+      "src/components/submission/**",
+      "src/pages/trips/**",
+      "src/components/ui/ContentWarningBanner.tsx",
+      "src/components/tags/TagLinkedContent.tsx",
+      "src/components/tags/TagRelationshipGraph.tsx",
+      "src/components/auth/PasswordStrengthMeter.tsx",
+      "src/components/auth/OAuthButtons.tsx",
+      "src/components/personalities/AddPersonalityDialog.tsx",
+      "src/hooks/useExploreMapData.ts",
+      "src/hooks/useReviewBulkActions.ts",
+      "src/hooks/useMapBoundaryLayers.ts",
+      "src/components/ui/modern-video-player.tsx",
+      "src/components/theme/ThemeProvider.tsx",
+      "src/components/analytics/UmamiAnalyticsDashboard.tsx",
+      "src/components/resources/TagListRenderer.tsx",
+      "src/pages/Ressources.tsx",
+      "src/components/location/LocationInfo.tsx",
+      "src/components/country/EqualityScoreBadge.tsx",
+      "src/components/country/CountryHeroImages.tsx",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector:
+            "Literal[value=/\\b(text|bg|border|ring|from|via|to|decoration|divide)-(red|green|emerald|amber|yellow|orange|blue|purple|pink|cyan|indigo|violet|fuchsia|rose|sky|teal|lime|slate|gray|neutral|zinc|stone)-(50|100|200|300|400|500|600|700|800|900|950)\\b/]",
+          message:
+            "Chromatic Tailwind class — use design token (text-foreground / text-muted-foreground / text-destructive / bg-muted / bg-accent) or <StatusBadge>.",
+        },
+        {
+          selector:
+            "Literal[value=/\\bfont-extrabold\\b/]",
+          message:
+            "Weight scale is 400/500/600/700. Use font-bold (700).",
         },
       ],
     },

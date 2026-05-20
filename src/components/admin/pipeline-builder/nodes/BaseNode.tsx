@@ -24,10 +24,10 @@ interface BaseNodeData {
 
 const statusConfig: Record<string, { className: string; icon: string }> = {
   pending:   { className: 'bg-muted text-muted-foreground', icon: 'Clock' },
-  running:   { className: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 animate-pulse', icon: 'Loader2' },
-  completed: { className: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300', icon: 'CheckCircle2' },
-  failed:    { className: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300', icon: 'XCircle' },
-  skipped:   { className: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400', icon: 'SkipForward' },
+  running:   { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground animate-pulse', icon: 'Loader2' },
+  completed: { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground', icon: 'CheckCircle2' },
+  failed:    { className: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive', icon: 'XCircle' },
+  skipped:   { className: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground', icon: 'SkipForward' },
 };
 
 function portPosition(index: number, total: number): string {
@@ -98,7 +98,7 @@ function BaseNode({ data, selected }: NodeProps) {
           {d.hasValidationIssue && !sc && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 ml-auto shrink-0" />
+                <AlertCircle className="h-3.5 w-3.5 text-foreground dark:text-foreground ml-auto shrink-0" />
               </TooltipTrigger>
               <TooltipContent className="text-xs">Missing required config</TooltipContent>
             </Tooltip>

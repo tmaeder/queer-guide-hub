@@ -13,25 +13,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router';
 
 const statusColors: Record<string, string> = {
-  queued: 'bg-gray-100 text-gray-700',
-  running: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-  completed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-  failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  cancelled: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
-  paused: 'bg-purple-100 text-purple-700',
+  queued: 'bg-muted text-foreground',
+  running: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  completed: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  cancelled: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  paused: 'bg-muted text-foreground',
 };
 
 const cbStateColors: Record<string, string> = {
-  closed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-  open: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  half_open: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
+  closed: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  open: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  half_open: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
 };
 
 const dispositionColors: Record<string, string> = {
-  pending: 'bg-gray-500',
-  committed: 'bg-green-500',
-  rejected: 'bg-red-500',
-  skipped: 'bg-yellow-500',
+  pending: 'bg-border',
+  committed: 'bg-foreground',
+  rejected: 'bg-destructive',
+  skipped: 'bg-foreground',
 };
 
 export default function PipelineDashboard() {
@@ -155,7 +155,7 @@ export default function PipelineDashboard() {
                           </TableCell>
                           <TableCell className="text-sm">
                             {run.items_succeeded}/{run.items_processed}
-                            {run.items_failed > 0 && <span className="text-red-500 ml-1">({run.items_failed} failed)</span>}
+                            {run.items_failed > 0 && <span className="text-destructive ml-1">({run.items_failed} failed)</span>}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : run.status === 'running' ? '...' : '-'}
@@ -193,13 +193,13 @@ export default function PipelineDashboard() {
                           <div className="mt-1 text-xs text-muted-foreground space-y-0.5">
                             {state.items_out > 0 && <div>Items out: {state.items_out}</div>}
                             {state.duration_ms && <div>Duration: {(state.duration_ms / 1000).toFixed(1)}s</div>}
-                            {state.error && <div className="text-red-500 truncate">{state.error}</div>}
+                            {state.error && <div className="text-destructive truncate">{state.error}</div>}
                           </div>
                         </div>
                       ))}
                       {selectedRun.error_message && (
-                        <div className="border border-red-200 dark:border-red-900 rounded-element p-2 bg-red-50 dark:bg-red-950/30">
-                          <p className="text-xs text-red-700 dark:text-red-300">{selectedRun.error_message}</p>
+                        <div className="border border-destructive dark:border-destructive rounded-element p-2 bg-destructive/10 dark:bg-destructive/30">
+                          <p className="text-xs text-destructive dark:text-destructive">{selectedRun.error_message}</p>
                         </div>
                       )}
                     </div>
@@ -231,11 +231,11 @@ export default function PipelineDashboard() {
                       </Badge>
                     </div>
                     <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <div>Failures: <span className={cb.failure_count > 0 ? 'text-red-600 dark:text-red-400 font-medium' : ''}>{cb.failure_count}/{cb.threshold}</span></div>
+                      <div>Failures: <span className={cb.failure_count > 0 ? 'text-destructive dark:text-destructive font-medium' : ''}>{cb.failure_count}/{cb.threshold}</span></div>
                       <div>Successes: {cb.success_count}</div>
                       {cb.last_failure_at && <div className="col-span-2">Last fail: {new Date(cb.last_failure_at).toLocaleString()}</div>}
                       {cb.state === 'open' && cb.open_until && (
-                        <div className="col-span-2 text-red-500">
+                        <div className="col-span-2 text-destructive">
                           Opens at: {new Date(cb.open_until).toLocaleTimeString()}
                         </div>
                       )}
@@ -263,7 +263,7 @@ export default function PipelineDashboard() {
                       {stagingStats.map(s => (
                         <div
                           key={s.status}
-                          className={`${dispositionColors[s.status] || 'bg-gray-400'} transition-all`}
+                          className={`${dispositionColors[s.status] || 'bg-border'} transition-all`}
                           style={{ width: `${(s.count / totalStaging) * 100}%` }}
                           title={`${s.status}: ${s.count}`}
                         />
@@ -317,16 +317,16 @@ export default function PipelineDashboard() {
                         <TableCell className="text-sm text-muted-foreground">{(def.schedule as string) || 'Manual'}</TableCell>
                         <TableCell>
                           {alert ? (
-                            <Badge variant="outline" className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 gap-1">
+                            <Badge variant="outline" className="text-xs bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive gap-1">
                               <AlertTriangle className="h-3 w-3" />
                               {((alert.detail as Record<string, unknown>)?.consecutive_failures as number) ?? 1}x
                             </Badge>
                           ) : (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <CheckCircle className="h-4 w-4 text-foreground" />
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-xs ${def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 text-gray-500'}`}>
+                          <Badge variant="outline" className={`text-xs ${def.is_enabled ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' : 'bg-muted text-muted-foreground'}`}>
                             {def.is_template ? 'Template' : def.is_enabled ? 'Enabled' : 'Disabled'}
                           </Badge>
                         </TableCell>

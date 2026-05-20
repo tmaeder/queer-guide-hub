@@ -30,10 +30,10 @@ interface SummaryRow {
 type Severity = 'fatal' | 'error' | 'warn' | 'info';
 
 const sevConfig: Record<Severity, { icon: React.ComponentType<{ className?: string }>; className: string; badgeClass: string }> = {
-  fatal: { icon: AlertCircle,    className: 'text-red-700 dark:text-red-300',    badgeClass: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900' },
-  error: { icon: AlertTriangle,  className: 'text-orange-600 dark:text-orange-400', badgeClass: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200' },
-  warn:  { icon: Bug,            className: 'text-yellow-600 dark:text-yellow-400', badgeClass: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-900' },
-  info:  { icon: Info,           className: 'text-blue-600 dark:text-blue-400',   badgeClass: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900' },
+  fatal: { icon: AlertCircle,    className: 'text-destructive dark:text-destructive',    badgeClass: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive border-destructive dark:border-destructive' },
+  error: { icon: AlertTriangle,  className: 'text-foreground dark:text-foreground', badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border' },
+  warn:  { icon: Bug,            className: 'text-foreground dark:text-foreground', badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-border dark:border-border' },
+  info:  { icon: Info,           className: 'text-foreground dark:text-foreground',   badgeClass: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground border-foreground/40 dark:border-foreground/40' },
 };
 
 export default function ErrorsTab() {
@@ -89,8 +89,8 @@ export default function ErrorsTab() {
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
           {summary.length === 0 ? (
             <div className="col-span-full border border-border rounded-element bg-background p-6 text-center text-sm">
-              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 inline mr-1" />
-              <span className="text-green-600 dark:text-green-400 font-medium">No errors in the last 7 days</span>
+              <CheckCircle2 className="h-5 w-5 text-foreground dark:text-foreground inline mr-1" />
+              <span className="text-foreground dark:text-foreground font-medium">No errors in the last 7 days</span>
             </div>
           ) : summary.map(s => {
             const sc = sevConfig[s.severity as Severity] ?? sevConfig.info;

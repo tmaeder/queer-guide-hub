@@ -325,7 +325,7 @@ export function SuggestionsTab() {
                       )}
                     </div>
                     {s.review_notes && (
-                      <Alert className="mt-2 border-yellow-500">
+                      <Alert className="mt-2 border-border">
                         <AlertDescription className="text-xs">{s.review_notes}</AlertDescription>
                       </Alert>
                     )}

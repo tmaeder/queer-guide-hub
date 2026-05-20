@@ -180,7 +180,7 @@ export const ScrapeSourcesDashboard = () => {
 
       {/* Failing sources alert */}
       {failingSources > 0 && (
-        <Alert className="mb-4 border-yellow-300 bg-yellow-50 text-yellow-900">
+        <Alert className="mb-4 border-border bg-muted text-foreground">
           <AlertDescription>
             {failingSources} source(s) have consecutive failures. Check the error column for details.
           </AlertDescription>
@@ -265,7 +265,7 @@ export const ScrapeSourcesDashboard = () => {
                     ) : source.last_success_at ? (
                       <Badge
                         variant="outline"
-                        className="text-[0.65rem] gap-1 border-green-500 text-green-700"
+                        className="text-[0.65rem] gap-1 border-foreground/40 text-foreground"
                       >
                         <CheckCircle size={12} />
                         OK
@@ -330,9 +330,9 @@ export const ScrapeSourcesDashboard = () => {
               const source = sources.find((s) => s.id === run.source_id);
               const statusClass =
                 run.status === 'completed'
-                  ? 'border-green-500 text-green-700'
+                  ? 'border-foreground/40 text-foreground'
                   : run.status === 'running'
-                    ? 'border-blue-500 text-blue-700'
+                    ? 'border-foreground/40 text-foreground'
                     : run.status === 'failed'
                       ? 'border-destructive text-destructive'
                       : '';

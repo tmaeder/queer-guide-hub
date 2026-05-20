@@ -33,7 +33,7 @@ export function TextAreaField({ field, value, onChange, error, disabled }: Field
         {field.maxLength && (
           <div
             className={`text-right text-xs mt-0.5 ${
-              charCount > field.maxLength ? 'text-red-500' : 'text-muted-foreground'
+              charCount > field.maxLength ? 'text-destructive' : 'text-muted-foreground'
             }`}
           >
             {charCount}/{field.maxLength}

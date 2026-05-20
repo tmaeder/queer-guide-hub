@@ -17,11 +17,11 @@ type Filter = 'all' | 'pipelines' | 'workflows' | 'failing' | 'disabled';
 
 const statusClass: Record<string, string> = {
   queued: 'bg-muted text-muted-foreground',
-  running: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-  completed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-  failed: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  cancelled: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
-  paused: 'bg-purple-100 text-purple-700',
+  running: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  completed: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  failed: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  cancelled: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  paused: 'bg-muted text-foreground',
 };
 
 function humanSchedule(cron: string | null): string {
@@ -47,9 +47,9 @@ function StatusDots({ statuses }: { statuses: string[] }) {
   return (
     <div className="flex gap-[2px]">
       {cells.map((s, i) => {
-        const bg = s === 'completed' ? 'bg-green-500'
+        const bg = s === 'completed' ? 'bg-foreground'
                  : s === 'failed' ? 'bg-destructive'
-                 : s === 'running' ? 'bg-blue-500'
+                 : s === 'running' ? 'bg-foreground'
                  : s ? 'bg-muted-foreground' : 'bg-muted';
         return (
           <Tooltip key={i}>
@@ -161,7 +161,7 @@ export default function OverviewTab() {
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard icon={Activity} color="text-primary" value={activeCount} label="Active definitions" />
-          <StatCard icon={CheckCircle} color="text-green-600 dark:text-green-400" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
+          <StatCard icon={CheckCircle} color="text-foreground dark:text-foreground" value={counts24h?.total ?? '—'} label="Runs in last 24h" />
           <StatCard
             icon={AlertTriangle}
             color={failingCount > 0 ? 'text-destructive' : 'text-muted-foreground'}
@@ -171,7 +171,7 @@ export default function OverviewTab() {
           />
           <StatCard
             icon={AlertTriangle}
-            color={openCircuits > 0 ? 'text-destructive' : 'text-green-600 dark:text-green-400'}
+            color={openCircuits > 0 ? 'text-destructive' : 'text-foreground dark:text-foreground'}
             value={openCircuits}
             label="Open circuits"
             alert={openCircuits > 0}
@@ -262,7 +262,7 @@ export default function OverviewTab() {
                   </td>
                   <td className="px-3 py-2.5 align-top text-xs tabular-nums">
                     {row.last_items_total != null && row.last_items_total > 0
-                      ? <><span className="text-green-700 dark:text-green-300 font-semibold">{row.last_items_succeeded ?? 0}</span><span className="text-muted-foreground">/{row.last_items_total}</span></>
+                      ? <><span className="text-foreground dark:text-foreground font-semibold">{row.last_items_succeeded ?? 0}</span><span className="text-muted-foreground">/{row.last_items_total}</span></>
                       : <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="px-3 py-2.5 align-top">

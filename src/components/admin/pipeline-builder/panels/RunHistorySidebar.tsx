@@ -23,11 +23,11 @@ const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 const statusClass: Record<string, string> = {
-  completed: 'text-green-600 dark:text-green-400',
+  completed: 'text-foreground dark:text-foreground',
   failed: 'text-destructive',
-  running: 'text-blue-600 dark:text-blue-400 animate-spin',
+  running: 'text-foreground dark:text-foreground animate-spin',
   pending: 'text-muted-foreground',
-  cancelled: 'text-yellow-600 dark:text-yellow-400',
+  cancelled: 'text-foreground dark:text-foreground',
 };
 
 function formatDuration(ms: number | null): string {
@@ -139,7 +139,7 @@ export default function RunHistorySidebar({ pipelineId, activeRunId, onSelectRun
                 <span className="font-mono">{formatDuration(run.duration_ms)}</span>
               </div>
               <div className="flex items-center gap-2 mt-1 text-2xs">
-                <span className="text-green-700 dark:text-green-300">{succeeded}</span>
+                <span className="text-foreground dark:text-foreground">{succeeded}</span>
                 <span className="text-muted-foreground">/</span>
                 <span>{total}</span>
                 {(run.items_failed ?? 0) > 0 && (

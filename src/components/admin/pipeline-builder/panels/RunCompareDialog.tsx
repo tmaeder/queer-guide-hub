@@ -36,9 +36,9 @@ const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 const statusClass: Record<string, string> = {
-  completed: 'text-green-600 dark:text-green-400',
+  completed: 'text-foreground dark:text-foreground',
   failed: 'text-destructive',
-  running: 'text-blue-600 dark:text-blue-400',
+  running: 'text-foreground dark:text-foreground',
 };
 
 function RunColumn({
@@ -90,7 +90,7 @@ function RunColumn({
           <div className="flex items-center justify-between text-muted-foreground">
             <span>items</span>
             <span className="font-mono tabular-nums text-foreground">
-              <span className="text-green-600 dark:text-green-400">{run.items_succeeded ?? 0}</span>
+              <span className="text-foreground dark:text-foreground">{run.items_succeeded ?? 0}</span>
               <span className="mx-1">/</span>
               {run.items_total ?? 0}
               {run.items_failed > 0 && <span className="text-destructive ml-1">·{run.items_failed}</span>}
@@ -194,7 +194,7 @@ export default function RunCompareDialog() {
               <div className="border border-border rounded-element p-2">
                 <div className="text-2xs text-muted-foreground">Duration Δ</div>
                 <div className={`text-sm font-mono tabular-nums font-semibold ${
-                  (runA.duration_ms || 0) < (runB.duration_ms || 0) ? 'text-green-600 dark:text-green-400'
+                  (runA.duration_ms || 0) < (runB.duration_ms || 0) ? 'text-foreground dark:text-foreground'
                   : (runA.duration_ms || 0) > (runB.duration_ms || 0) ? 'text-destructive'
                   : ''
                 }`}>

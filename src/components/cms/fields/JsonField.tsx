@@ -127,7 +127,7 @@ export function JsonField({ field, value, onChange, error, disabled }: FieldProp
           bg-muted/50 border-0 resize-y
           focus:outline-none focus:ring-2 focus:ring-ring
           disabled:cursor-not-allowed disabled:opacity-50
-          ${parseError ? 'ring-2 ring-red-400' : ''}
+          ${parseError ? 'ring-2 ring-destructive' : ''}
         `}
       />
       {!disabled && (

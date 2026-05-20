@@ -62,13 +62,13 @@ function formatAction(action: string): string {
 /** Tailwind classes for action type chips */
 function getActionClasses(action: string): string {
   if (action.includes('publish') || action.includes('approved'))
-    return 'border-green-500 text-green-700';
+    return 'border-foreground/40 text-foreground';
   if (action.includes('archive') || action.includes('delete'))
     return 'border-destructive text-destructive';
   if (action.includes('review') || action.includes('change_request'))
-    return 'border-yellow-500 text-yellow-700';
+    return 'border-border text-foreground';
   if (action.includes('create') || action.includes('restore'))
-    return 'border-blue-500 text-blue-700';
+    return 'border-foreground/40 text-foreground';
   if (action.includes('workflow')) return 'border-primary text-primary';
   return 'border-border text-foreground';
 }
@@ -151,7 +151,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
     <div>
       <div className="flex flex-row items-center justify-between mb-2">
         <div className="flex flex-row items-center gap-1">
-          <History size={18} className="text-gray-500" />
+          <History size={18} className="text-muted-foreground" />
           <p className="text-sm font-semibold">Audit Log</p>
           {totalCount > 0 && (
             <span className="text-xs text-muted-foreground">
@@ -187,7 +187,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
         </Alert>
       ) : paginatedEntries.length === 0 ? (
         <div className="border border-border rounded-element bg-background p-6 text-center">
-          <History size={24} className="text-gray-400 mx-auto mb-2" />
+          <History size={24} className="text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">No audit entries found.</p>
         </div>
       ) : (
@@ -209,7 +209,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
                   className="flex gap-2 py-3 px-1 hover:bg-muted rounded"
                 >
                   <Avatar className="w-7 h-7 mt-0.5">
-                    <AvatarFallback className="bg-gray-400 text-[0.6rem]">
+                    <AvatarFallback className="bg-border text-[0.6rem]">
                       {initials || <User size={14} />}
                     </AvatarFallback>
                   </Avatar>
@@ -231,7 +231,7 @@ export function AuditLog({ sourceTable, sourceId }: AuditLogProps) {
                     </div>
 
                     <div className="flex flex-row items-center gap-0.5 mt-0.5">
-                      <Clock size={12} className="text-gray-400" />
+                      <Clock size={12} className="text-muted-foreground" />
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="text-xs text-muted-foreground">

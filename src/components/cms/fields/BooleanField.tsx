@@ -24,7 +24,7 @@ export function BooleanField({ field, value, onChange, error, disabled }: FieldP
         <Label htmlFor={field.name} className="text-sm font-medium cursor-pointer select-none">
           {field.label}
           {field.required && (
-            <span className="text-red-500 ml-0.5">*</span>
+            <span className="text-destructive ml-0.5">*</span>
           )}
         </Label>
       </div>

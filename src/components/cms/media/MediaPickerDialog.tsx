@@ -87,10 +87,10 @@ function formatFileSize(bytes: number): string {
 }
 
 function getMimeIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return <ImageIcon size={40} className="text-gray-400" />;
-  if (mimeType.startsWith('video/')) return <Film size={40} className="text-gray-400" />;
-  if (mimeType.startsWith('audio/')) return <Music size={40} className="text-gray-400" />;
-  return <FileText size={40} className="text-gray-400" />;
+  if (mimeType.startsWith('image/')) return <ImageIcon size={40} className="text-muted-foreground" />;
+  if (mimeType.startsWith('video/')) return <Film size={40} className="text-muted-foreground" />;
+  if (mimeType.startsWith('audio/')) return <Music size={40} className="text-muted-foreground" />;
+  return <FileText size={40} className="text-muted-foreground" />;
 }
 
 export default function MediaPickerDialog({
@@ -258,7 +258,7 @@ export default function MediaPickerDialog({
                 <div className="flex-1 relative">
                   <Search
                     size={16}
-                    className="text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
                   />
                   <Input
                     placeholder="Search files..."
@@ -333,7 +333,7 @@ export default function MediaPickerDialog({
 
               {!loading && media.length === 0 && (
                 <div className="flex flex-col items-center py-12">
-                  <ImageIcon size={48} className="text-gray-300 mb-2" />
+                  <ImageIcon size={48} className="text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">
                     No media found. Upload a file or search external sources.
                   </p>
@@ -372,7 +372,7 @@ export default function MediaPickerDialog({
                         role="button"
                         tabIndex={0}
                         aria-pressed={isSelected}
-                        className={`cursor-pointer rounded overflow-hidden border-2 relative bg-gray-50 hover:border-muted ${
+                        className={`cursor-pointer rounded overflow-hidden border-2 relative bg-muted hover:border-muted ${
                           isSelected
                             ? 'border-primary hover:border-primary'
                             : 'border-transparent'
@@ -392,7 +392,7 @@ export default function MediaPickerDialog({
                           />
                         ) : (
                           <div
-                            className="w-full flex items-center justify-center bg-gray-100"
+                            className="w-full flex items-center justify-center bg-muted"
                             style={{ height: 160 }}
                           >
                             {getMimeIcon(item.mime_type)}

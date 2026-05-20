@@ -12,16 +12,16 @@ import { untypedFrom, untypedSupabase } from '@/integrations/supabase/untyped';
 const DuplicatesPanel = lazy(() => import('@/components/admin/import-hub/DuplicatesPanel').then(m => ({ default: m.DuplicatesPanel })));
 
 const cbClass: Record<string, string> = {
-  closed: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-  open: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  half_open: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300',
+  closed: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
+  open: 'bg-destructive/10 dark:bg-destructive/40 text-destructive dark:text-destructive',
+  half_open: 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground',
 };
 
 const dispositionColors: Record<string, string> = {
   pending: 'bg-muted-foreground',
-  committed: 'bg-green-500',
+  committed: 'bg-foreground',
   rejected: 'bg-destructive',
-  skipped: 'bg-amber-500',
+  skipped: 'bg-foreground',
   failed: 'bg-destructive',
 };
 
@@ -184,14 +184,14 @@ export default function HealthTab() {
           <SectionCard title="Enrichment outcomes" extra={<Badge variant="outline" className="text-2xs px-1.5 py-0">last 24h</Badge>}>
             <div className="grid grid-cols-[1fr_80px_80px_80px] gap-x-3 gap-y-1 text-xs">
               <div className="font-semibold text-muted-foreground uppercase tracking-wider text-2xs">Stage</div>
-              <div className="font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider text-2xs text-right">Success</div>
-              <div className="font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider text-2xs text-right">Partial</div>
+              <div className="font-semibold text-foreground dark:text-foreground uppercase tracking-wider text-2xs text-right">Success</div>
+              <div className="font-semibold text-foreground dark:text-foreground uppercase tracking-wider text-2xs text-right">Partial</div>
               <div className="font-semibold text-destructive uppercase tracking-wider text-2xs text-right">Failed</div>
               {enrichSummary.map((s, i) => (
                 <div key={i} className="contents">
                   <div className="font-mono py-1 border-t border-border/40">{s.stage}</div>
                   <div className="py-1 border-t border-border/40 text-right tabular-nums">{s.success}</div>
-                  <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.partial > 0 ? 'text-amber-700 dark:text-amber-300' : ''}`}>{s.partial}</div>
+                  <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.partial > 0 ? 'text-foreground dark:text-foreground' : ''}`}>{s.partial}</div>
                   <div className={`py-1 border-t border-border/40 text-right tabular-nums ${s.failed > 0 ? 'text-destructive font-semibold' : ''}`}>{s.failed}</div>
                 </div>
               ))}
@@ -205,7 +205,7 @@ export default function HealthTab() {
             <Shield className="h-4 w-4" />
             <span className="text-sm font-semibold">API Circuit Breakers</span>
             {openCircuits > 0 && (
-              <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">{openCircuits} open</Badge>
+              <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive">{openCircuits} open</Badge>
             )}
           </div>
           {circuitBreakers.length === 0 ? (
@@ -255,7 +255,7 @@ export default function HealthTab() {
               { label: 'Merge candidates',       value: geoHealth?.geo_merge_candidates },
             ].map(({ label, value }) => (
               <div key={label} className="border border-border rounded-element p-3">
-                <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-green-600 dark:text-green-400'}`}>
+                <div className={`text-2xl font-bold tabular-nums ${(value ?? 0) > 0 ? 'text-primary' : 'text-foreground dark:text-foreground'}`}>
                   {value ?? '–'}
                 </div>
                 <div className="text-2xs text-muted-foreground mt-1">{label}</div>
@@ -277,7 +277,7 @@ export default function HealthTab() {
                     <div className="flex gap-3 text-xs text-muted-foreground">
                       <span>
                         Depth:{' '}
-                        <strong className={(q.queue_length as number) > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}>
+                        <strong className={(q.queue_length as number) > 0 ? 'text-foreground dark:text-foreground' : 'text-foreground dark:text-foreground'}>
                           {q.queue_length as number}
                         </strong>
                       </span>
@@ -358,7 +358,7 @@ export default function HealthTab() {
                     <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
                     <td className="px-3 py-2">
                       <span className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
-                        def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
+                        def.is_enabled ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' : 'bg-muted text-muted-foreground'
                       }`}>
                         {def.is_enabled ? 'ON' : 'OFF'}
                       </span>
@@ -376,7 +376,7 @@ export default function HealthTab() {
                     <td className="px-3 py-2 text-muted-foreground font-mono text-xs">{(def.schedule as string) || 'Manual'}</td>
                     <td className="px-3 py-2">
                       <span className={`inline-block text-2xs font-semibold px-2 py-0.5 rounded-full ${
-                        def.is_enabled ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-muted text-muted-foreground'
+                        def.is_enabled ? 'bg-muted dark:bg-foreground/40 text-foreground dark:text-foreground' : 'bg-muted text-muted-foreground'
                       }`}>
                         {def.is_enabled ? 'ON' : 'OFF'}
                       </span>

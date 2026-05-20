@@ -147,7 +147,7 @@ function CommentNode({ comment, depth, readOnly, onReply, onResolve, onUnresolve
             </span>
           )}
           {comment.resolved && (
-            <span className="ml-1 inline-flex items-center gap-0.5 text-emerald-600">
+            <span className="ml-1 inline-flex items-center gap-0.5 text-foreground">
               <Check className="size-3" />
               resolved
             </span>

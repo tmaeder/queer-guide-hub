@@ -65,7 +65,7 @@ export function RevisionPanel({ sourceTable, sourceId }: RevisionPanelProps) {
     <TooltipProvider>
       <div>
         <div className="flex flex-row items-center gap-2 mb-3">
-          <History size={14} className="text-gray-500" />
+          <History size={14} className="text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Recent Revisions
           </span>
@@ -87,7 +87,7 @@ export function RevisionPanel({ sourceTable, sourceId }: RevisionPanelProps) {
                     #{revision.revision_number}
                   </span>
                   <div className="flex flex-row items-center gap-1">
-                    <Clock size={10} className="text-gray-400" />
+                    <Clock size={10} className="text-muted-foreground" />
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="text-[0.7rem] text-muted-foreground">

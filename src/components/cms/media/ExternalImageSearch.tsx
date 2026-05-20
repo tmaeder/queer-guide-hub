@@ -114,7 +114,7 @@ export default function ExternalImageSearch({
       <div className="px-0 pb-3 relative">
         <Search
           size={16}
-          className="text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+          className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
         />
         <Input
           placeholder={
@@ -158,7 +158,7 @@ export default function ExternalImageSearch({
 
         {!loading && displayResults.length === 0 && query.trim() && (
           <div className="text-center py-12">
-            <Camera size={48} className="text-gray-300" style={{ margin: '0 auto 8px' }} />
+            <Camera size={48} className="text-muted-foreground" style={{ margin: '0 auto 8px' }} />
             <p className="text-sm text-muted-foreground">
               No images found for &ldquo;{query}&rdquo;
             </p>
@@ -167,7 +167,7 @@ export default function ExternalImageSearch({
 
         {!query.trim() && !loading && (
           <div className="text-center py-12">
-            <Search size={48} className="text-gray-300" style={{ margin: '0 auto 8px' }} />
+            <Search size={48} className="text-muted-foreground" style={{ margin: '0 auto 8px' }} />
             <p className="text-sm text-muted-foreground">
               Enter a search term to find images
             </p>
@@ -197,7 +197,7 @@ export default function ExternalImageSearch({
                     role="button"
                     tabIndex={0}
                     aria-pressed={isSelected}
-                    className={`cursor-pointer rounded overflow-hidden border-2 relative bg-gray-50 hover:border-muted ${
+                    className={`cursor-pointer rounded overflow-hidden border-2 relative bg-muted hover:border-muted ${
                       isSelected ? 'border-primary hover:border-primary' : 'border-transparent'
                     }`}
                   >
@@ -267,7 +267,7 @@ export default function ExternalImageSearch({
 
       {/* Selected image attribution */}
       {selectedImage && (
-        <div className="mt-1 p-3 border-t border-border bg-gray-50 rounded">
+        <div className="mt-1 p-3 border-t border-border bg-muted rounded">
           <div className="flex flex-row gap-3 items-center">
             <img
               src={selectedImage.thumbnail}
@@ -293,7 +293,7 @@ export default function ExternalImageSearch({
                         rel="noopener noreferrer"
                         style={{ display: 'flex' }}
                       >
-                        <ExternalLink size={12} className="text-gray-400" />
+                        <ExternalLink size={12} className="text-muted-foreground" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent>View on source site</TooltipContent>

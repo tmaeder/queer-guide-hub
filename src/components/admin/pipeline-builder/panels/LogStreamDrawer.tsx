@@ -24,21 +24,21 @@ interface LogStreamDrawerProps {
 }
 
 const stageColor: Record<string, string> = {
-  normalize: 'text-blue-600 dark:text-blue-400',
-  validate: 'text-amber-600 dark:text-amber-400',
-  deduplicate: 'text-violet-600 dark:text-violet-400',
-  quality_score: 'text-cyan-600 dark:text-cyan-400',
-  review_gate: 'text-orange-600 dark:text-orange-400',
-  commit: 'text-green-600 dark:text-green-400',
-  enrich: 'text-indigo-600 dark:text-indigo-400',
+  normalize: 'text-foreground dark:text-foreground',
+  validate: 'text-foreground dark:text-foreground',
+  deduplicate: 'text-foreground dark:text-foreground',
+  quality_score: 'text-foreground dark:text-foreground',
+  review_gate: 'text-foreground dark:text-foreground',
+  commit: 'text-foreground dark:text-foreground',
+  enrich: 'text-foreground dark:text-foreground',
 };
 
 const statusIcon: Record<string, React.ReactNode> = {
-  committed: <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />,
+  committed: <CheckCircle2 className="h-3 w-3 text-foreground dark:text-foreground" />,
   rejected: <AlertCircle className="h-3 w-3 text-destructive" />,
   failed: <AlertCircle className="h-3 w-3 text-destructive" />,
   error: <AlertCircle className="h-3 w-3 text-destructive" />,
-  approved: <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />,
+  approved: <CheckCircle2 className="h-3 w-3 text-foreground dark:text-foreground" />,
 };
 
 /**
@@ -112,7 +112,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
         <Badge variant="outline" className="text-2xs px-1.5 py-0 font-mono">{pipelineRunId.slice(0, 8)}</Badge>
         <Badge variant="outline" className="text-2xs px-1.5 py-0">{events.length} events</Badge>
         {errorCount > 0 && (
-          <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900">
+          <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-destructive/10 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive">
             {errorCount} errors
           </Badge>
         )}
@@ -177,7 +177,7 @@ export default function LogStreamDrawer({ pipelineRunId, onClose }: LogStreamDra
               const errorMsg = (e.payload as Record<string, unknown>)?.error
                 || (e.payload as Record<string, unknown>)?.crash;
               return (
-                <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded hover:bg-muted/30 ${isError ? 'bg-red-50/30 dark:bg-red-950/20' : ''}`}>
+                <div key={e.id} className={`flex items-start gap-2 py-0.5 px-2 rounded hover:bg-muted/30 ${isError ? 'bg-destructive/10/30 dark:bg-destructive/20' : ''}`}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-muted-foreground text-2xs whitespace-nowrap cursor-help">
