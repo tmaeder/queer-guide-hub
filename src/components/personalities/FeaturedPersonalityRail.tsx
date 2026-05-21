@@ -24,7 +24,7 @@ function FeaturedItem({ p, eager }: { p: Personality; eager: boolean }) {
     <LocalizedLink
       to={href}
       aria-label={`${p.name}${p.profession ? ', ' + p.profession : ''}`}
-      className="flex-none w-40 block transition-transform hover:-translate-y-0.5 group no-underline"
+      className="flex-none w-40 block transition-opacity hover:opacity-80 group no-underline"
       style={{ scrollSnapAlign: 'start', color: 'inherit' }}
     >
       <div

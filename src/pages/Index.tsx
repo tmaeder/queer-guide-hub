@@ -105,7 +105,7 @@ const Index = React.memo(() => {
             <button
               type="button"
               onClick={() => navigate('/directory')}
-              className="inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-transform duration-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-opacity duration-200 hover:opacity-90"
             >
               <Calendar size={16} aria-hidden="true" />
               {t('home.browseDirectory', 'Browse the directory')}

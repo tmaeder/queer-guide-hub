@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { memo, type CSSProperties } from 'react';
 import { MotionCard as Card, CardImage } from '@/components/ui/card';
 import { CardHoverEffect } from '@/components/effects/CardHoverEffect';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +61,7 @@ function HighlightedText({ text, query }: { text: string; query?: string }) {
   );
 }
 
-export function MarketplaceCard({
+function MarketplaceCardImpl({
   listing,
   loading = false,
   showFavoriteButton = false,
@@ -283,3 +283,5 @@ export function MarketplaceCard({
     </CardHoverEffect>
   );
 }
+
+export const MarketplaceCard = memo(MarketplaceCardImpl);

@@ -43,7 +43,7 @@ export function TagListRenderer({
               key={tag.id}
               type="button"
               onClick={() => onTagClick(tag)}
-              className="flex flex-col overflow-hidden rounded-element bg-background border border-border cursor-pointer text-left p-0 transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
+              className="flex flex-col overflow-hidden rounded-element bg-background border border-border cursor-pointer text-left p-0 transition-colors hover:border-primary hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline focus-visible:outline-primary focus-visible:outline-offset-2"
               style={{ font: 'inherit', color: 'inherit' }}
             >
               <div className="relative w-full bg-muted" style={{ aspectRatio: '4 / 3' }}>

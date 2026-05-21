@@ -393,7 +393,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               onClick={() =>
                 ct.id === 'cms_pages' ? onNavigate('pages') : onNavigate('content', ct.id)
               }
-              className="text-left p-4 cursor-pointer rounded-element overflow-hidden bg-background border border-border transition-transform hover:-translate-y-0.5"
+              className="text-left p-4 cursor-pointer rounded-element overflow-hidden bg-background border border-border transition-colors hover:bg-muted/40"
             >
               <div className="flex items-center gap-2 mb-4">
                 <div
@@ -532,7 +532,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
             type="button"
             key={action.label}
             onClick={action.onClick}
-            className="p-4 rounded-element cursor-pointer flex items-center gap-4 bg-background border border-border transition-transform hover:-translate-y-px text-left"
+            className="p-4 rounded-element cursor-pointer flex items-center gap-4 bg-background border border-border transition-colors hover:bg-muted/40 text-left"
           >
             <div
               className="rounded-element flex items-center justify-center"
@@ -588,7 +588,7 @@ export function CMSOverview({ onNavigate, onEdit }: CMSOverviewProps) {
               type="button"
               key={action.label}
               onClick={action.onClick}
-              className="p-4 rounded-element cursor-pointer flex items-center gap-4 bg-background border border-border transition-transform hover:-translate-y-px text-left"
+              className="p-4 rounded-element cursor-pointer flex items-center gap-4 bg-background border border-border transition-colors hover:bg-muted/40 text-left"
             >
               <div
                 className="rounded-element flex items-center justify-center"

@@ -24,7 +24,7 @@ interface PageHeroProps {
 }
 
 const PRIMARY_CLASSES =
-  'inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-transform duration-300 hover:-translate-y-0.5 no-underline';
+  'inline-flex items-center gap-2 rounded-full bg-foreground px-8 py-4 text-sm font-bold tracking-tight text-background transition-opacity duration-300 hover:opacity-90 no-underline';
 
 const SECONDARY_CLASSES =
   'inline-flex items-center gap-2 rounded-full border border-foreground px-8 py-4 text-sm font-bold tracking-tight text-foreground hover:bg-foreground hover:text-background transition-colors no-underline';

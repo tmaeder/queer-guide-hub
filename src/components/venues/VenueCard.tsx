@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Card, CardImage } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, BadgeCheck, Share2 } from 'lucide-react';
@@ -101,7 +102,7 @@ const VenueCardFixture = () => (
   </Card>
 );
 
-export function VenueCard({ venue, loading = false }: VenueCardProps) {
+function VenueCardImpl({ venue, loading = false }: VenueCardProps) {
   const { data: tripStatus } = useEntityTripStatus('venue', venue?.id);
   const visitedLookup = useVisitedPlaceLookup();
   const isVisited = !!venue?.id && visitedLookup.has('venue', venue.id);
@@ -304,3 +305,5 @@ export function VenueCard({ venue, loading = false }: VenueCardProps) {
     </Skeleton>
   );
 }
+
+export const VenueCard = memo(VenueCardImpl);

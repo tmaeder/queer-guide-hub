@@ -196,6 +196,8 @@ export const EventCard = memo(function EventCard({
                     role="presentation"
                     loading="lazy"
                     decoding="async"
+                    width={800}
+                    height={400}
                     onError={() => setImageError(true)}
                     className="w-full h-full object-cover grayscale-[0.15] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-[1.04]"
                   />
@@ -255,6 +257,8 @@ export const EventCard = memo(function EventCard({
                       role="presentation"
                       loading="lazy"
                       decoding="async"
+                      width={32}
+                      height={32}
                       className="absolute bottom-3 left-3 w-8 h-8 rounded-element bg-background object-contain z-20 p-0.5"
                       onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                         (e.target as HTMLImageElement).style.display = 'none';
