@@ -6,7 +6,7 @@ The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guid
 
 | Layer | Stack |
 |-------|-------|
-| **Frontend** | React 19, Vite 6, TypeScript 5.8, Tailwind CSS, shadcn/ui |
+| **Frontend** | React 19, Vite 8, TypeScript 6.0, Tailwind CSS, shadcn/ui |
 | **Routing & Data** | TanStack Router + Query + Table |
 | **Backend** | Supabase (PostgreSQL 17.4, Auth, Storage, Edge Functions) |
 | **Hosting** | Cloudflare Pages + Cloudflare Workers |
@@ -24,20 +24,24 @@ The global platform for LGBTQ+ travel, community, and safe spaces at [queer.guid
 ```
 src/                       # React app (~90 pages, feature-grouped components)
 supabase/
-├── functions/             # 175 Deno Edge Functions
-└── migrations/            # 276 PostgreSQL migrations
+├── functions/             # 180 Deno Edge Functions
+└── migrations/            # 315 PostgreSQL migrations
 workers/
+├── geo/                   # CF Worker: geocoding proxy
+├── image-cdn/             # CF Worker: image transform + cache layer
+├── image-ingest/          # CF Worker: image mirror/dedup → R2
 ├── ingest/                # CF Worker: search-intelligence ingest pipeline
 ├── search-proxy/          # CF Worker: Meilisearch proxy with synonym injection
 ├── snapshot-archiver/     # CF Worker: admin/editorial snapshot archival
-└── submit/                # CF Worker: extension submissions → ingestion_staging
+├── submit/                # CF Worker: extension submissions → ingestion_staging
+└── trip-inbox/            # CF Worker: trip-planning inbox ingestion
 scraper/                   # Node.js scraping pipeline (Cheerio + Playwright)
 meilisearch/               # Self-hosted Meili config (Docker Compose, Caddy, index scripts)
 extension/                 # Chrome extension (MV3, React 19) — user venue/event submissions
 e2e/                       # Playwright E2E tests
 scripts/                   # Operational scripts
 docs/                      # Architecture docs, ADRs, runbooks
-.github/workflows/         # 25 GitHub Actions (CI, scraper crons, Meili ops, e2e nightly)
+.github/workflows/         # 28 GitHub Actions (CI, scraper crons, Meili ops, e2e nightly)
 ```
 
 ## Local Development
@@ -138,9 +142,15 @@ E2E nightly run at 03:00 UTC via GitHub Actions. i18n smoke tests on PRs touchin
 
 ## Design
 
-Monochrome design system. Black/white + grayscale only. No rounded corners (`--radius: 0`), no shadows, no gradients in public UI. Inter typeface. Icons from lucide-react. Full light + dark mode.
+Monochrome design system. Black/white + grayscale only. No shadows, no gradients in public UI. Inter typeface. Icons from lucide-react. Full light + dark mode.
 
-Components: 52 shadcn/ui primitives in `src/components/ui/`. Design tokens in `src/index.css`. ESLint enforces color/shape constraints.
+**Shape:** semantic 3-tier radius — `rounded-container` (16px, cards/sheets/dialogs), `rounded-element` (8px, buttons/inputs/list rows), `rounded-badge` (4px, chips/tags). Tokens defined in `src/index.css` `@theme`. `rounded-full` permitted for avatars only.
+
+**Spacing:** strict 8 pt grid. Even-step Tailwind utilities only (`p-{0,2,4,6,8,10,12,16,20,24}`). Odd-step utilities banned in new code.
+
+**Exceptions:** muted `--destructive` red for hard errors, traffic-light colors on the trip safety briefing, functional categorical scales (maps, equality scores, password strength). Crisis/safety pages are animation-free.
+
+Components: 58 shadcn/ui primitives in `src/components/ui/`. ESLint enforces color, radius, spacing, and shadow constraints — error in public tree, warn in admin.
 
 ## Compliance (Scraper)
 
